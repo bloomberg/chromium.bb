@@ -9,6 +9,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/display/shared_display_edge_indicator.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -32,25 +33,73 @@ const int kMinimumIndicatorHeight = 200;
 
 const int kIndicatorThickness = 1;
 
+// Helper method that maps a gfx::Display to an aura::Window.
+aura::Window* GetRootWindowForDisplayId(int64_t display_id) {
+  return Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->GetRootWindowForDisplayId(display_id);
+}
+
+// Helper method that maps an aura::Window to a gfx::Display.
+gfx::Display GetDisplayFromWindow(aura::Window* window) {
+  return Shell::GetScreen()->GetDisplayNearestWindow(window);
+}
+
 }  // namespace
+
+ExtendedMouseWarpController::WarpRegion::WarpRegion(
+    int64_t a_display_id,
+    int64_t b_display_id,
+    const gfx::Rect& a_indicator_bounds,
+    const gfx::Rect& b_indicator_bounds)
+    : a_display_id(a_display_id),
+      b_display_id(b_display_id),
+      a_indicator_bounds(a_indicator_bounds),
+      b_indicator_bounds(b_indicator_bounds),
+      shared_display_edge_indicator(nullptr) {
+  // Initialize edge bounds from indicator bounds.
+  aura::Window* a_window = GetRootWindowForDisplayId(a_display_id);
+  aura::Window* b_window = GetRootWindowForDisplayId(b_display_id);
+
+  AshWindowTreeHost* a_ash_host = GetRootWindowController(a_window)->ash_host();
+  AshWindowTreeHost* b_ash_host = GetRootWindowController(b_window)->ash_host();
+
+  a_edge_bounds_in_native = GetNativeEdgeBounds(a_ash_host, a_indicator_bounds);
+  b_edge_bounds_in_native = GetNativeEdgeBounds(b_ash_host, b_indicator_bounds);
+}
+
+ExtendedMouseWarpController::WarpRegion::~WarpRegion() {}
 
 ExtendedMouseWarpController::ExtendedMouseWarpController(
     aura::Window* drag_source)
     : drag_source_root_(drag_source),
-      shared_display_edge_indicator_(new SharedDisplayEdgeIndicator),
       allow_non_native_event_(false) {
-  DisplayLayout::Position position = Shell::GetInstance()
-                                         ->display_manager()
-                                         ->GetCurrentDisplayLayout()
-                                         .position;
-  // TODO(oshima): Use ComputeBondary instead.
-  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM)
-    UpdateHorizontalEdgeBounds();
-  else
-    UpdateVerticalEdgeBounds();
-  if (drag_source) {
-    shared_display_edge_indicator_->Show(src_indicator_bounds_,
-                                         dst_indicator_bounds_);
+  ash::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+
+  // For the time being, 3 or more displays are always always laid out
+  // horizontally, with each display being RIGHT of the previous one.
+  if (display_manager->GetNumDisplays() > 2) {
+    for (size_t i = 1; i < display_manager->GetNumDisplays(); ++i) {
+      const gfx::Display& left = display_manager->GetDisplayAt(i - 1);
+      const gfx::Display& right = display_manager->GetDisplayAt(i);
+
+      AddWarpRegion(CreateVerticalEdgeBounds(left, right, DisplayLayout::RIGHT),
+                    drag_source != nullptr);
+    }
+  } else {
+    DisplayLayout::Position position =
+        display_manager->GetCurrentDisplayLayout().position;
+    const gfx::Display& a = display_manager->GetDisplayAt(0);
+    const gfx::Display& b = display_manager->GetDisplayAt(1);
+
+    // TODO(oshima): Use ComputeBondary instead.
+    if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM)
+      AddWarpRegion(CreateHorizontalEdgeBounds(a, b, position),
+                    drag_source != nullptr);
+    else
+      AddWarpRegion(CreateVerticalEdgeBounds(a, b, position),
+                    drag_source != nullptr);
   }
 }
 
@@ -97,100 +146,106 @@ void ExtendedMouseWarpController::SetEnabled(bool enabled) {
   enabled_ = enabled;
 }
 
+void ExtendedMouseWarpController::AddWarpRegion(
+    scoped_ptr<WarpRegion> warp_region,
+    bool drag_source) {
+  if (drag_source) {
+    warp_region->shared_display_edge_indicator.reset(
+        new SharedDisplayEdgeIndicator);
+    warp_region->shared_display_edge_indicator->Show(
+        warp_region->a_indicator_bounds, warp_region->b_indicator_bounds);
+  }
+
+  warp_regions_.emplace_back(std::move(warp_region));
+}
+
 bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
     const gfx::Point& point_in_native,
     const gfx::Point& point_in_screen,
     bool update_mouse_location_now) {
-  bool in_src_edge = src_edge_bounds_in_native_.Contains(point_in_native);
-  bool in_dst_edge = dst_edge_bounds_in_native_.Contains(point_in_native);
-  if (!in_src_edge && !in_dst_edge)
-    return false;
+  for (const scoped_ptr<WarpRegion>& warp : warp_regions_) {
+    bool in_a_edge = warp->a_edge_bounds_in_native.Contains(point_in_native);
+    bool in_b_edge = warp->b_edge_bounds_in_native.Contains(point_in_native);
+    if (!in_a_edge && !in_b_edge)
+      continue;
 
-  // The mouse must move.
-  aura::Window* src_root = nullptr;
-  aura::Window* dst_root = nullptr;
-  GetSrcAndDstRootWindows(&src_root, &dst_root);
-  AshWindowTreeHost* target_ash_host =
-      GetRootWindowController(in_src_edge ? dst_root : src_root)->ash_host();
+    // The mouse must move.
+    aura::Window* dst_window = GetRootWindowForDisplayId(
+        in_a_edge ? warp->b_display_id : warp->a_display_id);
+    AshWindowTreeHost* target_ash_host =
+        GetRootWindowController(dst_window)->ash_host();
 
-  MoveCursorTo(target_ash_host, point_in_screen, update_mouse_location_now);
-  return true;
+    MoveCursorTo(target_ash_host, point_in_screen, update_mouse_location_now);
+    return true;
+  }
+
+  return false;
 }
 
-void ExtendedMouseWarpController::UpdateHorizontalEdgeBounds() {
-  bool from_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
-  // GetPrimaryDisplay returns an object on stack, so copy the bounds
-  // instead of using reference.
-  const gfx::Rect primary_bounds =
-      Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Rect secondary_bounds = ScreenUtil::GetSecondaryDisplay().bounds();
-  DisplayLayout::Position position = Shell::GetInstance()
-                                         ->display_manager()
-                                         ->GetCurrentDisplayLayout()
-                                         .position;
+scoped_ptr<ExtendedMouseWarpController::WarpRegion>
+ExtendedMouseWarpController::CreateHorizontalEdgeBounds(
+    const gfx::Display& a,
+    const gfx::Display& b,
+    DisplayLayout::Position position) {
+  bool from_a = a.id() == GetDisplayFromWindow(drag_source_root_).id();
 
-  src_indicator_bounds_.set_x(
-      std::max(primary_bounds.x(), secondary_bounds.x()));
-  src_indicator_bounds_.set_width(
-      std::min(primary_bounds.right(), secondary_bounds.right()) -
-      src_indicator_bounds_.x());
-  src_indicator_bounds_.set_height(kIndicatorThickness);
-  src_indicator_bounds_.set_y(
+  const gfx::Rect& a_bounds = a.bounds();
+  const gfx::Rect& b_bounds = b.bounds();
+
+  gfx::Rect a_indicator_bounds;
+  a_indicator_bounds.set_x(std::max(a_bounds.x(), b_bounds.x()));
+  a_indicator_bounds.set_width(std::min(a_bounds.right(), b_bounds.right()) -
+                               a_indicator_bounds.x());
+  a_indicator_bounds.set_height(kIndicatorThickness);
+  a_indicator_bounds.set_y(
       position == DisplayLayout::TOP
-          ? primary_bounds.y() - (from_primary ? 0 : kIndicatorThickness)
-          : primary_bounds.bottom() - (from_primary ? kIndicatorThickness : 0));
+          ? a_bounds.y() - (from_a ? 0 : kIndicatorThickness)
+          : a_bounds.bottom() - (from_a ? kIndicatorThickness : 0));
 
-  dst_indicator_bounds_ = src_indicator_bounds_;
-  dst_indicator_bounds_.set_height(kIndicatorThickness);
-  dst_indicator_bounds_.set_y(
+  gfx::Rect b_indicator_bounds;
+  b_indicator_bounds = a_indicator_bounds;
+  b_indicator_bounds.set_height(kIndicatorThickness);
+  b_indicator_bounds.set_y(
       position == DisplayLayout::TOP
-          ? primary_bounds.y() - (from_primary ? kIndicatorThickness : 0)
-          : primary_bounds.bottom() - (from_primary ? 0 : kIndicatorThickness));
+          ? a_bounds.y() - (from_a ? kIndicatorThickness : 0)
+          : a_bounds.bottom() - (from_a ? 0 : kIndicatorThickness));
 
-  aura::Window* src_root = nullptr;
-  aura::Window* dst_root = nullptr;
-  GetSrcAndDstRootWindows(&src_root, &dst_root);
-
-  src_edge_bounds_in_native_ = GetNativeEdgeBounds(
-      GetRootWindowController(src_root)->ash_host(), src_indicator_bounds_);
-  dst_edge_bounds_in_native_ = GetNativeEdgeBounds(
-      GetRootWindowController(dst_root)->ash_host(), dst_indicator_bounds_);
+  return make_scoped_ptr(
+      new WarpRegion(a.id(), b.id(), a_indicator_bounds, b_indicator_bounds));
 }
 
-void ExtendedMouseWarpController::UpdateVerticalEdgeBounds() {
+scoped_ptr<ExtendedMouseWarpController::WarpRegion>
+ExtendedMouseWarpController::CreateVerticalEdgeBounds(
+    const gfx::Display& a,
+    const gfx::Display& b,
+    DisplayLayout::Position position) {
   int snap_height = drag_source_root_ ? kMaximumSnapHeight : 0;
-  bool in_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
-  // GetPrimaryDisplay returns an object on stack, so copy the bounds
-  // instead of using reference.
-  const gfx::Rect primary_bounds =
-      Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Rect secondary_bounds = ScreenUtil::GetSecondaryDisplay().bounds();
-  DisplayLayout::Position position = Shell::GetInstance()
-                                         ->display_manager()
-                                         ->GetCurrentDisplayLayout()
-                                         .position;
+  bool in_a = a.id() == GetDisplayFromWindow(drag_source_root_).id();
 
-  int upper_shared_y = std::max(primary_bounds.y(), secondary_bounds.y());
-  int lower_shared_y =
-      std::min(primary_bounds.bottom(), secondary_bounds.bottom());
+  const gfx::Rect& a_bounds = a.bounds();
+  const gfx::Rect& b_bounds = b.bounds();
+
+  int upper_shared_y = std::max(a_bounds.y(), b_bounds.y());
+  int lower_shared_y = std::min(a_bounds.bottom(), b_bounds.bottom());
   int shared_height = lower_shared_y - upper_shared_y;
 
-  int dst_x =
-      position == DisplayLayout::LEFT
-          ? primary_bounds.x() - (in_primary ? kIndicatorThickness : 0)
-          : primary_bounds.right() - (in_primary ? 0 : kIndicatorThickness);
-  dst_indicator_bounds_.SetRect(dst_x, upper_shared_y, kIndicatorThickness,
-                                shared_height);
+  gfx::Rect a_indicator_bounds;
+  gfx::Rect b_indicator_bounds;
+
+  int dst_x = position == DisplayLayout::LEFT
+                  ? a_bounds.x() - (in_a ? kIndicatorThickness : 0)
+                  : a_bounds.right() - (in_a ? 0 : kIndicatorThickness);
+  b_indicator_bounds.SetRect(dst_x, upper_shared_y, kIndicatorThickness,
+                             shared_height);
 
   // The indicator on the source display.
-  src_indicator_bounds_.set_width(kIndicatorThickness);
-  src_indicator_bounds_.set_x(
-      position == DisplayLayout::LEFT
-          ? primary_bounds.x() - (in_primary ? 0 : kIndicatorThickness)
-          : primary_bounds.right() - (in_primary ? kIndicatorThickness : 0));
+  a_indicator_bounds.set_width(kIndicatorThickness);
+  a_indicator_bounds.set_x(position == DisplayLayout::LEFT
+                               ? a_bounds.x() - (in_a ? 0 : kIndicatorThickness)
+                               : a_bounds.right() -
+                                     (in_a ? kIndicatorThickness : 0));
 
-  const gfx::Rect& source_bounds =
-      in_primary ? primary_bounds : secondary_bounds;
+  const gfx::Rect& source_bounds = in_a ? a_bounds : b_bounds;
   int upper_indicator_y = source_bounds.y() + snap_height;
   int lower_indicator_y = std::min(source_bounds.bottom(), lower_shared_y);
 
@@ -209,27 +264,11 @@ void ExtendedMouseWarpController::UpdateVerticalEdgeBounds() {
   } else {
     upper_indicator_y = std::max(upper_indicator_y, upper_shared_y);
   }
-  src_indicator_bounds_.set_y(upper_indicator_y);
-  src_indicator_bounds_.set_height(lower_indicator_y - upper_indicator_y);
+  a_indicator_bounds.set_y(upper_indicator_y);
+  a_indicator_bounds.set_height(lower_indicator_y - upper_indicator_y);
 
-  aura::Window* src_root = nullptr;
-  aura::Window* dst_root = nullptr;
-  GetSrcAndDstRootWindows(&src_root, &dst_root);
-
-  // Native
-  src_edge_bounds_in_native_ = GetNativeEdgeBounds(
-      GetRootWindowController(src_root)->ash_host(), src_indicator_bounds_);
-  dst_edge_bounds_in_native_ = GetNativeEdgeBounds(
-      GetRootWindowController(dst_root)->ash_host(), dst_indicator_bounds_);
-}
-
-void ExtendedMouseWarpController::GetSrcAndDstRootWindows(
-    aura::Window** src_root,
-    aura::Window** dst_root) {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  *src_root = drag_source_root_ ? drag_source_root_
-                                : Shell::GetInstance()->GetPrimaryRootWindow();
-  *dst_root = root_windows[0] == *src_root ? root_windows[1] : root_windows[0];
+  return make_scoped_ptr(
+      new WarpRegion(a.id(), b.id(), a_indicator_bounds, b_indicator_bounds));
 }
 
 }  // namespace ash
