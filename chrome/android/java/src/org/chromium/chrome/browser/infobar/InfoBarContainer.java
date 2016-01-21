@@ -115,7 +115,8 @@ public class InfoBarContainer extends SwipableOverlayView {
         mParentView = parentView;
 
         mLayout = new InfoBarContainerLayout(context);
-        addView(mLayout);
+        addView(mLayout, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.

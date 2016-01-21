@@ -5,12 +5,12 @@
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
     <item>
-      <bitmap
-          android:src="@drawable/infobar_shadow"
-          android:gravity="top|fill_horizontal"
-          android:tileMode="disabled" />
+        <bitmap
+            android:src="@drawable/infobar_shadow_top"
+            android:gravity="top|fill_horizontal"
+            android:tileMode="disabled" />
     </item>
     <item
-        android:top="10dp"
+        android:top="@dimen/infobar_shadow_height"
         android:drawable="@android:color/white" />
 </layer-list>
