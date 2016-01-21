@@ -46,9 +46,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
                                                 int32_t end) override;
   gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
                                                     int32_t end) override;
-  uint32_t InsertSyncPoint() override;
-  uint32_t InsertFutureSyncPoint() override;
-  void RetireSyncPoint(uint32_t) override;
   void EnsureWorkVisible() override;
 
   // Binds/unbinds the graphics of this context with the associated instance.

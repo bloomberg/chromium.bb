@@ -131,18 +131,6 @@ gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForGetOffsetInRange(
   return GetCommandBuffer()->GetLastState();
 }
 
-uint32_t PPB_Graphics3D_Impl::InsertSyncPoint() {
-  return command_buffer_->InsertSyncPoint();
-}
-
-uint32_t PPB_Graphics3D_Impl::InsertFutureSyncPoint() {
-  return command_buffer_->InsertFutureSyncPoint();
-}
-
-void PPB_Graphics3D_Impl::RetireSyncPoint(uint32_t sync_point) {
-  return command_buffer_->RetireSyncPoint(sync_point);
-}
-
 void PPB_Graphics3D_Impl::EnsureWorkVisible() {
   command_buffer_->EnsureWorkVisible();
 }

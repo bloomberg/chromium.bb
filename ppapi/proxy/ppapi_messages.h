@@ -1045,15 +1045,6 @@ IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                     ppapi::HostResource /* graphics_3d */,
                     gpu::SyncToken /* sync_token */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_InsertSyncPoint,
-                           ppapi::HostResource /* context */,
-                           uint32_t /* sync_point */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_InsertFutureSyncPoint,
-                           ppapi::HostResource /* context */,
-                           uint32_t /* sync_point */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_RetireSyncPoint,
-                    ppapi::HostResource /* context */,
-                    uint32_t /* sync_point */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
                            ppapi::HostResource /* context */)
 
