@@ -12281,6 +12281,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Events.DispatchToComponentWithSuspendedEventPage"
+    enum="ExtensionEvents">
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Recorded every time an event is dispatched to a *component* extension with a
+    suspended event page.  Otherwise identical to
+    Extensions.Events.DispatchWithSuspendedEventPage.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Events.DispatchWithPersistentBackgroundPage"
     enum="ExtensionEvents">
   <owner>rdevlin.cronin@chromium.org</owner>

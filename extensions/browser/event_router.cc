@@ -760,10 +760,12 @@ void EventRouter::ReportEvent(events::HistogramValue histogram_value,
   UMA_HISTOGRAM_ENUMERATION("Extensions.Events.Dispatch", histogram_value,
                             events::ENUM_BOUNDARY);
 
+  bool is_component = Manifest::IsComponentLocation(extension->location());
+
   // Record events for component extensions. These should be kept to a minimum,
   // especially if they wake its event page. Component extensions should use
   // declarative APIs as much as possible.
-  if (Manifest::IsComponentLocation(extension->location())) {
+  if (is_component) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.Events.DispatchToComponent",
                               histogram_value, events::ENUM_BOUNDARY);
   }
@@ -788,6 +790,11 @@ void EventRouter::ReportEvent(events::HistogramValue histogram_value,
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.Events.DispatchWithSuspendedEventPage", histogram_value,
           events::ENUM_BOUNDARY);
+      if (is_component) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Extensions.Events.DispatchToComponentWithSuspendedEventPage",
+            histogram_value, events::ENUM_BOUNDARY);
+      }
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.Events.DispatchWithRunningEventPage", histogram_value,

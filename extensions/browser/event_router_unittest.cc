@@ -5,15 +5,20 @@
 #include "extensions/browser/event_router.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -81,6 +86,25 @@ scoped_ptr<EventListener> CreateEventListenerForURL(
       event_name, listener_url, process, make_scoped_ptr(filter));
 }
 
+// Creates an extension.  If |component| is true, it is created as a component
+// extension.  If |persistent| is true, it is created with a persistent
+// background page; otherwise it is created with an event page.
+scoped_refptr<Extension> CreateExtension(bool component, bool persistent) {
+  ExtensionBuilder builder;
+  scoped_ptr<base::DictionaryValue> manifest =
+      make_scoped_ptr(new base::DictionaryValue());
+  manifest->SetString("name", "foo");
+  manifest->SetString("version", "1.0.0");
+  manifest->SetInteger("manifest_version", 2);
+  manifest->SetString("background.page", "background.html");
+  manifest->SetBoolean("background.persistent", persistent);
+  builder.SetManifest(std::move(manifest));
+  if (component)
+    builder.SetLocation(Manifest::Location::COMPONENT);
+
+  return builder.Build();
+}
+
 }  // namespace
 
 class EventRouterTest : public ExtensionsTest {
@@ -92,8 +116,50 @@ class EventRouterTest : public ExtensionsTest {
   // Tests adding and removing observers from EventRouter.
   void RunEventRouterObserverTest(const EventListenerConstructor& constructor);
 
+  // Tests that the correct counts are recorded for the Extensions.Events
+  // histograms.
+  void ExpectHistogramCounts(int dispatch_count,
+                             int component_count,
+                             int persistent_count,
+                             int suspended_count,
+                             int component_suspended_count,
+                             int running_count) {
+    if (dispatch_count) {
+      histogram_tester_.ExpectBucketCount("Extensions.Events.Dispatch",
+                                          events::HistogramValue::FOR_TEST,
+                                          dispatch_count);
+    }
+    if (component_count) {
+      histogram_tester_.ExpectBucketCount(
+          "Extensions.Events.DispatchToComponent",
+          events::HistogramValue::FOR_TEST, component_count);
+    }
+    if (persistent_count) {
+      histogram_tester_.ExpectBucketCount(
+          "Extensions.Events.DispatchWithPersistentBackgroundPage",
+          events::HistogramValue::FOR_TEST, persistent_count);
+    }
+    if (suspended_count) {
+      histogram_tester_.ExpectBucketCount(
+          "Extensions.Events.DispatchWithSuspendedEventPage",
+          events::HistogramValue::FOR_TEST, suspended_count);
+    }
+    if (component_suspended_count) {
+      histogram_tester_.ExpectBucketCount(
+          "Extensions.Events.DispatchToComponentWithSuspendedEventPage",
+          events::HistogramValue::FOR_TEST, component_suspended_count);
+    }
+    if (running_count) {
+      histogram_tester_.ExpectBucketCount(
+          "Extensions.Events.DispatchWithRunningEventPage",
+          events::HistogramValue::FOR_TEST, running_count);
+    }
+  }
+
  private:
   scoped_ptr<content::NotificationService> notification_service_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouterTest);
 };
@@ -169,6 +235,45 @@ TEST_F(EventRouterTest, EventRouterObserverForExtensions) {
 TEST_F(EventRouterTest, EventRouterObserverForURLs) {
   RunEventRouterObserverTest(
       base::Bind(&CreateEventListenerForURL, GURL("http://google.com/path")));
+}
+
+TEST_F(EventRouterTest, TestReportEvent) {
+  EventRouter router(browser_context(), NULL);
+  scoped_refptr<Extension> normal = test_util::CreateEmptyExtension("id1");
+  router.ReportEvent(events::HistogramValue::FOR_TEST, normal.get(),
+                     false /** did_enqueue */);
+  ExpectHistogramCounts(1 /** Dispatch */, 0 /** DispatchToComponent */,
+                        0 /** DispatchWithPersistentBackgroundPage */,
+                        0 /** DispatchWithSuspendedEventPage */,
+                        0 /** DispatchToComponentWithSuspendedEventPage */,
+                        0 /** DispatchWithRunningEventPage */);
+
+  scoped_refptr<Extension> component =
+      CreateExtension(true /** component */, true /** persistent */);
+  router.ReportEvent(events::HistogramValue::FOR_TEST, component.get(),
+                     false /** did_enqueue */);
+  ExpectHistogramCounts(2, 1, 1, 0, 0, 0);
+
+  scoped_refptr<Extension> persistent = CreateExtension(false, true);
+  router.ReportEvent(events::HistogramValue::FOR_TEST, persistent.get(),
+                     false /** did_enqueue */);
+  ExpectHistogramCounts(3, 1, 2, 0, 0, 0);
+
+  scoped_refptr<Extension> event = CreateExtension(false, false);
+  router.ReportEvent(events::HistogramValue::FOR_TEST, event.get(),
+                     false /** did_enqueue */);
+  ExpectHistogramCounts(4, 1, 2, 0, 0, 0);
+  router.ReportEvent(events::HistogramValue::FOR_TEST, event.get(),
+                     true /** did_enqueue */);
+  ExpectHistogramCounts(5, 1, 2, 1, 0, 1);
+
+  scoped_refptr<Extension> component_event = CreateExtension(true, false);
+  router.ReportEvent(events::HistogramValue::FOR_TEST, component_event.get(),
+                     false /** did_enqueue */);
+  ExpectHistogramCounts(6, 2, 2, 1, 0, 2);
+  router.ReportEvent(events::HistogramValue::FOR_TEST, component_event.get(),
+                     true /** did_enqueue */);
+  ExpectHistogramCounts(7, 3, 2, 2, 1, 2);
 }
 
 }  // namespace extensions
