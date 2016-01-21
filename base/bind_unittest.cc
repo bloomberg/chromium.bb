@@ -712,80 +712,57 @@ TEST_F(BindTest, Owned) {
   EXPECT_EQ(1, deletes);
 }
 
-// Passed() wrapper support.
+// Tests for Passed() wrapper support:
 //   - Passed() can be constructed from a pointer to scoper.
 //   - Passed() can be constructed from a scoper rvalue.
 //   - Using Passed() gives Callback Ownership.
 //   - Ownership is transferred from Callback to callee on the first Run().
 //   - Callback supports unbound arguments.
-TEST_F(BindTest, ScopedPtr) {
+template <typename T>
+class BindMoveOnlyTypeTest : public ::testing::Test {
+};
+
+struct CustomDeleter {
+  void operator()(DeleteCounter* c) { delete c; }
+};
+
+using MoveOnlyTypesToTest =
+    ::testing::Types<scoped_ptr<DeleteCounter>,
+                     std::unique_ptr<DeleteCounter>,
+                     std::unique_ptr<DeleteCounter, CustomDeleter>>;
+TYPED_TEST_CASE(BindMoveOnlyTypeTest, MoveOnlyTypesToTest);
+
+TYPED_TEST(BindMoveOnlyTypeTest, PassedToBoundCallback) {
   int deletes = 0;
 
-  // Tests the Passed() function's support for pointers.
-  scoped_ptr<DeleteCounter> ptr(new DeleteCounter(&deletes));
-  Callback<scoped_ptr<DeleteCounter>()> unused_callback =
-      Bind(&PassThru<scoped_ptr<DeleteCounter> >, Passed(&ptr));
+  TypeParam ptr(new DeleteCounter(&deletes));
+  Callback<TypeParam()> callback = Bind(&PassThru<TypeParam>, Passed(&ptr));
   EXPECT_FALSE(ptr.get());
   EXPECT_EQ(0, deletes);
 
   // If we never invoke the Callback, it retains ownership and deletes.
-  unused_callback.Reset();
-  EXPECT_EQ(1, deletes);
-
-  // Tests the Passed() function's support for rvalues.
-  deletes = 0;
-  DeleteCounter* counter = new DeleteCounter(&deletes);
-  Callback<scoped_ptr<DeleteCounter>()> callback =
-      Bind(&PassThru<scoped_ptr<DeleteCounter> >,
-           Passed(scoped_ptr<DeleteCounter>(counter)));
-  EXPECT_FALSE(ptr.get());
-  EXPECT_EQ(0, deletes);
-
-  // Check that ownership can be transferred back out.
-  scoped_ptr<DeleteCounter> result = callback.Run();
-  ASSERT_EQ(counter, result.get());
-  EXPECT_EQ(0, deletes);
-
-  // Resetting does not delete since ownership was transferred.
   callback.Reset();
-  EXPECT_EQ(0, deletes);
-
-  // Ensure that we actually did get ownership.
-  result.reset();
   EXPECT_EQ(1, deletes);
-
-  // Test unbound argument forwarding.
-  Callback<scoped_ptr<DeleteCounter>(scoped_ptr<DeleteCounter>)> cb_unbound =
-      Bind(&PassThru<scoped_ptr<DeleteCounter> >);
-  ptr.reset(new DeleteCounter(&deletes));
-  cb_unbound.Run(std::move(ptr));
 }
 
-TEST_F(BindTest, UniquePtr) {
+TYPED_TEST(BindMoveOnlyTypeTest, PassedWithRvalue) {
   int deletes = 0;
-
-  // Tests the Passed() function's support for pointers.
-  std::unique_ptr<DeleteCounter> ptr(new DeleteCounter(&deletes));
-  Callback<std::unique_ptr<DeleteCounter>()> unused_callback =
-      Bind(&PassThru<std::unique_ptr<DeleteCounter>>, Passed(&ptr));
-  EXPECT_FALSE(ptr.get());
+  Callback<TypeParam()> callback = Bind(
+      &PassThru<TypeParam>, Passed(TypeParam(new DeleteCounter(&deletes))));
   EXPECT_EQ(0, deletes);
 
   // If we never invoke the Callback, it retains ownership and deletes.
-  unused_callback.Reset();
+  callback.Reset();
   EXPECT_EQ(1, deletes);
+}
 
-  // Tests the Passed() function's support for rvalues.
-  deletes = 0;
+// Check that ownership can be transferred back out.
+TYPED_TEST(BindMoveOnlyTypeTest, ReturnMoveOnlyType) {
+  int deletes = 0;
   DeleteCounter* counter = new DeleteCounter(&deletes);
-  Callback<std::unique_ptr<DeleteCounter>()> callback =
-      Bind(&PassThru<std::unique_ptr<DeleteCounter>>,
-           Passed(std::unique_ptr<DeleteCounter>(counter)));
-  EXPECT_FALSE(ptr.get());
-  EXPECT_EQ(0, deletes);
-
-  // Check that ownership can be transferred back out.
-  std::unique_ptr<DeleteCounter> result = callback.Run();
+  Callback<TypeParam()> callback =
+      Bind(&PassThru<TypeParam>, Passed(TypeParam(counter)));
+  TypeParam result = callback.Run();
   ASSERT_EQ(counter, result.get());
   EXPECT_EQ(0, deletes);
 
@@ -796,12 +773,15 @@ TEST_F(BindTest, UniquePtr) {
   // Ensure that we actually did get ownership.
   result.reset();
   EXPECT_EQ(1, deletes);
+}
 
+TYPED_TEST(BindMoveOnlyTypeTest, UnboundForwarding) {
+  int deletes = 0;
+  TypeParam ptr(new DeleteCounter(&deletes));
   // Test unbound argument forwarding.
-  Callback<std::unique_ptr<DeleteCounter>(std::unique_ptr<DeleteCounter>)>
-      cb_unbound = Bind(&PassThru<std::unique_ptr<DeleteCounter>>);
-  ptr.reset(new DeleteCounter(&deletes));
+  Callback<TypeParam(TypeParam)> cb_unbound = Bind(&PassThru<TypeParam>);
   cb_unbound.Run(std::move(ptr));
+  EXPECT_EQ(1, deletes);
 }
 
 // Argument Copy-constructor usage for non-reference parameters.
