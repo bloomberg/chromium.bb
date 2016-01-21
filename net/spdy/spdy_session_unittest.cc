@@ -1132,6 +1132,112 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
   EXPECT_FALSE(session_);
 }
 
+// Regression test for https://crbug.com/481009.
+TEST_P(SpdySessionTest, MaxConcurrentStreamsZero) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  int seq = 0;
+  std::vector<MockRead> reads;
+
+  // Receive SETTINGS frame that sets max_concurrent_streams to zero.
+  SettingsMap settings_zero;
+  settings_zero[SETTINGS_MAX_CONCURRENT_STREAMS] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 0);
+  scoped_ptr<SpdyFrame> settings_frame_zero(
+      spdy_util_.ConstructSpdySettings(settings_zero));
+  reads.push_back(CreateMockRead(*settings_frame_zero, seq++));
+
+  // Acknowledge it.
+  std::vector<MockWrite> writes;
+  scoped_ptr<SpdyFrame> settings_ack0;
+  if (GetProtocol() == kProtoHTTP2) {
+    settings_ack0.reset(spdy_util_.ConstructSpdySettingsAck());
+    writes.push_back(CreateMockWrite(*settings_ack0, seq++));
+  }
+
+  // Pause.
+  reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, seq++));
+
+  // Receive SETTINGS frame that sets max_concurrent_streams to one.
+  SettingsMap settings_one;
+  settings_one[SETTINGS_MAX_CONCURRENT_STREAMS] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 1);
+  scoped_ptr<SpdyFrame> settings_frame_one(
+      spdy_util_.ConstructSpdySettings(settings_one));
+  reads.push_back(CreateMockRead(*settings_frame_one, seq++));
+
+  // Acknowledge it.
+  scoped_ptr<SpdyFrame> settings_ack1;
+  if (GetProtocol() == kProtoHTTP2) {
+    settings_ack1.reset(spdy_util_.ConstructSpdySettingsAck());
+    writes.push_back(CreateMockWrite(*settings_ack1, seq++));
+  }
+
+  // Request and response.
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, MEDIUM, true));
+  writes.push_back(CreateMockWrite(*req, seq++));
+
+  scoped_ptr<SpdyFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  reads.push_back(CreateMockRead(*resp, seq++));
+
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  reads.push_back(CreateMockRead(*body, seq++));
+
+  reads.push_back(MockRead(ASYNC, 0, seq++));
+
+  SequencedSocketData data(reads.data(), reads.size(), writes.data(),
+                           writes.size());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  // Create session.
+  CreateNetworkSession();
+  CreateInsecureSpdySession();
+
+  // Receive SETTINGS frame that sets max_concurrent_streams to zero.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, session_->max_concurrent_streams_);
+
+  // Start request.
+  SpdyStreamRequest request;
+  TestCompletionCallback callback;
+  int rv =
+      request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
+                           MEDIUM, BoundNetLog(), callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Stream is stalled.
+  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(0u, session_->num_created_streams());
+
+  // Receive SETTINGS frame that sets max_concurrent_streams to one.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, session_->max_concurrent_streams_);
+
+  // Stream is created.
+  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, session_->num_created_streams());
+
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Send request.
+  base::WeakPtr<SpdyStream> stream = request.ReleaseStream();
+  test::StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(stream->HasUrlFromHeaders());
+
+  EXPECT_EQ(OK, delegate.WaitForClose());
+  EXPECT_EQ("hello!", delegate.TakeReceivedData());
+
+  // Session is destroyed.
+  EXPECT_FALSE(session_);
+}
+
 // Verifies that an unstalled pending stream creation racing with a new stream
 // creation doesn't violate the maximum stream concurrency. Regression test for
 // crbug.com/373858.
@@ -1459,7 +1565,7 @@ TEST_P(SpdySessionTest, ClearSettings) {
 
   // Make sure session's max_concurrent_streams is correct.
   EXPECT_EQ(kInitialMaxConcurrentStreams + 1,
-            session_->max_concurrent_streams());
+            session_->max_concurrent_streams_);
 
   data.Resume();
   base::RunLoop().RunUntilIdle();

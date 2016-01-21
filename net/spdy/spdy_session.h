@@ -535,6 +535,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, StreamIdSpaceExhausted);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, MaxConcurrentStreamsZero);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, UnstallRacesWithStreamCreation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GoAwayOnSessionFlowControlError);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
@@ -953,8 +954,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   bool check_ping_status_pending() const { return check_ping_status_pending_; }
 
-  size_t max_concurrent_streams() const { return max_concurrent_streams_; }
-
   // Set whether priority->dependency conversion is enabled
   // by default for all future SpdySessions.
   static void SetPriorityDependencyDefaultForTesting(bool enable);
@@ -1069,7 +1068,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   Error error_on_close_;
 
   // Limits
-  size_t max_concurrent_streams_;  // 0 if no limit
+  size_t max_concurrent_streams_;
   size_t max_concurrent_pushed_streams_;
 
   // Some statistics counters for the session.

@@ -884,8 +884,7 @@ int SpdySession::TryCreateStream(
   if (err != OK)
     return err;
 
-  if (!max_concurrent_streams_ ||
-      (active_streams_.size() + created_streams_.size() - num_pushed_streams_ <
+  if ((active_streams_.size() + created_streams_.size() - num_pushed_streams_ <
        max_concurrent_streams_)) {
     return CreateStream(*request, stream);
   }
@@ -992,16 +991,10 @@ base::WeakPtr<SpdyStreamRequest> SpdySession::GetNextPendingStreamRequest() {
 }
 
 void SpdySession::ProcessPendingStreamRequests() {
-  // Like |max_concurrent_streams_|, 0 means infinite for
-  // |max_requests_to_process|.
-  size_t max_requests_to_process = 0;
-  if (max_concurrent_streams_ != 0) {
-    max_requests_to_process =
-        max_concurrent_streams_ -
-        (active_streams_.size() + created_streams_.size());
-  }
-  for (size_t i = 0;
-       max_requests_to_process == 0 || i < max_requests_to_process; ++i) {
+  size_t max_requests_to_process =
+      max_concurrent_streams_ -
+      (active_streams_.size() + created_streams_.size());
+  for (size_t i = 0; i < max_requests_to_process; ++i) {
     base::WeakPtr<SpdyStreamRequest> pending_request =
         GetNextPendingStreamRequest();
     if (!pending_request)
