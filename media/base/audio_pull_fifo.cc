@@ -46,6 +46,10 @@ void AudioPullFifo::Consume(AudioBus* destination, int frames_to_consume) {
 
 void AudioPullFifo::Clear() { fifo_index_ = fifo_->frames(); }
 
+int AudioPullFifo::SizeInFrames() const {
+  return fifo_->frames();
+}
+
 int AudioPullFifo::ReadFromFifo(AudioBus* destination,
                                 int frames_to_provide,
                                 int write_pos) {

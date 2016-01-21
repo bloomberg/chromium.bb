@@ -28,11 +28,15 @@ class AudioPullFifoTest
     : public testing::TestWithParam<int> {
  public:
   AudioPullFifoTest()
-    : pull_fifo_(kChannels, kMaxFramesInFifo, base::Bind(
-          &AudioPullFifoTest::ProvideInput, base::Unretained(this))),
-      audio_bus_(AudioBus::Create(kChannels, kMaxFramesInFifo)),
-      fill_value_(0),
-      last_frame_delay_(-1) {}
+      : pull_fifo_(kChannels,
+                   kMaxFramesInFifo,
+                   base::Bind(&AudioPullFifoTest::ProvideInput,
+                              base::Unretained(this))),
+        audio_bus_(AudioBus::Create(kChannels, kMaxFramesInFifo)),
+        fill_value_(0),
+        last_frame_delay_(-1) {
+    EXPECT_EQ(kMaxFramesInFifo, pull_fifo_.SizeInFrames());
+  }
   virtual ~AudioPullFifoTest() {}
 
   void VerifyValue(const float data[], int size, float start_value) {

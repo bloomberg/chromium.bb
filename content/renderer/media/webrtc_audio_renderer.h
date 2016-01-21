@@ -203,8 +203,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   void OnPlayStateChanged(const blink::WebMediaStream& media_stream,
                           PlayingState* state);
 
-  // Updates |sink_params_|, |audio_fifo_| and |fifo_delay_milliseconds_| based
-  // on |sink_|, and initializes |sink_|.
+  // Updates |sink_params_| and |audio_fifo_| based on |sink_|, and initializes
+  // |sink_|.
   void PrepareSink();
 
   // The RenderFrame in which the audio is rendered into |sink_|.
@@ -240,9 +240,6 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Contains the accumulated delay estimate which is provided to the WebRTC
   // AEC.
   int audio_delay_milliseconds_;
-
-  // Delay due to the FIFO in milliseconds.
-  int fifo_delay_milliseconds_;
 
   base::TimeDelta current_time_;
 

@@ -41,6 +41,9 @@ class MEDIA_EXPORT AudioPullFifo {
   // Empties the FIFO without deallocating any memory.
   void Clear();
 
+  // Returns the size of the fifo in number of frames.
+  int SizeInFrames() const;
+
  private:
   // Attempt to fulfill the request using what is available in the FIFO.
   // Append new data to the |destination| starting at |write_pos|.
