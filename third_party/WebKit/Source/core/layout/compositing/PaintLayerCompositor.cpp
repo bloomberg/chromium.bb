@@ -245,7 +245,7 @@ void PaintLayerCompositor::updateIfNeededRecursive()
         if (!child->isLocalFrame())
             continue;
         LocalFrame* localFrame = toLocalFrame(child);
-        if (localFrame->shouldThrottleRendering())
+        if (localFrame->shouldThrottleRendering() || !localFrame->contentLayoutObject())
             continue;
         localFrame->contentLayoutObject()->compositor()->assertNoUnresolvedDirtyBits();
     }
