@@ -741,6 +741,7 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* f
     result->m_width = run->m_width;
     result->m_numGlyphs = count;
     ASSERT(result->m_numGlyphs == count); // no overflow
+    result->m_hasVerticalOffsets = fontData->platformData().isVerticalAnyUpright();
     result->m_runs.append(run.release());
     return result.release();
 }
