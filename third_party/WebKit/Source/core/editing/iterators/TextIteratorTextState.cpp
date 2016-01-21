@@ -111,7 +111,7 @@ void TextIteratorTextState::flushPositionOffsets() const
     m_positionOffsetBaseNode = nullptr;
 }
 
-void TextIteratorTextState::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
+void TextIteratorTextState::spliceBuffer(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
 {
     ASSERT(textNode);
     m_hasEmitted = true;

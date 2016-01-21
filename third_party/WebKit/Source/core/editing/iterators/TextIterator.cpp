@@ -239,7 +239,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
         // iteration, instead of using m_needsAnotherNewline.
         Node* lastChild = Strategy::lastChild(*m_node);
         Node* baseNode = lastChild ? lastChild : m_node.get();
-        emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
+        spliceBuffer('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
         m_needsAnotherNewline = false;
         return;
     }
@@ -460,11 +460,11 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode()
         if (m_lastTextNodeEndedWithCollapsedSpace && hasVisibleTextNode(layoutObject)) {
             if (m_behavior & TextIteratorCollapseTrailingSpace) {
                 if (runStart > 0 && str[runStart - 1] == ' ') {
-                    emitCharacter(spaceCharacter, textNode, 0, runStart, runStart);
+                    spliceBuffer(spaceCharacter, textNode, 0, runStart, runStart);
                     return false;
                 }
             } else {
-                emitCharacter(spaceCharacter, textNode, 0, runStart, runStart);
+                spliceBuffer(spaceCharacter, textNode, 0, runStart, runStart);
                 return false;
             }
         }
@@ -549,7 +549,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                         --spaceRunStart;
                     emitText(m_node, layoutObject, spaceRunStart, spaceRunStart + 1);
                 } else {
-                    emitCharacter(spaceCharacter, m_node, 0, runStart, runStart);
+                    spliceBuffer(spaceCharacter, m_node, 0, runStart, runStart);
                 }
                 return;
             }
@@ -581,7 +581,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                 // or a run of characters that does not include a newline.
                 // This effectively translates newlines to spaces without copying the text.
                 if (str[runStart] == '\n') {
-                    emitCharacter(spaceCharacter, m_node, 0, runStart, runStart + 1);
+                    spliceBuffer(spaceCharacter, m_node, 0, runStart, runStart + 1);
                     m_offset = runStart + 1;
                 } else {
                     size_t subrunEnd = str.find('\n', runStart);
@@ -674,7 +674,7 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         return false;
 
     if (emitsObjectReplacementCharacter()) {
-        emitCharacter(objectReplacementCharacter, Strategy::parent(*m_node), m_node, 0, 1);
+        spliceBuffer(objectReplacementCharacter, Strategy::parent(*m_node), m_node, 0, 1);
         return true;
     }
 
@@ -682,12 +682,12 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         if (m_lastTextNode) {
             String str = m_lastTextNode->layoutObject()->text();
             if (m_lastTextNodeEndedWithCollapsedSpace && m_offset > 0 && str[m_offset - 1] == ' ') {
-                emitCharacter(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
+                spliceBuffer(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
                 return false;
             }
         }
     } else if (m_lastTextNodeEndedWithCollapsedSpace) {
-        emitCharacter(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
+        spliceBuffer(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
         return false;
     }
 
@@ -700,7 +700,7 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         // We want replaced elements to behave like punctuation for boundary
         // finding, and to simply take up space for the selection preservation
         // code in moveParagraphs, so we use a comma.
-        emitCharacter(',', Strategy::parent(*m_node), m_node, 0, 1);
+        spliceBuffer(',', Strategy::parent(*m_node), m_node, 0, 1);
         return true;
     }
 
@@ -918,13 +918,13 @@ void TextIteratorAlgorithm<Strategy>::representNodeOffsetZero()
     // before encountering shouldRepresentNodeOffsetZero()s worse case behavior.
     if (shouldEmitTabBeforeNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter('\t', Strategy::parent(*m_node), m_node, 0, 0);
+            spliceBuffer('\t', Strategy::parent(*m_node), m_node, 0, 0);
     } else if (shouldEmitNewlineBeforeNode(*m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter('\n', Strategy::parent(*m_node), m_node, 0, 0);
+            spliceBuffer('\n', Strategy::parent(*m_node), m_node, 0, 0);
     } else if (shouldEmitSpaceBeforeAndAfterNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter(spaceCharacter, Strategy::parent(*m_node), m_node, 0, 0);
+            spliceBuffer(spaceCharacter, Strategy::parent(*m_node), m_node, 0, 0);
     }
 }
 
@@ -933,9 +933,9 @@ template<typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::handleNonTextNode()
 {
     if (shouldEmitNewlineForNode(m_node, emitsOriginalText()))
-        emitCharacter('\n', Strategy::parent(*m_node), m_node, 0, 1);
+        spliceBuffer('\n', Strategy::parent(*m_node), m_node, 0, 1);
     else if (emitsCharactersBetweenAllVisiblePositions() && m_node->layoutObject() && m_node->layoutObject()->isHR())
-        emitCharacter(spaceCharacter, Strategy::parent(*m_node), m_node, 0, 1);
+        spliceBuffer(spaceCharacter, Strategy::parent(*m_node), m_node, 0, 1);
     else
         representNodeOffsetZero();
 
@@ -969,28 +969,28 @@ void TextIteratorAlgorithm<Strategy>::exitNode()
         // contain a VisiblePosition when doing selection preservation.
         if (m_textState.lastCharacter() != '\n') {
             // insert a newline with a position following this block's contents.
-            emitCharacter(newlineCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
+            spliceBuffer(newlineCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
             // remember whether to later add a newline for the current node
             ASSERT(!m_needsAnotherNewline);
             m_needsAnotherNewline = addNewline;
         } else if (addNewline) {
             // insert a newline with a position following this block's contents.
-            emitCharacter(newlineCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
+            spliceBuffer(newlineCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
         }
     }
 
     // If nothing was emitted, see if we need to emit a space.
     if (!m_textState.positionNode() && shouldEmitSpaceBeforeAndAfterNode(m_node))
-        emitCharacter(spaceCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
+        spliceBuffer(spaceCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
 }
 
 template<typename Strategy>
-void TextIteratorAlgorithm<Strategy>::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
+void TextIteratorAlgorithm<Strategy>::spliceBuffer(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
 {
     // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
-    // TextIterator, but is always reset when we call emitCharacter, we
-    // wrap TextIteratorTextState::emitCharacter() with this function.
-    m_textState.emitCharacter(c, textNode, offsetBaseNode, textStartOffset, textEndOffset);
+    // TextIterator, but is always reset when we call spliceBuffer, we
+    // wrap TextIteratorTextState::spliceBuffer() with this function.
+    m_textState.spliceBuffer(c, textNode, offsetBaseNode, textStartOffset, textEndOffset);
     m_lastTextNodeEndedWithCollapsedSpace = false;
 }
 
@@ -998,8 +998,8 @@ template<typename Strategy>
 void TextIteratorAlgorithm<Strategy>::emitText(Node* textNode, LayoutText* layoutObject, int textStartOffset, int textEndOffset)
 {
     // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
-    // TextIterator, but is always reset when we call emitCharacter, we
-    // wrap TextIteratorTextState::emitCharacter() with this function.
+    // TextIterator, but is always reset when we call spliceBuffer, we
+    // wrap TextIteratorTextState::spliceBuffer() with this function.
     m_textState.emitText(textNode, layoutObject, textStartOffset, textEndOffset);
     m_lastTextNodeEndedWithCollapsedSpace = false;
 }

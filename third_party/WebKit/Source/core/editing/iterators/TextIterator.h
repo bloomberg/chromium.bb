@@ -121,7 +121,7 @@ private:
     bool handleNonTextNode();
     void handleTextBox();
     void handleTextNodeFirstLetter(LayoutTextFragment*);
-    void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
+    void spliceBuffer(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
     void emitText(Node* textNode, LayoutText* layoutObject, int textStartOffset, int textEndOffset);
 
     // Used by selection preservation code.  There should be one character emitted between every VisiblePosition
