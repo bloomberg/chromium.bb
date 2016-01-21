@@ -62,6 +62,10 @@ bool CreateMapAndDupSharedBuffer(size_t size,
   return true;
 }
 
+void PostTask(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+              const base::Closure& callback) {
+  task_runner->PostTask(FROM_HERE, callback);
+}
 }
 
 const unsigned int GL_READ_WRITE_CHROMIUM = 0x78F2;
@@ -308,11 +312,13 @@ void CommandBufferLocal::SignalSyncPoint(uint32_t sync_point,
   NOTREACHED();
 }
 
-void CommandBufferLocal::SignalQuery(uint32_t query,
+void CommandBufferLocal::SignalQuery(uint32_t query_id,
                                      const base::Closure& callback) {
   DCHECK(CalledOnValidThread());
-  // TODO(piman)
-  NOTIMPLEMENTED();
+
+  gpu_state_->command_buffer_task_runner()->PostTask(
+      driver_.get(), base::Bind(&CommandBufferLocal::SignalQueryOnGpuThread,
+                                base::Unretained(this), query_id, callback));
 }
 
 void CommandBufferLocal::SetLock(base::Lock* lock) {
@@ -521,6 +527,14 @@ bool CommandBufferLocal::MakeProgressOnGpuThread(
 
 bool CommandBufferLocal::DeleteOnGpuThread() {
   delete this;
+  return true;
+}
+
+bool CommandBufferLocal::SignalQueryOnGpuThread(uint32_t query_id,
+                                                const base::Closure& callback) {
+  // |callback| should run on the client thread.
+  driver_->SignalQuery(
+      query_id, base::Bind(&PostTask, client_thread_task_runner_, callback));
   return true;
 }
 

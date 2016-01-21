@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
@@ -497,6 +498,18 @@ void CommandBufferDriver::OnContextLost(uint32_t reason) {
   DCHECK(CalledOnValidThread());
   if (client_)
     client_->DidLoseContext(reason);
+}
+
+void CommandBufferDriver::SignalQuery(uint32_t query_id,
+                                      const base::Closure& callback) {
+  DCHECK(CalledOnValidThread());
+
+  gpu::gles2::QueryManager* query_manager = decoder_->GetQueryManager();
+  gpu::gles2::QueryManager::Query* query = query_manager->GetQuery(query_id);
+  if (query)
+    query->AddCallback(callback);
+  else
+    callback.Run();
 }
 
 }  // namespace mus

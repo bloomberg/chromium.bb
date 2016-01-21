@@ -88,7 +88,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   void RetireSyncPoint(uint32_t sync_point) override;
   void SignalSyncPoint(uint32_t sync_point,
                        const base::Closure& callback) override;
-  void SignalQuery(uint32_t query, const base::Closure& callback) override;
+  void SignalQuery(uint32_t query_id, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
@@ -133,6 +133,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   bool MakeProgressOnGpuThread(base::WaitableEvent* event,
                                gpu::CommandBuffer::State* state);
   bool DeleteOnGpuThread();
+  bool SignalQueryOnGpuThread(uint32_t query_id, const base::Closure& callback);
 
   // Helper functions are called in the client thread.
   void DidLoseContextOnClientThread(uint32_t reason);

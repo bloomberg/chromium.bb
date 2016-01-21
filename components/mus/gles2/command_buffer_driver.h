@@ -87,6 +87,7 @@ class CommandBufferDriver : base::NonThreadSafe {
   }
   uint32_t GetUnprocessedOrderNum() const;
   uint32_t GetProcessedOrderNum() const;
+  void SignalQuery(uint32_t query_id, const base::Closure& callback);
 
  private:
   bool MakeCurrent();
