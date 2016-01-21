@@ -10,11 +10,10 @@
     link.as = "script";
     link.rel = "preload";
     link.href = "../resources/dummy.js";
-    document.body.appendChild(link);
-    window.addEventListener("load", t.step_func(function() {
-        assert_equals(performance.getEntriesByType("resource").length, 4);
+    link.onload = t.step_func(function() {
+        assert_equals(performance.getEntriesByType("resource").length, 3);
         t.done();
-    }));
+    });
+    document.body.appendChild(link);
 </script>
-<script src="../resources/slow-script.pl?delay=200"></script>
 </body>
