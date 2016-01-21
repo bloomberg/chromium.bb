@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl_gtk2.h"
 
-#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <stddef.h>
 #include <sys/stat.h>
@@ -33,7 +32,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 namespace {
@@ -166,13 +164,9 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
   params_map_[dialog] = params;
 
-  if (owning_window && owning_window->GetHost()) {
-    // Disable input events handling in the host to make this dialog modal.
-    views::DesktopWindowTreeHostX11* host =
-        views::DesktopWindowTreeHostX11::GetHostForXID(
-        owning_window->GetHost()->GetAcceleratedWidget());
-    host->DisableEventListening(GDK_WINDOW_XID(gtk_widget_get_window(dialog)));
-  }
+  // TODO(erg): Figure out how to fake GTK window-to-parent modality without
+  // having the parent be a real GtkWindow.
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
 
   gtk_widget_show_all(dialog);
 
@@ -431,12 +425,6 @@ void SelectFileDialogImplGTK::FileDialogDestroyed(GtkWidget* dialog) {
   aura::Window* parent = GetAuraTransientParent(dialog);
   if (!parent)
     return;
-
-  views::DesktopWindowTreeHostX11* host =
-      views::DesktopWindowTreeHostX11::GetHostForXID(
-      parent->GetHost()->GetAcceleratedWidget());
-  host->EnableEventListening();
-
   std::set<aura::Window*>::iterator iter = parents_.find(parent);
   if (iter != parents_.end()) {
     (*iter)->RemoveObserver(this);

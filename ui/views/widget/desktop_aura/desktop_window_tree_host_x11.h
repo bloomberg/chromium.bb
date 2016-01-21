@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -87,16 +86,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Runs the |func| callback for each content-window, and deallocates the
   // internal list of open windows.
   static void CleanUpWindowList(void (*func)(aura::Window* window));
-
-  // Disables event listening to make |dialog| modal.
-  void DisableEventListening(XID dialog);
-
-  // Enables event listening after closing |dialog|.
-  void EnableEventListening();
-
-  // Returns XID of dialog currently displayed. When it returns 0,
-  // there is no dialog on the host window.
-  XID GetModalDialog();
 
  protected:
   // Overridden from DesktopWindowTreeHost:
@@ -359,10 +348,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool activatable_;
 
   base::CancelableCallback<void()> delayed_resize_task_;
-
-  scoped_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
-
-  XID modal_dialog_xid_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
 
