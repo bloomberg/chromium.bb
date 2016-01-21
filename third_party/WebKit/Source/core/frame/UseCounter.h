@@ -976,6 +976,7 @@ public:
         SecureSharedWorkerAccessedFromNonSecureContext = 1121,
         NonCSSStyleSheetType = 1122,
         EventDeepPath = 1123,
+        LinkHeaderPreload = 1124,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

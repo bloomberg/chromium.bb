@@ -216,7 +216,7 @@ void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)
     }
 }
 
-static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as)
+static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, LinkCaller caller)
 {
     if (!document.loader() || !relAttribute.isLinkPreload())
         return nullptr;
@@ -227,6 +227,8 @@ static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribut
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> has an invalid `href` value")));
         return nullptr;
     }
+    if (caller == LinkCalledFromHeader)
+        UseCounter::count(document, UseCounter::LinkHeaderPreload);
     Resource::Type type = LinkLoader::getTypeFromAsAttribute(as, &document);
     ResourceRequest resourceRequest(document.completeURL(href));
     ResourceFetcher::determineRequestContext(resourceRequest, type, false);
@@ -260,7 +262,7 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
                 preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), networkHintsInterface, LinkCalledFromHeader);
         } else {
             if (RuntimeEnabledFeatures::linkPreloadEnabled())
-                preloadIfNeeded(relAttribute, url, *document, header.as());
+                preloadIfNeeded(relAttribute, url, *document, header.as(), LinkCalledFromHeader);
         }
         // TODO(yoav): Add more supported headers as needed.
     }
@@ -278,7 +280,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttri
     preconnectIfNeeded(relAttribute, href, document, crossOrigin, networkHintsInterface, LinkCalledFromMarkup);
 
     if (m_client->shouldLoadLink())
-        createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as));
+        createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as, LinkCalledFromMarkup));
 
     // FIXME(crbug.com/323096): Should take care of import.
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document.frame()) {
