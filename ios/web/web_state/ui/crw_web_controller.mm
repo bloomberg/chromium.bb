@@ -2795,7 +2795,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // that errors reported following the 'NO' reply can be safely ignored.
       if ([self shouldClosePageOnNativeApplicationLoad])
         [_delegate webPageOrderedClose];
-      [self abortLoad];
+      [self stopLoading];
       [_openedApplicationURL addObject:request.URL];
       return NO;
     }
