@@ -183,7 +183,7 @@ void TableSectionPainter::paintCell(const LayoutTableCell& cell, const PaintInfo
     const LayoutTableRow* row = toLayoutTableRow(cell.parent());
 
     if (shouldPaintSelfBlockBackground(paintPhase)
-        && BlockPainter(cell).intersectsPaintRect(paintInfo, paintOffset)) {
+        && BlockPainter(cell).intersectsPaintRect(paintInfo, paintOffset + cell.location())) {
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
 

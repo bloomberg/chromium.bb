@@ -65,7 +65,6 @@ public:
     static const int defaultWidth;
     static const int defaultHeight;
     bool canHaveChildren() const override { return false; }
-    bool shouldPaint(const PaintInfo&, const LayoutPoint&) const;
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) const { }
     LayoutRect localSelectionRect() const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
 

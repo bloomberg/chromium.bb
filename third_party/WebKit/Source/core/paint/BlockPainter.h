@@ -34,7 +34,8 @@ public:
     static void paintChildrenOfFlexibleBox(const LayoutFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
     static void paintInlineBox(const InlineBox&, const PaintInfo&, const LayoutPoint& paintOffset);
 
-    bool intersectsPaintRect(const PaintInfo&, const LayoutPoint& paintOffset) const;
+    // The adjustedPaintOffset should include the location (offset) of the object itself.
+    bool intersectsPaintRect(const PaintInfo&, const LayoutPoint& adjustedPaintOffset) const;
 
 private:
     void paintCarets(const PaintInfo&, const LayoutPoint&);

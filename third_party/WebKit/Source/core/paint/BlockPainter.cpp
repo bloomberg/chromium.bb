@@ -30,10 +30,10 @@ namespace blink {
 
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!intersectsPaintRect(paintInfo, paintOffset))
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();
+    if (!intersectsPaintRect(paintInfo, adjustedPaintOffset))
         return;
 
-    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();
     PaintInfo localPaintInfo(paintInfo);
     PaintPhase originalPhase = localPaintInfo.phase;
 
@@ -214,7 +214,7 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& pa
         frame->page()->dragCaretController().paintDragCaret(frame, paintInfo.context, paintOffset);
 }
 
-bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
+bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset) const
 {
     LayoutRect overflowRect;
     if (paintInfo.isPrinting() && m_layoutBlock.isAnonymousBlock() && m_layoutBlock.childrenInline()) {
@@ -234,7 +234,7 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
         overflowRect.move(-m_layoutBlock.scrolledContentOffset());
     }
     m_layoutBlock.flipForWritingMode(overflowRect);
-    overflowRect.moveBy(paintOffset + m_layoutBlock.location());
+    overflowRect.moveBy(adjustedPaintOffset);
     return paintInfo.cullRect().intersectsCullRect(overflowRect);
 }
 

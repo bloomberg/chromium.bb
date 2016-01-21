@@ -114,26 +114,6 @@ void LayoutReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     ReplacedPainter(*this).paint(paintInfo, paintOffset);
 }
 
-bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
-{
-    if (paintInfo.phase != PaintPhaseForeground && !shouldPaintSelfOutline(paintInfo.phase)
-        && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseMask && paintInfo.phase != PaintPhaseClippingMask)
-        return false;
-
-    // if we're invisible or haven't received a layout yet, then just bail.
-    if (style()->visibility() != VISIBLE)
-        return false;
-
-    LayoutRect paintRect(visualOverflowRect());
-    paintRect.unite(localSelectionRect());
-    paintRect.moveBy(paintOffset + location());
-
-    if (!paintInfo.cullRect().intersectsCullRect(paintRect))
-        return false;
-
-    return true;
-}
-
 bool LayoutReplaced::hasReplacedLogicalHeight() const
 {
     if (style()->logicalHeight().isAuto())

@@ -9,6 +9,7 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/ReplacedPainter.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
@@ -41,10 +42,10 @@ bool PartPainter::isSelected() const
 
 void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!m_layoutPart.shouldPaint(paintInfo, paintOffset))
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
+    if (!ReplacedPainter(m_layoutPart).shouldPaint(paintInfo, adjustedPaintOffset))
         return;
 
-    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
     LayoutRect borderRect(adjustedPaintOffset, m_layoutPart.size());
 
     if (m_layoutPart.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
