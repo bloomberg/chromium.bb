@@ -5,6 +5,7 @@
 chrome.audio.OnDevicesChanged.addListener(function (devices) {
   if (devices.length === 3) {
     if (devices[0].id != "30001" ||
+        devices[0].stableDeviceId != "80001" ||
         devices[0].isInput != false ||
         devices[0].deviceType != "USB" ||
         devices[0].deviceName != "Jabra Speaker" ||
@@ -14,6 +15,7 @@ chrome.audio.OnDevicesChanged.addListener(function (devices) {
       chrome.test.sendMessage("failure");
     }
     if (devices[1].id != "30002" ||
+        devices[1].stableDeviceId != "80002" ||
         devices[1].isInput != false ||
         devices[1].deviceType != "USB" ||
         devices[1].deviceName != "Jabra Speaker" ||
@@ -23,6 +25,7 @@ chrome.audio.OnDevicesChanged.addListener(function (devices) {
       chrome.test.sendMessage("failure");
     }
     if (devices[2].id != "30003" ||
+        devices[2].stableDeviceId != "80003" ||
         devices[2].isInput != false ||
         devices[2].deviceType != "HDMI" ||
         devices[2].deviceName != "HDMI output" ||

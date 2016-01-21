@@ -273,8 +273,8 @@ void AudioServiceImpl::NotifyDevicesChanged() {
             ? cras_audio_handler_->GetOutputVolumePercentForDevice(
                   devices[i].id)
             : cras_audio_handler_->GetInputGainPercentForDevice(devices[i].id);
-    // TODO(jennyz): Set stable_device_id once it is implemented.
-    // See crbug.com/466768.
+    info->stable_device_id.reset(
+        new std::string(base::Uint64ToString(devices[i].stable_device_id)));
 
     devices_info_list.push_back(info);
   }

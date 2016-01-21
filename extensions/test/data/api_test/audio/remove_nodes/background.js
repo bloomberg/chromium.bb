@@ -5,6 +5,7 @@
 chrome.audio.OnDevicesChanged.addListener(function (devices) {
   if (devices.length === 2) {
     if (devices[0].id != "40001" ||
+      devices[0].stableDeviceId != "90001" ||
       devices[0].isInput != true ||
       devices[0].deviceType != "USB" ||
       devices[0].deviceName != "Jabra Mic" ||
@@ -14,6 +15,7 @@ chrome.audio.OnDevicesChanged.addListener(function (devices) {
       chrome.test.sendMessage("failure");
     }
     if (devices[1].id != "40002" ||
+        devices[1].stableDeviceId != "90002" ||
         devices[1].isInput != true ||
         devices[1].deviceType != "USB" ||
         devices[1].deviceName != "Jabra Mic" ||
