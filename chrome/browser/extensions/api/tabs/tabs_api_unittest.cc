@@ -97,15 +97,14 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   const char* kTitleAndURLQueryInfo =
       "[{\"title\": \"Sample title\", \"url\": \"*://www.google.com/*\"}]";
 
-  // An extension without "tabs" permission will see all 3 tabs, because the
-  // query_info filter will be ignored.
+  // An extension without "tabs" permission will see none of the 3 tabs.
   scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
   scoped_ptr<base::ListValue> tabs_list_without_permission(
       RunTabsQueryFunction(browser(), extension.get(), kTitleAndURLQueryInfo));
   ASSERT_TRUE(tabs_list_without_permission);
-  EXPECT_EQ(3u, tabs_list_without_permission->GetSize());
+  EXPECT_EQ(0u, tabs_list_without_permission->GetSize());
 
-  // An extension with "tabs" permission however will only see the third tab.
+  // An extension with "tabs" permission however will see the third tab.
   scoped_refptr<const Extension> extension_with_permission =
       ExtensionBuilder()
           .SetManifest(std::move(
@@ -122,9 +121,86 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
 
   const base::DictionaryValue* third_tab_info;
   ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &third_tab_info));
-  int third_tab_id;
+  int third_tab_id = -1;
   ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
   EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
+}
+
+TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
+  GURL tab_urls[] = {GURL("http://www.google.com"),
+                     GURL("http://www.example.com"),
+                     GURL("https://www.google.com/test")};
+  std::string tab_titles[] = {"", "Sample title", "Sample title"};
+
+  // Add 3 web contentses to the browser.
+  content::TestWebContentsFactory factory;
+  content::WebContents* web_contentses[arraysize(tab_urls)];
+  for (size_t i = 0; i < arraysize(tab_urls); ++i) {
+    content::WebContents* web_contents = factory.CreateWebContents(profile());
+    web_contentses[i] = web_contents;
+    browser()->tab_strip_model()->AppendWebContents(web_contents, true);
+    EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
+              web_contents);
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents);
+    web_contents_tester->NavigateAndCommit(tab_urls[i]);
+    web_contents->GetController().GetVisibleEntry()->SetTitle(
+        base::ASCIIToUTF16(tab_titles[i]));
+  }
+
+  const char* kTitleAndURLQueryInfo =
+      "[{\"title\": \"Sample title\", \"url\": \"*://www.google.com/*\"}]";
+
+  // An extension with "host" permission will only see the third tab.
+  scoped_refptr<const Extension> extension_with_permission =
+      ExtensionBuilder()
+          .SetManifest(
+              std::move(DictionaryBuilder()
+                            .Set("name", "Extension with tabs permission")
+                            .Set("version", "1.0")
+                            .Set("manifest_version", 2)
+                            .Set("permissions", std::move(ListBuilder().Append(
+                                                    "*://www.google.com/*")))))
+          .Build();
+
+  {
+    scoped_ptr<base::ListValue> tabs_list_with_permission(RunTabsQueryFunction(
+        browser(), extension_with_permission.get(), kTitleAndURLQueryInfo));
+    ASSERT_TRUE(tabs_list_with_permission);
+    ASSERT_EQ(1u, tabs_list_with_permission->GetSize());
+
+    const base::DictionaryValue* third_tab_info;
+    ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &third_tab_info));
+    int third_tab_id = -1;
+    ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
+    EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
+  }
+
+  // Try the same without title, first and third tabs will match.
+  const char* kURLQueryInfo = "[{\"url\": \"*://www.google.com/*\"}]";
+  {
+    scoped_ptr<base::ListValue> tabs_list_with_permission(RunTabsQueryFunction(
+        browser(), extension_with_permission.get(), kURLQueryInfo));
+    ASSERT_TRUE(tabs_list_with_permission);
+    ASSERT_EQ(2u, tabs_list_with_permission->GetSize());
+
+    const base::DictionaryValue* first_tab_info;
+    const base::DictionaryValue* third_tab_info;
+    ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &first_tab_info));
+    ASSERT_TRUE(tabs_list_with_permission->GetDictionary(1, &third_tab_info));
+
+    std::vector<int> expected_tabs_ids;
+    expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[0]));
+    expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[2]));
+
+    int first_tab_id = -1;
+    ASSERT_TRUE(first_tab_info->GetInteger("id", &first_tab_id));
+    EXPECT_TRUE(ContainsValue(expected_tabs_ids, first_tab_id));
+
+    int third_tab_id = -1;
+    ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
+    EXPECT_TRUE(ContainsValue(expected_tabs_ids, third_tab_id));
+  }
 }
 
 }  // namespace extensions
