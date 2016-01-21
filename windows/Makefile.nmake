@@ -24,6 +24,8 @@ CFLAGS = $(CFLAGS) /DUNICODEBITS=32
 
 all: liblouis.lib liblouis.def
     link $(DLLFLAGS) /DEF:liblouis.def /OUT:liblouis.dll $(OBJ)  
+clean:
+    clean.bat
 liblouis.lib: $(OBJ)
     lib $(LIBFLAGS) $(OBJ) /out:liblouis.lib
 
