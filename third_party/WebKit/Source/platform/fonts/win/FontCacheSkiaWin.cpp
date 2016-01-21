@@ -128,11 +128,11 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
             return fontData;
     }
 
-    // FIXME: Consider passing fontDescription.dominantScript()
-    // to GetFallbackFamily here.
     UScriptCode script;
     const wchar_t* family = getFallbackFamily(character,
         fontDescription.genericFamily(),
+        fontDescription.script(),
+        fontDescription.locale(),
         &script,
         m_fontManager.get());
     FontPlatformData* data = 0;

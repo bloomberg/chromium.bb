@@ -42,6 +42,64 @@
 
 namespace blink {
 
+static bool isUnambiguousUnifiedHanScript(UScriptCode script)
+{
+    // localeToScriptCodeForFontSelection() does not return these values.
+    ASSERT(script != USCRIPT_HIRAGANA && script != USCRIPT_KATAKANA);
+    return script == USCRIPT_KATAKANA_OR_HIRAGANA
+        || script == USCRIPT_SIMPLIFIED_HAN
+        || script == USCRIPT_TRADITIONAL_HAN
+        || script == USCRIPT_HANGUL;
+}
+
+static UScriptCode scriptCodeForUnifiedHanFromSubtag(const String& subtag)
+{
+    struct SubtagScript {
+        const char* subtag;
+        UScriptCode script;
+    };
+
+    static const SubtagScript subtagScriptList[] = {
+        { "cn", USCRIPT_SIMPLIFIED_HAN },
+        { "hans", USCRIPT_SIMPLIFIED_HAN },
+        { "hant", USCRIPT_TRADITIONAL_HAN },
+        { "hk", USCRIPT_TRADITIONAL_HAN },
+        { "jp", USCRIPT_HIRAGANA },
+        { "kr", USCRIPT_HANGUL },
+        { "tw", USCRIPT_TRADITIONAL_HAN },
+    };
+
+    typedef HashMap<String, UScriptCode> SubtagScriptMap;
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, subtagScriptMap, ());
+    if (subtagScriptMap.isEmpty()) {
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(subtagScriptList); ++i)
+            subtagScriptMap.set(subtagScriptList[i].subtag, subtagScriptList[i].script);
+    }
+
+    const auto& it = subtagScriptMap.find(subtag.lower());
+    return it != subtagScriptMap.end() ? it->value : USCRIPT_COMMON;
+}
+
+UScriptCode scriptCodeForUnifiedHanFromSubtags(const String& locale)
+{
+    // Some sites emit lang="en-JP" when English is set as the preferred
+    // language. Use script/region subtags of the content locale to pick the
+    // fallback font for unified Han ideographs.
+    for (size_t delimiter = locale.find('-'); delimiter != kNotFound; ) {
+        ++delimiter;
+        size_t end = locale.find('-', delimiter);
+        UScriptCode script = scriptCodeForUnifiedHanFromSubtag(
+            locale.substring(delimiter,
+                end == kNotFound ? UINT_MAX : end - delimiter));
+        if (script != USCRIPT_COMMON)
+            return script;
+        delimiter = end;
+    }
+
+    // Fallback to the UI locale.
+    return USCRIPT_HAN;
+}
+
 UScriptCode scriptCodeForUnifiedHanFromLocale(const icu::Locale& locale)
 {
     // ICU default locale may have country as an empty string or differently.
@@ -52,13 +110,13 @@ UScriptCode scriptCodeForUnifiedHanFromLocale(const icu::Locale& locale)
     if (strcasecmp(locale.getLanguage(), icu::Locale::getKorean().getLanguage()) == 0)
         return USCRIPT_HANGUL;
 
-    const icu::Locale& traditionalChinese = icu::Locale::getTraditionalChinese();
-    if (strcasecmp(locale.getLanguage(), traditionalChinese.getLanguage()) == 0
-        && (strcasecmp(locale.getCountry(), traditionalChinese.getCountry()) == 0
-            || strcasecmp(locale.getCountry(), "HK") == 0
-            || strcasecmp(locale.getScript(), "Hant") == 0)) {
-        return USCRIPT_TRADITIONAL_HAN;
-    }
+    // Chinese and non-CJK languages may be able to determine from subtags.
+    UScriptCode script = scriptCodeForUnifiedHanFromSubtag(locale.getScript());
+    if (script != USCRIPT_COMMON)
+        return script;
+    script = scriptCodeForUnifiedHanFromSubtag(locale.getCountry());
+    if (script != USCRIPT_COMMON)
+        return script;
 
     // For other locales, use the simplified Chinese font for Han.
     return USCRIPT_SIMPLIFIED_HAN;
@@ -401,6 +459,8 @@ const UChar* getFontFamilyForScript(UScriptCode script,
 //    font can cover) need to be taken into account
 const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType generic,
+    UScriptCode contentScript,
+    const AtomicString& contentLocale,
     UScriptCode* scriptChecked,
     SkFontMgr* fontManager)
 {
@@ -424,6 +484,14 @@ const UChar* getFallbackFamily(UChar32 character,
 
     if (script == USCRIPT_COMMON)
         script = getScriptBasedOnUnicodeBlock(character);
+
+    // For unified-Han scripts, try the lang attribute.
+    if (script == USCRIPT_HAN) {
+        if (isUnambiguousUnifiedHanScript(contentScript))
+            script = contentScript;
+        else
+            script = scriptCodeForUnifiedHanFromSubtags(contentLocale);
+    }
 
     family = getFontFamilyForScript(script, generic, fontManager);
     // Another lame work-around to cover non-BMP characters.

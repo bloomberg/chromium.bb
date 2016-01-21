@@ -36,4 +36,28 @@ TEST(FontFallbackWinTest, scriptCodeForUnifiedHanFromLocaleTest)
         icu::Locale("zh", "hant")));
 }
 
+TEST(FontFallbackWinTest, scriptCodeForUnifiedHanFromSubtagsTest)
+{
+    EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-CN"));
+    EXPECT_EQ(USCRIPT_HIRAGANA, scriptCodeForUnifiedHanFromSubtags("en-JP"));
+    EXPECT_EQ(USCRIPT_HANGUL, scriptCodeForUnifiedHanFromSubtags("en-KR"));
+    EXPECT_EQ(USCRIPT_TRADITIONAL_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-HK"));
+    EXPECT_EQ(USCRIPT_TRADITIONAL_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-TW"));
+
+    EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-HanS"));
+    EXPECT_EQ(USCRIPT_TRADITIONAL_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-HanT"));
+
+    EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-HanS-JP"));
+    EXPECT_EQ(USCRIPT_TRADITIONAL_HAN,
+        scriptCodeForUnifiedHanFromSubtags("en-HanT-JP"));
+
+    EXPECT_EQ(USCRIPT_HAN, scriptCodeForUnifiedHanFromSubtags("en-US"));
+}
+
 } // namespace blink
