@@ -54,6 +54,7 @@ MediaCodecDecoder::MediaCodecDecoder(
       waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       error_cb_(error_cb),
       state_(kStopped),
+      pending_input_buf_index_(-1),
       is_prepared_(false),
       eos_enqueued_(false),
       missing_key_reported_(false),
@@ -105,6 +106,8 @@ void MediaCodecDecoder::Flush() {
   DCHECK(!decoder_thread_.IsRunning());
   is_prepared_ = false;
 
+  pending_input_buf_index_ = -1;
+
 #ifndef NDEBUG
   // We check and reset |verify_next_frame_is_key_| on Decoder thread.
   // We have just DCHECKed that decoder thread is not running.
@@ -135,6 +138,8 @@ void MediaCodecDecoder::ReleaseMediaCodec() {
 
   // |is_prepared_| is set on the decoder thread, it shouldn't be running now.
   is_prepared_ = false;
+
+  pending_input_buf_index_ = -1;
 }
 
 bool MediaCodecDecoder::IsPrefetchingOrPlaying() const {
@@ -280,6 +285,7 @@ bool MediaCodecDecoder::Preroll(const base::Closure& preroll_done_cb) {
   DissociatePTSFromTime();  // associaton will happen after preroll is done.
 
   last_frame_posted_ = false;
+  missing_key_reported_ = false;
 
   // Start the decoder thread
   if (!decoder_thread_.Start()) {
@@ -325,6 +331,7 @@ bool MediaCodecDecoder::Start(base::TimeDelta start_timestamp) {
   // Start the decoder thread
   if (!decoder_thread_.IsRunning()) {
     last_frame_posted_ = false;
+    missing_key_reported_ = false;
     if (!decoder_thread_.Start()) {
       DVLOG(1) << class_name() << "::" << __FUNCTION__
                << ": cannot start decoder thread";
@@ -683,39 +690,51 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
 
   // Dequeue input buffer
 
-  base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(kInputBufferTimeout);
-  int index = -1;
-  MediaCodecStatus status =
-      media_codec_bridge_->DequeueInputBuffer(timeout, &index);
+  int index = pending_input_buf_index_;
 
-  DVLOG(2) << class_name() << ":: DequeueInputBuffer index:" << index;
+  // Do not dequeue a new input buffer if we failed with MEDIA_CODEC_NO_KEY.
+  // That status does not return this buffer back to the pool of
+  // available input buffers. We have to reuse it in QueueSecureInputBuffer().
+  if (index == -1) {
+    base::TimeDelta timeout =
+        base::TimeDelta::FromMilliseconds(kInputBufferTimeout);
+    MediaCodecStatus status =
+        media_codec_bridge_->DequeueInputBuffer(timeout, &index);
 
-  switch (status) {
-    case MEDIA_CODEC_ERROR:
-      DVLOG(0) << class_name() << "::" << __FUNCTION__
-               << ": MEDIA_CODEC_ERROR DequeueInputBuffer failed";
-      media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
-      return false;
+    switch (status) {
+      case MEDIA_CODEC_ERROR:
+        DVLOG(0) << class_name() << "::" << __FUNCTION__
+                 << ": MEDIA_CODEC_ERROR DequeueInputBuffer failed";
+        media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
+        return false;
 
-    case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
-      DVLOG(2)
-          << class_name() << "::" << __FUNCTION__
-          << ": DequeueInputBuffer returned MediaCodec.INFO_TRY_AGAIN_LATER.";
-      return true;
+      case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+        DVLOG(2)
+            << class_name() << "::" << __FUNCTION__
+            << ": DequeueInputBuffer returned MediaCodec.INFO_TRY_AGAIN_LATER.";
+        return true;
 
-    default:
-      break;
+      default:
+        break;
+    }
+
+    DCHECK_EQ(status, MEDIA_CODEC_OK);
   }
 
+  DVLOG(2) << class_name() << "::" << __FUNCTION__
+           << ": using input buffer index:" << index;
+
   // We got the buffer
-  DCHECK_EQ(status, MEDIA_CODEC_OK);
   DCHECK_GE(index, 0);
 
   const AccessUnit* unit = au_info.front_unit;
 
   if (drain_decoder_ || unit->is_end_of_stream) {
     DVLOG(1) << class_name() << "::" << __FUNCTION__ << ": QueueEOS";
+
+    // Check that we are not using the pending input buffer to queue EOS
+    DCHECK(pending_input_buf_index_ == -1);
+
     media_codec_bridge_->QueueEOS(index);
     eos_enqueued_ = true;
     return true;
@@ -724,12 +743,19 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
   DCHECK(unit);
   DCHECK(!unit->data.empty());
 
+  // Pending input buffer is already filled with data.
+  const uint8_t* memory =
+      (pending_input_buf_index_ == -1) ? &unit->data[0] : nullptr;
+
+  pending_input_buf_index_ = -1;
+  MediaCodecStatus status = MEDIA_CODEC_OK;
+
   if (unit->key_id.empty() || unit->iv.empty()) {
     DVLOG(2) << class_name() << "::" << __FUNCTION__
              << ": QueueInputBuffer pts:" << unit->timestamp;
 
     status = media_codec_bridge_->QueueInputBuffer(
-        index, &unit->data[0], unit->data.size(), unit->timestamp);
+        index, memory, unit->data.size(), unit->timestamp);
   } else {
     DVLOG(2) << class_name() << "::" << __FUNCTION__
              << ": QueueSecureInputBuffer pts:" << unit->timestamp
@@ -738,7 +764,7 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
              << " subsamples size:" << unit->subsamples.size();
 
     status = media_codec_bridge_->QueueSecureInputBuffer(
-        index, &unit->data[0], unit->data.size(), unit->key_id, unit->iv,
+        index, memory, unit->data.size(), unit->key_id, unit->iv,
         unit->subsamples.empty() ? nullptr : &unit->subsamples[0],
         unit->subsamples.size(), unit->timestamp);
   }
@@ -758,10 +784,13 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
                << ": MEDIA_CODEC_NO_KEY";
       media_task_runner_->PostTask(FROM_HERE, waiting_for_decryption_key_cb_);
 
+      // We need to enqueue the same input buffer after we get the key.
+      // The buffer is owned by us (not the MediaCodec) and is filled with data.
+      pending_input_buf_index_ = index;
+
       // In response to the |waiting_for_decryption_key_cb_| the player will
       // request to stop decoder. We need to keep running to properly perform
-      // the stop, but prevent enqueuing the same frame over and over again so
-      // we won't generate more |waiting_for_decryption_key_cb_|.
+      // the stop, but prevent generating more |waiting_for_decryption_key_cb_|.
       missing_key_reported_ = true;
       return true;
 

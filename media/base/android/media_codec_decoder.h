@@ -426,6 +426,10 @@ class MediaCodecDecoder {
   // Preroll timestamp is set if we need preroll and cleared after we done it.
   base::TimeDelta preroll_timestamp_;
 
+  // Index of the dequeued and filled buffer that we keep trying to enqueue.
+  // Such buffer appears in MEDIA_CODEC_NO_KEY processing.
+  int pending_input_buf_index_;
+
   // Set to true when MediaCodec internal buffers are filled up.
   bool is_prepared_;
 
