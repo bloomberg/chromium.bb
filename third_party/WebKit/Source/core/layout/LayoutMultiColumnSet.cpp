@@ -118,7 +118,7 @@ LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(LayoutUnit 
     LayoutUnit firstRowLogicalBottomInFlowThread = firstRow.logicalTopInFlowThread() + firstRow.logicalHeight() * usedColumnCount();
     if (flowThreadOffset >= firstRowLogicalBottomInFlowThread)
         return flowThreadOffset; // We're not in the first row. Give up.
-    LayoutUnit newLogicalHeight = enclosingFragmentationContext->fragmentainerLogicalHeightAt(firstRowLogicalBottomInFlowThread);
+    LayoutUnit newLogicalHeight = enclosingFragmentationContext->fragmentainerLogicalHeightAt(firstRow.blockOffsetInEnclosingFragmentationContext() + firstRow.logicalHeight());
     if (contentLogicalHeight > newLogicalHeight) {
         // The next outer column or page doesn't have enough space either. Give up and stay where
         // we are.
