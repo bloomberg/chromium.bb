@@ -20,6 +20,7 @@ import android.widget.TextView;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
@@ -228,6 +229,132 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDataTypesAre(expectedTypes);
     }
 
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationChecked() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(true);
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+
+        assertFalse(paymentsIntegration.isEnabled());
+        assertTrue(paymentsIntegration.isChecked());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationUnchecked() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(false);
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        togglePreference(syncEverything);
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+
+        assertTrue(paymentsIntegration.isEnabled());
+        assertFalse(paymentsIntegration.isChecked());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationCheckboxDisablesPaymentsIntegration() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(true);
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        togglePreference(syncEverything);
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+        togglePreference(paymentsIntegration);
+
+        closeFragment(fragment);
+        assertPaymentsIntegrationEnabled(false);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationCheckboxEnablesPaymentsIntegration() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(false);
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        togglePreference(syncEverything);
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+        togglePreference(paymentsIntegration);
+
+        closeFragment(fragment);
+        assertPaymentsIntegrationEnabled(true);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationDisabledByAutofillSyncCheckbox() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(true);
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        togglePreference(syncEverything);
+
+        CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_SYNC_AUTOFILL);
+        togglePreference(syncAutofill);
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+        assertFalse(paymentsIntegration.isEnabled());
+        assertFalse(paymentsIntegration.isChecked());
+
+        closeFragment(fragment);
+        assertPaymentsIntegrationEnabled(false);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationEnabledByAutofillSyncCheckbox() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(false);
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        togglePreference(syncEverything);
+
+        CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_SYNC_AUTOFILL);
+        togglePreference(syncAutofill);  // Disable autofill sync.
+        togglePreference(syncAutofill);  // Re-enable autofill sync again.
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+        assertTrue(paymentsIntegration.isEnabled());
+        assertTrue(paymentsIntegration.isChecked());
+
+        closeFragment(fragment);
+        assertPaymentsIntegrationEnabled(true);
+    }
     /**
      * Test that choosing a passphrase type while sync is off doesn't crash.
      *
@@ -487,6 +614,24 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 for (Integer disabledDataType : disabledDataTypes) {
                     assertFalse(actualDataTypes.contains(disabledDataType));
                 }
+            }
+        });
+    }
+
+    private void setPaymentsIntegrationEnabled(final boolean enabled) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.setPaymentsIntegrationEnabled(enabled);
+            }
+        });
+    }
+
+    private void assertPaymentsIntegrationEnabled(final boolean enabled) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals(enabled, PersonalDataManager.isPaymentsIntegrationEnabled());
             }
         });
     }

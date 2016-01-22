@@ -28,6 +28,8 @@ import android.view.ViewGroup;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -71,6 +73,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
     @VisibleForTesting
     public static final String PREFERENCE_SYNC_SETTINGS = "sync_settings";
     @VisibleForTesting
+    public static final String PREFERENCE_PAYMENTS_INTEGRATION = "payments_integration";
+    @VisibleForTesting
     public static final String PREFERENCE_ENCRYPTION = "encryption";
     @VisibleForTesting
     public static final String PREF_SYNC_SWITCH = "sync_switch";
@@ -94,6 +98,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         PREFERENCE_SYNC_PASSWORDS,
         PREFERENCE_SYNC_RECENT_TABS,
         PREFERENCE_SYNC_SETTINGS,
+        PREFERENCE_PAYMENTS_INTEGRATION
     };
 
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
@@ -105,6 +110,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private CheckBoxPreference mSyncPasswords;
     private CheckBoxPreference mSyncRecentTabs;
     private CheckBoxPreference mSyncSettings;
+    private CheckBoxPreference mPaymentsIntegration;
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
     private CheckBoxPreference[] mAllTypes;
@@ -132,6 +138,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
         mSyncPasswords = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_PASSWORDS);
         mSyncRecentTabs = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_RECENT_TABS);
         mSyncSettings = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_SETTINGS);
+        mPaymentsIntegration = (CheckBoxPreference) findPreference(PREFERENCE_PAYMENTS_INTEGRATION);
+
         mSyncEncryption = findPreference(PREFERENCE_ENCRYPTION);
         mSyncEncryption.setOnPreferenceClickListener(this);
         mManageSyncData = findPreference(PREFERENCE_SYNC_MANAGE_DATA);
@@ -139,7 +147,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
         mAllTypes = new CheckBoxPreference[]{
             mSyncAutofill, mSyncBookmarks, mSyncOmnibox, mSyncPasswords,
-            mSyncRecentTabs, mSyncSettings
+            mSyncRecentTabs, mSyncSettings, mPaymentsIntegration
         };
 
         mSyncEverything.setOnPreferenceChangeListener(this);
@@ -184,9 +192,20 @@ public class SyncCustomizationFragment extends PreferenceFragment
             return true;
         }
         if (isSyncTypePreference(preference)) {
+            final boolean syncAutofillToggled = preference == mSyncAutofill;
+            final boolean preferenceChecked = (boolean) newValue;
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
+                    if (syncAutofillToggled) {
+                        // If the user checks the autofill sync checkbox, then enable and check the
+                        // payments integration checkbox.
+                        //
+                        // If the user unchecks the autofill sync checkbox, then disable and uncheck
+                        // the payments integration checkbox.
+                        mPaymentsIntegration.setEnabled(preferenceChecked);
+                        mPaymentsIntegration.setChecked(preferenceChecked);
+                    }
                     maybeDisableSync();
                 }
             });
@@ -247,6 +266,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 // Inform sync that the user has finished setting up sync at least once.
                 mProfileSyncService.setFirstSetupComplete();
             }
+            PersonalDataManager.setPaymentsIntegrationEnabled(mPaymentsIntegration.isChecked());
             // Setup is done. This was preventing sync from turning on even if it was enabled.
             mProfileSyncService.setSetupInProgress(false);
         }
@@ -507,8 +527,12 @@ public class SyncCustomizationFragment extends PreferenceFragment
         boolean syncEverything = mSyncEverything.isChecked();
         boolean passwordSyncConfigurable = mProfileSyncService.isBackendInitialized()
                 && mProfileSyncService.isCryptographerReady();
+        Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
+        boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
         for (CheckBoxPreference pref : mAllTypes) {
-            boolean canSyncType = pref != mSyncPasswords || passwordSyncConfigurable;
+            boolean canSyncType = true;
+            if (pref == mSyncPasswords) canSyncType = passwordSyncConfigurable;
+            if (pref == mPaymentsIntegration) canSyncType = syncAutofill;
 
             if (!isSyncEnabled) {
                 pref.setChecked(true);
@@ -519,8 +543,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             pref.setEnabled(isSyncEnabled && !syncEverything && canSyncType);
         }
         if (isSyncEnabled && !syncEverything) {
-            Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
-            mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
+            mSyncAutofill.setChecked(syncAutofill);
             mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
             mSyncOmnibox.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
             mSyncPasswords.setChecked(passwordSyncConfigurable
@@ -529,6 +552,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
             // TODO(zea): Switch this to PREFERENCE once that datatype is
             // supported on Android.
             mSyncSettings.setChecked(syncTypes.contains(ModelType.PRIORITY_PREFERENCES));
+            mPaymentsIntegration.setChecked(
+                    syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
         }
     }
 

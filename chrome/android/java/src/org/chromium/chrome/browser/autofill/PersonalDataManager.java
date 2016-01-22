@@ -520,25 +520,18 @@ public class PersonalDataManager {
     }
 
     /**
-     * @return Whether to offer the Wallet import feature.
+     * @return Whether the Payments integration feature is enabled.
      */
-    public static boolean isWalletImportFeatureAvailable() {
-        return nativeIsWalletImportFeatureAvailable();
+    public static boolean isPaymentsIntegrationEnabled() {
+        return nativeIsPaymentsIntegrationEnabled();
     }
 
     /**
-     * @return Whether the Wallet import feature is enabled.
+     * Enables or disables the Payments integration.
+     * @param enable True to enable Payments data import.
      */
-    public static boolean isWalletImportEnabled() {
-        return nativeIsWalletImportEnabled();
-    }
-
-    /**
-     * Enables or disables the Autofill Wallet integration.
-     * @param enable True to enable Wallet data import.
-     */
-    public static void setWalletImportEnabled(boolean enable) {
-        nativeSetWalletImportEnabled(enable);
+    public static void setPaymentsIntegrationEnabled(boolean enable) {
+        nativeSetPaymentsIntegrationEnabled(enable);
     }
 
     private native long nativeInit();
@@ -563,8 +556,7 @@ public class PersonalDataManager {
     private static native boolean nativeIsAutofillEnabled();
     private static native void nativeSetAutofillEnabled(boolean enable);
     private static native boolean nativeIsAutofillManaged();
-    private static native boolean nativeIsWalletImportFeatureAvailable();
-    private static native boolean nativeIsWalletImportEnabled();
-    private static native void nativeSetWalletImportEnabled(boolean enable);
+    private static native boolean nativeIsPaymentsIntegrationEnabled();
+    private static native void nativeSetPaymentsIntegrationEnabled(boolean enable);
     private static native String nativeToCountryCode(String countryName);
 }

@@ -10,10 +10,6 @@
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off" />
 
-    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
-        android:key="autofill_wallet"
-        android:title="@string/autofill_wallet_title" />
-
     <org.chromium.chrome.browser.preferences.PreferenceCategoryWithButton
        android:key="autofill_profiles"
        android:enabled="true"

@@ -258,9 +258,6 @@ CHAR-LIMIT guidelines:
        </message>
 
       <!-- Autofill/Wallet integration preferences -->
-      <message name="IDS_AUTOFILL_WALLET_TITLE" desc="Text for checkbox that enables or disables import of Wallet data for Autofill.">
-        Show addresses and credit cards from Google Payments
-      </message>
       <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for link that allows users to see and edit their Wallet information.">
         Edit
       </message>
@@ -985,6 +982,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SYNC_SETTINGS" desc="Title for preference which enables sync'ing of settings. [CHAR-LIMT=32]">
         Settings
+      </message>
+      <message name="IDS_PAYMENTS_INTEGRATION" desc="Title for preference which enables import of Google Payments data for Autofill.">
+        Credit cards and addresses using Google Payments
       </message>
       <message name="IDS_SYNC_ENCRYPTION" desc="Preference category name for sync encryption. [CHAR-LIMT=32]">
         Encryption

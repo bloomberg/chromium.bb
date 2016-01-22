@@ -330,23 +330,17 @@ static jboolean IsAutofillManaged(JNIEnv* env,
   return GetPrefs()->IsManagedPreference(autofill::prefs::kAutofillEnabled);
 }
 
-// Returns whether the Wallet import feature is available.
-static jboolean IsWalletImportFeatureAvailable(
+// Returns whether the Payments integration feature is enabled.
+static jboolean IsPaymentsIntegrationEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return WalletIntegrationAvailableForProfile(GetProfile());
-}
-
-// Returns whether the Wallet import feature is enabled.
-static jboolean IsWalletImportEnabled(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz) {
   return GetPrefs()->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
 }
 
-// Enables or disables the Wallet import feature.
-static void SetWalletImportEnabled(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   jboolean enable) {
+// Enables or disables the Payments integration feature.
+static void SetPaymentsIntegrationEnabled(JNIEnv* env,
+                                          const JavaParamRef<jclass>& clazz,
+                                          jboolean enable) {
   GetPrefs()->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled, enable);
 }
 
