@@ -448,8 +448,9 @@ void LogResourceRequestTimeOnUI(
 bool IsUsingLoFi(LoFiState lofi_state,
                  ResourceDispatcherHostDelegate* delegate,
                  const net::URLRequest& request,
-                 ResourceContext* resource_context) {
-  if (lofi_state == LOFI_UNSPECIFIED && delegate)
+                 ResourceContext* resource_context,
+                 bool is_main_frame) {
+  if (lofi_state == LOFI_UNSPECIFIED && delegate && is_main_frame)
     return delegate->ShouldEnableLoFiMode(request, resource_context);
   return lofi_state == LOFI_ON;
 }
@@ -1445,28 +1446,20 @@ void ResourceDispatcherHostImpl::BeginRequest(
   ResourceRequestInfoImpl* extra_info = new ResourceRequestInfoImpl(
       process_type, child_id, route_id,
       -1,  // frame_tree_node_id
-      request_data.origin_pid,
-      request_id,
-      request_data.render_frame_id,
-      request_data.is_main_frame,
-      request_data.parent_is_main_frame,
-      request_data.resource_type,
-      request_data.transition_type,
+      request_data.origin_pid, request_id, request_data.render_frame_id,
+      request_data.is_main_frame, request_data.parent_is_main_frame,
+      request_data.resource_type, request_data.transition_type,
       request_data.should_replace_current_entry,
       false,  // is download
       false,  // is stream
-      allow_download,
-      request_data.has_user_gesture,
-      request_data.enable_load_timing,
-      request_data.enable_upload_progress,
-      do_not_prompt_for_login,
-      request_data.referrer_policy,
-      request_data.visiblity_state,
-      resource_context, filter_->GetWeakPtr(),
-      report_raw_headers,
-      !is_sync_load,
-      IsUsingLoFi(request_data.lofi_state, delegate_,
-                  *new_request, resource_context),
+      allow_download, request_data.has_user_gesture,
+      request_data.enable_load_timing, request_data.enable_upload_progress,
+      do_not_prompt_for_login, request_data.referrer_policy,
+      request_data.visiblity_state, resource_context, filter_->GetWeakPtr(),
+      report_raw_headers, !is_sync_load,
+      IsUsingLoFi(request_data.lofi_state, delegate_, *new_request,
+                  resource_context,
+                  request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME),
       support_async_revalidation ? request_data.headers : std::string());
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
@@ -2183,8 +2176,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // request_data.origin_pid,
       request_id_,
       -1,  // request_data.render_frame_id,
-      info.is_main_frame, info.parent_is_main_frame,
-      resource_type, info.common_params.transition,
+      info.is_main_frame, info.parent_is_main_frame, resource_type,
+      info.common_params.transition,
       // should_replace_current_entry. This was only maintained at layer for
       // request transfers and isn't needed for browser-side navigations.
       false,
@@ -2202,8 +2195,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       false,  // request_data.report_raw_headers
       true,   // is_async
-      IsUsingLoFi(info.common_params.lofi_state, delegate_,
-                  *new_request, resource_context),
+      IsUsingLoFi(info.common_params.lofi_state, delegate_, *new_request,
+                  resource_context, info.is_main_frame),
       // The original_headers field is for stale-while-revalidate but the
       // feature doesn't work with PlzNavigate, so it's just a placeholder
       // here.
