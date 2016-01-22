@@ -140,7 +140,6 @@ TEST_F(TextureManagerTest, Basic) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLuint kClient2Id = 2;
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   // Check we can create texture.
@@ -620,7 +619,6 @@ TEST_F(TextureTest, Basic) {
   EXPECT_EQ(static_cast<GLenum>(GL_LINEAR), texture->mag_filter());
   EXPECT_EQ(static_cast<GLenum>(GL_REPEAT), texture->wrap_s());
   EXPECT_EQ(static_cast<GLenum>(GL_REPEAT), texture->wrap_t());
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_EQ(0u, texture->estimated_size());
 }
@@ -695,25 +693,21 @@ TEST_F(TextureTest, POT2D) {
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(texture->SafeToRenderFrom());
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Set filters to something that will work with a single mip.
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_MIN_FILTER, GL_LINEAR, GL_NO_ERROR);
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set them back.
   SetParameter(texture_ref_.get(),
                GL_TEXTURE_MIN_FILTER,
                GL_LINEAR_MIPMAP_LINEAR,
                GL_NO_ERROR);
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
 
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   // Make mips.
   manager_->MarkMipmapsGenerated(texture_ref_.get());
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Change a mip.
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
@@ -721,7 +715,6 @@ TEST_F(TextureTest, POT2D) {
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Set a level past the number of mips that would get generated.
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 3, GL_RGBA, 4, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
@@ -730,7 +723,6 @@ TEST_F(TextureTest, POT2D) {
   manager_->MarkMipmapsGenerated(texture_ref_.get());
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureTest, BaseLevel) {
@@ -743,11 +735,9 @@ TEST_F(TextureTest, BaseLevel) {
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_MIN_FILTER, GL_LINEAR, GL_NO_ERROR);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_BASE_LEVEL, 1, GL_NO_ERROR);
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureTest, BaseLevelMaxLevel) {
@@ -767,19 +757,15 @@ TEST_F(TextureTest, BaseLevelMaxLevel) {
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_MAG_FILTER, GL_LINEAR, GL_NO_ERROR);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_BASE_LEVEL, 2, GL_NO_ERROR);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_MAX_LEVEL, 4, GL_NO_ERROR);
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_BASE_LEVEL, 0, GL_NO_ERROR);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureMemoryTrackerTest, MarkMipmapsGenerated) {
@@ -807,7 +793,6 @@ TEST_F(TextureTest, UnusedMips) {
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set level zero to large smaller (levels unused mips)
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
@@ -816,14 +801,12 @@ TEST_F(TextureTest, UnusedMips) {
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set an unused level to some size
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 4, GL_RGBA, 16, 16,
                          1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(16, 16));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureTest, NPOT2D) {
@@ -837,26 +820,21 @@ TEST_F(TextureTest, NPOT2D) {
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_MIN_FILTER, GL_LINEAR, GL_NO_ERROR);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE, GL_NO_ERROR);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   SetParameter(
       texture_ref_.get(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE, GL_NO_ERROR);
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Change it to POT.
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureTest, NPOT2DNPOTOK) {
@@ -885,11 +863,9 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager.CanGenerateMipmaps(texture_ref));
   EXPECT_FALSE(manager.CanRender(texture_ref));
-  EXPECT_TRUE(manager.HaveUnrenderableTextures());
   manager.MarkMipmapsGenerated(texture_ref);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager.CanRender(texture_ref));
-  EXPECT_FALSE(manager.HaveUnrenderableTextures());
   manager.Destroy(false);
 }
 
@@ -906,7 +882,6 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -915,7 +890,6 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -924,7 +898,6 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -933,7 +906,6 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -942,7 +914,6 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -951,14 +922,12 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
 
   // Make mips.
   manager_->MarkMipmapsGenerated(texture_ref_.get());
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 
   // Change a mip.
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 1,
@@ -1001,7 +970,6 @@ TEST_F(TextureTest, POTCubeMapWithoutMipmap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -1010,7 +978,6 @@ TEST_F(TextureTest, POTCubeMapWithoutMipmap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -1019,7 +986,6 @@ TEST_F(TextureTest, POTCubeMapWithoutMipmap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -1028,7 +994,6 @@ TEST_F(TextureTest, POTCubeMapWithoutMipmap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -1037,7 +1002,6 @@ TEST_F(TextureTest, POTCubeMapWithoutMipmap) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0,
                          GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(4, 4));
@@ -1046,7 +1010,6 @@ TEST_F(TextureTest, POTCubeMapWithoutMipmap) {
   EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureTest, GetLevelSize) {
@@ -1149,15 +1112,15 @@ TEST_F(TextureTest, FloatNotLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                        GL_RGBA, GL_FLOAT, gfx::Rect(1, 1));
-  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_FALSE(manager.CanRender(texture_ref));
   TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager,
       texture_ref, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
-  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_FALSE(manager.CanRender(texture_ref));
   TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
-  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_TRUE(manager.CanRender(texture_ref));
   manager.Destroy(false);
 }
 
@@ -1181,7 +1144,7 @@ TEST_F(TextureTest, FloatLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                        GL_RGBA, GL_FLOAT, gfx::Rect(1, 1));
-  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_TRUE(manager.CanRender(texture_ref));
   manager.Destroy(false);
 }
 
@@ -1205,15 +1168,15 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                        GL_RGBA, GL_HALF_FLOAT_OES, gfx::Rect(1, 1));
-  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_FALSE(manager.CanRender(texture_ref));
   TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager,
       texture_ref, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
-  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_FALSE(manager.CanRender(texture_ref));
   TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
-  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_TRUE(manager.CanRender(texture_ref));
   manager.Destroy(false);
 }
 
@@ -1237,7 +1200,7 @@ TEST_F(TextureTest, HalfFloatLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                        GL_RGBA, GL_HALF_FLOAT_OES, gfx::Rect(1, 1));
-  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
+  EXPECT_TRUE(manager.CanRender(texture_ref));
   manager.Destroy(false);
 }
 
@@ -1462,23 +1425,19 @@ TEST_F(TextureTest, UseDeletedTexture) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Make a new texture
   manager_->CreateTexture(kClient2Id, kService2Id);
   scoped_refptr<TextureRef> texture_ref(
       manager_->GetTexture(kClient2Id));
   manager_->SetTarget(texture_ref.get(), GL_TEXTURE_2D);
   EXPECT_FALSE(manager_->CanRender(texture_ref.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Remove it.
   manager_->RemoveTexture(kClient2Id);
   EXPECT_FALSE(manager_->CanRender(texture_ref.get()));
-  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Check that we can still manipulate it and it effects the manager.
   manager_->SetLevelInfo(texture_ref.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_TRUE(manager_->CanRender(texture_ref.get()));
-  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService2Id)))
       .Times(1)
       .RetiresOnSaturation();
@@ -1993,16 +1952,13 @@ TEST_F(SharedTextureTest, DeleteTextures) {
 }
 
 TEST_F(SharedTextureTest, TextureSafetyAccounting) {
-  EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnclearedMips());
-  EXPECT_FALSE(texture_manager2_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
 
   // Newly created texture is renderable.
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
-  EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnclearedMips());
 
@@ -2010,26 +1966,21 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
   // too.
   scoped_refptr<TextureRef> ref2 =
       texture_manager2_->Consume(20, ref1->texture());
-  EXPECT_FALSE(texture_manager2_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
 
   // Make texture renderable but uncleared on one texture manager, should affect
   // other one.
   texture_manager1_->SetTarget(ref1.get(), GL_TEXTURE_2D);
-  EXPECT_TRUE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnclearedMips());
-  EXPECT_TRUE(texture_manager2_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
 
   texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1,
                                   1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
-  EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_TRUE(texture_manager1_->HaveUnsafeTextures());
   EXPECT_TRUE(texture_manager1_->HaveUnclearedMips());
-  EXPECT_FALSE(texture_manager2_->HaveUnrenderableTextures());
   EXPECT_TRUE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_TRUE(texture_manager2_->HaveUnclearedMips());
 

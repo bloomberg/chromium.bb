@@ -21,6 +21,20 @@ namespace gles2 {
 
 class SamplerManager;
 
+struct SamplerState {
+  SamplerState();
+
+  GLenum min_filter;
+  GLenum mag_filter;
+  GLenum wrap_r;
+  GLenum wrap_s;
+  GLenum wrap_t;
+  GLenum compare_func;
+  GLenum compare_mode;
+  GLfloat max_lod;
+  GLfloat min_lod;
+};
+
 class GPU_EXPORT Sampler : public base::RefCounted<Sampler> {
  public:
   Sampler(SamplerManager* manager, GLuint service_id);
@@ -30,41 +44,45 @@ class GPU_EXPORT Sampler : public base::RefCounted<Sampler> {
     return service_id_;
   }
 
+  const SamplerState& sampler_state() const {
+    return sampler_state_;
+  }
+
   // Sampler parameters
   GLenum min_filter() const {
-    return min_filter_;
+    return sampler_state_.min_filter;
   }
 
   GLenum mag_filter() const {
-    return mag_filter_;
+    return sampler_state_.mag_filter;
   }
 
   GLenum wrap_r() const {
-    return wrap_r_;
+    return sampler_state_.wrap_r;
   }
 
   GLenum wrap_s() const {
-    return wrap_s_;
+    return sampler_state_.wrap_s;
   }
 
   GLenum wrap_t() const {
-    return wrap_t_;
+    return sampler_state_.wrap_t;
   }
 
   GLenum compare_func() const {
-    return compare_func_;
+    return sampler_state_.compare_func;
   }
 
   GLenum compare_mode() const {
-    return compare_mode_;
+    return sampler_state_.compare_mode;
   }
 
   GLfloat max_lod() const {
-    return max_lod_;
+    return sampler_state_.max_lod;
   }
 
   GLfloat min_lod() const {
-    return min_lod_;
+    return sampler_state_.min_lod;
   }
 
   bool IsDeleted() const {
@@ -99,16 +117,8 @@ class GPU_EXPORT Sampler : public base::RefCounted<Sampler> {
     // The id of the texure
   GLuint service_id_;
 
-  // Texture parameters.
-  GLenum min_filter_;
-  GLenum mag_filter_;
-  GLenum wrap_r_;
-  GLenum wrap_s_;
-  GLenum wrap_t_;
-  GLenum compare_func_;
-  GLenum compare_mode_;
-  GLfloat max_lod_;
-  GLfloat min_lod_;
+  // Sampler parameters.
+  SamplerState sampler_state_;
 
   // True if deleted.
   bool deleted_;
