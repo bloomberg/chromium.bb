@@ -70,11 +70,10 @@ private:
     float getAvgCharWidth(const AtomicString& family) const final;
     LayoutUnit preferredContentLogicalWidth(float charWidth) const final;
     LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
-
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+    void addOverflowFromChildren() final;
 
     bool textShouldBeTruncated() const;
-
     HTMLElement* innerSpinButtonElement() const;
 
     bool m_shouldDrawCapsLockIndicator;

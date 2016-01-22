@@ -414,6 +414,13 @@ void LayoutTextControlSingleLine::setScrollTop(LayoutUnit newTop)
         innerEditorElement()->setScrollTop(newTop);
 }
 
+void LayoutTextControlSingleLine::addOverflowFromChildren()
+{
+    // If the INPUT content height is smaller than the font height, the
+    // inner-editor element overflows the INPUT box intentionally, however it
+    // shouldn't affect outside of the INPUT box.  So we ignore child overflow.
+}
+
 HTMLInputElement* LayoutTextControlSingleLine::inputElement() const
 {
     return toHTMLInputElement(node());
