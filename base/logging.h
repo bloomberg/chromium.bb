@@ -802,12 +802,6 @@ class BASE_EXPORT LogMessage {
   DISALLOW_COPY_AND_ASSIGN(LogMessage);
 };
 
-// A non-macro interface to the log facility; (useful
-// when the logging level is not a compile-time constant).
-inline void LogAtLevel(int log_level, const std::string& msg) {
-  LogMessage(__FILE__, __LINE__, log_level).stream() << msg;
-}
-
 // This class is used to explicitly ignore values in the conditional
 // logging macros.  This avoids compiler warnings like "value computed
 // is not used" and "statement has no effect".
