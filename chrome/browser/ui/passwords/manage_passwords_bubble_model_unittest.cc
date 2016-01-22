@@ -131,7 +131,6 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
                       ManagePasswordsBubbleModel::DisplayReason reason);
   void PretendPasswordWaiting();
   void PretendUpdatePasswordWaiting();
-  void PretendCredentialsWaiting();
   void PretendAutoSigningIn();
   void PretendManagingPasswords();
 
@@ -182,14 +181,6 @@ void ManagePasswordsBubbleModelTest::PretendUpdatePasswordWaiting() {
   EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   EXPECT_CALL(*controller(), IsPasswordOverridden()).WillOnce(Return(false));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
-                 ManagePasswordsBubbleModel::AUTOMATIC);
-}
-
-void ManagePasswordsBubbleModelTest::PretendCredentialsWaiting() {
-  std::vector<const autofill::PasswordForm*> forms;
-  EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
-  EXPECT_CALL(*controller(), GetFederatedForms()).WillOnce(ReturnRef(forms));
-  SetUpWithState(password_manager::ui::CREDENTIAL_REQUEST_STATE,
                  ManagePasswordsBubbleModel::AUTOMATIC);
 }
 
@@ -314,55 +305,9 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_DONE);
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, ClickCredential) {
-  PretendCredentialsWaiting();
-
-  autofill::PasswordForm form;
-  EXPECT_CALL(
-      *controller(),
-      ChooseCredential(
-          form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD));
-  model()->OnChooseCredentials(
-      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_CREDENTIAL);
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_CREDENTIAL);
-}
-
-TEST_F(ManagePasswordsBubbleModelTest, ClickCancelCredential) {
-  PretendCredentialsWaiting();
-
-  EXPECT_CALL(*controller(), ChooseCredential(_, _)).Times(0);
-  model()->OnCancelClicked();
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_CANCEL);
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_CANCEL);
-}
-
-TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {
-  PretendCredentialsWaiting();
-
-  EXPECT_CALL(*controller(), ChooseCredential(_, _)).Times(0);
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::NO_DIRECT_INTERACTION);
-  DestroyModelExpectReason(
-      password_manager::metrics_util::NO_DIRECT_INTERACTION);
-}
-
 TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
-  // Pop up the first time with the warm welcome.
   PretendAutoSigningIn();
 
-  EXPECT_TRUE(model()->ShouldShowAutoSigninWarmWelcome());
-  model()->OnAutoSignOKClicked();
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_OK);
-  EXPECT_FALSE(model()->ShouldShowAutoSigninWarmWelcome());
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_OK);
-
-  // Pop up the second time without the warm welcome.
-  PretendAutoSigningIn();
-  EXPECT_FALSE(model()->ShouldShowAutoSigninWarmWelcome());
   model()->OnAutoSignInToastTimeout();
   EXPECT_EQ(model()->dismissal_reason(),
             password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);

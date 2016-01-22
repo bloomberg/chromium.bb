@@ -67,10 +67,6 @@ enum ColumnSetType {
   // | | (LEADING, CENTER) | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
   // Used when there are three buttons.
   TRIPLE_BUTTON_COLUMN_SET,
-
-  // | | (FILL, FILL) | |
-  // Used for the autosignin warm welcome that needs a padding column.
-  PADDING_SINGLE_VIEW_COLUMN_SET,
 };
 
 enum TextRowType { ROW_SINGLE, ROW_MULTILINE };
@@ -149,25 +145,7 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             0,
                             0);
       break;
-    case PADDING_SINGLE_VIEW_COLUMN_SET:
-      // Call BuildPaddingSingleColumnSet() instead.
-      NOTREACHED();
-      break;
   }
-}
-
-// Construct |PADDING_SINGLE_VIEW_COLUMN_SET| column set and add it to |layout|.
-void BuildPaddingSingleColumnSet(views::GridLayout* layout, int padding) {
-  views::ColumnSet* column_set =
-      layout->AddColumnSet(PADDING_SINGLE_VIEW_COLUMN_SET);
-  column_set->AddPaddingColumn(0, padding);
-  int full_width = kDesiredBubbleWidth - 2 * views::kPanelHorizMargin - padding;
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        0,
-                        views::GridLayout::FIXED,
-                        full_width,
-                        0);
 }
 
 views::StyledLabel::RangeStyleInfo GetLinkStyle() {
@@ -217,119 +195,6 @@ scoped_ptr<views::LabelButton> GenerateButton(views::ButtonListener* listener,
 
 }  // namespace
 
-// ManagePasswordsBubbleView::AccountChooserView ------------------------------
-
-// A view offering the user the ability to choose credentials for
-// authentication. Contains a list of CredentialsItemView, along with a
-// "Cancel" button.
-class ManagePasswordsBubbleView::AccountChooserView
-    : public views::View,
-      public views::ButtonListener,
-      public views::StyledLabelListener {
- public:
-  explicit AccountChooserView(ManagePasswordsBubbleView* parent);
-  ~AccountChooserView() override;
-
- private:
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
-
-  // Adds |password_forms| to the layout remembering their |type|.
-  void AddCredentialItemsWithType(
-      views::GridLayout* layout,
-      const ScopedVector<const autofill::PasswordForm>& password_forms,
-      password_manager::CredentialType type);
-
-  ManagePasswordsBubbleView* parent_;
-  views::Button* cancel_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountChooserView);
-};
-
-ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  cancel_button_ =
-      GenerateButton(this, l10n_util::GetStringUTF16(IDS_CANCEL)).release();
-
-  // Title row.
-  AddTitleRowWithLink(layout, parent_->model(), this);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-
-  AddCredentialItemsWithType(
-      layout, parent_->model()->local_credentials(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-
-  AddCredentialItemsWithType(
-      layout, parent_->model()->federated_credentials(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
-
-  // Button row.
-  BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, SINGLE_BUTTON_COLUMN_SET, 0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(cancel_button_);
-
-  parent_->set_initially_focused_view(cancel_button_);
-}
-
-ManagePasswordsBubbleView::AccountChooserView::~AccountChooserView() {
-}
-
-void ManagePasswordsBubbleView::AccountChooserView::AddCredentialItemsWithType(
-    views::GridLayout* layout,
-    const ScopedVector<const autofill::PasswordForm>& password_forms,
-    password_manager::CredentialType type) {
-  net::URLRequestContextGetter* request_context =
-      parent_->model()->GetProfile()->GetRequestContext();
-  for (const autofill::PasswordForm* form : password_forms) {
-    const base::string16& upper_string =
-        form->display_name.empty() ? form->username_value : form->display_name;
-    base::string16 lower_string;
-    if (form->federation_url.is_empty()) {
-      if (!form->display_name.empty())
-        lower_string = form->username_value;
-    } else {
-      lower_string = l10n_util::GetStringFUTF16(
-          IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(form->federation_url.host()));
-    }
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(new CredentialsItemView(this, form, type, upper_string,
-                                            lower_string, request_context));
-  }
-}
-
-void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  if (sender != cancel_button_) {
-    // ManagePasswordsBubbleModel should care about calling a callback in case
-    // the bubble is dismissed by any other means.
-    CredentialsItemView* view = static_cast<CredentialsItemView*>(sender);
-    parent_->model()->OnChooseCredentials(*view->form(),
-                                          view->credential_type());
-  } else {
-    parent_->model()->OnCancelClicked();
-  }
-  parent_->Close();
-}
-
-void ManagePasswordsBubbleView::AccountChooserView::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  DCHECK_EQ(range, parent_->model()->title_brand_link_range());
-  parent_->model()->OnBrandLinkClicked();
-}
-
 // ManagePasswordsBubbleView::AutoSigninView ----------------------------------
 
 // A view containing just one credential that was used for for automatic signing
@@ -337,7 +202,6 @@ void ManagePasswordsBubbleView::AccountChooserView::StyledLabelLinkClicked(
 class ManagePasswordsBubbleView::AutoSigninView
     : public views::View,
       public views::ButtonListener,
-      public views::StyledLabelListener,
       public views::WidgetObserver {
  public:
   explicit AutoSigninView(ManagePasswordsBubbleView* parent);
@@ -345,11 +209,6 @@ class ManagePasswordsBubbleView::AutoSigninView
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   // views::WidgetObserver:
   // Tracks the state of the browser window.
@@ -365,7 +224,6 @@ class ManagePasswordsBubbleView::AutoSigninView
   base::OneShotTimer timer_;
   ManagePasswordsBubbleView* parent_;
   ScopedObserver<views::Widget, views::WidgetObserver> observed_browser_;
-  views::Button* ok_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoSigninView);
 };
@@ -373,11 +231,8 @@ class ManagePasswordsBubbleView::AutoSigninView
 ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent),
-      observed_browser_(this),
-      ok_button_(nullptr) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
+      observed_browser_(this) {
+  SetLayoutManager(new views::FillLayout);
   const autofill::PasswordForm& form = parent_->model()->pending_password();
   CredentialsItemView* credential = new CredentialsItemView(
       this, &form,
@@ -387,69 +242,22 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
                                  form.username_value),
       parent_->model()->GetProfile()->GetRequestContext());
   credential->SetEnabled(false);
-  // Set the empty border so that the content doesn't jump and aligned with the
-  // warm welcome.
-  credential->SetBorder(views::Border::NullBorder());
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(credential);
+  AddChildView(credential);
 
-  if (parent_->model()->ShouldShowAutoSigninWarmWelcome()) {
-    // The autosignin toast with the warm welcome simply stays active until user
-    // clicks OK.
-    views::StyledLabel* welcome_label = new views::StyledLabel(
-        parent_->model()->autosignin_welcome_text(), this);
-    welcome_label->SetBaseFontList(
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::SmallFont));
-    views::StyledLabel::RangeStyleInfo range_info;
-    range_info.color = kWarmWelcomeColor;
-    welcome_label->SetDefaultStyle(range_info);
-    if (!parent_->model()->autosignin_welcome_link_range().is_empty()) {
-      welcome_label->AddStyleRange(
-          parent_->model()->autosignin_welcome_link_range(),
-          GetLinkStyle());
-    }
-    // Add the warm welcome.
-    BuildPaddingSingleColumnSet(layout, credential->GetLabelOffset());
-    layout->StartRowWithPadding(0, PADDING_SINGLE_VIEW_COLUMN_SET, 0,
-                                views::kRelatedControlVerticalSpacing);
-    layout->AddView(welcome_label);
-    // Add the button.
-    ok_button_ = GenerateButton(
-        this, l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON))
-            .release();
-    BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
-    layout->StartRowWithPadding(0, SINGLE_BUTTON_COLUMN_SET, 0,
-                                views::kUnrelatedControlVerticalSpacing);
-    layout->AddView(ok_button_);
-    parent_->set_initially_focused_view(ok_button_);
-  } else {
-    // Setup the observer and maybe start the timer.
-    Browser* browser =
-        chrome::FindBrowserWithWebContents(parent_->web_contents());
-    DCHECK(browser);
-    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    observed_browser_.Add(browser_view->GetWidget());
+  // Setup the observer and maybe start the timer.
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(parent_->web_contents());
+  DCHECK(browser);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  observed_browser_.Add(browser_view->GetWidget());
 
-    if (browser_view->IsActive())
-      timer_.Start(FROM_HERE, GetTimeout(), this, &AutoSigninView::OnTimer);
-  }
+  if (browser_view->IsActive())
+    timer_.Start(FROM_HERE, GetTimeout(), this, &AutoSigninView::OnTimer);
 }
 
 void ManagePasswordsBubbleView::AutoSigninView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
-  DCHECK_EQ(ok_button_, sender);
-  parent_->model()->OnAutoSignOKClicked();
-  parent_->Close();
-}
-
-void ManagePasswordsBubbleView::AutoSigninView::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  DCHECK_EQ(range, parent_->model()->autosignin_welcome_link_range());
-  parent_->model()->OnBrandLinkClicked();
+  NOTREACHED();
 }
 
 void ManagePasswordsBubbleView::AutoSigninView::OnWidgetActivationChanged(
@@ -1019,8 +827,6 @@ void ManagePasswordsBubbleView::Refresh() {
     AddChildView(new UpdatePendingView(this));
   } else if (model_.state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
-  } else if (model_.state() == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    AddChildView(new AccountChooserView(this));
   } else if (model_.state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     AddChildView(new AutoSigninView(this));
   } else {

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
@@ -339,9 +338,6 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
 
   EXPECT_FALSE(browser()->window()->IsActive());
   ManagePasswordsBubbleView::set_auto_signin_toast_timeout(0);
-  // Get rid of the warm welcome which makes the bubble sticky.
-  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
-      browser()->profile()->GetPrefs());
   SetupAutoSignin(std::move(local_credentials));
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsBubbleShowing());

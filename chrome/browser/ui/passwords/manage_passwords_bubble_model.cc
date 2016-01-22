@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
@@ -25,7 +24,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -92,9 +91,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     local_credentials_ = DeepCopyForms(delegate->GetCurrentForms());
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     // We don't need anything.
-  } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    local_credentials_ = DeepCopyForms(delegate->GetCurrentForms());
-    federated_credentials_ = DeepCopyForms(delegate->GetFederatedForms());
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     pending_password_ = delegate->GetPendingPassword();
   } else {
@@ -107,12 +103,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
-  } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    GetAccountChooserDialogTitleTextAndLinkRange(
-        GetSmartLockBrandingState(GetProfile()) ==
-        password_bubble_experiment::SmartLockBranding::FULL,
-        &title_,
-        &title_brand_link_range_);
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     // There is no title.
   } else if (state_ == password_manager::ui::MANAGE_STATE) {
@@ -138,12 +128,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
             confirmation_text_id, save_confirmation_link, &offset);
     save_confirmation_link_range_ =
         gfx::Range(offset, offset + save_confirmation_link.length());
-  } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    GetAutoSigninPromptFirstRunExperienceExplanation(
-        GetSmartLockBrandingState(GetProfile()) ==
-        password_bubble_experiment::SmartLockBranding::FULL,
-        &autosignin_welcome_text_,
-        &autosignin_welcome_link_range_);
   } else if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     interaction_stats_.origin_domain = origin_.GetOrigin();
     interaction_stats_.username_value = pending_password_.username_value;
@@ -193,13 +177,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         display_disposition_ =
             metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
         break;
-      case password_manager::ui::CREDENTIAL_REQUEST_STATE:
-        display_disposition_ = metrics_util::AUTOMATIC_CREDENTIAL_REQUEST;
-        break;
       case password_manager::ui::AUTO_SIGNIN_STATE:
         display_disposition_ = metrics_util::AUTOMATIC_SIGNIN_TOAST;
         break;
       case password_manager::ui::MANAGE_STATE:
+      case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -260,11 +242,6 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
   }
   if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
     LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
-}
-
-void ManagePasswordsBubbleModel::OnCancelClicked() {
-  DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state_);
-  dismissal_reason_ = metrics_util::CLICKED_CANCEL;
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
@@ -335,17 +312,7 @@ void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
-  DCHECK_EQ(password_manager::ui::AUTO_SIGNIN_STATE, state_);
   dismissal_reason_ = metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT;
-}
-
-void ManagePasswordsBubbleModel::OnAutoSignOKClicked() {
-  DCHECK_EQ(password_manager::ui::AUTO_SIGNIN_STATE, state_);
-  dismissal_reason_ = metrics_util::CLICKED_OK;
-  Profile* profile = GetProfile();
-  DCHECK(profile);
-  password_bubble_experiment::
-      RecordAutoSignInPromptFirstRunExperienceWasShown(profile->GetPrefs());
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(
@@ -365,14 +332,6 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     password_store->AddLogin(password_form);
 }
 
-void ManagePasswordsBubbleModel::OnChooseCredentials(
-    const autofill::PasswordForm& password_form,
-    password_manager::CredentialType credential_type) {
-  dismissal_reason_ = metrics_util::CLICKED_CREDENTIAL;
-  PasswordsModelDelegateFromWebContents(web_contents())->ChooseCredential(
-      password_form, credential_type);
-}
-
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
   return GetProfileFromWebContents(web_contents());
 }
@@ -384,16 +343,13 @@ bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
 
 bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
   Profile* profile = GetProfile();
-  const ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  return password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
-      sync_service, profile->GetPrefs());
-}
-
-bool ManagePasswordsBubbleModel::ShouldShowAutoSigninWarmWelcome() const {
-  Profile* profile = GetProfile();
-  return password_bubble_experiment::
-      ShouldShowAutoSignInPromptFirstRunExperience(profile->GetPrefs());
+  if (GetSmartLockBrandingState(profile) ==
+      password_bubble_experiment::SmartLockBranding::FULL) {
+    PrefService* prefs = profile->GetPrefs();
+    return !prefs->GetBoolean(
+        password_manager::prefs::kWasSavePrompFirstRunExperienceShown);
+  }
+  return false;
 }
 
 void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {

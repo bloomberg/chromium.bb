@@ -55,7 +55,6 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   ManagePasswordsBubbleModel* model() { return &model_; }
 
  private:
-  class AccountChooserView;
   class AutoSigninView;
   class BlacklistedView;
   class ManageView;

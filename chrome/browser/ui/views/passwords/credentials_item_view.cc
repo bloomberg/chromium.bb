@@ -21,7 +21,7 @@
 
 namespace {
 // The default spacing between the icon and text.
-const int kSpacing = 10;
+const int kSpacing = 5;
 
 gfx::Size GetTextLabelsSize(const views::Label* upper_label,
                             const views::Label* lower_label) {
@@ -109,16 +109,6 @@ CredentialsItemView::CredentialsItemView(
 
 CredentialsItemView::~CredentialsItemView() = default;
 
-
-void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {
-  image_view_->SetImage(ScaleImageForAccountAvatar(image));
-}
-
-int CredentialsItemView::GetLabelOffset() const {
-  return GetInsets().left() + image_view_->GetPreferredSize().width() +
-      kSpacing;
-}
-
 gfx::Size CredentialsItemView::GetPreferredSize() const {
   gfx::Size labels_size = GetTextLabelsSize(upper_label_, lower_label_);
   gfx::Size size = gfx::Size(kAvatarImageSize + labels_size.width(),
@@ -160,4 +150,8 @@ void CredentialsItemView::Layout() {
     label_origin.Offset(0, upper_size.height());
     lower_label_->SetBoundsRect(gfx::Rect(label_origin, lower_size));
   }
+}
+
+void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {
+  image_view_->SetImage(ScaleImageForAccountAvatar(image));
 }

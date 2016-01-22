@@ -32346,8 +32346,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordBubble.DisplayDisposition"
     enum="PasswordBubbleDisplayDisposition">
-  <owner>mkwst@chromium.org</owner>
-  <owner>markusheintz@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
   <summary>
     When the password management bubble opened, what state was it in?
   </summary>
@@ -33009,8 +33008,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.UIDismissalReason"
     enum="PasswordManagerUIDismissalReason">
-  <owner>mkwst@chromium.org</owner>
-  <owner>markusheintz@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
   <summary>
     Why was the password manager's UI (bubble or infobar) closed?
   </summary>
@@ -73261,11 +73259,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Opened automatically / Offering a password to save"/>
   <int value="1" label="Opened manually / Offering a password to save"/>
   <int value="2" label="Opened manually / Managing saved passwords"/>
-  <int value="3" label="Opened manually / Site is blacklisted"/>
+  <int value="3" label="Opened manually / Site is blacklisted (obsolete)"/>
   <int value="4"
       label="Opened automatically / Confirming generated password saved"/>
   <int value="5"
-      label="Opened automatically / Offering a credential to choose"/>
+      label="Opened automatically / Offering a credential to choose
+             (obsolete)"/>
   <int value="6" label="Opened automatically / Auto-signin toast"/>
   <int value="7" label="Opened manually / Offering a password to update"/>
   <int value="8" label="Opened automatically / Offering a password to update"/>
@@ -73835,11 +73834,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Clicked 'Never'"/>
   <int value="4" label="Clicked 'Manage passwords'"/>
   <int value="5" label="Clicked 'Done'"/>
-  <int value="6" label="Clicked 'Enable password manager'"/>
+  <int value="6" label="Clicked 'Unblacklist' (obsolete)"/>
   <int value="7" label="Clicked 'OK'"/>
-  <int value="8" label="Clicked on a credential"/>
+  <int value="8" label="Clicked on a credential (obsolete)"/>
   <int value="9" label="Auto-signin toast timeout"/>
-  <int value="10" label="Auto-signin toast clicked"/>
+  <int value="10" label="Auto-signin toast clicked (obsolete)"/>
   <int value="11" label="Clicked 'Google Smart Lock'"/>
 </enum>
 

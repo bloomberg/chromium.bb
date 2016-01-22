@@ -70,11 +70,7 @@ void GetAccountChooserDialogTitleTextAndLinkRange(
     base::string16* title,
     gfx::Range* title_link_range);
 
-// Sets the formatted |explanation| in the Auto sign-in prompt.
-// If |is_smartlock_branding_enabled| is true, sets the
-// |explanation_link_range| for the "Google Smart Lock" text range to be set
-// visibly as a hyperlink in the prompt, otherwise chooses the title which
-// doesn't contain Smart Lock branding.
+// TODO(melandory): remove as obsolete. http://crbug.com/532876
 void GetAutoSigninPromptFirstRunExperienceExplanation(
     bool is_smartlock_branding_enabled,
     base::string16* explanation,
