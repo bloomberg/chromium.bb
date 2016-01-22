@@ -368,10 +368,14 @@ scoped_ptr<base::DictionaryValue> GetPdfCapabilitiesOnFileThread(
   color.SaveTo(&description);
 
   static const cloud_devices::printer::MediaType kPdfMedia[] = {
-    ISO_A4,
+    ISO_A0,
+    ISO_A1,
+    ISO_A2,
     ISO_A3,
-    NA_LETTER,
+    ISO_A4,
+    ISO_A5,
     NA_LEGAL,
+    NA_LETTER,
     NA_LEDGER
   };
   const gfx::Size default_media_size = GetDefaultPdfMediaSizeMicrons();

@@ -341,10 +341,14 @@ cr.define('print_preview', function() {
     var mediaSize = capabilities.printer.media_size;
     if (mediaSize) {
       var mediaDisplayNames = {
-        'ISO_A4': 'A4',
+        'ISO_A0': 'A0',
+        'ISO_A1': 'A1',
+        'ISO_A2': 'A2',
         'ISO_A3': 'A3',
-        'NA_LETTER': 'Letter',
+        'ISO_A4': 'A4',
+        'ISO_A5': 'A5',
         'NA_LEGAL': 'Legal',
+        'NA_LETTER': 'Letter',
         'NA_LEDGER': 'Tabloid'
       };
       for (var i = 0, media; media = mediaSize.option[i]; i++) {
