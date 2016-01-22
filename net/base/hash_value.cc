@@ -4,6 +4,8 @@
 
 #include "net/base/hash_value.h"
 
+#include <stdlib.h>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/sha1.h"
