@@ -390,7 +390,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   DCHECK(params.process_type != nacl::kUnknownNaClProcessType);
   CHECK(params.irt_handle != IPC::InvalidPlatformFileForTransit());
-  NaClHandle irt_handle =
+  base::PlatformFile irt_handle =
       IPC::PlatformFileForTransitToPlatformFile(params.irt_handle);
 
 #if defined(OS_WIN)
