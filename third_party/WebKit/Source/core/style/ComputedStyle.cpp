@@ -1836,4 +1836,15 @@ void ComputedStyle::copyChildDependentFlagsFrom(const ComputedStyle& other)
         setHasExplicitlyInheritedProperties();
 }
 
+bool ComputedStyle::shadowListHasCurrentColor(const ShadowList* shadowList)
+{
+    if (!shadowList)
+        return false;
+    for (size_t i = shadowList->shadows().size(); i--; ) {
+        if (shadowList->shadows()[i].color().isCurrentColor())
+            return true;
+    }
+    return false;
+}
+
 } // namespace blink

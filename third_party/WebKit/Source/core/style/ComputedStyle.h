@@ -423,7 +423,14 @@ public:
 
     bool hasAppearance() const { return appearance() != NoControlPart; }
 
-    bool isBackgroundColorCurrentColor() const { return backgroundColor().isCurrentColor() || visitedLinkBackgroundColor().isCurrentColor(); }
+    bool hasBackgroundRelatedColorReferencingCurrentColor() const
+    {
+        if (backgroundColor().isCurrentColor() || visitedLinkBackgroundColor().isCurrentColor())
+            return true;
+        if (!boxShadow())
+            return false;
+        return shadowListHasCurrentColor(boxShadow());
+    }
 
     bool hasBackground() const
     {
@@ -1901,6 +1908,7 @@ private:
     void updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference&) const;
 
     bool requireTransformOrigin(ApplyTransformOrigin applyOrigin, ApplyMotionPath) const;
+    static bool shadowListHasCurrentColor(const ShadowList*);
 };
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.
