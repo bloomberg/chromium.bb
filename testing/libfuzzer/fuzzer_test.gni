@@ -21,7 +21,7 @@ template("fuzzer_test_launcher") {
       "--launcher",
       rebase_path(generated_script, root_build_dir),
       "--dict",
-      rebase_path("$target_out_dir/" + invoker.dict, root_build_dir),
+      rebase_path("$root_build_dir/" + invoker.dict, root_build_dir),
     ]
     outputs = [
       generated_script,
@@ -66,7 +66,7 @@ template("fuzzer_test") {
         invoker.dict,
       ]
       outputs = [
-        "$target_out_dir/{{source_file_part}}",
+        "$root_build_dir/" + invoker.dict,
       ]
     }
 
