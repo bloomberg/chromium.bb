@@ -526,16 +526,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id,
 
   ResourceProvider::ResourceIdSet referenced_resources;
   size_t reserve_size = frame_data->resource_list.size();
-#if defined(COMPILER_MSVC)
   referenced_resources.reserve(reserve_size);
-#elif defined(COMPILER_GCC)
-  // Pre-standard hash-tables only implement resize, which behaves similarly
-  // to reserve for these keys. Resizing to 0 may also be broken (particularly
-  // on stlport).
-  // TODO(jbauman): Replace with reserve when C++11 is supported everywhere.
-  if (reserve_size)
-    referenced_resources.resize(reserve_size);
-#endif
 
   bool invalid_frame = false;
   ResourceProvider::ResourceIdMap empty_map;

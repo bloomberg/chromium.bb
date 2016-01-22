@@ -15,6 +15,7 @@
 #include "components/metrics/leak_detector/call_stack_manager.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "components/metrics/leak_detector/leak_analyzer.h"
+#include "components/metrics/leak_detector/stl_allocator.h"
 
 namespace metrics {
 namespace leak_detector {
@@ -104,7 +105,7 @@ class LeakDetectorImpl {
   // Allocator class for allocation entry map. Maps allocated addresses to
   // AllocInfo objects.
   using AllocationEntryAllocator =
-      STLAllocator<std::pair<const void*, AllocInfo>, CustomAllocator>;
+      STLAllocator<std::pair<const uintptr_t, AllocInfo>, CustomAllocator>;
 
   // Hash class for addresses.
   struct AddressHash {

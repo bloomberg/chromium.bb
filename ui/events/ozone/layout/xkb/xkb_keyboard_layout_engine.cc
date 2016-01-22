@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <xkbcommon/xkbcommon-names.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

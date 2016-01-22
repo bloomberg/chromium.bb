@@ -64,7 +64,7 @@ class CallStackTable {
   // Hash table containing entries. Uses CustomAllocator to avoid recursive
   // malloc hook invocation when analyzing allocs and frees.
   using TableEntryAllocator =
-      STLAllocator<std::pair<const CallStack*, Entry>, CustomAllocator>;
+      STLAllocator<std::pair<const CallStack* const, Entry>, CustomAllocator>;
   base::hash_map<const CallStack*,
                  Entry,
                  StoredHash,

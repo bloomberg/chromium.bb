@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <limits>
 #include <vector>
 
 #include "base/base64.h"
