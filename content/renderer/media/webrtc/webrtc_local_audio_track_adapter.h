@@ -71,7 +71,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
   rtc::scoped_refptr<webrtc::AudioProcessorInterface> GetAudioProcessor()
       override;
   webrtc::AudioSourceInterface* GetSource() const override;
-  cricket::AudioRenderer* GetRenderer() override;
 
   // Weak reference.
   WebRtcLocalAudioTrack* owner_;

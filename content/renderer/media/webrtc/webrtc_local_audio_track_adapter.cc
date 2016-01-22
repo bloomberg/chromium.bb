@@ -151,8 +151,4 @@ webrtc::AudioSourceInterface* WebRtcLocalAudioTrackAdapter::GetSource() const {
   return track_source_;
 }
 
-cricket::AudioRenderer* WebRtcLocalAudioTrackAdapter::GetRenderer() {
-  return NULL;
-}
-
 }  // namespace content
