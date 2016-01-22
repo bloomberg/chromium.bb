@@ -74,7 +74,7 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionInfo::Reason reason) {
   GetInputImeEventRouter(Profile::FromBrowserContext(browser_context))
-      ->UnregisterImeExtension(extension->id());
+      ->DeleteInputMethodEngine(extension->id());
 }
 
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {}
@@ -83,46 +83,28 @@ InputImeEventRouter::InputImeEventRouter(Profile* profile)
     : InputImeEventRouterBase(profile), active_engine_(nullptr) {}
 
 InputImeEventRouter::~InputImeEventRouter() {
-  DeleteInputMethodEngine();
-}
-
-bool InputImeEventRouter::RegisterImeExtension(
-    const std::string& extension_id) {
-  // Check if the IME extension is already registered.
-  if (std::find(extension_ids_.begin(), extension_ids_.end(), extension_id) !=
-      extension_ids_.end())
-    return false;
-
-  extension_ids_.push_back(extension_id);
-  return true;
-}
-
-void InputImeEventRouter::UnregisterImeExtension(
-    const std::string& extension_id) {
-  std::vector<std::string>::iterator it =
-      std::find(extension_ids_.begin(), extension_ids_.end(), extension_id);
-  if (it != extension_ids_.end()) {
-    if (GetActiveEngine(extension_id))
-      DeleteInputMethodEngine();
-    extension_ids_.erase(it);
-  }
+  if (active_engine_)
+    DeleteInputMethodEngine(active_engine_->GetExtensionId());
 }
 
 InputMethodEngine* InputImeEventRouter::GetActiveEngine(
     const std::string& extension_id) {
-  return (active_engine_ && active_engine_->GetExtensionId() == extension_id)
+  return (ui::IMEBridge::Get()->GetCurrentEngineHandler() &&
+          active_engine_ &&
+          active_engine_->GetExtensionId() == extension_id)
              ? active_engine_
              : nullptr;
 }
 
 void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
   if (active_engine_) {
-    if (active_engine_->GetExtensionId() == extension_id)
+    if (active_engine_->GetExtensionId() == extension_id) {
+      ui::IMEBridge::Get()->SetCurrentEngineHandler(active_engine_);
       return;
-    DeleteInputMethodEngine();
+    }
+    DeleteInputMethodEngine(active_engine_->GetExtensionId());
   }
 
-  RegisterImeExtension(extension_id);
   scoped_ptr<input_method::InputMethodEngine> engine(
       new input_method::InputMethodEngine());
   scoped_ptr<InputMethodEngineBase::Observer> observer(
@@ -133,8 +115,9 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
   ui::IMEBridge::Get()->SetCurrentEngineHandler(active_engine_);
 }
 
-void InputImeEventRouter::DeleteInputMethodEngine() {
-  if (active_engine_) {
+void InputImeEventRouter::DeleteInputMethodEngine(
+    const std::string& extension_id) {
+  if (active_engine_ && active_engine_->GetExtensionId() == extension_id) {
     ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
     delete active_engine_;
     active_engine_ = nullptr;
@@ -155,9 +138,7 @@ ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {
   if (!IsInputImeEnabled())
     return RespondNow(Error(kErrorAPIDisabled));
 
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  event_router->UnregisterImeExtension(extension_id());
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
   return RespondNow(NoArguments());
 }
 

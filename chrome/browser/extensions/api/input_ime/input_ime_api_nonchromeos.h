@@ -24,14 +24,6 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   explicit InputImeEventRouter(Profile* profile);
   ~InputImeEventRouter() override;
 
-  // Registers the extension as an IME extension, allowing it to be the active
-  // engine.
-  bool RegisterImeExtension(const std::string& extension_id);
-
-  // Unregisters the extension as an IME extension and deactivates the IME
-  // engine for it, if it was active.
-  void UnregisterImeExtension(const std::string& extension_id);
-
   // Gets the input method engine if the extension is active.
   input_method::InputMethodEngine* GetActiveEngine(
       const std::string& extension_id);
@@ -40,15 +32,12 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   // previous engine if another extension was active.
   void SetActiveEngine(const std::string& extension_id);
 
- private:
-  // Deletes the current input method engine.
-  void DeleteInputMethodEngine();
+  // Deletes the current input method engine of the specific extension.
+  void DeleteInputMethodEngine(const std::string& extension_id);
 
+ private:
   // The active input method engine.
   input_method::InputMethodEngine* active_engine_;
-
-  // The id of the all registered extensions.
-  std::vector<std::string> extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
