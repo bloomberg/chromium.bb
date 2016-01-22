@@ -34,7 +34,7 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentVisibilityObserver.h"
-#include "core/fileapi/FileCallback.h"
+#include "core/fileapi/BlobCallback.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "core/html/canvas/CanvasImageSource.h"
@@ -101,8 +101,8 @@ public:
     String toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
     String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, ScriptValue(), exceptionState); }
 
-    void toBlob(ScriptState*, FileCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&);
-    void toBlob(ScriptState* scriptState, FileCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(scriptState, callback, mimeType, ScriptValue(), exceptionState); }
+    void toBlob(ScriptState*, BlobCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&);
+    void toBlob(ScriptState* scriptState, BlobCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(scriptState, callback, mimeType, ScriptValue(), exceptionState); }
 
     // Used for canvas capture.
     void addListener(CanvasDrawListener*);

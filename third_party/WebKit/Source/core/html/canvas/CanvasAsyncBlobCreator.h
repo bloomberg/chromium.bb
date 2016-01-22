@@ -5,7 +5,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/fileapi/FileCallback.h"
+#include "core/fileapi/BlobCallback.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -20,12 +20,12 @@ class PNGImageEncoderState;
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public RefCounted<CanvasAsyncBlobCreator> {
 public:
-    static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, FileCallback*, ExecutionContext*);
+    static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*, ExecutionContext*);
     void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality = 0.0);
     virtual ~CanvasAsyncBlobCreator();
 
 protected:
-    CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize&, FileCallback*);
+    CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize&, BlobCallback*);
     virtual void scheduleCreateBlobAndCallOnMainThread();
     virtual void scheduleCreateNullptrAndCallOnMainThread();
     virtual void scheduleClearSelfRefOnMainThread();
@@ -42,7 +42,7 @@ private:
     const IntSize m_size;
     size_t m_pixelRowStride;
     const String m_mimeType;
-    Persistent<FileCallback> m_callback;
+    Persistent<BlobCallback> m_callback;
 
     RefPtr<CanvasAsyncBlobCreator> m_selfRef;
     void clearSelfReference();

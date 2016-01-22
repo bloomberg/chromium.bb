@@ -580,7 +580,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
     return toDataURLInternal(mimeType, quality, BackBuffer);
 }
 
-void HTMLCanvasElement::toBlob(ScriptState* scriptState, FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
+void HTMLCanvasElement::toBlob(ScriptState* scriptState, BlobCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
 {
     if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
@@ -589,7 +589,7 @@ void HTMLCanvasElement::toBlob(ScriptState* scriptState, FileCallback* callback,
 
     if (!isPaintable()) {
         // If the canvas element's bitmap has no pixels
-        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, callback, nullptr));
         return;
     }
 

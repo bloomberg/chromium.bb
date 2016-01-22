@@ -31,8 +31,8 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/fileapi/BlobCallback.h"
 #include "core/fileapi/File.h"
-#include "core/fileapi/FileCallback.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -267,12 +267,12 @@ void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebFileWriter> file
 
 // SnapshotFileCallback -------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, FileCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, BlobCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
     return adoptPtr(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context));
 }
 
-SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem, const String& name, const KURL& url, FileCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem, const String& name, const KURL& url, BlobCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
     : FileSystemCallbacksBase(errorCallback, filesystem, context)
     , m_name(name)
     , m_url(url)

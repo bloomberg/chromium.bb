@@ -44,7 +44,7 @@
 namespace blink {
 
 class DirectoryEntry;
-class FileCallback;
+class BlobCallback;
 class FileEntry;
 class FileWriterCallback;
 
@@ -68,7 +68,7 @@ public:
     bool hasPendingActivity() const override;
 
     void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallback*);
-    void createFile(const FileEntry*, FileCallback*, ErrorCallback*);
+    void createFile(const FileEntry*, BlobCallback*, ErrorCallback*);
 
     // Schedule a callback. This should not cross threads (should be called on the same context thread).
     // FIXME: move this to a more generic place.

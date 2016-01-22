@@ -36,8 +36,8 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/fileapi/BlobCallback.h"
 #include "core/fileapi/File.h"
-#include "core/fileapi/FileCallback.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReader.h"
 #include "core/frame/LocalFrame.h"
@@ -440,7 +440,7 @@ private:
     }
 
     bool didGetEntry(Entry*);
-    bool didGetFile(File*);
+    bool didGetFile(Blob*);
     void didRead();
 
     void reportResult(FileError::ErrorCode errorCode, const String* result = 0, const String* charset = 0)
@@ -491,7 +491,7 @@ bool FileContentRequest::didGetEntry(Entry* entry)
         return true;
     }
 
-    FileCallback* successCallback = CallbackDispatcherFactory<FileCallback>::create(this, &FileContentRequest::didGetFile);
+    BlobCallback* successCallback = CallbackDispatcherFactory<BlobCallback>::create(this, &FileContentRequest::didGetFile);
     ErrorCallback* errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileContentRequest::didHitError);
     toFileEntry(entry)->file(successCallback, errorCallback);
 
@@ -501,9 +501,9 @@ bool FileContentRequest::didGetEntry(Entry* entry)
     return true;
 }
 
-bool FileContentRequest::didGetFile(File* file)
+bool FileContentRequest::didGetFile(Blob* file)
 {
-    Blob* blob = file->Blob::slice(m_start, m_end, IGNORE_EXCEPTION);
+    Blob* blob = file->slice(m_start, m_end, IGNORE_EXCEPTION);
     m_reader->setOnload(this);
     m_reader->setOnerror(this);
 

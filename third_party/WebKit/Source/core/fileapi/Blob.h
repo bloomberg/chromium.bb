@@ -65,6 +65,8 @@ public:
         return new Blob(blobDataHandle);
     }
 
+    static Blob* create(const unsigned char* data, size_t bytes, const String& contentType);
+
     ~Blob() override;
 
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }

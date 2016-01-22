@@ -44,7 +44,7 @@ class DirectoryReaderBase;
 class EntriesCallback;
 class EntryCallback;
 class ErrorCallback;
-class FileCallback;
+class BlobCallback;
 class FileMetadata;
 class FileSystemCallback;
 class FileWriterBase;
@@ -151,14 +151,14 @@ private:
 
 class SnapshotFileCallback final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystemBase*, const String& name, const KURL&, FileCallback*, ErrorCallback*, ExecutionContext*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystemBase*, const String& name, const KURL&, BlobCallback*, ErrorCallback*, ExecutionContext*);
     virtual void didCreateSnapshotFile(const FileMetadata&, PassRefPtr<BlobDataHandle> snapshot);
 
 private:
-    SnapshotFileCallback(DOMFileSystemBase*, const String& name, const KURL&, FileCallback*, ErrorCallback*, ExecutionContext*);
+    SnapshotFileCallback(DOMFileSystemBase*, const String& name, const KURL&, BlobCallback*, ErrorCallback*, ExecutionContext*);
     String m_name;
     KURL m_url;
-    Persistent<FileCallback> m_successCallback;
+    Persistent<BlobCallback> m_successCallback;
 };
 
 class VoidCallbacks final : public FileSystemCallbacksBase {

@@ -28,6 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-callback interface FileCallback {
-    void handleEvent(File file);
+#ifndef BlobCallback_h
+#define BlobCallback_h
+
+#include "platform/heap/Handle.h"
+
+namespace blink {
+
+class Blob;
+
+class BlobCallback : public GarbageCollectedFinalized<BlobCallback> {
+public:
+    virtual ~BlobCallback() {}
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void handleEvent(Blob*) = 0;
 };
+
+} // namespace
+
+#endif // BlobCallback_h

@@ -105,6 +105,18 @@ Blob* Blob::create(const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>&
     return new Blob(BlobDataHandle::create(blobData.release(), blobSize));
 }
 
+Blob* Blob::create(const unsigned char* data, size_t bytes, const String& contentType)
+{
+    ASSERT(data);
+
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(contentType);
+    blobData->appendBytes(data, bytes);
+    long long blobSize = blobData->length();
+
+    return new Blob(BlobDataHandle::create(blobData.release(), blobSize));
+}
+
 void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
 {
     ASSERT(size != -1);
