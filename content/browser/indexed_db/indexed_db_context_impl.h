@@ -83,7 +83,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void ConnectionClosed(const GURL& origin_url, IndexedDBConnection* db);
   void TransactionComplete(const GURL& origin_url);
   void DatabaseDeleted(const GURL& origin_url);
-  bool WouldBeOverQuota(const GURL& origin_url, int64_t additional_bytes);
 
   // Will be null in unit tests.
   storage::QuotaManagerProxy* quota_manager_proxy() const {
@@ -134,11 +133,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   int64_t ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
-  void GotUsageAndQuota(const GURL& origin_url,
-                        storage::QuotaStatusCode,
-                        int64_t usage,
-                        int64_t quota);
-  void QueryAvailableQuota(const GURL& origin_url);
   base::Time GetOriginLastModified(const GURL& origin_url);
 
   std::set<GURL>* GetOriginSet();
@@ -161,7 +155,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
-  OriginToSizeMap space_available_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };

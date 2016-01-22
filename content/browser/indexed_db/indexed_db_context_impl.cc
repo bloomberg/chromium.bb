@@ -335,7 +335,6 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   if (s.ok()) {
     RemoveFromOriginSet(origin_url);
     origin_size_map_.erase(origin_url);
-    space_available_map_.erase(origin_url);
   }
 }
 
@@ -436,7 +435,6 @@ void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
   } else {
     EnsureDiskUsageCacheInitialized(origin_url);
   }
-  QueryAvailableQuota(origin_url);
 }
 
 void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
@@ -452,23 +450,11 @@ void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
 void IndexedDBContextImpl::TransactionComplete(const GURL& origin_url) {
   DCHECK(!factory_.get() || factory_->GetConnectionCount(origin_url) > 0);
   QueryDiskAndUpdateQuotaUsage(origin_url);
-  QueryAvailableQuota(origin_url);
 }
 
 void IndexedDBContextImpl::DatabaseDeleted(const GURL& origin_url) {
   AddToOriginSet(origin_url);
   QueryDiskAndUpdateQuotaUsage(origin_url);
-  QueryAvailableQuota(origin_url);
-}
-
-bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
-                                            int64_t additional_bytes) {
-  if (space_available_map_.find(origin_url) == space_available_map_.end()) {
-    // We haven't heard back from the QuotaManager yet, just let it through.
-    return false;
-  }
-  bool over_quota = additional_bytes > space_available_map_[origin_url];
-  return over_quota;
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
@@ -540,30 +526,6 @@ void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(
   }
 }
 
-void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
-                                            storage::QuotaStatusCode status,
-                                            int64_t usage,
-                                            int64_t quota) {
-  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  DCHECK(status == storage::kQuotaStatusOk ||
-         status == storage::kQuotaErrorAbort)
-      << "status was " << status;
-  if (status == storage::kQuotaErrorAbort) {
-    // We seem to no longer care to wait around for the answer.
-    return;
-  }
-  space_available_map_[origin_url] = quota - usage;
-}
-
-void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
-  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  quota_manager_proxy()->GetUsageAndQuota(
-      TaskRunner(),
-      origin_url,
-      storage::kStorageTypeTemporary,
-      base::Bind(&IndexedDBContextImpl::GotUsageAndQuota, this, origin_url));
-}
-
 std::set<GURL>* IndexedDBContextImpl::GetOriginSet() {
   if (!origin_set_) {
     std::vector<GURL> origins;
@@ -576,7 +538,6 @@ std::set<GURL>* IndexedDBContextImpl::GetOriginSet() {
 void IndexedDBContextImpl::ResetCaches() {
   origin_set_.reset();
   origin_size_map_.clear();
-  space_available_map_.clear();
 }
 
 base::SequencedTaskRunner* IndexedDBContextImpl::TaskRunner() const {
