@@ -190,14 +190,9 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {
     return result;
   }
 
-  if (!channel_id_crypto_key_) {
-    // TODO(wtc): use the new error code ERR_CHANNEL_ID_IMPORT_FAILED to be
-    // added in https://codereview.chromium.org/338093012/.
-    return ERR_UNEXPECTED;
-  }
+  DCHECK(channel_id_crypto_key_);
   channel_id_key_.reset(
       new ChannelIDKeyChromium(std::move(channel_id_crypto_key_)));
-
   return result;
 }
 

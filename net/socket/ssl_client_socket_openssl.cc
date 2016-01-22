@@ -1257,13 +1257,9 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
   if (result < 0)
     return result;
 
-  if (!channel_id_key_) {
-    LOG(ERROR) << "Failed to import Channel ID.";
-    return ERR_CHANNEL_ID_IMPORT_FAILED;
-  }
-
   // Hand the key to OpenSSL. Check for error in case OpenSSL rejects the key
   // type.
+  DCHECK(channel_id_key_);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int rv = SSL_set1_tls_channel_id(ssl_, channel_id_key_->key());
   if (!rv) {
