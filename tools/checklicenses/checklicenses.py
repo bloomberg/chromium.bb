@@ -325,12 +325,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # https://bitbucket.org/gutworth/six/issues/129/add-license-headers-to-source-files
-    # MIT license.
-    'third_party/catapult/third_party/six': [
-        'UNKNOWN',
-    ],
-
     'third_party/expat/files/lib': [  # http://crbug.com/98121
         'UNKNOWN',
     ],
