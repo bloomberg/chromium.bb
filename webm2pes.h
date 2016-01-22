@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "mkvparser.hpp"
 #include "mkvreader.hpp"
@@ -51,6 +52,9 @@ struct PesHeaderField {
   // Number of bits to shift value before or'ing.
   const std::uint8_t shift;
 };
+
+// Data is stored in buffers before being written to output files.
+typedef std::vector<std::uint8_t> PacketDataBuffer;
 
 // Storage for PES Optional Header values. Fields written in order using sizes
 // specified.
@@ -112,9 +116,9 @@ struct PesOptionalHeader {
   // Writes |pts_90khz| to |pts| per format described at its declaration above.
   void SetPtsBits(std::int64_t pts_90khz);
 
-  // Writes fields to |file| and returns true. Returns false when write or
+  // Writes fields to |buffer| and returns true. Returns false when write or
   // field value validation fails.
-  bool Write(std::FILE* file, bool write_pts) const;
+  bool Write(bool write_pts, PacketDataBuffer* buffer) const;
 };
 
 // Describes custom 10 byte header that immediately follows the PES Optional
@@ -133,14 +137,13 @@ struct BCMVHeader {
 
   static std::size_t size() { return 10; }
 
-  // Write the BCMV Header into the FILE stream.
-  bool Write(std::FILE* fileptr) const;
+  // Write the BCMV Header into |buffer|.
+  bool Write(PacketDataBuffer* buffer) const;
 };
 
 struct PesHeader {
   const std::uint8_t start_code[4] = {
-      0x00,
-      0x00,
+      0x00, 0x00,
       0x01,   // 0x000001 is the PES packet start code prefix.
       0xE0};  // 0xE0 is the minimum video stream ID.
   std::uint16_t packet_length = 0;  // Number of bytes _after_ this field.
@@ -150,9 +153,16 @@ struct PesHeader {
            6 /* start_code + packet_length */ + packet_length;
   }
 
-  // Writes out the header to |file|. Calls PesOptionalHeader::Write() to write
-  // |optional_header| contents. Returns true when successful, false otherwise.
-  bool Write(std::FILE* file, bool write_pts) const;
+  // Writes out the header to |buffer|. Calls PesOptionalHeader::Write() to
+  // write |optional_header| contents. Returns true when successful, false
+  // otherwise.
+  bool Write(bool write_pts, PacketDataBuffer* buffer) const;
+};
+
+class PacketReceiverInterface {
+ public:
+  virtual ~PacketReceiverInterface() {}
+  virtual bool ReceivePacket(const PacketDataBuffer& packet) = 0;
 };
 
 // Converts the VP9 track of a WebM file to a Packetized Elementary Stream
@@ -165,6 +175,8 @@ class Webm2Pes {
 
   Webm2Pes(const std::string& input_file, const std::string& output_file)
       : input_file_name_(input_file), output_file_name_(output_file) {}
+  Webm2Pes(const std::string& input_file, PacketReceiverInterface* packet_sink)
+      : input_file_name_(input_file), packet_sink_(packet_sink) {}
 
   Webm2Pes() = delete;
   Webm2Pes(const Webm2Pes&) = delete;
@@ -174,6 +186,12 @@ class Webm2Pes {
   // Converts the VPx video stream to a PES file and returns true. Returns false
   // to report failure.
   bool ConvertToFile();
+
+  // Converts the VPx video stream to a sequence of PES packets, and calls the
+  // PacketReceiverInterface::ReceivePacket() once for each PES packet. Returns
+  // only after full conversion or error. Returns true for success, and false
+  // when an error occurs.
+  bool ConvertToPacketReceiver();
 
  private:
   bool InitWebmParser();
@@ -194,9 +212,14 @@ class Webm2Pes {
 
   // Input timecode scale.
   std::int64_t timecode_scale_ = 1000000;
+
+  // Packet sink; when constructed with a PacketReceiverInterface*, packet and
+  // type of packet are sent to |packet_sink_| instead of written to an output
+  // file.
+  PacketReceiverInterface* packet_sink_ = nullptr;
+
+  PacketDataBuffer packet_data_;
 };
-
-
 
 }  // namespace libwebm
 

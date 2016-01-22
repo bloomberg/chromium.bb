@@ -11,6 +11,13 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
 
 set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Turn up the warning levels.
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "/W4 ${CMAKE_CXX_FLAGS}")
+else ()
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
+endif()
+
 # Test configuration flags. Defined here for visibility.
 option(ENABLE_TESTS "Enables tests." OFF)
 set(GTEST_SRC_DIR "${LIBWEBM_SRC_DIR}/../googletest" CACHE PATH
@@ -74,7 +81,17 @@ add_executable(webm2pes
                "${LIBWEBM_SRC_DIR}/webm2pes_main.cc")
 target_link_libraries(webm2pes LINK_PUBLIC webm)
 
-# tests section.
+# webm2ts section.
+add_executable(webm2ts
+               "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
+               "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
+               "${LIBWEBM_SRC_DIR}/vpxpes2ts.cc"
+               "${LIBWEBM_SRC_DIR}/vpxpes2ts.h"
+               "${LIBWEBM_SRC_DIR}/webm2pes.cc"
+               "${LIBWEBM_SRC_DIR}/webm2pes.h"
+               "${LIBWEBM_SRC_DIR}/vpxpes2ts_main.cc")
+target_link_libraries(webm2ts LINK_PUBLIC webm)
+
 if (ENABLE_TESTS)
   add_subdirectory("${GTEST_SRC_DIR}" "${GTEST_BUILD_DIR}")
   include_directories("${GTEST_SRC_DIR}/googletest/include")
@@ -101,3 +118,4 @@ if (ENABLE_TESTS)
                  "${LIBWEBM_SRC_DIR}/testing/webm2pes_tests.cc")
   target_link_libraries(webm2pes_tests LINK_PUBLIC webm gtest)
 endif (ENABLE_TESTS)
+

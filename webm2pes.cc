@@ -106,13 +106,14 @@ void PesOptionalHeader::SetPtsBits(std::int64_t pts_90khz) {
 
 // Writes fields to |file| and returns true. Returns false when write or
 // field value validation fails.
-bool PesOptionalHeader::Write(std::FILE* file, bool write_pts) const {
-  if (file == nullptr) {
+bool PesOptionalHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
+  if (buffer == nullptr) {
     std::fprintf(stderr, "Webm2Pes: nullptr in opt header writer.\n");
     return false;
   }
 
-  std::uint8_t header[9] = {0};
+  const std::size_t kHeaderSize = 9;
+  std::uint8_t header[kHeaderSize] = {0};
   std::uint8_t* byte = header;
 
   if (marker.Check() != true || scrambling.Check() != true ||
@@ -163,11 +164,8 @@ bool PesOptionalHeader::Write(std::FILE* file, bool write_pts) const {
   for (int i = 0; i < num_stuffing_bytes; ++i)
     *++byte = stuffing_byte.bits;
 
-  if (std::fwrite(reinterpret_cast<void*>(header), 1, size_in_bytes(), file) !=
-      size_in_bytes()) {
-    std::fprintf(stderr, "Webm2Pes: unable to write PES opt header to file.\n");
-    return false;
-  }
+  for (int i = 0; i < kHeaderSize; ++i)
+    buffer->push_back(header[i]);
 
   return true;
 }
@@ -176,28 +174,26 @@ bool PesOptionalHeader::Write(std::FILE* file, bool write_pts) const {
 // BCMVHeader methods.
 //
 
-bool BCMVHeader::Write(std::FILE* fileptr) const {
-  if (fileptr == nullptr) {
-    std::fprintf(stderr, "Webm2Pes: nullptr for file in BCMV Write.\n");
+bool BCMVHeader::Write(PacketDataBuffer* buffer) const {
+  if (buffer == nullptr) {
+    std::fprintf(stderr, "Webm2Pes: nullptr for buffer in BCMV Write.\n");
     return false;
   }
-  if (std::fwrite(bcmv, 1, 4, fileptr) != 4) {
-    std::fprintf(stderr, "Webm2Pes: BCMV write failed.\n");
-  }
+  const std::size_t kBcmvSize = 4;
+  for (int i = 0; i < kBcmvSize; ++i)
+    buffer->push_back(bcmv[i]);
+
   const std::size_t kRemainingBytes = 6;
-  const uint8_t buffer[kRemainingBytes] = {
+  const uint8_t bcmv_buffer[kRemainingBytes] = {
       static_cast<std::uint8_t>((length >> 24) & 0xff),
       static_cast<std::uint8_t>((length >> 16) & 0xff),
       static_cast<std::uint8_t>((length >> 8) & 0xff),
       static_cast<std::uint8_t>(length & 0xff),
       0,
       0 /* 2 bytes 0 padding */};
-  for (std::int8_t i = 0; i < kRemainingBytes; ++i) {
-    if (WriteUint8(buffer[i], fileptr) != true) {
-      std::fprintf(stderr, "Webm2Pes: BCMV remainder write failed.\n");
-      return false;
-    }
-  }
+  for (std::int8_t i = 0; i < kRemainingBytes; ++i)
+    buffer->push_back(bcmv_buffer[i]);
+
   return true;
 }
 
@@ -205,34 +201,27 @@ bool BCMVHeader::Write(std::FILE* fileptr) const {
 // PesHeader methods.
 //
 
-// Writes out the header to |file|. Calls PesOptionalHeader::Write() to write
+// Writes out the header to |buffer|. Calls PesOptionalHeader::Write() to write
 // |optional_header| contents. Returns true when successful, false otherwise.
-bool PesHeader::Write(std::FILE* file, bool write_pts) const {
-  if (file == nullptr) {
+bool PesHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
+  if (buffer == nullptr) {
     std::fprintf(stderr, "Webm2Pes: nullptr in header writer.\n");
     return false;
   }
 
   // Write |start_code|.
-  if (std::fwrite(reinterpret_cast<const void*>(start_code), 1, 4, file) != 4) {
-    std::fprintf(stderr, "Webm2Pes: cannot write packet start code.\n");
-    return false;
-  }
+  const std::size_t kStartCodeLength = 4;
+  for (int i = 0; i < kStartCodeLength; ++i)
+    buffer->push_back(start_code[i]);
 
   // Write |packet_length| as big endian.
   std::uint8_t byte = (packet_length >> 8) & 0xff;
-  if (WriteUint8(byte, file) != true) {
-    std::fprintf(stderr, "Webm2Pes: cannot write packet length (byte 0).\n");
-    return false;
-  }
+  buffer->push_back(byte);
   byte = packet_length & 0xff;
-  if (WriteUint8(byte, file) != true) {
-    std::fprintf(stderr, "Webm2Pes: cannot write packet length (byte 1).\n");
-    return false;
-  }
+  buffer->push_back(byte);
 
   // Write the (not really) optional header.
-  if (optional_header.Write(file, write_pts) != true) {
+  if (optional_header.Write(write_pts, buffer) != true) {
     std::fprintf(stderr, "Webm2Pes: PES optional header write failed.");
     return false;
   }
@@ -282,11 +271,77 @@ bool Webm2Pes::ConvertToFile() {
         for (int frame_num = 0; frame_num < frame_count; ++frame_num) {
           const mkvparser::Block::Frame& frame = block->GetFrame(frame_num);
 
+          // Write frame out as PES packet(s), storing them in |packet_data_|.
+          const bool pes_status =
+              WritePesPacket(frame, block->GetTime(cluster));
+          if (pes_status != true) {
+            std::fprintf(stderr, "Webm2Pes: WritePesPacket failed.\n");
+            return false;
+          }
+
+          // Write contents of |packet_data_| to |output_file_|.
+          if (std::fwrite(&packet_data_[0], 1, packet_data_.size(),
+                          output_file_.get()) != packet_data_.size()) {
+            std::fprintf(stderr, "Webm2Pes: packet payload write failed.\n");
+            return false;
+          }
+        }
+      }
+      block_status = cluster->GetNext(block_entry, block_entry);
+      if (block_status < 0) {
+        std::fprintf(stderr, "Webm2Pes: Cannot parse block in %s.\n",
+                     input_file_name_.c_str());
+        return false;
+      }
+    }
+
+    cluster = webm_parser_->GetNext(cluster);
+  }
+
+  return true;
+}
+
+bool Webm2Pes::ConvertToPacketReceiver() {
+  if (input_file_name_.empty() || packet_sink_ == nullptr) {
+    std::fprintf(stderr, "Webm2Pes: input file name empty or null sink.\n");
+    return false;
+  }
+
+  if (InitWebmParser() != true) {
+    std::fprintf(stderr, "Webm2Pes: Cannot initialize WebM parser.\n");
+    return false;
+  }
+
+  // Walk clusters in segment.
+  const mkvparser::Cluster* cluster = webm_parser_->GetFirst();
+  while (cluster != nullptr && cluster->EOS() == false) {
+    const mkvparser::BlockEntry* block_entry = nullptr;
+    std::int64_t block_status = cluster->GetFirst(block_entry);
+    if (block_status < 0) {
+      std::fprintf(stderr, "Webm2Pes: Cannot parse first block in %s.\n",
+                   input_file_name_.c_str());
+      return false;
+    }
+
+    // Walk blocks in cluster.
+    while (block_entry != nullptr && block_entry->EOS() == false) {
+      const mkvparser::Block* block = block_entry->GetBlock();
+      if (block->GetTrackNumber() == video_track_num_) {
+        const int frame_count = block->GetFrameCount();
+
+        // Walk frames in block.
+        for (int frame_num = 0; frame_num < frame_count; ++frame_num) {
+          const mkvparser::Block::Frame& frame = block->GetFrame(frame_num);
+
           // Write frame out as PES packet(s).
           const bool pes_status =
               WritePesPacket(frame, block->GetTime(cluster));
           if (pes_status != true) {
             std::fprintf(stderr, "Webm2Pes: WritePesPacket failed.\n");
+            return false;
+          }
+          if (packet_sink_->ReceivePacket(packet_data_) != true) {
+            std::fprintf(stderr, "Webm2Pes: ReceivePacket failed.\n");
             return false;
           }
         }
@@ -411,29 +466,29 @@ bool Webm2Pes::WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
   const std::int64_t khz90_pts = NanosecondsTo90KhzTicks(nanosecond_pts);
   header.optional_header.SetPtsBits(khz90_pts);
 
+  packet_data_.clear();
+
   bool write_pts = true;
   for (const Range& packet_payload_range : packet_payload_ranges) {
     header.packet_length =
         header.optional_header.size_in_bytes() + packet_payload_range.length;
-    if (header.Write(output_file_.get(), write_pts) != true) {
+    if (header.Write(write_pts, &packet_data_) != true) {
       std::fprintf(stderr, "Webm2Pes: packet header write failed.\n");
       return false;
     }
     write_pts = false;
 
     BCMVHeader bcmv_header(packet_payload_range.length);
-    if (bcmv_header.Write(output_file_.get()) != true) {
+    if (bcmv_header.Write(&packet_data_) != true) {
       std::fprintf(stderr, "Webm2Pes: BCMV write failed.\n");
       return false;
     }
 
-    // Write the payload.
-    if (std::fwrite(frame_data.get() + packet_payload_range.offset, 1,
-                    packet_payload_range.length,
-                    output_file_.get()) != packet_payload_range.length) {
-      std::fprintf(stderr, "Webm2Pes: packet payload write failed.\n");
-      return false;
-    }
+    // Insert the payload at the end of |packet_data_|.
+    const std::uint8_t* payload_start =
+        frame_data.get() + packet_payload_range.offset;
+    packet_data_.insert(packet_data_.end(), payload_start,
+                        payload_start + packet_payload_range.length);
   }
 
   return true;
