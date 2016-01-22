@@ -141,7 +141,7 @@ RenderedPosition RenderedPosition::leftBoundaryOfBidiRun(unsigned char bidiLevel
     do {
         InlineBox* prev = box->prevLeafChildIgnoringLineBreak();
         if (!prev || prev->bidiLevel() < bidiLevelOfRun)
-            return RenderedPosition(&box->layoutObject(), box, box->caretLeftmostOffset());
+            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem()), box, box->caretLeftmostOffset());
         box = prev;
     } while (box);
 
@@ -158,7 +158,7 @@ RenderedPosition RenderedPosition::rightBoundaryOfBidiRun(unsigned char bidiLeve
     do {
         InlineBox* next = box->nextLeafChildIgnoringLineBreak();
         if (!next || next->bidiLevel() < bidiLevelOfRun)
-            return RenderedPosition(&box->layoutObject(), box, box->caretRightmostOffset());
+            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem()), box, box->caretRightmostOffset());
         box = next;
     } while (box);
 
@@ -213,7 +213,7 @@ Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const
     if (atLeftmostOffsetInBox())
         return Position::editingPositionOf(m_layoutObject->node(), m_offset);
 
-    return Position::editingPositionOf(nextLeafChild()->layoutObject().node(), nextLeafChild()->caretLeftmostOffset());
+    return Position::editingPositionOf(nextLeafChild()->lineLayoutItem().node(), nextLeafChild()->caretLeftmostOffset());
 }
 
 Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
@@ -223,7 +223,7 @@ Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
     if (atRightmostOffsetInBox())
         return Position::editingPositionOf(m_layoutObject->node(), m_offset);
 
-    return Position::editingPositionOf(prevLeafChild()->layoutObject().node(), prevLeafChild()->caretRightmostOffset());
+    return Position::editingPositionOf(prevLeafChild()->lineLayoutItem().node(), prevLeafChild()->caretRightmostOffset());
 }
 
 IntRect RenderedPosition::absoluteRect(LayoutUnit* extraWidthToEndOfLine) const
