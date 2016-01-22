@@ -14,9 +14,11 @@
 #include "android_webview/browser/net/aw_request_interceptor.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "android_webview/browser/net/token_binding_manager.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -33,6 +35,7 @@
 #include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -55,6 +58,8 @@ namespace android_webview {
 
 
 namespace {
+
+const base::FilePath::CharType kChannelIDFilename[] = "Origin Bound Certs";
 
 void ApplyCmdlineOverridesToHostResolver(
     net::MappedHostResolver* host_resolver) {
@@ -210,13 +215,29 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
   DCHECK(proxy_config_service_.get());
+  scoped_ptr<net::ChannelIDService> channel_id_service;
+  if (TokenBindingManager::GetInstance()->is_enabled()) {
+    base::FilePath channel_id_path =
+        browser_context->GetPath().Append(kChannelIDFilename);
+    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
+    channel_id_db = new net::SQLiteChannelIDStore(
+        channel_id_path,
+        BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+            BrowserThread::GetBlockingPool()->GetSequenceToken()));
+
+    channel_id_service.reset(new net::ChannelIDService(
+        new net::DefaultChannelIDStore(channel_id_db.get()),
+        base::WorkerPool::GetTaskRunner(true)));
+  }
+
   // Android provides a local HTTP proxy that handles all the proxying.
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
   builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
       std::move(proxy_config_service_), net_log_.get()));
   builder.set_net_log(net_log_.get());
-  builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
+  builder.SetCookieAndChannelIdStores(cookie_store_,
+                                      std::move(channel_id_service));
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
   cache_params.type =

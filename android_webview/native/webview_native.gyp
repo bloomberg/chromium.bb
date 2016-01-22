@@ -112,6 +112,8 @@
         'permission/simple_permission_request.h',
         'state_serializer.cc',
         'state_serializer.h',
+        'token_binding_manager_bridge.cc',
+        'token_binding_manager_bridge.h',
       ],
       'conditions': [
         ['video_hole==1', {
@@ -122,7 +124,7 @@
       ],
     },
     {
-      # GN version:  //android_webview/native:cancellation_signal_android_jar_jni_headers' 
+      # GN version:  //android_webview/native:cancellation_signal_android_jar_jni_headers'
       'target_name': 'cancellation_signal_android_jar_jni_headers',
       'type': 'none',
       'variables': {
@@ -132,7 +134,7 @@
       'includes': [ '../../build/jar_file_jni_generator.gypi' ],
     },
     {
-      # GN version:  //android_webview/native:native_jni 
+      # GN version:  //android_webview/native:native_jni
       'target_name': 'android_webview_native_jni',
       'type': 'none',
       'sources': [
@@ -156,6 +158,7 @@
           '../java/src/org/chromium/android_webview/AwQuotaManagerBridge.java',
           '../java/src/org/chromium/android_webview/AwResource.java',
           '../java/src/org/chromium/android_webview/AwSettings.java',
+          '../java/src/org/chromium/android_webview/AwTokenBindingManager.java',
           '../java/src/org/chromium/android_webview/AwWebContentsDelegate.java',
           '../java/src/org/chromium/android_webview/AwWebResourceResponse.java',
           '../java/src/org/chromium/android_webview/InputStreamUtil.java',
@@ -170,7 +173,7 @@
         'cancellation_signal_android_jar_jni_headers',
       ],
     },
-    # GN version:  //android_webview/native:aw_permission_request_resource' 
+    # GN version:  //android_webview/native:aw_permission_request_resource'
     {
       'target_name': 'android_webview_aw_permission_request_resource',
       'type': 'none',

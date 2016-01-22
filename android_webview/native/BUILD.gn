@@ -109,6 +109,8 @@ source_set("native") {
     "permission/simple_permission_request.h",
     "state_serializer.cc",
     "state_serializer.h",
+    "token_binding_manager_bridge.cc",
+    "token_binding_manager_bridge.h",
   ]
   if (enable_video_hole) {
     deps += [ "//components/external_video_surface:external_video_surface" ]
@@ -139,6 +141,7 @@ generate_jni("native_jni") {
     "../java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "../java/src/org/chromium/android_webview/AwResource.java",
     "../java/src/org/chromium/android_webview/AwSettings.java",
+    "../java/src/org/chromium/android_webview/AwTokenBindingManager.java",
     "../java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
     "../java/src/org/chromium/android_webview/AwWebResourceResponse.java",
     "../java/src/org/chromium/android_webview/InputStreamUtil.java",
