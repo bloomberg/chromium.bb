@@ -38,6 +38,7 @@ public:
     virtual size_t frameCount() = 0;
     virtual int repetitionCount() const = 0;
     virtual float frameDuration() const = 0;
+    virtual void clearCacheExceptFrameRequested(size_t) {};
 
     // Clients can control the behavior of MockImageDecoder::decodedSize() by
     // overriding this method. The default implementation causes
@@ -86,7 +87,11 @@ public:
         return m_client->frameDuration();
     }
 
-    size_t clearCacheExceptFrame(size_t) override { return 0; }
+    size_t clearCacheExceptFrame(size_t clearExceptFrame) override
+    {
+        m_client->clearCacheExceptFrameRequested(clearExceptFrame);
+        return 0;
+    }
 
 private:
     void decodeSize() override { }

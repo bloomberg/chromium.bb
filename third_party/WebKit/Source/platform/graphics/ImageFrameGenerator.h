@@ -116,7 +116,6 @@ private:
     bool m_decodeFailed;
     size_t m_frameCount;
     Vector<bool> m_hasAlpha;
-    Vector<bool> m_frameComplete;
 
     class ExternalMemoryAllocator;
     OwnPtr<ExternalMemoryAllocator> m_externalAllocator;

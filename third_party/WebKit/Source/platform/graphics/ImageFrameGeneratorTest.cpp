@@ -61,6 +61,7 @@ public:
         m_decodeRequestCount = 0;
         m_status = ImageFrame::FrameEmpty;
         m_frameCount = 1;
+        m_requestedClearExceptFrame = kNotFound;
     }
 
     void TearDown() override
@@ -84,6 +85,11 @@ public:
         m_status = m_nextFrameStatus;
         return currentStatus;
     }
+
+    void clearCacheExceptFrameRequested(size_t clearExceptFrame) override
+    {
+        m_requestedClearExceptFrame = clearExceptFrame;
+    };
 
     size_t frameCount() override { return m_frameCount; }
     int repetitionCount() const override { return m_frameCount == 1 ? cAnimationNone:cAnimationLoopOnce; }
@@ -120,6 +126,7 @@ protected:
     ImageFrame::Status m_status;
     ImageFrame::Status m_nextFrameStatus;
     size_t m_frameCount;
+    size_t m_requestedClearExceptFrame;
 };
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecode)
@@ -247,7 +254,7 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha)
     EXPECT_FALSE(m_generator->hasAlpha(0));
 }
 
-TEST_F(ImageFrameGeneratorTest, removeMultiFrameDecoder)
+TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder)
 {
     setFrameCount(3);
     setFrameStatus(ImageFrame::FrameComplete);
@@ -256,19 +263,24 @@ TEST_F(ImageFrameGeneratorTest, removeMultiFrameDecoder)
     m_generator->decodeAndScale(0, imageInfo(), buffer, 100 * 4);
     EXPECT_EQ(1, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
+    EXPECT_EQ(0U, m_requestedClearExceptFrame);
 
     setFrameStatus(ImageFrame::FrameComplete);
 
     m_generator->decodeAndScale(1, imageInfo(), buffer, 100 * 4);
     EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
+    EXPECT_EQ(1U, m_requestedClearExceptFrame);
 
     setFrameStatus(ImageFrame::FrameComplete);
 
-    // Multi frame decoder should be removed.
+    // Decoding the last frame of a multi-frame images should trigger clearing
+    // all the frame data, but not destroying the decoder.  See comments in
+    // ImageFrameGenerator::tryToResumeDecode().
     m_generator->decodeAndScale(2, imageInfo(), buffer, 100 * 4);
     EXPECT_EQ(3, m_decodeRequestCount);
-    EXPECT_EQ(1, m_decodersDestroyed);
+    EXPECT_EQ(0, m_decodersDestroyed);
+    EXPECT_EQ(kNotFound, m_requestedClearExceptFrame);
 }
 
 } // namespace blink

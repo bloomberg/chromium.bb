@@ -263,9 +263,6 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(size_t index, const SkISize& sca
 
     if (!decoder)
         return SkBitmap();
-    if (index >= m_frameComplete.size())
-        m_frameComplete.resize(index + 1);
-    m_frameComplete[index] = complete;
 
     // If we are not resuming decoding that means the decoder is freshly
     // created and we have ownership. If we are resuming decoding then
@@ -283,29 +280,27 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(size_t index, const SkISize& sca
         return SkBitmap();
     }
 
-    // If the image generated is complete then there is no need to keep
-    // the decoder. For multi-frame images, if all frames in the image are
-    // decoded, we remove the decoder.
-    bool removeDecoder;
-
-    if (m_isMultiFrame) {
-        size_t decodedFrameCount = 0;
-        for (Vector<bool>::iterator it = m_frameComplete.begin(); it != m_frameComplete.end(); ++it) {
-            if (*it)
-                decodedFrameCount++;
-        }
-        removeDecoder = m_frameCount && (decodedFrameCount == m_frameCount);
-    } else {
-        removeDecoder = complete;
+    bool removeDecoder = false;
+    if (complete) {
+        // Free as much memory as possible.  For single-frame images, we can
+        // just delete the decoder entirely.  For multi-frame images, we keep
+        // the decoder around in order to preserve decoded information such as
+        // the required previous frame indexes, but if we've reached the last
+        // frame we can at least delete all the cached frames.  (If we were to
+        // do this before reaching the last frame, any subsequent requested
+        // frames which relied on the current frame would trigger extra
+        // re-decoding of all frames in the dependency chain.)
+        if (!m_isMultiFrame)
+            removeDecoder = true;
+        else if (index == m_frameCount - 1)
+            decoder->clearCacheExceptFrame(kNotFound);
     }
 
     if (resumeDecoding) {
-        if (removeDecoder) {
+        if (removeDecoder)
             ImageDecodingStore::instance().removeDecoder(this, decoder);
-            m_frameComplete.clear();
-        } else {
+        else
             ImageDecodingStore::instance().unlockDecoder(this, decoder);
-        }
     } else if (!removeDecoder) {
         ImageDecodingStore::instance().insertDecoder(this, decoderContainer.release());
     }
