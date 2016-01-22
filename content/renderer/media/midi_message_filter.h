@@ -17,7 +17,7 @@
 #include "ipc/message_filter.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/result.h"
-#include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 
 namespace base {
 class SingleThreadTaskRunner;

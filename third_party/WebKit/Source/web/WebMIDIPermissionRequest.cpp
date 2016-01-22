@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebMIDIPermissionRequest.h"
+#include "public/web/modules/webmidi/WebMIDIPermissionRequest.h"
 
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "platform/weborigin/SecurityOrigin.h"

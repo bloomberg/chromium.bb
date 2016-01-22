@@ -31,8 +31,8 @@
 #ifndef MIDIAccessor_h
 #define MIDIAccessor_h
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
+#include "public/platform/modules/webmidi/WebMIDIAccessor.h"
+#include "public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebMIDIAccessor.h"
-#include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 
 namespace content {
 

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/test_runner/web_task.h"
-#include "third_party/WebKit/public/platform/WebMIDIAccessor.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 
 namespace blink {
 class WebMIDIAccessorClient;

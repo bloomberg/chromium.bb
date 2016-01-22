@@ -31,7 +31,7 @@
 #ifndef WebMIDIAccessor_h
 #define WebMIDIAccessor_h
 
-#include "WebString.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 

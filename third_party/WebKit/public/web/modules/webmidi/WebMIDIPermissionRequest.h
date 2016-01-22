@@ -31,8 +31,8 @@
 #ifndef WebMIDIPermissionRequest_h
 #define WebMIDIPermissionRequest_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace blink {
 

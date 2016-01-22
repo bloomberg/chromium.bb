@@ -9,7 +9,7 @@
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_runner.h"
-#include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 
 namespace test_runner {
 

@@ -31,8 +31,8 @@
 #include "web/MIDIClientProxy.h"
 
 #include "modules/webmidi/MIDIAccessInitializer.h"
-#include "public/web/WebMIDIClient.h"
-#include "public/web/WebMIDIPermissionRequest.h"
+#include "public/web/modules/webmidi/WebMIDIClient.h"
+#include "public/web/modules/webmidi/WebMIDIPermissionRequest.h"
 
 namespace blink {
 

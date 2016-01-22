@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "content/common/permission_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/web/WebMIDIClient.h"
+#include "third_party/WebKit/public/web/modules/webmidi/WebMIDIClient.h"
 
 namespace blink {
 class WebMIDIPermissionRequest;
