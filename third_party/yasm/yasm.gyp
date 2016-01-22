@@ -43,8 +43,7 @@
     # yasm executable, and its subprograms.
     'yasm_defines': ['HAVE_CONFIG_H'],
     'yasm_cflags': [
-      '-std=gnu99',
-      '-ansi',
+      '-std=c89',
       '-pedantic',
     ],
 

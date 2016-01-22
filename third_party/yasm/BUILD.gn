@@ -287,7 +287,7 @@ if (current_toolchain == host_toolchain) {
 
     if (!is_win) {
       cflags = [
-        "-ansi",
+        "-std=c89",
         "-pedantic",
       ]
     }
