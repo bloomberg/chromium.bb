@@ -80,6 +80,9 @@ protected:
     LayoutSize intrinsicSize() const final { return m_intrinsicSize; }
     void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
 
+    void computePositionedLogicalWidth(LogicalExtentComputedValues&) const override;
+    void computePositionedLogicalHeight(LogicalExtentComputedValues&) const override;
+
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
 
     virtual LayoutUnit intrinsicContentLogicalHeight() const { return intrinsicLogicalHeight(); }
