@@ -358,7 +358,8 @@ int main(int argc, const char* argv[]) {
   Replacements replacements;
 
   auto in_blink_namespace =
-      decl(hasAncestor(namespaceDecl(anyOf(hasName("blink"), hasName("WTF")))));
+      decl(hasAncestor(namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
+                                     hasParent(translationUnitDecl()))));
 
   // Field and variable declarations ========
   // Given
