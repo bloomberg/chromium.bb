@@ -342,7 +342,7 @@ def UpdateClang(args):
 
   if not args.force_local_build:
     cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' or sys.platform == 'cygwin':
       cds_full_url = CDS_URL + '/Win/' + cds_file
     elif sys.platform == 'darwin':
       cds_full_url = CDS_URL + '/Mac/' + cds_file
