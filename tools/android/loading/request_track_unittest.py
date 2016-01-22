@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import json
 import unittest
 
@@ -257,6 +258,21 @@ class RequestTrackTestCase(unittest.TestCase):
         RequestTrackTestCase._DATA_RECEIVED_2['params']['encodedDataLength'],
         r.data_chunks[1][1])
 
+  def testDuplicatedResponseReceived(self):
+    msg1 = RequestTrackTestCase._REQUEST_WILL_BE_SENT
+    msg2 = copy.deepcopy(RequestTrackTestCase._RESPONSE_RECEIVED)
+    msg2_other_timestamp = copy.deepcopy(msg2)
+    msg2_other_timestamp['params']['timestamp'] += 12
+    msg2_different = copy.deepcopy(msg2)
+    msg2_different['params']['response']['encodedDataLength'] += 1
+    self.request_track.Handle('Network.requestWillBeSent', msg1)
+    self.request_track.Handle('Network.responseReceived', msg2)
+    # Should not raise an AssertionError.
+    self.request_track.Handle('Network.responseReceived', msg2)
+    self.assertEquals(1, self.request_track.duplicates_count)
+    with self.assertRaises(AssertionError):
+      self.request_track.Handle('Network.responseReceived', msg2_different)
+
   def testCanSerialize(self):
     self._ValidSequence(self.request_track)
     json_dict = self.request_track.ToJsonDict()
@@ -264,6 +280,7 @@ class RequestTrackTestCase(unittest.TestCase):
 
   def testCanDeserialize(self):
     self._ValidSequence(self.request_track)
+    self.request_track.duplicates_count = 142
     json_dict = self.request_track.ToJsonDict()
     request_track = RequestTrack.FromJsonDict(json_dict)
     self.assertEquals(self.request_track, request_track)

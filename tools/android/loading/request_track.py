@@ -176,6 +176,10 @@ class RequestTrack(devtools_monitor.Track):
   _STATUS_DATA = 2
   _STATUS_FINISHED = 3
   _STATUS_FAILED = 4
+  # Serialization KEYS
+  _EVENTS_KEY = 'events'
+  _METADATA_KEY = 'metadata'
+  _DUPLICATES_KEY = 'duplicates_count'
   def __init__(self, connection):
     super(RequestTrack, self).__init__(connection)
     self._connection = connection
@@ -185,6 +189,10 @@ class RequestTrack(devtools_monitor.Track):
     if connection:  # Optional for testing.
       for method in RequestTrack._METHOD_TO_HANDLER:
         self._connection.RegisterListener(method, self)
+    # responseReceived message are sometimes duplicated. Records the message to
+    # detect this.
+    self._request_id_to_response_received = {}
+    self.duplicates_count = 0
 
   def Handle(self, method, msg):
     assert method in RequestTrack._METHOD_TO_HANDLER
@@ -201,15 +209,19 @@ class RequestTrack(devtools_monitor.Track):
   def ToJsonDict(self):
     if self._requests_in_flight:
       logging.warning('Requests in flight, will be ignored in the dump')
-    return {'events': [request.ToJsonDict() for request in self._requests]}
+    return {self._EVENTS_KEY: [
+        request.ToJsonDict() for request in self._requests],
+            self._METADATA_KEY: {self._DUPLICATES_KEY: self.duplicates_count}}
 
   @classmethod
   def FromJsonDict(cls, json_dict):
-    assert 'events' in json_dict
+    assert cls._EVENTS_KEY in json_dict
+    assert cls._METADATA_KEY in json_dict
     result = RequestTrack(None)
     requests = [Request.FromJsonDict(request)
-                for request in json_dict['events']]
+                for request in json_dict[cls._EVENTS_KEY]]
     result._requests = requests
+    result.duplicates_count = json_dict[cls._METADATA_KEY][cls._DUPLICATES_KEY]
     return result
 
   def _RequestWillBeSent(self, request_id, params):
@@ -260,8 +272,16 @@ class RequestTrack(devtools_monitor.Track):
   def _ResponseReceived(self, request_id, params):
     assert request_id in self._requests_in_flight
     (r, status) = self._requests_in_flight[request_id]
+    if status == RequestTrack._STATUS_RESPONSE:
+      # Duplicated messages (apart from the timestamp) are OK.
+      old_params = self._request_id_to_response_received[request_id]
+      params_copy = copy.deepcopy(params)
+      params_copy['timestamp'] = None
+      old_params['timestamp'] = None
+      assert params_copy == old_params
+      self.duplicates_count += 1
+      return
     assert status == RequestTrack._STATUS_SENT
-    self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_RESPONSE)
     assert r.frame_id == params['frameId']
     assert r.timestamp <= params['timestamp']
     if r.resource_type == 'Other':
@@ -286,6 +306,7 @@ class RequestTrack(devtools_monitor.Track):
       timing_dict = {'requestTime': r.timestamp}
     r.timing = TimingFromDict(timing_dict)
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_RESPONSE)
+    self._request_id_to_response_received[request_id] = params
 
   def _DataReceived(self, request_id, params):
     (r, status) = self._requests_in_flight[request_id]
