@@ -804,3 +804,22 @@ system call NtGdiDeleteObjectApp
 GDI32.dll!...
 SHELL32.dll!...
 ui_base.dll!drag_utils::SetDragImageOnDataObject
+
+HANDLE LEAK
+name=bug_580636_a
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+...
+*!ChildProcessHostMsg_AllocatedSharedBitmap::ChildProcessHostMsg_AllocatedSharedBitmap
+*!content::ChildSharedBitmapManager::AllocateSharedMemoryBitmap
+
+HANDLE LEAK
+name=bug_580636_b
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+...
+...
+content.dll!content::HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory
+content.dll!content::RenderMessageFilter::AllocateLockedDiscardableSharedMemoryOnFileThread
+
+
