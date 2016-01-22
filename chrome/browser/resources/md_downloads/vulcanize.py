@@ -66,8 +66,10 @@ def main():
         '<include src="', '<include src="../../../../ui/webui/resources/js/'))
 
   try:
-    _run_cmd(['crisper', '--source', tmp.name, '--html', _HTML_OUT_PATH,
-                                               '--js', _JS_OUT_PATH])
+    _run_cmd(['crisper', '--source', tmp.name,
+                         '--script-in-head', 'false',
+                         '--html', _HTML_OUT_PATH,
+                         '--js', _JS_OUT_PATH])
   finally:
     os.remove(tmp.name)
 

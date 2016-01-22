@@ -11028,6 +11028,15 @@ Polymer({
     };
 
     /**
+     * KeyboardEvent.key is mostly represented by printable character made by
+     * the keyboard, with unprintable keys labeled nicely.
+     *
+     * However, on OS X, Alt+char can make a Unicode character that follows an
+     * Apple-specific mapping. In this case, we fall back to .keyCode.
+     */
+    var KEY_CHAR = /[a-z0-9*]/;
+
+    /**
      * Matches a keyIdentifier string.
      */
     var IDENT_CHAR = /U\+/;
@@ -11043,14 +11052,22 @@ Polymer({
      */
     var SPACE_KEY = /^space(bar)?/;
 
-    function transformKey(key) {
+    /**
+     * Transforms the key.
+     * @param {string} key The KeyBoardEvent.key
+     * @param {Boolean} [noSpecialChars] Limits the transformation to
+     * alpha-numeric characters.
+     */
+    function transformKey(key, noSpecialChars) {
       var validKey = '';
       if (key) {
         var lKey = key.toLowerCase();
         if (lKey === ' ' || SPACE_KEY.test(lKey)) {
           validKey = 'space';
         } else if (lKey.length == 1) {
-          validKey = lKey;
+          if (!noSpecialChars || KEY_CHAR.test(lKey)) {
+            validKey = lKey;
+          }
         } else if (ARROW_KEY.test(lKey)) {
           validKey = lKey.replace('arrow', '');
         } else if (lKey == 'multiply') {
@@ -11101,17 +11118,29 @@ Polymer({
       return validKey;
     }
 
-    function normalizedKeyForEvent(keyEvent) {
-      // fall back from .key, to .keyIdentifier, to .keyCode, and then to
-      // .detail.key to support artificial keyboard events
-      return transformKey(keyEvent.key) ||
+    /**
+      * Calculates the normalized key for a KeyboardEvent.
+      * @param {KeyboardEvent} keyEvent
+      * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key
+      * transformation to alpha-numeric chars. This is useful with key
+      * combinations like shift + 2, which on FF for MacOS produces
+      * keyEvent.key = @
+      * To get 2 returned, set noSpecialChars = true
+      * To get @ returned, set noSpecialChars = false
+     */
+    function normalizedKeyForEvent(keyEvent, noSpecialChars) {
+      // Fall back from .key, to .keyIdentifier, to .keyCode, and then to
+      // .detail.key to support artificial keyboard events.
+      return transformKey(keyEvent.key, noSpecialChars) ||
         transformKeyIdentifier(keyEvent.keyIdentifier) ||
         transformKeyCode(keyEvent.keyCode) ||
-        transformKey(keyEvent.detail.key) || '';
+        transformKey(keyEvent.detail.key, noSpecialChars) || '';
     }
 
-    function keyComboMatchesEvent(keyCombo, event, eventKey) {
-      return eventKey === keyCombo.key &&
+    function keyComboMatchesEvent(keyCombo, event) {
+      // For combos with modifiers we support only alpha-numeric keys
+      var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);
+      return keyEvent === keyCombo.key &&
         (!keyCombo.hasModifiers || (
           !!event.shiftKey === !!keyCombo.shiftKey &&
           !!event.ctrlKey === !!keyCombo.ctrlKey &&
@@ -11248,9 +11277,8 @@ Polymer({
 
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
-        var eventKey = normalizedKeyForEvent(event);
         for (var i = 0; i < keyCombos.length; ++i) {
-          if (keyComboMatchesEvent(keyCombos[i], event, eventKey)) {
+          if (keyComboMatchesEvent(keyCombos[i], event)) {
             return true;
           }
         }
@@ -11350,11 +11378,10 @@ Polymer({
           return;
         }
 
-        var eventKey = normalizedKeyForEvent(event);
         for (var i = 0; i < keyBindings.length; i++) {
           var keyCombo = keyBindings[i][0];
           var handlerName = keyBindings[i][1];
-          if (keyComboMatchesEvent(keyCombo, event, eventKey)) {
+          if (keyComboMatchesEvent(keyCombo, event)) {
             this._triggerKeyHandler(keyCombo, handlerName, event);
             // exit the loop if eventDefault was prevented
             if (event.defaultPrevented) {
@@ -12564,7 +12591,7 @@ Polymer({
 
     _calculateElevation: function() {
       if (!this.raised) {
-        this.elevation = 0;
+        this._setElevation(0);
       } else {
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
@@ -12677,7 +12704,6 @@ Polymer({
 
 };
 Polymer({
-
     is: 'paper-progress',
 
     behaviors: [
@@ -12685,7 +12711,6 @@ Polymer({
     ],
 
     properties: {
-
       /**
        * The number that represents the current secondary progress.
        */
@@ -12771,7 +12796,6 @@ Polymer({
     _hideSecondaryProgress: function(secondaryRatio) {
       return secondaryRatio === 0;
     }
-
   });
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -13119,8 +13143,8 @@ cr.define('downloads', function() {
 
   /** @polymerBehavior */
   Polymer.PaperItemBehavior = [
-    Polymer.IronControlState,
     Polymer.IronButtonState,
+    Polymer.IronControlState,
     Polymer.PaperItemBehaviorImpl
   ];
 Polymer({
@@ -14492,7 +14516,6 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     listeners: {
-      'tap': '_onClick',
       'iron-resize': '_onIronResize'
     },
 
@@ -14514,6 +14537,10 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     ready: function() {
       this._ensureSetup();
+    },
+
+    attached: function() {
+      // Call _openedChanged here so that position can be computed correctly.
       if (this._callOpenedWhenReady) {
         this._openedChanged();
       }
@@ -14745,20 +14772,10 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _onCaptureClick: function(event) {
-      // attempt to close asynchronously and prevent the close of a tap event is immediately heard
-      // on target. This is because in shadow dom due to event retargetting event.target is not
-      // useful.
-      if (!this.noCancelOnOutsideClick && (this._manager.currentOverlay() == this)) {
-        this._cancelJob = this.async(function() {
-          this.cancel();
-        }, 10);
-      }
-    },
-
-    _onClick: function(event) {
-      if (this._cancelJob) {
-        this.cancelAsync(this._cancelJob);
-        this._cancelJob = null;
+      if (!this.noCancelOnOutsideClick &&
+          this._manager.currentOverlay() === this &&
+          Polymer.dom(event).path.indexOf(this) === -1) {
+        this.cancel();
       }
     },
 
@@ -14767,6 +14784,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (!this.noCancelOnEscKey && (event.keyCode === ESC)) {
         this.cancel();
         event.stopPropagation();
+        event.stopImmediatePropagation();
       }
     },
 
@@ -15020,7 +15038,7 @@ Polymer({
      * or a map of animation type to array of configuration objects.
      */
     getAnimationConfig: function(type) {
-      var map = [];
+      var map = {};
       var allConfigs = [];
       this._getAnimationConfigRecursive(type, map, allConfigs);
       // append the configurations saved in the map to the array
@@ -15164,6 +15182,10 @@ Polymer({
        */
       elementIsScrollLocked: function(element) {
         var currentLockingElement = this.currentLockingElement;
+
+        if (currentLockingElement === undefined)
+          return false;
+
         var scrollLocked;
 
         if (this._hasCachedLockedElement(element)) {
@@ -15378,8 +15400,17 @@ Polymer({
 
           /**
            * A pixel value that will be added to the position calculated for the
-           * given `horizontalAlign`. Use a negative value to offset to the
-           * left, or a positive value to offset to the right.
+           * given `horizontalAlign`, in the direction of alignment. You can think
+           * of it as increasing or decreasing the distance to the side of the
+           * screen given by `horizontalAlign`.
+           *
+           * If `horizontalAlign` is "left", this offset will increase or decrease
+           * the distance to the left side of the screen: a negative offset will
+           * move the dropdown to the left; a positive one, to the right.
+           *
+           * Conversely if `horizontalAlign` is "right", this offset will increase
+           * or decrease the distance to the right side of the screen: a negative
+           * offset will move the dropdown to the right; a positive one, to the left.
            */
           horizontalOffset: {
             type: Number,
@@ -15389,8 +15420,17 @@ Polymer({
 
           /**
            * A pixel value that will be added to the position calculated for the
-           * given `verticalAlign`. Use a negative value to offset towards the
-           * top, or a positive value to offset towards the bottom.
+           * given `verticalAlign`, in the direction of alignment. You can think
+           * of it as increasing or decreasing the distance to the side of the
+           * screen given by `verticalAlign`.
+           *
+           * If `verticalAlign` is "top", this offset will increase or decrease
+           * the distance to the top side of the screen: a negative offset will
+           * move the dropdown upwards; a positive one, downwards.
+           *
+           * Conversely if `verticalAlign` is "bottom", this offset will increase
+           * or decrease the distance to the bottom side of the screen: a negative
+           * offset will move the dropdown downwards; a positive one, upwards.
            */
           verticalOffset: {
             type: Number,
@@ -15490,6 +15530,13 @@ Polymer({
         },
 
         /**
+         * Whether the text direction is RTL
+         */
+        _isRTL: function() {
+          return window.getComputedStyle(this).direction == 'rtl';
+        },
+
+        /**
          * The element that should be used to position the dropdown when
          * it opens, if no position target is configured.
          */
@@ -15520,7 +15567,10 @@ Polymer({
         get _horizontalAlignTargetValue() {
           var target;
 
-          if (this.horizontalAlign === 'right') {
+          // In RTL, the direction flips, so what is "right" in LTR becomes "left".
+          var isRTL = this._isRTL();
+          if ((!isRTL && this.horizontalAlign === 'right') ||
+              (isRTL && this.horizontalAlign === 'left')) {
             target = document.documentElement.clientWidth - this._positionRect.right;
           } else {
             target = this._positionRect.left;
@@ -15546,6 +15596,18 @@ Polymer({
           target += this.verticalOffset;
 
           return Math.max(target, 0);
+        },
+
+        /**
+         * The horizontal align value, accounting for the RTL/LTR text direction.
+         */
+        get _localeHorizontalAlign() {
+          // In RTL, "left" becomes "right".
+          if (this._isRTL()) {
+            return this.horizontalAlign === 'right' ? 'left' : 'right';
+          } else {
+            return this.horizontalAlign;
+          }
         },
 
         /**
@@ -15696,7 +15758,7 @@ Polymer({
             return;
           }
 
-          this.style[this.horizontalAlign] =
+          this.style[this._localeHorizontalAlign] =
             this._horizontalAlignTargetValue + 'px';
 
           this.style[this.verticalAlign] =
@@ -16329,15 +16391,17 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       /**
        * Set to true to prevent the user from entering invalid input. The new input characters are
-       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
-       * set, or the `type` attribute (only supported for `type=number`).
+       * matched with `allowedPattern` if it is set, otherwise it will use the `type` attribute (only
+       * supported for `type=number`).
        */
       preventInvalidInput: {
         type: Boolean
       },
 
       /**
-       * Regular expression to match valid input characters.
+       * Regular expression expressing a set of characters to enforce the validity of input characters.
+       * The recommended value should follow this format: `[a-ZA-Z0-9.+-!;:]` that list the characters 
+       * allowed as input.
        */
       allowedPattern: {
         type: String,
@@ -16365,8 +16429,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       var pattern;
       if (this.allowedPattern) {
         pattern = new RegExp(this.allowedPattern);
-      } else if (this.pattern) {
-        pattern = new RegExp(this.pattern);
       } else {
         switch (this.type) {
           case 'number':
@@ -16386,7 +16448,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      */
     _bindValueChanged: function() {
       if (this.value !== this.bindValue) {
-        this.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+        this.value = !(this.bindValue || this.bindValue === 0 || this.bindValue === false) ? '' : this.bindValue;
       }
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -16495,8 +16557,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       if (this.hasValidator()) {
         valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
       } else {
-        this.invalid = !this.validity.valid;
-        valid = this.validity.valid;
+        valid = this.checkValidity();
+        this.invalid = !valid;
       }
       this.fire('iron-input-validate');
       return valid;
