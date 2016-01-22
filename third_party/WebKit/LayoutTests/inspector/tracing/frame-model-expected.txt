@@ -2,36 +2,38 @@ Test the frames are correctly built based on trace events
 
 Test: main thread only
 {
-    cpuTime : 4.001
-    duration : 16
-    endTime : 1016.001
+    cpuTime : 11.998
+    duration : 23
+    endTime : 1027.002
     idle : false
-    startTime : 1000.001
+    startTime : 1004.002
     timeByCategory : {
-        other : 0.004
-        scripting : 3.997
-    }
-}
-{
-    cpuTime : 12.994
-    duration : 16
-    endTime : 1032.001
-    idle : false
-    startTime : 1016.001
-    timeByCategory : {
-        other : 3.998
+        other : 2.003
+        painting : 0.999
         rendering : 5.999
         scripting : 2.997
     }
 }
 {
     cpuTime : 1.999
-    duration : 16
-    endTime : 1048.001
+    duration : 5.002
+    endTime : 1032.004
     idle : false
-    startTime : 1032.001
+    startTime : 1027.002
     timeByCategory : {
-        other : 1.999
+        other : 1
+        painting : 0.999
+    }
+}
+{
+    cpuTime : 1.999
+    duration : 16
+    endTime : 1048.004
+    idle : false
+    startTime : 1032.004
+    timeByCategory : {
+        other : 1
+        painting : 0.999
     }
 }
 Test: impl-side only
@@ -135,15 +137,16 @@ Test: impl-side with interleaving commits
 }
 Test: pre-frame time accounting
 {
-    cpuTime : 2.999
+    cpuTime : 32.998
     duration : 3.001
     endTime : 1035.001
     idle : false
     startTime : 1032
     timeByCategory : {
-        other : 1.601
+        other : 2.603
         painting : 0.598
         rendering : 0.8
+        scripting : 28.997
     }
 }
 {

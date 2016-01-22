@@ -35,21 +35,33 @@ function test()
 
     var testData = {
         "main thread only": [
-            {"name": "Program", "ts": 1000000, args: {}, "dur": 3999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "Program", "ts": 1000000, args: {}, "dur": 4999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "BeginMainThreadFrame", "ts": 1000001, args: {}, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "FunctionCall", "ts": 1000002, args: {}, "dur": 3997, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "CompositeLayers", "ts": 1004000, args: { "layerTreeId": 17 }, "dur": 999, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "ActivateLayerTree", "ts": 1004001, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "DrawFrame", "ts": 1004002, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
 
             {"name": "Program", "ts": 1016000, args: {}, "dur": 10999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "BeginMainThreadFrame", "ts": 1016001, args: {}, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "FunctionCall", "ts": 1016002, args: {}, "dur": 2997, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "StyleRecalculate", "ts": 1019000, args: {}, "dur": 1999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "Layout", "ts": 1021000, args: { "beginData": { "frame": 0x12345678 }, "endData": { "rootNode": 1} }, "dur": 5999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "CompositeLayers", "ts": 1027000, args: { "layerTreeId": 17 }, "dur": 999, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "ActivateLayerTree", "ts": 1027001, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "DrawFrame", "ts": 1027002, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
 
             {"name": "Program", "ts": 1032000, args: {}, "dur": 1999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "BeginMainThreadFrame", "ts": 1032001, args: {}, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "CompositeLayers", "ts": 1032002, args: { "layerTreeId": 17 }, "dur": 999, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "ActivateLayerTree", "ts": 1032003, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "DrawFrame", "ts": 1032004, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
 
             {"name": "Program", "ts": 1048000, args: {}, "dur": 1999, "ph": "X", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
             {"name": "BeginMainThreadFrame", "ts": 1048001, args: {}, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "CompositeLayers", "ts": 1048002, args: { "layerTreeId": 17 }, "dur": 999, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "ActivateLayerTree", "ts": 1048003, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
+            {"name": "DrawFrame", "ts": 1048004, args: { "layerTreeId": 17 }, "ph": "I", "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
         ],
         "impl-side only": [
             {"name": "BeginFrame", "ts": 1000000, args: { "layerTreeId": 17 }, "ph": "I", "tid": implThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline" },
