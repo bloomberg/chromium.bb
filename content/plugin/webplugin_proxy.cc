@@ -543,13 +543,6 @@ void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
   Send(new PluginHostMsg_URLRedirectResponse(route_id_, allow, resource_id));
 }
 
-bool WebPluginProxy::CheckIfRunInsecureContent(const GURL& url) {
-  bool result = true;
-  Send(new PluginHostMsg_CheckIfRunInsecureContent(
-      route_id_, url, &result));
-  return result;
-}
-
 #if defined(OS_WIN) && !defined(USE_AURA)
 void WebPluginProxy::UpdateIMEStatus() {
   // Retrieve the IME status from a plugin and send it to a renderer process

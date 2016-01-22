@@ -250,12 +250,6 @@ void WebRemoteFrameImpl::collectGarbage()
     ASSERT_NOT_REACHED();
 }
 
-bool WebRemoteFrameImpl::checkIfRunInsecureContent(const WebURL&) const
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 v8::Local<v8::Value> WebRemoteFrameImpl::executeScriptAndReturnValue(
     const WebScriptSource&)
 {

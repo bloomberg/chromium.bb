@@ -763,13 +763,6 @@ void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
   }
 }
 
-bool WebPluginImpl::CheckIfRunInsecureContent(const GURL& url) {
-  if (!webframe_)
-    return true;
-
-  return webframe_->checkIfRunInsecureContent(url);
-}
-
 #if defined(OS_MACOSX)
 WebPluginAcceleratedSurface* WebPluginImpl::GetAcceleratedSurface(
     gfx::GpuPreference gpu_preference) {
@@ -858,17 +851,6 @@ void WebPluginImpl::willFollowRedirect(WebURLLoader* loader,
   // until kDirectNPAPIRequests is the default and we can remove this old path.
   WebPluginImpl::ClientInfo* client_info = GetClientInfoFromLoader(loader);
   if (client_info) {
-    // Currently this check is just to catch an https -> http redirect when
-    // loading the main plugin src URL. Longer term, we could investigate
-    // firing mixed diplay or scripting issues for subresource loads
-    // initiated by plugins.
-    if (client_info->is_plugin_src_load &&
-        webframe_ &&
-        !webframe_->checkIfRunInsecureContent(new_request.url())) {
-      loader->cancel();
-      client_info->client->DidFail(client_info->id);
-      return;
-    }
     if (net::HttpResponseHeaders::IsRedirectResponseCode(
             response.httpStatusCode())) {
       // If the plugin does not participate in url redirect notifications then

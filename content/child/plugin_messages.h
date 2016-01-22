@@ -238,10 +238,6 @@ IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
                     bool /* allow */,
                     int  /* resource_id */)
 
-IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_CheckIfRunInsecureContent,
-                           GURL /* url */,
-                           bool /* result */)
-
 #if defined(OS_WIN)
 // The modal_loop_pump_messages_event parameter is an event handle which is
 // passed in for windowless plugins and is used to indicate if messages

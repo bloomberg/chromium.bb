@@ -151,7 +151,6 @@ class WebPluginDelegateProxy
   void OnDidStopLoading();
   void OnDeferResourceLoading(unsigned long resource_id, bool defer);
   void OnURLRedirectResponse(bool allow, int resource_id);
-  void OnCheckIfRunInsecureContent(const GURL& url, bool* result);
 #if defined(OS_MACOSX)
   void OnFocusChanged(bool focused);
   void OnStartIme();

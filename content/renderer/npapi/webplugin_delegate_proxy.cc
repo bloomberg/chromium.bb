@@ -388,8 +388,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnDeferResourceLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_URLRedirectResponse,
                         OnURLRedirectResponse)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_CheckIfRunInsecureContent,
-                        OnCheckIfRunInsecureContent)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessData, OnSetWindowlessData)
     IPC_MESSAGE_HANDLER(PluginHostMsg_NotifyIMEStatus, OnNotifyIMEStatus)
@@ -1078,11 +1076,6 @@ void WebPluginDelegateProxy::OnURLRedirectResponse(bool allow,
     return;
 
   plugin_->URLRedirectResponse(allow, resource_id);
-}
-
-void WebPluginDelegateProxy::OnCheckIfRunInsecureContent(const GURL& url,
-                                                         bool* result) {
-  *result = plugin_->CheckIfRunInsecureContent(url);
 }
 
 }  // namespace content

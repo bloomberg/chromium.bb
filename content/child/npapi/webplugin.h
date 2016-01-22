@@ -94,10 +94,6 @@ class WebPlugin {
   // HTTP URL redirect notifications.
   virtual void URLRedirectResponse(bool allow, int resource_id) = 0;
 
-  // Returns true if the new url is a secure transition. This is to catch a
-  // plugin src url transitioning from https to http.
-  virtual bool CheckIfRunInsecureContent(const GURL& url) = 0;
-
 #if defined(OS_WIN)
   // |pump_messages_event| is a event handle which is used in NPP_HandleEvent
   // calls to pump messages if the plugin enters a modal loop.

@@ -81,7 +81,6 @@ class WebPluginProxy : public WebPlugin,
   bool IsOffTheRecord() override;
   void ResourceClientDeleted(WebPluginResourceClient* resource_client) override;
   void URLRedirectResponse(bool allow, int resource_id) override;
-  bool CheckIfRunInsecureContent(const GURL& url) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window) override;
