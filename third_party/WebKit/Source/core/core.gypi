@@ -3907,6 +3907,7 @@
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentStatisticsCollectorTest.cpp',
             'dom/DocumentTest.cpp',
+            'dom/ElementTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
             'dom/NodeTest.cpp',
             'dom/NthIndexCacheTest.cpp',
