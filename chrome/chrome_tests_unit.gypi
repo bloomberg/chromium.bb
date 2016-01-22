@@ -1649,7 +1649,7 @@
       'browser/ui/app_list/arc/arc_app_unittest.cc',
     ],
     'chrome_unit_tests_arc_settings_bridge_sources': [
-      'browser/chromeos/arc/arc_settings_bridge_unittest.cc',
+      'browser/chromeos/arc/settings_bridge_unittest.cc',
     ],
     # Sources for Offline pages. For now only for Android.
     'chrome_unit_tests_offline_pages_sources': [

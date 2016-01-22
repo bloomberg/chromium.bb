@@ -15,5 +15,14 @@ interface IntentHelperInstance {
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
 
-  // TODO(yusukes): Merge settings.mojom into intent_helper.mojom.
+  // Send an Android broadcast message to the Android package and class
+  // specified.  Data can be sent as extras by including a JSON map string which
+  // will be automatically converted to a bundle accessible by the receiver.
+  //
+  // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
+  // added to the whitelist in ArcBridgeService.java in the Android source.
+  [MinVersion=1] SendBroadcast@1(string action,
+                                 string package,
+                                 string cls,
+                                 string extras);
 };

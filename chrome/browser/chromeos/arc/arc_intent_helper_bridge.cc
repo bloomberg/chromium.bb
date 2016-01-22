@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_intent_helper_bridge.h"
 
+#include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,6 +28,11 @@ void ArcIntentHelperBridge::OnIntentHelperInstanceReady() {
   IntentHelperHostPtr host;
   binding_.Bind(mojo::GetProxy(&host));
   arc_bridge_service()->intent_helper_instance()->Init(std::move(host));
+  settings_bridge_.reset(new SettingsBridge(this));
+}
+
+void ArcIntentHelperBridge::OnIntentHelperInstanceClosed() {
+  settings_bridge_.reset();
 }
 
 void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
@@ -43,6 +49,25 @@ void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
   // browser will be shown on the active desktop, we ensure the visibility.
   multi_user_util::MoveWindowToCurrentDesktop(
       displayer.browser()->window()->GetNativeWindow());
+}
+
+void ArcIntentHelperBridge::OnBroadcastNeeded(
+    const std::string& action,
+    const base::DictionaryValue& extras) {
+  if (arc_bridge_service()->state() != ArcBridgeService::State::READY) {
+    LOG(ERROR) << "Bridge service is not ready.";
+    return;
+  }
+
+  std::string extras_json;
+  bool write_success = base::JSONWriter::Write(extras, &extras_json);
+  DCHECK(write_success);
+
+  if (arc_bridge_service()->intent_helper_version() >= 1) {
+    arc_bridge_service()->intent_helper_instance()->SendBroadcast(
+        action, "org.chromium.arc.intent_helper",
+        "org.chromium.arc.intent_helper.SettingsReceiver", extras_json);
+  }
 }
 
 }  // namespace arc

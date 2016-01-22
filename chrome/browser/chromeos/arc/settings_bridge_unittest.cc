@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/arc_settings_bridge.h"
+#include "chrome/browser/chromeos/arc/settings_bridge.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -10,7 +10,7 @@ namespace arc {
 
 namespace fontsizes {
 
-TEST(ArcSettingsBridgeTest, FontSizeConvertChromeToAndroid) {
+TEST(SettingsBridgeTest, FontSizeConvertChromeToAndroid) {
   // Does not return a value smaller than Small.
   EXPECT_DOUBLE_EQ(kAndroidFontScaleSmall,
                    ConvertFontSizeChromeToAndroid(0, 0, 0));

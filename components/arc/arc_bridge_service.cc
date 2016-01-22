@@ -69,8 +69,6 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnPowerInstanceReady();
   if (process_instance())
     observer->OnProcessInstanceReady();
-  if (settings_instance())
-    observer->OnSettingsInstanceReady();
   if (video_instance())
     observer->OnVideoInstanceReady();
 }
@@ -304,27 +302,7 @@ void ArcBridgeService::CloseProcessChannel() {
 
 void ArcBridgeService::OnSettingsInstanceReady(
     SettingsInstancePtr settings_ptr) {
-  DCHECK(CalledOnValidThread());
-  temporary_settings_ptr_ = std::move(settings_ptr);
-  temporary_settings_ptr_.QueryVersion(base::Bind(
-      &ArcBridgeService::OnSettingsVersionReady, weak_factory_.GetWeakPtr()));
-}
-
-void ArcBridgeService::OnSettingsVersionReady(int32_t version) {
-  DCHECK(CalledOnValidThread());
-  settings_ptr_ = std::move(temporary_settings_ptr_);
-  settings_ptr_.set_connection_error_handler(base::Bind(
-      &ArcBridgeService::CloseSettingsChannel, weak_factory_.GetWeakPtr()));
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceReady());
-}
-
-void ArcBridgeService::CloseSettingsChannel() {
-  DCHECK(CalledOnValidThread());
-  if (!settings_ptr_)
-    return;
-
-  settings_ptr_.reset();
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceClosed());
+  // Obsolete interface.
 }
 
 void ArcBridgeService::OnVideoInstanceReady(VideoInstancePtr video_ptr) {
@@ -382,7 +360,6 @@ void ArcBridgeService::CloseAllChannels() {
   CloseNotificationsChannel();
   ClosePowerChannel();
   CloseProcessChannel();
-  CloseSettingsChannel();
   CloseVideoChannel();
 }
 

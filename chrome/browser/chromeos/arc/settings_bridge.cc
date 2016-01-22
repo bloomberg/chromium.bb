@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/arc_settings_bridge.h"
+#include "chrome/browser/chromeos/arc/settings_bridge.h"
 
 #include <algorithm>
 
-#include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/arc/common/settings.mojom.h"
 
 using ::chromeos::system::TimezoneSettings;
 
@@ -44,16 +42,18 @@ double ConvertFontSizeChromeToAndroid(int default_size,
 
 }  // namespace fontsizes
 
-ArcSettingsBridge::ArcSettingsBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
-  arc_bridge_service()->AddObserver(this);
+SettingsBridge::SettingsBridge(SettingsBridge::Delegate* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate_);
+  StartObservingSettingsChanges();
+  SyncAllPrefs();
 }
 
-ArcSettingsBridge::~ArcSettingsBridge() {
-  arc_bridge_service()->RemoveObserver(this);
+SettingsBridge::~SettingsBridge() {
+  StopObservingSettingsChanges();
 }
 
-void ArcSettingsBridge::StartObservingSettingsChanges() {
+void SettingsBridge::StartObservingSettingsChanges() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   registrar_.Init(profile->GetPrefs());
 
@@ -65,25 +65,25 @@ void ArcSettingsBridge::StartObservingSettingsChanges() {
   TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
-void ArcSettingsBridge::SyncAllPrefs() const {
+void SettingsBridge::SyncAllPrefs() const {
   SyncFontSize();
   SyncLocale();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
 }
 
-void ArcSettingsBridge::StopObservingSettingsChanges() {
+void SettingsBridge::StopObservingSettingsChanges() {
   registrar_.RemoveAll();
 
   TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 
-void ArcSettingsBridge::AddPrefToObserve(const std::string& pref_name) {
-  registrar_.Add(pref_name, base::Bind(&ArcSettingsBridge::OnPrefChanged,
+void SettingsBridge::AddPrefToObserve(const std::string& pref_name) {
+  registrar_.Add(pref_name, base::Bind(&SettingsBridge::OnPrefChanged,
                                        base::Unretained(this)));
 }
 
-void ArcSettingsBridge::OnPrefChanged(const std::string& pref_name) const {
+void SettingsBridge::OnPrefChanged(const std::string& pref_name) const {
   if (pref_name == prefs::kAccessibilitySpokenFeedbackEnabled) {
     SyncSpokenFeedbackEnabled();
   } else if (pref_name == prefs::kWebKitDefaultFixedFontSize ||
@@ -95,24 +95,11 @@ void ArcSettingsBridge::OnPrefChanged(const std::string& pref_name) const {
   }
 }
 
-void ArcSettingsBridge::OnStateChanged(ArcBridgeService::State state) {
-  // ArcBridgeService::State::READY is emitted before ArcSettings app is ready
-  // to send broadcasts.  Instead we wait for the SettingsInstance to be ready.
-  if (state == ArcBridgeService::State::STOPPING) {
-    StopObservingSettingsChanges();
-  }
-}
-
-void ArcSettingsBridge::OnSettingsInstanceReady() {
-  StartObservingSettingsChanges();
-  SyncAllPrefs();
-}
-
-void ArcSettingsBridge::TimezoneChanged(const icu::TimeZone& timezone) {
+void SettingsBridge::TimezoneChanged(const icu::TimeZone& timezone) {
   SyncTimeZone();
 }
 
-int ArcSettingsBridge::GetIntegerPref(const std::string& pref_name) const {
+int SettingsBridge::GetIntegerPref(const std::string& pref_name) const {
   const PrefService::Preference* pref =
       registrar_.prefs()->FindPreference(pref_name);
   DCHECK(pref);
@@ -122,7 +109,7 @@ int ArcSettingsBridge::GetIntegerPref(const std::string& pref_name) const {
   return val;
 }
 
-void ArcSettingsBridge::SyncFontSize() const {
+void SettingsBridge::SyncFontSize() const {
   int default_size = GetIntegerPref(prefs::kWebKitDefaultFontSize);
   int default_fixed_size = GetIntegerPref(prefs::kWebKitDefaultFixedFontSize);
   int minimum_size = GetIntegerPref(prefs::kWebKitMinimumFontSize);
@@ -132,10 +119,11 @@ void ArcSettingsBridge::SyncFontSize() const {
 
   base::DictionaryValue extras;
   extras.SetDouble("scale", android_scale);
-  SendSettingsBroadcast("org.chromium.arc.settings.SET_FONT_SCALE", extras);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_FONT_SCALE",
+                        extras);
 }
 
-void ArcSettingsBridge::SyncSpokenFeedbackEnabled() const {
+void SettingsBridge::SyncSpokenFeedbackEnabled() const {
   const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
       prefs::kAccessibilitySpokenFeedbackEnabled);
   DCHECK(pref);
@@ -144,11 +132,11 @@ void ArcSettingsBridge::SyncSpokenFeedbackEnabled() const {
   DCHECK(value_exists);
   base::DictionaryValue extras;
   extras.SetBoolean("enabled", enabled);
-  SendSettingsBroadcast("org.chromium.arc.settings.SET_SPOKEN_FEEDBACK_ENABLED",
-                        extras);
+  SendSettingsBroadcast(
+      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED", extras);
 }
 
-void ArcSettingsBridge::SyncLocale() const {
+void SettingsBridge::SyncLocale() const {
   const PrefService::Preference* pref =
       registrar_.prefs()->FindPreference(prefs::kApplicationLocale);
   DCHECK(pref);
@@ -157,33 +145,21 @@ void ArcSettingsBridge::SyncLocale() const {
   DCHECK(value_exists);
   base::DictionaryValue extras;
   extras.SetString("locale", locale);
-  SendSettingsBroadcast("org.chromium.arc.settings.SET_LOCALE", extras);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_LOCALE", extras);
 }
 
-void ArcSettingsBridge::SyncTimeZone() const {
+void SettingsBridge::SyncTimeZone() const {
   TimezoneSettings* timezone_settings = TimezoneSettings::GetInstance();
   base::string16 timezoneID = timezone_settings->GetCurrentTimezoneID();
   base::DictionaryValue extras;
   extras.SetString("olsonTimeZone", timezoneID);
-  SendSettingsBroadcast("org.chromium.arc.settings.SET_TIME_ZONE", extras);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_TIME_ZONE", extras);
 }
 
-void ArcSettingsBridge::SendSettingsBroadcast(
+void SettingsBridge::SendSettingsBroadcast(
     const std::string& action,
     const base::DictionaryValue& extras) const {
-  SettingsInstance* settings_instance =
-      arc_bridge_service()->settings_instance();
-  if (!settings_instance) {
-    LOG(ERROR) << "Bridge service is not ready.";
-    return;
-  }
-
-  std::string extras_json;
-  bool write_success = base::JSONWriter::Write(extras, &extras_json);
-  DCHECK(write_success);
-  settings_instance->SendBroadcast(action, "org.chromium.arc.settings",
-                                   "org.chromium.arc.settings.SettingsReceiver",
-                                   extras_json);
+  delegate_->OnBroadcastNeeded(action, extras);
 }
 
 }  // namespace arc

@@ -1,8 +1,8 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_SETTINGS_BRIDGE_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_SETTINGS_BRIDGE_H_
 
 #include <string>
 
@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service.h"
 
 namespace arc {
 
@@ -40,20 +39,20 @@ double ConvertFontSizeChromeToAndroid(int default_size,
 
 // Listens to changes for select Chrome settings (prefs) that Android cares
 // about and sends the new values to Android to keep the state in sync.
-class ArcSettingsBridge : public ArcService,
-                          public ArcBridgeService::Observer,
-                          public chromeos::system::TimezoneSettings::Observer {
+class SettingsBridge : public chromeos::system::TimezoneSettings::Observer {
  public:
-  explicit ArcSettingsBridge(ArcBridgeService* bridge_service);
-  ~ArcSettingsBridge() override;
+  class Delegate {
+   public:
+    virtual void OnBroadcastNeeded(const std::string& action,
+                                   const base::DictionaryValue& extras) = 0;
+  };
+
+  explicit SettingsBridge(Delegate* delegate);
+  ~SettingsBridge() override;
 
   // Called when a Chrome pref we have registered an observer for has changed.
   // Obtains the new pref value and sends it to Android.
   void OnPrefChanged(const std::string& pref_name) const;
-
-  // ArcBridgeService::Observer
-  void OnStateChanged(ArcBridgeService::State state) override;
-  void OnSettingsInstanceReady() override;
 
   // TimezoneSettings::Observer
   void TimezoneChanged(const icu::TimeZone& timezone) override;
@@ -78,16 +77,18 @@ class ArcSettingsBridge : public ArcService,
   // Returns the integer value of the pref.  pref_name must exist.
   int GetIntegerPref(const std::string& pref_name) const;
 
-  // Sends a broadcast to the ArcSettings app in Android.
+  // Sends a broadcast to the delegate.
   void SendSettingsBroadcast(const std::string& action,
                              const base::DictionaryValue& extras) const;
 
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcSettingsBridge);
+  Delegate* const delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsBridge);
 };
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_SETTINGS_BRIDGE_H_
