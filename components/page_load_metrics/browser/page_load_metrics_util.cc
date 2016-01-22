@@ -11,14 +11,6 @@
 
 namespace page_load_metrics {
 
-base::TimeDelta GetFirstContentfulPaint(const PageLoadTiming& timing) {
-  if (timing.first_text_paint.is_zero())
-    return timing.first_image_paint;
-  if (timing.first_image_paint.is_zero())
-    return timing.first_text_paint;
-  return std::min(timing.first_text_paint, timing.first_image_paint);
-}
-
 bool EventOccurredInForeground(const base::TimeDelta& event,
                                const PageLoadExtraInfo& info) {
   return info.started_in_foreground && !event.is_zero() &&

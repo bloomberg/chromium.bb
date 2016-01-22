@@ -179,23 +179,22 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
                           timing.first_image_paint);
     }
   }
-  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing);
-  if (!first_contentful_paint.is_zero()) {
-    if (EventOccurredInForeground(first_contentful_paint, info)) {
+  if (!timing.first_contentful_paint.is_zero()) {
+    if (EventOccurredInForeground(timing.first_contentful_paint, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaint,
-                          first_contentful_paint);
+                          timing.first_contentful_paint);
       // Bucket these histograms into high/low resolution clock systems. This
       // might point us to directions that will de-noise some UMA.
       if (base::TimeTicks::IsHighResolution()) {
         PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintHigh,
-                            first_contentful_paint);
+                            timing.first_contentful_paint);
       } else {
         PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintLow,
-                            first_contentful_paint);
+                            timing.first_contentful_paint);
       }
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstContentfulPaint,
-                          first_contentful_paint);
+                          timing.first_contentful_paint);
     }
   }
 
@@ -224,21 +223,22 @@ void CorePageLoadMetricsObserver::RecordRappor(
   if (info.time_to_commit.is_zero())
     return;
   DCHECK(!info.committed_url.is_empty());
-  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing);
   // Log the eTLD+1 of sites that show poor loading performance.
-  if (!EventOccurredInForeground(first_contentful_paint, info)) {
+  if (!EventOccurredInForeground(timing.first_contentful_paint, info)) {
     return;
   }
   scoped_ptr<rappor::Sample> sample =
       rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
   sample->SetStringField(
       "Domain", rappor::GetDomainAndRegistrySampleFromGURL(info.committed_url));
-  uint64_t bucket_index = RapporHistogramBucketIndex(first_contentful_paint);
+  uint64_t bucket_index =
+      RapporHistogramBucketIndex(timing.first_contentful_paint);
   sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
                         kNumRapporHistogramBuckets);
   // The IsSlow flag is just a one bit boolean if the first contentful paint
   // was > 10s.
-  sample->SetFlagsField("IsSlow", first_contentful_paint.InSecondsF() >= 10, 1);
+  sample->SetFlagsField("IsSlow",
+                        timing.first_contentful_paint.InSecondsF() >= 10, 1);
   rappor_service->RecordSampleObj(internal::kRapporMetricsNameCoarseTiming,
                                   std::move(sample));
 }

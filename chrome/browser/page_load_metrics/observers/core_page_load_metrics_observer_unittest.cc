@@ -291,7 +291,7 @@ TEST_F(CorePageLoadMetricsObserverTest, NoRappor) {
 TEST_F(CorePageLoadMetricsObserverTest, RapporLongPageLoad) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_image_paint = base::TimeDelta::FromSeconds(40);
+  timing.first_contentful_paint = base::TimeDelta::FromSeconds(40);
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
@@ -313,7 +313,7 @@ TEST_F(CorePageLoadMetricsObserverTest, RapporLongPageLoad) {
 TEST_F(CorePageLoadMetricsObserverTest, RapporQuickPageLoad) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_text_paint = base::TimeDelta::FromSeconds(1);
+  timing.first_contentful_paint = base::TimeDelta::FromSeconds(1);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);

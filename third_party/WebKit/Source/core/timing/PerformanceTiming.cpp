@@ -351,6 +351,15 @@ unsigned long long PerformanceTiming::firstImagePaint() const
     return monotonicTimeToIntegerMilliseconds(timing->firstImagePaint());
 }
 
+unsigned long long PerformanceTiming::firstContentfulPaint() const
+{
+    const PaintTiming* timing = paintTiming();
+    if (!timing)
+        return 0;
+
+    return monotonicTimeToIntegerMilliseconds(timing->firstContentfulPaint());
+}
+
 DocumentLoader* PerformanceTiming::documentLoader() const
 {
     if (!m_frame)

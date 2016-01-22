@@ -100,11 +100,10 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstPaint",
         timing.first_paint);
   }
-  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing);
-  if (EventOccurredInForeground(first_contentful_paint, extra_info)) {
+  if (EventOccurredInForeground(timing.first_contentful_paint, extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstContentfulPaint",
-        first_contentful_paint);
+        timing.first_contentful_paint);
   }
 }
 

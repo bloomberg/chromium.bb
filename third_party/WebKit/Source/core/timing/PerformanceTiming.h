@@ -88,6 +88,9 @@ public:
     unsigned long long firstTextPaint() const;
     // The time the first paint operation for image was performed.
     unsigned long long firstImagePaint() const;
+    // The time of the first 'contentful' paint. A contentful paint is a paint
+    // that includes content of some kind (for example, text or image content).
+    unsigned long long firstContentfulPaint() const;
 
     ScriptValue toJSONForBinding(ScriptState*) const;
 

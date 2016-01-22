@@ -21,6 +21,7 @@ IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
   IPC_STRUCT_TRAITS_MEMBER(first_paint)
   IPC_STRUCT_TRAITS_MEMBER(first_text_paint)
   IPC_STRUCT_TRAITS_MEMBER(first_image_paint)
+  IPC_STRUCT_TRAITS_MEMBER(first_contentful_paint)
 IPC_STRUCT_TRAITS_END()
 
 // Sent from renderer to browser process when the PageLoadTiming for the

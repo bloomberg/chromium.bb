@@ -44,6 +44,8 @@ struct PageLoadTiming {
   base::TimeDelta first_text_paint;
   // Time when the first image is painted.
   base::TimeDelta first_image_paint;
+  // Time when the first contentful thing (image, text, etc.) is painted.
+  base::TimeDelta first_contentful_paint;
 
   // If you add additional members, also be sure to update operator==,
   // page_load_metrics_messages.h, and IsEmpty().

@@ -23,11 +23,13 @@ public:
     void markFirstPaint();
     void markFirstTextPaint();
     void markFirstImagePaint();
+    void markFirstContentfulPaint();
 
     // These return monotonically-increasing seconds.
     double firstPaint() const { return m_firstPaint; }
     double firstTextPaint() const { return m_firstTextPaint; }
     double firstImagePaint() const { return m_firstImagePaint; }
+    double firstContentfulPaint() const { return m_firstContentfulPaint; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -39,6 +41,7 @@ private:
     double m_firstPaint = 0.0;
     double m_firstTextPaint = 0.0;
     double m_firstImagePaint = 0.0;
+    double m_firstContentfulPaint = 0.0;
 
     RawPtrWillBeMember<Document> m_document;
 };

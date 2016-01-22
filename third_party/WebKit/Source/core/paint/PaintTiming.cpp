@@ -55,13 +55,28 @@ void PaintTiming::markFirstTextPaint()
 {
     m_firstTextPaint = monotonicallyIncreasingTime();
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstTextPaint", m_firstTextPaint, "frame", frame());
-    notifyPaintTimingChanged();
+
+    if (firstContentfulPaint() == 0.0)
+        markFirstContentfulPaint();
+    else
+        notifyPaintTimingChanged();
 }
 
 void PaintTiming::markFirstImagePaint()
 {
     m_firstImagePaint = monotonicallyIncreasingTime();
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstImagePaint", m_firstImagePaint, "frame", frame());
+
+    if (firstContentfulPaint() == 0.0)
+        markFirstContentfulPaint();
+    else
+        notifyPaintTimingChanged();
+}
+
+void PaintTiming::markFirstContentfulPaint()
+{
+    m_firstContentfulPaint = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstContentfulPaint", m_firstContentfulPaint, "frame", frame());
     notifyPaintTimingChanged();
 }
 
