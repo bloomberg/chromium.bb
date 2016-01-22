@@ -21,7 +21,7 @@
 #include "content/public/browser/browser_main_runner.h"
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
-#include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
+#include "components/safe_browsing_db/safe_browsing_api_handler.h"
 using safe_browsing::SafeBrowsingApiHandler;
 #endif
 

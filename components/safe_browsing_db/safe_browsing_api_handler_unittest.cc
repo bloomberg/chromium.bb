@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/metadata.pb.h"
-#include "chrome/browser/safe_browsing/safe_browsing_api_handler_util.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/metadata.pb.h"
+#include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
+#include "components/safe_browsing_db/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

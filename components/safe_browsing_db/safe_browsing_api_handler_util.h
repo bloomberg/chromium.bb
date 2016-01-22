@@ -4,12 +4,12 @@
 //
 // Helper functions for SafeBrowsingApiHandlerImpl.  Separated out for tests.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_UTIL_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_UTIL_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_UTIL_H_
+#define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_UTIL_H_
 
 #include <string>
 
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/util.h"
 
 namespace safe_browsing {
 
@@ -55,4 +55,4 @@ UmaRemoteCallResult ParseJsonToThreatAndPB(const std::string& metadata_str,
                                            std::string* metadata_pb_str);
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_UTIL_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_UTIL_H_

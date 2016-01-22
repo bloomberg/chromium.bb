@@ -269,6 +269,10 @@ test("components_unittests") {
       "//components/printing/renderer",
     ]
   }
+
+  if (safe_browsing_mode == 2) {
+    deps += [ "//components/safe_browsing_db:unit_tests_mobile" ]
+  }
 }
 
 repack("components_tests_pak") {

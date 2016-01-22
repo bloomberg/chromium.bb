@@ -4,8 +4,8 @@
 //
 // Datastructures that hold details of a Safe Browsing hit for reporting.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
-#define CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_HIT_REPORT_H_
+#define COMPONENTS_SAFE_BROWSING_DB_HIT_REPORT_H_
 
 #include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
@@ -43,4 +43,4 @@ struct HitReport {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_HIT_REPORT_H_

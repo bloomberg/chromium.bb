@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/remote_database_manager.h"
+#include "components/safe_browsing_db/remote_database_manager.h"
 
 #include <vector>
 
@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
+#include "components/safe_browsing_db/safe_browsing_api_handler.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -60,8 +60,10 @@ RemoteSafeBrowsingDatabaseManager::ClientRequest::ClientRequest(
     Client* client,
     RemoteSafeBrowsingDatabaseManager* db_manager,
     const GURL& url)
-    : client_(client), db_manager_(db_manager), url_(url), weak_factory_(this) {
-}
+    : client_(client),
+      db_manager_(db_manager),
+      url_(url),
+      weak_factory_(this) {}
 
 // Static
 void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDoneWeak(
@@ -158,8 +160,7 @@ bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
          url.SchemeIs(url::kFtpScheme);
 }
 
-bool RemoteSafeBrowsingDatabaseManager::download_protection_enabled()
-    const {
+bool RemoteSafeBrowsingDatabaseManager::download_protection_enabled() const {
   return false;
 }
 
