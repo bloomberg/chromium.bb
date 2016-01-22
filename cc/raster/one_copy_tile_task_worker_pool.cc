@@ -420,10 +420,9 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
       if (!staging_buffer->query_id)
         gl->GenQueriesEXT(1, &staging_buffer->query_id);
 
-#if defined(OS_CHROMEOS)
-      // TODO(reveman): This avoids a performance problem on some ChromeOS
-      // devices. This needs to be removed to support native GpuMemoryBuffer
-      // implementations. crbug.com/436314
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+      // TODO(reveman): This avoids a performance problem on ARM ChromeOS
+      // devices. crbug.com/580166
       gl->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, staging_buffer->query_id);
 #else
       gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM,
@@ -460,7 +459,7 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     }
 
     if (resource_provider_->use_sync_query()) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
       gl->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 #else
       gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);

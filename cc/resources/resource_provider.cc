@@ -1590,10 +1590,10 @@ void ResourceProvider::LazyCreateImage(Resource* resource) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
 
-#if defined(OS_CHROMEOS)
-    // TODO(reveman): GL_COMMANDS_ISSUED_CHROMIUM is used for synchronization
-    // on ChromeOS to avoid some performance issues. This only works with
-    // shared memory backed buffers. crbug.com/436314
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+    // TODO(reveman): This avoids a performance problem on ARM ChromeOS
+    // devices. This only works with shared memory backed buffers.
+    // crbug.com/580166
     DCHECK_EQ(resource->gpu_memory_buffer->GetHandle().type,
               gfx::SHARED_MEMORY_BUFFER);
 #endif
