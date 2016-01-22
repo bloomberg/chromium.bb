@@ -388,28 +388,25 @@ void ContextState::RestoreVertexAttribArrays(
 
 void ContextState::RestoreVertexAttribs() const {
   // Restore Vertex Attrib Arrays
-  // TODO: This if should not be needed. RestoreState is getting called
-  // before GLES2Decoder::Initialize which is a bug.
-  if (vertex_attrib_manager.get()) {
-    // Restore VAOs.
-    if (feature_info_->feature_flags().native_vertex_array_object) {
-      // If default VAO is still using shared id 0 instead of unique ids
-      // per-context, default VAO state must be restored.
-      GLuint default_vao_service_id =
-          default_vertex_attrib_manager->service_id();
-      if (default_vao_service_id == 0)
-        RestoreVertexAttribArrays(default_vertex_attrib_manager);
+  DCHECK(vertex_attrib_manager.get());
+  // Restore VAOs.
+  if (feature_info_->feature_flags().native_vertex_array_object) {
+    // If default VAO is still using shared id 0 instead of unique ids
+    // per-context, default VAO state must be restored.
+    GLuint default_vao_service_id =
+        default_vertex_attrib_manager->service_id();
+    if (default_vao_service_id == 0)
+      RestoreVertexAttribArrays(default_vertex_attrib_manager);
 
-      // Restore the current VAO binding, unless it's the same as the
-      // default above.
-      GLuint curr_vao_service_id = vertex_attrib_manager->service_id();
-      if (curr_vao_service_id != 0)
-        glBindVertexArrayOES(curr_vao_service_id);
-    } else {
-      // If native VAO isn't supported, emulated VAOs are used.
-      // Restore to the currently bound VAO.
-      RestoreVertexAttribArrays(vertex_attrib_manager);
-    }
+    // Restore the current VAO binding, unless it's the same as the
+    // default above.
+    GLuint curr_vao_service_id = vertex_attrib_manager->service_id();
+    if (curr_vao_service_id != 0)
+      glBindVertexArrayOES(curr_vao_service_id);
+  } else {
+    // If native VAO isn't supported, emulated VAOs are used.
+    // Restore to the currently bound VAO.
+    RestoreVertexAttribArrays(vertex_attrib_manager);
   }
 
   // glVertexAttrib4fv aren't part of VAO state and must be restored.

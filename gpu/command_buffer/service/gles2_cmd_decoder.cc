@@ -13285,7 +13285,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (!copy_texture_CHROMIUM_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopyTextureCHROMIUM");
     copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
-    copy_texture_CHROMIUM_->Initialize(this);
+    copy_texture_CHROMIUM_->Initialize(this, features());
     RestoreCurrentFramebufferBindings();
     if (LOCAL_PEEK_GL_ERROR("glCopyTextureCHROMIUM") != GL_NO_ERROR)
       return;
@@ -13464,7 +13464,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   if (!copy_texture_CHROMIUM_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTextureCHROMIUM");
     copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
-    copy_texture_CHROMIUM_->Initialize(this);
+    copy_texture_CHROMIUM_->Initialize(this, features());
     RestoreCurrentFramebufferBindings();
     if (LOCAL_PEEK_GL_ERROR("glCopySubTextureCHROMIUM") != GL_NO_ERROR)
       return;
@@ -13597,7 +13597,7 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
   if (!copy_texture_CHROMIUM_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopyTextureCHROMIUM");
     copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
-    copy_texture_CHROMIUM_->Initialize(this);
+    copy_texture_CHROMIUM_->Initialize(this, features());
     RestoreCurrentFramebufferBindings();
     if (LOCAL_PEEK_GL_ERROR("glCopyTextureCHROMIUM") != GL_NO_ERROR)
       return;

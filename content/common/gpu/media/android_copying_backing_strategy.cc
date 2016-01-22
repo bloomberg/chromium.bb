@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/media/avda_return_on_failure.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/limits.h"
@@ -108,7 +109,9 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
   // needed because it takes 10s of milliseconds to initialize.
   if (!copier_) {
     copier_.reset(new gpu::CopyTextureCHROMIUMResourceManager());
-    copier_->Initialize(state_provider_->GetGlDecoder().get());
+    copier_->Initialize(state_provider_->GetGlDecoder().get(),
+                        state_provider_->GetGlDecoder()->GetContextGroup()->
+                            feature_info()->feature_flags());
   }
 
   // Here, we copy |surface_texture_id_| to the picture buffer instead of

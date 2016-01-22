@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 
@@ -28,7 +29,8 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   CopyTextureCHROMIUMResourceManager();
   ~CopyTextureCHROMIUMResourceManager();
 
-  void Initialize(const gles2::GLES2Decoder* decoder);
+  void Initialize(const gles2::GLES2Decoder* decoder,
+                  const gles2::FeatureInfo::FeatureFlags& feature_flags);
   void Destroy();
 
   void DoCopyTexture(const gles2::GLES2Decoder* decoder,
@@ -138,6 +140,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   typedef int ProgramMapKey;
   typedef base::hash_map<ProgramMapKey, ProgramInfo> ProgramMap;
   ProgramMap programs_;
+  GLuint vertex_array_object_id_;
   GLuint buffer_id_;
   GLuint framebuffer_;
 
