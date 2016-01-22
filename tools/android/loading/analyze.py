@@ -159,7 +159,7 @@ def InvalidCommand(cmd):
 
 
 def DoCost(arg_str):
-  parser = argparse.ArgumentParser(usage='cost [--parameter ...] REQUEST_JSON')
+  parser = argparse.ArgumentParser(description='Tabulates cost')
   parser.add_argument('request_json')
   parser.add_argument('--parameter', nargs='*', default=[])
   parser.add_argument('--path', action='store_true')
@@ -179,7 +179,7 @@ def DoCost(arg_str):
 
 def DoPng(arg_str):
   parser = argparse.ArgumentParser(
-      usage='png [--eog] [--highlight X[,...] REQUEST_JSON [PNG_OUTPUT]')
+      description='Generates a PNG from a trace')
   parser.add_argument('request_json')
   parser.add_argument('png_output', nargs='?')
   parser.add_argument('--eog', action='store_true')
@@ -208,7 +208,7 @@ def DoPng(arg_str):
 
 
 def DoCompare(arg_str):
-  parser = argparse.ArgumentParser(usage='compare REQUEST_JSON REQUEST_JSON')
+  parser = argparse.ArgumentParser(description='Compares two traces')
   parser.add_argument('g1_json')
   parser.add_argument('g2_json')
   args = parser.parse_args(arg_str)
@@ -223,8 +223,7 @@ def DoCompare(arg_str):
 
 
 def DoPrefetchSetup(arg_str):
-  parser = argparse.ArgumentParser(
-      usage='prefetch_setup [--upload] REQUEST_JSON TARGET_HTML')
+  parser = argparse.ArgumentParser(description='Sets up prefetch')
   parser.add_argument('request_json')
   parser.add_argument('target_html')
   parser.add_argument('--upload', action='store_true')
@@ -244,8 +243,7 @@ def DoPrefetchSetup(arg_str):
 
 
 def DoLogRequests(arg_str):
-  parser = argparse.ArgumentParser(
-      usage='log_requests [--prefetch] --site URL --output JSON_OUTPUT')
+  parser = argparse.ArgumentParser(description='Logs requests of a load')
   parser.add_argument('--url', required=True)
   parser.add_argument('--output', required=True)
   parser.add_argument('--prefetch', action='store_true')
@@ -260,13 +258,12 @@ def DoLogRequests(arg_str):
 
 
 def DoFetch(arg_str):
-  parser = argparse.ArgumentParser(usage='fetch --site SITE --dir DIR\n'
-                                   'Fetches SITE into DIR with standard naming '
-                                   'that can be processed by ./cost_to_csv.py. '
-                                   'Both warm and cold fetches are done. '
-                                   'SITE can be a full url but the filename '
-                                   'may be strange so better to just use a '
-                                   'site (ie, domain).')
+  parser = argparse.ArgumentParser(description='Fetches SITE into DIR with '
+                                   'standard naming that can be processed by '
+                                   './cost_to_csv.py.  Both warm and cold '
+                                   'fetches are done.  SITE can be a full url '
+                                   'but the filename may be strange so better '
+                                   'to just use a site (ie, domain).')
   # Arguments are flags as it's easy to get the wrong order of site vs dir.
   parser.add_argument('--site', required=True)
   parser.add_argument('--dir', required=True)
@@ -282,7 +279,7 @@ def DoFetch(arg_str):
 
 
 def DoLongPole(arg_str):
-  parser = argparse.ArgumentParser(usage='longpole [--noads] REQUEST_JSON')
+  parser = argparse.ArgumentParser(description='Calculates long pole')
   parser.add_argument('request_json')
   parser.add_argument('--noads', action='store_true')
   args = parser.parse_args(arg_str)
@@ -295,7 +292,7 @@ def DoLongPole(arg_str):
 
 
 def DoNodeCost(arg_str):
-  parser = argparse.ArgumentParser(usage='nodecost [--noads] REQUEST_JSON')
+  parser = argparse.ArgumentParser(description='Calculates node cost')
   parser.add_argument('request_json')
   parser.add_argument('--noads', action='store_true')
   args = parser.parse_args(arg_str)
@@ -318,8 +315,8 @@ COMMAND_MAP = {
 
 def main():
   logging.basicConfig(level=logging.WARNING)
-  parser = argparse.ArgumentParser(usage=' '.join(COMMAND_MAP.keys()))
-  parser.add_argument('command')
+  parser = argparse.ArgumentParser(description='Analyzes loading')
+  parser.add_argument('command', help=' '.join(COMMAND_MAP.keys()))
   parser.add_argument('rest', nargs=argparse.REMAINDER)
   args = parser.parse_args()
   devil_chromium.Initialize()
