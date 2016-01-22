@@ -69,7 +69,7 @@ ifeq ($(CONFIG_VP10_ENCODER),yes)
   INSTALL-LIBS-$(CONFIG_SPATIAL_SVC) += include/vpx/svc_context.h
   INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
   CODEC_DOC_SRCS += vpx/vp8.h vpx/vp8cx.h
-  CODEC_DOC_SECTIONS += vp9 vp9_encoder
+  CODEC_DOC_SECTIONS += vp10 vp10_encoder
 endif
 
 ifeq ($(CONFIG_VP10_DECODER),yes)
@@ -81,7 +81,7 @@ ifeq ($(CONFIG_VP10_DECODER),yes)
   INSTALL-LIBS-yes += include/vpx/vp8.h include/vpx/vp8dx.h
   INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
   CODEC_DOC_SRCS += vpx/vp8.h vpx/vp8dx.h
-  CODEC_DOC_SECTIONS += vp9 vp9_decoder
+  CODEC_DOC_SECTIONS += vp10 vp10_decoder
 endif
 
 VP10_PREFIX=vp10/

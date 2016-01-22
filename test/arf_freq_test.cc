@@ -66,7 +66,7 @@ const TestEncodeParam kEncodeVectors[] = {
 
 const int kMinArfVectors[] = {
   // NOTE: 0 refers to the default built-in logic in:
-  //       vp9_rc_get_default_min_gf_interval(...)
+  //       vp10_rc_get_default_min_gf_interval(...)
   0, 4, 8, 12, 15
 };
 
