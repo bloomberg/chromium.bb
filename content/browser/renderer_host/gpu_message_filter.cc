@@ -44,6 +44,17 @@ void GpuMessageFilter::OnEstablishGpuChannel(
     IPC::Message* reply_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<IPC::Message> reply(reply_ptr);
+
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+  // TODO(jbauman): Remove this when we know why renderer processes are
+  // hanging on x86-64. https://crbug.com/577127
+  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+    reply->set_reply_error();
+    Send(reply.release());
+    return;
+  }
+#endif
+
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
   if (!host) {
     host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
