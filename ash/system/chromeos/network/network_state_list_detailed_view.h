@@ -27,6 +27,7 @@ class NetworkListViewBase;
 
 namespace views {
 class BubbleDelegateView;
+class ImageButton;
 }
 
 namespace ash {
@@ -125,7 +126,7 @@ class NetworkStateListDetailedView
   bool wifi_scanning_;
 
   // Child views.
-  TrayPopupHeaderButton* info_icon_;
+  views::ImageButton* info_icon_;
   TrayPopupHeaderButton* button_wifi_;
   TrayPopupHeaderButton* button_mobile_;
   TrayPopupLabelButton* other_wifi_;

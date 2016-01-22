@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/networking_config_delegate.h"
@@ -58,6 +59,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 using chromeos::DeviceState;
@@ -145,43 +147,17 @@ class NetworkStateListDetailedView::InfoBubble
 
 //------------------------------------------------------------------------------
 
-// A throbber button that can also be clicked on.
-class ThrobberButton : public ThrobberView {
- public:
-  explicit ThrobberButton(NetworkStateListDetailedView* owner)
-      : owner_(owner) {}
-  ~ThrobberButton() override {}
-
-  // views::View
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    return owner_->ThrobberPressed(this, event);
-  }
-
- private:
-  NetworkStateListDetailedView* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThrobberButton);
-};
-
-//------------------------------------------------------------------------------
-
 const int kFadeIconMs = 500;
 
-// A TrayPopupHeaderButton that fades in/out when shown/hidden.
-class InfoIcon : public TrayPopupHeaderButton {
+// A throbber view that fades in/out when shown/hidden.
+class ScanningThrobber : public ThrobberView {
  public:
-  explicit InfoIcon(views::ButtonListener* listener)
-      : TrayPopupHeaderButton(listener,
-                              IDR_AURA_UBER_TRAY_NETWORK_INFO,
-                              IDR_AURA_UBER_TRAY_NETWORK_INFO,
-                              IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
-                              IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
-                              IDS_ASH_STATUS_TRAY_NETWORK_INFO) {
+  ScanningThrobber() {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetOpacity(1.0);
   }
-  ~InfoIcon() override {}
+  ~ScanningThrobber() override {}
 
   // views::View
   void SetVisible(bool visible) override {
@@ -190,6 +166,58 @@ class InfoIcon : public TrayPopupHeaderButton {
     animation.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFadeIconMs));
     layer()->SetOpacity(visible ? 1.0 : 0.0);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScanningThrobber);
+};
+
+//------------------------------------------------------------------------------
+
+// An image button showing the info icon similar to TrayPopupHeaderButton,
+// but without the toggle properties, that fades in/out when shown/hidden.
+class InfoIcon : public views::ImageButton {
+ public:
+  explicit InfoIcon(views::ButtonListener* listener)
+      : views::ImageButton(listener) {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    SetImage(STATE_NORMAL, bundle.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_INFO)
+                               .ToImageSkia());
+    SetImage(STATE_HOVERED,
+             bundle.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER)
+                 .ToImageSkia());
+    SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
+    SetAccessibleName(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(1.0);
+  }
+
+  ~InfoIcon() override {}
+
+  // views::View
+  gfx::Size GetPreferredSize() const override {
+    return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
+  }
+
+  void SetVisible(bool visible) override {
+    layer()->GetAnimator()->StopAnimating();  // Stop any previous animation.
+    ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+    animation.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kFadeIconMs));
+    layer()->SetOpacity(visible ? 1.0 : 0.0);
+  }
+
+  // views::CustomButton
+  void StateChanged() override {
+    if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+      set_background(views::Background::CreateSolidBackground(
+          kTrayPopupHoverBackgroundColor));
+    } else {
+      set_background(nullptr);
+    }
+    SchedulePaint();
   }
 
  private:
@@ -451,15 +479,15 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
   info_throbber_container->SetLayoutManager(info_throbber_layout);
   footer()->AddView(info_throbber_container, true /* add_separator */);
 
-  info_icon_ = new InfoIcon(this);
-  info_throbber_container->AddChildView(info_icon_);
-
-  scanning_throbber_ = new ThrobberButton(this);
-  // Since the throbber is added last, it will be "on top" of the info button,
-  // so it gets the info tooltip.
-  scanning_throbber_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
+  // Place the throbber behind the info icon so that the icon receives
+  // click / touch events. The info icon is hidden when the throbber is active.
+  scanning_throbber_ = new ScanningThrobber();
   info_throbber_container->AddChildView(scanning_throbber_);
+
+  info_icon_ = new InfoIcon(this);
+  info_icon_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
+  info_throbber_container->AddChildView(info_icon_);
 }
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {
@@ -534,11 +562,13 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
     wifi_scanning_ = scanning;
     if (scanning) {
       info_icon_->SetVisible(false);
+      scanning_throbber_->SetVisible(true);
       scanning_throbber_->Start();
       scanning_throbber_->SetTooltipText(
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
     } else {
       scanning_throbber_->Stop();
+      scanning_throbber_->SetVisible(false);
       scanning_throbber_->SetTooltipText(
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
       info_icon_->SetVisible(true);
