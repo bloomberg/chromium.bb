@@ -241,6 +241,12 @@ public:
     bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
     void setShouldShowBlockCursor(bool);
 
+    // TODO(yosin): We should check DOM tree version and style version in
+    // |FrameSelection::selection()| to make sure we use updated selection,
+    // rather than having |updateIfNeeded()|. Once, we update all layout tests
+    // to use updated selection, we should make |updateIfNeeded()| private.
+    void updateIfNeeded();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

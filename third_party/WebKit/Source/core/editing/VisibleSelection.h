@@ -152,6 +152,7 @@ public:
         visitor->trace(m_changeObserver);
     }
 
+    void updateIfNeeded();
     void validatePositionsIfNeeded();
 
 #ifndef NDEBUG

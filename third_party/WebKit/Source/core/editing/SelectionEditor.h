@@ -75,6 +75,10 @@ public:
     // VisibleSelectionChangeObserver interface.
     void didChangeVisibleSelection() override;
 
+    // Updates |m_selection| and |m_selectionInComposedTree| with up-to-date
+    // layout if needed.
+    void updateIfNeeded();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

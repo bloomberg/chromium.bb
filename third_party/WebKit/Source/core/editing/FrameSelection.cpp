@@ -1394,6 +1394,11 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition, con
     setSelection(newSelection, granularity);
 }
 
+void FrameSelection::updateIfNeeded()
+{
+    m_selectionEditor->updateIfNeeded();
+}
+
 } // namespace blink
 
 #ifndef NDEBUG

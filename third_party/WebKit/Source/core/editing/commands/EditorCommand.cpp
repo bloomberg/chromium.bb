@@ -1298,6 +1298,9 @@ static bool enabledInEditableTextOrCaretBrowsing(LocalFrame& frame, Event* event
 
 static bool enabledInRichlyEditableText(LocalFrame& frame, Event*, EditorCommandSource)
 {
+    // We should update selection to canonicalize with current layout and style,
+    // before accessing |FrameSelection::selection()|.
+    frame.selection().updateIfNeeded();
     return frame.selection().isCaretOrRange() && frame.selection().isContentRichlyEditable() && frame.selection().rootEditableElement();
 }
 

@@ -1018,6 +1018,16 @@ static bool isValidPosition(const PositionTemplate<Strategy>& position)
 }
 
 template <typename Strategy>
+void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
+{
+    Document* document = m_base.document();
+    if (!document)
+        return;
+    document->updateLayoutIgnorePendingStylesheets();
+    validate();
+}
+
+template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validatePositionsIfNeeded()
 {
     if (!isValidPosition(m_base) || !isValidPosition(m_extent) || !isValidPosition(m_start) || !isValidPosition(m_end))

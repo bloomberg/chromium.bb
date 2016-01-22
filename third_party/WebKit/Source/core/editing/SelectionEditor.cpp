@@ -933,6 +933,12 @@ void SelectionEditor::stopObservingVisibleSelectionChangeIfNecessary()
     m_observingVisibleSelection = false;
 }
 
+void SelectionEditor::updateIfNeeded()
+{
+    m_selection.updateIfNeeded();
+    m_selectionInComposedTree.updateIfNeeded();
+}
+
 DEFINE_TRACE(SelectionEditor)
 {
     visitor->trace(m_frameSelection);
