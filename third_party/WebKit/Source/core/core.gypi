@@ -1822,6 +1822,7 @@
             'inspector/v8/InspectorWrapper.cpp',
             'inspector/v8/InspectorWrapper.h',
             'inspector/v8/IgnoreExceptionsScope.h',
+            'inspector/v8/IgnoreExceptionsScope.cpp',
             'inspector/v8/JavaScriptCallFrame.cpp',
             'inspector/v8/JavaScriptCallFrame.h',
             'inspector/v8/ScriptBreakpoint.h',

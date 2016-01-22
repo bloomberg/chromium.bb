@@ -43,8 +43,9 @@
 
 namespace blink {
 
-class V8DebuggerAgentImpl;
 class JavaScriptCallFrame;
+struct ScriptBreakpoint;
+class V8DebuggerAgentImpl;
 
 class CORE_EXPORT V8DebuggerImpl : public V8Debugger {
     WTF_MAKE_NONCOPYABLE(V8DebuggerImpl);
@@ -52,7 +53,7 @@ public:
     V8DebuggerImpl(v8::Isolate*, V8DebuggerClient*);
     ~V8DebuggerImpl() override;
 
-    bool enabled() const override;
+    bool enabled() const;
 
     void addAgent(int contextGroupId, V8DebuggerAgentImpl*);
     void removeAgent(int contextGroupId);
@@ -61,11 +62,15 @@ public:
     void removeBreakpoint(const String& breakpointId);
     void setBreakpointsActivated(bool);
 
-    PauseOnExceptionsState pauseOnExceptionsState() override;
-    void setPauseOnExceptionsState(PauseOnExceptionsState) override;
-
-    void setPauseOnNextStatement(bool) override;
-    bool pausingOnNextStatement() override;
+    enum PauseOnExceptionsState {
+        DontPauseOnExceptions,
+        PauseOnAllExceptions,
+        PauseOnUncaughtExceptions
+    };
+    PauseOnExceptionsState pauseOnExceptionsState();
+    void setPauseOnExceptionsState(PauseOnExceptionsState);
+    void setPauseOnNextStatement(bool);
+    bool pausingOnNextStatement();
     bool canBreakProgram();
     void breakProgram();
     void continueProgram();
@@ -83,10 +88,10 @@ public:
     bool isPaused();
     v8::Local<v8::Context> pausedContext() { return m_pausedContext; }
 
-    v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>) override;
-    v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) override;
-    v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&) override;
-    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue) override;
+    v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>);
+    v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
+    v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&);
+    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
 
     v8::Isolate* isolate() const { return m_isolate; }
     V8DebuggerClient* client() { return m_client; }

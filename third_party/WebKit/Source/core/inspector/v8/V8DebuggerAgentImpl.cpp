@@ -222,7 +222,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
         return;
 
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
-    m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
+    m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     m_state->setString(DebuggerAgentState::skipStackPattern, "");
     m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
@@ -299,7 +299,7 @@ void V8DebuggerAgentImpl::restore()
     ASSERT(!m_enabled);
     m_frontend->globalObjectCleared();
     enable();
-    long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
+    long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     String error;
     setPauseOnExceptionsImpl(&error, pauseState);
     m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));
@@ -889,13 +889,13 @@ void V8DebuggerAgentImpl::setPauseOnExceptions(ErrorString* errorString, const S
 {
     if (!checkEnabled(errorString))
         return;
-    V8Debugger::PauseOnExceptionsState pauseState;
+    V8DebuggerImpl::PauseOnExceptionsState pauseState;
     if (stringPauseState == "none") {
-        pauseState = V8Debugger::DontPauseOnExceptions;
+        pauseState = V8DebuggerImpl::DontPauseOnExceptions;
     } else if (stringPauseState == "all") {
-        pauseState = V8Debugger::PauseOnAllExceptions;
+        pauseState = V8DebuggerImpl::PauseOnAllExceptions;
     } else if (stringPauseState == "uncaught") {
-        pauseState = V8Debugger::PauseOnUncaughtExceptions;
+        pauseState = V8DebuggerImpl::PauseOnUncaughtExceptions;
     } else {
         *errorString = "Unknown pause on exceptions mode: " + stringPauseState;
         return;
@@ -905,7 +905,7 @@ void V8DebuggerAgentImpl::setPauseOnExceptions(ErrorString* errorString, const S
 
 void V8DebuggerAgentImpl::setPauseOnExceptionsImpl(ErrorString* errorString, int pauseState)
 {
-    debugger().setPauseOnExceptionsState(static_cast<V8Debugger::PauseOnExceptionsState>(pauseState));
+    debugger().setPauseOnExceptionsState(static_cast<V8DebuggerImpl::PauseOnExceptionsState>(pauseState));
     if (debugger().pauseOnExceptionsState() != pauseState)
         *errorString = "Internal error. Could not change pause on exceptions state";
     else
@@ -1650,6 +1650,13 @@ void V8DebuggerAgentImpl::breakProgram(InspectorFrontend::Debugger::Reason::Enum
     m_pausingOnNativeEvent = false;
     clearStepIntoAsync();
     debugger().breakProgram();
+}
+
+void V8DebuggerAgentImpl::breakProgramOnException(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
+{
+    if (m_debugger->pauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
+        return;
+    breakProgram(breakReason, data);
 }
 
 void V8DebuggerAgentImpl::clearStepIntoAsync()

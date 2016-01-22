@@ -273,11 +273,9 @@ PassRefPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceF
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
 {
-    if (m_v8DebuggerAgent->debugger().pauseOnExceptionsState() == V8Debugger::DontPauseOnExceptions)
-        return;
     RefPtr<JSONObject> directive = JSONObject::create();
     directive->setString("directiveText", directiveText);
-    m_v8DebuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::CSPViolation, directive.release());
+    m_v8DebuggerAgent->breakProgramOnException(InspectorFrontend::Debugger::Reason::CSPViolation, directive.release());
 }
 
 void InspectorDebuggerAgent::willExecuteScript(int scriptId)

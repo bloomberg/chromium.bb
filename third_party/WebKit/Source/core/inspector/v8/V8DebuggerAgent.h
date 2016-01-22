@@ -87,6 +87,7 @@ public:
     virtual void cancelPauseOnNextStatement() = 0;
     virtual bool canBreakProgram() = 0;
     virtual void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
+    virtual void breakProgramOnException(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) = 0;
     virtual void willExecuteScript(int scriptId) = 0;
     virtual void didExecuteScript() = 0;
     virtual void reset() = 0;

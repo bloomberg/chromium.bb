@@ -120,6 +120,7 @@ public:
     void cancelPauseOnNextStatement() override;
     bool canBreakProgram() override;
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
+    void breakProgramOnException(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
     void willExecuteScript(int scriptId) override;
     void didExecuteScript() override;
 

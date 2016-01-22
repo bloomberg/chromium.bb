@@ -5,37 +5,20 @@
 #ifndef IgnoreExceptionsScope_h
 #define IgnoreExceptionsScope_h
 
-#include "core/inspector/v8/V8DebuggerImpl.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
+class V8Debugger;
+class IgnoreExceptionsScopeImpl;
+
 class IgnoreExceptionsScope {
 public:
-    explicit IgnoreExceptionsScope(V8DebuggerImpl* debugger)
-        : m_debugger(debugger)
-        , m_previousPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions)
-    {
-        m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
-    }
-    ~IgnoreExceptionsScope()
-    {
-        setPauseOnExceptionsState(m_previousPauseOnExceptionsState);
-    }
+    explicit IgnoreExceptionsScope(V8Debugger*);
+    ~IgnoreExceptionsScope();
 
 private:
-    V8Debugger::PauseOnExceptionsState setPauseOnExceptionsState(V8Debugger::PauseOnExceptionsState newState)
-    {
-        ASSERT(m_debugger);
-        if (!m_debugger->enabled())
-            return newState;
-        V8Debugger::PauseOnExceptionsState presentState = m_debugger->pauseOnExceptionsState();
-        if (presentState != newState)
-            m_debugger->setPauseOnExceptionsState(newState);
-        return presentState;
-    }
-
-    V8DebuggerImpl* m_debugger;
-    V8Debugger::PauseOnExceptionsState m_previousPauseOnExceptionsState;
+    OwnPtr<IgnoreExceptionsScopeImpl> m_impl;
 };
 
 } // namespace blink

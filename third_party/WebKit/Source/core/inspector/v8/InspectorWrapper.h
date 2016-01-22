@@ -46,8 +46,8 @@ public:
 template<typename T>
 class InspectorWrapperTypeTrait<T, true> {
 public:
-    using PassType = PassRefPtrWillBeRawPtr<T>;
-    using Type = RefPtrWillBeRawPtr<T>;
+    using PassType = PassRefPtr<T>;
+    using Type = RefPtr<T>;
 };
 
 template<class T, char* const hiddenPropertyName, char* const className>

@@ -174,7 +174,7 @@ void V8InjectedScriptHost::functionDetailsCallback(const v8::FunctionCallbackInf
     result->Set(v8AtomicString(isolate, "isGenerator"), v8::Boolean::New(isolate, function->IsGeneratorFunction()));
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    V8Debugger& debugger = host->debugger();
+    V8DebuggerImpl& debugger = static_cast<V8DebuggerImpl&>(host->debugger());
     v8::MaybeLocal<v8::Value> scopes = debugger.functionScopes(function);
     if (!scopes.IsEmpty() && scopes.ToLocalChecked()->IsArray())
         result->Set(v8AtomicString(isolate, "rawScopes"), scopes.ToLocalChecked());
@@ -190,7 +190,7 @@ void V8InjectedScriptHost::generatorObjectDetailsCallback(const v8::FunctionCall
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(info[0]);
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    V8Debugger& debugger = host->debugger();
+    V8DebuggerImpl& debugger = static_cast<V8DebuggerImpl&>(host->debugger());
     v8SetReturnValue(info, debugger.generatorObjectDetails(object));
 }
 
@@ -202,7 +202,7 @@ void V8InjectedScriptHost::collectionEntriesCallback(const v8::FunctionCallbackI
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(info[0]);
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    V8Debugger& debugger = host->debugger();
+    V8DebuggerImpl& debugger = static_cast<V8DebuggerImpl&>(host->debugger());
     v8SetReturnValue(info, debugger.collectionEntries(object));
 }
 
@@ -345,7 +345,7 @@ void V8InjectedScriptHost::setFunctionVariableValueCallback(const v8::FunctionCa
     v8::Local<v8::Value> newValue = info[3];
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    V8Debugger& debugger = host->debugger();
+    V8DebuggerImpl& debugger = static_cast<V8DebuggerImpl&>(host->debugger());
     v8SetReturnValue(info, debugger.setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
 }
 

@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/v8/EventListenerInfo.h"
-#include "wtf/Allocator.h"
 
 #include <v8.h>
 

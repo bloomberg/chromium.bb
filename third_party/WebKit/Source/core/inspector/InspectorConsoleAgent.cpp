@@ -108,8 +108,7 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
         return;
     if (!m_debuggerAgent || !m_debuggerAgent->enabled())
         return;
-    if (m_debuggerAgent->debugger().pauseOnExceptionsState() != V8Debugger::DontPauseOnExceptions)
-        m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::Assert, nullptr);
+    m_debuggerAgent->breakProgramOnException(InspectorFrontend::Debugger::Reason::Assert, nullptr);
 }
 
 void InspectorConsoleAgent::clearAllMessages()
