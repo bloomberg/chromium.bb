@@ -14,7 +14,6 @@ assert(is_android)
 config("compiler") {
   cflags = [
     "-ffunction-sections",
-    "-funwind-tables",
     "-fno-short-enums",
   ]
   defines = [
