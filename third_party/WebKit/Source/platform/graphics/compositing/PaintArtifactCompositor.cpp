@@ -11,6 +11,7 @@
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
+#include "cc/playback/transform_display_item.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
@@ -19,6 +20,8 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
 #include "skia/ext/refptr.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "wtf/Allocator.h"
@@ -70,7 +73,7 @@ void PaintArtifactCompositor::initializeIfNeeded()
     m_webLayer = adoptPtr(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_rootLayer.get()));
 }
 
-static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem, cc::DisplayItemList* list, gfx::Rect& combinedBounds)
+static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem, cc::DisplayItemList* list)
 {
     if (DisplayItem::isDrawingType(displayItem.type())) {
         const SkPicture* picture = static_cast<const DrawingDisplayItem&>(displayItem).picture();
@@ -78,18 +81,25 @@ static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
             return;
         gfx::Rect bounds = gfx::SkIRectToRect(picture->cullRect().roundOut());
         list->CreateAndAppendItem<cc::DrawingDisplayItem>(bounds, skia::SharePtr(picture));
-        combinedBounds.Union(bounds);
     }
 }
 
-static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& artifact, const PaintChunk& chunk, gfx::Rect& combinedBounds)
+static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& artifact, const PaintChunk& chunk, const gfx::Rect& combinedBounds)
 {
     cc::DisplayItemListSettings settings;
-    scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create(gfx::Rect(), settings);
+    scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create(
+        gfx::Rect(combinedBounds.size()), settings);
+
+    gfx::Transform translation;
+    translation.Translate(-combinedBounds.x(), -combinedBounds.y());
+    // TODO(jbroman, wkorman): What visual rectangle is wanted here?
+    list->CreateAndAppendItem<cc::TransformDisplayItem>(gfx::Rect(), translation);
 
     const DisplayItemList& displayItems = artifact.displayItemList();
     for (const auto& displayItem : displayItems.itemsInPaintChunk(chunk))
-        appendDisplayItemToCcDisplayItemList(displayItem, list.get(), combinedBounds);
+        appendDisplayItemToCcDisplayItemList(displayItem, list.get());
+
+    list->CreateAndAppendItem<cc::EndTransformDisplayItem>(gfx::Rect());
 
     list->Finalize();
     return list;
@@ -120,18 +130,18 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
-        // TODO(jbroman): This only really works well for chunks without an
-        // offset. That really needs to be fixed.
-        gfx::Rect combinedBounds;
+        gfx::Rect combinedBounds = enclosingIntRect(paintChunk.bounds);
         scoped_refptr<cc::DisplayItemList> displayList = recordPaintChunk(paintArtifact, paintChunk, combinedBounds);
         OwnPtr<ContentLayerClientImpl> contentLayerClient = adoptPtr(
-            new ContentLayerClientImpl(std::move(displayList), combinedBounds));
+            new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
+
         scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
-        layer->SetPosition(gfx::PointF());
+        layer->SetPosition(gfx::PointF(combinedBounds.origin()));
         layer->SetBounds(combinedBounds.size());
         layer->SetTransform(transformToRoot(paintChunk.properties.transform.get()));
         layer->SetIsDrawable(true);
         layer->SetNeedsDisplay();
+
         m_contentLayerClients.append(contentLayerClient.release());
         m_rootLayer->AddChild(std::move(layer));
     }

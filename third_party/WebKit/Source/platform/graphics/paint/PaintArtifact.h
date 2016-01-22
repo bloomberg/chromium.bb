@@ -24,6 +24,9 @@ class WebDisplayItemList;
 // It represents a particular state of the world, and should be immutable
 // (const) to most of its users.
 //
+// Unless its dangerous accessors are used, it promises to be in a reasonable
+// state (e.g. chunk bounding boxes computed).
+//
 // Reminder: moved-from objects may not be in a known state. They can only
 // safely be assigned to or destroyed.
 class PLATFORM_EXPORT PaintArtifact final {

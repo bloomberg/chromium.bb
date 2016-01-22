@@ -6,8 +6,28 @@
 
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 
 namespace blink {
+
+namespace {
+
+void computeChunkBounds(const DisplayItemList& displayItems, Vector<PaintChunk>& paintChunks)
+{
+    for (PaintChunk& chunk : paintChunks) {
+        FloatRect bounds;
+        for (const DisplayItem& item : displayItems.itemsInPaintChunk(chunk)) {
+            if (!item.isDrawing())
+                continue;
+            const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
+            if (const SkPicture* picture = drawing.picture())
+                bounds.unite(picture->cullRect());
+        }
+        chunk.bounds = bounds;
+    }
+}
+
+} // namespace
 
 PaintArtifact::PaintArtifact()
     : m_displayItemList(0)
@@ -18,6 +38,7 @@ PaintArtifact::PaintArtifact(DisplayItemList displayItems, Vector<PaintChunk> pa
     : m_displayItemList(std::move(displayItems))
     , m_paintChunks(std::move(paintChunks))
 {
+    computeChunkBounds(m_displayItemList, m_paintChunks);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)

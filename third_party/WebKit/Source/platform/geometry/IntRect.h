@@ -43,6 +43,10 @@ typedef struct CGRect CGRect;
 struct SkRect;
 struct SkIRect;
 
+namespace gfx {
+class Rect;
+}
+
 namespace blink {
 
 class FloatRect;
@@ -171,6 +175,8 @@ public:
 
     operator SkRect() const;
     operator SkIRect() const;
+
+    operator gfx::Rect() const;
 
 #ifndef NDEBUG
     // Prints the rect to the screen.

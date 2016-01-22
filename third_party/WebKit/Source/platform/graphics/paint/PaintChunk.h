@@ -5,6 +5,7 @@
 #ifndef PaintChunk_h
 #define PaintChunk_h
 
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "wtf/Allocator.h"
 #include <iosfwd>
@@ -32,13 +33,17 @@ struct PaintChunk {
 
     // The paint properties which apply to this chunk.
     PaintChunkProperties properties;
+
+    // The total bounds of this paint chunk's contents.
+    FloatRect bounds;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b)
 {
     return a.beginIndex == b.beginIndex
         && a.endIndex == b.endIndex
-        && a.properties == b.properties;
+        && a.properties == b.properties
+        && a.bounds == b.bounds;
 }
 
 inline bool operator!=(const PaintChunk& a, const PaintChunk& b)

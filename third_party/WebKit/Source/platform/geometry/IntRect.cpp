@@ -28,6 +28,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #include <algorithm>
 
@@ -154,6 +155,11 @@ IntRect::operator SkRect() const
     SkRect rect;
     rect.set(SkIntToScalar(x()), SkIntToScalar(y()), SkIntToScalar(maxX()), SkIntToScalar(maxY()));
     return rect;
+}
+
+IntRect::operator gfx::Rect() const
+{
+    return gfx::Rect(x(), y(), width(), height());
 }
 
 IntRect unionRect(const Vector<IntRect>& rects)
