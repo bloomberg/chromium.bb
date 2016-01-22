@@ -93,6 +93,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Do any minimal work that must be done at browser startup.
   static void EarlyStartup();
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Launch the NaCl zygote early in the browser startup.
+  static void EarlyZygoteLaunch();
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+
   // Specifies throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
   static void SetPpapiKeepAliveThrottleForTesting(unsigned milliseconds);
 

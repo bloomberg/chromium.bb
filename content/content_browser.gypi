@@ -302,6 +302,7 @@
       'public/browser/worker_service.h',
       'public/browser/worker_service_observer.h',
       'public/browser/zoom_level_delegate.h',
+      'public/browser/zygote_handle_linux.h',
       'public/browser/zygote_host_linux.h',
     ],
     'private_browser_sources': [
@@ -1572,6 +1573,9 @@
       'browser/webui/web_ui_impl.cc',
       'browser/webui/web_ui_impl.h',
       'browser/webui/web_ui_message_handler.cc',
+      'browser/zygote_host/zygote_communication_linux.h',
+      'browser/zygote_host/zygote_communication_linux.cc',
+      'browser/zygote_host/zygote_handle_linux.cc',
       'browser/zygote_host/zygote_host_impl_linux.cc',
       'browser/zygote_host/zygote_host_impl_linux.h',
       'zygote/zygote_linux.cc',

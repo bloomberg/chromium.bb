@@ -5,12 +5,15 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 
+#include <cstddef>
+
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/sandbox_type.h"
+#include "content/public/common/zygote_handle.h"
 
 namespace base {
 class FilePath;
@@ -51,8 +54,10 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
   virtual void PostSpawnTarget(base::ProcessHandle process) {}
 
 #elif defined(OS_POSIX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Override this to return true to use the setuid sandbox.
-  virtual bool ShouldUseZygote();
+  virtual ZygoteHandle* GetZygote();
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
   // Override this if the process needs a non-empty environment map.
   virtual base::EnvironmentMap GetEnvironment();

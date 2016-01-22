@@ -161,6 +161,7 @@
       'public/common/webplugininfo.h',
       'public/common/window_container_type.cc',
       'public/common/window_container_type.h',
+      'public/common/zygote_handle.h',
       'public/common/zygote_fork_delegate_linux.h',
     ],
     'private_common_sources': [

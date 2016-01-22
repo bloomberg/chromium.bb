@@ -116,6 +116,11 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
     return profile_data_directory_;
   }
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  // Launch the zygote early in the browser startup.
+  static void EarlyZygoteLaunch();
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+
   // The client pointer must remain valid until its callback is issued.
 
  private:
