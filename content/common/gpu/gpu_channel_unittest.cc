@@ -26,7 +26,6 @@ class GpuChannelTest : public GpuChannelTestCommon {
     params.client_tracing_id = kClientTracingId;
     params.preempts = false;
     params.preempted = false;
-    params.allow_future_sync_points = false;
     params.allow_real_time_streams = allow_real_time_streams;
     EXPECT_TRUE(
         channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));

@@ -78,7 +78,6 @@ class CONTENT_EXPORT GpuChannel
              base::SingleThreadTaskRunner* io_task_runner,
              int client_id,
              uint64_t client_tracing_id,
-             bool allow_future_sync_points,
              bool allow_real_time_streams);
   ~GpuChannel() override;
 
@@ -157,8 +156,6 @@ class CONTENT_EXPORT GpuChannel
       const gfx::Size& size,
       gfx::BufferFormat format,
       uint32_t internalformat);
-
-  bool allow_future_sync_points() const { return allow_future_sync_points_; }
 
   void HandleUpdateValueState(unsigned int target,
                               const gpu::ValueState& state);
@@ -290,7 +287,6 @@ class CONTENT_EXPORT GpuChannel
   // Map of stream id to stream state.
   base::hash_map<int32_t, StreamState> streams_;
 
-  bool allow_future_sync_points_;
   bool allow_real_time_streams_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
@@ -317,8 +313,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   GpuChannelMessageFilter(const base::WeakPtr<GpuChannel>& gpu_channel,
                           GpuChannelMessageQueue* message_queue,
                           base::SingleThreadTaskRunner* task_runner,
-                          gpu::PreemptionFlag* preempting_flag,
-                          bool future_sync_points);
+                          gpu::PreemptionFlag* preempting_flag);
 
   // IPC::MessageFilter implementation.
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -385,9 +380,6 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   scoped_ptr<base::OneShotTimer> timer_;
 
   bool a_stub_is_descheduled_;
-
-  // True if this channel can create future sync points.
-  bool future_sync_points_;
 };
 
 struct GpuChannelMessage {
@@ -395,16 +387,10 @@ struct GpuChannelMessage {
   base::TimeTicks time_received;
   IPC::Message message;
 
-  // TODO(dyen): Temporary sync point data, remove once new sync point lands.
-  bool retire_sync_point;
-  uint32_t sync_point;
-
   GpuChannelMessage(const IPC::Message& msg)
       : order_number(0),
         time_received(base::TimeTicks()),
-        message(msg),
-        retire_sync_point(false),
-        sync_point(0) {}
+        message(msg) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessage);
@@ -443,10 +429,6 @@ class GpuChannelMessageQueue
   bool MessageProcessed();
 
   void PushBackMessage(const IPC::Message& message);
-
-  bool GenerateSyncPointMessage(const IPC::Message& message,
-                                bool retire_sync_point,
-                                uint32_t* sync_point_number);
 
   void DeleteAndDisableMessages();
 

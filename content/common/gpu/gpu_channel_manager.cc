@@ -171,13 +171,12 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
     int client_id,
     uint64_t client_tracing_id,
     bool preempts,
-    bool allow_future_sync_points,
     bool allow_real_time_streams) {
   return make_scoped_ptr(new GpuChannel(
       this, sync_point_manager(), watchdog_, share_group(), mailbox_manager(),
       preempts ? preemption_flag() : nullptr, task_runner_.get(),
       io_task_runner_.get(), client_id, client_tracing_id,
-      allow_future_sync_points, allow_real_time_streams));
+      allow_real_time_streams));
 }
 
 void GpuChannelManager::OnEstablishChannel(
@@ -185,7 +184,7 @@ void GpuChannelManager::OnEstablishChannel(
   DCHECK(!params.preempts || !params.preempted);
   scoped_ptr<GpuChannel> channel(CreateGpuChannel(
       params.client_id, params.client_tracing_id, params.preempts,
-      params.allow_future_sync_points, params.allow_real_time_streams));
+      params.allow_real_time_streams));
   if (params.preempted)
     channel->SetPreemptByFlag(preemption_flag_.get());
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);

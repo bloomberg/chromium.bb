@@ -125,7 +125,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   virtual scoped_ptr<GpuChannel> CreateGpuChannel(int client_id,
                                                   uint64_t client_tracing_id,
                                                   bool preempts,
-                                                  bool allow_future_sync_points,
                                                   bool allow_real_time_streams);
 
   gpu::SyncPointManager* sync_point_manager() const {

@@ -40,13 +40,12 @@ scoped_ptr<GpuChannel> TestGpuChannelManager::CreateGpuChannel(
     int client_id,
     uint64_t client_tracing_id,
     bool preempts,
-    bool allow_future_sync_points,
     bool allow_real_time_streams) {
   return make_scoped_ptr(new TestGpuChannel(
       sink_, this, sync_point_manager(), share_group(), mailbox_manager(),
       preempts ? preemption_flag() : nullptr, task_runner_.get(),
       io_task_runner_.get(), client_id, client_tracing_id,
-      allow_future_sync_points, allow_real_time_streams));
+      allow_real_time_streams));
 }
 
 TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
@@ -59,7 +58,6 @@ TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
                                base::SingleThreadTaskRunner* io_task_runner,
                                int client_id,
                                uint64_t client_tracing_id,
-                               bool allow_future_sync_points,
                                bool allow_real_time_streams)
     : GpuChannel(gpu_channel_manager,
                  sync_point_manager,
@@ -71,7 +69,6 @@ TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
                  io_task_runner,
                  client_id,
                  client_tracing_id,
-                 allow_future_sync_points,
                  allow_real_time_streams),
       sink_(sink) {}
 

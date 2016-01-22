@@ -138,10 +138,6 @@ class GpuCommandBufferStub
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
 
-  // Associates a sync point to this stub. When the stub is destroyed, it will
-  // retire all sync points that haven't been previously retired.
-  void InsertSyncPoint(uint32_t sync_point, bool retire);
-
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
 
   void MarkContextLost();
@@ -197,10 +193,6 @@ class GpuCommandBufferStub
 
   void OnEnsureBackbuffer();
 
-  void OnRetireSyncPoint(uint32_t sync_point);
-  bool OnWaitSyncPoint(uint32_t sync_point);
-  void OnWaitSyncPointCompleted(uint32_t sync_point);
-  void OnSignalSyncPoint(uint32_t sync_point, uint32_t id);
   void OnSignalSyncToken(const gpu::SyncToken& sync_token, uint32_t id);
   void OnSignalAck(uint32_t id);
   void OnSignalQuery(uint32_t query, uint32_t id);
@@ -282,8 +274,6 @@ class GpuCommandBufferStub
 
   base::ObserverList<DestructionObserver> destruction_observers_;
 
-  // A queue of sync points associated with this stub.
-  std::deque<uint32_t> sync_points_;
   bool waiting_for_sync_point_;
 
   base::TimeTicks process_delayed_work_time_;

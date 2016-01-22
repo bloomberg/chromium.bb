@@ -151,11 +151,10 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
 
   bool preempts = true;
   bool preempted = false;
-  bool allow_future_sync_points = true;
   bool allow_real_time_streams = true;
   host->EstablishGpuChannel(
       gpu_client_id_, gpu_client_tracing_id_, preempts, preempted,
-      allow_future_sync_points, allow_real_time_streams,
+      allow_real_time_streams,
       base::Bind(
           &BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO,
           this));

@@ -676,7 +676,6 @@ void GpuProcessHost::EstablishGpuChannel(
     uint64_t client_tracing_id,
     bool preempts,
     bool preempted,
-    bool allow_future_sync_points,
     bool allow_real_time_streams,
     const EstablishChannelCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -694,7 +693,6 @@ void GpuProcessHost::EstablishGpuChannel(
   params.client_tracing_id = client_tracing_id;
   params.preempts = preempts;
   params.preempted = preempted;
-  params.allow_future_sync_points = allow_future_sync_points;
   params.allow_real_time_streams = allow_real_time_streams;
   if (Send(new GpuMsg_EstablishChannel(params))) {
     channel_requests_.push(callback);

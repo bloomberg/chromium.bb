@@ -59,13 +59,12 @@ void GpuMessageFilter::OnEstablishGpuChannel(
 
   bool preempts = false;
   bool preempted = true;
-  bool allow_future_sync_points = false;
   bool allow_real_time_streams = false;
   host->EstablishGpuChannel(
       render_process_id_,
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
           render_process_id_),
-      preempts, preempted, allow_future_sync_points, allow_real_time_streams,
+      preempts, preempted, allow_real_time_streams,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }

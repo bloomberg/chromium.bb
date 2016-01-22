@@ -38,7 +38,6 @@ class TestGpuChannelManager : public GpuChannelManager {
       int client_id,
       uint64_t client_tracing_id,
       bool preempts,
-      bool allow_future_sync_points,
       bool allow_real_time_streams) override;
 
  private:
@@ -57,7 +56,6 @@ class TestGpuChannel : public GpuChannel {
                  base::SingleThreadTaskRunner* io_task_runner,
                  int client_id,
                  uint64_t client_tracing_id,
-                 bool allow_future_sync_points,
                  bool allow_real_time_streams);
   ~TestGpuChannel() override;
 

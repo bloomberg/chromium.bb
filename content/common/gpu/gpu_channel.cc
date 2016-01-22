@@ -115,26 +115,6 @@ void GpuChannelMessageQueue::PushBackMessage(const IPC::Message& message) {
     PushMessageHelper(make_scoped_ptr(new GpuChannelMessage(message)));
 }
 
-bool GpuChannelMessageQueue::GenerateSyncPointMessage(
-    const IPC::Message& message,
-    bool retire_sync_point,
-    uint32_t* sync_point) {
-  DCHECK_EQ((uint32_t)GpuCommandBufferMsg_InsertSyncPoint::ID, message.type());
-  DCHECK(sync_point);
-  base::AutoLock auto_lock(channel_messages_lock_);
-  if (enabled_) {
-    *sync_point = sync_point_manager_->GenerateSyncPoint();
-
-    scoped_ptr<GpuChannelMessage> msg(new GpuChannelMessage(message));
-    msg->retire_sync_point = retire_sync_point;
-    msg->sync_point = *sync_point;
-
-    PushMessageHelper(std::move(msg));
-    return true;
-  }
-  return false;
-}
-
 bool GpuChannelMessageQueue::HasQueuedMessages() const {
   base::AutoLock auto_lock(channel_messages_lock_);
   return !channel_messages_.empty();
@@ -193,11 +173,6 @@ void GpuChannelMessageQueue::DeleteAndDisableMessages() {
   while (!channel_messages_.empty()) {
     scoped_ptr<GpuChannelMessage> msg(channel_messages_.front());
     channel_messages_.pop_front();
-    // This needs to clean up both GpuCommandBufferMsg_InsertSyncPoint and
-    // GpuCommandBufferMsg_RetireSyncPoint messages, safer to just check
-    // if we have a sync point number here.
-    if (msg->sync_point)
-      sync_point_manager_->RetireSyncPoint(msg->sync_point);
   }
 
   if (sync_point_order_data_) {
@@ -230,8 +205,7 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
     const base::WeakPtr<GpuChannel>& gpu_channel,
     GpuChannelMessageQueue* message_queue,
     base::SingleThreadTaskRunner* task_runner,
-    gpu::PreemptionFlag* preempting_flag,
-    bool future_sync_points)
+    gpu::PreemptionFlag* preempting_flag)
     : preemption_state_(IDLE),
       gpu_channel_(gpu_channel),
       message_queue_(message_queue),
@@ -239,8 +213,7 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
       peer_pid_(base::kNullProcessId),
       task_runner_(task_runner),
       preempting_flag_(preempting_flag),
-      a_stub_is_descheduled_(false),
-      future_sync_points_(future_sync_points) {}
+      a_stub_is_descheduled_(false) {}
 
 GpuChannelMessageFilter::~GpuChannelMessageFilter() {}
 
@@ -320,63 +293,18 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     }
   }
 
-  bool handled = false;
-  if ((message.type() == GpuCommandBufferMsg_RetireSyncPoint::ID) &&
-      !future_sync_points_) {
-    DLOG(ERROR) << "Untrusted client should not send "
-                   "GpuCommandBufferMsg_RetireSyncPoint message";
-    return true;
-  }
-
-  if (message.type() == GpuCommandBufferMsg_InsertSyncPoint::ID) {
-    base::Tuple<bool> params;
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-    if (!GpuCommandBufferMsg_InsertSyncPoint::ReadSendParam(&message,
-                                                            &params)) {
-      reply->set_reply_error();
-      Send(reply);
-      return true;
-    }
-    bool retire_sync_point = base::get<0>(params);
-    if (!future_sync_points_ && !retire_sync_point) {
-      DLOG(ERROR) << "Untrusted contexts can't create future sync points";
-      reply->set_reply_error();
-      Send(reply);
-      return true;
-    }
-
-    // Message queue must handle the entire sync point generation because the
-    // message queue could be disabled from the main thread during generation.
-    uint32_t sync_point = 0u;
-    if (!message_queue_->GenerateSyncPointMessage(message, retire_sync_point,
-                                                  &sync_point)) {
-      DLOG(ERROR) << "GpuChannel has been destroyed.";
-      reply->set_reply_error();
-      Send(reply);
-      return true;
-    }
-
-    DCHECK_NE(sync_point, 0u);
-    GpuCommandBufferMsg_InsertSyncPoint::WriteReplyParams(reply, sync_point);
-    Send(reply);
-    handled = true;
-  }
-
   // Forward all other messages to the GPU Channel.
-  if (!handled) {
-    if (message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
-        message.type() == GpuCommandBufferMsg_WaitForGetOffsetInRange::ID) {
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&GpuChannel::HandleOutOfOrderMessage,
-                                        gpu_channel_, message));
-    } else {
-      message_queue_->PushBackMessage(message);
-    }
-    handled = true;
+  if (message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
+      message.type() == GpuCommandBufferMsg_WaitForGetOffsetInRange::ID) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&GpuChannel::HandleOutOfOrderMessage,
+                                      gpu_channel_, message));
+  } else {
+    message_queue_->PushBackMessage(message);
   }
 
   UpdatePreemptionState();
-  return handled;
+  return true;
 }
 
 void GpuChannelMessageFilter::OnMessageProcessed() {
@@ -563,7 +491,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        base::SingleThreadTaskRunner* io_task_runner,
                        int client_id,
                        uint64_t client_tracing_id,
-                       bool allow_future_sync_points,
                        bool allow_real_time_streams)
     : gpu_channel_manager_(gpu_channel_manager),
       sync_point_manager_(sync_point_manager),
@@ -579,7 +506,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       pending_valuebuffer_state_(new gpu::ValueStateMap),
       watchdog_(watchdog),
       num_stubs_descheduled_(0),
-      allow_future_sync_points_(allow_future_sync_points),
       allow_real_time_streams_(allow_real_time_streams),
       weak_factory_(this) {
   DCHECK(gpu_channel_manager);
@@ -590,7 +516,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
 
   filter_ = new GpuChannelMessageFilter(
       weak_factory_.GetWeakPtr(), message_queue_.get(), task_runner,
-      preempting_flag, allow_future_sync_points);
+      preempting_flag);
 
   subscription_ref_set_->AddObserver(this);
 }
@@ -834,19 +760,6 @@ void GpuChannel::HandleMessage() {
 
   if (routing_id == MSG_ROUTING_CONTROL) {
     handled = OnControlMessageReceived(message);
-  } else if (message.type() == GpuCommandBufferMsg_InsertSyncPoint::ID) {
-    // TODO(dyen): Temporary handling of old sync points.
-    // This must ensure that the sync point will be retired. Normally we'll
-    // find the stub based on the routing ID, and associate the sync point
-    // with it, but if that fails for any reason (channel or stub already
-    // deleted, invalid routing id), we need to retire the sync point
-    // immediately.
-    if (stub) {
-      stub->InsertSyncPoint(m->sync_point, m->retire_sync_point);
-    } else {
-      sync_point_manager_->RetireSyncPoint(m->sync_point);
-    }
-    handled = true;
   } else {
     handled = router_.RouteMessage(message);
   }

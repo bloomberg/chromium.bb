@@ -122,7 +122,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                            uint64_t client_tracing_id,
                            bool preempts,
                            bool preempted,
-                           bool allow_future_sync_points,
                            bool allow_real_time_streams,
                            const EstablishChannelCallback& callback);
 
