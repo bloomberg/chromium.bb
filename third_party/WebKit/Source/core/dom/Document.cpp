@@ -1637,6 +1637,12 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         } else {
             ASSERT(element == documentElement());
             overflowStyle = documentElementStyle.get();
+
+            // The body element has its own scrolling box, independent from the viewport.
+            // This is a bit of a weird edge case in the CSS spec that we might want to try to
+            // eliminate some day (eg. for ScrollTopLeftInterop - see http://crbug.com/157855).
+            if (bodyStyle && !bodyStyle->isOverflowVisible())
+                UseCounter::count(*this, UseCounter::BodyScrollsInAdditionToViewport);
         }
     }
 
