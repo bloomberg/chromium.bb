@@ -29,12 +29,8 @@ var SearchField = Polymer({
     showingSearch_: {
       type: Boolean,
       value: false,
+      observer: 'showingSearchChanged_',
     },
-  },
-
-  /** @param {SearchFieldDelegate} delegate */
-  setDelegate: function(delegate) {
-    this.delegate_ = delegate;
   },
 
   /**
@@ -42,8 +38,38 @@ var SearchField = Polymer({
    * @return {string}
    */
   getValue: function() {
-    var searchInput = this.$$('#search-input');
+    var searchInput = this.getSearchInput_();
     return searchInput ? searchInput.value : '';
+  },
+
+  /** @param {SearchFieldDelegate} delegate */
+  setDelegate: function(delegate) {
+    this.delegate_ = delegate;
+  },
+
+  showAndFocus: function() {
+    this.showingSearch_ = true;
+    this.focus_();
+  },
+
+  /** @private */
+  focus_: function() {
+    this.async(function() {
+      if (!this.showingSearch_)
+        return;
+
+      var searchInput = this.getSearchInput_();
+      if (searchInput)
+        searchInput.focus();
+    });
+  },
+
+  /**
+   * @return {?HTMLElement}
+   * @private
+   */
+  getSearchInput_: function() {
+    return this.$$('#search-input');
   },
 
   /** @private */
@@ -54,22 +80,27 @@ var SearchField = Polymer({
 
   /** @private */
   onSearchTermKeydown_: function(e) {
-    assert(this.showingSearch_);
     if (e.keyIdentifier == 'U+001B')  // Escape.
-      this.toggleShowingSearch_();
+      this.showingSearch_ = false;
+  },
+
+  /** @private */
+  showingSearchChanged_: function() {
+    if (this.showingSearch_) {
+      this.focus_();
+      return;
+    }
+
+    var searchInput = this.getSearchInput_();
+    if (!searchInput)
+      return;
+
+    searchInput.value = '';
+    this.onSearchTermSearch_();
   },
 
   /** @private */
   toggleShowingSearch_: function() {
     this.showingSearch_ = !this.showingSearch_;
-    this.async(function() {
-      var searchInput = this.$$('#search-input');
-      if (this.showingSearch_) {
-        searchInput.focus();
-      } else {
-        searchInput.value = '';
-        this.onSearchTermSearch_();
-      }
-    });
   },
 });

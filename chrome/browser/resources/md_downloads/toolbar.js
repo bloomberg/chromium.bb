@@ -20,7 +20,7 @@ cr.define('downloads', function() {
         reflectToAttribute: true,
         type: Boolean,
         value: false,
-        observer: 'onDownloadsShowingChange_',
+        observer: 'downloadsShowingChanged_',
       },
 
       overflowAlign_: {
@@ -39,6 +39,10 @@ cr.define('downloads', function() {
       return !this.$['search-input'].getValue() && this.downloadsShowing;
     },
 
+    onFindCommand: function() {
+      this.$['search-input'].showAndFocus();
+    },
+
     /** @private */
     onClearAllTap_: function() {
       assert(this.canClearAll());
@@ -46,7 +50,7 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onDownloadsShowingChange_: function() {
+    downloadsShowingChanged_: function() {
       this.updateClearAll_();
     },
 

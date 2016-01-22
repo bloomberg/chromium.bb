@@ -79,6 +79,9 @@ cr.define('downloads', function() {
         case 'clear-all-command':
           e.canExecute = this.$.toolbar.canClearAll();
           break;
+        case 'find-command':
+          e.canExecute = true;
+          break;
       }
     },
 
@@ -91,6 +94,8 @@ cr.define('downloads', function() {
         downloads.ActionService.getInstance().clearAll();
       else if (e.command.id == 'undo-command')
         downloads.ActionService.getInstance().undo();
+      else if (e.command.id == 'find-command')
+        this.$.toolbar.onFindCommand();
     },
 
     /** @private */
