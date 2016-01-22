@@ -62231,8 +62231,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="EventResultType" type="int">
   <int value="0" label="Passive"/>
   <int value="1" label="Uncancelable"/>
-  <int value="2" label="Cancelable and not canceled"/>
-  <int value="3" label="Cancelable and canceled"/>
+  <int value="2" label="Suppressed"/>
+  <int value="3" label="Cancelable and not canceled"/>
+  <int value="4" label="Cancelable and canceled"/>
 </enum>
 
 <enum name="EVWhitelistStatus" type="int">
