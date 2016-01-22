@@ -7,14 +7,18 @@ package org.chromium.webview_shell;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.util.SparseArray;
 
 import android.view.KeyEvent;
@@ -46,6 +50,7 @@ import java.net.URISyntaxException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -207,7 +212,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                return false;
+                // "about:" and "chrome:" schemes are internal to Chromium;
+                // don't want these to be dispatched to other apps.
+                if (url.startsWith("about:") || url.startsWith("chrome:")) {
+                    return false;
+                }
+                return startBrowsingIntent(WebViewBrowserActivity.this, url);
             }
 
             @Override
@@ -439,5 +449,74 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
     private static String getUrlFromIntent(Intent intent) {
         return intent != null ? intent.getDataString() : null;
+    }
+
+    static final Pattern BROWSER_URI_SCHEMA = Pattern.compile(
+            "(?i)"   // switch on case insensitive matching
+            + "("    // begin group for schema
+            + "(?:http|https|file):\\/\\/"
+            + "|(?:inline|data|about|chrome|javascript):"
+            + ")"
+            + "(.*)");
+
+    private static boolean startBrowsingIntent(Context context, String url) {
+        Intent intent;
+        // Perform generic parsing of the URI to turn it into an Intent.
+        try {
+            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+        } catch (Exception ex) {
+            Log.w(TAG, "Bad URI %s", url, ex);
+            return false;
+        }
+        // Check for regular URIs that WebView supports by itself, but also
+        // check if there is a specialized app that had registered itself
+        // for this kind of an intent.
+        Matcher m = BROWSER_URI_SCHEMA.matcher(url);
+        if (m.matches() && !isSpecializedHandlerAvailable(context, intent)) {
+            return false;
+        }
+        // Sanitize the Intent, ensuring web pages can not bypass browser
+        // security (only access to BROWSABLE activities).
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setComponent(null);
+        Intent selector = intent.getSelector();
+        if (selector != null) {
+            selector.addCategory(Intent.CATEGORY_BROWSABLE);
+            selector.setComponent(null);
+        }
+
+        // Pass the package name as application ID so that the intent from the
+        // same application can be opened in the same tab.
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        try {
+            context.startActivity(intent);
+            return true;
+        } catch (ActivityNotFoundException ex) {
+            Log.w(TAG, "No application can handle %s", url);
+        }
+        return false;
+    }
+
+    /**
+     * Search for intent handlers that are specific to the scheme of the URL in the intent.
+     */
+    private static boolean isSpecializedHandlerAvailable(Context context, Intent intent) {
+        PackageManager pm = context.getPackageManager();
+        List<ResolveInfo> handlers = pm.queryIntentActivities(intent,
+                PackageManager.GET_RESOLVED_FILTER);
+        if (handlers == null || handlers.size() == 0) {
+            return false;
+        }
+        for (ResolveInfo resolveInfo : handlers) {
+            if (!isNullOrGenericHandler(resolveInfo.filter)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isNullOrGenericHandler(IntentFilter filter) {
+        return filter == null
+                || (filter.countDataAuthorities() == 0 && filter.countDataPaths() == 0);
     }
 }
