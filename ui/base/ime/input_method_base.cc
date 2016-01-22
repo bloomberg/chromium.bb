@@ -16,8 +16,7 @@ namespace ui {
 
 InputMethodBase::InputMethodBase()
   : delegate_(NULL),
-    text_input_client_(NULL),
-    system_toplevel_window_focused_(false) {
+    text_input_client_(NULL) {
 }
 
 InputMethodBase::~InputMethodBase() {
@@ -30,13 +29,9 @@ void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
   delegate_ = delegate;
 }
 
-void InputMethodBase::OnFocus() {
-  system_toplevel_window_focused_ = true;
-}
+void InputMethodBase::OnFocus() {}
 
-void InputMethodBase::OnBlur() {
-  system_toplevel_window_focused_ = false;
-}
+void InputMethodBase::OnBlur() {}
 
 void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
   SetFocusedTextInputClientInternal(client);
@@ -49,7 +44,7 @@ void InputMethodBase::DetachTextInputClient(TextInputClient* client) {
 }
 
 TextInputClient* InputMethodBase::GetTextInputClient() const {
-  return system_toplevel_window_focused_ ? text_input_client_ : NULL;
+  return text_input_client_;
 }
 
 void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {

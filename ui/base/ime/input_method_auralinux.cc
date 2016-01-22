@@ -57,7 +57,6 @@ bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
 
 void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
   DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);
-  DCHECK(system_toplevel_window_focused());
 
   // If no text input client, do nothing.
   if (!GetTextInputClient()) {

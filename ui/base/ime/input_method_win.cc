@@ -321,15 +321,13 @@ LRESULT InputMethodWin::OnImeSetContext(HWND window_handle,
                                         BOOL* handled) {
   if (!!wparam) {
     imm32_manager_.CreateImeWindow(window_handle);
-    if (system_toplevel_window_focused()) {
-      // Delay initialize the tsf to avoid perf regression.
-      // Loading tsf dll causes some time, so doing it in UpdateIMEState() will
-      // slow down the browser window creation.
-      // See crbug.com/509984.
-      tsf_inputscope::InitializeTsfForInputScopes();
-      tsf_inputscope::SetInputScopeForTsfUnawareWindow(
-          toplevel_window_handle_, GetTextInputType(), GetTextInputMode());
-    }
+    // Delay initialize the tsf to avoid perf regression.
+    // Loading tsf dll causes some time, so doing it in UpdateIMEState() will
+    // slow down the browser window creation.
+    // See crbug.com/509984.
+    tsf_inputscope::InitializeTsfForInputScopes();
+    tsf_inputscope::SetInputScopeForTsfUnawareWindow(
+        toplevel_window_handle_, GetTextInputType(), GetTextInputMode());
   }
 
   OnInputMethodChanged();
