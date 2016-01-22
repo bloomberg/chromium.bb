@@ -371,8 +371,6 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
   static bool launch_mode_determined = false;
   static EC_HOST_UI_MODE launch_mode = ECHUIM_DESKTOP;
 
-  const char* modes[] = { "Desktop", "Immersive", "SysLauncher", "??" };
-
   if (launch_mode_determined)
     return launch_mode;
 
@@ -401,8 +399,6 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     return launch_mode;
   }
 
-  // From here on, if we can, we will write the outcome
-  // of this function to the registry.
   if (parameters_.HasSwitch(switches::kForceImmersive)) {
     launch_mode = ECHUIM_IMMERSIVE;
     launch_mode_determined = true;
@@ -413,31 +409,9 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     parameters_ = base::CommandLine(base::CommandLine::NO_PROGRAM);
   }
 
-  base::win::RegKey reg_key;
-  LONG key_result = reg_key.Create(HKEY_CURRENT_USER,
-                                   chrome::kMetroRegistryPath,
-                                   KEY_ALL_ACCESS);
-  if (key_result != ERROR_SUCCESS) {
-    AtlTrace("Failed to open HKCU %ls key, error 0x%x\n",
-             chrome::kMetroRegistryPath,
-             key_result);
-    if (!launch_mode_determined) {
-      // If we cannot open the key and we don't know the
-      // launch mode we default to desktop mode.
-      launch_mode = ECHUIM_DESKTOP;
-      launch_mode_determined = true;
-    }
-    return launch_mode;
+  if (!launch_mode_determined) {
+    launch_mode = ECHUIM_DESKTOP;
+    launch_mode_determined = true;
   }
-
-  if (launch_mode_determined) {
-    AtlTrace("Launch mode forced by cmdline to %s\n", modes[launch_mode]);
-    reg_key.WriteValue(chrome::kLaunchModeValue,
-                       static_cast<DWORD>(launch_mode));
-    return launch_mode;
-  }
-
-  launch_mode = ECHUIM_DESKTOP;
-  launch_mode_determined = true;
   return launch_mode;
 }

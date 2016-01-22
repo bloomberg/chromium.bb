@@ -86,6 +86,14 @@ std::string ChromiumBinariesDistribution::GetSafeBrowsingName() {
   return std::string();
 }
 
+base::string16 ChromiumBinariesDistribution::GetRegistryPath() {
+  NOTREACHED();
+  // Handling a NOTREACHED() with anything but a default return value is unusual
+  // but in this case returning the empty string would point the caller at the
+  // root of the registry which could have disastrous consequences.
+  return BrowserDistribution::GetRegistryPath();
+}
+
 base::string16 ChromiumBinariesDistribution::GetUninstallRegPath() {
   NOTREACHED();
   return base::string16();

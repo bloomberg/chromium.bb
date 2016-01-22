@@ -204,7 +204,6 @@ extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kCmdOnOsUpgrade[];
 extern const wchar_t kCmdQuickEnableCf[];
-extern const wchar_t kDelegateExecuteExe[];
 extern const wchar_t kEULASentinelFile[];
 extern const wchar_t kGoogleChromeInstallSubDir1[];
 extern const wchar_t kGoogleChromeInstallSubDir2[];

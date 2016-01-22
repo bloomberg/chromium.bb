@@ -135,7 +135,7 @@ class BrowserDistribution {
   // by third parties (e.g., a subkey that specifies the location of a native
   // messaging host's manifest), state stored in this key is removed during
   // uninstall when the user chooses to also delete their browsing data.
-  base::string16 GetRegistryPath();
+  virtual base::string16 GetRegistryPath();
 
   virtual base::string16 GetUninstallRegPath();
 

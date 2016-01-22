@@ -13,6 +13,8 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+// Do not use this, instead use BrowserDistribution's methods which will ensure
+// Google Chrome and Canary installs don't collide. http://crbug.com/577820
 #if defined(GOOGLE_CHROME_BUILD)
 #define PRODUCT_STRING_PATH L"Google\\Chrome"
 #elif defined(CHROMIUM_BUILD)
@@ -117,9 +119,6 @@ extern const int kHighestRendererOomScore;
 extern const wchar_t kMetroNavigationAndSearchMessage[];
 // Used by Metro Chrome to get information about the current tab.
 extern const wchar_t kMetroGetCurrentTabInfoMessage[];
-// Used by Metro Chrome to store activation state.
-extern const wchar_t kMetroRegistryPath[];
-extern const wchar_t kLaunchModeValue[];
 // Used to store crash report metrics using
 // content/browser_watcher/crash_reporting_metrics_win.h.
 extern const wchar_t kBrowserCrashDumpAttemptsRegistryPath[];

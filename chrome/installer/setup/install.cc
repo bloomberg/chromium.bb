@@ -624,14 +624,19 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
   }
 }
 
-// NOTE: Should the work done here, on Active Setup, change: kActiveSetupVersion
-// in update_active_setup_version_work_item.cc needs to be increased for Active
-// Setup to invoke this again for all users of this install. It may also be
-// invoked again when a system-level chrome install goes through an OS upgrade.
+// NOTE: Should the work done here, on Active Setup, change:
+// kActiveSetupMajorVersion in update_active_setup_version_work_item.cc needs to
+// be increased for Active Setup to invoke this again for all users of this
+// install. It may also be invoked again when a system-level chrome install goes
+// through an OS upgrade.
 void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
                                  const installer::Product& chrome,
                                  bool force) {
   DCHECK(chrome.is_chrome());
+
+  NoRollbackWorkItemList cleanup_list;
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(chrome, &cleanup_list);
+  cleanup_list.Do();
 
   // Only create shortcuts on Active Setup if the first run sentinel is not
   // present for this user (as some shortcuts used to be installed on first

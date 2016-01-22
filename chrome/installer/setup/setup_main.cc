@@ -982,12 +982,6 @@ installer::InstallStatus RegisterDevChrome(
         shortcut_properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
 
     // Register Chrome at user-level and make it default.
-    scoped_ptr<WorkItemList> delegate_execute_list(
-        WorkItem::CreateWorkItemList());
-    installer::AddDelegateExecuteWorkItems(
-        installer_state, chrome_exe.DirName(), Version(), chrome,
-        delegate_execute_list.get());
-    delegate_execute_list->Do();
     if (ShellUtil::CanMakeChromeDefaultUnattended()) {
       ShellUtil::MakeChromeDefault(chrome_dist, ShellUtil::CURRENT_USER,
                                    chrome_exe, true);

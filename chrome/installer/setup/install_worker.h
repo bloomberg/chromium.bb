@@ -134,15 +134,9 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
                              bool set,
                              WorkItemList* work_item_list);
 
-// Called for either installation or uninstallation. This method adds or
-// removes COM registration for a product's DelegateExecute verb handler.
-// If |new_version| is empty, the registrations will point to
-// delegate_execute.exe directly in |target_path|.
-void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                 const base::FilePath& target_path,
-                                 const base::Version& new_version,
-                                 const Product& product,
-                                 WorkItemList* list);
+// Adds work items to cleanup deprecated per-user registrations.
+void AddCleanupDeprecatedPerUserRegistrationsWorkItems(const Product& product,
+                                                       WorkItemList* list);
 
 // Adds Active Setup registration for sytem-level setup to be called by Windows
 // on user-login post-install/update.
