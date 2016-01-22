@@ -177,7 +177,6 @@ void BlobURLRequestJob::DidStart() {
       NotifyFailure(blob_reader_->net_error());
       return;
     case BlobReader::Status::IO_PENDING:
-      SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
       return;
     case BlobReader::Status::DONE:
       DidCalculateSize(net::OK);
@@ -188,8 +187,6 @@ void BlobURLRequestJob::DidStart() {
 void BlobURLRequestJob::DidCalculateSize(int result) {
   TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::CountSize", this, "uuid",
                          blob_handle_->uuid());
-  // Clear the IO_PENDING status
-  SetStatus(net::URLRequestStatus());
 
   if (result != net::OK) {
     NotifyFailure(result);

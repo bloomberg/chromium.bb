@@ -22,12 +22,8 @@ namespace {
 
 class MockURLRequestJob : public URLRequestJob {
  public:
-  MockURLRequestJob(URLRequest* request,
-                    NetworkDelegate* network_delegate,
-                    const URLRequestStatus& status)
-      : URLRequestJob(request, network_delegate),
-        status_(status),
-        weak_factory_(this) {}
+  MockURLRequestJob(URLRequest* request, NetworkDelegate* network_delegate)
+      : URLRequestJob(request, network_delegate), weak_factory_(this) {}
 
   void Start() override {
     // Start reading asynchronously so that all error reporting and data
@@ -42,11 +38,9 @@ class MockURLRequestJob : public URLRequestJob {
 
  private:
   void StartAsync() {
-    SetStatus(status_);
     NotifyHeadersComplete();
   }
 
-  URLRequestStatus status_;
   base::WeakPtrFactory<MockURLRequestJob> weak_factory_;
 };
 
@@ -55,10 +49,7 @@ class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
   URLRequestJob* MaybeCreateJob(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
-    return new MockURLRequestJob(
-        request,
-        network_delegate,
-        URLRequestStatus(URLRequestStatus::SUCCESS, OK));
+    return new MockURLRequestJob(request, network_delegate);
   }
 };
 

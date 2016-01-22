@@ -377,6 +377,7 @@ bool URLRequestJob::CanEnablePrivacyMode() const {
 }
 
 void URLRequestJob::NotifyBeforeNetworkStart(bool* defer) {
+  DCHECK(request_->status().is_io_pending());
   request_->NotifyBeforeNetworkStart(defer);
 }
 
@@ -384,11 +385,11 @@ void URLRequestJob::NotifyHeadersComplete() {
   if (has_handled_response_)
     return;
 
-  // This should not be called on error, and the job type should have cleared
-  // IO_PENDING state before calling this method.
-  // TODO(mmenke): Change this to a DCHECK once https://crbug.com/508900 is
-  // resolved.
-  CHECK(request_->status().is_success());
+  // The URLRequest status should still be IO_PENDING, which it was set to
+  // before the URLRequestJob was started.  On error or cancellation, this
+  // method should not be called.
+  DCHECK(request_->status().is_io_pending());
+  SetStatus(URLRequestStatus());
 
   // Initialize to the current time, and let the subclass optionally override
   // the time stamps if it has that information.  The default request_time is
@@ -474,6 +475,8 @@ void URLRequestJob::ConvertResultToError(int result, Error* error, int* count) {
 }
 
 void URLRequestJob::ReadRawDataComplete(int result) {
+  DCHECK(request_->status().is_io_pending());
+
   // TODO(cbentzel): Remove ScopedTracker below once crbug.com/475755 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -493,29 +496,20 @@ void URLRequestJob::ReadRawDataComplete(int result) {
 
   DCHECK_NE(ERR_IO_PENDING, error);
 
-  // Synchronize the URLRequest state machine with the URLRequestJob state
-  // machine. If this read succeeded, either the request is at EOF and the
-  // URLRequest state machine goes to 'finished', or it is not and the
-  // URLRequest state machine goes to 'success'. If the read failed, the
-  // URLRequest state machine goes directly to 'finished'.
-  //
-  // Update the URLRequest's status first, so that NotifyReadCompleted has an
-  // accurate view of the request.
-  if (error == OK && bytes_read > 0) {
-    SetStatus(URLRequestStatus());
-  } else {
-    NotifyDone(URLRequestStatus::FromError(error));
-  }
-
   GatherRawReadStats(error, bytes_read);
 
   if (filter_.get() && error == OK) {
+    // |bytes_read| being 0 indicates an EOF was received.  ReadFilteredData
+    // can incorrectly return ERR_IO_PENDING when 0 bytes are passed to it, so
+    // just don't call into the filter in that case.
     int filter_bytes_read = 0;
-    // Tell the filter that it has more data.
-    PushInputToFilter(bytes_read);
+    if (bytes_read > 0) {
+      // Tell the filter that it has more data.
+      PushInputToFilter(bytes_read);
 
-    // Filter the data.
-    error = ReadFilteredData(&filter_bytes_read);
+      // Filter the data.
+      error = ReadFilteredData(&filter_bytes_read);
+    }
 
     if (error == OK && !filter_bytes_read)
       DoneReading();
@@ -534,6 +528,22 @@ void URLRequestJob::ReadRawDataComplete(int result) {
              << " post total = " << postfilter_bytes_read_;
   }
 
+  // Synchronize the URLRequest state machine with the URLRequestJob state
+  // machine. If this read succeeded, either the request is at EOF and the
+  // URLRequest state machine goes to 'finished', or it is not and the
+  // URLRequest state machine goes to 'success'. If the read failed, the
+  // URLRequest state machine goes directly to 'finished'.  If filtered data is
+  // pending, then there's nothing to do, since the status of the request is
+  // already pending.
+  //
+  // Update the URLRequest's status first, so that NotifyReadCompleted has an
+  // accurate view of the request.
+  if (error == OK && bytes_read > 0) {
+    SetStatus(URLRequestStatus());
+  } else if (error != ERR_IO_PENDING) {
+    NotifyDone(URLRequestStatus::FromError(error));
+  }
+
   // NotifyReadCompleted should be called after SetStatus or NotifyDone updates
   // the status.
   if (error == OK)
@@ -544,12 +554,14 @@ void URLRequestJob::ReadRawDataComplete(int result) {
 
 void URLRequestJob::NotifyStartError(const URLRequestStatus &status) {
   DCHECK(!has_handled_response_);
+  DCHECK(request_->status().is_io_pending());
+
   has_handled_response_ = true;
   // There may be relevant information in the response info even in the
   // error case.
   GetResponseInfo(&request_->response_info_);
 
-  request_->set_status(status);
+  SetStatus(status);
   request_->NotifyResponseStarted();
   // |this| may have been deleted here.
 }
@@ -783,10 +795,9 @@ void URLRequestJob::SetStatus(const URLRequestStatus &status) {
   // An error status should never be replaced by a non-error status by a
   // URLRequestJob.  URLRequest has some retry paths, but it resets the status
   // itself, if needed.
-  // TODO(mmenke): Change this to a DCHECK once https://crbug.com/508900 is
-  // resolved.
-  CHECK(request_->status().is_io_pending() || request_->status().is_success() ||
-        (!status.is_success() && !status.is_io_pending()));
+  DCHECK(request_->status().is_io_pending() ||
+         request_->status().is_success() ||
+         (!status.is_success() && !status.is_io_pending()));
   request_->set_status(status);
 }
 

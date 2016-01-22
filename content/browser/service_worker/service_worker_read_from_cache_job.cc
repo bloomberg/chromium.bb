@@ -139,7 +139,6 @@ void ServiceWorkerReadFromCacheJob::StartAsync() {
       http_info_io_buffer_.get(),
       base::Bind(&ServiceWorkerReadFromCacheJob::OnReadInfoComplete,
                  weak_factory_.GetWeakPtr()));
-  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
 }
 
 const net::HttpResponseInfo* ServiceWorkerReadFromCacheJob::http_info() const {
@@ -161,7 +160,6 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
     return;
   }
   DCHECK_GE(result, 0);
-  SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   http_info_.reset(http_info_io_buffer_->http_info.release());
   if (is_range_request())
     SetupRangeResponse(http_info_io_buffer_->response_data_size);

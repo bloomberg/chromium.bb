@@ -663,10 +663,13 @@ void URLRequest::StartJob(URLRequestJob* job) {
     }
   }
 
-  // Don't allow errors to be sent from within Start().
-  // TODO(brettw) this may cause NotifyDone to be sent synchronously,
-  // we probably don't want this: they should be sent asynchronously so
-  // the caller does not get reentered.
+  // Start() always completes asynchronously.
+  //
+  // Status is generally set by URLRequestJob itself, but Start() calls
+  // directly into the URLRequestJob subclass, so URLRequestJob can't set it
+  // here.
+  // TODO(mmenke):  Make the URLRequest manage its own status.
+  status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->Start();
 }
 
@@ -860,9 +863,10 @@ void URLRequest::NotifyResponseStarted() {
 }
 
 void URLRequest::FollowDeferredRedirect() {
-  CHECK(job_.get());
-  CHECK(status_.is_success());
+  DCHECK(job_.get());
+  DCHECK(status_.is_success());
 
+  status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->FollowDeferredRedirect();
 }
 
@@ -870,6 +874,7 @@ void URLRequest::SetAuth(const AuthCredentials& credentials) {
   DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
 
+  status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->SetAuth(credentials);
 }
 
@@ -877,6 +882,7 @@ void URLRequest::CancelAuth() {
   DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
 
+  status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->CancelAuth();
 }
 
@@ -884,12 +890,14 @@ void URLRequest::ContinueWithCertificate(X509Certificate* client_cert,
                                          SSLPrivateKey* client_private_key) {
   DCHECK(job_.get());
 
+  status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->ContinueWithCertificate(client_cert, client_private_key);
 }
 
 void URLRequest::ContinueDespiteLastError() {
   DCHECK(job_.get());
 
+  status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->ContinueDespiteLastError();
 }
 
@@ -1116,11 +1124,13 @@ void URLRequest::NotifyAuthRequiredComplete(
 
 void URLRequest::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
+  status_ = URLRequestStatus();
   delegate_->OnCertificateRequested(this, cert_request_info);
 }
 
 void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
                                            bool fatal) {
+  status_ = URLRequestStatus();
   delegate_->OnSSLCertificateError(this, ssl_info, fatal);
 }
 

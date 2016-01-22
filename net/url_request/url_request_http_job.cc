@@ -480,7 +480,6 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
     std::string source("delegate");
     request_->net_log().AddEvent(NetLog::TYPE_CANCELLED,
                                  NetLog::StringCallback("source", &source));
-    NotifyCanceled();
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
 }
@@ -661,10 +660,6 @@ void URLRequestHttpJob::AddExtraHeaders() {
 }
 
 void URLRequestHttpJob::AddCookieHeaderAndStart() {
-  // No matter what, we want to report our status as IO pending since we will
-  // be notifying our consumer asynchronously via OnStartCompleted.
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-
   // If the request was destroyed, then there is no more work to do.
   if (!request_)
     return;
@@ -767,10 +762,6 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 // whether it completed synchronously or asynchronously.
 // See http://crbug.com/131066.
 void URLRequestHttpJob::SaveNextCookie() {
-  // No matter what, we want to report our status as IO pending since we will
-  // be notifying our consumer asynchronously via OnStartCompleted.
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-
   // Used to communicate with the callback. See the implementation of
   // OnCookieSaved.
   scoped_refptr<SharedBoolean> callback_pending = new SharedBoolean(false);
@@ -812,7 +803,6 @@ void URLRequestHttpJob::SaveNextCookie() {
   if (!callback_pending->data) {
     response_cookies_.clear();
     response_cookies_save_index_ = 0;
-    SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
     NotifyHeadersComplete();
     return;
   }
@@ -952,9 +942,6 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     return;
 
   receive_headers_end_ = base::TimeTicks::Now();
-
-  // Clear the IO_PENDING status
-  SetStatus(URLRequestStatus());
 
   const URLRequestContext* context = request_->context();
 
@@ -1322,10 +1309,6 @@ void URLRequestHttpJob::ContinueWithCertificate(
 
   ResetTimer();
 
-  // No matter what, we want to report our status as IO pending since we will
-  // be notifying our consumer asynchronously via OnStartCompleted.
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-
   int rv = transaction_->RestartWithCertificate(client_cert, client_private_key,
                                                 start_callback_);
   if (rv == ERR_IO_PENDING)
@@ -1347,10 +1330,6 @@ void URLRequestHttpJob::ContinueDespiteLastError() {
   receive_headers_end_ = base::TimeTicks();
 
   ResetTimer();
-
-  // No matter what, we want to report our status as IO pending since we will
-  // be notifying our consumer asynchronously via OnStartCompleted.
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
 
   int rv = transaction_->RestartIgnoringLastError(start_callback_);
   if (rv == ERR_IO_PENDING)

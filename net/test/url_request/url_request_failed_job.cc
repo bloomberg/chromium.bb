@@ -181,7 +181,6 @@ void URLRequestFailedJob::StartAsync() {
       NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, net_error_));
       return;
     }
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
     return;
   }
   response_info_.headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");

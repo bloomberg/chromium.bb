@@ -9,7 +9,7 @@
 #include "content/browser/streams/stream_read_observer.h"
 #include "content/common/content_export.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_job.h"
+#include "net/url_request/url_range_request_job.h"
 
 namespace content {
 
@@ -17,7 +17,7 @@ class Stream;
 
 // A request job that handles reading stream URLs.
 class CONTENT_EXPORT StreamURLRequestJob
-    : public net::URLRequestJob,
+    : public net::URLRangeRequestJob,
       public StreamReadObserver {
  public:
   StreamURLRequestJob(net::URLRequest* request,
@@ -34,7 +34,6 @@ class CONTENT_EXPORT StreamURLRequestJob
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int GetResponseCode() const override;
-  void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
 
  protected:
   ~StreamURLRequestJob() override;

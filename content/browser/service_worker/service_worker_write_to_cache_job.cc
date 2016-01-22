@@ -365,12 +365,10 @@ void ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete(net::Error error) {
     NotifyStartError(net::URLRequestStatus::FromError(error));
     return;
   }
-  SetStatus(net::URLRequestStatus());
   NotifyHeadersComplete();
 }
 
 void ServiceWorkerWriteToCacheJob::OnWriteDataComplete(net::Error error) {
-  SetStatus(net::URLRequestStatus::FromError(error));
   DCHECK_NE(net::ERR_IO_PENDING, error);
   if (io_buffer_bytes_ == 0)
     error = NotifyFinishedCaching(net::URLRequestStatus::FromError(error), "");
@@ -452,7 +450,6 @@ void ServiceWorkerWriteToCacheJob::NotifyStartErrorHelper(
   net::URLRequestStatus reported_status = status;
   std::string reported_status_message = status_message;
 
-  SetStatus(reported_status);
   NotifyStartError(reported_status);
 }
 

@@ -285,7 +285,6 @@ int TestDownloadRequestHandler::PartialResponseJob::ReadRawData(
 
     if (offset_of_next_read_ == injected_error.offset) {
       int error = injected_error.error;
-      SetStatus(net::URLRequestStatus(net::URLRequestStatus::FAILED, error));
       DVLOG(1) << "Returning error " << net::ErrorToString(error);
       ReportCompletedRequest(injected_error.offset - requested_range_begin_);
       parameters_->injected_errors.pop();
@@ -353,7 +352,6 @@ void TestDownloadRequestHandler::PartialResponseJob::OnStartResponseCallback(
 
 void TestDownloadRequestHandler::PartialResponseJob::HandleOnStartDefault() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SetStatus(net::URLRequestStatus());
 
   const net::HttpRequestHeaders& extra_headers =
       request()->extra_request_headers();
@@ -367,8 +365,9 @@ void TestDownloadRequestHandler::PartialResponseJob::HandleOnStartDefault() {
   // ETag, then try to handle the range request.
   if (parameters_->support_byte_ranges &&
       extra_headers.GetHeader(net::HttpRequestHeaders::kIfRange, &value) &&
-      value == parameters_->etag && HandleRangeAssumingValidatorMatch())
+      value == parameters_->etag && HandleRangeAssumingValidatorMatch()) {
     return;
+  }
 
   if (parameters_->support_byte_ranges &&
       extra_headers.GetHeader("If-Match", &value)) {

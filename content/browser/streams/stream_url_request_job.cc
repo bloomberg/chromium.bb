@@ -23,7 +23,7 @@ StreamURLRequestJob::StreamURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     scoped_refptr<Stream> stream)
-    : net::URLRequestJob(request, network_delegate),
+    : net::URLRangeRequestJob(request, network_delegate),
       stream_(stream),
       headers_set_(false),
       pending_buffer_size_(0),
@@ -147,31 +147,18 @@ int StreamURLRequestJob::GetResponseCode() const {
   return response_info_->headers->response_code();
 }
 
-void StreamURLRequestJob::SetExtraRequestHeaders(
-    const net::HttpRequestHeaders& headers) {
-  std::string range_header;
-  if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
-    std::vector<net::HttpByteRange> ranges;
-    if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
-      if (ranges.size() == 1) {
-        // Streams don't support seeking, so a non-zero starting position
-        // doesn't make sense.
-        if (ranges[0].first_byte_position() == 0) {
-          max_range_ = ranges[0].last_byte_position() + 1;
-        } else {
-          NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
-          return;
-        }
-      } else {
-        NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
-        return;
-      }
-    }
-  }
-}
-
 void StreamURLRequestJob::DidStart() {
-  // We only support GET request.
+  if (range_parse_result() == net::OK && ranges().size() > 0) {
+    // Only one range is supported, and it must start at the first byte.
+    if (ranges().size() > 1 || ranges()[0].first_byte_position() != 0) {
+      NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
+      return;
+    }
+
+    max_range_ = ranges()[0].last_byte_position() + 1;
+  }
+
+  // This class only supports GET requests.
   if (request()->method() != "GET") {
     NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
     return;

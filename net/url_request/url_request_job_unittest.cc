@@ -126,6 +126,15 @@ const MockTransaction kEmptyBodyGzip_Transaction = {
     OK,
 };
 
+const MockTransaction kInvalidContentGZip_Transaction = {
+    "http://www.google.com/gzyp", "GET", base::Time(), "", LOAD_NORMAL,
+    "HTTP/1.1 200 OK",
+    "Content-Encoding: gzip\n"
+    "Content-Length: 21\n",
+    base::Time(), "not a valid gzip body", TEST_MODE_NORMAL, nullptr, nullptr,
+    0, 0, OK,
+};
+
 const MockTransaction kBrotli_Slow_Transaction = {
     "http://www.google.com/brotli", "GET", base::Time(), "", LOAD_NORMAL,
     "HTTP/1.1 200 OK",
@@ -270,6 +279,34 @@ TEST(URLRequestJob, EmptyBodySkipFilter) {
   EXPECT_TRUE(network_layer.done_reading_called());
 
   RemoveMockTransaction(&kEmptyBodyGzip_Transaction);
+}
+
+// Regression test for crbug.com/575213.
+TEST(URLRequestJob, InvalidContentGZipTransaction) {
+  MockNetworkLayer network_layer;
+  TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL(kInvalidContentGZip_Transaction.url), DEFAULT_PRIORITY, &d));
+  AddMockTransaction(&kInvalidContentGZip_Transaction);
+
+  req->set_method("GET");
+  req->Start();
+
+  base::MessageLoop::current()->Run();
+
+  // Request failed indicates the request failed before headers were received,
+  // so should be false.
+  EXPECT_FALSE(d.request_failed());
+  EXPECT_EQ(200, req->GetResponseCode());
+  EXPECT_FALSE(req->status().is_success());
+  EXPECT_EQ(ERR_CONTENT_DECODING_FAILED, req->status().error());
+  EXPECT_TRUE(d.data_received().empty());
+  EXPECT_FALSE(network_layer.done_reading_called());
+
+  RemoveMockTransaction(&kInvalidContentGZip_Transaction);
 }
 
 // Regression test for crbug.com/553300.
