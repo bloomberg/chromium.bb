@@ -7,6 +7,7 @@
 #include "net/quic/congestion_control/general_loss_algorithm.h"
 #include "net/quic/congestion_control/tcp_loss_algorithm.h"
 #include "net/quic/congestion_control/time_loss_algorithm.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 
 namespace net {
@@ -23,7 +24,7 @@ LossDetectionInterface* LossDetectionInterface::Create(
     case kTime:
       return new TimeLossAlgorithm();
   }
-  LOG(DFATAL) << "Unknown loss detection algorithm:" << loss_type;
+  QUIC_BUG << "Unknown loss detection algorithm:" << loss_type;
   return nullptr;
 }
 

@@ -49,4 +49,8 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_rfc7539;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_drop_non_awaited_packets;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_utils_use_fast_incremental_hash;
 NET_EXPORT_PRIVATE extern bool FLAGS_require_strike_register_or_server_nonce;
+NET_EXPORT_PRIVATE extern bool
+    FLAGS_quic_time_wait_list_manager_use_shared_writer;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_log_loss_event;
+
 #endif  // NET_QUIC_QUIC_FLAGS_H_

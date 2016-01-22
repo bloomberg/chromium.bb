@@ -106,6 +106,8 @@ const struct QuicErrorMapping {
   { net::QUIC_INVALID_BLOCKED_DATA, "quic.invalid.blocked_data" },
   // STOP_WAITING frame data is malformed.
   { net::QUIC_INVALID_STOP_WAITING_DATA, "quic.invalid.stop_waiting_data" },
+  // PATH_CLOSE frame data is malformed.
+  { net::QUIC_INVALID_PATH_CLOSE_DATA, "quic.invalid_path_close_data" },
   // ACK frame data is malformed.
   { net::QUIC_INVALID_ACK_DATA, "quic.invalid.ack_data" },
 
@@ -255,6 +257,9 @@ const struct QuicErrorMapping {
   // tampered with.
   { net::QUIC_VERSION_NEGOTIATION_MISMATCH,
    "quic.version_negotiation_mismatch" },
+
+  // Multipath is not enabled, but a packet with multipath flag on is received.
+  { net::QUIC_BAD_MULTIPATH_FLAG, "quic.bad_multipath_flag" },
 
   // Network change and connection migration errors.
 

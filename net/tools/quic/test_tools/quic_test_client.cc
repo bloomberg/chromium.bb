@@ -437,7 +437,7 @@ void QuicTestClient::Disconnect() {
 }
 
 IPEndPoint QuicTestClient::local_address() const {
-  return client_->client_address();
+  return client_->GetLatestClientAddress();
 }
 
 void QuicTestClient::ClearPerRequestState() {

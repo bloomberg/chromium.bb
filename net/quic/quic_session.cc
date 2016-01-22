@@ -588,7 +588,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       break;
 
     case HANDSHAKE_CONFIRMED:
-      LOG_IF(DFATAL, !config_.negotiated())
+      QUIC_BUG_IF(!config_.negotiated())
           << ENDPOINT << "Handshake confirmed without parameter negotiation.";
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
@@ -787,7 +787,7 @@ void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id,
 #ifndef NDEBUG
   ReliableQuicStream* stream = GetStream(id);
   if (stream != nullptr) {
-    LOG_IF(DFATAL, priority != stream->Priority())
+    QUIC_BUG_IF(priority != stream->Priority())
         << ENDPOINT << "Stream " << id
         << "Priorities do not match.  Got: " << static_cast<int>(priority)
         << " Expected: " << static_cast<int>(stream->Priority());

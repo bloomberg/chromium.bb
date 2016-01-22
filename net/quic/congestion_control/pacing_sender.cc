@@ -111,6 +111,10 @@ void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   sender_->OnRetransmissionTimeout(packets_retransmitted);
 }
 
+void PacingSender::OnConnectionMigration() {
+  sender_->OnConnectionMigration();
+}
+
 QuicTime::Delta PacingSender::TimeUntilSend(
     QuicTime now,
     QuicByteCount bytes_in_flight,

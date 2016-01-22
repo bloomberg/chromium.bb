@@ -324,5 +324,73 @@ TEST_F(PacingSenderTest, NoBurstInRecovery) {
   CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
 }
 
+TEST_F(PacingSenderTest, VerifyInnerSenderCalled) {
+  QuicBandwidth kBandwidth = QuicBandwidth::FromBitsPerSecond(1000);
+  QuicTime kTime = QuicTime::Infinite();
+  QuicTime::Delta kTimeDelta = QuicTime::Delta::Infinite();
+  QuicByteCount kBytes = 12345u;
+
+  EXPECT_CALL(*mock_sender_, SetFromConfig(_, Perspective::IS_SERVER));
+  QuicConfig config;
+  pacing_sender_->SetFromConfig(config, Perspective::IS_SERVER);
+
+  EXPECT_CALL(*mock_sender_, ResumeConnectionState(_, true));
+  CachedNetworkParameters cached_network_params;
+  pacing_sender_->ResumeConnectionState(cached_network_params, true);
+
+  EXPECT_CALL(*mock_sender_, SetNumEmulatedConnections(2));
+  pacing_sender_->SetNumEmulatedConnections(2);
+
+  EXPECT_CALL(*mock_sender_, SetMaxCongestionWindow(kBytes));
+  pacing_sender_->SetMaxCongestionWindow(kBytes);
+
+  SendAlgorithmInterface::CongestionVector packets;
+  EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytes, packets, packets));
+  pacing_sender_->OnCongestionEvent(true, kBytes, packets, packets);
+
+  EXPECT_CALL(*mock_sender_, OnPacketSent(kTime, kBytes, 123u, kBytes,
+                                          HAS_RETRANSMITTABLE_DATA));
+  EXPECT_CALL(*mock_sender_, PacingRate()).WillOnce(Return(kBandwidth));
+  pacing_sender_->OnPacketSent(kTime, kBytes, 123u, kBytes,
+                               HAS_RETRANSMITTABLE_DATA);
+
+  EXPECT_CALL(*mock_sender_, OnRetransmissionTimeout(true));
+  pacing_sender_->OnRetransmissionTimeout(true);
+
+  EXPECT_CALL(*mock_sender_, OnConnectionMigration());
+  pacing_sender_->OnConnectionMigration();
+
+  EXPECT_CALL(*mock_sender_,
+              TimeUntilSend(kTime, kBytes, HAS_RETRANSMITTABLE_DATA))
+      .WillOnce(Return(kTimeDelta));
+  pacing_sender_->TimeUntilSend(kTime, kBytes, HAS_RETRANSMITTABLE_DATA);
+
+  EXPECT_CALL(*mock_sender_, PacingRate()).WillOnce(Return(kBandwidth));
+  EXPECT_EQ(kBandwidth, pacing_sender_->PacingRate());
+
+  EXPECT_CALL(*mock_sender_, BandwidthEstimate()).WillOnce(Return(kBandwidth));
+  EXPECT_EQ(kBandwidth, pacing_sender_->BandwidthEstimate());
+
+  EXPECT_CALL(*mock_sender_, RetransmissionDelay())
+      .WillOnce(Return(kTimeDelta));
+  EXPECT_EQ(kTimeDelta, pacing_sender_->RetransmissionDelay());
+
+  EXPECT_CALL(*mock_sender_, GetCongestionWindow()).WillOnce(Return(kBytes));
+  EXPECT_EQ(kBytes, pacing_sender_->GetCongestionWindow());
+
+  EXPECT_CALL(*mock_sender_, InSlowStart()).WillOnce(Return(true));
+  EXPECT_TRUE(pacing_sender_->InSlowStart());
+
+  EXPECT_CALL(*mock_sender_, InRecovery()).WillOnce(Return(true));
+  EXPECT_TRUE(pacing_sender_->InRecovery());
+
+  EXPECT_CALL(*mock_sender_, GetSlowStartThreshold()).WillOnce(Return(kBytes));
+  EXPECT_EQ(kBytes, pacing_sender_->GetSlowStartThreshold());
+
+  EXPECT_CALL(*mock_sender_, GetCongestionControlType())
+      .WillOnce(Return(kReno));
+  EXPECT_EQ(kReno, pacing_sender_->GetCongestionControlType());
+}
+
 }  // namespace test
 }  // namespace net

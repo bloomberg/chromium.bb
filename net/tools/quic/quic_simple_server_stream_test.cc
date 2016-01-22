@@ -42,6 +42,8 @@ using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
 
+DECLARE_bool(quic_always_log_bugs_for_tests);
+
 namespace net {
 namespace tools {
 namespace test {
@@ -152,6 +154,7 @@ class QuicSimpleServerStreamTest
             ::net::test::CryptoTestUtils::ProofSourceForTesting())),
         session_(connection_, session_owner_, crypto_config_.get()),
         body_("hello world") {
+    FLAGS_quic_always_log_bugs_for_tests = true;
     SpdyHeaderBlock request_headers;
     request_headers[":host"] = "";
     request_headers[":authority"] = "www.google.com";

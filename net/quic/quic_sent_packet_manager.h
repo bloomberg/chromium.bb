@@ -58,6 +58,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                                QuicPacketNumber largest_observed,
                                bool rtt_updated,
                                QuicPacketNumber least_unacked_sent_packet) {}
+
+    virtual void OnPacketLoss(QuicPacketNumber lost_packet_number,
+                              TransmissionType transmission_type,
+                              QuicTime detection_time) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -73,29 +77,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     // Called when RTT may have changed, including when an RTT is read from
     // the config.
     virtual void OnRttChange() = 0;
-  };
-
-  // Struct to store the pending retransmission information.
-  struct PendingRetransmission {
-    PendingRetransmission(QuicPathId path_id,
-                          QuicPacketNumber packet_number,
-                          TransmissionType transmission_type,
-                          const RetransmittableFrames& retransmittable_frames,
-                          EncryptionLevel encryption_level,
-                          QuicPacketNumberLength packet_number_length)
-        : path_id(path_id),
-          packet_number(packet_number),
-          transmission_type(transmission_type),
-          retransmittable_frames(retransmittable_frames),
-          encryption_level(encryption_level),
-          packet_number_length(packet_number_length) {}
-
-    QuicPathId path_id;
-    QuicPacketNumber packet_number;
-    TransmissionType transmission_type;
-    const RetransmittableFrames& retransmittable_frames;
-    EncryptionLevel encryption_level;
-    QuicPacketNumberLength packet_number_length;
   };
 
   QuicSentPacketManager(Perspective perspective,
@@ -249,6 +230,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     network_change_visitor_ = visitor;
   }
 
+  bool InSlowStart() const;
+
   // Used in Chromium, but not in the server.
   size_t consecutive_rto_count() const { return consecutive_rto_count_; }
 
@@ -326,13 +309,13 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // received, so the packet remains pending if it is and the congestion control
   // does not consider the packet acked.
   void MarkPacketRevived(QuicPacketNumber packet_number,
-                         QuicTime::Delta delta_largest_observed);
+                         QuicTime::Delta ack_delay_time);
 
   // Removes the retransmittability and in flight properties from the packet at
   // |info| due to receipt by the peer.
   void MarkPacketHandled(QuicPacketNumber packet_number,
                          TransmissionInfo* info,
-                         QuicTime::Delta delta_largest_observed);
+                         QuicTime::Delta ack_delay_time);
 
   // Request that |packet_number| be retransmitted after the other pending
   // retransmissions.  Does not add it to the retransmissions if it's already

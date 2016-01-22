@@ -170,7 +170,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager
 
   // The time we received the largest_observed packet number, or zero if
   // no packet numbers have been received since UpdateReceivedPacketInfo.
-  // Needed for calculating delta_time_largest_observed.
+  // Needed for calculating ack_delay_time.
   QuicTime time_largest_observed_;
 
   QuicConnectionStats* stats_;

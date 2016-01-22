@@ -10,6 +10,7 @@
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 
 using std::max;
@@ -314,7 +315,7 @@ void TcpCubicBytesSender::MaybeIncreaseCwnd(
     QuicPacketNumber acked_packet_number,
     QuicByteCount acked_bytes,
     QuicByteCount bytes_in_flight) {
-  LOG_IF(DFATAL, InRecovery()) << "Never increase the CWND during recovery.";
+  QUIC_BUG_IF(InRecovery()) << "Never increase the CWND during recovery.";
   // Do not increase the congestion window unless the sender is close to using
   // the current window.
   if (!IsCwndLimited(bytes_in_flight)) {

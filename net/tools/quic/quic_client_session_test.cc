@@ -261,8 +261,8 @@ TEST_P(ToolsQuicClientSessionTest, InvalidFramedPacketReceived) {
   // Verify that a decryptable packet with bad frames does close the connection.
   QuicConnectionId connection_id = session_->connection()->connection_id();
   scoped_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
-      connection_id, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_6BYTE_PACKET_NUMBER, nullptr));
+      connection_id, false, false, false, 100, "data",
+      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, nullptr));
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(1);
   session_->connection()->ProcessUdpPacket(client_address, server_address,
                                            *packet);

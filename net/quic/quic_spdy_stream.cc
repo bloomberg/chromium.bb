@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
@@ -82,7 +83,7 @@ size_t QuicSpdyStream::WriteTrailers(
     return 0;
   }
   if (fin_sent()) {
-    LOG(DFATAL) << "Trailers cannot be sent after a FIN.";
+    QUIC_BUG << "Trailers cannot be sent after a FIN.";
     return 0;
   }
 

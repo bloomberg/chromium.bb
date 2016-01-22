@@ -906,6 +906,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
       for (size_t i = GetStartOfFecProtectedData(
                header.public_header.connection_id_length,
                header.public_header.version_flag,
+               header.public_header.multipath_flag,
                header.public_header.packet_number_length);
            i < data_packet->length(); ++i) {
         data_packet->mutable_data()[i] ^= data_packet->data()[i];
@@ -970,6 +971,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   }
 
   QuicPacketEntropyHash ProcessGoAwayPacket(QuicGoAwayFrame* frame) {
+    return ProcessFramePacket(QuicFrame(frame));
+  }
+
+  QuicPacketEntropyHash ProcessPathClosePacket(QuicPathCloseFrame* frame) {
     return ProcessFramePacket(QuicFrame(frame));
   }
 
@@ -1820,10 +1825,10 @@ TEST_P(QuicConnectionTest, FECSending) {
   // max_packet_length by 2 so that subsequent packets containing subsequent
   // stream frames with non-zero offets will fit within the packet length.
   size_t length =
-      2 + GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
-                                      PACKET_8BYTE_CONNECTION_ID,
-                                      PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP,
-                                      &payload_length);
+      2 + GetPacketLengthForOneStream(
+              connection_.version(), kIncludeVersion, !kIncludePathId,
+              PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER,
+              IN_FEC_GROUP, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   if (generator_->fec_send_policy() == FEC_ALARM_TRIGGER) {
@@ -1849,8 +1854,9 @@ TEST_P(QuicConnectionTest, FECQueueing) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   size_t length = GetPacketLengthForOneStream(
-      connection_.version(), kIncludeVersion, PACKET_8BYTE_CONNECTION_ID,
-      PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP, &payload_length);
+      connection_.version(), kIncludeVersion, !kIncludePathId,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP,
+      &payload_length);
   connection_.SetMaxPacketLength(length);
   EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
 
@@ -4264,8 +4270,9 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   size_t length = GetPacketLengthForOneStream(
-      connection_.version(), kIncludeVersion, PACKET_8BYTE_CONNECTION_ID,
-      PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP, &payload_length);
+      connection_.version(), kIncludeVersion, !kIncludePathId,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP,
+      &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -4287,10 +4294,10 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
   // max_packet_length by 2 so that subsequent packets containing subsequent
   // stream frames with non-zero offets will fit within the packet length.
   size_t length =
-      2 + GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
-                                      PACKET_8BYTE_CONNECTION_ID,
-                                      PACKET_1BYTE_PACKET_NUMBER,
-                                      NOT_IN_FEC_GROUP, &payload_length);
+      2 + GetPacketLengthForOneStream(
+              connection_.version(), kIncludeVersion, !kIncludePathId,
+              PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER,
+              NOT_IN_FEC_GROUP, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -4672,6 +4679,15 @@ TEST_P(QuicConnectionTest, Blocked) {
   blocked.stream_id = 3;
   EXPECT_CALL(visitor_, OnBlockedFrame(_));
   ProcessFramePacket(QuicFrame(&blocked));
+}
+
+TEST_P(QuicConnectionTest, PathClose) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  QuicPathCloseFrame path_close = QuicPathCloseFrame(1);
+  ProcessPathClosePacket(&path_close);
+  EXPECT_TRUE(QuicFramerPeer::IsPathClosed(
+      QuicConnectionPeer::GetFramer(&connection_), 1));
 }
 
 TEST_P(QuicConnectionTest, ZeroBytePacket) {
@@ -5591,6 +5607,27 @@ TEST_P(QuicConnectionTest, EnableMultipathNegotiation) {
 
   connection_.SetFromConfig(config);
   EXPECT_TRUE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
+}
+
+TEST_P(QuicConnectionTest, ClosePath) {
+  QuicPathId kTestPathId = 1;
+  connection_.SendPathClose(kTestPathId);
+  EXPECT_TRUE(QuicFramerPeer::IsPathClosed(
+      QuicConnectionPeer::GetFramer(&connection_), kTestPathId));
+}
+
+TEST_P(QuicConnectionTest, BadMultipathFlag) {
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_BAD_MULTIPATH_FLAG, false));
+
+  // Receieve a packet with multipath flag on when multipath is not enabled.
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
+  peer_creator_.SetCurrentPath(/*path_id=*/1u, 1u, 10u);
+  QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
+  EXPECT_DFATAL(ProcessFramePacket(QuicFrame(&stream_frame)),
+                "Received a packet with multipath flag on when multipath is "
+                "not enabled.");
+  EXPECT_FALSE(connection_.connected());
 }
 
 }  // namespace

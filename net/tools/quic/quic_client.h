@@ -143,6 +143,14 @@ class QuicClient : public QuicClientBase,
   // Otherwise, deletes the data.  Takes ownerership of |data_to_resend|.
   void MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend);
 
+  // If the client has at least one UDP socket, return address of the latest
+  // created one. Otherwise, return an empty socket address.
+  const IPEndPoint GetLatestClientAddress() const;
+
+  // If the client has at least one UDP socket, return the latest created one.
+  // Otherwise, return -1.
+  int GetLatestFD() const;
+
   void set_bind_to_address(IPAddressNumber address) {
     bind_to_address_ = address;
   }
@@ -153,9 +161,6 @@ class QuicClient : public QuicClientBase,
 
   const IPEndPoint& server_address() const { return server_address_; }
 
-  const IPEndPoint& client_address() const { return client_address_; }
-
-  int fd() { return fd_; }
 
   // Takes ownership of the listener.
   void set_response_listener(ResponseListener* listener) {
@@ -177,10 +182,18 @@ class QuicClient : public QuicClientBase,
                          IPEndPoint* server_address,
                          IPAddressNumber* client_ip);
 
+  // If |fd| is an open UDP socket, unregister and close it. Otherwise, do
+  // nothing.
+  virtual void CleanUpUDPSocket(int fd);
+
+  // Unregister and close all open UDP sockets.
+  virtual void CleanUpAllUDPSockets();
+
   EpollServer* epoll_server() { return epoll_server_; }
 
-  // If the socket has been created, then unregister and close() the FD.
-  virtual void CleanUpUDPSocket();
+  const linked_hash_map<int, IPEndPoint>& fd_address_map() const {
+    return fd_address_map_;
+  }
 
  private:
   friend class net::tools::test::QuicClientPeer;
@@ -212,17 +225,14 @@ class QuicClient : public QuicClientBase,
   // and binds the socket to our address.
   bool CreateUDPSocket();
 
-  // Actually clean up the socket.
-  void CleanUpUDPSocketImpl();
+  // Actually clean up |fd|.
+  void CleanUpUDPSocketImpl(int fd);
 
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
 
   // Address of the server.
   const IPEndPoint server_address_;
-
-  // Address of the client if the client is connected to the server.
-  IPEndPoint client_address_;
 
   // If initialized, the address to bind to.
   IPAddressNumber bind_to_address_;
@@ -231,8 +241,10 @@ class QuicClient : public QuicClientBase,
 
   // Listens for events on the client socket.
   EpollServer* epoll_server_;
-  // UDP socket.
-  int fd_;
+
+  // Map mapping created UDP sockets to their addresses. By using linked hash
+  // map, the order of socket creation can be recorded.
+  linked_hash_map<int, IPEndPoint> fd_address_map_;
 
   // Listens for full responses.
   scoped_ptr<ResponseListener> response_listener_;

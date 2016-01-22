@@ -114,9 +114,8 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("largest_observed",
                   base::Uint64ToString(frame->largest_observed));
-  dict->SetString(
-      "delta_time_largest_observed_us",
-      base::Int64ToString(frame->delta_time_largest_observed.ToMicroseconds()));
+  dict->SetString("delta_time_largest_observed_us",
+                  base::Int64ToString(frame->ack_delay_time.ToMicroseconds()));
   dict->SetInteger("entropy_hash", frame->entropy_hash);
   dict->SetBoolean("truncated", frame->is_truncated);
 

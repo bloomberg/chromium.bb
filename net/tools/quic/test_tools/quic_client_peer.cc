@@ -16,8 +16,14 @@ bool QuicClientPeer::CreateUDPSocket(QuicClient* client) {
 }
 
 // static
+void QuicClientPeer::CleanUpUDPSocket(QuicClient* client, int fd) {
+  client->CleanUpUDPSocket(fd);
+}
+
+// static
 void QuicClientPeer::SetClientPort(QuicClient* client, int port) {
-  client->client_address_ = IPEndPoint(client->client_address_.address(), port);
+  client->fd_address_map_.back().second =
+      IPEndPoint(client->GetLatestClientAddress().address(), port);
 }
 
 }  // namespace test

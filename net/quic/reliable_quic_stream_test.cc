@@ -165,9 +165,10 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
 TEST_F(ReliableQuicStreamTest, WriteAllData) {
   Initialize(kShouldProcessData);
 
-  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
-                          PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  size_t length =
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+              PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+              PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
@@ -237,9 +238,10 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   Initialize(kShouldProcessData);
 
   EXPECT_FALSE(HasWriteBlockedStreams());
-  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
-                          PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  size_t length =
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+              PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+              PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
@@ -271,9 +273,10 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectAlways) {
   ReliableQuicStreamPeer::SetFecPolicy(stream_, FEC_PROTECT_ALWAYS);
 
   EXPECT_FALSE(HasWriteBlockedStreams());
-  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
-                          PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_6BYTE_PACKET_NUMBER, 0u, IN_FEC_GROUP);
+  size_t length =
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+              PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+              PACKET_6BYTE_PACKET_NUMBER, 0u, IN_FEC_GROUP);
   connection_->SetMaxPacketLength(length);
 
   // Write first data onto stream, which will cause one session write.
@@ -306,9 +309,10 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectOptional) {
   ReliableQuicStreamPeer::SetFecPolicy(stream_, FEC_PROTECT_OPTIONAL);
 
   EXPECT_FALSE(HasWriteBlockedStreams());
-  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
-                          PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  size_t length =
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+              PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+              PACKET_6BYTE_PACKET_NUMBER, 0u, NOT_IN_FEC_GROUP);
   connection_->SetMaxPacketLength(length);
 
   // Write first data onto stream, which will cause one session write.

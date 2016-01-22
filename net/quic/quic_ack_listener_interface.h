@@ -20,7 +20,7 @@ class NET_EXPORT_PRIVATE QuicAckListenerInterface
   // Called when a packet is acked.  Called once per packet.
   // |acked_bytes| is the number of data bytes acked.
   virtual void OnPacketAcked(int acked_bytes,
-                             QuicTime::Delta delta_largest_observed) = 0;
+                             QuicTime::Delta ack_delay_time) = 0;
 
   // Called when a packet is retransmitted.  Called once per packet.
   // |retransmitted_bytes| is the number of data bytes retransmitted.

@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_stream.h"
 #include "net/quic/spdy_utils.h"
@@ -43,7 +44,7 @@ void QuicSimpleServerStream::OnInitialHeadersComplete(bool fin,
 
 void QuicSimpleServerStream::OnTrailingHeadersComplete(bool fin,
                                                        size_t frame_len) {
-  LOG(DFATAL) << "Server does not support receiving Trailers.";
+  QUIC_BUG << "Server does not support receiving Trailers.";
   SendErrorResponse();
 }
 
@@ -99,8 +100,7 @@ void QuicSimpleServerStream::OnDataAvailable() {
 void QuicSimpleServerStream::PushResponse(
     SpdyHeaderBlock push_request_headers) {
   if (id() % 2 != 0) {
-    LOG(DFATAL) << "Client initiated stream shouldn't be used "
-                << "as promised stream.";
+    QUIC_BUG << "Client initiated stream shouldn't be used as promised stream.";
     return;
   }
   // Change the stream state to emulate a client request.
@@ -126,7 +126,7 @@ void QuicSimpleServerStream::SendResponse() {
           request_headers_[":authority"], request_headers_[":path"]);
   if (response == nullptr) {
     DVLOG(1) << "Response not found in cache.";
-    SendErrorResponse();
+    SendNotFoundResponse();
     return;
   }
 
@@ -191,6 +191,14 @@ void QuicSimpleServerStream::SendResponse() {
                                 response->trailers());
 }
 
+void QuicSimpleServerStream::SendNotFoundResponse() {
+  DVLOG(1) << "Sending not found response for stream " << id();
+  SpdyHeaderBlock headers;
+  headers[":status"] = "404";
+  headers["content-length"] = base::IntToString(strlen(kNotFoundResponseBody));
+  SendHeadersAndBody(headers, kNotFoundResponseBody);
+}
+
 void QuicSimpleServerStream::SendErrorResponse() {
   DVLOG(1) << "Sending error response for stream " << id();
   SpdyHeaderBlock headers;
@@ -242,6 +250,8 @@ void QuicSimpleServerStream::SendHeadersAndBodyAndTrailers(
 }
 
 const char* const QuicSimpleServerStream::kErrorResponseBody = "bad";
+const char* const QuicSimpleServerStream::kNotFoundResponseBody =
+    "file not found";
 
 }  // namespace tools
 }  // namespace net

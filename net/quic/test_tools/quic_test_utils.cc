@@ -78,6 +78,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
   return new QuicPacket(buffer, length, /* owns_buffer */ true,
                         header.public_header.connection_id_length,
                         header.public_header.version_flag,
+                        header.public_header.multipath_flag,
                         header.public_header.packet_number_length);
 }
 
@@ -174,6 +175,10 @@ bool NoOpFramerVisitor::OnWindowUpdateFrame(
 }
 
 bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnPathCloseFrame(const QuicPathCloseFrame& frame) {
   return true;
 }
 
@@ -531,6 +536,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
+    bool path_id_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const string& data,
@@ -563,7 +569,8 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   // Now set the packet's private flags byte to 0xFF, which is an invalid value.
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
-      connection_id_length, version_flag, packet_number_length)] = 0xFF;
+      connection_id_length, version_flag, path_id_flag, packet_number_length)] =
+      0xFF;
 
   char* buffer = new char[kMaxPacketSize];
   size_t encrypted_length = framer.EncryptPayload(
@@ -651,6 +658,7 @@ QuicPacket* ConstructHandshakePacket(QuicConnectionId connection_id,
 
 size_t GetPacketLengthForOneStream(QuicVersion version,
                                    bool include_version,
+                                   bool include_path_id,
                                    QuicConnectionIdLength connection_id_length,
                                    QuicPacketNumberLength packet_number_length,
                                    InFecGroup is_in_fec_group,
@@ -659,13 +667,13 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
   const size_t stream_length =
       NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          PACKET_8BYTE_CONNECTION_ID, include_version, packet_number_length, 0u,
-          is_in_fec_group);
+          PACKET_8BYTE_CONNECTION_ID, include_version, include_path_id,
+          packet_number_length, 0u, is_in_fec_group);
   const size_t ack_length =
       NullEncrypter().GetCiphertextSize(
           QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_PACKET_NUMBER)) +
       GetPacketHeaderSize(connection_id_length, include_version,
-                          /*include_path_id=*/false, packet_number_length,
+                          include_path_id, packet_number_length,
                           is_in_fec_group);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
@@ -673,8 +681,8 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
 
   return NullEncrypter().GetCiphertextSize(*payload_length) +
          QuicPacketCreator::StreamFramePacketOverhead(
-             connection_id_length, include_version, packet_number_length, 0u,
-             is_in_fec_group);
+             connection_id_length, include_version, include_path_id,
+             packet_number_length, 0u, is_in_fec_group);
 }
 
 TestEntropyCalculator::TestEntropyCalculator() {}

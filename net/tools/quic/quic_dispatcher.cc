@@ -134,6 +134,10 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     DCHECK(false);
     return false;
   }
+  bool OnPathCloseFrame(const QuicPathCloseFrame& frame) override {
+    DCHECK(false);
+    return false;
+  }
   void OnFecData(StringPiece /*redundancy*/) override { DCHECK(false); }
   void OnPacketComplete() override { DCHECK(false); }
 
@@ -405,8 +409,8 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
 void QuicDispatcher::OnWriteBlocked(
     QuicBlockedWriterInterface* blocked_writer) {
   if (!writer_->IsWriteBlocked()) {
-    LOG(DFATAL) << "QuicDispatcher::OnWriteBlocked called when the writer is "
-                   "not blocked.";
+    QUIC_BUG << "QuicDispatcher::OnWriteBlocked called when the writer is "
+                "not blocked.";
     // Return without adding the connection to the blocked list, to avoid
     // infinite loops in OnCanWrite.
     return;
@@ -439,11 +443,13 @@ QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
-  // TODO(rjshade): The QuicTimeWaitListManager should take ownership of the
-  // per-connection packet writer.
-  time_wait_list_writer_.reset(CreatePerConnectionWriter());
-  return new QuicTimeWaitListManager(time_wait_list_writer_.get(), this,
-                                     helper_.get());
+  if (FLAGS_quic_time_wait_list_manager_use_shared_writer) {
+    return new QuicTimeWaitListManager(writer_.get(), this, helper_.get());
+  } else {
+    time_wait_list_writer_.reset(CreatePerConnectionWriter());
+    return new QuicTimeWaitListManager(time_wait_list_writer_.get(), this,
+                                       helper_.get());
+  }
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

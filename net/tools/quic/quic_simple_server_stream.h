@@ -44,6 +44,7 @@ class QuicSimpleServerStream : public QuicSpdyStream {
 
   // The response body of error responses.
   static const char* const kErrorResponseBody;
+  static const char* const kNotFoundResponseBody;
 
  protected:
   // Sends a basic 200 response using SendHeaders for the headers and WriteData
@@ -51,8 +52,12 @@ class QuicSimpleServerStream : public QuicSpdyStream {
   virtual void SendResponse();
 
   // Sends a basic 500 response using SendHeaders for the headers and WriteData
-  // for the body
+  // for the body.
   virtual void SendErrorResponse();
+
+  // Sends a basic 404 response using SendHeaders for the headers and WriteData
+  // for the body.
+  void SendNotFoundResponse();
 
   void SendHeadersAndBody(const SpdyHeaderBlock& response_headers,
                           base::StringPiece body);

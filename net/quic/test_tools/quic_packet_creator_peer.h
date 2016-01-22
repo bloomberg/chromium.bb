@@ -18,9 +18,12 @@ namespace test {
 class QuicPacketCreatorPeer {
  public:
   static bool SendVersionInPacket(QuicPacketCreator* creator);
+  static bool SendPathIdInPacket(QuicPacketCreator* creator);
 
   static void SetSendVersionInPacket(QuicPacketCreator* creator,
                                      bool send_version_in_packet);
+  static void SetSendPathIdInPacket(QuicPacketCreator* creator,
+                                    bool send_path_id_in_packet);
   static void SetPacketNumberLength(
       QuicPacketCreator* creator,
       QuicPacketNumberLength packet_number_length);

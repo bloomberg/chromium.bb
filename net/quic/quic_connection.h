@@ -216,6 +216,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when a BlockedFrame has been parsed.
   virtual void OnBlockedFrame(const QuicBlockedFrame& frame) {}
 
+  // Called when a PathCloseFrame has been parsed.
+  virtual void OnPathCloseFrame(const QuicPathCloseFrame& frame) {}
+
   // Called when a public reset packet has been received.
   virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
 
@@ -351,6 +354,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Send a WINDOW_UPDATE frame to the peer.
   virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
 
+  // Send a PATH_CLOSE frame to the peer.
+  virtual void SendPathClose(QuicPathId path_id);
+
   // Sends the connection close packet without affecting the state of the
   // connection.  This should only be called if the session is actively being
   // destroyed: otherwise call SendConnectionCloseWithDetails instead.
@@ -437,6 +443,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  bool OnPathCloseFrame(const QuicPathCloseFrame& frame) override;
   void OnFecData(base::StringPiece redundnancy) override;
   void OnPacketComplete() override;
 
@@ -790,6 +797,15 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Validates the potential maximum packet size, and reduces it if it exceeds
   // the largest supported by the protocol or the packet writer.
   QuicByteCount LimitMaxPacketSize(QuicByteCount suggested_max_packet_size);
+
+  // Called when |path_id| is considered as closed because either a PATH_CLOSE
+  // frame is sent or received. Stops receiving packets on closed path. Drops
+  // receive side of a closed path, and packets with retransmittable frames on a
+  // closed path are marked as retransmissions which will be transmitted on
+  // other paths.
+  // TODO(fayang): complete OnPathClosed once QuicMultipathSentPacketManager and
+  // QuicMultipathReceivedPacketManager are landed in QuicConnection.
+  void OnPathClosed(QuicPathId path_id);
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.

@@ -37,6 +37,8 @@ class QuicFramerPeer {
 
   static QuicPathId GetLastPathId(QuicFramer* framer);
 
+  static bool IsPathClosed(QuicFramer* framer, QuicPathId path_id);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);
 };

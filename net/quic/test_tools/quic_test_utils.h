@@ -109,6 +109,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
+    bool path_id_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const std::string& data,
@@ -129,6 +130,7 @@ bool DecodeHexString(const base::StringPiece& hex, std::string* bytes);
 // of bytes of stream data that will fit in such a packet.
 size_t GetPacketLengthForOneStream(QuicVersion version,
                                    bool include_version,
+                                   bool include_path_id,
                                    QuicConnectionIdLength connection_id_length,
                                    QuicPacketNumberLength packet_number_length,
                                    InFecGroup is_in_fec_group,
@@ -230,6 +232,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnGoAwayFrame, bool(const QuicGoAwayFrame& frame));
   MOCK_METHOD1(OnWindowUpdateFrame, bool(const QuicWindowUpdateFrame& frame));
   MOCK_METHOD1(OnBlockedFrame, bool(const QuicBlockedFrame& frame));
+  MOCK_METHOD1(OnPathCloseFrame, bool(const QuicPathCloseFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
 
  private:
@@ -263,6 +266,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  bool OnPathCloseFrame(const QuicPathCloseFrame& frame) override;
   void OnPacketComplete() override {}
 
  private:
@@ -660,7 +664,7 @@ class MockAckListener : public QuicAckListenerInterface {
   MockAckListener();
 
   MOCK_METHOD2(OnPacketAcked,
-               void(int acked_bytes, QuicTime::Delta delta_largest_observed));
+               void(int acked_bytes, QuicTime::Delta ack_delay_time));
 
   MOCK_METHOD1(OnPacketRetransmitted, void(int retransmitted_bytes));
 

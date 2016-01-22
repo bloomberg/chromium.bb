@@ -247,7 +247,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   ~ClientDelegate() override {}
   void OnCanWrite() override {
     EpollEvent event(EPOLLOUT, false);
-    client_->OnEvent(client_->fd(), &event);
+    client_->OnEvent(client_->GetLatestFD(), &event);
   }
 
  private:
@@ -1480,7 +1480,8 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   // Store the client IP address which was used to send the first request.
-  IPAddressNumber old_host = client_->client()->client_address().address();
+  IPAddressNumber old_host =
+      client_->client()->GetLatestClientAddress().address();
 
   // Migrate socket to the new IP address.
   IPAddressNumber new_host;
@@ -1503,16 +1504,15 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   // Store the client address which was used to send the first request.
-  IPEndPoint old_address = client_->client()->client_address();
+  IPEndPoint old_address = client_->client()->GetLatestClientAddress();
 
-  // Stop listening on the old FD.
-  EpollServer* eps = client_->epoll_server();
-  int old_fd = client_->client()->fd();
-  eps->UnregisterFD(old_fd);
+  // Stop listening and close the old FD.
+  QuicClientPeer::CleanUpUDPSocket(client_->client(),
+                                   client_->client()->GetLatestFD());
+
   // Create a new socket before closing the old one, which will result in a new
   // ephemeral port.
   QuicClientPeer::CreateUDPSocket(client_->client());
-  close(old_fd);
 
   // The packet writer needs to be updated to use the new FD.
   client_->client()->CreateQuicPacketWriter();
@@ -1522,7 +1522,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   // port change, and so expects no change to incoming port.
   // This is kind of ugly, but needed as we are simply swapping out the client
   // FD rather than any more complex NAT rebinding simulation.
-  int new_port = client_->client()->client_address().port();
+  int new_port = client_->client()->GetLatestClientAddress().port();
   QuicClientPeer::SetClientPort(client_->client(), new_port);
   QuicConnectionPeer::SetSelfAddress(
       client_->client()->session()->connection(),
@@ -1531,7 +1531,8 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
           new_port));
 
   // Register the new FD for epoll events.
-  int new_fd = client_->client()->fd();
+  int new_fd = client_->client()->GetLatestFD();
+  EpollServer* eps = client_->epoll_server();
   eps->RegisterFD(new_fd, client_->client(), EPOLLIN | EPOLLOUT | EPOLLET);
 
   // Send a second request, using the new FD.
@@ -1539,7 +1540,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   // Verify that the client's ephemeral port is different.
-  IPEndPoint new_address = client_->client()->client_address();
+  IPEndPoint new_address = client_->client()->GetLatestClientAddress();
   EXPECT_EQ(old_address.address(), new_address.address());
   EXPECT_NE(old_address.port(), new_address.port());
 }
@@ -1805,7 +1806,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   server_thread_->Pause();
   server_writer_->WritePacket(packet->data(), packet->length(),
                               server_address_.address(),
-                              client_->client()->client_address());
+                              client_->client()->GetLatestClientAddress());
   server_thread_->Resume();
 
   // The connection should be unaffected.
@@ -1831,9 +1832,9 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_CLIENT);
   scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
-  client_writer_->WritePacket(packet->data(), packet->length(),
-                              client_->client()->client_address().address(),
-                              server_address_);
+  client_writer_->WritePacket(
+      packet->data(), packet->length(),
+      client_->client()->GetLatestClientAddress().address(), server_address_);
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1860,7 +1861,7 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   server_thread_->Pause();
   server_writer_->WritePacket(packet->data(), packet->length(),
                               server_address_.address(),
-                              client_->client()->client_address());
+                              client_->client()->GetLatestClientAddress());
   server_thread_->Resume();
 
   // The connection should be unaffected.
@@ -1884,9 +1885,9 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
                    0x3C,
                    // truncated connection ID
                    0x11};
-  client_writer_->WritePacket(&packet[0], sizeof(packet),
-                              client_->client()->client_address().address(),
-                              server_address_);
+  client_writer_->WritePacket(
+      &packet[0], sizeof(packet),
+      client_->client()->GetLatestClientAddress().address(), server_address_);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1922,9 +1923,9 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
       // private flags
       0x00,
   };
-  client_writer_->WritePacket(&packet[0], sizeof(packet),
-                              client_->client()->client_address().address(),
-                              server_address_);
+  client_writer_->WritePacket(
+      &packet[0], sizeof(packet),
+      client_->client()->GetLatestClientAddress().address(), server_address_);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1957,9 +1958,9 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   string damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;
   DVLOG(1) << "Sending bad packet.";
-  client_writer_->WritePacket(damaged_packet.data(), damaged_packet.length(),
-                              client_->client()->client_address().address(),
-                              server_address_);
+  client_writer_->WritePacket(
+      damaged_packet.data(), damaged_packet.length(),
+      client_->client()->GetLatestClientAddress().address(), server_address_);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // This error is sent to the connection's OnError (which ignores it), so the

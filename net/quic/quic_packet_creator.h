@@ -105,6 +105,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   static size_t StreamFramePacketOverhead(
       QuicConnectionIdLength connection_id_length,
       bool include_version,
+      bool include_path_id,
       QuicPacketNumberLength packet_number_length,
       QuicStreamOffset offset,
       InFecGroup is_in_fec_group);
@@ -141,9 +142,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
   SerializedPacket ReserializeAllFrames(
-      const RetransmittableFrames& frames,
-      EncryptionLevel original_encryption_level,
-      QuicPacketNumberLength original_length,
+      const PendingRetransmission& retransmission,
       char* buffer,
       size_t buffer_len);
 
@@ -363,26 +362,61 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Fails if |buffer_len| isn't long enough for the encrypted packet.
   SerializedPacket SerializeFec(char* buffer, size_t buffer_len);
 
-  // Does not own these delegates.
+  // Does not own these delegates or the framer.
   DelegateInterface* delegate_;
   DebugDelegate* debug_delegate_;
+  QuicFramer* framer_;
 
+  scoped_ptr<QuicRandomBoolSource> random_bool_source_;
+  QuicBufferAllocator* const buffer_allocator_;
+
+  // Controls whether version should be included while serializing the packet.
+  bool send_version_in_packet_;
+  // Controls whether path id should be included while serializing the packet.
+  bool send_path_id_in_packet_;
+  // Staging variable to hold next packet number length. When sequence
+  // number length is to be changed, this variable holds the new length until
+  // a packet or FEC group boundary, when the creator's packet_number_length_
+  // can be changed to this new value.
+  QuicPacketNumberLength next_packet_number_length_;
+  // Maximum length including headers and encryption (UDP payload length.)
+  QuicByteCount max_packet_length_;
+  mutable size_t max_plaintext_size_;
+
+  // Frames to be added to the next SerializedPacket
+  QuicFrames queued_frames_;
+
+  // Fields used to populate SerializedPacket.
   QuicConnectionId connection_id_;
   EncryptionLevel encryption_level_;
   // True if an ack is queued in queued_frames_.
   bool has_ack_;
   // True if a stop waiting frame is queued in queued_frames_.
   bool has_stop_waiting_;
-  QuicFramer* framer_;
-  scoped_ptr<QuicRandomBoolSource> random_bool_source_;
-  // Map mapping path_id to last sent packet number on the path.
-  hash_map<QuicPathId, QuicPacketNumber> multipath_packet_number_;
   // The path which current constructed packet will be sent on.
   QuicPathId current_path_;
-  QuicBufferAllocator* const buffer_allocator_;
   QuicPacketNumber packet_number_;
+  // Length of connection_id to send over the wire.
+  QuicConnectionIdLength connection_id_length_;
+  // packet number length for the current packet and for the current FEC group
+  // when FEC is enabled. Mutable so PacketSize() can adjust it when the packet
+  // is empty.
+  mutable QuicPacketNumberLength packet_number_length_;
+  // packet_size_ is mutable because it's just a cache of the current size.
+  // packet_size should never be read directly, use PacketSize() instead.
+  mutable size_t packet_size_;
+  scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;
+  // If true, the packet will be padded up to |max_packet_length_|.
+  bool needs_padding_;
+  // Stores ack std::listeners that should be attached to the next packet.
+  std::list<AckListenerWrapper> ack_listeners_;
+
+  // Map mapping path_id to last sent packet number on the path.
+  hash_map<QuicPathId, QuicPacketNumber> multipath_packet_number_;
+
+  // FEC related fields.
   // True when creator is requested to turn on FEC protection. False otherwise.
-  // There is a time difference between should_fec_protect_next_packet is
+  // There is a time difference between should_fec_protect_next_packet_ is
   // true/false and FEC is actually turned on/off (e.g., The creator may have an
   // open FEC group even if this variable is false).
   bool should_fec_protect_next_packet_;
@@ -391,35 +425,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // one variable.
   bool fec_protect_;
   scoped_ptr<QuicFecGroup> fec_group_;
-  // Controls whether protocol version should be included while serializing the
-  // packet.
-  bool send_version_in_packet_;
-  // Maximum length including headers and encryption (UDP payload length.)
-  QuicByteCount max_packet_length_;
   // 0 indicates FEC is disabled.
   size_t max_packets_per_fec_group_;
-  // Length of connection_id to send over the wire.
-  QuicConnectionIdLength connection_id_length_;
-  // Staging variable to hold next packet number length. When sequence
-  // number length is to be changed, this variable holds the new length until
-  // a packet or FEC group boundary, when the creator's packet_number_length_
-  // can be changed to this new value.
-  QuicPacketNumberLength next_packet_number_length_;
-  // packet number length for the current packet and for the current FEC group
-  // when FEC is enabled. Mutable so PacketSize() can adjust it when the packet
-  // is empty.
-  mutable QuicPacketNumberLength packet_number_length_;
-  // packet_size_ is mutable because it's just a cache of the current size.
-  // packet_size should never be read directly, use PacketSize() instead.
-  mutable size_t packet_size_;
-  mutable size_t max_plaintext_size_;
-  QuicFrames queued_frames_;
-  scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;
-  // If true, the packet will be padded up to |max_packet_length_|.
-  bool needs_padding_;
-  // Stores ack std::listeners that should be attached to the next packet.
-  std::list<AckListenerWrapper> ack_listeners_;
-
   // FEC policy that specifies when to send FEC packet.
   FecSendPolicy fec_send_policy_;
   // Timeout used for FEC alarm. Can be set to zero initially or if the SRTT has

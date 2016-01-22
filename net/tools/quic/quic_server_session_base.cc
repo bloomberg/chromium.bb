@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_session.h"
@@ -178,7 +179,7 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
 
 bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateIncomingDynamicStream called when disconnected";
     return false;
   }
 
@@ -193,11 +194,11 @@ bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
 
 bool QuicServerSessionBase::ShouldCreateOutgoingDynamicStream() {
   if (!connection()->connected()) {
-    LOG(DFATAL) << "ShouldCreateOutgoingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateOutgoingDynamicStream called when disconnected";
     return false;
   }
   if (!crypto_stream_->encryption_established()) {
-    LOG(DFATAL) << "Encryption not established so no outgoing stream created.";
+    QUIC_BUG << "Encryption not established so no outgoing stream created.";
     return false;
   }
   if (GetNumOpenOutgoingStreams() >= get_max_open_streams()) {

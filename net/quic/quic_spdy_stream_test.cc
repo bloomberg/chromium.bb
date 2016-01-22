@@ -65,6 +65,7 @@ class TestStream : public QuicSpdyStream {
 class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicSpdyStreamTest() {
+    FLAGS_quic_always_log_bugs_for_tests = true;
     headers_[":host"] = "www.google.com";
     headers_[":path"] = "/index.hml";
     headers_[":scheme"] = "https";

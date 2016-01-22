@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection_stats.h"
 
 using std::max;
@@ -184,7 +185,7 @@ void QuicReceivedPacketManager::RecordPacketReceived(
 
 void QuicReceivedPacketManager::RecordPacketRevived(
     QuicPacketNumber packet_number) {
-  LOG_IF(DFATAL, !IsAwaitingPacket(packet_number));
+  QUIC_BUG_IF(!IsAwaitingPacket(packet_number));
   ack_frame_updated_ = true;
   ack_frame_.latest_revived_packet = packet_number;
 }
@@ -220,12 +221,12 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
 
   if (time_largest_observed_ == QuicTime::Zero()) {
     // We have received no packets.
-    ack_frame->delta_time_largest_observed = QuicTime::Delta::Infinite();
+    ack_frame->ack_delay_time = QuicTime::Delta::Infinite();
     return;
   }
 
   // Ensure the delta is zero if approximate now is "in the past".
-  ack_frame->delta_time_largest_observed =
+  ack_frame->ack_delay_time =
       approximate_now < time_largest_observed_
           ? QuicTime::Delta::Zero()
           : approximate_now.Subtract(time_largest_observed_);

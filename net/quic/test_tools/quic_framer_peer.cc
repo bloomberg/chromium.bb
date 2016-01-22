@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_framer_peer.h"
 
+#include "base/stl_util.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
@@ -73,6 +74,11 @@ QuicPacketNumber QuicFramerPeer::GetLastPacketNumber(QuicFramer* framer) {
 // static
 QuicPathId QuicFramerPeer::GetLastPathId(QuicFramer* framer) {
   return framer->last_path_id_;
+}
+
+// static
+bool QuicFramerPeer::IsPathClosed(QuicFramer* framer, QuicPathId path_id) {
+  return ContainsKey(framer->closed_paths_, path_id);
 }
 
 }  // namespace test

@@ -102,7 +102,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     size_t num_retransmittable_packets = 0;
     for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
          it != unacked_packets_.end(); ++it) {
-      if (it->retransmittable_frames != nullptr) {
+      if (!it->retransmittable_frames.empty()) {
         ++num_retransmittable_packets;
       }
     }

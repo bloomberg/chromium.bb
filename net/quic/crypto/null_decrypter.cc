@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_utils.h"
 
@@ -39,7 +40,7 @@ bool NullDecrypter::DecryptPacket(QuicPacketNumber /*packet_number*/,
 
   StringPiece plaintext = reader.ReadRemainingPayload();
   if (plaintext.length() > max_output_length) {
-    LOG(DFATAL) << "Output buffer must be larger than the plaintext.";
+    QUIC_BUG << "Output buffer must be larger than the plaintext.";
     return false;
   }
   if (hash != ComputeHash(associated_data, plaintext)) {

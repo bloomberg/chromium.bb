@@ -5,6 +5,7 @@
 #include "net/quic/congestion_control/tcp_loss_algorithm.h"
 
 #include "net/quic/congestion_control/rtt_stats.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -49,9 +50,9 @@ PacketNumberSet TCPLossAlgorithm::DetectLostPackets(
       continue;
     }
 
-    LOG_IF(DFATAL, it->nack_count == 0 && it->sent_time.IsInitialized())
+    QUIC_BUG_IF(it->nack_count == 0 && it->sent_time.IsInitialized())
         << "All packets less than largest observed should have been nacked."
-        << "packet_number:" << packet_number
+        << " packet_number:" << packet_number
         << " largest_observed:" << largest_observed;
     if (it->nack_count >= kNumberOfNacksBeforeRetransmission) {
       lost_packets.insert(packet_number);
@@ -71,7 +72,7 @@ PacketNumberSet TCPLossAlgorithm::DetectLostPackets(
     // Only early retransmit(RFC5827) when the last packet gets acked and
     // there are retransmittable packets in flight.
     // This also implements a timer-protected variant of FACK.
-    if (it->retransmittable_frames &&
+    if (!it->retransmittable_frames.empty() &&
         unacked_packets.largest_sent_packet() == largest_observed) {
       // Early retransmit marks the packet as lost once 1.25RTTs have passed
       // since the packet was sent and otherwise sets an alarm.
@@ -94,7 +95,7 @@ void TCPLossAlgorithm::DetectLosses(
     const QuicTime& time,
     const RttStats& rtt_stats,
     SendAlgorithmInterface::CongestionVector* packets_lost) {
-  LOG(DFATAL) << "DetectLoss is unsupported by TCPLossAlgorithm.";
+  QUIC_BUG << "DetectLoss is unsupported by TCPLossAlgorithm.";
 }
 
 QuicTime TCPLossAlgorithm::GetLossTimeout() const {

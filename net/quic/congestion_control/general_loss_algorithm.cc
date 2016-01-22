@@ -5,6 +5,7 @@
 #include "net/quic/congestion_control/general_loss_algorithm.h"
 
 #include "net/quic/congestion_control/rtt_stats.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -80,9 +81,9 @@ void GeneralLossAlgorithm::DetectLosses(
     }
 
     // FACK based loss detection.
-    LOG_IF(DFATAL, it->nack_count == 0 && it->sent_time.IsInitialized())
+    QUIC_BUG_IF(it->nack_count == 0 && it->sent_time.IsInitialized())
         << "All packets less than largest observed should have been nacked."
-        << "packet_number:" << packet_number
+        << " packet_number:" << packet_number
         << " largest_observed:" << largest_observed;
     if (it->nack_count >= kNumberOfNacksBeforeRetransmission) {
       packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
@@ -99,7 +100,7 @@ void GeneralLossAlgorithm::DetectLosses(
     // Only early retransmit(RFC5827) when the last packet gets acked and
     // there are retransmittable packets in flight.
     // This also implements a timer-protected variant of FACK.
-    if (it->retransmittable_frames &&
+    if (!it->retransmittable_frames.empty() &&
         unacked_packets.largest_sent_packet() == largest_observed) {
       // Early retransmit marks the packet as lost once 1.25RTTs have passed
       // since the packet was sent and otherwise sets an alarm.

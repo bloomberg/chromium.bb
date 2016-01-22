@@ -38,9 +38,8 @@ bool HasFixedTag(const CryptoHandshakeMessage& message) {
 }
 }  // namespace
 
-void ServerHelloNotifier::OnPacketAcked(
-    int acked_bytes,
-    QuicTime::Delta delta_largest_observed) {
+void ServerHelloNotifier::OnPacketAcked(int acked_bytes,
+                                        QuicTime::Delta ack_delay_time) {
   // The SHLO is sent in one packet.
   server_stream_->OnServerHelloAcked();
 }

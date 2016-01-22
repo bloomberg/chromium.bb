@@ -205,7 +205,7 @@ class MtuDiscoveryAckListener : public QuicAckListenerInterface {
       : connection_(connection), probe_size_(probe_size) {}
 
   void OnPacketAcked(int /*acked_bytes*/,
-                     QuicTime::Delta /*delta_largest_observed*/) override {
+                     QuicTime::Delta /*ack delay time*/) override {
     // MTU discovery packets are not retransmittable, so it must be acked.
     MaybeIncreaseMtu();
   }
@@ -489,8 +489,8 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
            << received_version;
   // TODO(satyamshekhar): Implement no server state in this mode.
   if (perspective_ == Perspective::IS_CLIENT) {
-    LOG(DFATAL) << ENDPOINT << "Framer called OnProtocolVersionMismatch. "
-                << "Closing connection.";
+    QUIC_BUG << ENDPOINT << "Framer called OnProtocolVersionMismatch. "
+             << "Closing connection.";
     CloseConnection(QUIC_INTERNAL_ERROR, false);
     return false;
   }
@@ -549,8 +549,8 @@ void QuicConnection::OnVersionNegotiationPacket(
   // here.  (Check for a bug regression.)
   DCHECK_EQ(connection_id_, packet.connection_id);
   if (perspective_ == Perspective::IS_SERVER) {
-    LOG(DFATAL) << ENDPOINT << "Framer parsed VersionNegotiationPacket."
-                << " Closing connection.";
+    QUIC_BUG << ENDPOINT << "Framer parsed VersionNegotiationPacket."
+             << " Closing connection.";
     CloseConnection(QUIC_INTERNAL_ERROR, false);
     return;
   }
@@ -614,6 +614,16 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   // routed to this QuicConnection has been redirected before control reaches
   // here.
   DCHECK_EQ(connection_id_, header.public_header.connection_id);
+
+  // Multipath is not enabled, but a packet with multipath flag on is received.
+  if (!multipath_enabled_ && header.public_header.multipath_flag) {
+    LOG(DFATAL) << "Received a packet with multipath flag on when multipath is "
+                   "not enabled.";
+    SendConnectionCloseWithDetails(QUIC_BAD_MULTIPATH_FLAG,
+                                   "receive a packet with multipath flag on "
+                                   "when multipath is not enabled.");
+    return false;
+  }
 
   // If this packet has already been seen, or the sender has told us that it
   // will not be retransmitted, then stop processing the packet.
@@ -931,6 +941,17 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return connected_;
 }
 
+bool QuicConnection::OnPathCloseFrame(const QuicPathCloseFrame& frame) {
+  DCHECK(connected_);
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnPathCloseFrame(frame);
+  }
+  DVLOG(1) << ENDPOINT
+           << "PATH_CLOSE_FRAME received for path: " << frame.path_id;
+  OnPathClosed(frame.path_id);
+  return connected_;
+}
+
 void QuicConnection::OnPacketComplete() {
   // Don't do anything if this packet closed the connection.
   if (!connected_) {
@@ -1190,6 +1211,13 @@ void QuicConnection::SendBlocked(QuicStreamId id) {
   packet_generator_.AddControlFrame(QuicFrame(new QuicBlockedFrame(id)));
 }
 
+void QuicConnection::SendPathClose(QuicPathId path_id) {
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  packet_generator_.AddControlFrame(QuicFrame(new QuicPathCloseFrame(path_id)));
+  OnPathClosed(path_id);
+}
+
 const QuicConnectionStats& QuicConnection::GetStats() {
   const RttStats* rtt_stats = sent_packet_manager_.GetRttStats();
 
@@ -1447,7 +1475,7 @@ void QuicConnection::WritePendingRetransmissions() {
   // Keep writing as long as there's a pending retransmission which can be
   // written.
   while (sent_packet_manager_.HasPendingRetransmissions()) {
-    const QuicSentPacketManager::PendingRetransmission pending =
+    const PendingRetransmission pending =
         sent_packet_manager_.NextPendingRetransmission();
     if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
       break;
@@ -1462,9 +1490,8 @@ void QuicConnection::WritePendingRetransmissions() {
     // does not require the creator to be flushed.
     packet_generator_.FlushAllQueuedFrames();
     char buffer[kMaxPacketSize];
-    SerializedPacket serialized_packet = packet_generator_.ReserializeAllFrames(
-        pending.retransmittable_frames, pending.encryption_level,
-        pending.packet_number_length, buffer, kMaxPacketSize);
+    SerializedPacket serialized_packet =
+        packet_generator_.ReserializeAllFrames(pending, buffer, kMaxPacketSize);
     if (serialized_packet.packet == nullptr) {
       // We failed to serialize the packet, so close the connection.
       // CloseConnection does not send close packet, so no infinite loop here.
@@ -2135,7 +2162,7 @@ bool QuicConnection::CanWriteStreamData() {
 
 void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
                                         QuicTime::Delta idle_timeout) {
-  LOG_IF(DFATAL, idle_timeout > overall_timeout)
+  QUIC_BUG_IF(idle_timeout > overall_timeout)
       << "idle_timeout:" << idle_timeout.ToMilliseconds()
       << " overall_timeout:" << overall_timeout.ToMilliseconds();
   // Adjust the idle timeout on client and server to prevent clients from
@@ -2356,7 +2383,7 @@ void QuicConnection::SetMtuDiscoveryTarget(QuicByteCount target) {
 QuicByteCount QuicConnection::LimitMaxPacketSize(
     QuicByteCount suggested_max_packet_size) {
   if (peer_address_.address().empty()) {
-    LOG(DFATAL) << "Attempted to use a connection without a valid peer address";
+    QUIC_BUG << "Attempted to use a connection without a valid peer address";
     return suggested_max_packet_size;
   }
 
@@ -2409,6 +2436,11 @@ void QuicConnection::DiscoverMtu() {
   SendMtuDiscoveryPacket(mtu_discovery_target_);
 
   DCHECK(!mtu_discovery_alarm_->IsSet());
+}
+
+void QuicConnection::OnPathClosed(QuicPathId path_id) {
+  // Stop receiving packets on this path.
+  framer_.OnPathClosed(path_id);
 }
 
 bool QuicConnection::ack_frame_updated() const {

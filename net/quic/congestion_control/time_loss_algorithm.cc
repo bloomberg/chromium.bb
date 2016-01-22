@@ -5,6 +5,7 @@
 #include "net/quic/congestion_control/time_loss_algorithm.h"
 
 #include "net/quic/congestion_control/rtt_stats.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -46,9 +47,9 @@ PacketNumberSet TimeLossAlgorithm::DetectLostPackets(
     if (!it->in_flight) {
       continue;
     }
-    LOG_IF(DFATAL, it->nack_count == 0 && it->sent_time.IsInitialized())
+    QUIC_BUG_IF(it->nack_count == 0 && it->sent_time.IsInitialized())
         << "All packets less than largest observed should have been nacked."
-        << "packet_number:" << packet_number
+        << " packet_number:" << packet_number
         << " largest_observed:" << largest_observed;
 
     // Packets are sent in order, so break when we haven't waited long enough
@@ -69,7 +70,7 @@ void TimeLossAlgorithm::DetectLosses(
     const QuicTime& time,
     const RttStats& rtt_stats,
     SendAlgorithmInterface::CongestionVector* packets_lost) {
-  LOG(DFATAL) << "DetectLoss is unsupported by TimeLossAlgorithm.";
+  QUIC_BUG << "DetectLoss is unsupported by TimeLossAlgorithm.";
 }
 
 // loss_time_ is updated in DetectLostPackets, which must be called every time

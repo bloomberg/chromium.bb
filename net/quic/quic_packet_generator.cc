@@ -33,40 +33,7 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       max_packet_length_(kDefaultMaxPacketSize) {}
 
 QuicPacketGenerator::~QuicPacketGenerator() {
-  for (QuicFrame& frame : queued_control_frames_) {
-    switch (frame.type) {
-      case PADDING_FRAME:
-      case MTU_DISCOVERY_FRAME:
-      case PING_FRAME:
-        break;
-      case STREAM_FRAME:
-        delete frame.stream_frame;
-        break;
-      case ACK_FRAME:
-        delete frame.ack_frame;
-        break;
-      case RST_STREAM_FRAME:
-        delete frame.rst_stream_frame;
-        break;
-      case CONNECTION_CLOSE_FRAME:
-        delete frame.connection_close_frame;
-        break;
-      case GOAWAY_FRAME:
-        delete frame.goaway_frame;
-        break;
-      case WINDOW_UPDATE_FRAME:
-        delete frame.window_update_frame;
-        break;
-      case BLOCKED_FRAME:
-        delete frame.blocked_frame;
-        break;
-      case STOP_WAITING_FRAME:
-        delete frame.stop_waiting_frame;
-        break;
-      case NUM_FRAME_TYPES:
-        DCHECK(false) << "Cannot delete type: " << frame.type;
-    }
-  }
+  QuicUtils::DeleteFrames(&queued_control_frames_);
 }
 
 void QuicPacketGenerator::OnCongestionWindowChange(
@@ -292,7 +259,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     return !should_send_stop_waiting_;
   }
 
-  LOG_IF(DFATAL, queued_control_frames_.empty())
+  QUIC_BUG_IF(queued_control_frames_.empty())
       << "AddNextPendingFrame called with no queued control frames.";
   if (!packet_creator_.AddSavedFrame(queued_control_frames_.back())) {
     // Packet was full.
@@ -341,13 +308,11 @@ QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(
 }
 
 SerializedPacket QuicPacketGenerator::ReserializeAllFrames(
-    const RetransmittableFrames& frames,
-    EncryptionLevel original_encryption_level,
-    QuicPacketNumberLength original_length,
+    const PendingRetransmission& retransmission,
     char* buffer,
     size_t buffer_len) {
-  return packet_creator_.ReserializeAllFrames(
-      frames, original_encryption_level, original_length, buffer, buffer_len);
+  return packet_creator_.ReserializeAllFrames(retransmission, buffer,
+                                              buffer_len);
 }
 
 void QuicPacketGenerator::UpdateSequenceNumberLength(

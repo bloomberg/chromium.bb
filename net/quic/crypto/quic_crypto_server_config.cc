@@ -35,6 +35,7 @@
 #include "net/quic/crypto/strike_register.h"
 #include "net/quic/crypto/strike_register_client.h"
 #include "net/quic/proto/source_address_token.pb.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
@@ -84,7 +85,7 @@ class ValidateClientHelloHelper {
       : result_(result), done_cb_(done_cb) {}
 
   ~ValidateClientHelloHelper() {
-    LOG_IF(DFATAL, done_cb_ != nullptr)
+    QUIC_BUG_IF(done_cb_ != nullptr)
         << "Deleting ValidateClientHelloHelper with a pending callback.";
   }
 
@@ -99,7 +100,7 @@ class ValidateClientHelloHelper {
 
  private:
   void DetachCallback() {
-    LOG_IF(DFATAL, done_cb_ == nullptr) << "Callback already detached.";
+    QUIC_BUG_IF(done_cb_ == nullptr) << "Callback already detached.";
     done_cb_ = nullptr;
   }
 
@@ -148,7 +149,7 @@ class VerifyNonceIsValidAndUniqueCallback
           break;
         case NONCE_OK:
         default:
-          LOG(DFATAL) << "Unexpected client nonce error: " << nonce_error;
+          QUIC_BUG << "Unexpected client nonce error: " << nonce_error;
           client_nonce_error = CLIENT_NONCE_UNKNOWN_FAILURE;
           break;
       }
@@ -586,7 +587,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       primary_config = GetConfigWithScid(crypto_proof->primary_scid);
       if (!primary_config) {
         *error_details = "Configuration not found";
-        LOG(DFATAL) << "Primary config not found";
+        QUIC_BUG << "Primary config not found";
         return QUIC_CRYPTO_INTERNAL_ERROR;
       }
     } else {
@@ -890,9 +891,9 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
 
   if (configs.empty()) {
     if (primary_config_.get()) {
-      LOG(DFATAL) << "No valid QUIC server config. Keeping the current config.";
+      QUIC_BUG << "No valid QUIC server config. Keeping the current config.";
     } else {
-      LOG(DFATAL) << "No valid QUIC server config.";
+      QUIC_BUG << "No valid QUIC server config.";
     }
     return;
   }
@@ -1713,7 +1714,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
 
   if (plaintext.size() != kServerNoncePlaintextSize) {
     // This should never happen because the value decrypted correctly.
-    LOG(DFATAL) << "Seemingly valid server nonce had incorrect length.";
+    QUIC_BUG << "Seemingly valid server nonce had incorrect length.";
     return SERVER_NONCE_INVALID_FAILURE;
   }
 
@@ -1753,7 +1754,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
     case STRIKE_REGISTER_TIMEOUT:
     case STRIKE_REGISTER_FAILURE:
     default:
-      LOG(DFATAL) << "Unexpected server nonce error: " << nonce_error;
+      QUIC_BUG << "Unexpected server nonce error: " << nonce_error;
       return SERVER_NONCE_NOT_UNIQUE_FAILURE;
   }
 }

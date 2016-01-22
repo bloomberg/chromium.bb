@@ -105,6 +105,12 @@ class NET_EXPORT_PRIVATE QuicUtils {
     return reinterpret_cast<char*>(data);
   }
 
+  // Deletes all the sub-frames contained in |frames|.
+  static void DeleteFrames(QuicFrames* frames);
+
+  // Deletes all the QuicStreamFrames for the specified |stream_id|.
+  static void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };

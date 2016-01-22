@@ -88,7 +88,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   header.fec_group = 0;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.delta_time_largest_observed = QuicTime::Delta::Zero();
+  ack.ack_delay_time = QuicTime::Delta::Zero();
   for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
@@ -118,7 +118,7 @@ scoped_ptr<QuicEncryptedPacket>
 QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
     QuicPacketNumber num,
     bool include_version,
-    QuicTime::Delta delta_time_largest_observed,
+    QuicTime::Delta ack_delay_time,
     QuicPacketNumber largest_received,
     QuicPacketNumber least_unacked,
     QuicErrorCode quic_error,
@@ -134,7 +134,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   header.fec_group = 0;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.delta_time_largest_observed = delta_time_largest_observed;
+  ack.ack_delay_time = ack_delay_time;
   for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
@@ -212,7 +212,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   header.fec_group = 0;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.delta_time_largest_observed = QuicTime::Delta::Zero();
+  ack.ack_delay_time = QuicTime::Delta::Zero();
   for (QuicPacketNumber i = ack_least_unacked; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
@@ -261,7 +261,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndDataPacket(
   InitializeHeader(packet_number, include_version);
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.delta_time_largest_observed = QuicTime::Delta::Zero();
+  ack.ack_delay_time = QuicTime::Delta::Zero();
   for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
