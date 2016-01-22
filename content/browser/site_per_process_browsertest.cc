@@ -161,9 +161,6 @@ class RenderWidgetHostMouseEventMonitor {
 void SurfaceHitTestTestHelper(
     Shell* shell,
     net::test_server::EmbeddedTestServer* embedded_test_server) {
-  if (!UseSurfacesEnabled())
-    return;
-
   GURL main_url(embedded_test_server->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   NavigateToURL(shell, main_url);
@@ -4371,9 +4368,6 @@ class ContextMenuObserverDelegate : public WebContentsDelegate {
 #define MAYBE_CreateContextMenuTest CreateContextMenuTest
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
-  if (!UseSurfacesEnabled())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   NavigateToURL(shell(), main_url);

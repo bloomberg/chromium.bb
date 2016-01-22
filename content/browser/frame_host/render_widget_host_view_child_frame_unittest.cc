@@ -168,27 +168,20 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
-  if (UseSurfacesEnabled()) {
-    cc::SurfaceId id = surface_id();
-    if (!id.is_null()) {
+  cc::SurfaceId id = surface_id();
+  if (!id.is_null()) {
 #if !defined(OS_ANDROID)
-      ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-      cc::SurfaceManager* manager = factory->GetSurfaceManager();
-      cc::Surface* surface = manager->GetSurfaceForId(id);
-      EXPECT_TRUE(surface);
-      // There should be a SurfaceSequence created by the RWHVChildFrame.
-      EXPECT_EQ(1u, surface->GetDestructionDependencyCount());
+    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+    cc::SurfaceManager* manager = factory->GetSurfaceManager();
+    cc::Surface* surface = manager->GetSurfaceForId(id);
+    EXPECT_TRUE(surface);
+    // There should be a SurfaceSequence created by the RWHVChildFrame.
+    EXPECT_EQ(1u, surface->GetDestructionDependencyCount());
 #endif
 
-      // Surface ID should have been passed to CrossProcessFrameConnector to
-      // be sent to the embedding renderer.
-      EXPECT_EQ(id, test_frame_connector_->last_surface_id_received_);
-      EXPECT_EQ(view_size, test_frame_connector_->last_frame_size_received_);
-      EXPECT_EQ(scale_factor,
-                test_frame_connector_->last_scale_factor_received_);
-    }
-  } else {
-    EXPECT_TRUE(test_frame_connector_->received_delegated_frame_);
+    // Surface ID should have been passed to CrossProcessFrameConnector to
+    // be sent to the embedding renderer.
+    EXPECT_EQ(id, test_frame_connector_->last_surface_id_received_);
     EXPECT_EQ(view_size, test_frame_connector_->last_frame_size_received_);
     EXPECT_EQ(scale_factor, test_frame_connector_->last_scale_factor_received_);
   }

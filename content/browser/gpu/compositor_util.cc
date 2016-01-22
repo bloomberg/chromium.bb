@@ -277,24 +277,6 @@ bool IsForceGpuRasterizationEnabled() {
   return command_line.HasSwitch(switches::kForceGpuRasterization);
 }
 
-bool UseSurfacesEnabled() {
-#if defined(OS_ANDROID)
-  return true;
-#endif
-  bool enabled = false;
-#if defined(USE_AURA) || defined(OS_MACOSX)
-  enabled = true;
-#endif
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  // Flags override.
-  enabled |= command_line.HasSwitch(switches::kUseSurfaces);
-  enabled &= !command_line.HasSwitch(switches::kDisableSurfaces);
-  return enabled;
-}
-
 int GpuRasterizationMSAASampleCount() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

@@ -65,7 +65,7 @@ void RequireCallback(cc::SurfaceManager* manager,
 DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
       compositor_(nullptr),
-      use_surfaces_(UseSurfacesEnabled()),
+      use_surfaces_(true),
       tick_clock_(new base::DefaultTickClock()),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),

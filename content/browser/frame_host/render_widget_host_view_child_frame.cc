@@ -34,7 +34,7 @@ namespace content {
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
-      use_surfaces_(UseSurfacesEnabled()),
+      use_surfaces_(true),
       next_surface_sequence_(1u),
       last_output_surface_id_(0),
       current_surface_scale_factor_(1.f),

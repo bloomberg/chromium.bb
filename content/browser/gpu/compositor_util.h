@@ -40,9 +40,6 @@ CONTENT_EXPORT bool IsForceGpuRasterizationEnabled();
 // Returns the number of raster threads to use for compositing.
 CONTENT_EXPORT int NumberOfRendererRasterThreads();
 
-// Returns true if using cc Surfaces is allowed.
-CONTENT_EXPORT bool UseSurfacesEnabled();
-
 CONTENT_EXPORT base::DictionaryValue* GetFeatureStatus();
 CONTENT_EXPORT base::Value* GetProblems();
 CONTENT_EXPORT std::vector<std::string> GetDriverBugWorkarounds();

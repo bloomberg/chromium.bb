@@ -18,12 +18,11 @@
 namespace content {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory()
-    : surface_manager_(UseSurfacesEnabled() ? new cc::SurfaceManager : nullptr),
+    : surface_manager_(new cc::SurfaceManager),
       // The context factory created here is for unit tests, thus passing in
       // true in constructor.
       context_factory_(
-          new ui::InProcessContextFactory(true, surface_manager_.get())) {
-}
+          new ui::InProcessContextFactory(true, surface_manager_.get())) {}
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
   scoped_ptr<GLHelper> lost_gl_helper = std::move(gl_helper_);

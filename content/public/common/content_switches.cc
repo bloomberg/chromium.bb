@@ -828,12 +828,6 @@ const char kUseNormalPriorityForTileTaskWorkerThreads[] =
 // Use remote compositor for the renderer.
 const char kUseRemoteCompositing[] = "use-remote-compositing";
 
-// Use the new surfaces system to handle compositor delegation.
-const char kUseSurfaces[] = "use-surfaces";
-
-// Disable the use of the new surfaces system to handle compositor delegation.
-const char kDisableSurfaces[] = "disable-surfaces";
-
 // The contents of this flag are prepended to the utility process command line.
 // Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";

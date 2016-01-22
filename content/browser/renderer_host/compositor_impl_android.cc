@@ -220,7 +220,7 @@ Compositor* Compositor::Create(CompositorClient* client,
 void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
   g_initialized = true;
-  g_use_surface_manager = UseSurfacesEnabled();
+  g_use_surface_manager = true;
 }
 
 // static

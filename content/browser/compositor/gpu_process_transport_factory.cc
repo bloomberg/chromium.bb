@@ -102,8 +102,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   ui::Layer::InitializeUILayerSettings();
   cc::SetClientNameForMetrics("Browser");
 
-  if (UseSurfacesEnabled())
-    surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
+  surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
 
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
@@ -360,11 +359,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   data->surface = surface.get();
   if (data->reflector)
     data->reflector->OnSourceSurfaceReady(data->surface);
-
-  if (!UseSurfacesEnabled()) {
-    compositor->SetOutputSurface(std::move(surface));
-    return;
-  }
 
   // This gets a bit confusing. Here we have a ContextProvider in the |surface|
   // configured to render directly to this widget. We need to make an
