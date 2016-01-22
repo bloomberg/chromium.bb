@@ -19,6 +19,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/startup_metric_utils/browser/pref_names.h"
+#include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
 #include <winternl.h>
@@ -29,9 +31,6 @@
 namespace startup_metric_utils {
 
 namespace {
-
-const char kLastStartupTimestampPref[] =
-    "startup_metric.last_startup_timestamp";
 
 // Mark as volatile to defensively make sure usage is thread-safe.
 // Note that at the time of this writing, access is only on the UI thread.
@@ -406,7 +405,9 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(registry);
-  registry->RegisterInt64Pref(kLastStartupTimestampPref, 0);
+  registry->RegisterInt64Pref(prefs::kLastStartupTimestamp, 0);
+  registry->RegisterStringPref(prefs::kLastStartupVersion, std::string());
+  registry->RegisterIntegerPref(prefs::kSameVersionStartupCount, 0);
 }
 
 bool WasNonBrowserUIDisplayed() {
@@ -514,7 +515,7 @@ void RecordTimeSinceLastStartup(PrefService* pref_service) {
 
   // Get the timestamp of the last startup from |pref_service|.
   const int64_t last_startup_timestamp_internal =
-      pref_service->GetInt64(kLastStartupTimestampPref);
+      pref_service->GetInt64(prefs::kLastStartupTimestamp);
   if (last_startup_timestamp_internal != 0) {
     // Log the Startup.TimeSinceLastStartup histogram.
     const base::Time last_startup_timestamp =
@@ -532,9 +533,31 @@ void RecordTimeSinceLastStartup(PrefService* pref_service) {
   }
 
   // Write the timestamp of the current startup in |pref_service|.
-  pref_service->SetInt64(kLastStartupTimestampPref,
+  pref_service->SetInt64(prefs::kLastStartupTimestamp,
                          process_start_time.ToInternalValue());
 #endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+}
+
+void RecordStartupCount(PrefService* pref_service) {
+  DCHECK(pref_service);
+
+  const std::string current_version = version_info::GetVersionNumber();
+
+  int startups_with_current_version = 0;
+  if (current_version == pref_service->GetString(prefs::kLastStartupVersion)) {
+    startups_with_current_version =
+        pref_service->GetInteger(prefs::kSameVersionStartupCount);
+    ++startups_with_current_version;
+    pref_service->SetInteger(prefs::kSameVersionStartupCount,
+                             startups_with_current_version);
+  } else {
+    startups_with_current_version = 1;
+    pref_service->SetString(prefs::kLastStartupVersion, current_version);
+    pref_service->SetInteger(prefs::kSameVersionStartupCount, 1);
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Startup.SameVersionStartupCount",
+                           startups_with_current_version);
 }
 
 void RecordBrowserWindowDisplay(const base::TimeTicks& ticks) {

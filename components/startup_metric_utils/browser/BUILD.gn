@@ -17,6 +17,8 @@ group("browser") {
 
 source_set("lib") {
   sources = [
+    "pref_names.cc",
+    "pref_names.h",
     "startup_metric_utils.cc",
     "startup_metric_utils.h",
   ]
@@ -24,6 +26,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//base:prefs",
+    "//components/version_info",
   ]
 }
 

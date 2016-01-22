@@ -306,6 +306,9 @@ per-file signin*=rogerta@chromium.org
 per-file ssl_errors*=estark@chromium.org
 per-file ssl_errors*=felt@chromium.org
 
+per-file startup_metric_utils.gypi=gab@chromium.org
+per-file startup_metric_utils.gypi=erikchen@chromium.org
+
 per-file storage_monitor.gypi=gbillock@chromium.org
 per-file storage_monitor.gypi=thestig@chromium.org
 per-file storage_monitor.gypi=vandebo@chromium.org

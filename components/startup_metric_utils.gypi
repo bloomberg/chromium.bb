@@ -15,11 +15,14 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
+        'components.gyp:version_info',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'startup_metric_utils/browser/pref_names.cc',
+        'startup_metric_utils/browser/pref_names.h',
         'startup_metric_utils/browser/startup_metric_utils.cc',
         'startup_metric_utils/browser/startup_metric_utils.h',
       ],

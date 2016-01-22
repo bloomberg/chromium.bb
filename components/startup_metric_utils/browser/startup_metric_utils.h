@@ -25,12 +25,11 @@ namespace startup_metric_utils {
 // An enumeration of startup temperatures. This must be kept in sync with the
 // UMA StartupType enumeration defined in histograms.xml.
 enum StartupTemperature {
-  // The startup was a cold start: nearly all of the Chrome binaries and
-  // resources were brought into memory using hard faults.
+  // The startup was a cold start: nearly all of the binaries and resources were
+  // brought into memory using hard faults.
   COLD_STARTUP_TEMPERATURE = 0,
-  // The startup was a warm start: the Chrome binaries and resources were
-  // mostly already resident in memory and effectively no hard faults were
-  // observed.
+  // The startup was a warm start: the binaries and resources were mostly
+  // already resident in memory and effectively no hard faults were observed.
   WARM_STARTUP_TEMPERATURE = 1,
   // The startup type couldn't quite be classified as warm or cold, but rather
   // was somewhere in between.
@@ -55,8 +54,7 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 // window was shown, which would invalidate any surrounding timing metrics.
 bool WasNonBrowserUIDisplayed();
 
-// Call this when displaying UI that might potentially delay the appearance
-// of the initial browser window on Chrome startup.
+// Call this when displaying UI that might potentially delay startup events.
 //
 // Note on usage: This function is idempotent and its overhead is low enough
 // in comparison with UI display that it's OK to call it on every
@@ -88,6 +86,11 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
 // RecordBrowserMainMessageLoopStart, the time since last startup is also logged
 // to an histogram suffixed with the startup temperature.
 void RecordTimeSinceLastStartup(PrefService* pref_service);
+
+// Logs the Startup.SameVersionStartupCount histogram. Relies on |pref_service|
+// to know information about the previous startups and store information for
+// future ones.
+void RecordStartupCount(PrefService* pref_service);
 
 // Call this with the time when the first browser window became visible.
 void RecordBrowserWindowDisplay(const base::TimeTicks& ticks);

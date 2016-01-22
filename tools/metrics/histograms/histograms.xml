@@ -47861,6 +47861,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.SameVersionStartupCount">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The number of startups the current version has been through. Reported once
+    per Chrome session, on startup. Any user that reports X for this version
+    will also have previously reported [1,X-1] for this version through the
+    previous X-1 Chrome sessions.
+  </summary>
+</histogram>
+
 <histogram name="Startup.ShowAppListColdStart" units="ms">
   <owner>jeremy@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
