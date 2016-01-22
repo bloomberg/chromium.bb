@@ -1067,17 +1067,6 @@ void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase)
         mayBeginScrollGesture();
 }
 
-void ScrollAnimatorMac::setIsActive()
-{
-    if (!ScrollbarThemeMacCommon::isOverlayAPIAvailable())
-        return;
-
-    if (!m_needsScrollerStyleUpdate)
-        return;
-
-    updateScrollerStyle();
-}
-
 void ScrollAnimatorMac::updateScrollerStyle()
 {
     if (!ScrollbarThemeMacCommon::isOverlayAPIAvailable())

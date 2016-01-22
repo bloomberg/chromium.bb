@@ -94,7 +94,6 @@ private:
     void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
     void cancelAnimation() override;
-    void setIsActive() override;
 
     void contentAreaWillPaint() const override;
     void mouseEnteredContentArea() const override;

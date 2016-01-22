@@ -63,8 +63,6 @@ public:
 
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
-    virtual void setIsActive() { }
-
 #if OS(MACOSX)
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) { }
 #endif
