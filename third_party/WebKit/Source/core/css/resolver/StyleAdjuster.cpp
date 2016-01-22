@@ -340,12 +340,6 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
         return;
 
     if (isHTMLTableCellElement(element)) {
-        // If we have a <td> that specifies a float property, in quirks mode we just drop the float property.
-        // FIXME: Why is this only <td> and not <th>?
-        if (element.hasTagName(tdTag) && m_useQuirksModeStyles) {
-            style.setDisplay(TABLE_CELL);
-            style.setFloating(NoFloat);
-        }
         // FIXME: We shouldn't be overriding start/-webkit-auto like this. Do it in html.css instead.
         // Table headers with a text-align of -webkit-auto will change the text-align to center.
         if (element.hasTagName(thTag) && style.textAlign() == TASTART)
