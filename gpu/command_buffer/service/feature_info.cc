@@ -528,6 +528,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_SRGB8_ALPHA8_EXT);
     validators_.frame_buffer_parameter.AddValue(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT);
+    validators_.texture_unsized_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
   }
 
   bool enable_texture_format_bgra8888 = false;
@@ -559,6 +560,7 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_EXT_texture_format_BGRA8888");
     validators_.texture_internal_format.AddValue(GL_BGRA_EXT);
     validators_.texture_format.AddValue(GL_BGRA_EXT);
+    validators_.texture_unsized_internal_format.AddValue(GL_BGRA_EXT);
   }
 
   if (enable_read_format_bgra) {
@@ -650,6 +652,14 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_OES_texture_float");
     if (enable_texture_float_linear) {
       AddExtensionString("GL_OES_texture_float_linear");
+      validators_.texture_sized_texture_filterable_internal_format.AddValue(
+          GL_R32F);
+      validators_.texture_sized_texture_filterable_internal_format.AddValue(
+          GL_RG32F);
+      validators_.texture_sized_texture_filterable_internal_format.AddValue(
+          GL_RGB32F);
+      validators_.texture_sized_texture_filterable_internal_format.AddValue(
+          GL_RGBA32F);
     }
   }
 
@@ -694,14 +704,14 @@ void FeatureInfo::InitializeFeatures() {
     glBindFramebufferEXT(GL_FRAMEBUFFER, fb_id);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, tex_id, 0);
-    GLenum statusRGBA = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    GLenum status_rgba = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0, GL_RGB,
                  GL_FLOAT, NULL);
-    GLenum statusRGB = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    GLenum status_rgb = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 
     // For desktop systems, check to see if we support rendering to the full
     // range of formats supported by EXT_color_buffer_float
-    if (statusRGBA == GL_FRAMEBUFFER_COMPLETE && IsES3Capable()) {
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && IsES3Capable()) {
       bool full_float_support = true;
 
       glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width, 0, GL_RED,
@@ -740,13 +750,17 @@ void FeatureInfo::InitializeFeatures() {
 
     DCHECK(glGetError() == GL_NO_ERROR);
 
-    if (statusRGBA == GL_FRAMEBUFFER_COMPLETE) {
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE) {
       validators_.texture_internal_format.AddValue(GL_RGBA32F);
+      validators_.texture_sized_color_renderable_internal_format.AddValue(
+          GL_RGBA32F);
       feature_flags_.chromium_color_buffer_float_rgba = true;
       AddExtensionString("GL_CHROMIUM_color_buffer_float_rgba");
     }
-    if (statusRGB == GL_FRAMEBUFFER_COMPLETE) {
+    if (status_rgb == GL_FRAMEBUFFER_COMPLETE) {
       validators_.texture_internal_format.AddValue(GL_RGB32F);
+      validators_.texture_sized_color_renderable_internal_format.AddValue(
+          GL_RGB32F);
       feature_flags_.chromium_color_buffer_float_rgb = true;
       AddExtensionString("GL_CHROMIUM_color_buffer_float_rgb");
     }
@@ -762,6 +776,20 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_RG32F);
     validators_.render_buffer_format.AddValue(GL_RGBA32F);
     validators_.render_buffer_format.AddValue(GL_R11F_G11F_B10F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_R16F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_RG16F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_RGBA16F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_R32F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_RG32F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_RGBA32F);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_R11F_G11F_B10F);
   }
 
   // Check for multisample support
@@ -1197,6 +1225,8 @@ void FeatureInfo::InitializeFeatures() {
     validators_.read_pixel_format.AddValue(GL_RG_EXT);
     validators_.render_buffer_format.AddValue(GL_R8_EXT);
     validators_.render_buffer_format.AddValue(GL_RG8_EXT);
+    validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
+    validators_.texture_unsized_internal_format.AddValue(GL_RG_EXT);
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 

@@ -346,7 +346,10 @@ class TextureMinFilterModeValidator {
 TextureMinFilterModeValidator texture_min_filter_mode;
 
 ValueValidator<GLenum> texture_parameter;
+ValueValidator<GLenum> texture_sized_color_renderable_internal_format;
+ValueValidator<GLenum> texture_sized_texture_filterable_internal_format;
 ValueValidator<GLenum> texture_target;
+ValueValidator<GLenum> texture_unsized_internal_format;
 class TextureUsageValidator {
  public:
   bool IsValid(const GLenum value) const;
