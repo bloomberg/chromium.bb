@@ -481,7 +481,9 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(IconType type)
 
 void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryCommitType commitType)
 {
-    m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
+    if (!m_webFrame->parent()) {
+        m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
+    }
 
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.

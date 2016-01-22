@@ -33,7 +33,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharacters)
 
     compositor().beginFrame();
 
-    EXPECT_TRUE(webViewClient().hadVisuallyNonEmptyLayout());
+    EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually)
@@ -52,7 +52,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually)
     // Pump a frame mid-load.
     compositor().beginFrame();
 
-    EXPECT_FALSE(webViewClient().hadVisuallyNonEmptyLayout());
+    EXPECT_EQ(0, webViewClient().visuallyNonEmptyLayoutCount());
 
     // Write more than 200 characters.
     mainResource.write("!");
@@ -63,7 +63,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually)
     // not as the character count goes over 200.
     compositor().beginFrame();
 
-    EXPECT_TRUE(webViewClient().hadVisuallyNonEmptyLayout());
+    EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
 }
 
 // TODO(dglazkov): Write pixel-count and canvas-based VisuallyNonEmpty tests
@@ -93,7 +93,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyMissingPump)
     compositor().beginFrame();
 
     // ... which correctly signals the VisuallyNonEmpty.
-    EXPECT_TRUE(webViewClient().hadVisuallyNonEmptyLayout());
+    EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsing)
@@ -102,15 +102,11 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsing)
 
     loadURL("https://example.com/index.html");
 
-    mainResource.start();
-
-    mainResource.write("content");
-
-    mainResource.finish();
+    mainResource.complete("content");
 
     compositor().beginFrame();
 
-    EXPECT_TRUE(webViewClient().hadFinishedParsingLayout());
+    EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedLoading)
@@ -119,15 +115,11 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedLoading)
 
     loadURL("https://example.com/index.html");
 
-    mainResource.start();
-
-    mainResource.write("content");
-
-    mainResource.finish();
+    mainResource.complete("content");
 
     compositor().beginFrame();
 
-    EXPECT_TRUE(webViewClient().hadFinishedLoadingLayout());
+    EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading)
@@ -137,16 +129,12 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading)
 
     loadURL("https://example.com/index.html");
 
-    mainResource.start();
-
-    mainResource.write("<img src=cat.png>");
-
-    mainResource.finish();
+    mainResource.complete("<img src=cat.png>");
 
     compositor().beginFrame();
 
-    EXPECT_TRUE(webViewClient().hadFinishedParsingLayout());
-    EXPECT_FALSE(webViewClient().hadFinishedLoadingLayout());
+    EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
+    EXPECT_EQ(0, webViewClient().finishedLoadingLayoutCount());
 
     imageResource.complete("image data");
 
@@ -155,7 +143,35 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading)
 
     compositor().beginFrame();
 
-    EXPECT_TRUE(webViewClient().hadFinishedLoadingLayout());
+    EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
+    EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
+}
+
+TEST_F(WebMeaningfulLayoutsTest, WithIFrames)
+{
+    SimRequest mainResource("https://example.com/index.html", "text/html");
+    SimRequest iframeResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/index.html");
+
+    mainResource.complete("<iframe src=iframe.html></iframe>");
+
+    compositor().beginFrame();
+
+    EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+    EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
+    EXPECT_EQ(0, webViewClient().finishedLoadingLayoutCount());
+
+    iframeResource.complete("iframe data");
+
+    // Pump the message loop to process the iframe loading task.
+    testing::runPendingTasks();
+
+    compositor().beginFrame();
+
+    EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+    EXPECT_EQ(1, webViewClient().finishedParsingLayoutCount());
+    EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
 }
 
 }

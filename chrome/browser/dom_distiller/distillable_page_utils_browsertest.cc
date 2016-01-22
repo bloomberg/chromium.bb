@@ -26,8 +26,17 @@ using namespace switches::reader_mode_heuristics;
 namespace {
 
 const char kSimpleArticlePath[] = "/dom_distiller/simple_article.html";
+const char kSimpleArticleIFramePath[] =
+    "/dom_distiller/simple_article_iframe.html";
 const char kArticlePath[] = "/dom_distiller/og_article.html";
 const char kNonArticlePath[] = "/dom_distiller/non_og_article.html";
+
+const char* kAllPaths[] = {
+    kSimpleArticlePath,
+    kSimpleArticleIFramePath,
+    kArticlePath,
+    kNonArticlePath
+};
 
 class Holder {
  public:
@@ -96,6 +105,11 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
     EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
     NavigateAndWait(kSimpleArticlePath);
   }
+  for (unsigned i = 0; i < sizeof(kAllPaths) / sizeof(kAllPaths[0]); ++i) {
+    testing::InSequence dummy;
+    EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
+    NavigateAndWait(kAllPaths[i]);
+  }
   // Test pages that we don't care about its distillability.
   {
     testing::InSequence dummy;
@@ -138,11 +152,12 @@ using DistillablePageUtilsBrowserTestAdaboost =
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
                        TestDelegate) {
-  {
+  const char* paths[] = {kSimpleArticlePath, kSimpleArticleIFramePath};
+  for (unsigned i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
     testing::InSequence dummy;
     EXPECT_CALL(holder_, OnResult(true, false)).Times(1);
     EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
-    NavigateAndWait(kSimpleArticlePath);
+    NavigateAndWait(paths[i]);
   }
   {
     testing::InSequence dummy;

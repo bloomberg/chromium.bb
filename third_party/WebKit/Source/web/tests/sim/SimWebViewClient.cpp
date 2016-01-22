@@ -9,9 +9,9 @@
 namespace blink {
 
 SimWebViewClient::SimWebViewClient(WebLayerTreeView& layerTreeView)
-    : m_hadVisuallyNonEmptyLayout(false)
-    , m_hadFinishedParsingLayout(false)
-    , m_hadFinishedLoadingLayout(false)
+    : m_visuallyNonEmptyLayoutCount(0)
+    , m_finishedParsingLayoutCount(0)
+    , m_finishedLoadingLayoutCount(0)
     , m_layerTreeView(&layerTreeView)
 {
 }
@@ -20,13 +20,13 @@ void SimWebViewClient::didMeaningfulLayout(WebMeaningfulLayout meaningfulLayout)
 {
     switch (meaningfulLayout) {
     case WebMeaningfulLayout::VisuallyNonEmpty:
-        m_hadVisuallyNonEmptyLayout = true;
+        m_visuallyNonEmptyLayoutCount++;
         break;
     case WebMeaningfulLayout::FinishedParsing:
-        m_hadFinishedParsingLayout = true;
+        m_finishedParsingLayoutCount++;
         break;
     case WebMeaningfulLayout::FinishedLoading:
-        m_hadFinishedLoadingLayout = true;
+        m_finishedLoadingLayoutCount++;
         break;
     }
 }

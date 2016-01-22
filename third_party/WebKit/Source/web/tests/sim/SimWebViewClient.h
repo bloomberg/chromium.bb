@@ -17,17 +17,17 @@ public:
 
     WebLayerTreeView* layerTreeView() override { return m_layerTreeView; }
 
-    bool hadVisuallyNonEmptyLayout() const { return m_hadVisuallyNonEmptyLayout; }
-    bool hadFinishedParsingLayout() const { return m_hadFinishedParsingLayout; }
-    bool hadFinishedLoadingLayout() const { return m_hadFinishedLoadingLayout; }
+    int visuallyNonEmptyLayoutCount() const { return m_visuallyNonEmptyLayoutCount; }
+    int finishedParsingLayoutCount() const { return m_finishedParsingLayoutCount; }
+    int finishedLoadingLayoutCount() const { return m_finishedLoadingLayoutCount; }
 
 private:
     // WebWidgetClient overrides.
     void didMeaningfulLayout(WebMeaningfulLayout) override;
 
-    bool m_hadVisuallyNonEmptyLayout;
-    bool m_hadFinishedParsingLayout;
-    bool m_hadFinishedLoadingLayout;
+    int m_visuallyNonEmptyLayoutCount;
+    int m_finishedParsingLayoutCount;
+    int m_finishedLoadingLayoutCount;
 
     WebLayerTreeView* m_layerTreeView;
 };
