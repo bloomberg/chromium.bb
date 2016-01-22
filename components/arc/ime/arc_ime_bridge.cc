@@ -90,14 +90,14 @@ void ArcImeBridge::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void ArcImeBridge::OnWindowFocused(aura::Window* gained_focus,
                                    aura::Window* lost_focus) {
-  if (focused_arc_window_.Contains(lost_focus)) {
+  if (lost_focus && focused_arc_window_.Contains(lost_focus)) {
     ui::InputMethod* const input_method = GetInputMethod();
     if (input_method)
       input_method->DetachTextInputClient(this);
     focused_arc_window_.Remove(lost_focus);
   }
 
-  if (IsArcWindow(gained_focus)) {
+  if (gained_focus && IsArcWindow(gained_focus)) {
     focused_arc_window_.Add(gained_focus);
     ui::InputMethod* const input_method = GetInputMethod();
     if (input_method)
