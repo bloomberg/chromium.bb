@@ -27,7 +27,7 @@ bool CompositorProxiedPropertySet::isEmpty() const
 
 void CompositorProxiedPropertySet::increment(uint32_t mutableProperties)
 {
-    for (int i = 0; i < kNumWebCompositorMutableProperties; ++i) {
+    for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
         if (mutableProperties & (1 << i))
             ++m_counts[i];
     }
@@ -35,7 +35,7 @@ void CompositorProxiedPropertySet::increment(uint32_t mutableProperties)
 
 void CompositorProxiedPropertySet::decrement(uint32_t mutableProperties)
 {
-    for (int i = 0; i < kNumWebCompositorMutableProperties; ++i) {
+    for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
         if (mutableProperties & (1 << i)) {
             ASSERT(m_counts[i]);
             --m_counts[i];
@@ -45,8 +45,8 @@ void CompositorProxiedPropertySet::decrement(uint32_t mutableProperties)
 
 uint32_t CompositorProxiedPropertySet::proxiedProperties() const
 {
-    uint32_t properties = WebCompositorMutablePropertyNone;
-    for (int i = 0; i < kNumWebCompositorMutableProperties; ++i) {
+    uint32_t properties = CompositorMutableProperty::kNone;
+    for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
         if (m_counts[i])
             properties |= 1 << i;
     }

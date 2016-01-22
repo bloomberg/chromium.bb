@@ -7,10 +7,10 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorMutableProperties.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -135,19 +135,19 @@ TEST_F(CompositorWorkerTest, plumbingElementIdAndMutableProperties)
 
     Element* proxiedElement = document->getElementById("proxied");
     WebLayer* proxiedLayer = webLayerFromElement(proxiedElement);
-    EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & WebCompositorMutablePropertyTransform);
-    EXPECT_FALSE(proxiedLayer->compositorMutableProperties() & (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop | WebCompositorMutablePropertyOpacity));
+    EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & CompositorMutableProperty::kTransform);
+    EXPECT_FALSE(proxiedLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kOpacity));
     EXPECT_NE(0UL, proxiedLayer->elementId());
 
     Element* scrollElement = document->getElementById("proxied-scroller");
     WebLayer* scrollLayer = scrollingWebLayerFromElement(scrollElement);
-    EXPECT_TRUE(scrollLayer->compositorMutableProperties() & (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop));
-    EXPECT_FALSE(scrollLayer->compositorMutableProperties() & (WebCompositorMutablePropertyTransform | WebCompositorMutablePropertyOpacity));
+    EXPECT_TRUE(scrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop));
+    EXPECT_FALSE(scrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kTransform | CompositorMutableProperty::kOpacity));
     EXPECT_NE(0UL, scrollLayer->elementId());
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
-    EXPECT_TRUE(rootScrollLayer->compositorMutableProperties() & (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop));
-    EXPECT_FALSE(rootScrollLayer->compositorMutableProperties() & (WebCompositorMutablePropertyTransform | WebCompositorMutablePropertyOpacity));
+    EXPECT_TRUE(rootScrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop));
+    EXPECT_FALSE(rootScrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kTransform | CompositorMutableProperty::kOpacity));
 
     EXPECT_NE(0UL, rootScrollLayer->elementId());
 }

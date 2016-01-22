@@ -48,7 +48,6 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Length.h"
 #include "platform/transforms/TransformOperations.h"
-#include "public/platform/WebCompositorMutableProperties.h"
 #include "wtf/Assertions.h"
 
 namespace blink {

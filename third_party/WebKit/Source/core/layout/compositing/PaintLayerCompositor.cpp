@@ -55,13 +55,13 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorMutableProperties.h"
 
 namespace blink {
 
@@ -396,10 +396,10 @@ void PaintLayerCompositor::updateIfNeeded()
         if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
             if (Element* scrollingElement = m_layoutView.document().scrollingElement()) {
                 uint64_t elementId = 0;
-                uint32_t mutableProperties = WebCompositorMutablePropertyNone;
+                uint32_t mutableProperties = CompositorMutableProperty::kNone;
                 if (scrollingElement->hasCompositorProxy()) {
                     elementId = DOMNodeIds::idForNode(scrollingElement);
-                    mutableProperties = (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop) & scrollingElement->compositorMutableProperties();
+                    mutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & scrollingElement->compositorMutableProperties();
                 }
                 m_scrollLayer->setElementId(elementId);
                 m_scrollLayer->setCompositorMutableProperties(mutableProperties);

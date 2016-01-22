@@ -66,7 +66,7 @@ Layer::Layer(const LayerSettings& settings)
       clip_tree_index_(-1),
       property_tree_sequence_number_(-1),
       element_id_(0),
-      mutable_properties_(kMutablePropertyNone),
+      mutable_properties_(MutableProperty::kNone),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
       should_flatten_transform_from_property_tree_(false),

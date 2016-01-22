@@ -70,12 +70,12 @@
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorMutableProperties.h"
 
 namespace blink {
 
@@ -1392,7 +1392,7 @@ static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode 
         return false;
 
     Node* node = layer->enclosingNode();
-    if (node && node->isElementNode() && (toElement(node)->compositorMutableProperties() & (WebCompositorMutablePropertyScrollTop | WebCompositorMutablePropertyScrollLeft)))
+    if (node && node->isElementNode() && (toElement(node)->compositorMutableProperties() & (CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kScrollLeft)))
         return true;
 
     if (mode == PaintLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())

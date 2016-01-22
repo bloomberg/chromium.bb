@@ -5,14 +5,18 @@
 #ifndef CC_ANIMATION_MUTABLE_PROPERTIES_H_
 #define CC_ANIMATION_MUTABLE_PROPERTIES_H_
 
+#include <stdint.h>
+
 namespace cc {
 
-enum MutableProperty {
-  kMutablePropertyNone = 0,
-  kMutablePropertyOpacity = 1 << 0,
-  kMutablePropertyScrollLeft = 1 << 1,
-  kMutablePropertyScrollTop = 1 << 2,
-  kMutablePropertyTransform = 1 << 3,
+struct MutableProperty {
+  enum : uint32_t { kNone = 0 };
+  enum : uint32_t { kOpacity = 1 << 0 };
+  enum : uint32_t { kScrollLeft = 1 << 1 };
+  enum : uint32_t { kScrollTop = 1 << 2 };
+  enum : uint32_t { kTransform = 1 << 3 };
+
+  enum : int { kNumProperties = 4 };
 };
 
 }  // namespace cc

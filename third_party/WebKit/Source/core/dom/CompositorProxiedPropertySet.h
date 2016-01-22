@@ -5,7 +5,7 @@
 #ifndef CompositorProxiedPropertySet_h
 #define CompositorProxiedPropertySet_h
 
-#include "public/platform/WebCompositorMutableProperties.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -28,7 +28,7 @@ public:
 private:
     CompositorProxiedPropertySet();
 
-    unsigned short m_counts[kNumWebCompositorMutableProperties];
+    unsigned short m_counts[CompositorMutableProperty::kNumProperties];
 };
 
 } // namespace blink

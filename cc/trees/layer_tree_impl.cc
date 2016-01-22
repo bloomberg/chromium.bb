@@ -50,9 +50,9 @@ namespace cc {
 namespace {
 
 const uint32_t kMainLayerFlags =
-    kMutablePropertyOpacity | kMutablePropertyTransform;
+    MutableProperty::kOpacity | MutableProperty::kTransform;
 const uint32_t kScrollLayerFlags =
-    kMutablePropertyScrollLeft | kMutablePropertyScrollTop;
+    MutableProperty::kScrollLeft | MutableProperty::kScrollTop;
 
 }  // namespace
 

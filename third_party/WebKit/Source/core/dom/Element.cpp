@@ -123,6 +123,7 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/BitVector.h"
 #include "wtf/HashFunctions.h"
@@ -996,10 +997,10 @@ void Element::decrementCompositorProxiedProperties(uint32_t mutableProperties)
 uint32_t Element::compositorMutableProperties() const
 {
     if (!hasRareData())
-        return WebCompositorMutablePropertyNone;
+        return CompositorMutableProperty::kNone;
     if (CompositorProxiedPropertySet* set = elementRareData()->proxiedPropertyCounts())
         return set->proxiedProperties();
-    return WebCompositorMutablePropertyNone;
+    return CompositorMutableProperty::kNone;
 }
 
 bool Element::hasNonEmptyLayoutSize() const

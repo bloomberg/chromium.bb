@@ -60,12 +60,12 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
-#include "public/platform/WebCompositorMutableProperties.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -1528,8 +1528,8 @@ void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties()
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositedLayerMapping::updateElementId()");
 
     uint64_t elementId = 0;
-    uint32_t mainMutableProperties = WebCompositorMutablePropertyNone;
-    uint32_t scrollMutableProperties = WebCompositorMutablePropertyNone;
+    uint32_t mainMutableProperties = CompositorMutableProperty::kNone;
+    uint32_t scrollMutableProperties = CompositorMutableProperty::kNone;
 
     if (m_owningLayer.layoutObject()->style()->hasCompositorProxy()) {
         if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode()) {
@@ -1537,8 +1537,8 @@ void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties()
                 Element* owningElement = toElement(owningNode);
                 uint32_t compositorMutableProperties = owningElement->compositorMutableProperties();
                 elementId = DOMNodeIds::idForNode(owningNode);
-                mainMutableProperties = (WebCompositorMutablePropertyOpacity | WebCompositorMutablePropertyTransform) & compositorMutableProperties;
-                scrollMutableProperties = (WebCompositorMutablePropertyScrollLeft | WebCompositorMutablePropertyScrollTop) & compositorMutableProperties;
+                mainMutableProperties = (CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform) & compositorMutableProperties;
+                scrollMutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & compositorMutableProperties;
             }
         }
     }

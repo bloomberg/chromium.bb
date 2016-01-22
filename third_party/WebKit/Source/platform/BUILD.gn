@@ -409,6 +409,8 @@ test("blink_platform_unittests") {
     "//base",
     "//base/allocator",
     "//base/test:test_support",
+    "//cc",
+    "//cc:test_support",
     "//cc/blink",
     "//skia",
     "//testing/gmock",
@@ -416,6 +418,8 @@ test("blink_platform_unittests") {
     "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/wtf:test_support",
     "//third_party/harfbuzz-ng",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//url",
   ]
 

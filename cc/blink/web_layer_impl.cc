@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "cc/animation/animation.h"
-#include "cc/animation/mutable_properties.h"
 #include "cc/base/region.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_animation_impl.h"
@@ -27,7 +26,6 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_host.h"
-#include "third_party/WebKit/public/platform/WebCompositorMutableProperties.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebLayerPositionConstraint.h"
@@ -562,35 +560,6 @@ void WebLayerImpl::setElementId(uint64_t id) {
 uint64_t WebLayerImpl::elementId() const {
   return layer_->element_id();
 }
-
-static_assert(
-    static_cast<cc::MutableProperty>(blink::WebCompositorMutablePropertyNone) ==
-        cc::kMutablePropertyNone,
-    "MutableProperty and WebCompositorMutableProperty enums must match");
-
-static_assert(
-    static_cast<cc::MutableProperty>(
-        blink::WebCompositorMutablePropertyOpacity) ==
-        cc::kMutablePropertyOpacity,
-    "MutableProperty and WebCompositorMutableProperty enums must match");
-
-static_assert(
-    static_cast<cc::MutableProperty>(
-        blink::WebCompositorMutablePropertyScrollLeft) ==
-        cc::kMutablePropertyScrollLeft,
-    "MutableProperty and WebCompositorMutableProperty enums must match");
-
-static_assert(
-    static_cast<cc::MutableProperty>(
-        blink::WebCompositorMutablePropertyScrollTop) ==
-        cc::kMutablePropertyScrollTop,
-    "MutableProperty and WebCompositorMutableProperty enums must match");
-
-static_assert(
-    static_cast<cc::MutableProperty>(
-        blink::WebCompositorMutablePropertyTransform) ==
-        cc::kMutablePropertyTransform,
-    "MutableProperty and WebCompositorMutableProperty enums must match");
 
 void WebLayerImpl::setCompositorMutableProperties(uint32_t properties) {
   layer_->SetMutableProperties(properties);

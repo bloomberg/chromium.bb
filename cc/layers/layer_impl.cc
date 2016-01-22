@@ -94,7 +94,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
       element_id_(0),
-      mutable_properties_(kMutablePropertyNone),
+      mutable_properties_(MutableProperty::kNone),
       force_render_surface_(false),
       frame_timing_requests_dirty_(false),
       visited_(false),
@@ -1720,7 +1720,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("gpu_memory_usage",
                     base::saturated_cast<int>(GPUMemoryUsageInBytes()));
 
-  if (mutable_properties_ != kMutablePropertyNone) {
+  if (mutable_properties_ != MutableProperty::kNone) {
     state->SetInteger("element_id", base::saturated_cast<int>(element_id_));
     state->SetInteger("mutable_properties", mutable_properties_);
   }

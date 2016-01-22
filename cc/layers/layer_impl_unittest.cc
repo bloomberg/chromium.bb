@@ -207,7 +207,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetElementId(2));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetMutableProperties(kMutablePropertyOpacity));
+      root->SetMutableProperties(MutableProperty::kOpacity));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetScrollParent(scroll_parent.get()));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
@@ -385,7 +385,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetElementId(2));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetMutableProperties(kMutablePropertyTransform));
+      layer->SetMutableProperties(MutableProperty::kTransform));
 }
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
