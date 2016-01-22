@@ -633,16 +633,19 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
 
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
 {
-    RefPtrWillBeRawPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
-    canvasElement->setHeight(40);
-    canvasElement->setWidth(40);
+    NonThrowableExceptionState nonThrowableExceptionState;
+    RefPtrWillBeRawPtr<Element> canvasElement = document().createElement("canvas", nonThrowableExceptionState);
+    EXPECT_FALSE(nonThrowableExceptionState.hadException());
+    HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(canvasElement.get());
+    canvas->setHeight(40);
+    canvas->setWidth(40);
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived = nullptr;
     {
-        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvas, IntRect(0, 0, canvas->width(), canvas->height()));
         imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
     }
     CanvasContextCreationAttributes attributes;
-    CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvasElement->getCanvasRenderingContext("2d", attributes));
+    CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->getCanvasRenderingContext("2d", attributes));
     TrackExceptionState exceptionState;
     CanvasImageSourceUnion imageSource;
     imageSource.setImageBitmap(imageBitmapDerived);

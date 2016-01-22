@@ -888,11 +888,11 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
             return false;
     }
 
-    if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter()) {
+    if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter(canvas(), accessFont(), canvas()->size())) {
         compositedDraw(drawFunc, drawingCanvas(), paintType, imageType);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
-        clearCanvas(); // takes care of checkOvewrdraw()
+        clearCanvas(); // takes care of checkOverdraw()
         const SkPaint* paint = state().getPaint(paintType, DrawForegroundOnly, imageType);
         drawFunc(drawingCanvas(), paint);
         didDraw(clipBounds);

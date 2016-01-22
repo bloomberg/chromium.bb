@@ -85,7 +85,7 @@ public:
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
     SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize) const;
-    bool hasFilter() const { return m_filterValue; }
+    bool hasFilter(Element*, const Font&, IntSize canvasSize) const;
 
     void setStrokeStyle(CanvasStyle*);
     CanvasStyle* strokeStyle() const { return m_strokeStyle.get(); }
