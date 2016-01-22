@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
+#include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
@@ -100,6 +101,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   mojo::Array<mojo::String> window_manager_interfaces;
   window_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
   window_manager_interfaces.push_back(mus::mojom::WindowTreeHostFactory::Name_);
+  window_manager_interfaces.push_back(mus::mojom::DisplayManager::Name_);
   filter->filter.insert("mojo:mus", std::move(window_manager_interfaces));
 
   mojo::Array<mojo::String> test_runner_interfaces;

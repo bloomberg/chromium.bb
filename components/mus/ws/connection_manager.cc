@@ -20,7 +20,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace mus {
-
 namespace ws {
 
 ConnectionManager::ConnectionManager(
@@ -252,6 +251,11 @@ const WindowTreeHostImpl* ConnectionManager::GetWindowTreeHostByWindow(
 
 WindowTreeHostImpl* ConnectionManager::GetActiveWindowTreeHost() {
   return host_connection_map_.begin()->first;
+}
+
+void ConnectionManager::AddDisplayManagerBinding(
+    mojo::InterfaceRequest<mojom::DisplayManager> request) {
+  display_manager_bindings_.AddBinding(this, std::move(request));
 }
 
 uint32_t ConnectionManager::GenerateWindowManagerChangeId(
@@ -583,6 +587,36 @@ void ConnectionManager::OnTransientWindowRemoved(
   }
 }
 
-}  // namespace ws
+void ConnectionManager::AddObserver(mojom::DisplayManagerObserverPtr observer) {
+  mojo::Array<mojom::DisplayPtr> displays(host_connection_map_.size());
+  {
+    size_t i = 0;
+    int next_x = 0;
+    for (auto& pair : host_connection_map_) {
+      const WindowTreeHostImpl* tree_host = pair.first;
+      const ServerWindow* root = tree_host->root_window();
+      displays[i]->id = tree_host->id();
+      displays[i]->bounds = mojo::Rect::New();
+      displays[i]->bounds->x = next_x;
+      displays[i]->bounds->y = 0;
+      displays[i]->bounds->width = root->bounds().size().width();
+      displays[i]->bounds->height = root->bounds().size().height();
+      next_x += displays[i]->bounds->width;
+      // TODO(sky): window manager needs an API to set the work area.
+      displays[i]->work_area = displays[1]->bounds.Clone();
+      displays[i]->device_pixel_ratio =
+          tree_host->GetViewportMetrics().device_pixel_ratio;
+      displays[i]->rotation = tree_host->GetRotation();
+      // TODO(sky): make this real.
+      displays[i]->is_primary = i == 0;
+      // TODO(sky): make this real.
+      displays[i]->touch_support = mojom::TouchSupport::UNKNOWN;
+      ++i;
+    }
+  }
+  observer->OnDisplays(std::move(displays));
+  display_manager_observers_.AddInterfacePtr(std::move(observer));
+}
 
+}  // namespace ws
 }  // namespace mus

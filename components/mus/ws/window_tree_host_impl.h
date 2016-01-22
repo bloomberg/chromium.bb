@@ -56,6 +56,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // Initializes state that depends on the existence of a WindowTreeHostImpl.
   void Init(WindowTreeHostDelegate* delegate);
 
+  uint32_t id() const { return id_; }
+
   const WindowTreeImpl* GetWindowTree() const;
   WindowTreeImpl* GetWindowTree();
 
@@ -79,6 +81,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   // Returns the metrics for this viewport.
   const mojom::ViewportMetrics& GetViewportMetrics() const;
+
+  mojom::Rotation GetRotation() const;
 
   ConnectionManager* connection_manager() { return connection_manager_; }
 
@@ -221,6 +225,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   std::queue<scoped_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
+
+  const uint32_t id_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };

@@ -31,12 +31,21 @@ const int32 kResizeBehaviorCanResize = 1;
 const int32 kResizeBehaviorCanMaximize = 2;
 const int32 kResizeBehaviorCanMinimize = 4;
 
+enum TouchSupport {
+  UNKNOWN,
+  AVAILABLE,
+  UNAVAILABLE,
+};
+
+// TODO(sky): move this to display.mojom
 struct Display {
   int64 id;
   mojo.Rect bounds;
   mojo.Rect work_area;
   float device_pixel_ratio;
   Rotation rotation;
+  TouchSupport touch_support;
+  bool is_primary;
 };
 
 enum WindowType {

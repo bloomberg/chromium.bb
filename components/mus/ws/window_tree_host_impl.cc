@@ -51,6 +51,8 @@ mojom::EventPtr CoalesceEvents(mojom::EventPtr first, mojom::EventPtr second) {
   return second;
 }
 
+uint32_t next_id = 1;
+
 }  // namespace
 
 class WindowTreeHostImpl::ProcessedEventTarget {
@@ -98,7 +100,8 @@ WindowTreeHostImpl::WindowTreeHostImpl(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
       window_manager_(std::move(window_manager)),
       tree_awaiting_input_ack_(nullptr),
-      last_cursor_(0) {
+      last_cursor_(0),
+      id_(next_id) {
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(
@@ -153,6 +156,10 @@ void WindowTreeHostImpl::ScheduleSurfaceDestruction(ServerWindow* window) {
 
 const mojom::ViewportMetrics& WindowTreeHostImpl::GetViewportMetrics() const {
   return display_manager_->GetViewportMetrics();
+}
+
+mojom::Rotation WindowTreeHostImpl::GetRotation() const {
+  return display_manager_->GetRotation();
 }
 
 void WindowTreeHostImpl::SetFocusedWindow(ServerWindow* new_focused_window) {
