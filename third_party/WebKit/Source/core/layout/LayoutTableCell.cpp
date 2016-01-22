@@ -459,8 +459,7 @@ static int compareBorders(const CollapsedBorderValue& border1, const CollapsedBo
 
 static CollapsedBorderValue chooseBorder(const CollapsedBorderValue& border1, const CollapsedBorderValue& border2)
 {
-    const CollapsedBorderValue& border = compareBorders(border1, border2) < 0 ? border2 : border1;
-    return border.style() == BHIDDEN ? CollapsedBorderValue() : border;
+    return compareBorders(border1, border2) < 0 ? border2 : border1;
 }
 
 bool LayoutTableCell::hasStartBorderAdjoiningTable() const
@@ -908,7 +907,7 @@ void LayoutTableCell::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 static void addBorderStyle(LayoutTable::CollapsedBorderValues& borderValues,
     CollapsedBorderValue borderValue)
 {
-    if (!borderValue.exists())
+    if (!borderValue.isVisible())
         return;
     size_t count = borderValues.size();
     for (size_t i = 0; i < count; ++i) {

@@ -70,9 +70,16 @@ public:
         return color() == o.color() && isTransparent() == o.isTransparent() && isSameIgnoringColor(o);
     }
 
+    bool isVisible() const
+    {
+        return style() > BHIDDEN && !isTransparent() && exists();
+    }
+
     bool shouldPaint(const CollapsedBorderValue& tableCurrentBorderValue) const
     {
-        return style() > BHIDDEN && !isTransparent() && exists() && isSameIgnoringColor(tableCurrentBorderValue);
+        // Invisible borders are not cached so painters see visible borders only.
+        ASSERT(isVisible());
+        return isSameIgnoringColor(tableCurrentBorderValue);
     }
 
 private:

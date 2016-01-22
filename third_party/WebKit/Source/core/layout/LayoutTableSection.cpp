@@ -1603,7 +1603,13 @@ bool LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, C
     ASSERT(table()->collapseBorders());
     CellsCollapsedBordersMap::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
     if (it == m_cellsCollapsedBorders.end()) {
+        if (!border.isVisible())
+            return false;
         m_cellsCollapsedBorders.add(std::make_pair(cell, side), border);
+        return true;
+    }
+    if (!border.isVisible()) {
+        m_cellsCollapsedBorders.remove(it);
         return true;
     }
     if (!it->value.equals(border)) {
@@ -1613,12 +1619,11 @@ bool LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, C
     return false;
 }
 
-const CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side) const
+const CollapsedBorderValue* LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side) const
 {
     ASSERT(table()->collapseBorders());
     CellsCollapsedBordersMap::const_iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
-    ASSERT_WITH_SECURITY_IMPLICATION(it != m_cellsCollapsedBorders.end());
-    return it->value;
+    return it == m_cellsCollapsedBorders.end() ? nullptr : &it->value;
 }
 
 LayoutTableSection* LayoutTableSection::createAnonymousWithParent(const LayoutObject* parent)
