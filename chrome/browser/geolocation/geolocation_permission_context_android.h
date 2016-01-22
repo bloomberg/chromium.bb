@@ -29,6 +29,10 @@ namespace content {
 class WebContents;
 }
 
+namespace infobars {
+class InfoBar;
+}
+
 class LocationSettings;
 class GURL;
 class PermissionRequestID;
@@ -49,6 +53,8 @@ class GeolocationPermissionContextAndroid
       const GURL& requesting_frame_origin,
       bool user_gesture,
       const BrowserPermissionCallback& callback) override;
+  void CancelPermissionRequest(content::WebContents* web_contents,
+                               const PermissionRequestID& id) override;
 
   void HandleUpdateAndroidPermissions(const PermissionRequestID& id,
                                       const GURL& requesting_frame_origin,
@@ -61,6 +67,9 @@ class GeolocationPermissionContextAndroid
   void SetLocationSettingsForTesting(scoped_ptr<LocationSettings> settings);
 
   scoped_ptr<LocationSettings> location_settings_;
+
+  // This is owned by the InfoBarService (owner of the InfoBar).
+  infobars::InfoBar* permission_update_infobar_;
 
   // Must be the last member, to ensure that it will be destroyed first, which
   // will invalidate weak pointers.
