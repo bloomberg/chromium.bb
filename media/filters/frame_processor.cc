@@ -197,7 +197,6 @@ bool FrameProcessor::ProcessFrames(
     const StreamParser::TextBufferQueueMap& text_map,
     base::TimeDelta append_window_start,
     base::TimeDelta append_window_end,
-    bool* new_media_segment,
     base::TimeDelta* timestamp_offset) {
   StreamParser::BufferQueue frames;
   if (!MergeBufferQueues(audio_buffers, video_buffers, text_map, &frames)) {
@@ -217,7 +216,7 @@ bool FrameProcessor::ProcessFrames(
   for (StreamParser::BufferQueue::const_iterator frames_itr = frames.begin();
        frames_itr != frames.end(); ++frames_itr) {
     if (!ProcessFrame(*frames_itr, append_window_start, append_window_end,
-                      timestamp_offset, new_media_segment)) {
+                      timestamp_offset)) {
       FlushProcessedFrames();
       return false;
     }
@@ -291,10 +290,16 @@ void FrameProcessor::Reset() {
     itr->second->Reset();
   }
 
-  if (sequence_mode_) {
-    DCHECK(kNoTimestamp() != group_end_timestamp_);
-    group_start_timestamp_ = group_end_timestamp_;
+  // Maintain current |in_coded_frame_group_| state for Reset() during
+  // sequence mode. Reset it here only if in segments mode.
+  if (!sequence_mode_) {
+    in_coded_frame_group_ = false;
+    return;
   }
+
+  // Sequence mode
+  DCHECK(kNoTimestamp() != group_end_timestamp_);
+  group_start_timestamp_ = group_end_timestamp_;
 }
 
 void FrameProcessor::OnPossibleAudioConfigUpdate(
@@ -320,14 +325,14 @@ MseTrackBuffer* FrameProcessor::FindTrack(StreamParser::TrackId id) {
   return itr->second;
 }
 
-void FrameProcessor::NotifyNewMediaSegmentStarting(
-    DecodeTimestamp segment_timestamp) {
-  DVLOG(2) << __FUNCTION__ << "(" << segment_timestamp.InSecondsF() << ")";
+void FrameProcessor::NotifyStartOfCodedFrameGroup(
+    DecodeTimestamp start_timestamp) {
+  DVLOG(2) << __FUNCTION__ << "(" << start_timestamp.InSecondsF() << ")";
 
   for (TrackBufferMap::iterator itr = track_buffers_.begin();
        itr != track_buffers_.end();
        ++itr) {
-    itr->second->stream()->OnNewMediaSegment(segment_timestamp);
+    itr->second->stream()->OnStartOfCodedFrameGroup(start_timestamp);
   }
 }
 
@@ -448,8 +453,7 @@ bool FrameProcessor::ProcessFrame(
     const scoped_refptr<StreamParserBuffer>& frame,
     base::TimeDelta append_window_start,
     base::TimeDelta append_window_end,
-    base::TimeDelta* timestamp_offset,
-    bool* new_media_segment) {
+    base::TimeDelta* timestamp_offset) {
   // Implements the loop within step 1 of the coded frame processing algorithm
   // for a single input frame per April 1, 2014 MSE spec editor's draft:
   // https://dvcs.w3.org/hg/html-media/raw-file/d471a4412040/media-source/
@@ -587,12 +591,14 @@ bool FrameProcessor::ProcessFrame(
     //    If last decode timestamp for track buffer is set and the difference
     //    between decode timestamp and last decode timestamp is greater than 2
     //    times last frame duration:
-    DecodeTimestamp last_decode_timestamp =
+    DecodeTimestamp track_last_decode_timestamp =
         track_buffer->last_decode_timestamp();
-    if (last_decode_timestamp != kNoDecodeTimestamp()) {
-      base::TimeDelta dts_delta = decode_timestamp - last_decode_timestamp;
-      if (dts_delta < base::TimeDelta() ||
-          dts_delta > 2 * track_buffer->last_frame_duration()) {
+    if (track_last_decode_timestamp != kNoDecodeTimestamp()) {
+      base::TimeDelta track_dts_delta =
+          decode_timestamp - track_last_decode_timestamp;
+      if (track_dts_delta < base::TimeDelta() ||
+          track_dts_delta > 2 * track_buffer->last_frame_duration()) {
+        DCHECK(in_coded_frame_group_);
         // 7.1. If mode equals "segments": Set group end timestamp to
         //      presentation timestamp.
         //      If mode equals "sequence": Set group start timestamp equal to
@@ -601,8 +607,8 @@ bool FrameProcessor::ProcessFrame(
           group_end_timestamp_ = presentation_timestamp;
           // This triggers a discontinuity so we need to treat the next frames
           // appended within the append window as if they were the beginning of
-          // a new segment.
-          *new_media_segment = true;
+          // a new coded frame group.
+          in_coded_frame_group_ = false;
         } else {
           DVLOG(3) << __FUNCTION__ << " : Sequence mode discontinuity, GETS: "
                    << group_end_timestamp_.InSecondsF();
@@ -692,19 +698,19 @@ bool FrameProcessor::ProcessFrame(
     }
 
     // We now have a processed buffer to append to the track buffer's stream.
-    // If it is the first in a new media segment or following a discontinuity,
-    // notify all the track buffers' streams that a new segment is beginning.
-    if (*new_media_segment) {
-      // First, complete the append to track buffer streams of previous media
-      // segment's frames, if any.
+    // If it is the first in a new coded frame group (such as following a
+    // discontinuity), notify all the track buffers' streams that a coded frame
+    // group is starting.
+    if (!in_coded_frame_group_) {
+      // First, complete the append to track buffer streams of the previous
+      // coded frame group's frames, if any.
       if (!FlushProcessedFrames())
         return false;
 
-      *new_media_segment = false;
-
       // TODO(acolwell/wolenetz): This should be changed to a presentation
       // timestamp. See http://crbug.com/402502
-      NotifyNewMediaSegmentStarting(decode_timestamp);
+      NotifyStartOfCodedFrameGroup(decode_timestamp);
+      in_coded_frame_group_ = true;
     }
 
     DVLOG(3) << __FUNCTION__ << ": Sending processed frame to stream, "
@@ -713,9 +719,7 @@ bool FrameProcessor::ProcessFrame(
 
     // Steps 13-18: Note, we optimize by appending groups of contiguous
     // processed frames for each track buffer at end of ProcessFrames() or prior
-    // to NotifyNewMediaSegmentStarting().
-    // TODO(wolenetz): Refactor SourceBufferStream to conform to spec GC timing.
-    // See http://crbug.com/371197.
+    // to NotifyStartOfCodedFrameGroup().
     track_buffer->EnqueueProcessedFrame(frame);
 
     // 19. Set last decode timestamp for track buffer to decode timestamp.
