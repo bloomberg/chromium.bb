@@ -307,7 +307,13 @@ TEST_F(PersistentMemoryAllocatorTest, ParallelismTest) {
 // This test doesn't verify anything other than it doesn't crash. Its goal
 // is to find coding errors that aren't otherwise tested for, much like a
 // "fuzzer" would.
-TEST_F(PersistentMemoryAllocatorTest, CorruptionTest) {
+// This test is suppsoed to fail on TSAN bot (crbug.com/579867).
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CorruptionTest DISABLED_CorruptionTest
+#else
+#define MAYBE_CorruptionTest CorruptionTest
+#endif
+TEST_F(PersistentMemoryAllocatorTest, MAYBE_CorruptionTest) {
   char* memory = mem_segment_.get();
   AllocatorThread t1("t1", memory, TEST_MEMORY_SIZE, TEST_MEMORY_PAGE);
   AllocatorThread t2("t2", memory, TEST_MEMORY_SIZE, TEST_MEMORY_PAGE);
