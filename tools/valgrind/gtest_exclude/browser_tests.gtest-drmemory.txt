@@ -103,3 +103,6 @@ LoginPromptBrowserTest.ShouldReplaceExistingInterstitialWhenNavigated
 
 # https://crbug.com/577853
 OnStartupSettingsBrowserTest.uiTests
+
+# https://crbug.com/493167
+SmartSessionRestoreTest.PRE_CorrectLoadingOrder
