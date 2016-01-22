@@ -46,7 +46,6 @@ namespace chromeos {
 class DemoAppLauncher;
 class FocusRingController;
 class KeyboardDrivenOobeKeyHandler;
-class OobeUI;
 class WebUILoginDisplay;
 class WebUILoginView;
 
@@ -65,14 +64,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
   ~LoginDisplayHostImpl() override;
 
-  // Returns the default LoginDisplayHost instance if it has been created.
-  static LoginDisplayHost* default_host() {
-    return default_host_;
-  }
-
   // LoginDisplayHost implementation:
   LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
   gfx::NativeWindow GetNativeWindow() const override;
+  OobeUI* GetOobeUI() const override;
   WebUILoginView* GetWebUILoginView() const override;
   void BeforeSessionStart() override;
   void Finalize() override;
@@ -98,9 +93,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Called when the first browser window is created, but before it's shown.
   void OnBrowserCreated();
-
-  // Returns instance of the OOBE WebUI.
-  OobeUI* GetOobeUI() const;
 
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
@@ -206,9 +198,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   gfx::Rect background_bounds_;
 
   content::NotificationRegistrar registrar_;
-
-  // Default LoginDisplayHost.
-  static LoginDisplayHost* default_host_;
 
   // The controller driving the auto-enrollment check.
   scoped_ptr<AutoEnrollmentController> auto_enrollment_controller_;

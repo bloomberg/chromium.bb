@@ -621,6 +621,7 @@
         'browser/chromeos/login/ui/login_display.cc',
         'browser/chromeos/login/ui/login_display.h',
         'browser/chromeos/login/ui/login_display_host.h',
+        'browser/chromeos/login/ui/login_display_host.cc',
         'browser/chromeos/login/ui/login_display_host_impl.cc',
         'browser/chromeos/login/ui/login_display_host_impl.h',
         'browser/chromeos/login/ui/login_web_dialog.cc',

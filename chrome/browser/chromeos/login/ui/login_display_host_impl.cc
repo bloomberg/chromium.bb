@@ -249,9 +249,6 @@ void ResetKeyboardOverscrollOverride() {
 namespace chromeos {
 
 // static
-LoginDisplayHost* LoginDisplayHostImpl::default_host_ = NULL;
-
-// static
 const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +303,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
                  chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
 
-  DCHECK(default_host_ == NULL);
+  DCHECK(default_host() == nullptr);
   default_host_ = this;
 
   // Make sure chrome won't exit while we are at login/oobe screen.
@@ -402,7 +399,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   // Let chrome process exit after login/oobe screen if needed.
   chrome::DecrementKeepAliveCount();
 
-  default_host_ = NULL;
+  default_host_ = nullptr;
   // TODO(tengs): This should be refactored. See crbug.com/314934.
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // DriveOptInController will delete itself when finished.
