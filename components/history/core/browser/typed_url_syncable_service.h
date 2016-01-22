@@ -147,6 +147,7 @@ class TypedUrlSyncableService : public syncer::SyncableService,
   // Writes new typed url data from sync server to history backend.
   void WriteToHistoryBackend(const history::URLRows* new_urls,
                              const history::URLRows* updated_urls,
+                             const std::vector<GURL>* deleted_urls,
                              const TypedUrlVisitVector* new_visits,
                              const history::VisitVector* deleted_visits);
 

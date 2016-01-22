@@ -256,6 +256,9 @@ class TypedUrlSyncableServiceTest : public testing::Test {
       bool hidden,
       syncer::SyncChange::SyncChangeType change_type);
 
+  // Add typed_url_sync_service_ to fake_history_backend_'s observer's list.
+  void AddObserver();
+
   // Fills |specifics| with the sync data for |url| and |visits|.
   static void WriteToTypedUrlSpecifics(const URLRow& url,
                                        const VisitVector& visits,
@@ -376,6 +379,11 @@ VisitVector TypedUrlSyncableServiceTest::ApplyUrlAndVisitsChange(
   change_list.push_back(sync_change);
   typed_url_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   return visits;
+}
+
+void TypedUrlSyncableServiceTest::AddObserver() {
+  typed_url_sync_service_->history_backend_observer_.Add(
+      fake_history_backend_.get());
 }
 
 // Static.
@@ -1124,9 +1132,16 @@ TEST_F(TypedUrlSyncableServiceTest, UpdateUrlAndVisits) {
 // Delete a typed urls which already synced. Check that local DB receives the
 // DELETE changes.
 TEST_F(TypedUrlSyncableServiceTest, DeleteUrlAndVisits) {
+  URLRows url_rows;
+  std::vector<VisitVector> visit_vectors;
+  std::vector<std::string> urls;
+  urls.push_back(kURL);
+
   StartSyncing(syncer::SyncDataList());
-  VisitVector visits = ApplyUrlAndVisitsChange(kURL, kTitle, 1, 3, false,
-                                               syncer::SyncChange::ACTION_ADD);
+  ASSERT_TRUE(BuildAndPushLocalChanges(1, 0, urls, &url_rows, &visit_vectors));
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  changes.clear();
+
   base::Time visit_time = base::Time::FromInternalValue(3);
   VisitVector all_visits;
   URLID url_id = fake_history_backend_->GetIdByUrl(GURL(kURL));
@@ -1134,10 +1149,14 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteUrlAndVisits) {
   fake_history_backend_->GetVisitsForURL(url_id, &all_visits);
   EXPECT_EQ(1U, all_visits.size());
   EXPECT_EQ(visit_time, all_visits[0].visit_time);
-  EXPECT_EQ(visits[0].transition, all_visits[0].transition);
+  EXPECT_EQ(visit_vectors[0][0].transition, all_visits[0].transition);
   URLRow url_row;
   EXPECT_TRUE(fake_history_backend_->GetURL(GURL(kURL), &url_row));
   EXPECT_EQ(kTitle, base::UTF16ToUTF8(url_row.title()));
+
+  // Add observer back to check if TypedUrlSyncableService receive delete
+  // changes back from fake_history_backend_.
+  AddObserver();
 
   ApplyUrlAndVisitsChange(kURL, kTitle, 1, 3, false,
                           syncer::SyncChange::ACTION_DELETE);
@@ -1145,6 +1164,10 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteUrlAndVisits) {
   EXPECT_FALSE(fake_history_backend_->GetURL(GURL(kURL), &url_row));
   url_id = fake_history_backend_->GetIdByUrl(GURL(kURL));
   ASSERT_EQ(0, url_id);
+
+  // Check TypedUrlSyncableService did not receive update since the update is
+  // trigered by it.
+  ASSERT_EQ(0u, changes.size());
 }
 
 // Create two set of visits for history DB and sync DB, two same set of visits

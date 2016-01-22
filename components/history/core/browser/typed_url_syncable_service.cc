@@ -193,7 +193,7 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
 
   if (!merge_result.error().IsSet()) {
-    WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls,
+    WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls, NULL,
                           &new_synced_visits, NULL);
   }
 
@@ -267,11 +267,9 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
                      &updated_synced_urls, &new_synced_urls);
   }
 
-  if (!pending_deleted_urls.empty())
-    history_backend_->DeleteURLs(pending_deleted_urls);
-
   WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls,
-                        &new_synced_visits, &deleted_visits);
+                        &pending_deleted_urls, &new_synced_visits,
+                        &deleted_visits);
 
   return syncer::SyncError();
 }
@@ -664,10 +662,14 @@ TypedUrlSyncableService::MergeResult TypedUrlSyncableService::MergeUrls(
 void TypedUrlSyncableService::WriteToHistoryBackend(
     const history::URLRows* new_urls,
     const history::URLRows* updated_urls,
+    const std::vector<GURL>* deleted_urls,
     const TypedUrlVisitVector* new_visits,
     const history::VisitVector* deleted_visits) {
   // Set flag to stop accepting history change notifications from backend
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+
+  if (deleted_urls && !deleted_urls->empty())
+    history_backend_->DeleteURLs(*deleted_urls);
 
   if (new_urls) {
     history_backend_->AddPagesWithDetails(*new_urls, history::SOURCE_SYNCED);
