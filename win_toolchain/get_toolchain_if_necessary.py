@@ -26,7 +26,6 @@ future when a hypothetical VS2015 is released, the 2013 script will be
 maintained, and a new 2015 script would be added.
 """
 
-import _winreg
 import hashlib
 import json
 import optparse
@@ -39,6 +38,23 @@ import tempfile
 import time
 import zipfile
 
+# winreg isn't natively available under CygWin
+if sys.platform == "win32":
+  try:
+    import winreg
+  except ImportError:
+    import _winreg as winreg
+elif sys.platform == "cygwin":
+  try:
+    import cygwinreg as winreg
+  except ImportError:
+    print ''
+    print 'CygWin does not natively support winreg but a replacement exists.'
+    print 'https://pypi.python.org/pypi/cygwinreg/'
+    print ''
+    print 'Try: easy_install cygwinreg'
+    print ''
+    raise
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DEPOT_TOOLS_PATH = os.path.join(BASEDIR, '..')
@@ -227,10 +243,10 @@ def GetInstallerName():
   version APIs helpfully return a maximum of 6.2 (Windows 8).
   """
   key_name = r'Software\Microsoft\Windows NT\CurrentVersion'
-  key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key_name)
-  value, keytype = _winreg.QueryValueEx(key, "CurrentVersion")
+  key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_name)
+  value, keytype = winreg.QueryValueEx(key, "CurrentVersion")
   key.Close()
-  if keytype != _winreg.REG_SZ:
+  if keytype != winreg.REG_SZ:
     raise Exception("Unexpected type in registry")
   if value == '6.1':
     # Windows 7 and Windows Server 2008 R2
