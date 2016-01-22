@@ -15,7 +15,7 @@ ios_app("ios_web_shell") {
   ]
 
   deps = [
-    ":ios_web_shell_lib",
+    ":shell",
   ]
 
   ldflags = [
