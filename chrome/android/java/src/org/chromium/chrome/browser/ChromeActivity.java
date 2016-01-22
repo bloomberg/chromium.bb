@@ -1007,8 +1007,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         bookmarkModel.runAfterBookmarkModelLoaded(new Runnable() {
             @Override
             public void run() {
-                EnhancedBookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
-                        tabToBookmark, getSnackbarManager(), ChromeActivity.this);
+                // Gives up the bookmarking if the tab is being destroyed.
+                if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
+                    EnhancedBookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
+                            tabToBookmark, getSnackbarManager(), ChromeActivity.this);
+                }
             }
         });
     }

@@ -59,10 +59,11 @@ public class EnhancedBookmarkUtils {
      */
     public static void addOrEditBookmark(long idToAdd, EnhancedBookmarksModel bookmarkModel,
             Tab tab, SnackbarManager snackbarManager, Activity activity) {
+        // See if the Tab's contents should be saved or not.
+        WebContents webContentsToSave = null;
+        if (!shouldSkipSavingTabOffline(tab)) webContentsToSave = tab.getWebContents();
+
         if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
-            // See if the Tab's contents should be saved or not.
-            WebContents webContentsToSave = null;
-            if (!shouldSkipSavingTabOffline(tab)) webContentsToSave = tab.getWebContents();
             startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL),
                     webContentsToSave);
             return;
@@ -74,7 +75,7 @@ public class EnhancedBookmarkUtils {
         }
 
         bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
-                tab.getUrl(), tab.getWebContents(), shouldSkipSavingTabOffline(tab),
+                tab.getUrl(), webContentsToSave,
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
     }
 

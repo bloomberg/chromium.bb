@@ -208,18 +208,17 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
      * @param index The position where the bookmark will be placed in parent folder
      * @param title Title of the new bookmark.
      * @param url Url of the new bookmark
-     * @param webContents A {@link WebContents} object.
-     * @param skipSavingOffline Whether saving an offline copy of the page should be skipped.
+     * @param webContents A {@link WebContents} object for saving the offline copy. If null, the
+     *        saving should be skipped.
      * @param callback The callback to be invoked when the bookmark is added.
      */
     public void addBookmarkAsync(BookmarkId parent, int index, String title, String url,
-                                 WebContents webContents, boolean skipSavingOffline,
-                                 final AddBookmarkCallback callback) {
+                                 WebContents webContents, final AddBookmarkCallback callback) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         final BookmarkId enhancedId = addBookmark(parent, index, title, url);
 
         // If there is no need to save offline page, return now.
-        if (mOfflinePageBridge == null || skipSavingOffline) {
+        if (mOfflinePageBridge == null || webContents == null) {
             callback.onBookmarkAdded(enhancedId, AddBookmarkCallback.SKIPPED);
             return;
         }

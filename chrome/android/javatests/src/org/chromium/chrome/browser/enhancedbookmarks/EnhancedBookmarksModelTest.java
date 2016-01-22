@@ -232,7 +232,7 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 mBookmarksModel.addBookmarkAsync(
-                        parent, index, title, url, null, false, new AddBookmarkCallback() {
+                        parent, index, title, url, null, new AddBookmarkCallback() {
                             @Override
                             public void onBookmarkAdded(
                                     final BookmarkId bookmarkId, int saveResult) {
