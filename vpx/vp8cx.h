@@ -27,24 +27,6 @@
 extern "C" {
 #endif
 
-/*!\name Algorithm interface for VP8
- *
- * This interface provides the capability to encode raw VP8 streams.
- * @{
- */
-extern vpx_codec_iface_t  vpx_codec_vp8_cx_algo;
-extern vpx_codec_iface_t *vpx_codec_vp8_cx(void);
-/*!@} - end algorithm interface member group*/
-
-/*!\name Algorithm interface for VP9
- *
- * This interface provides the capability to encode raw VP9 streams.
- * @{
- */
-extern vpx_codec_iface_t  vpx_codec_vp9_cx_algo;
-extern vpx_codec_iface_t *vpx_codec_vp9_cx(void);
-/*!@} - end algorithm interface member group*/
-
 /*!\name Algorithm interface for VP10
  *
  * This interface provides the capability to encode raw VP10 streams.
