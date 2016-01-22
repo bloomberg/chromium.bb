@@ -41,11 +41,11 @@ const uint32_t kDefaultMatchingRuleExpirationDurationSeconds =
     60 * 60 * 24;  // 24 hours.
 
 const char kUMAExpiredInactiveTabEntryRemovalDurationHistogram[] =
-    "DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration";
+    "DataUsage.TabModel.ExpiredInactiveTabEntryRemovalDuration";
 const char kUMAExpiredActiveTabEntryRemovalDurationHistogram[] =
-    "DataUse.TabModel.ExpiredActiveTabEntryRemovalDuration";
+    "DataUsage.TabModel.ExpiredActiveTabEntryRemovalDuration";
 const char kUMAUnexpiredTabEntryRemovalDurationHistogram[] =
-    "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
+    "DataUsage.TabModel.UnexpiredTabEntryRemovalDuration";
 
 // Returns true if |tab_id| is a valid tab ID.
 bool IsValidTabID(SessionID::id_type tab_id) {

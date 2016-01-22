@@ -15,9 +15,9 @@
 namespace {
 
 const char kUMATrackingSessionLifetimeHistogram[] =
-    "DataUse.TabModel.TrackingSessionLifetime";
+    "DataUsage.TabModel.TrackingSessionLifetime";
 const char kUMAOldInactiveSessionRemovalDurationHistogram[] =
-    "DataUse.TabModel.OldInactiveSessionRemovalDuration";
+    "DataUsage.TabModel.OldInactiveSessionRemovalDuration";
 
 }  // namespace
 

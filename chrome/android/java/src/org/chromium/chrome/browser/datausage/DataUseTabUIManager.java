@@ -32,9 +32,9 @@ public class DataUseTabUIManager {
 
     /**
      * Represents the possible user actions with the data use snackbars and dialog. This must
-     * remain in sync with DataUse.UIAction in tools/metrics/histograms/histograms.xml.
+     * remain in sync with DataUsage.UIAction in tools/metrics/histograms/histograms.xml.
      */
-    public static class DataUseUIActions {
+    public static class DataUsageUIAction {
         public static final int STARTED_SNACKBAR_SHOWN = 0;
         public static final int STARTED_SNACKBAR_MORE_CLICKED = 1;
         public static final int ENDED_SNACKBAR_SHOWN = 2;
@@ -154,7 +154,7 @@ public class DataUseTabUIManager {
             public void onClick(View v) {
                 EmbedContentViewActivity.show(activity, R.string.data_use_learn_more_title,
                         R.string.data_use_learn_more_link_url);
-                recordDataUseUIAction(DataUseUIActions.DIALOG_LEARN_MORE_CLICKED);
+                recordDataUseUIAction(DataUsageUIAction.DIALOG_LEARN_MORE_CLICKED);
             }
         });
         new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
@@ -173,7 +173,7 @@ public class DataUseTabUIManager {
                                     loadUrlParams.setReferrer(referrer);
                                 }
                                 tab.loadUrl(loadUrlParams);
-                                recordDataUseUIAction(DataUseUIActions.DIALOG_CONTINUE_CLICKED);
+                                recordDataUseUIAction(DataUsageUIAction.DIALOG_CONTINUE_CLICKED);
                                 userClickedContinueOnDialogBox(tab);
                             }
                         })
@@ -181,11 +181,11 @@ public class DataUseTabUIManager {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         setOptedOutOfDataUseDialog(activity, checkBox.isChecked());
-                        recordDataUseUIAction(DataUseUIActions.DIALOG_CANCEL_CLICKED);
+                        recordDataUseUIAction(DataUsageUIAction.DIALOG_CANCEL_CLICKED);
                     }
                 })
                 .show();
-        recordDataUseUIAction(DataUseUIActions.DIALOG_SHOWN);
+        recordDataUseUIAction(DataUsageUIAction.DIALOG_SHOWN);
     }
 
     /**
@@ -210,19 +210,19 @@ public class DataUseTabUIManager {
                 .putBoolean(SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, optedOut)
                 .apply();
         if (optedOut) {
-            recordDataUseUIAction(DataUseUIActions.DIALOG_OPTED_OUT);
+            recordDataUseUIAction(DataUsageUIAction.DIALOG_OPTED_OUT);
         }
     }
 
     /**
-     * Record the DataUse.UIAction histogram.
+     * Record the DataUsage.UIAction histogram.
      * @param action Action with the data use tracking snackbar or dialog.
      */
     public static void recordDataUseUIAction(int action) {
-        assert action >= 0 && action < DataUseUIActions.INDEX_BOUNDARY;
+        assert action >= 0 && action < DataUsageUIAction.INDEX_BOUNDARY;
         RecordHistogram.recordEnumeratedHistogram(
-                "DataReductionProxy.UIAction", action,
-                DataUseUIActions.INDEX_BOUNDARY);
+                "DataUsage.UIAction", action,
+                DataUsageUIAction.INDEX_BOUNDARY);
     }
 
     private static native boolean nativeCheckAndResetDataUseTrackingStarted(

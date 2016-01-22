@@ -434,7 +434,7 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
 
 TEST_F(DataUseTabModelTest, ExpiredInactiveTabEntryRemovaltimeHistogram) {
   const char kUMAExpiredInactiveTabEntryRemovalDurationHistogram[] =
-      "DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration";
+      "DataUsage.TabModel.ExpiredInactiveTabEntryRemovalDuration";
   base::HistogramTester histogram_tester;
 
   StartTrackingDataUse(kTabID1, kTestLabel1);
@@ -464,7 +464,7 @@ TEST_F(DataUseTabModelTest, ExpiredInactiveTabEntryRemovaltimeHistogram) {
 
 TEST_F(DataUseTabModelTest, UnexpiredTabEntryRemovaltimeHistogram) {
   const char kUMAUnexpiredTabEntryRemovalDurationHistogram[] =
-      "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
+      "DataUsage.TabModel.UnexpiredTabEntryRemovalDuration";
   base::HistogramTester histogram_tester;
   const int32_t max_tab_entries =
       static_cast<int32_t>(data_use_tab_model_->max_tab_entries_);

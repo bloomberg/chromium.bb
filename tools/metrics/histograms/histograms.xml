@@ -6717,6 +6717,105 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of data usage report submission.</summary>
 </histogram>
 
+<histogram name="DataUsage.TabModel.ExpiredActiveTabEntryRemovalDuration"
+    units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the start time of a tab entry's latest data usage tracking
+    session, till when the entry is expired and removed from the tab model. This
+    is for tab entries that are still actively tracking data usage for a
+    Chromium tab.
+
+    Tab model maintains the tab entries, each pertaining to tracking sessions of
+    a single Chromium tab. These entries are considered expired after some
+    duration and can be removed from the tab model after that. The sample is
+    taken when an expired tab entry still tracking data usage is removed from
+    the tab model.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.TabModel.ExpiredInactiveTabEntryRemovalDuration"
+    units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the end time of a tab entry's latest data usage tracking
+    session, till when the entry is expired and removed from the tab model. This
+    is for tab entries that are not actively tracking data usage for a Chromium
+    tab.
+
+    Tab model maintains the tab entries, each pertaining to tracking sessions of
+    a single Chromium tab. These entries are considered expired after some
+    duration and can be removed from the tab model after that. The sample is
+    taken when an expired inactive tab entry is removed from the tab model.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.TabModel.OldInactiveSessionRemovalDuration"
+    units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the end time of a data usage tracking session, till when
+    the tracking session is removed from the tab model. This is for old tracking
+    sessions that are not actively tracking data usage.
+
+    Tab model maintains a limited number of tracking sessions per Chromium tab.
+    When this limit is reached oldest inactive tracking sessions are removed.
+    The sample is taken when an old inactive tracking session of a tab is
+    removed from the tab model.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.TabModel.TrackingSessionLifetime" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The lifetime of a data usage tracking session of a Chromium tab, maintained
+    by the tab model. This is the duration between the time tracking started due
+    to an entry event and ended with an exit event. The sample is taken when the
+    data usage tracking session ends.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.TabModel.UnexpiredTabEntryRemovalDuration"
+    units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the end time (start time, if still active) of a tab
+    entry's latest data usage tracking session, till when the entry is removed
+    from the tab model. This is for tab entries that are not expired yet, and
+    removed from the tab model.
+
+    Tab model maintains a limited number of entries, each pertaining to tracking
+    sessions of a single Chromium tab. When this limit is reached even after
+    removing expired tab entries, then oldest unexpired tab entries are removed.
+    The sample is taken when an unexpired tab entry is removed from the tab
+    model.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.UIAction" enum="DataUsageUIAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the Data Use snackbar and dialog. These
+    samples include:
+
+    Displays of the snackbar that indicates the start of data use tracking and
+    clicks on its &quot;More&quot; button. Displays of snackbar that indicates
+    the end of data use tracking and clicks on its &quot;More&quot; button.
+    Displays of the dialog that indicates the end of data use tracking and the
+    user interactions with it, which include: clicking &quot;Continue&quot;,
+    clicking &quot;Cancel&quot;, clicking &quot;Learn more&quot;, and opting out
+    of seeing the dialog. If the user opts out of seeing the dialog, he or she
+    will see the snackbar that indicates the end of data use tracking from then
+    on.
+  </summary>
+</histogram>
+
 <histogram name="DataUse.MessageSize" units="bytes">
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -6789,84 +6888,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DataUse.TabModel.ExpiredActiveTabEntryRemovalDuration"
-    units="ms">
-  <owner>bengr@chromium.org</owner>
-  <owner>rajendrant@chromium.org</owner>
-  <summary>
-    The duration from the start time of a tab entry's latest data usage tracking
-    session, till when the entry is expired and removed from the tab model. This
-    is for tab entries that are still actively tracking data usage for a
-    Chromium tab.
-
-    Tab model maintains the tab entries, each pertaining to tracking sessions of
-    a single Chromium tab. These entries are considered expired after some
-    duration and can be removed from the tab model after that. The sample is
-    taken when an expired tab entry still tracking data usage is removed from
-    the tab model.
-  </summary>
-</histogram>
-
-<histogram name="DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration"
-    units="ms">
-  <owner>bengr@chromium.org</owner>
-  <owner>rajendrant@chromium.org</owner>
-  <summary>
-    The duration from the end time of a tab entry's latest data usage tracking
-    session, till when the entry is expired and removed from the tab model. This
-    is for tab entries that are not actively tracking data usage for a Chromium
-    tab.
-
-    Tab model maintains the tab entries, each pertaining to tracking sessions of
-    a single Chromium tab. These entries are considered expired after some
-    duration and can be removed from the tab model after that. The sample is
-    taken when an expired inactive tab entry is removed from the tab model.
-  </summary>
-</histogram>
-
-<histogram name="DataUse.TabModel.OldInactiveSessionRemovalDuration" units="ms">
-  <owner>bengr@chromium.org</owner>
-  <owner>rajendrant@chromium.org</owner>
-  <summary>
-    The duration from the end time of a data usage tracking session, till when
-    the tracking session is removed from the tab model. This is for old tracking
-    sessions that are not actively tracking data usage.
-
-    Tab model maintains a limited number of tracking sessions per Chromium tab.
-    When this limit is reached oldest inactive tracking sessions are removed.
-    The sample is taken when an old inactive tracking session of a tab is
-    removed from the tab model.
-  </summary>
-</histogram>
-
-<histogram name="DataUse.TabModel.TrackingSessionLifetime" units="ms">
-  <owner>bengr@chromium.org</owner>
-  <owner>rajendrant@chromium.org</owner>
-  <summary>
-    The lifetime of a data usage tracking session of a Chromium tab, maintained
-    by the tab model. This is the duration between the time tracking started due
-    to an entry event and ended with an exit event. The sample is taken when the
-    data usage tracking session ends.
-  </summary>
-</histogram>
-
-<histogram name="DataUse.TabModel.UnexpiredTabEntryRemovalDuration" units="ms">
-  <owner>bengr@chromium.org</owner>
-  <owner>rajendrant@chromium.org</owner>
-  <summary>
-    The duration from the end time (start time, if still active) of a tab
-    entry's latest data usage tracking session, till when the entry is removed
-    from the tab model. This is for tab entries that are not expired yet, and
-    removed from the tab model.
-
-    Tab model maintains a limited number of entries, each pertaining to tracking
-    sessions of a single Chromium tab. When this limit is reached even after
-    removing expired tab entries, then oldest unexpired tab entries are removed.
-    The sample is taken when an unexpired tab entry is removed from the tab
-    model.
-  </summary>
-</histogram>
-
 <histogram name="DataUse.TrafficSize.System" units="bytes">
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -6884,25 +6905,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The total amount of data use of Chrome for user traffic. This traffic has
     content::ResourceRequestInfo attached to its request. If the OS is not
     Android all the requests are considered foreground.
-  </summary>
-</histogram>
-
-<histogram name="DataUse.UIAction" enum="DataUseUIAction">
-  <owner>bengr@chromium.org</owner>
-  <owner>megjablon@chromium.org</owner>
-  <summary>
-    Samples of user interactions with the Data Use snackbar and dialog. These
-    samples include:
-
-    Displays of the snackbar that indicates the start of data use tracking and
-    clicks on its &quot;More&quot; button. Displays of snackbar that indicates
-    the end of data use tracking and clicks on its &quot;More&quot; button.
-    Displays of the dialog that indicates the end of data use tracking and the
-    user interactions with it, which include: clicking &quot;Continue&quot;,
-    clicking &quot;Cancel&quot;, clicking &quot;Learn more&quot;, and opting out
-    of seeing the dialog. If the user opts out of seeing the dialog, he or she
-    will see the snackbar that indicates the end of data use tracking from then
-    on.
   </summary>
 </histogram>
 
@@ -60029,6 +60031,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Lost"/>
 </enum>
 
+<enum name="DataUsageUIAction" type="int">
+  <int value="0" label="Data use tracking started snackbar shown"/>
+  <int value="1"
+      label="Data use tracking started snackbar 'More' link clicked"/>
+  <int value="2" label="Data use tracking ended snackbar shown"/>
+  <int value="3" label="Data use tracking ended snackbar 'More' link clicked"/>
+  <int value="4" label="Data use tracking ended dialog shown"/>
+  <int value="5"
+      label="Data use tracking ended dialog 'Continue' button clicked"/>
+  <int value="6"
+      label="Data use tracking ended dialog 'Cancel' button clicked"/>
+  <int value="7"
+      label="Data use tracking ended dialog 'Learn more' link clicked"/>
+  <int value="8" label="Data use tracking ended dialog opted out"/>
+</enum>
+
 <enum name="DataUseServices" type="int">
   <int value="0" label="Not Tagged"/>
   <int value="1" label="Suggestions"/>
@@ -60045,22 +60063,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="Autofill"/>
   <int value="13" label="Policy"/>
   <int value="14" label="Spell Checker"/>
-</enum>
-
-<enum name="DataUseUIAction" type="int">
-  <int value="0" label="Data use tracking started snackbar shown"/>
-  <int value="1"
-      label="Data use tracking started snackbar 'More' link clicked"/>
-  <int value="2" label="Data use tracking ended snackbar shown"/>
-  <int value="3" label="Data use tracking ended snackbar 'More' link clicked"/>
-  <int value="4" label="Data use tracking ended dialog shown"/>
-  <int value="5"
-      label="Data use tracking ended dialog 'Continue' button clicked"/>
-  <int value="6"
-      label="Data use tracking ended dialog 'Cancel' button clicked"/>
-  <int value="7"
-      label="Data use tracking ended dialog 'Learn more' link clicked"/>
-  <int value="8" label="Data use tracking ended dialog opted out"/>
 </enum>
 
 <enum name="DecodedImageOrientation" type="int">

@@ -488,7 +488,7 @@ TEST_F(TabDataUseEntryTest, CompactTabSessionHistory) {
 
 TEST_F(TabDataUseEntryTest, TrackingSessionLifetimeHistogram) {
   const char kUMATrackingSessionLifetimeSecondsHistogram[] =
-      "DataUse.TabModel.TrackingSessionLifetime";
+      "DataUsage.TabModel.TrackingSessionLifetime";
   base::HistogramTester histogram_tester;
 
   // Tracking session from time=20 to time=30, lifetime of 10 seconds.
@@ -518,7 +518,7 @@ TEST_F(TabDataUseEntryTest, TrackingSessionLifetimeHistogram) {
 
 TEST_F(TabDataUseEntryTest, OldInactiveSessionRemovaltimeHistogram) {
   const char kUMAOldInactiveSessionRemovalDurationSecondsHistogram[] =
-      "DataUse.TabModel.OldInactiveSessionRemovalDuration";
+      "DataUsage.TabModel.OldInactiveSessionRemovalDuration";
   base::HistogramTester histogram_tester;
   const size_t max_sessions_per_tab = GetMaxSessionsPerTab();
 
