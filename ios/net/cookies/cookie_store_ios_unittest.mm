@@ -101,6 +101,11 @@ class RoundTripTestCookieStore : public net::CookieStore {
     store_->GetAllCookiesForURLAsync(url, callback);
   }
 
+  void GetAllCookiesAsync(const GetCookieListCallback& callback) override {
+    RoundTrip();
+    store_->GetAllCookiesAsync(callback);
+  }
+
   void DeleteCookieAsync(const GURL& url,
                          const std::string& cookie_name,
                          const base::Closure& callback) override {

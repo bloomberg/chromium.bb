@@ -84,7 +84,9 @@ class CookieStoreTest : public testing::Test {
         ws_www_google_("ws://www.google.izzle"),
         wss_www_google_("wss://www.google.izzle"),
         www_google_foo_("http://www.google.izzle/foo"),
-        www_google_bar_("http://www.google.izzle/bar") {
+        www_google_bar_("http://www.google.izzle/bar"),
+        http_foo_com_("http://foo.com"),
+        http_bar_com_("http://bar.com") {
     // This test may be used outside of the net test suite, and thus may not
     // have a message loop.
     if (!base::MessageLoop::current())
@@ -123,6 +125,16 @@ class CookieStoreTest : public testing::Test {
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
     return callback.result();
+  }
+
+  CookieList GetAllCookies(CookieStore* cs) {
+    DCHECK(cs);
+    GetCookieListCallback callback;
+    cs->GetAllCookiesAsync(
+        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
+    RunFor(kTimeout);
+    EXPECT_TRUE(callback.did_run());
+    return callback.cookies();
   }
 
   bool SetCookieWithOptions(CookieStore* cs,
@@ -264,6 +276,8 @@ class CookieStoreTest : public testing::Test {
   const CookieURLHelper wss_www_google_;
   const CookieURLHelper www_google_foo_;
   const CookieURLHelper www_google_bar_;
+  const CookieURLHelper http_foo_com_;
+  const CookieURLHelper http_bar_com_;
 
   scoped_ptr<base::WeakPtrFactory<base::MessageLoop> > weak_factory_;
   scoped_ptr<base::MessageLoop> message_loop_;
@@ -1061,6 +1075,42 @@ TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
                              GURL("http://d.c.b.a.google.com/aa/bb/cc/dd")));
 }
 
+// Check that GetAllCookiesAsync returns cookies from multiple domains, in the
+// correct order.
+TYPED_TEST_P(CookieStoreTest, GetAllCookiesAsync) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B; path=/a"));
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_foo_com_.url(), "C=D;/"));
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_bar_com_.url(), "E=F; path=/bar"));
+
+  // Check cookies for url.
+  CookieList cookies = this->GetAllCookies(cs.get());
+  CookieList::const_iterator it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ(this->http_bar_com_.host(), it->Domain());
+  EXPECT_EQ("/bar", it->Path());
+  EXPECT_EQ("E", it->Name());
+  EXPECT_EQ("F", it->Value());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ(this->http_www_google_.host(), it->Domain());
+  EXPECT_EQ("/a", it->Path());
+  EXPECT_EQ("A", it->Name());
+  EXPECT_EQ("B", it->Value());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ(this->http_foo_com_.host(), it->Domain());
+  EXPECT_EQ("/", it->Path());
+  EXPECT_EQ("C", it->Name());
+  EXPECT_EQ("D", it->Value());
+
+  ASSERT_TRUE(++it == cookies.end());
+}
+
 TYPED_TEST_P(CookieStoreTest, DeleteSessionCookie) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   // Create a session cookie and a persistent cookie.
@@ -1101,6 +1151,7 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            NetUtilCookieTest,
                            OverwritePersistentCookie,
                            CookieOrdering,
+                           GetAllCookiesAsync,
                            DeleteSessionCookie);
 
 template<class CookieStoreTestTraits>

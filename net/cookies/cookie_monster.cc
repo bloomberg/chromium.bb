@@ -973,12 +973,6 @@ void CookieMonster::SetCookieWithDetailsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::GetAllCookiesAsync(const GetCookieListCallback& callback) {
-  scoped_refptr<GetAllCookiesTask> task = new GetAllCookiesTask(this, callback);
-
-  DoCookieTask(task);
-}
-
 void CookieMonster::GetAllCookiesForURLWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,
@@ -1058,6 +1052,12 @@ void CookieMonster::GetAllCookiesForURLAsync(
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
   DoCookieTaskForURL(task, url);
+}
+
+void CookieMonster::GetAllCookiesAsync(const GetCookieListCallback& callback) {
+  scoped_refptr<GetAllCookiesTask> task = new GetAllCookiesTask(this, callback);
+
+  DoCookieTask(task);
 }
 
 void CookieMonster::DeleteCookieAsync(const GURL& url,

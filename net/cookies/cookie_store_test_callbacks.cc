@@ -51,4 +51,15 @@ NoResultCookieCallback::NoResultCookieCallback() {}
 NoResultCookieCallback::NoResultCookieCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
+GetCookieListCallback::GetCookieListCallback() {}
+GetCookieListCallback::GetCookieListCallback(base::Thread* run_in_thread)
+    : CookieCallback(run_in_thread) {}
+
+GetCookieListCallback::~GetCookieListCallback() {}
+
+void GetCookieListCallback::Run(const CookieList& cookies) {
+  cookies_ = cookies;
+  CallbackEpilogue();
+}
+
 }  // namespace net

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 
 namespace base {
@@ -92,6 +93,21 @@ class NoResultCookieCallback : public CookieCallback {
   void Run() {
     CallbackEpilogue();
   }
+};
+
+class GetCookieListCallback : public CookieCallback {
+ public:
+  GetCookieListCallback();
+  explicit GetCookieListCallback(base::Thread* run_in_thread);
+
+  ~GetCookieListCallback();
+
+  void Run(const CookieList& cookies);
+
+  const CookieList& cookies() { return cookies_; }
+
+ private:
+  CookieList cookies_;
 };
 
 }  // namespace net

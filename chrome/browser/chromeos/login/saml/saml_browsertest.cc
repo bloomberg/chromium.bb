@@ -82,7 +82,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1092,11 +1091,9 @@ void SAMLPolicyTest::GetCookies() {
 void SAMLPolicyTest::GetCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const base::Closure& callback) {
-  request_context->GetURLRequestContext()->cookie_store()->
-      GetCookieMonster()->GetAllCookiesAsync(base::Bind(
-          &SAMLPolicyTest::StoreCookieList,
-          base::Unretained(this),
-          callback));
+  request_context->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
+      base::Bind(&SAMLPolicyTest::StoreCookieList, base::Unretained(this),
+                 callback));
 }
 
 void SAMLPolicyTest::StoreCookieList(

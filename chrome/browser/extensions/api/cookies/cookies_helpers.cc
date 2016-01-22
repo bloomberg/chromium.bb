@@ -27,6 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
@@ -110,12 +111,11 @@ void GetCookieListFromStore(
     net::CookieStore* cookie_store, const GURL& url,
     const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK(cookie_store);
-  net::CookieMonster* monster = cookie_store->GetCookieMonster();
   if (!url.is_empty()) {
     DCHECK(url.is_valid());
-    monster->GetAllCookiesForURLAsync(url, callback);
+    cookie_store->GetAllCookiesForURLAsync(url, callback);
   } else {
-    monster->GetAllCookiesAsync(callback);
+    cookie_store->GetAllCookiesAsync(callback);
   }
 }
 

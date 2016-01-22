@@ -70,23 +70,6 @@ const char kTopLevelDomainPlus2Secure[] = "https://www.math.harvard.edu";
 const char kTopLevelDomainPlus3[] = "http://www.bourbaki.math.harvard.edu";
 const char kOtherDomain[] = "http://www.mit.edu";
 
-class GetCookieListCallback : public CookieCallback {
- public:
-  GetCookieListCallback() {}
-  explicit GetCookieListCallback(Thread* run_in_thread)
-      : CookieCallback(run_in_thread) {}
-
-  void Run(const CookieList& cookies) {
-    cookies_ = cookies;
-    CallbackEpilogue();
-  }
-
-  const CookieList& cookies() { return cookies_; }
-
- private:
-  CookieList cookies_;
-};
-
 struct CookieMonsterTestTraits {
   static scoped_refptr<CookieStore> Create() {
     return new CookieMonster(NULL, NULL);
@@ -138,16 +121,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
  protected:
   using CookieStoreTest<T>::http_www_google_;
   using CookieStoreTest<T>::https_www_google_;
-
-  CookieList GetAllCookies(CookieMonster* cm) {
-    DCHECK(cm);
-    GetCookieListCallback callback;
-    cm->GetAllCookiesAsync(
-        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
-    return callback.cookies();
-  }
 
   CookieList GetAllCookiesForURL(CookieMonster* cm, const GURL& url) {
     DCHECK(cm);

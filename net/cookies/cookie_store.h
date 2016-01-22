@@ -77,6 +77,11 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const GURL& url,
       const GetCookieListCallback& callback) = 0;
 
+  // Returns all the cookies, for use in management UI, etc. This does not mark
+  // the cookies as having been accessed. The returned cookies are ordered by
+  // longest path, then by earliest creation date.
+  virtual void GetAllCookiesAsync(const GetCookieListCallback& callback) = 0;
+
   // Deletes all cookies that might apply to |url| that have |cookie_name|.
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,

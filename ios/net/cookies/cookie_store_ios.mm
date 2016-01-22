@@ -210,6 +210,15 @@ NSArray* GetCookiesForURL(NSHTTPCookieStorage* system_store,
   return [cookies sortedArrayUsingFunction:CompareCookies context:manager];
 }
 
+// Gets all cookies from the system cookie store.
+NSArray* GetAllCookies(NSHTTPCookieStorage* system_store,
+                       CookieCreationTimeManager* manager) {
+  NSArray* cookies = [system_store cookies];
+
+  // Sort cookies by decreasing path length, then creation time, as per RFC6265.
+  return [cookies sortedArrayUsingFunction:CompareCookies context:manager];
+}
+
 // Builds a cookie line (such as "key1=value1; key2=value2") from an array of
 // cookies.
 std::string BuildCookieLine(NSArray* cookies,
@@ -475,14 +484,40 @@ void CookieStoreIOS::GetAllCookiesForURLAsync(
 
       NSArray* cookies = GetCookiesForURL(system_store_,
                                           url, creation_time_manager_.get());
-      net::CookieList cookie_list;
-      cookie_list.reserve([cookies count]);
-      for (NSHTTPCookie* cookie in cookies) {
-        base::Time created = creation_time_manager_->GetCreationTime(cookie);
-        cookie_list.push_back(CanonicalCookieFromSystemCookie(cookie, created));
-      }
+      net::CookieList cookie_list = CanonicalCookieListFromSystemCookies(
+          cookies);
       if (!callback.is_null())
         callback.Run(cookie_list);
+      break;
+  }
+}
+
+void CookieStoreIOS::GetAllCookiesAsync(const GetCookieListCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  switch (synchronization_state_) {
+    case NOT_SYNCHRONIZED:
+      cookie_monster_->GetAllCookiesAsync(callback);
+      break;
+    case SYNCHRONIZING:
+      tasks_pending_synchronization_.push_back(base::Bind(
+          &CookieStoreIOS::GetAllCookiesAsync, this, callback));
+      break;
+    case SYNCHRONIZED:
+      if (!SystemCookiesAllowed()) {
+        // If cookies are not allowed, the cookies are stashed in the
+        // CookieMonster, so get them from there.
+        cookie_monster_->GetAllCookiesAsync(callback);
+        return;
+      }
+
+      NSArray* cookies = GetAllCookies(system_store_,
+                                       creation_time_manager_.get());
+      net::CookieList cookie_list = CanonicalCookieListFromSystemCookies(
+          cookies);
+      if (!callback.is_null()) {
+        callback.Run(cookie_list);
+      }
       break;
   }
 }
@@ -988,6 +1023,17 @@ void CookieStoreIOS::UpdateCachesAfterClosure(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateCachesFromCookieMonster();
   callback.Run();
+}
+
+net::CookieList
+CookieStoreIOS::CanonicalCookieListFromSystemCookies(NSArray* cookies) {
+  net::CookieList cookie_list;
+  cookie_list.reserve([cookies count]);
+  for (NSHTTPCookie* cookie in cookies) {
+    base::Time created = creation_time_manager_->GetCreationTime(cookie);
+    cookie_list.push_back(CanonicalCookieFromSystemCookie(cookie, created));
+  }
+  return cookie_list;
 }
 
 CookieStoreIOS::SetCookiesCallback CookieStoreIOS::WrapSetCallback(

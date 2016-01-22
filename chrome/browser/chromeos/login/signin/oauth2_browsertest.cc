@@ -45,7 +45,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -404,10 +403,8 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
   }
 
   void ReadCookiesOnIOThread() {
-    context_->GetURLRequestContext()->cookie_store()->GetCookieMonster()->
-        GetAllCookiesAsync(base::Bind(
-            &CookieReader::OnGetAllCookiesOnUIThread,
-            this));
+    context_->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
+        base::Bind(&CookieReader::OnGetAllCookiesOnUIThread, this));
   }
 
   void OnGetAllCookiesOnUIThread(const net::CookieList& cookies) {
