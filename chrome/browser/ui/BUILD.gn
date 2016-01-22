@@ -285,6 +285,8 @@ source_set("ui") {
         # This is not explicitly excluded in GYP, but I think the static
         # library linking rules means it's never referenced when compiling in
         # non-Views mode on Mac. It appears not to link in that case.
+        "views/frame/avatar_button_manager.cc",
+        "views/frame/avatar_button_manager.h",
         "views/profiles/new_avatar_button.cc",
         "views/profiles/new_avatar_button.h",
       ]

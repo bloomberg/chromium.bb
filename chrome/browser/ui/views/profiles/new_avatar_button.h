@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/ui/views/profiles/avatar_button_style.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "ui/views/controls/button/label_button.h"
 
@@ -17,12 +18,6 @@ class NewAvatarButton : public views::LabelButton,
                         public ProfileInfoCacheObserver,
                         public SigninErrorController::Observer {
  public:
-  // Different button styles that can be applied.
-  enum AvatarButtonStyle {
-    THEMED_BUTTON,   // Used in a themed browser window.
-    NATIVE_BUTTON,    // Used in a native aero or metro window.
-  };
-
   NewAvatarButton(views::ButtonListener* listener,
                   AvatarButtonStyle button_style,
                   Browser* browser);

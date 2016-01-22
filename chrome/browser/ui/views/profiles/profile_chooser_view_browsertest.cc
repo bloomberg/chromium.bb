@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -118,7 +117,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
 
   void OpenProfileChooserView(Browser* browser){
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    NewAvatarButton* button = browser_view->frame()->GetNewAvatarMenuButton();
+    views::View* button = browser_view->frame()->GetNewAvatarMenuButton();
     if (!button)
       NOTREACHED() << "NewAvatarButton not found.";
     if (browser_view->frame()->GetAvatarMenuButton())
@@ -127,8 +126,8 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     ProfileChooserView::close_on_deactivate_for_testing_ = false;
 
     ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                     ui::EventTimeForNow(), 0, 0);
-    button->NotifyClick(e);
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+    button->OnMouseReleased(e);
     base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(ProfileChooserView::IsShowing());
 

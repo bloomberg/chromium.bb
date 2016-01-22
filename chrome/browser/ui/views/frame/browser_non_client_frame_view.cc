@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -35,7 +34,7 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
     : frame_(frame),
       browser_view_(browser_view),
 #if defined(FRAME_AVATAR_BUTTON)
-      new_avatar_button_(nullptr),
+      profile_switcher_(this),
 #endif
       avatar_button_(nullptr) {
   // The profile manager may by null in tests.
@@ -95,7 +94,7 @@ void BrowserNonClientFrameView::ChildPreferredSizeChanged(View* child) {
 #if defined(FRAME_AVATAR_BUTTON)
   // Only perform a re-layout if the avatar button has changed, since that
   // can affect the size of the tabs.
-  if (child == new_avatar_button_) {
+  if (child == new_avatar_button()) {
     InvalidateLayout();
     frame_->GetRootView()->Layout();
   }
@@ -219,24 +218,8 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
 
 #if defined(FRAME_AVATAR_BUTTON)
 void BrowserNonClientFrameView::UpdateNewAvatarButton(
-    views::ButtonListener* listener,
-    const NewAvatarButton::AvatarButtonStyle style) {
-  // This should never be called in incognito mode.
-  DCHECK(browser_view_->IsRegularOrGuestSession());
-
-  if (browser_view_->ShouldShowAvatar()) {
-    if (!new_avatar_button_) {
-      new_avatar_button_ =
-          new NewAvatarButton(listener, style, browser_view_->browser());
-      new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
-      AddChildView(new_avatar_button_);
-      frame_->GetRootView()->Layout();
-    }
-  } else if (new_avatar_button_) {
-    delete new_avatar_button_;
-    new_avatar_button_ = nullptr;
-    frame_->GetRootView()->Layout();
-  }
+    const AvatarButtonStyle style) {
+  profile_switcher_.Update(style);
 }
 #endif
 

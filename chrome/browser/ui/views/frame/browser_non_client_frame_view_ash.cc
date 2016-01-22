@@ -54,10 +54,6 @@
 
 namespace {
 
-#if defined(FRAME_AVATAR_BUTTON)
-// Space between the new avatar button and the minimize button.
-const int kNewAvatarButtonOffset = 5;
-#endif
 // Space between right edge of tabstrip and maximize button.
 const int kTabstripRightSpacing = 10;
 // Height of the shadow of the content area, at the top of the toolbar.
@@ -242,13 +238,6 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   int hit_test = ash::FrameBorderHitTestController::NonClientHitTest(this,
       caption_button_container_, point);
 
-#if defined(FRAME_AVATAR_BUTTON)
-  if (hit_test == HTCAPTION && new_avatar_button() &&
-      ConvertedHitTest(this, new_avatar_button(), point)) {
-    return HTCLIENT;
-  }
-#endif
-
   // See if the point is actually within the web app back button.
   if (hit_test == HTCAPTION && web_app_left_header_view_ &&
       ConvertedHitTest(this, web_app_left_header_view_, point)) {
@@ -344,10 +333,6 @@ void BrowserNonClientFrameViewAsh::Layout() {
     LayoutAvatar();
     header_painter_->UpdateLeftViewXInset(avatar_button()->bounds().right());
   }
-#if defined(FRAME_AVATAR_BUTTON)
-  if (new_avatar_button())
-    LayoutNewStyleAvatar();
-#endif
   header_painter_->UpdateLeftViewXInset(
       ash::HeaderPainterUtil::GetDefaultLeftViewXInset());
   BrowserNonClientFrameView::Layout();
@@ -385,11 +370,7 @@ void BrowserNonClientFrameViewAsh::
   // size changes.
   if (!browser_view()->initialized())
     return;
-  bool needs_layout = child == caption_button_container_;
-#if defined(FRAME_AVATAR_BUTTON)
-  needs_layout = needs_layout || child == new_avatar_button();
-#endif
-  if (needs_layout) {
+  if (child == caption_button_container_) {
     InvalidateLayout();
     frame()->GetRootView()->Layout();
   }
@@ -431,31 +412,11 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::ButtonListener:
-
-void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-#if !defined(FRAME_AVATAR_BUTTON)
-  NOTREACHED();
-#else
-  DCHECK(sender == new_avatar_button());
-  int command = IDC_SHOW_AVATAR_MENU;
-  if (event.IsMouseEvent() &&
-      static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) {
-    command = IDC_SHOW_FAST_USER_SWITCHER;
-  }
-  chrome::ExecuteCommand(browser_view()->browser(), command);
-#endif
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, protected:
 
 // BrowserNonClientFrameView:
 void BrowserNonClientFrameViewAsh::UpdateNewAvatarButtonImpl() {
-#if defined(FRAME_AVATAR_BUTTON)
-  UpdateNewAvatarButton(this, NewAvatarButton::NATIVE_BUTTON);
-#endif
+  NOTREACHED();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -501,13 +462,6 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   int tabstrip_width = kTabstripRightSpacing +
       caption_button_container_->GetPreferredSize().width();
-
-#if defined(FRAME_AVATAR_BUTTON)
-  if (new_avatar_button()) {
-    tabstrip_width += kNewAvatarButtonOffset +
-         new_avatar_button()->GetPreferredSize().width();
-  }
-#endif
 
   return tabstrip_width;
 }
@@ -564,23 +518,6 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   avatar_button()->SetBoundsRect(avatar_bounds);
   avatar_button()->SetVisible(avatar_visible);
 }
-
-#if defined(FRAME_AVATAR_BUTTON)
-void BrowserNonClientFrameViewAsh::LayoutNewStyleAvatar() {
-  DCHECK(new_avatar_button());
-
-  gfx::Size button_size = new_avatar_button()->GetPreferredSize();
-  int button_x = width() -
-      caption_button_container_->GetPreferredSize().width() -
-      kNewAvatarButtonOffset - button_size.width();
-
-  new_avatar_button()->SetBounds(
-      button_x,
-      0,
-      button_size.width(),
-      caption_button_container_->GetPreferredSize().height());
-}
-#endif
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   if (!frame()->IsFullscreen())

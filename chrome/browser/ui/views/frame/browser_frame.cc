@@ -264,7 +264,7 @@ AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {
 }
 
 #if defined(FRAME_AVATAR_BUTTON)
-NewAvatarButton* BrowserFrame::GetNewAvatarMenuButton() {
+views::View* BrowserFrame::GetNewAvatarMenuButton() {
   return browser_frame_view_->new_avatar_button();
 }
 #endif

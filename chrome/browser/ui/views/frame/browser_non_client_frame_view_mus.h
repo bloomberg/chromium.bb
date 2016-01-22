@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
-#include "ui/views/controls/button/button.h"
 
 class TabIconView;
 class WebAppLeftHeaderView;
@@ -26,7 +25,6 @@ class ToggleImageButton;
 
 class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
                                      public TabIconViewModel,
-                                     public views::ButtonListener,
                                      public TabStripObserver {
  public:
   static const char kViewClassName[];
@@ -67,9 +65,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  protected:
   // BrowserNonClientFrameView:

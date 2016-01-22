@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
-#include "ui/views/controls/button/button.h"
 
 class TabIconView;
 class WebAppLeftHeaderView;
@@ -30,8 +29,7 @@ class ToggleImageButton;
 
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
-                                     public TabIconViewModel,
-                                     public views::ButtonListener {
+                                     public TabIconViewModel {
  public:
   static const char kViewClassName[];
 
@@ -74,9 +72,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  protected:
   // BrowserNonClientFrameView:
@@ -121,9 +116,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // Layout the avatar button.
   void LayoutAvatar();
-#if defined(FRAME_AVATAR_BUTTON)
-  void LayoutNewStyleAvatar();
-#endif
 
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.

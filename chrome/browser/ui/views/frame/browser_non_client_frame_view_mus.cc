@@ -352,32 +352,13 @@ gfx::ImageSkia BrowserNonClientFrameViewMus::GetFaviconForTabIconView() {
     return gfx::ImageSkia();
   return delegate->GetWindowIcon();
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// views::ButtonListener:
-
-void BrowserNonClientFrameViewMus::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-#if !defined(FRAME_AVATAR_BUTTON)
-  NOTREACHED();
-#else
-  DCHECK(sender == new_avatar_button());
-  int command = IDC_SHOW_AVATAR_MENU;
-  if (event.IsMouseEvent() &&
-      static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) {
-    command = IDC_SHOW_FAST_USER_SWITCHER;
-  }
-  chrome::ExecuteCommand(browser_view()->browser(), command);
-#endif
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, protected:
 
 // BrowserNonClientFrameView:
 void BrowserNonClientFrameViewMus::UpdateNewAvatarButtonImpl() {
 #if defined(FRAME_AVATAR_BUTTON)
-  UpdateNewAvatarButton(this, NewAvatarButton::NATIVE_BUTTON);
+  UpdateNewAvatarButton(AvatarButtonStyle::NATIVE);
 #endif
 }
 

@@ -72,7 +72,7 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
   SetFontList(GetFontList().DeriveWithHeightUpperBound(kDisplayFontHeight));
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  if (button_style == THEMED_BUTTON) {
+  if (button_style == AvatarButtonStyle::THEMED) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_PRESSED);

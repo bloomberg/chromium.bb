@@ -20,7 +20,6 @@ class BrowserView;
 class OpaqueBrowserFrameViewLayout;
 class OpaqueBrowserFrameViewPlatformSpecific;
 class TabIconView;
-class NewAvatarButton;
 
 namespace views {
 class ImageButton;

@@ -9,13 +9,11 @@
 #include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
 
-class GlassBrowserFrameView : public BrowserNonClientFrameView,
-                              public views::ButtonListener {
+class GlassBrowserFrameView : public BrowserNonClientFrameView {
  public:
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
@@ -43,9 +41,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // BrowserNonClientFrameView:
   void UpdateNewAvatarButtonImpl() override;

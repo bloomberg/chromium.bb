@@ -17,7 +17,6 @@ class AvatarMenuButton;
 class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;
-class NewAvatarButton;
 class NonClientFrameView;
 class SystemMenuModelBuilder;
 
@@ -117,7 +116,7 @@ class BrowserFrame
   AvatarMenuButton* GetAvatarMenuButton();
 
 #if defined(FRAME_AVATAR_BUTTON)
-  NewAvatarButton* GetNewAvatarMenuButton();
+  views::View* GetNewAvatarMenuButton();
 #endif
 
   // Returns the menu model. BrowserFrame owns the returned model.

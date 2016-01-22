@@ -9,7 +9,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(FRAME_AVATAR_BUTTON)
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
+#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #endif
 
 class AvatarMenuButton;
@@ -24,10 +24,14 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
 
+  BrowserView* browser_view() const { return browser_view_; }
+  BrowserFrame* frame() const { return frame_; }
   AvatarMenuButton* avatar_button() const { return avatar_button_; }
 
 #if defined(FRAME_AVATAR_BUTTON)
-  NewAvatarButton* new_avatar_button() const { return new_avatar_button_; }
+  views::View* new_avatar_button() const {
+    return profile_switcher_.view();
+  }
 #endif
 
   // Called when BrowserView creates all it's child views.
@@ -63,9 +67,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void ChildPreferredSizeChanged(View* child) override;
 
  protected:
-  BrowserView* browser_view() const { return browser_view_; }
-  BrowserFrame* frame() const { return frame_; }
-
   // Whether the frame should be painted with theming.
   // By default, tabbed browser windows are themed but popup and app windows are
   // not.
@@ -92,10 +93,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
 #if defined(FRAME_AVATAR_BUTTON)
   // Updates the title of the avatar button displayed in the caption area.
-  // The button uses |style| to match the browser window style and notifies
-  // |listener| when it is clicked.
-  void UpdateNewAvatarButton(views::ButtonListener* listener,
-                             const NewAvatarButton::AvatarButtonStyle style);
+  // The button uses |style| to match the browser window style.
+  void UpdateNewAvatarButton(const AvatarButtonStyle style);
 #endif
 
  private:
@@ -115,9 +114,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserView* browser_view_;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  // Menu button that displays the name of the active or guest profile.
-  // May be null and will not be displayed for off the record profiles.
-  NewAvatarButton* new_avatar_button_;
+  // Wrapper around the in-frame avatar switcher.
+  // TODO(tapted): Move this component down into the subclasses that need it.
+  AvatarButtonManager profile_switcher_;
 #endif
 
   // Menu button that displays the incognito icon. May be null for some frame

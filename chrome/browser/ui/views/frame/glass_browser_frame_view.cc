@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -267,26 +266,9 @@ void GlassBrowserFrameView::Layout() {
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, protected:
 
-// views::ButtonListener:
-void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {
-  if (sender == new_avatar_button()) {
-    BrowserWindow::AvatarBubbleMode mode =
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
-    if ((event.IsMouseEvent() &&
-         static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) ||
-        (event.type() == ui::ET_GESTURE_LONG_PRESS)) {
-      mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
-    }
-    browser_view()->ShowAvatarBubbleFromAvatarButton(
-        mode, signin::ManageAccountsParams(),
-        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-  }
-}
-
 // BrowserNonClientFrameView:
 void GlassBrowserFrameView::UpdateNewAvatarButtonImpl() {
-  UpdateNewAvatarButton(this, NewAvatarButton::NATIVE_BUTTON);
+  UpdateNewAvatarButton(AvatarButtonStyle::NATIVE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
