@@ -399,8 +399,16 @@ int main(int argc, const char* argv[]) {
   //     void g();
   //   };
   // matches |f| but not |g|.
-  auto function_decl_matcher =
-      id("decl", functionDecl(unless(cxxMethodDecl()), in_blink_namespace));
+  auto function_decl_matcher = id(
+      "decl",
+      functionDecl(
+          unless(anyOf(
+              // Methods are covered by the method matchers.
+              cxxMethodDecl(),
+              // Out-of-line overloaded operators have special names and should
+              // never be renamed.
+              isOverloadedOperator())),
+          in_blink_namespace));
   FunctionDeclRewriter function_decl_rewriter(&replacements);
   match_finder.addMatcher(function_decl_matcher, &function_decl_rewriter);
 
