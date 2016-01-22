@@ -148,7 +148,7 @@ class Rietveld(object):
           out.append(patch.FilePatchDelete(filename, state['is_binary']))
         else:
           content = self.get_file_content(issue, patchset, state['id'])
-          if not content:
+          if not content or content == 'None':
             # As a precaution due to a bug in upload.py for git checkout, refuse
             # empty files. If it's empty, it's not a binary file.
             raise patch.UnsupportedPatchFormat(
