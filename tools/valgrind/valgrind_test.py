@@ -739,7 +739,7 @@ class DrMemory(BaseTool):
 
     # crbug.com/155839: extra Dr. Memory options passed via --drmemory_ops
     if self._options.drmemory_ops:
-      proc.extend(drmem_ops.split())
+      proc.extend(self._options.drmemory_ops.split())
 
     if self.pattern_mode:
       proc += ["-pattern", "0xf1fd", "-no_count_leaks", "-redzone_size", "0x20"]
