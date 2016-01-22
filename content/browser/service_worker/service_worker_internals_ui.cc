@@ -89,31 +89,6 @@ void CallServiceWorkerVersionMethodWithVersionID(
   (*version.get().*method)(callback);
 }
 
-void DispatchPushEventWithVersionID(
-    scoped_refptr<ServiceWorkerContextWrapper> context,
-    int64_t version_id,
-    const ServiceWorkerInternalsUI::StatusCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(DispatchPushEventWithVersionID,
-                   context,
-                   version_id,
-                   callback));
-    return;
-  }
-
-  scoped_refptr<ServiceWorkerVersion> version =
-      context->GetLiveVersion(version_id);
-  if (!version.get()) {
-    callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
-    return;
-  }
-  std::string data = "Test push message from ServiceWorkerInternals.";
-  version->DispatchPushEvent(callback, data);
-}
-
 void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
                        DictionaryValue* info) {
   switch (version.running_status) {
@@ -358,10 +333,6 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
                  base::Unretained(this),
                  &ServiceWorkerVersion::StopWorker));
   web_ui->RegisterMessageCallback(
-      "push",
-      base::Bind(&ServiceWorkerInternalsUI::DispatchPushEvent,
-                 base::Unretained(this)));
-  web_ui->RegisterMessageCallback(
       "inspect",
       base::Bind(&ServiceWorkerInternalsUI::InspectWorker,
                  base::Unretained(this)));
@@ -508,29 +479,6 @@ void ServiceWorkerInternalsUI::CallServiceWorkerVersionMethod(
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
   CallServiceWorkerVersionMethodWithVersionID(
       method, context, version_id, callback);
-}
-
-void ServiceWorkerInternalsUI::DispatchPushEvent(
-    const ListValue* args) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int callback_id;
-  int partition_id;
-  int64_t version_id = 0;
-  std::string version_id_string;
-  const DictionaryValue* cmd_args = NULL;
-  scoped_refptr<ServiceWorkerContextWrapper> context;
-  if (!args->GetInteger(0, &callback_id) ||
-      !args->GetDictionary(1, &cmd_args) ||
-      !cmd_args->GetInteger("partition_id", &partition_id) ||
-      !GetServiceWorkerContext(partition_id, &context) ||
-      !cmd_args->GetString("version_id", &version_id_string) ||
-      !base::StringToInt64(version_id_string, &version_id)) {
-    return;
-  }
-
-  base::Callback<void(ServiceWorkerStatusCode)> callback =
-      base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
-  DispatchPushEventWithVersionID(context, version_id, callback);
 }
 
 void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {

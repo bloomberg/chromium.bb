@@ -52,7 +52,6 @@ class ServiceWorkerInternalsUI
   void GetAllRegistrations(const base::ListValue* args);
   void CallServiceWorkerVersionMethod(ServiceWorkerVersionMethod method,
                                       const base::ListValue* args);
-  void DispatchPushEvent(const base::ListValue* args);
   void InspectWorker(const base::ListValue* args);
   void Unregister(const base::ListValue* args);
   void StartWorker(const base::ListValue* args);
