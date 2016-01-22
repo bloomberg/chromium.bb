@@ -12,7 +12,6 @@
 #include "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -380,6 +379,5 @@ void GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(
 }
 
 bool GaiaAuthFetcherIOS::ShouldUseGaiaAuthFetcherIOS() {
-  return experimental_flags::IsWKWebViewEnabled() &&
-         g_should_use_gaia_auth_fetcher_ios;
+  return g_should_use_gaia_auth_fetcher_ios;
 }

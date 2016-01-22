@@ -8,7 +8,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
@@ -51,9 +50,6 @@ void AccountConsistencyServiceFactory::RegisterBrowserStatePrefs(
 scoped_ptr<KeyedService>
 AccountConsistencyServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  if (!experimental_flags::IsWKWebViewEnabled()) {
-    return nullptr;
-  }
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return make_scoped_ptr(new AccountConsistencyService(
