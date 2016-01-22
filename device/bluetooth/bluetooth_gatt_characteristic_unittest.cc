@@ -47,20 +47,55 @@ class BluetoothGattCharacteristicTest : public BluetoothTest {
     ResetEventCounts();
   }
 
+  enum class StartNotifySetupError {
+    CHARACTERISTIC_PROPERTIES,
+    CONFIG_DESCRIPTOR_MISSING,
+    SET_NOTIFY,
+    WRITE_DESCRIPTOR,
+    NONE
+  };
   // Constructs characteristics with |properties|, calls StartNotifySession,
   // and verifies the appropriate |expected_config_descriptor_value| is written.
-  void StartNotifyBoilerplate(int properties,
-                              uint16_t expected_config_descriptor_value) {
+  // Error scenarios in this boilerplate are tested by setting |error| to the
+  // setup stage to test.
+  void StartNotifyBoilerplate(
+      int properties,
+      uint16_t expected_config_descriptor_value,
+      StartNotifySetupError error = StartNotifySetupError::NONE) {
+    if (error == StartNotifySetupError::CHARACTERISTIC_PROPERTIES) {
+      properties = 0;
+    }
     ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(properties));
-    SimulateGattDescriptor(
-        characteristic1_,
-        /* Client Characteristic Configuration descriptor's standard UUID: */
-        "00002902-0000-1000-8000-00805F9B34FB");
-    ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+
+    if (error != StartNotifySetupError::CONFIG_DESCRIPTOR_MISSING) {
+      SimulateGattDescriptor(
+          characteristic1_,
+          /* Client Characteristic Configuration descriptor's standard UUID: */
+          "00002902-0000-1000-8000-00805F9B34FB");
+      ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+    }
+
+    if (error == StartNotifySetupError::SET_NOTIFY) {
+      SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
+          characteristic1_);
+    }
+
+    if (error == StartNotifySetupError::WRITE_DESCRIPTOR) {
+      SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
+          characteristic1_->GetDescriptors()[0]);
+    }
+
+    if (error != StartNotifySetupError::NONE) {
+      characteristic1_->StartNotifySession(
+          GetNotifyCallback(Call::NOT_EXPECTED),
+          GetGattErrorCallback(Call::EXPECTED));
+      return;
+    }
 
     characteristic1_->StartNotifySession(
         GetNotifyCallback(Call::EXPECTED),
         GetGattErrorCallback(Call::NOT_EXPECTED));
+
     EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
     EXPECT_EQ(0, callback_count_);
     SimulateGattNotifySessionStarted(characteristic1_);
@@ -679,10 +714,11 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_ReadPending) {
 // StartNotifySession fails if characteristic doesn't have Notify or Indicate
 // property.
 TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_NoNotifyOrIndicate) {
-  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10,
+      /* expected_config_descriptor_value: NOTIFY */ 1,
+      StartNotifySetupError::CHARACTERISTIC_PROPERTIES));
 
-  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
-                                       GetGattErrorCallback(Call::EXPECTED));
   EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
 
   // The expected error callback is asynchronous:
@@ -696,11 +732,11 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_NoNotifyOrIndicate) {
 // StartNotifySession fails if the characteristic is missing the Client
 // Characteristic Configuration descriptor.
 TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_NoConfigDescriptor) {
-  ASSERT_NO_FATAL_FAILURE(
-      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10,
+      /* expected_config_descriptor_value: NOTIFY */ 1,
+      StartNotifySetupError::CONFIG_DESCRIPTOR_MISSING));
 
-  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
-                                       GetGattErrorCallback(Call::EXPECTED));
   EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
 
   // The expected error callback is asynchronous:
@@ -716,21 +752,16 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_NoConfigDescriptor) {
 // Android: This is mBluetoothGatt.setCharacteristicNotification failing.
 TEST_F(BluetoothGattCharacteristicTest,
        StartNotifySession_FailToSetCharacteristicNotification) {
-  ASSERT_NO_FATAL_FAILURE(
-      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
-  SimulateGattDescriptor(
-      characteristic1_,
-      /* Client Characteristic Configuration descriptor's standard UUID: */
-      "00002902-0000-1000-8000-00805F9B34FB");
-  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10,
+      /* expected_config_descriptor_value: NOTIFY */ 1,
+      StartNotifySetupError::SET_NOTIFY));
 
-  SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
-      characteristic1_);
-  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
-                                       GetGattErrorCallback(Call::EXPECTED));
+  // The expected error callback is asynchronous:
   EXPECT_EQ(0, error_callback_count_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, error_callback_count_);
+
   EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
   ASSERT_EQ(0u, notify_sessions_.size());
 }
@@ -740,23 +771,16 @@ TEST_F(BluetoothGattCharacteristicTest,
 // Tests StartNotifySession descriptor write synchronous failure.
 TEST_F(BluetoothGattCharacteristicTest,
        StartNotifySession_WriteDescriptorSynchronousError) {
-  ASSERT_NO_FATAL_FAILURE(
-      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
-  SimulateGattDescriptor(
-      characteristic1_,
-      /* Client Characteristic Configuration descriptor's standard UUID: */
-      "00002902-0000-1000-8000-00805F9B34FB");
-  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10,
+      /* expected_config_descriptor_value: NOTIFY */ 1,
+      StartNotifySetupError::WRITE_DESCRIPTOR));
 
-  // Fail to write to config descriptor synchronously.
-  SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
-      characteristic1_->GetDescriptors()[0]);
-
-  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
-                                       GetGattErrorCallback(Call::EXPECTED));
+  // The expected error callback is asynchronous:
   EXPECT_EQ(0, error_callback_count_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, error_callback_count_);
+
   EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
   ASSERT_EQ(0u, notify_sessions_.size());
 }
