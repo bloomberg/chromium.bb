@@ -583,6 +583,18 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         # https://sourceforge.net/p/pyserial/feature-requests/35/
         'UNKNOWN',
     ],
+    # Not shipped, MIT license but the header files contain no licensing info.
+    'third_party/catapult/telemetry/third_party/altgraph': [
+        'UNKNOWN',
+    ],
+    # Not shipped, MIT license but the header files contain no licensing info.
+    'third_party/catapult/telemetry/third_party/modulegraph': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/telemetry/third_party/pyserial': [
+        # https://sourceforge.net/p/pyserial/feature-requests/35/
+        'UNKNOWN',
+    ],
 }
 
 EXCLUDED_PATHS = [
