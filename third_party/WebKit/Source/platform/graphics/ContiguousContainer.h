@@ -42,7 +42,10 @@ class PLATFORM_EXPORT ContiguousContainerBase {
     WTF_MAKE_NONCOPYABLE(ContiguousContainerBase);
 protected:
     explicit ContiguousContainerBase(size_t maxObjectSize);
+    ContiguousContainerBase(ContiguousContainerBase&&);
     ~ContiguousContainerBase();
+
+    ContiguousContainerBase& operator=(ContiguousContainerBase&&);
 
     size_t size() const { return m_elements.size(); }
     bool isEmpty() const { return !size(); }
@@ -116,12 +119,25 @@ public:
         reserveInitialCapacity(std::max(maxObjectSize, initialSizeBytes), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
     }
 
+    ContiguousContainer(ContiguousContainer&& source)
+        : ContiguousContainerBase(std::move(source)) {}
+
     ~ContiguousContainer()
     {
         for (auto& element : *this) {
             (void)element; // MSVC incorrectly reports this variable as unused.
             element.~BaseElementType();
         }
+    }
+
+    ContiguousContainer& operator=(ContiguousContainer&& source)
+    {
+        // Must clear in the derived class to ensure that element destructors
+        // care called.
+        clear();
+
+        ContiguousContainerBase::operator=(std::move(source));
+        return *this;
     }
 
     using ContiguousContainerBase::size;

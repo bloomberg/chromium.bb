@@ -71,8 +71,20 @@ ContiguousContainerBase::ContiguousContainerBase(size_t maxObjectSize)
 {
 }
 
+ContiguousContainerBase::ContiguousContainerBase(ContiguousContainerBase&& source)
+    : ContiguousContainerBase(source.m_maxObjectSize)
+{
+    swap(source);
+}
+
 ContiguousContainerBase::~ContiguousContainerBase()
 {
+}
+
+ContiguousContainerBase& ContiguousContainerBase::operator=(ContiguousContainerBase&& source)
+{
+    swap(source);
+    return *this;
 }
 
 size_t ContiguousContainerBase::capacityInBytes() const

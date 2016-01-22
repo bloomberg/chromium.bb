@@ -23,12 +23,19 @@ class WebDisplayItemList;
 //
 // It represents a particular state of the world, and should be immutable
 // (const) to most of its users.
+//
+// Reminder: moved-from objects may not be in a known state. They can only
+// safely be assigned to or destroyed.
 class PLATFORM_EXPORT PaintArtifact final {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PaintArtifact);
 public:
     PaintArtifact();
+    PaintArtifact(DisplayItemList, Vector<PaintChunk>);
+    PaintArtifact(PaintArtifact&&);
     ~PaintArtifact();
+
+    PaintArtifact& operator=(PaintArtifact&&);
 
     bool isEmpty() const { return m_displayItemList.isEmpty(); }
 

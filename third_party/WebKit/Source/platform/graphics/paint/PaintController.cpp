@@ -302,8 +302,8 @@ void PaintController::commitNewDisplayItemsInternal()
         for (const auto& item : m_newDisplayItemList)
             ASSERT(!item.isCached());
 #endif
-        m_currentPaintArtifact.displayItemList().swap(m_newDisplayItemList);
-        m_currentPaintArtifact.paintChunks() = m_newPaintChunks.releasePaintChunks();
+        m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks());
+        m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
         m_validlyCachedClientsDirty = true;
         return;
     }
@@ -384,10 +384,8 @@ void PaintController::commitNewDisplayItemsInternal()
 
     // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
     // merge the paint chunks as well.
-    m_currentPaintArtifact.displayItemList().swap(updatedList);
-    m_currentPaintArtifact.paintChunks() = m_newPaintChunks.releasePaintChunks();
-
-    m_newDisplayItemList.clear();
+    m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks());
+    m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
     m_validlyCachedClientsDirty = true;
 }
 

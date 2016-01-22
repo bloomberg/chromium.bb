@@ -14,8 +14,27 @@ PaintArtifact::PaintArtifact()
 {
 }
 
+PaintArtifact::PaintArtifact(DisplayItemList displayItems, Vector<PaintChunk> paintChunks)
+    : m_displayItemList(std::move(displayItems))
+    , m_paintChunks(std::move(paintChunks))
+{
+}
+
+PaintArtifact::PaintArtifact(PaintArtifact&& source)
+    : m_displayItemList(std::move(source.m_displayItemList))
+    , m_paintChunks(std::move(source.m_paintChunks))
+{
+}
+
 PaintArtifact::~PaintArtifact()
 {
+}
+
+PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source)
+{
+    m_displayItemList = std::move(source.m_displayItemList);
+    m_paintChunks = std::move(source.m_paintChunks);
+    return *this;
 }
 
 void PaintArtifact::reset()

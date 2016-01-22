@@ -31,6 +31,14 @@ class DisplayItemList : public ContiguousContainer<DisplayItem, kDisplayItemAlig
 public:
     DisplayItemList(size_t initialSizeBytes)
         : ContiguousContainer(kMaximumDisplayItemSize, initialSizeBytes) {}
+    DisplayItemList(DisplayItemList&& source)
+        : ContiguousContainer(std::move(source)) {}
+
+    DisplayItemList& operator=(DisplayItemList&& source)
+    {
+        ContiguousContainer::operator=(std::move(source));
+        return *this;
+    }
 
     DisplayItem& appendByMoving(DisplayItem& item)
     {
