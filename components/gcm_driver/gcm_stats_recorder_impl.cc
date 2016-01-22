@@ -163,11 +163,28 @@ void GCMStatsRecorderImpl::Clear() {
   registration_activities_.clear();
   receiving_activities_.clear();
   sending_activities_.clear();
+  decryption_failure_activities_.clear();
 }
 
 void GCMStatsRecorderImpl::NotifyActivityRecorded() {
   if (delegate_)
     delegate_->OnActivityRecorded();
+}
+
+void GCMStatsRecorderImpl::RecordDecryptionFailure(
+    const std::string& app_id,
+    GCMEncryptionProvider::DecryptionFailure reason) {
+  if (!is_recording_)
+    return;
+
+  DecryptionFailureActivity data;
+  DecryptionFailureActivity* inserted_data = InsertCircularBuffer(
+      &decryption_failure_activities_, data);
+  inserted_data->app_id = app_id;
+  inserted_data->details =
+      GCMEncryptionProvider::ToDecryptionFailureDetailsString(reason);
+
+  NotifyActivityRecorded();
 }
 
 void GCMStatsRecorderImpl::RecordCheckin(
@@ -460,6 +477,10 @@ void GCMStatsRecorderImpl::CollectActivities(
       recorded_activities->sending_activities.begin(),
       sending_activities_.begin(),
       sending_activities_.end());
+  recorded_activities->decryption_failure_activities.insert(
+      recorded_activities->decryption_failure_activities.begin(),
+      decryption_failure_activities_.begin(),
+      decryption_failure_activities_.end());
 }
 
 void GCMStatsRecorderImpl::RecordSending(const std::string& app_id,

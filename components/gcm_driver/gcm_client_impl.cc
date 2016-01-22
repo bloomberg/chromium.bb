@@ -1152,6 +1152,12 @@ std::string GCMClientImpl::GetStateString() const {
   }
 }
 
+void GCMClientImpl::RecordDecryptionFailure(
+    const std::string& app_id,
+    GCMEncryptionProvider::DecryptionFailure reason) {
+  recorder_.RecordDecryptionFailure(app_id, reason);
+}
+
 void GCMClientImpl::SetRecording(bool recording) {
   recorder_.set_is_recording(recording);
 }

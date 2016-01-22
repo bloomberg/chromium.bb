@@ -33,5 +33,6 @@ const char kRegistrationInfo[] = "registrationInfo";
 const char kResendQueueSize[] = "resendQueueSize";
 const char kSendInfo[] = "sendInfo";
 const char kSendQueueSize[] = "sendQueueSize";
+const char kDecryptionFailureInfo[] = "decryptionFailureInfo";
 
 }  // namespace gcm_driver

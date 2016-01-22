@@ -240,7 +240,8 @@ void GCMDriverAndroid::UnregisterImpl(const std::string& app_id) {
 }
 
 void GCMDriverAndroid::UnregisterWithSenderIdImpl(
-    const std::string& app_id, const std::string& sender_id) {
+    const std::string& app_id,
+    const std::string& sender_id) {
   JNIEnv* env = AttachCurrentThread();
 
   recorder_.RecordUnregistrationSent(app_id);
@@ -254,6 +255,12 @@ void GCMDriverAndroid::SendImpl(const std::string& app_id,
                                 const std::string& receiver_id,
                                 const OutgoingMessage& message) {
   NOTIMPLEMENTED();
+}
+
+void GCMDriverAndroid::RecordDecryptionFailure(
+    const std::string& app_id,
+    GCMEncryptionProvider::DecryptionFailure reason) {
+  recorder_.RecordDecryptionFailure(app_id, reason);
 }
 
 }  // namespace gcm

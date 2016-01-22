@@ -44,6 +44,12 @@ SendingActivity::SendingActivity() {
 SendingActivity::~SendingActivity() {
 }
 
+DecryptionFailureActivity::DecryptionFailureActivity() {
+}
+
+DecryptionFailureActivity::~DecryptionFailureActivity() {
+}
+
 RecordedActivities::RecordedActivities() {
 }
 

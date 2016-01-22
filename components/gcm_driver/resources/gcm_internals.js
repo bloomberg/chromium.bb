@@ -142,6 +142,7 @@ cr.define('gcmInternals', function() {
     refreshLogTable('connection-info', infos.connectionInfo);
     refreshLogTable('registration-info', infos.registrationInfo);
     refreshLogTable('receive-info', infos.receiveInfo);
+    refreshLogTable('decryption-failure-info', infos.decryptionFailureInfo);
     refreshLogTable('send-info', infos.sendInfo);
   }
 

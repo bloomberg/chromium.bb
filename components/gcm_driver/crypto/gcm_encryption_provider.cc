@@ -29,6 +29,27 @@ const base::FilePath::CharType kEncryptionDirectoryName[] =
 
 }  // namespace
 
+std::string GCMEncryptionProvider::ToDecryptionFailureDetailsString(
+    DecryptionFailure reason) {
+  switch(reason) {
+    case DECRYPTION_FAILURE_UNKNOWN:
+      return "Unknown failure";
+    case DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER:
+      return "Invalid format for the Encryption header";
+    case DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER:
+      return "Invalid format for the Crypto-Key header";
+    case DECRYPTION_FAILURE_NO_KEYS:
+      return "There are no associated keys with the subscription";
+    case DECRYPTION_FAILURE_INVALID_PUBLIC_KEY:
+      return "The public key in the Crypto-Key header is invalid";
+    case DECRYPTION_FAILURE_INVALID_PAYLOAD:
+      return "AES-GCM decryption failed";
+  }
+
+  NOTREACHED();
+  return "(invalid reason)";
+}
+
 GCMEncryptionProvider::GCMEncryptionProvider()
     : weak_ptr_factory_(this) {
 }

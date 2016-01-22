@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/gcm_stats_recorder_impl.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -57,6 +58,9 @@ class FakeGCMClient : public GCMClient {
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const OutgoingMessage& message) override;
+  void RecordDecryptionFailure(const std::string& app_id,
+                               GCMEncryptionProvider::DecryptionFailure reason)
+      override;
   void SetRecording(bool recording) override;
   void ClearActivityLogs() override;
   GCMStatistics GetStatistics() const override;
@@ -115,6 +119,7 @@ class FakeGCMClient : public GCMClient {
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
   std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
+  GCMStatsRecorderImpl recorder_;
   base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClient);

@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "google_apis/gcm/engine/connection_factory.h"
 #include "google_apis/gcm/engine/mcs_client.h"
@@ -37,6 +38,10 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
 
   // Clear all recorded activities.
   void Clear();
+
+  // Records a message decryption failure caused by |reason| for |app_id|.
+  void RecordDecryptionFailure(const std::string& app_id,
+                               GCMEncryptionProvider::DecryptionFailure reason);
 
   // GCMStatsRecorder implementation:
   void RecordCheckinInitiated(uint64_t android_id) override;
@@ -109,6 +114,10 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   const std::deque<SendingActivity>& sending_activities() const {
     return sending_activities_;
   }
+  const std::deque<DecryptionFailureActivity>& decryption_failure_activities()
+      const {
+    return decryption_failure_activities_;
+  }
 
  protected:
   // Notify the recorder delegate, if it exists, that an activity has been
@@ -146,6 +155,7 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   std::deque<RegistrationActivity> registration_activities_;
   std::deque<ReceivingActivity> receiving_activities_;
   std::deque<SendingActivity> sending_activities_;
+  std::deque<DecryptionFailureActivity> decryption_failure_activities_;
 
   base::TimeTicks last_connection_initiation_time_;
   base::TimeTicks last_connection_success_time_;
