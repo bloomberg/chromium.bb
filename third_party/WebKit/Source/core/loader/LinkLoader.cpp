@@ -194,6 +194,7 @@ void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)
         return;
     switch (resource->type()) {
     case Resource::Image:
+        m_linkPreloadResourceClient = LinkPreloadImageResourceClient::create(this, toImageResource(resource.get()));
         break;
     case Resource::Script:
         m_linkPreloadResourceClient = LinkPreloadScriptResourceClient::create(this, toScriptResource(resource.get()));
@@ -201,15 +202,14 @@ void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)
     case Resource::CSSStyleSheet:
         m_linkPreloadResourceClient = LinkPreloadStyleResourceClient::create(this, toCSSStyleSheetResource(resource.get()));
         break;
-    // TODO(yoav): add support for everything below.
     case Resource::Font:
+        m_linkPreloadResourceClient = LinkPreloadFontResourceClient::create(this, toFontResource(resource.get()));
         break;
     case Resource::Media:
-        break;
     case Resource::TextTrack:
-        break;
     case Resource::Raw:
     case Resource::LinkSubresource:
+        m_linkPreloadResourceClient = LinkPreloadRawResourceClient::create(this, toRawResource(resource.get()));
         break;
     default:
         ASSERT_NOT_REACHED();

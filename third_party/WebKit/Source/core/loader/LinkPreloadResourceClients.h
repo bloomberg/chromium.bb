@@ -7,7 +7,9 @@
 
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FontResource.h"
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
@@ -102,6 +104,108 @@ public:
 
 private:
     LinkPreloadStyleResourceClient(LinkLoader* loader, CSSStyleSheetResource* resource)
+        : LinkPreloadResourceClient(loader)
+    {
+        setResource(resource);
+    }
+};
+
+class LinkPreloadImageResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ImageResource, ImageResourceClient> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadImageResourceClient);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(LinkPreloadImageResourceClient);
+public:
+    static PassOwnPtrWillBeRawPtr<LinkPreloadImageResourceClient> create(LinkLoader* loader, ImageResource* resource)
+    {
+        return adoptPtrWillBeNoop(new LinkPreloadImageResourceClient(loader, resource));
+    }
+
+    virtual String debugName() const { return "LinkPreloadImage"; }
+    virtual ~LinkPreloadImageResourceClient() { }
+
+    void clear() override { clearResource(); }
+
+    void notifyFinished(Resource* resource) override
+    {
+        ASSERT(this->resource() == toImageResource(resource));
+        triggerEvents(resource);
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        LinkPreloadResourceClient::trace(visitor);
+        ResourceOwner<ImageResource, ImageResourceClient>::trace(visitor);
+    }
+
+private:
+    LinkPreloadImageResourceClient(LinkLoader* loader, ImageResource* resource)
+        : LinkPreloadResourceClient(loader)
+    {
+        setResource(resource);
+    }
+};
+
+class LinkPreloadFontResourceClient: public LinkPreloadResourceClient, public ResourceOwner<FontResource, FontResourceClient> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadFontResourceClient);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(LinkPreloadFontResourceClient);
+public:
+    static PassOwnPtrWillBeRawPtr<LinkPreloadFontResourceClient> create(LinkLoader* loader, FontResource* resource)
+    {
+        return adoptPtrWillBeNoop(new LinkPreloadFontResourceClient(loader, resource));
+    }
+
+    virtual String debugName() const { return "LinkPreloadFont"; }
+    virtual ~LinkPreloadFontResourceClient() { }
+
+    void clear() override { clearResource(); }
+
+    void fontLoaded(FontResource* resource) override
+    {
+        ASSERT(this->resource() == resource);
+        triggerEvents(resource);
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        LinkPreloadResourceClient::trace(visitor);
+        ResourceOwner<FontResource, FontResourceClient>::trace(visitor);
+    }
+
+private:
+    LinkPreloadFontResourceClient(LinkLoader* loader, FontResource* resource)
+        : LinkPreloadResourceClient(loader)
+    {
+        setResource(resource);
+    }
+};
+
+class LinkPreloadRawResourceClient: public LinkPreloadResourceClient, public ResourceOwner<RawResource, RawResourceClient> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadRawResourceClient);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(LinkPreloadRawResourceClient);
+public:
+    static PassOwnPtrWillBeRawPtr<LinkPreloadRawResourceClient> create(LinkLoader* loader, RawResource* resource)
+    {
+        return adoptPtrWillBeNoop(new LinkPreloadRawResourceClient(loader, resource));
+    }
+
+    virtual String debugName() const { return "LinkPreloadRaw"; }
+    virtual ~LinkPreloadRawResourceClient() { }
+
+    void clear() override { clearResource(); }
+
+    void notifyFinished(Resource* resource) override
+    {
+        ASSERT(this->resource() == toRawResource(resource));
+        triggerEvents(resource);
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        LinkPreloadResourceClient::trace(visitor);
+        ResourceOwner<RawResource, RawResourceClient>::trace(visitor);
+    }
+
+private:
+    LinkPreloadRawResourceClient(LinkLoader* loader, RawResource* resource)
         : LinkPreloadResourceClient(loader)
     {
         setResource(resource);

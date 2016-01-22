@@ -5,14 +5,35 @@
     var t = async_test('Makes sure that preloaded resources trigger the onload event');
     var scriptLoaded = false;
     var styleLoaded = false;
+    var imageLoaded = false;
+    var fontLoaded = false;
+    var videoLoaded = false;
+    var audioLoaded = false;
+    var trackLoaded = false;
+    var gibrishLoaded = false;
+    var noTypeLoaded = false;
 </script>
 <link rel=preload href="../resources/dummy.js" as=script onload="scriptLoaded = true;">
 <link rel=preload href="../resources/dummy.css" as=style onload="styleLoaded = true;">
+<link rel=preload href="../resources/square.png" as=image onload="imageLoaded = true;">
+<link rel=preload href="../resources/Ahem.ttf" as=font crossorigin onload="fontLoaded = true;">
+<link rel=preload href="../resources/test.mp4" as=video onload="videoLoaded = true;">
+<link rel=preload href="../resources/test.oga" as=audio onload="audioLoaded = true;">
+<link rel=preload href="../resources/security/captions.vtt" as=track onload="trackLoaded = true;">
+<link rel=preload href="../resources/dummy.xml" as=foobarxmlthing onload="gibrishLoaded = true;">
+<link rel=preload href="../resources/dummy.xml" onload="noTypeLoaded = true;">
 <script src="../resources/slow-script.pl?delay=500"></script>
 <script>
     window.onload = t.step(function(){
-        assert_true(window.scriptLoaded, "script triggered load event");
         assert_true(styleLoaded, "style triggered load event");
+        assert_true(scriptLoaded, "script triggered load event");
+        assert_true(imageLoaded, "image triggered load event");
+        assert_true(fontLoaded, "font triggered load event");
+        assert_true(videoLoaded, "video triggered load event");
+        assert_true(audioLoaded, "audio triggered load event");
+        assert_true(trackLoaded, "track triggered load event");
+        assert_true(gibrishLoaded, "gibrish as value triggered load event");
+        assert_true(noTypeLoaded, "empty as triggered load event");
         t.done();
     });
 </script>

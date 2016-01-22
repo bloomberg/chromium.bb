@@ -4,6 +4,7 @@
 
 #include "core/loader/LinkLoader.h"
 
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
 #include "core/html/LinkRelAttribute.h"
@@ -135,7 +136,9 @@ TEST(LinkLoaderTest, Preload)
                     ASSERT_STREQ(testCase.accept, resource->accept().string().ascii().data());
                 }
             }
+            dummyPageHolder->document().fetcher()->clearPreloads();
         }
+        memoryCache()->evictResources();
     }
 }
 
