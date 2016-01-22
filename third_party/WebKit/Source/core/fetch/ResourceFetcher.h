@@ -93,8 +93,10 @@ public:
 
     int requestCount() const;
 
+    enum ClearPreloadsPolicy { ClearAllPreloads, ClearSpeculativeMarkupPreloads };
+
     bool isPreloaded(const KURL&) const;
-    void clearPreloads();
+    void clearPreloads(ClearPreloadsPolicy = ClearAllPreloads);
     void preloadStarted(Resource*);
     void printPreloadStats();
 

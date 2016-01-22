@@ -4754,7 +4754,7 @@ void Document::finishedParsing()
     m_elementDataCacheClearTimer.startOneShot(10, BLINK_FROM_HERE);
 
     // Parser should have picked up all preloads by now
-    m_fetcher->clearPreloads();
+    m_fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
 }
 
 void Document::elementDataCacheClearTimerFired(Timer<Document>*)

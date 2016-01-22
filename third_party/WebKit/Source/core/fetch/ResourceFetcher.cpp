@@ -181,7 +181,7 @@ ResourceFetcher::ResourceFetcher(FetchContext* context)
 ResourceFetcher::~ResourceFetcher()
 {
 #if !ENABLE(OILPAN)
-    clearPreloads();
+    clearPreloads(ClearAllPreloads);
 #endif
 }
 
@@ -834,7 +834,7 @@ bool ResourceFetcher::isPreloaded(const KURL& url) const
     return false;
 }
 
-void ResourceFetcher::clearPreloads()
+void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
 {
 #if PRELOAD_DEBUG
     printPreloadStats();
@@ -845,7 +845,8 @@ void ResourceFetcher::clearPreloads()
     for (auto resource : *m_preloads) {
         resource->decreasePreloadCount();
         bool deleted = resource->deleteIfPossible();
-        if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced)
+        // avoidBlockingOnLoad is only set on non speculative preloads (i.e. <link rel=preload> triggered preloads)
+        if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced && (policy == ClearAllPreloads || !resource->avoidBlockingOnLoad()))
             memoryCache()->remove(resource.get());
     }
     m_preloads.clear();
