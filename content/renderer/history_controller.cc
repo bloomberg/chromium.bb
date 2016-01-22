@@ -134,11 +134,15 @@ void HistoryController::RecursiveGoToEntry(
   if (old_item.isNull() ||
       new_item.itemSequenceNumber() != old_item.itemSequenceNumber()) {
     if (!old_item.isNull() &&
-        new_item.documentSequenceNumber() == old_item.documentSequenceNumber())
+        new_item.documentSequenceNumber() ==
+            old_item.documentSequenceNumber()) {
       same_document_loads.push_back(std::make_pair(frame, new_item));
-    else
+    } else {
       different_document_loads.push_back(std::make_pair(frame, new_item));
-    return;
+      // For a different document, the subframes will be destroyed, so there's
+      // no need to consider them.
+      return;
+    }
   }
 
   for (WebFrame* child = frame->firstChild(); child;

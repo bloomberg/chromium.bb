@@ -1869,8 +1869,10 @@ void NavigationControllerImpl::FindFramesToNavigate(
       same_document_loads->push_back(std::make_pair(frame, new_item));
     } else {
       different_document_loads->push_back(std::make_pair(frame, new_item));
+      // For a different document, the subframes will be destroyed, so there's
+      // no need to consider them.
+      return;
     }
-    return;
   }
 
   for (size_t i = 0; i < frame->child_count(); i++) {
