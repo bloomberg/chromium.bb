@@ -23,9 +23,9 @@ extern "C" {
 
 static INLINE tran_low_t check_range(tran_high_t input) {
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-  // For valid VP9 input streams, intermediate stage coefficients should always
+  // For valid input streams, intermediate stage coefficients should always
   // stay within the range of a signed 16 bit integer. Coefficients can go out
-  // of this range for invalid/corrupt VP9 streams. However, strictly checking
+  // of this range for invalid/corrupt streams. However, strictly checking
   // this range for every intermediate coefficient can burdensome for a decoder,
   // therefore the following assertion is only enabled when configured with
   // --enable-coefficient-range-checking.
@@ -44,7 +44,7 @@ static INLINE tran_low_t dct_const_round_shift(tran_high_t input) {
 static INLINE tran_low_t highbd_check_range(tran_high_t input,
                                             int bd) {
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-  // For valid highbitdepth VP9 streams, intermediate stage coefficients will
+  // For valid highbitdepth streams, intermediate stage coefficients will
   // stay within the ranges:
   // - 8 bit: signed 16 bit integer
   // - 10 bit: signed 18 bit integer
@@ -69,7 +69,7 @@ static INLINE tran_low_t highbd_dct_const_round_shift(tran_high_t input,
 #if CONFIG_EMULATE_HARDWARE
 // When CONFIG_EMULATE_HARDWARE is 1 the transform performs a
 // non-normative method to handle overflows. A stream that causes
-// overflows  in the inverse transform is considered invalid in VP9,
+// overflows  in the inverse transform is considered invalid,
 // and a hardware implementer is free to choose any reasonable
 // method to handle overflows. However to aid in hardware
 // verification they can use a specific implementation of the
