@@ -80,12 +80,14 @@ class RequestDependencyLens(object):
         request_track.RequestTrack.REDIRECT_SUFFIX)]
     assert request_id in self._requests_by_id
     dependent_request = self._requests_by_id[request_id]
-    assert request.timestamp < dependent_request.timestamp
+    assert request.timing.request_time < \
+        dependent_request.timing.request_time, '.\n'.join(
+            [str(request), str(dependent_request)])
     return (request, dependent_request, 'redirect')
 
   def _GetInitiatingRequestParser(self, request):
     url = request.initiator['url']
-    candidates = self._FindMatchingRequests(url, request.timestamp)
+    candidates = self._FindMatchingRequests(url, request.timing.request_time)
     if not candidates:
       return None
     initiating_request = self._FindBestMatchingInitiator(request, candidates)
@@ -96,16 +98,23 @@ class RequestDependencyLens(object):
       logging.warning('Script initiator but no stack trace.')
       return None
     initiating_request = None
-    timestamp = request.timestamp
+    timestamp = request.timing.request_time
     for frame in request.initiator['stackTrace']:
       url = frame['url']
       candidates = self._FindMatchingRequests(url, timestamp)
       if candidates:
         initiating_request = self._FindBestMatchingInitiator(
             request, candidates)
-        break
+        if initiating_request:
+          break
     else:
-      logging.warning('Unmatched request')
+      for frame in request.initiator['stackTrace']:
+        if not frame.get('url', None) and frame.get(
+            'functionName', None) == 'window.onload':
+          logging.warning('Unmatched request for onload handler.')
+          break
+      else:
+        logging.warning('Unmatched request.')
       return None
     return (initiating_request, request, 'script')
 
@@ -126,9 +135,9 @@ class RequestDependencyLens(object):
     """
     candidates = self._requests_by_url.get(url, [])
     candidates = [r for r in candidates if (
-        r.timestamp + max(
+        r.timing.request_time + max(
             0, r.timing.receive_headers_end / 1000) <= before_timestamp)]
-    candidates.sort(key=operator.attrgetter('timestamp'))
+    candidates.sort(key=lambda r: r.timing.request_time)
     return candidates
 
   def _FindBestMatchingInitiator(self, request, matches):

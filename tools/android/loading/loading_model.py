@@ -576,7 +576,7 @@ class ResourceGraph(object):
     if not content_type:
       type_str = 'other'
     elif '/' in content_type:
-      kind, type_str = content_type.split('/')
+      kind, type_str = content_type.split('/', 1)
       if kind in self._CONTENT_KIND_TO_COLOR:
         return self._CONTENT_KIND_TO_COLOR[kind]
     else:

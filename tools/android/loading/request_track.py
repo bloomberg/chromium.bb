@@ -166,6 +166,9 @@ class Request(object):
   def __hash__(self):
     return hash(self.request_id)
 
+  def __str__(self):
+    return json.dumps(self.ToJsonDict(), sort_keys=True, indent=2)
+
 
 class RequestTrack(devtools_monitor.Track):
   """Aggregates request data."""
