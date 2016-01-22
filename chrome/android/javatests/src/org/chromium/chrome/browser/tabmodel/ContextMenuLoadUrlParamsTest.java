@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -73,11 +74,9 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Verifies that the referrer is correctly set for "Open in new tab".
-     * Bug: crbug.com/413216
-     * @MediumTest
-     * @Feature({"Browser"})
      */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Browser"})
     public void testOpenInNewTabReferrer()
             throws InterruptedException, TimeoutException {
         triggerContextMenuLoad(TEST_URL, "testLink", R.id.contextmenu_open_in_new_tab);
@@ -88,11 +87,9 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Verifies that the referrer is not set for "Open in new incognito tab".
-     * Bug: crbug.com/413216
-     * @MediumTest
-     * @Feature({"Browser"})
      */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Browser"})
     public void testOpenInIncognitoTabNoReferrer()
             throws InterruptedException, TimeoutException {
         triggerContextMenuLoad(TEST_URL, "testLink", R.id.contextmenu_open_in_incognito_tab);
@@ -103,11 +100,9 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Verifies that the referrer is stripped from username and password fields.
-     * Bug: crbug.com/413216
-     * @MediumTest
-     * @Feature({"Browser"})
      */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Browser"})
     public void testOpenInNewTabSanitizeReferrer()
             throws InterruptedException, TimeoutException {
         assertTrue(TEST_URL_USER_PASS.contains("pass")); // Sanity check.
