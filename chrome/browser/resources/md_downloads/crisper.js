@@ -16915,7 +16915,7 @@ var SearchField = Polymer({
   },
 
   /**
-   * @return {?HTMLElement}
+   * @return {?Element}
    * @private
    */
   getSearchInput_: function() {
