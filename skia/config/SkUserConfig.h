@@ -246,10 +246,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_BITMAP_FILTER
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_ARCTO
-#   define SK_SUPPORT_LEGACY_ARCTO
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_DASH_MEASURE
 #   define SK_SUPPORT_LEGACY_DASH_MEASURE
 #endif
