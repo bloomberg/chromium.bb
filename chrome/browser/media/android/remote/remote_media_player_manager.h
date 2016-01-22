@@ -74,6 +74,8 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   void OnRequestRemotePlayback(int player_id) override;
   void OnRequestRemotePlaybackControl(int player_id) override;
 
+  bool IsPlayingRemotely(int player_id) override;
+
   void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player) override;
 
   // Callback for when the download of poster image is done.
@@ -107,8 +109,6 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   // remote players for videos that are playing locally, and the local players
   // for videos that are playing remotely.
   ScopedVector<media::MediaPlayerAndroid> alternative_players_;
-
-  bool IsPlayingRemotely(int player_id);
 
   std::set<int> players_playing_remotely_;
 

@@ -71,6 +71,10 @@ void RemoteMediaPlayerManager::OnRequestRemotePlaybackControl(int player_id) {
     player->RequestRemotePlaybackControl();
 }
 
+bool RemoteMediaPlayerManager::IsPlayingRemotely(int player_id) {
+  return players_playing_remotely_.count(player_id) != 0;
+}
+
 int RemoteMediaPlayerManager::GetTabId() {
   if (!web_contents())
     return -1;
@@ -269,9 +273,4 @@ void RemoteMediaPlayerManager::OnMediaMetadataChanged(int player_id,
                                                       width, height, success);
   }
 }
-
-bool RemoteMediaPlayerManager::IsPlayingRemotely(int player_id) {
-  return players_playing_remotely_.count(player_id) != 0;
-}
-
 } // namespace remote_media

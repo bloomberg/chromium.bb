@@ -622,7 +622,7 @@ void BrowserMediaPlayerManager::OnPause(
   if (player)
     player->Pause(is_media_related_action);
 
-  if (is_media_related_action)
+  if (is_media_related_action && !IsPlayingRemotely(player_id))
     MediaSession::Get(web_contents())->OnPlayerPaused(this, player_id);
 }
 
@@ -654,6 +654,10 @@ void BrowserMediaPlayerManager::OnRequestRemotePlayback(int /* player_id */) {
 void BrowserMediaPlayerManager::OnRequestRemotePlaybackControl(
     int /* player_id */) {
   // Does nothing if we don't have a remote player
+}
+
+bool BrowserMediaPlayerManager::IsPlayingRemotely(int player_id) {
+  return false;
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {

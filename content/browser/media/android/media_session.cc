@@ -139,7 +139,10 @@ void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
                                   int player_id) {
   // If a playback is completed, BrowserMediaPlayerManager will call
-  // OnPlayerPaused() after RemovePlayer(). This is a workaround for this.
+  // OnPlayerPaused() after RemovePlayer(). This is a workaround.
+  // Also, this method may be called when a player that is not added
+  // to this session (e.g. a silent video) is paused. MediaSession
+  // should ignore the paused player for this case.
   if (!players_.count(PlayerIdentifier(observer, player_id)))
     return;
 
