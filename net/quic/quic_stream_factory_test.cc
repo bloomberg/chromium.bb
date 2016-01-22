@@ -218,6 +218,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         receive_buffer_size_(0),
         delay_tcp_race_(false),
         close_sessions_on_ip_change_(false),
+        disable_quic_on_timeout_with_open_streams_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         migrate_sessions_on_network_change_(false) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
@@ -239,8 +240,10 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         max_disabled_reasons_, threshold_timeouts_with_open_streams_,
         threshold_public_resets_post_handshake_, receive_buffer_size_,
         delay_tcp_race_, /*max_server_configs_stored_in_properties*/ 0,
-        close_sessions_on_ip_change_, idle_connection_timeout_seconds_,
-        migrate_sessions_on_network_change_, QuicTagVector()));
+        close_sessions_on_ip_change_,
+        disable_quic_on_timeout_with_open_streams_,
+        idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
+        QuicTagVector()));
     factory_->set_require_confirmation(false);
     EXPECT_FALSE(factory_->has_quic_server_info_factory());
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
@@ -413,6 +416,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   int receive_buffer_size_;
   bool delay_tcp_race_;
   bool close_sessions_on_ip_change_;
+  bool disable_quic_on_timeout_with_open_streams_;
   int idle_connection_timeout_seconds_;
   bool migrate_sessions_on_network_change_;
 };
@@ -2760,6 +2764,65 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data3.AllReadDataConsumed());
   EXPECT_TRUE(socket_data3.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, DisableQuicWhenTimeoutsWithOpenStreams) {
+  disable_disk_cache_ = true;
+  disable_quic_on_timeout_with_open_streams_ = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                     host_port_pair_.port()));
+  EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
+                   factory_.get(), host_port_pair_.port()));
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  // Test first timeouts with open streams will disable QUIC.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
+                                /*cert_verify_flags=*/0, host_port_pair_.host(),
+                                "GET", net_log_, callback_.callback()));
+
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  DVLOG(1)
+      << "Created 1st session and initialized a stream. Now trigger timeout."
+      << "Will disable QUIC.";
+  session->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  // Need to spin the loop now to ensure that
+  // QuicStreamFactory::OnSessionClosed() runs.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  EXPECT_EQ(
+      1, QuicStreamFactoryPeer::GetNumTimeoutsWithOpenStreams(factory_.get()));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                    host_port_pair_.port()));
+
+  EXPECT_EQ(QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS,
+            factory_->QuicDisabledReason(host_port_pair_.port()));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {

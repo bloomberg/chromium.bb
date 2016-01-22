@@ -179,6 +179,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_delay_tcp_race,
           params.quic_max_server_configs_stored_in_properties,
           params.quic_close_sessions_on_ip_change,
+          params.disable_quic_on_timeout_with_open_streams,
           params.quic_idle_connection_timeout_seconds,
           params.quic_migrate_sessions_on_network_change,
           params.quic_connection_options),

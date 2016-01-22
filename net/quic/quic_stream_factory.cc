@@ -568,6 +568,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
+    bool disable_quic_on_timeout_with_open_streams,
     int idle_connection_timeout_seconds,
     bool migrate_sessions_on_network_change,
     const QuicTagVector& connection_options)
@@ -624,6 +625,8 @@ QuicStreamFactory::QuicStreamFactory(
       has_initialized_data_(false),
       task_runner_(nullptr),
       weak_factory_(this) {
+  if (disable_quic_on_timeout_with_open_streams)
+    threshold_timeouts_with_open_streams_ = 1;
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   crypto_config_.set_user_agent_id(user_agent_id);
