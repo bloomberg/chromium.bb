@@ -245,18 +245,6 @@ void Page::setNeedsRecalcStyleInAllFrames()
     }
 }
 
-void Page::setNeedsLayoutInAllFrames()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (!frame->isLocalFrame())
-            continue;
-        if (FrameView* view = toLocalFrame(frame)->view()) {
-            view->setNeedsLayout();
-            view->scheduleRelayout();
-        }
-    }
-}
-
 void Page::refreshPlugins()
 {
     if (allPages().isEmpty())

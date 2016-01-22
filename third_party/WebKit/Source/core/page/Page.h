@@ -230,8 +230,6 @@ private:
 
     void initGroup();
 
-    void setNeedsLayoutInAllFrames();
-
     // SettingsDelegate overrides.
     void settingsChanged(SettingsDelegate::ChangeType) override;
 
