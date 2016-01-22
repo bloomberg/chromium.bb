@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
+<link href="../css-intrinsic-dimensions/resources/height-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
@@ -23,14 +25,8 @@
     height: 50%;
 }
 
-.indefiniteSize {
-    width: -webkit-fit-content;
+.indefiniteHeight {
     height: auto;
-}
-
-.fitContentSize {
-    width: fit-content;
-    height: fit-content;
 }
 
 .firstRowFirstColumn {
@@ -62,7 +58,7 @@
         </div>
     </div>
 
-    <div class="indefiniteSize">
+    <div class="fit-content indefiniteHeight">
         <div class="grid">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
@@ -78,7 +74,7 @@
         </div>
     </div>
 
-    <div class="indefiniteSize">
+    <div class="indefiniteHeight">
         <div class="grid fixedSize">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="80" data-expected-height="160">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="200" data-expected-height="160">XXXXX</div>
@@ -86,7 +82,7 @@
         </div>
     </div>
 
-    <div class="indefiniteSize">
+    <div class="fit-content indefiniteHeight">
         <div class="grid calculatedSize">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
@@ -102,7 +98,7 @@
         </div>
     </div>
 
-    <div class="indefiniteSize">
+    <div class="fit-content indefiniteHeight">
         <div class="grid percentageSize">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
@@ -118,8 +114,8 @@
         </div>
     </div>
 
-    <div class="indefiniteSize">
-        <div class="grid indefiniteSize">
+    <div class="fit-content indefiniteHeight">
+        <div class="grid fit-content indefiniteHeight">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
             <div class="firstRowThirdColumn sizedToGridArea" data-expected-width="30" data-expected-height="10">XXX</div>
@@ -127,15 +123,15 @@
     </div>
 
     <div class="unconstrainedContainer">
-        <div class="grid indefiniteSize">
+        <div class="grid fit-content indefiniteHeight">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
             <div class="firstRowThirdColumn sizedToGridArea" data-expected-width="30" data-expected-height="10">XXX</div>
         </div>
     </div>
 
-    <div class="indefiniteSize">
-        <div class="grid fitContentSize">
+    <div class="indefiniteHeight fit-content">
+        <div class="grid fit-content">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
             <div class="firstRowThirdColumn sizedToGridArea" data-expected-width="30" data-expected-height="10">XXX</div>
@@ -143,7 +139,7 @@
     </div>
 
     <div class="unconstrainedContainer">
-        <div class="grid fitContentSize">
+        <div class="grid fit-content">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
             <div class="firstRowThirdColumn sizedToGridArea" data-expected-width="30" data-expected-height="10">XXX</div>

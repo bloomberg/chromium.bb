@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
     grid-auto-columns: minmax(50px, max-content);
     grid-auto-rows: minmax(50px, max-content);
-    width: -webkit-fit-content;
 }
 
 .floatChild {
@@ -22,7 +22,7 @@
 
 <div>This test checks that grid item sets a new formatting context for its content, preventing any 'float' protruding content on the adjoining grid item ('Float' text shouldn't overflow the first row).</div>
 
-<div class="grid">
+<div class="grid fit-content">
   <div class="firstRowFirstColumn">
     <div class="floatChild">Float</div>
     <div class="floatChild">Float</div>

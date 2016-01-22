@@ -10,7 +10,7 @@
         [8, 48, 100, 150]
       ],
       "paintInvalidationClients": [
-        "LayoutGrid DIV class='grid'",
+        "LayoutGrid DIV class='grid fit-content'",
         "LayoutBlockFlow DIV class='sizedToGridArea'"
       ]
     }

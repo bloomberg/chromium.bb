@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <script src="../../resources/check-layout.js"></script>
 <style>
 body {
@@ -15,7 +17,6 @@ body {
     border-width: 5px 10px 15px 20px;
     border-style: dotted;
     border-color: blue;
-    width: -webkit-fit-content;
     position: relative;
 }
 
@@ -27,47 +28,6 @@ body {
 .cell {
     margin: 4px 8px 12px 16px;
 }
-
-.itemsStart {
-    align-items: start;
-    justify-items: start;
-}
-
-.itemsCenter {
-    align-items: center;
-    justify-items: center;
-}
-
-.itemsEnd {
-    align-items: end;
-    justify-items: end;
-}
-
-.itemsLeft {
-    align-items: left;
-    justify-items: left;
-}
-
-.itemsRight {
-    align-items: right;
-    justify-items: right;
-}
-
-.itemsSelfStart {
-    align-items: self-start;
-    justify-items: self-start;
-}
-
-.itemsSelfEnd {
-    align-items: self-end;
-    justify-items: self-end;
-}
-
-.stretch {
-    align-self: stretch;
-    justify-self: stretch;
-}
-
 </style>
 </head>
 <body onload="checkLayout('.grid')">
@@ -77,7 +37,7 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR | align-items: 'auto' | justify-items: 'auto'</p>
-    <div class="grid itemsStart" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content itemsStart" data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"   data-offset-x="46"  data-offset-y="14"  data-expected-width="20" data-expected-height="40"><div class="content"></div></div>
         <div class="cell firstRowSecondColumn"  data-offset-x="146" data-offset-y="14"  data-expected-width="20" data-expected-height="40"><div class="content"></div></div>
         <div class="cell secondRowFirstColumn"  data-offset-x="46"  data-offset-y="214" data-expected-width="20" data-expected-height="40"><div class="content"></div></div>
@@ -88,10 +48,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR | align-items: 'center' | justify-items: 'center'</p>
-    <div class="grid itemsCenter" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content itemsCenter" data-expected-width="375" data-expected-height="450">
         <div class="firstRowFirstColumn cell"     data-offset-x="74"  data-offset-y="86" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="224" data-offset-y="286" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -99,10 +59,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR | align-items: 'end' | justify-items: 'end'</p>
-    <div class="grid itemsEnd" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content itemsEnd" data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="102" data-offset-y="158" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="302" data-offset-y="358" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -110,10 +70,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR | align-items: 'left' | justify-items: 'left'</p>
-    <div class="grid itemsLeft" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content itemsLeft" data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="46"  data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="146" data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -121,10 +81,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR | align-items: 'right' | justify-items: 'right'</p>
-    <div class="grid itemsRight" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content itemsRight" data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="102" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="302" data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -132,10 +92,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR (ortho) | align-items: 'self-start' | justify-items: 'self-start'</p>
-    <div class="grid directionLTR itemsSelfStart" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionLTR itemsSelfStart" data-expected-width="375" data-expected-height="450">
         <div class="directionRTL cell firstRowFirstColumn"     data-offset-x="102" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionRTL stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionRTL stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionRTL cell secondRowSecondColumn"   data-offset-x="302" data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -143,10 +103,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR (ortho) | align-items: 'self-end' | justify-items: 'self-end'</p>
-    <div class="grid directionLTR itemsSelfEnd" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionLTR itemsSelfEnd" data-expected-width="375" data-expected-height="450">
         <div class="directionRTL cell firstRowFirstColumn"     data-offset-x="46"  data-offset-y="158" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionRTL stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionRTL stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionRTL cell secondRowSecondColumn"   data-offset-x="146" data-offset-y="358" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -154,10 +114,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR (parall) | align-items: 'self-start' | justify-items: 'self-start'</p>
-    <div class="grid directionLTR itemsSelfStart" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionLTR itemsSelfStart" data-expected-width="375" data-expected-height="450">
         <div class="directionLTR cell firstRowFirstColumn"     data-offset-x="46" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionLTR stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionLTR stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionLTR cell secondRowSecondColumn"   data-offset-x="146" data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -165,10 +125,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: LTR - (parall) | align-items: 'self-end' | justify-items: 'self-end'</p>
-    <div class="grid directionLTR itemsSelfEnd" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionLTR itemsSelfEnd" data-expected-width="375" data-expected-height="450">
         <div class="directionLTR cell firstRowFirstColumn"     data-offset-x="102"  data-offset-y="158" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionLTR stretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionLTR stretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch firstRowSecondColumn" data-offset-x="130" data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch secondRowFirstColumn" data-offset-x="30"  data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionLTR cell secondRowSecondColumn"   data-offset-x="302" data-offset-y="358" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -177,7 +137,7 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL | align-items: 'auto' | justify-items: 'auto'</p>
-    <div class="grid directionRTL itemsStart" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsStart" data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"   data-offset-x="302" data-offset-y="14"  data-expected-width="20" data-expected-height="40"><div class="content"></div></div>
         <div class="cell firstRowSecondColumn"  data-offset-x="202" data-offset-y="14"  data-expected-width="20" data-expected-height="40"><div class="content"></div></div>
         <div class="cell secondRowFirstColumn"  data-offset-x="302" data-offset-y="214" data-expected-width="20" data-expected-height="40"><div class="content"></div></div>
@@ -188,10 +148,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL | align-items: 'center' | justify-items: 'center'</p>
-    <div class="grid directionRTL itemsCenter" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsCenter" data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="274" data-offset-y="86" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="124" data-offset-y="286" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -199,10 +159,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL | align-items: 'end' | justify-items: 'end'</p>
-    <div class="grid directionRTL itemsEnd"       data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsEnd"       data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="246" data-offset-y="158" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="46"  data-offset-y="358" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -210,10 +170,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL | align-items: 'left' | justify-items: 'left'</p>
-    <div class="grid directionRTL itemsLeft"      data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsLeft"      data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="246" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="46"  data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -221,10 +181,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL | align-items: 'right' | justify-items: 'right'</p>
-    <div class="grid directionRTL itemsRight"     data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsRight"     data-expected-width="375" data-expected-height="450">
         <div class="cell firstRowFirstColumn"     data-offset-x="302" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="cell secondRowSecondColumn"   data-offset-x="202" data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -232,10 +192,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL (ortho) | align-items: 'self-start' | justify-items: 'self-start'</p>
-    <div class="grid directionRTL itemsSelfStart" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsSelfStart" data-expected-width="375" data-expected-height="450">
         <div class="directionLTR cell firstRowFirstColumn"     data-offset-x="246" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionLTR stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionLTR stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionLTR cell secondRowSecondColumn"   data-offset-x="46"  data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -243,10 +203,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL (ortho) | align-items: 'self-end' | justify-items: 'self-end'</p>
-    <div class="grid directionRTL itemsSelfEnd" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsSelfEnd" data-expected-width="375" data-expected-height="450">
         <div class="directionLTR cell firstRowFirstColumn"     data-offset-x="302" data-offset-y="158" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionLTR stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionLTR stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionLTR selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionLTR cell secondRowSecondColumn"   data-offset-x="202" data-offset-y="358" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -254,10 +214,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL (parall) | align-items: 'self-start' | justify-items: 'self-start'</p>
-    <div class="grid directionRTL itemsSelfStart" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsSelfStart" data-expected-width="375" data-expected-height="450">
         <div class="directionRTL cell firstRowFirstColumn"     data-offset-x="302" data-offset-y="14"  data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionRTL stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionRTL stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionRTL cell secondRowSecondColumn"   data-offset-x="202"  data-offset-y="214" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>
@@ -265,10 +225,10 @@ body {
 <div>
     <p>border: 5px 10px 15px 20px | padding: 10px 15px 20px 30px | margin: 4px 8px 12px 16px<br>
         direction: RTL (parall) | align-items: 'self-end' | justify-items: 'self-end'</p>
-    <div class="grid directionRTL itemsSelfEnd" data-expected-width="375" data-expected-height="450">
+    <div class="grid fit-content directionRTL itemsSelfEnd" data-expected-width="375" data-expected-height="450">
         <div class="directionRTL cell firstRowFirstColumn"     data-offset-x="246" data-offset-y="158" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
-        <div class="directionRTL stretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
-        <div class="directionRTL stretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch firstRowSecondColumn" data-offset-x="30"  data-offset-y="10"  data-expected-width="200" data-expected-height="200"><div class="content"></div></div>
+        <div class="directionRTL selfStretch secondRowFirstColumn" data-offset-x="230" data-offset-y="210" data-expected-width="100" data-expected-height="200"><div class="content"></div></div>
         <div class="directionRTL cell secondRowSecondColumn"   data-offset-x="46" data-offset-y="358" data-expected-width="20"  data-expected-height="40"><div class="content"></div></div>
     </div>
 </div>

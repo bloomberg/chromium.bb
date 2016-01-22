@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
 <style>
     .grid {
         display: grid;
         grid-template-rows: repeat(2, 100px);
         grid-template-columns: 100px;
-        width: -webkit-fit-content;
         background-color: red;
     }
 
@@ -26,7 +26,7 @@
 </head>
 <body style="height: 1000px" onload="onloadScrollTop()">
 
-<div class="grid">
+<div class="grid fit-content">
   <div class="gridItem" style="grid-column: 1; grid-row: 1; border-bottom: 100px green solid;"></div>
 </div>
 

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <script src="../../resources/check-layout.js"></script>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
     grid-template-rows: auto auto;
     grid-template-columns: auto auto;
-    width: -webkit-fit-content;
 }
 
 .gridItem {
@@ -44,7 +44,7 @@
 <div>This test checks that the grid's rows and columns 'auto' sizes are updated accordingly to its grid-item's before and start margins.</div>
 
 <div>
-    <div class="grid" data-expected-width="40" data-expected-height="120">
+    <div class="grid fit-content" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop firstRowFirstColumn"></div>
         <div class="gridItem firstRowSecondColumn"></div>
         <div class="gridItem marginBottom secondRowFirstColumn"></div>
@@ -53,7 +53,7 @@
 </div>
 
 <div>
-    <div class="grid" data-expected-width="40" data-expected-height="120">
+    <div class="grid fit-content" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop paddingTop firstRowFirstColumn"></div>
         <div class="gridItem firstRowSecondColumn"></div>
         <div class="gridItem borderTop borderBottom secondRowFirstColumn"></div>
@@ -62,7 +62,7 @@
 </div>
 
 <div>
-    <div class="grid" data-expected-width="40" data-expected-height="120">
+    <div class="grid fit-content" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop paddingTop firstRowFirstColumn"></div>
         <div class="gridItem firstRowSecondColumn"></div>
         <div class="gridItem borderTop borderBottom secondRowFirstColumn"></div>
@@ -71,7 +71,7 @@
 </div>
 
 <div>
-    <div class="grid" data-expected-width="40" data-expected-height="120">
+    <div class="grid fit-content" data-expected-width="40" data-expected-height="120">
         <div class="gridItem marginTop paddingTop firstRowFirstColumn"></div>
         <div class="gridItem firstRowSecondColumn"></div>
         <div class="gridItem paddingBottom secondRowFirstColumn"></div>

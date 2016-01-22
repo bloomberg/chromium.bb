@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
     grid-template-rows: 100px;
     grid-template-columns: 200px 200px;
-    width: -webkit-fit-content;
     margin-top: 10px;
 }
 .red {
@@ -36,12 +36,12 @@ window.onload = runRepaintTest;
     <p>For this test to pass, there should be no red below.</p>
 </div>
 
-<div class="grid">
+<div class="grid fit-content">
     <div id="item1" class="sizedToGridArea green negativeZIndex"></div>
     <div class="sizedToGridArea red"></div>
 </div>
 
-<div class="grid">
+<div class="grid fit-content">
     <div id="item2" class="sizedToGridArea green"></div>
     <div class="sizedToGridArea red"></div>
 </div>

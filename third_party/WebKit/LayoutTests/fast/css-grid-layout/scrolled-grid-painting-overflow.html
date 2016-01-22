@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html>
+<link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
 <body>
 <style>
     .grid {
         grid-template-rows: repeat(5, 100px);
         grid-template-columns: repeat(5, 100px);
-        width: -webkit-fit-content;
         background-color: red;
-    }
-
-    .verticalRL {
-        -webkit-writing-mode: vertical-lr;
     }
 
     .gridItem {
@@ -33,21 +29,21 @@
 
 <!-- An item in the middle of the grid. -->
 <div class="scrolledDiv" data-scroll-top="200" data-scroll-left="100">
-    <div class="grid">
+    <div class="grid fit-content">
         <div class="gridItem" style="grid-column: 2; grid-row: 2; border-bottom: 100px green solid;"></div>
     </div>
 </div>
 
 <!-- Bottom-right corner of the grid. -->
 <div class="scrolledDiv" data-scroll-top="400" data-scroll-left="400">
-    <div class="grid">
+    <div class="grid fit-content">
         <div class="gridItem" style="grid-column: 4; grid-row: 5; border-right: 100px green solid;"></div>
     </div>
 </div>
 
 <!-- Bottom-right corner of the grid. -->
 <div class="scrolledDiv" data-scroll-top="400" data-scroll-left="400">
-    <div class="grid">
+    <div class="grid fit-content">
         <div class="gridItem" style="grid-column: 4; grid-row: 5; border-left: 100px purple solid; background-color: green;"></div>
     </div>
 </div>
@@ -56,21 +52,21 @@
 
 <!-- An item in the middle of the grid. -->
 <div class="scrolledDiv" data-scroll-top="100" data-scroll-left="200">
-    <div class="grid verticalRL">
+    <div class="grid fit-content verticalLR">
         <div class="gridItem" style="grid-column: 2; grid-row: 2; border-right: 100px green solid;"></div>
     </div>
 </div>
 
 <!-- Bottom-right corner of the grid. -->
 <div class="scrolledDiv" data-scroll-top="400" data-scroll-left="400">
-    <div class="grid verticalRL">
+    <div class="grid fit-content verticalLR">
         <div class="gridItem" style="grid-column: 4; grid-row: 5; border-bottom: 100px green solid;"></div>
     </div>
 </div>
 
 <!-- Bottom-right corner of the grid. -->
 <div class="scrolledDiv" data-scroll-top="400" data-scroll-left="400">
-    <div class="grid verticalRL">
+    <div class="grid fit-content verticalLR">
         <div class="gridItem" style="grid-column: 4; grid-row: 5; border-top: 100px purple solid; background-color: green;"></div>
     </div>
 </div>
