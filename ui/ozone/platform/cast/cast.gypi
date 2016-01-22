@@ -24,7 +24,6 @@
         '../../base/base.gyp:base',
         '../../chromecast/chromecast.gyp:cast_public_api',
         '../../chromecast/chromecast.gyp:libcast_graphics_1.0',
-        '../../chromecast/media/media.gyp:media_base',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',

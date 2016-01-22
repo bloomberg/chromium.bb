@@ -37,6 +37,7 @@
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_message_loop.h"
+#include "chromecast/media/base/video_plane_controller.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/cast_sys_info.h"
@@ -70,9 +71,13 @@
 #endif
 
 #if defined(USE_AURA)
+// gn check ignored on OverlayManagerCast as it's not a public ozone
+// header, but is exported to allow injecting the overlay-composited
+// callback.
 #include "chromecast/graphics/cast_screen.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
+#include "ui/ozone/platform/cast/overlay_manager_cast.h"  // nogncheck
 #endif
 
 namespace {
@@ -380,6 +385,15 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   media::CastMediaShlib::Initialize(cmd_line->argv());
   ::media::InitializeMediaLibrary();
+
+#if defined(USE_AURA) && !defined(DISABLE_DISPLAY)
+  // TODO(halliwell) move audio builds to use ozone_platform_cast, then can
+  // simplify this by removing DISABLE_DISPLAY condition.  Should then also
+  // assert(ozone_platform_cast) in BUILD.gn where it depends on //ui/ozone.
+  ui::OverlayManagerCast::SetOverlayCompositedCallback(
+      base::Bind(&media::VideoPlaneController::SetGeometry,
+                 base::Unretained(media::VideoPlaneController::GetInstance())));
+#endif
 
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(

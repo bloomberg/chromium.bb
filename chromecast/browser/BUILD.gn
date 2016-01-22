@@ -5,6 +5,7 @@
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
+import("//build/config/ui.gni")
 
 source_set("browser") {
   sources = [
@@ -123,6 +124,10 @@ source_set("browser") {
 
   if (enable_mojo_media == "utility") {
     deps += [ "//media/mojo/services:application" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

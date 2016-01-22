@@ -456,6 +456,11 @@
             'cast_jni_headers',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     },
     {

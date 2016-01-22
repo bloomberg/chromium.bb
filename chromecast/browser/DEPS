@@ -14,4 +14,5 @@ include_rules = [
   "+gpu/command_buffer/service/gpu_switches.h",
   "+media/audio",
   "+media/base",
+  "+ui/ozone/platform/cast/overlay_manager_cast.h",
 ]

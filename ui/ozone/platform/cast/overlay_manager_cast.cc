@@ -4,13 +4,15 @@
 
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 
-#include "chromecast/media/base/video_plane_controller.h"
-#include "chromecast/public/graphics_types.h"
+#include "base/lazy_instance.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {
 namespace {
+
+base::LazyInstance<OverlayManagerCast::OverlayCompositedCallback>
+    g_overlay_composited_callback = LAZY_INSTANCE_INITIALIZER;
 
 // Translates a gfx::OverlayTransform into a VideoPlane::Transform.
 // Could be just a lookup table once we have unit tests for this code
@@ -60,9 +62,9 @@ void OverlayCandidatesCast::CheckOverlaySupport(
         candidate.display_rect.width(), candidate.display_rect.height());
 
     // Update video plane geometry + transform to match compositor quad.
-    chromecast::media::VideoPlaneController::GetInstance()->SetGeometry(
-        display_rect, ConvertTransform(candidate.transform));
-
+    if (!g_overlay_composited_callback.Get().is_null())
+      g_overlay_composited_callback.Get().Run(
+          display_rect, ConvertTransform(candidate.transform));
     return;
   }
 }
@@ -78,6 +80,12 @@ OverlayManagerCast::~OverlayManagerCast() {
 scoped_ptr<OverlayCandidatesOzone> OverlayManagerCast::CreateOverlayCandidates(
     gfx::AcceleratedWidget w) {
   return make_scoped_ptr(new OverlayCandidatesCast());
+}
+
+// static
+void OverlayManagerCast::SetOverlayCompositedCallback(
+    const OverlayCompositedCallback& cb) {
+  g_overlay_composited_callback.Get() = cb;
 }
 
 }  // namespace ui
