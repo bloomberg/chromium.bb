@@ -341,7 +341,8 @@ bool BitmapImage::isSizeAvailable()
 
     if (m_sizeAvailable && hasVisibleImageSize(size())) {
         BitmapImageMetrics::countDecodedImageType(m_source.filenameExtension());
-        BitmapImageMetrics::countImageOrientation(m_source.orientationAtIndex(0).orientation());
+        if (m_source.filenameExtension() == "jpg")
+            BitmapImageMetrics::countImageOrientation(m_source.orientationAtIndex(0).orientation());
     }
 
     return m_sizeAvailable;
