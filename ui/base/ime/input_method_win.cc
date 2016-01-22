@@ -9,6 +9,8 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/ui_base_switches.h"
@@ -18,6 +20,16 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
+
+namespace {
+
+ui::IMEEngineHandlerInterface* GetEngine() {
+  if (ui::IMEBridge::Get())
+    return ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  return nullptr;
+}
+
+}  // namespace
 
 namespace ui {
 namespace {
@@ -187,6 +199,14 @@ void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
     return;
   imm32_manager_.CancelIME(toplevel_window_handle_);
   UpdateIMEState();
+
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    engine->FocusOut();
+    ui::IMEEngineHandlerInterface::InputContext context(
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+    engine->FocusIn(context);
+  }
 }
 
 void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
@@ -233,8 +253,12 @@ bool InputMethodWin::IsCandidatePopupOpen() const {
 
 void InputMethodWin::OnWillChangeFocusedClient(TextInputClient* focused_before,
                                                TextInputClient* focused) {
-  if (IsWindowFocused(focused_before))
+  if (IsWindowFocused(focused_before)) {
     ConfirmCompositionText();
+
+    if (GetEngine())
+      GetEngine()->FocusOut();
+  }
 }
 
 void InputMethodWin::OnDidChangeFocusedClient(
