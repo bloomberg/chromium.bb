@@ -13,7 +13,7 @@ assert(is_posix)
 config("runtime_library") {
   if (!is_mac && sysroot != "") {
     # Pass the sysroot to all C compiler variants, the assembler, and linker.
-    cflags = [ "--sysroot=" + rebase_path(sysroot, root_build_dir) ]
+    cflags = [ "--sysroot=" + sysroot ]
     asmflags = cflags
     ldflags = cflags
 

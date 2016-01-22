@@ -52,7 +52,7 @@ if (sysroot != "") {
   # Pass the sysroot if we're using one (it requires the CPU arch also).
   pkg_config_args = [
     "-s",
-    rebase_path(sysroot),
+    sysroot,
     "-a",
     current_cpu,
     "--system_libdir",

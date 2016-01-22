@@ -131,7 +131,7 @@ component("printing") {
       cups_version = exec_script("cups_config_helper.py",
                                  [
                                    "--api-version",
-                                   rebase_path(sysroot),
+                                   sysroot,
                                  ],
                                  "trim string")
 
@@ -254,7 +254,7 @@ if (use_cups) {
       libs = exec_script("cups_config_helper.py",
                          [
                            "--libs-for-gn",
-                           rebase_path(sysroot),
+                           sysroot,
                          ],
                          "value")
     }
