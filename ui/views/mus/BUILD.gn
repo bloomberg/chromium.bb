@@ -23,8 +23,6 @@ component("mus") {
     "native_widget_mus.h",
     "platform_window_mus.cc",
     "platform_window_mus.h",
-    "screen_mus.cc",
-    "screen_mus.h",
     "surface_binding.cc",
     "surface_binding.h",
     "surface_context_factory.cc",

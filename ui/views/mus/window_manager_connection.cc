@@ -15,12 +15,55 @@
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/native_widget_mus.h"
-#include "ui/views/mus/screen_mus.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/views_delegate.h"
 
+namespace mojo {
+
+gfx::Display::Rotation GFXRotationFromMojomRotation(
+    mus::mojom::Rotation input) {
+  switch (input) {
+    case mus::mojom::Rotation::VALUE_0:
+      return gfx::Display::ROTATE_0;
+    case mus::mojom::Rotation::VALUE_90:
+      return gfx::Display::ROTATE_90;
+    case mus::mojom::Rotation::VALUE_180:
+      return gfx::Display::ROTATE_180;
+    case mus::mojom::Rotation::VALUE_270:
+      return gfx::Display::ROTATE_270;
+  }
+  return gfx::Display::ROTATE_0;
+}
+
+template <>
+struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
+  static gfx::Display Convert(const mus::mojom::DisplayPtr& input) {
+    gfx::Display result;
+    result.set_id(input->id);
+    result.SetScaleAndBounds(input->device_pixel_ratio,
+                             input->bounds.To<gfx::Rect>());
+    gfx::Rect work_area(
+        gfx::ScaleToFlooredPoint(
+            gfx::Point(input->work_area->x, input->work_area->y),
+            1.0f / input->device_pixel_ratio),
+        gfx::ScaleToFlooredSize(
+            gfx::Size(input->work_area->width, input->work_area->height),
+            1.0f / input->device_pixel_ratio));
+    result.set_work_area(work_area);
+    result.set_rotation(GFXRotationFromMojomRotation(input->rotation));
+    return result;
+  }
+};
+
+}  // namespace mojo
+
 namespace views {
+
 namespace {
 
 using WindowManagerConnectionPtr =
@@ -29,6 +72,26 @@ using WindowManagerConnectionPtr =
 // Env is thread local so that aura may be used on multiple threads.
 base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
+
+std::vector<gfx::Display> GetDisplaysFromWindowManager(
+    mus::mojom::WindowManagerPtr* window_manager) {
+  WindowManagerFrameValues frame_values;
+  std::vector<gfx::Display> displays;
+  (*window_manager)
+      ->GetConfig([&displays,
+                   &frame_values](mus::mojom::WindowManagerConfigPtr results) {
+        displays = results->displays.To<std::vector<gfx::Display>>();
+        frame_values.normal_insets =
+            results->normal_client_area_insets.To<gfx::Insets>();
+        frame_values.maximized_insets =
+            results->maximized_client_area_insets.To<gfx::Insets>();
+        frame_values.max_title_bar_button_width =
+            results->max_title_bar_button_width;
+      });
+  CHECK(window_manager->WaitForIncomingResponse());
+  WindowManagerFrameValues::SetInstance(frame_values);
+  return displays;
+}
 
 }  // namespace
 
@@ -70,8 +133,8 @@ WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
     : app_(app), window_tree_connection_(nullptr) {
   app->ConnectToService("mojo:mus", &window_manager_);
 
-  screen_.reset(new ScreenMus);
-  screen_->Init(app);
+  ui_init_.reset(new ui::mojo::UIInit(
+      GetDisplaysFromWindowManager(&window_manager_)));
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       base::Bind(&WindowManagerConnection::CreateNativeWidget,
                  base::Unretained(this)));

@@ -254,11 +254,6 @@ const mojom::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
   return metrics_;
 }
 
-mojom::Rotation DefaultDisplayManager::GetRotation() {
-  // TODO(sky): implement me.
-  return mojom::Rotation::VALUE_0;
-}
-
 void DefaultDisplayManager::UpdateTextInputState(
     const ui::TextInputState& state) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();

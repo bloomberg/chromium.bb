@@ -39,11 +39,6 @@ using mus::mojom::Gpu;
 
 namespace mus {
 
-struct MandolineUIServicesApp::PendingRequest {
-  scoped_ptr<mojo::InterfaceRequest<mojom::DisplayManager>> dm_request;
-  scoped_ptr<mojo::InterfaceRequest<mojom::WindowManager>> wm_request;
-};
-
 MandolineUIServicesApp::MandolineUIServicesApp()
     : app_impl_(nullptr) {}
 
@@ -92,21 +87,16 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
 bool MandolineUIServicesApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   connection->AddService<Gpu>(this);
-  connection->AddService<mojom::DisplayManager>(this);
   connection->AddService<mojom::WindowManager>(this);
   connection->AddService<WindowTreeHostFactory>(this);
   return true;
 }
 
 void MandolineUIServicesApp::OnFirstRootConnectionCreated() {
-  PendingRequests requests;
-  requests.swap(pending_requests_);
-  for (auto& request : requests) {
-    if (request->dm_request)
-      Create(nullptr, std::move(*request->dm_request));
-    else
-      Create(nullptr, std::move(*request->wm_request));
-  }
+  WindowManagerRequests requests;
+  requests.swap(pending_window_manager_requests_);
+  for (auto& request : requests)
+    Create(nullptr, std::move(*request));
 }
 
 void MandolineUIServicesApp::OnNoMoreRootConnections() {
@@ -129,25 +119,10 @@ MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
 
 void MandolineUIServicesApp::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojom::DisplayManager> request) {
-  if (!connection_manager_->has_tree_host_connections()) {
-    scoped_ptr<PendingRequest> pending_request(new PendingRequest);
-    pending_request->dm_request.reset(
-        new mojo::InterfaceRequest<mojom::DisplayManager>(std::move(request)));
-    pending_requests_.push_back(std::move(pending_request));
-    return;
-  }
-  connection_manager_->AddDisplayManagerBinding(std::move(request));
-}
-
-void MandolineUIServicesApp::Create(
-    mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojom::WindowManager> request) {
   if (!connection_manager_->has_tree_host_connections()) {
-    scoped_ptr<PendingRequest> pending_request(new PendingRequest);
-    pending_request->wm_request.reset(
-        new mojo::InterfaceRequest<mojom::WindowManager>(std::move(request)));
-    pending_requests_.push_back(std::move(pending_request));
+    pending_window_manager_requests_.push_back(make_scoped_ptr(
+        new mojo::InterfaceRequest<mojom::WindowManager>(std::move(request))));
     return;
   }
   if (!window_manager_impl_) {

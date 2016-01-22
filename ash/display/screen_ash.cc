@@ -17,7 +17,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/display_finder.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -26,6 +25,42 @@ namespace {
 
 DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
+}
+
+gfx::Display FindDisplayNearestPoint(const std::vector<gfx::Display>& displays,
+                                     const gfx::Point& point) {
+  int min_distance = INT_MAX;
+  const gfx::Display* nearest_display = NULL;
+  for (std::vector<gfx::Display>::const_iterator iter = displays.begin();
+       iter != displays.end(); ++iter) {
+    const gfx::Display& display = *iter;
+    int distance = display.bounds().ManhattanDistanceToPoint(point);
+    if (distance < min_distance) {
+      min_distance = distance;
+      nearest_display = &display;
+    }
+  }
+  // There should always be at least one display that is less than INT_MAX away.
+  DCHECK(nearest_display);
+  return *nearest_display;
+}
+
+const gfx::Display* FindDisplayMatching(
+    const std::vector<gfx::Display>& displays,
+    const gfx::Rect& match_rect) {
+  int max_area = 0;
+  const gfx::Display* matching = NULL;
+  for (std::vector<gfx::Display>::const_iterator iter = displays.begin();
+       iter != displays.end(); ++iter) {
+    const gfx::Display& display = *iter;
+    gfx::Rect intersect = gfx::IntersectRects(display.bounds(), match_rect);
+    int area = intersect.width() * intersect.height();
+    if (area > max_area) {
+      max_area = area;
+      matching = &display;
+    }
+  }
+  return matching;
 }
 
 class ScreenForShutdown : public gfx::Screen {
@@ -49,11 +84,11 @@ class ScreenForShutdown : public gfx::Screen {
     return primary_display_;
   }
   gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
-    return *gfx::FindDisplayNearestPoint(display_list_, point);
+    return FindDisplayNearestPoint(display_list_, point);
   }
   gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     const gfx::Display* matching =
-        gfx::FindDisplayWithBiggestIntersection(display_list_, match_rect);
+        FindDisplayMatching(display_list_, match_rect);
     // Fallback to the primary display if there is no matching display.
     return matching ? *matching : GetPrimaryDisplay();
   }
@@ -152,14 +187,14 @@ gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
   // Fallback to the display that has the shortest Manhattan distance from
   // the |point|. This is correct in the only areas that matter, namely in the
   // corners between the physical screens.
-  return *gfx::FindDisplayNearestPoint(
-      GetDisplayManager()->active_display_list(), point);
+  return FindDisplayNearestPoint(GetDisplayManager()->active_display_list(),
+                                 point);
 }
 
 gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
   if (match_rect.IsEmpty())
     return GetDisplayNearestPoint(match_rect.origin());
-  const gfx::Display* matching = gfx::FindDisplayWithBiggestIntersection(
+  const gfx::Display* matching = FindDisplayMatching(
       GetDisplayManager()->active_display_list(), match_rect);
   // Fallback to the primary display if there is no matching display.
   return matching ? *matching : GetPrimaryDisplay();

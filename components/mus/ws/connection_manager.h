@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -23,8 +22,6 @@
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/window_tree_host_impl.h"
-#include "mojo/common/weak_binding_set.h"
-#include "mojo/common/weak_interface_ptr_set.h"
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -40,12 +37,8 @@ class WindowTreeImpl;
 
 // ConnectionManager manages the set of connections to the window server (all
 // the WindowTreeImpls) as well as providing the root of the hierarchy.
-//
-// TODO(sky): this class is doing too much. Refactor to make responsibilities
-// clearer.
 class ConnectionManager : public ServerWindowDelegate,
-                          public ServerWindowObserver,
-                          public mojom::DisplayManager {
+                          public ServerWindowObserver {
  public:
   ConnectionManager(ConnectionManagerDelegate* delegate,
                     const scoped_refptr<mus::SurfacesState>& surfaces_state);
@@ -131,9 +124,6 @@ class ConnectionManager : public ServerWindowDelegate,
   bool has_tree_host_connections() const {
     return !host_connection_map_.empty();
   }
-
-  void AddDisplayManagerBinding(
-      mojo::InterfaceRequest<mojom::DisplayManager> request);
 
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
@@ -264,9 +254,6 @@ class ConnectionManager : public ServerWindowDelegate,
   void OnTransientWindowRemoved(ServerWindow* window,
                                 ServerWindow* transient_child) override;
 
-  // Overriden from mojom::DisplayManager:
-  void AddObserver(mojom::DisplayManagerObserverPtr observer) override;
-
   ConnectionManagerDelegate* delegate_;
 
   // State for rendering into a Surface.
@@ -296,10 +283,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Next id supplied to the window manager.
   uint32_t next_wm_change_id_;
-
-  mojo::WeakBindingSet<mojom::DisplayManager> display_manager_bindings_;
-  mojo::WeakInterfacePtrSet<mojom::DisplayManagerObserver>
-      display_manager_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

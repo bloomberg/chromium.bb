@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -44,7 +43,6 @@ class ForwardingWindowManager;
 class MandolineUIServicesApp
     : public mojo::ApplicationDelegate,
       public ws::ConnectionManagerDelegate,
-      public mojo::InterfaceFactory<mojom::DisplayManager>,
       public mojo::InterfaceFactory<mojom::WindowManager>,
       public mojo::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public mojo::InterfaceFactory<mojom::Gpu>,
@@ -54,10 +52,6 @@ class MandolineUIServicesApp
   ~MandolineUIServicesApp() override;
 
  private:
-  // Holds InterfaceRequests received before the first WindowTreeHost Display
-  // has been established.
-  struct PendingRequest;
-
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
@@ -72,10 +66,6 @@ class MandolineUIServicesApp
       ws::ServerWindow* root,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) override;
-
-  // mojo::InterfaceFactory<mojom::DisplayManager> implementation.
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojom::DisplayManager> request) override;
 
   // mojo::InterfaceFactory<mojom::WindowManager> implementation.
   void Create(mojo::ApplicationConnection* connection,
@@ -104,8 +94,9 @@ class MandolineUIServicesApp
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
   mojo::TracingImpl tracing_;
-  using PendingRequests = std::vector<scoped_ptr<PendingRequest>>;
-  PendingRequests pending_requests_;
+  using WindowManagerRequests =
+      std::vector<scoped_ptr<mojo::InterfaceRequest<mojom::WindowManager>>>;
+  WindowManagerRequests pending_window_manager_requests_;
 
   // Surfaces
   scoped_refptr<SurfacesState> surfaces_state_;
