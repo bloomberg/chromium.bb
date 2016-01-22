@@ -110,30 +110,7 @@ class DefaultWidgetDelegate : public WidgetDelegate {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, InitParams:
 
-Widget::InitParams::InitParams()
-    : type(TYPE_WINDOW),
-      delegate(nullptr),
-      child(false),
-      opacity(INFER_OPACITY),
-      accept_events(true),
-      activatable(ACTIVATABLE_DEFAULT),
-      keep_on_top(false),
-      visible_on_all_workspaces(false),
-      ownership(NATIVE_WIDGET_OWNS_WIDGET),
-      mirror_origin_in_rtl(false),
-      shadow_type(SHADOW_TYPE_DEFAULT),
-      remove_standard_frame(false),
-      use_system_default_icon(false),
-      show_state(ui::SHOW_STATE_DEFAULT),
-      parent(nullptr),
-      native_widget(nullptr),
-      native_theme(nullptr),
-      desktop_window_tree_host(nullptr),
-      layer_type(ui::LAYER_TEXTURED),
-      context(nullptr),
-      force_show_in_taskbar(false),
-      force_software_compositing(false) {
-}
+Widget::InitParams::InitParams() : InitParams(TYPE_WINDOW) {}
 
 Widget::InitParams::InitParams(Type type)
     : type(type),
