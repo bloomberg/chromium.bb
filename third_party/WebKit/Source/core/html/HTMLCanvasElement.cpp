@@ -611,8 +611,7 @@ void HTMLCanvasElement::toBlob(ScriptState* scriptState, BlobCallback* callback,
 
     RefPtr<CanvasAsyncBlobCreator> asyncCreatorRef = CanvasAsyncBlobCreator::create(imageDataRef.release(), encodingMimeType, imageData->size(), callback, scriptState->executionContext());
 
-    // TODO(xlai): Remove idle-periods version of implementation completely, http://crbug.com/564218
-    asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);
+    asyncCreatorRef->scheduleAsyncBlobCreation(quality);
 }
 
 void HTMLCanvasElement::addListener(CanvasDrawListener* listener)

@@ -1,5 +1,6 @@
 jsTestIsAsync = true;
 if (window.testRunner) {
+    testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
