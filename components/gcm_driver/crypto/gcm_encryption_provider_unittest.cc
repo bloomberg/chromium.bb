@@ -150,13 +150,13 @@ TEST_F(GCMEncryptionProviderTest, IsEncryptedMessage) {
 
   IncomingMessage double_header_message;
   double_header_message.data["encryption"] = "";
-  double_header_message.data["crypto_key"] = "";
+  double_header_message.data["crypto-key"] = "";
   EXPECT_FALSE(encryption_provider()->IsEncryptedMessage(
                    double_header_message));
 
   IncomingMessage double_header_with_data_message;
   double_header_with_data_message.data["encryption"] = "";
-  double_header_with_data_message.data["crypto_key"] = "";
+  double_header_with_data_message.data["crypto-key"] = "";
   double_header_with_data_message.raw_data = "foo";
   EXPECT_TRUE(encryption_provider()->IsEncryptedMessage(
                   double_header_with_data_message));
@@ -168,7 +168,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesEncryptionHeaderParsing) {
 
   IncomingMessage invalid_message;
   invalid_message.data["encryption"] = kInvalidEncryptionHeader;
-  invalid_message.data["crypto_key"] = kValidCryptoKeyHeader;
+  invalid_message.data["crypto-key"] = kValidCryptoKeyHeader;
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(invalid_message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -177,7 +177,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesEncryptionHeaderParsing) {
 
   IncomingMessage valid_message;
   valid_message.data["encryption"] = kValidEncryptionHeader;
-  valid_message.data["crypto_key"] = kInvalidCryptoKeyHeader;
+  valid_message.data["crypto-key"] = kInvalidCryptoKeyHeader;
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -191,7 +191,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsing) {
 
   IncomingMessage invalid_message;
   invalid_message.data["encryption"] = kValidEncryptionHeader;
-  invalid_message.data["crypto_key"] = kInvalidCryptoKeyHeader;
+  invalid_message.data["crypto-key"] = kInvalidCryptoKeyHeader;
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(invalid_message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -200,7 +200,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsing) {
 
   IncomingMessage valid_message;
   valid_message.data["encryption"] = kInvalidEncryptionHeader;
-  valid_message.data["crypto_key"] = kValidCryptoKeyHeader;
+  valid_message.data["crypto-key"] = kValidCryptoKeyHeader;
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -214,7 +214,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
 
   IncomingMessage message;
   message.data["encryption"] = kValidEncryptionHeader;
-  message.data["crypto_key"] = kValidCryptoKeyHeader;
+  message.data["crypto-key"] = kValidCryptoKeyHeader;
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -306,7 +306,7 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   encryption_header << "salt=" << encoded_salt;
 
   message.data["encryption"] = encryption_header.str();
-  message.data["crypto_key"] = "dh=" + encoded_key;
+  message.data["crypto-key"] = "dh=" + encoded_key;
 
   ASSERT_TRUE(encryption_provider()->IsEncryptedMessage(message));
 

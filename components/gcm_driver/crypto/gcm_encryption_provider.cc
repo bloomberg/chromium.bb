@@ -21,7 +21,7 @@ namespace gcm {
 namespace {
 
 const char kEncryptionProperty[] = "encryption";
-const char kCryptoKeyProperty[] = "crypto_key";
+const char kCryptoKeyProperty[] = "crypto-key";
 
 // Directory in the GCM Store in which the encryption database will be stored.
 const base::FilePath::CharType kEncryptionDirectoryName[] =
@@ -63,7 +63,7 @@ void GCMEncryptionProvider::GetEncryptionInfo(
 
 bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)
     const {
-  // The Web Push protocol requires the encryption and crypto_key properties to
+  // The Web Push protocol requires the encryption and crypto-key properties to
   // be set, and the raw_data field to be populated with the payload.
   if (message.data.find(kEncryptionProperty) == message.data.end() ||
       message.data.find(kCryptoKeyProperty) == message.data.end())

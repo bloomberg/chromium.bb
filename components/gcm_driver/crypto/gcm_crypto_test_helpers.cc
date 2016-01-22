@@ -74,7 +74,7 @@ bool CreateEncryptedPayloadForTesting(const base::StringPiece& payload,
   std::stringstream crypto_key_header;
   crypto_key_header << "dh=" << encoded_public_key;
 
-  message->data["crypto_key"] = crypto_key_header.str();
+  message->data["crypto-key"] = crypto_key_header.str();
 
   message->raw_data.swap(ciphertext);
   return true;
