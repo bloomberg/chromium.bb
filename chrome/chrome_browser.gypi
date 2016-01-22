@@ -347,6 +347,8 @@
       'browser/manifest/manifest_icon_selector.cc',
       'browser/manifest/manifest_icon_selector.h',
       'browser/media/desktop_media_list.h',
+      'browser/media/desktop_media_list_base.cc',
+      'browser/media/desktop_media_list_base.h',
       'browser/media/desktop_media_picker.h',
       'browser/media/desktop_streams_registry.cc',
       'browser/media/desktop_streams_registry.h',

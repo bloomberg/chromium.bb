@@ -268,15 +268,15 @@ TEST_F(DesktopMediaListTest, AddWindow) {
                     QuitMessageLoop(&message_loop_)));
 
   webrtc::WindowCapturer::Window window;
-  window.id = 0;
-  window.title = "Test window 0";
+  window.id = 10;  // id=0 is invalid.
+  window.title = "Test window 10";
   list.push_back(window);
   window_capturer_->SetWindowList(list);
 
   message_loop_.Run();
 
   EXPECT_EQ(model_->GetSource(2).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->GetSource(2).id.id, 0);
+  EXPECT_EQ(model_->GetSource(2).id.id, 10);
 }
 
 TEST_F(DesktopMediaListTest, RemoveWindow) {

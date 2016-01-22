@@ -4,16 +4,7 @@
 
 #include "chrome/browser/media/native_desktop_media_list.h"
 
-#include <stddef.h>
-#include <stdint.h>
-#include <map>
-#include <set>
-#include <sstream>
-#include <utility>
-
 #include "base/hash.h"
-#include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
@@ -26,7 +17,6 @@
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
 using content::DesktopMediaID;
@@ -78,13 +68,6 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
 }
 
 }  // namespace
-
-NativeDesktopMediaList::SourceDescription::SourceDescription(
-    DesktopMediaID id,
-    const base::string16& name)
-    : id(id),
-      name(name) {
-}
 
 class NativeDesktopMediaList::Worker
     : public webrtc::DesktopCapturer::Callback {
@@ -171,10 +154,9 @@ void NativeDesktopMediaList::Worker::Refresh(
     }
   }
   // Update list of windows before updating thumbnails.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&NativeDesktopMediaList::OnSourcesList,
-                 media_list_, sources));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&NativeDesktopMediaList::UpdateSourcesList,
+                                     media_list_, sources));
 
   ImageHashesMap new_image_hashes;
 
@@ -212,8 +194,8 @@ void NativeDesktopMediaList::Worker::Refresh(
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&NativeDesktopMediaList::OnSourceThumbnail,
-                        media_list_, i, thumbnail));
+            base::Bind(&NativeDesktopMediaList::OnSourceThumbnail, media_list_,
+                       i, thumbnail));
       }
     }
   }
@@ -222,7 +204,7 @@ void NativeDesktopMediaList::Worker::Refresh(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NativeDesktopMediaList::OnRefreshFinished, media_list_));
+      base::Bind(&NativeDesktopMediaList::ScheduleNextRefresh, media_list_));
 }
 
 webrtc::SharedMemory* NativeDesktopMediaList::Worker::CreateSharedMemory(
@@ -238,56 +220,20 @@ void NativeDesktopMediaList::Worker::OnCaptureCompleted(
 NativeDesktopMediaList::NativeDesktopMediaList(
     scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
     scoped_ptr<webrtc::WindowCapturer> window_capturer)
-    : screen_capturer_(std::move(screen_capturer)),
-      window_capturer_(std::move(window_capturer)),
-      update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
-      thumbnail_size_(100, 100),
-      view_dialog_id_(content::DesktopMediaID::TYPE_NONE, -1),
-      observer_(NULL),
+    : DesktopMediaListBase(
+          base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
   capture_task_runner_ = worker_pool->GetSequencedTaskRunner(
       worker_pool->GetSequenceToken());
+
+  worker_.reset(new Worker(weak_factory_.GetWeakPtr(),
+                           std::move(screen_capturer),
+                           std::move(window_capturer)));
 }
 
 NativeDesktopMediaList::~NativeDesktopMediaList() {
   capture_task_runner_->DeleteSoon(FROM_HERE, worker_.release());
-}
-
-void NativeDesktopMediaList::SetUpdatePeriod(base::TimeDelta period) {
-  DCHECK(!observer_);
-  update_period_ = period;
-}
-
-void NativeDesktopMediaList::SetThumbnailSize(
-    const gfx::Size& thumbnail_size) {
-  thumbnail_size_ = thumbnail_size;
-}
-
-void NativeDesktopMediaList::SetViewDialogWindowId(
-    content::DesktopMediaID dialog_id) {
-  view_dialog_id_ = dialog_id;
-}
-
-void NativeDesktopMediaList::StartUpdating(DesktopMediaListObserver* observer) {
-  DCHECK(!observer_);
-  DCHECK(screen_capturer_ || window_capturer_);
-
-  observer_ = observer;
-
-  worker_.reset(new Worker(weak_factory_.GetWeakPtr(),
-                           std::move(screen_capturer_),
-                           std::move(window_capturer_)));
-  Refresh();
-}
-
-int NativeDesktopMediaList::GetSourceCount() const {
-  return sources_.size();
-}
-
-const DesktopMediaList::Source& NativeDesktopMediaList::GetSource(
-    int index) const {
-  return sources_[index];
 }
 
 void NativeDesktopMediaList::Refresh() {
@@ -296,80 +242,7 @@ void NativeDesktopMediaList::Refresh() {
                             thumbnail_size_, view_dialog_id_.id));
 }
 
-void NativeDesktopMediaList::OnSourcesList(
-    const std::vector<SourceDescription>& new_sources) {
-  typedef std::set<content::DesktopMediaID> SourceSet;
-  SourceSet new_source_set;
-  for (size_t i = 0; i < new_sources.size(); ++i) {
-    new_source_set.insert(new_sources[i].id);
-  }
-  // Iterate through the old sources to find the removed sources.
-  for (size_t i = 0; i < sources_.size(); ++i) {
-    if (new_source_set.find(sources_[i].id) == new_source_set.end()) {
-      sources_.erase(sources_.begin() + i);
-      observer_->OnSourceRemoved(i);
-      --i;
-    }
-  }
-  // Iterate through the new sources to find the added sources.
-  if (new_sources.size() > sources_.size()) {
-    SourceSet old_source_set;
-    for (size_t i = 0; i < sources_.size(); ++i) {
-      old_source_set.insert(sources_[i].id);
-    }
-
-    for (size_t i = 0; i < new_sources.size(); ++i) {
-      if (old_source_set.find(new_sources[i].id) == old_source_set.end()) {
-        sources_.insert(sources_.begin() + i, Source());
-        sources_[i].id = new_sources[i].id;
-        sources_[i].name = new_sources[i].name;
-        observer_->OnSourceAdded(i);
-      }
-    }
-  }
-  DCHECK_EQ(new_sources.size(), sources_.size());
-
-  // Find the moved/changed sources.
-  size_t pos = 0;
-  while (pos < sources_.size()) {
-    if (!(sources_[pos].id == new_sources[pos].id)) {
-      // Find the source that should be moved to |pos|, starting from |pos + 1|
-      // of |sources_|, because entries before |pos| should have been sorted.
-      size_t old_pos = pos + 1;
-      for (; old_pos < sources_.size(); ++old_pos) {
-        if (sources_[old_pos].id == new_sources[pos].id)
-          break;
-      }
-      DCHECK(sources_[old_pos].id == new_sources[pos].id);
-
-      // Move the source from |old_pos| to |pos|.
-      Source temp = sources_[old_pos];
-      sources_.erase(sources_.begin() + old_pos);
-      sources_.insert(sources_.begin() + pos, temp);
-
-      observer_->OnSourceMoved(old_pos, pos);
-    }
-
-    if (sources_[pos].name != new_sources[pos].name) {
-      sources_[pos].name = new_sources[pos].name;
-      observer_->OnSourceNameChanged(pos);
-    }
-    ++pos;
-  }
-}
-
-void NativeDesktopMediaList::OnSourceThumbnail(
-    int index,
-    const gfx::ImageSkia& image) {
-  DCHECK_LT(index, static_cast<int>(sources_.size()));
-  sources_[index].thumbnail = image;
-  observer_->OnSourceThumbnailChanged(index);
-}
-
-void NativeDesktopMediaList::OnRefreshFinished() {
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&NativeDesktopMediaList::Refresh,
-                 weak_factory_.GetWeakPtr()),
-      update_period_);
+void NativeDesktopMediaList::OnSourceThumbnail(int index,
+                                               const gfx::ImageSkia& image) {
+  UpdateSourceThumbnail(GetSource(index).id, image);
 }
