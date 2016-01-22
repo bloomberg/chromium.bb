@@ -6,35 +6,24 @@
 
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/box_f.h"
 
 namespace cc {
 
 namespace {
 
-bool HasAnimationThatInflatesBounds(const LayerImpl& layer) {
-  return layer.HasAnimationThatInflatesBounds();
-}
-
-bool HasFilterAnimationThatInflatesBounds(const LayerImpl& layer) {
-  return layer.HasFilterAnimationThatInflatesBounds();
-}
-
 bool HasTransformAnimationThatInflatesBounds(const LayerImpl& layer) {
   return layer.HasTransformAnimationThatInflatesBounds();
 }
 
-inline bool HasAncestorTransformAnimation(const LayerImpl& layer) {
-  return layer.screen_space_transform_is_animating();
+inline bool HasAncestorTransformAnimation(const TransformNode* transform_node) {
+  return transform_node->data.to_screen_is_animated;
 }
 
 inline bool HasAncestorFilterAnimation(const LayerImpl& layer) {
-  for (const LayerImpl* current = &layer; current;
-       current = current->parent()) {
-    if (HasFilterAnimationThatInflatesBounds(*current))
-        return true;
-  }
-
+  // This function returns false, it should use the effect tree once filters
+  // and filter animations are known by the tree.
   return false;
 }
 
@@ -45,23 +34,38 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
   if (!layer_in.DrawsContent())
     return false;
 
+  TransformTree& transform_tree =
+      layer_in.layer_tree_impl()->property_trees()->transform_tree;
+
   // We also don't care for layers that are not animated or a child of an
   // animated layer.
-  if (!HasAncestorTransformAnimation(layer_in) &&
+  if (!HasAncestorTransformAnimation(
+          transform_tree.Node(layer_in.transform_tree_index())) &&
       !HasAncestorFilterAnimation(layer_in))
     return false;
 
   // To compute the inflated bounds for a layer, we start by taking its bounds
   // and converting it to a 3d box, and then we transform or inflate it
-  // repeatedly as we walk up the layer tree to the root.
+  // repeatedly as we walk up the transform tree to the root.
   //
-  // At each layer we apply the following transformations to the box:
-  //   1) We translate so that the anchor point is the origin.
-  //   2) We either apply the layer's transform or inflate if the layer's
-  //      transform is animated.
-  //   3) We undo the translation from step 1 and apply a second translation
-  //      to account for the layer's position.
+  // At each transform_node without transform animation that inflates bounds:
   //
+  //   1) We concat transform_node->data.to_parent to the coalesced_transform.
+  //
+  // At each transform_node with a transform animation that inflates bounds:
+  //
+  //   1) We concat transform_node->data.pre_local to the coalesced_transform.
+  //   This is to translate the box so that the anchor point is the origin.
+  //   2) We apply coalesced_transform to the 3d box and make the transform
+  //   identity. This is apply the accumulated transform to the box to inflate
+  //   it.
+  //   3) We inflate the 3d box for animation as the node has a animated
+  //   transform.
+  //   4) We concat transform_node->data.post_local to the coalesced_transform.
+  //   This step undoes the translation in step (1), accounts for the layer's
+  //   position and the 2d translation to the space of the parent transform
+  //   node.
+
   gfx::BoxF box(layer_in.bounds().width(), layer_in.bounds().height(), 0.f);
 
   // We want to inflate/transform the box as few times as possible. Each time
@@ -72,61 +76,35 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
   // matrix stores said product.
   gfx::Transform coalesced_transform;
 
-  for (const LayerImpl* layer = &layer_in; layer; layer = layer->parent()) {
-    int transform_origin_x = layer->transform_origin().x();
-    int transform_origin_y = layer->transform_origin().y();
-    int transform_origin_z = layer->transform_origin().z();
+  const TransformNode* transform_node =
+      transform_tree.Node(layer_in.transform_tree_index());
 
-    gfx::PointF position = layer->position();
-    if (layer->parent() && !HasAnimationThatInflatesBounds(*layer)) {
-      // |composite_layer_transform| contains 1 - 4 mentioned above. We compute
-      // it separately and apply afterwards because it's a bit more efficient
-      // because post-multiplication appears a bit more expensive, so we want
-      // to do it only once.
-      gfx::Transform composite_layer_transform;
+  // If layer_in has a transform node, the offset_to_transform_parent() is 0
+  coalesced_transform.Translate(layer_in.offset_to_transform_parent().x(),
+                                layer_in.offset_to_transform_parent().y());
 
-      composite_layer_transform.Translate3d(transform_origin_x + position.x(),
-                                            transform_origin_y + position.y(),
-                                            transform_origin_z);
-      composite_layer_transform.PreconcatTransform(layer->transform());
-      composite_layer_transform.Translate3d(
-          -transform_origin_x, -transform_origin_y, -transform_origin_z);
+  for (; transform_tree.parent(transform_node);
+       transform_node = transform_tree.parent(transform_node)) {
+    LayerImpl* layer =
+        layer_in.layer_tree_impl()->LayerById(transform_node->owner_id);
 
-      // Add this layer's contributions to the |coalesced_transform|.
-      coalesced_transform.ConcatTransform(composite_layer_transform);
-      continue;
-    }
-
-    // First, apply coalesced transform we've been building and reset it.
-    coalesced_transform.TransformBox(&box);
-    coalesced_transform.MakeIdentity();
-
-    // We need to apply the inflation about the layer's anchor point. Rather
-    // than doing this via transforms, we'll just shift the box directly.
-    box.set_origin(box.origin() + gfx::Vector3dF(-transform_origin_x,
-                                                 -transform_origin_y,
-                                                 -transform_origin_z));
-
-    // Perform the inflation
-    if (HasFilterAnimationThatInflatesBounds(*layer)) {
-      gfx::BoxF inflated;
-      if (!layer->FilterAnimationBoundsForBox(box, &inflated))
-        return false;
-      box = inflated;
-    }
+    // Filter animation bounds are unimplemented, see function
+    // HasAncestorFilterAnimation() for reference.
 
     if (HasTransformAnimationThatInflatesBounds(*layer)) {
+      coalesced_transform.ConcatTransform(transform_node->data.pre_local);
+      coalesced_transform.TransformBox(&box);
+      coalesced_transform.MakeIdentity();
+
       gfx::BoxF inflated;
       if (!layer->TransformAnimationBoundsForBox(box, &inflated))
         return false;
       box = inflated;
-    }
 
-    // Apply step 3) mentioned above.
-    box.set_origin(box.origin() +
-                   gfx::Vector3dF(transform_origin_x + position.x(),
-                                  transform_origin_y + position.y(),
-                                  transform_origin_z));
+      coalesced_transform.ConcatTransform(transform_node->data.post_local);
+    } else {
+      coalesced_transform.ConcatTransform(transform_node->data.to_parent);
+    }
   }
 
   // If we've got an unapplied coalesced transform at this point, it must still
