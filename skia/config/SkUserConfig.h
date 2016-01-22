@@ -206,10 +206,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 //
 // Remove these as we update our sites.
 //
-#ifndef    SK_SUPPORT_LEGACY_CONIC_MEASURE
-#   define SK_SUPPORT_LEGACY_CONIC_MEASURE
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAPS
 #   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAPS
 #endif
