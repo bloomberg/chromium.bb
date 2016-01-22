@@ -49,19 +49,19 @@
         shouldBe("matchMedia('(min-resolution: 0dpi)').matches", "false");
         shouldBe("matchMedia('(max-resolution: 0dpi)').matches", "false");
 
-        window.internals.setDeviceScaleFactor(1.5)
+        window.testRunner.setBackingScaleFactor(1.5, function() {});
         shouldBe("matchMedia('(resolution: 1.5dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "1.5");
 
-        window.internals.setDeviceScaleFactor(2);
+        window.testRunner.setBackingScaleFactor(2, function() {});
         shouldBe("matchMedia('(resolution: 2dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "2");
 
-        window.internals.setDeviceScaleFactor(1);
+        window.testRunner.setBackingScaleFactor(1, function() {});
         shouldBe("matchMedia('(resolution: 1dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "1");
 
-        window.internals.setDeviceScaleFactor(2.25);
+        window.testRunner.setBackingScaleFactor(2.25, function() {});
         shouldBe("matchMedia('(resolution: 2.25dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "2.25");
         shouldBe("matchMedia('(resolution)').matches", "true");
