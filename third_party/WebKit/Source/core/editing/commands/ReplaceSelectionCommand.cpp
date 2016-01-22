@@ -1380,6 +1380,9 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
         return;
     }
 
+    m_startOfInsertedRange = start;
+    m_endOfInsertedRange = end;
+
     if (m_selectReplacement)
         setEndingSelection(VisibleSelection(start, end, SEL_DEFAULT_AFFINITY, endingSelection().isDirectional()));
     else
@@ -1532,6 +1535,9 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
         && shouldRemoveEndBR(toHTMLBRElement(nodeAfterInsertionPos.get()), createVisiblePosition(positionBeforeNode(nodeAfterInsertionPos.get()))))
         removeNodeAndPruneAncestors(nodeAfterInsertionPos.get());
 
+    m_startOfInsertedRange = start;
+    m_endOfInsertedRange = end;
+
     VisibleSelection selectionAfterReplace(m_selectReplacement ? start : end, end);
 
     setEndingSelection(selectionAfterReplace);
@@ -1544,12 +1550,19 @@ bool ReplaceSelectionCommand::isReplaceSelectionCommand() const
     return true;
 }
 
+EphemeralRange ReplaceSelectionCommand::insertedRange() const
+{
+    return EphemeralRange(m_startOfInsertedRange, m_endOfInsertedRange);
+}
+
 DEFINE_TRACE(ReplaceSelectionCommand)
 {
     visitor->trace(m_startOfInsertedContent);
     visitor->trace(m_endOfInsertedContent);
     visitor->trace(m_insertionStyle);
     visitor->trace(m_documentFragment);
+    visitor->trace(m_startOfInsertedRange);
+    visitor->trace(m_endOfInsertedRange);
     CompositeEditCommand::trace(visitor);
 }
 

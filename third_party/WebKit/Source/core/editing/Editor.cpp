@@ -512,7 +512,11 @@ void Editor::replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragmen
 
     if (frame().selection().isInPasswordField() || !spellChecker().isContinuousSpellCheckingEnabled())
         return;
-    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(frame().selection().rootEditableElement());
+    ASSERT(lastEditCommand()->isReplaceSelectionCommand());
+    const EphemeralRange& insertedRange = toReplaceSelectionCommand(lastEditCommand())->insertedRange();
+    if (insertedRange.isNull())
+        return;
+    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(frame().selection().rootEditableElement(), insertedRange);
 }
 
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)

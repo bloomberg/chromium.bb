@@ -84,7 +84,7 @@ public:
     bool selectionStartHasSpellingMarkerFor(int from, int length) const;
     void updateMarkersForWordsAffectedByEditing(bool onlyHandleWordsContainingSelection);
     void cancelCheck();
-    void chunkAndMarkAllMisspellingsAndBadGrammar(Node*);
+    void chunkAndMarkAllMisspellingsAndBadGrammar(Node*, const EphemeralRange&);
     void requestTextChecking(const Element&);
 
     // Exposed for testing only

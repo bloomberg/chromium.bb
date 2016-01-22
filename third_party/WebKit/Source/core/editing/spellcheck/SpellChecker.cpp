@@ -497,13 +497,13 @@ static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
     return expandEndToSentenceBoundary(EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, range.endPosition()));
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node)
+void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const EphemeralRange& insertedRange)
 {
     TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
     if (!node)
         return;
-    RefPtrWillBeRawPtr<Range> rangeToCheck = Range::create(*frame().document(), firstPositionInNode(node), lastPositionInNode(node));
-    TextCheckingParagraph textToCheck(rangeToCheck, rangeToCheck);
+    EphemeralRange paragraphRange(firstPositionInNode(node), lastPositionInNode(node));
+    TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
     chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck);
 }
 

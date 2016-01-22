@@ -52,6 +52,8 @@ public:
         return adoptRefWillBeNoop(new ReplaceSelectionCommand(document, fragment, options, action));
     }
 
+    EphemeralRange insertedRange() const;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -118,6 +120,9 @@ private:
     EditAction m_editAction;
     bool m_sanitizeFragment;
     bool m_shouldMergeEnd;
+
+    Position m_startOfInsertedRange;
+    Position m_endOfInsertedRange;
 };
 
 DEFINE_TYPE_CASTS(ReplaceSelectionCommand, CompositeEditCommand, command, command->isReplaceSelectionCommand(), command.isReplaceSelectionCommand());
