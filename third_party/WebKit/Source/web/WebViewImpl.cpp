@@ -4526,16 +4526,10 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
     if (page())
         m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
 
-    if (m_layerTreeView) {
-        bool visible = visibilityState == WebPageVisibilityStateVisible;
+    bool visible = visibilityState == WebPageVisibilityStateVisible;
+    if (m_layerTreeView)
         m_layerTreeView->setVisible(visible);
-    }
-
-    if (visibilityState == WebPageVisibilityStateVisible) {
-        m_scheduler->setPageInBackground(false);
-    } else {
-        m_scheduler->setPageInBackground(true);
-    }
+    m_scheduler->setPageVisible(visible);
 }
 
 bool WebViewImpl::requestPointerLock()

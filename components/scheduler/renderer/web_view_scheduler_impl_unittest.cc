@@ -89,7 +89,7 @@ class RepeatingTask : public blink::WebTaskRunner::Task {
 }  // namespace
 
 TEST_F(WebViewSchedulerImplTest, RepeatingTimer_PageInForeground) {
-  web_view_scheduler_->setPageInBackground(false);
+  web_view_scheduler_->setPageVisible(true);
 
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
@@ -102,7 +102,7 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimer_PageInForeground) {
 }
 
 TEST_F(WebViewSchedulerImplTest, RepeatingTimer_PageInBackground) {
-  web_view_scheduler_->setPageInBackground(true);
+  web_view_scheduler_->setPageVisible(false);
 
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
@@ -115,7 +115,7 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimer_PageInBackground) {
 }
 
 TEST_F(WebViewSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
-  web_view_scheduler_->setPageInBackground(true);
+  web_view_scheduler_->setPageVisible(false);
 
   int run_count = 0;
   web_frame_scheduler_->loadingTaskRunner()->postDelayedTask(
@@ -133,8 +133,8 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   scoped_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
       web_view_scheduler2->createWebFrameSchedulerImpl();
 
-  web_view_scheduler_->setPageInBackground(false);
-  web_view_scheduler2->setPageInBackground(true);
+  web_view_scheduler_->setPageVisible(true);
+  web_view_scheduler2->setPageVisible(false);
 
   int run_count1 = 0;
   int run_count2 = 0;
@@ -163,7 +163,7 @@ class WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling
 
 TEST_F(WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling,
        RepeatingTimer_PageInBackground) {
-  web_view_scheduler_->setPageInBackground(true);
+  web_view_scheduler_->setPageVisible(false);
 
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(

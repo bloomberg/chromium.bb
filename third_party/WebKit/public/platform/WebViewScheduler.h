@@ -17,7 +17,7 @@ public:
     virtual ~WebViewScheduler() { }
 
     // The scheduler may throttle tasks associated with background pages.
-    virtual void setPageInBackground(bool) = 0;
+    virtual void setPageVisible(bool) = 0;
 
     // Creaters a new WebFrameScheduler, the caller is responsible for deleting it.
     virtual WebPassOwnPtr<WebFrameScheduler> createFrameScheduler() = 0;

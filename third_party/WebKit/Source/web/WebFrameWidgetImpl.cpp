@@ -46,6 +46,7 @@
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/NotImplemented.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/WebDevToolsAgentImpl.h"
@@ -1071,6 +1072,8 @@ void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilitySta
     // FIXME: This is not correct, since Show and Hide messages for a frame's Widget do not necessarily
     // correspond to Page visibility, but is necessary until we properly sort out OOPIF visibility.
     page()->setVisibilityState(static_cast<PageVisibilityState>(visibilityState), isInitialState);
+
+    m_localRoot->frame()->frameScheduler()->setPageVisible(visibilityState == WebPageVisibilityStateVisible);
 
     if (m_layerTreeView) {
         bool visible = visibilityState == WebPageVisibilityStateVisible;

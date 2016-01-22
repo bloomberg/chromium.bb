@@ -22,7 +22,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     bool disable_background_timer_throttling)
     : web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
-      page_in_background_(false),
+      page_visible_(true),
       disable_background_timer_throttling_(
           disable_background_timer_throttling) {
   renderer_scheduler->AddWebViewScheduler(this);
@@ -37,15 +37,14 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
   renderer_scheduler_->RemoveWebViewScheduler(this);
 }
 
-void WebViewSchedulerImpl::setPageInBackground(bool page_in_background) {
-  if (disable_background_timer_throttling_ ||
-      page_in_background_ == page_in_background)
+void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
+  if (disable_background_timer_throttling_ || page_visible_ == page_visible)
     return;
 
-  page_in_background_ = page_in_background;
+  page_visible_ = page_visible;
 
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    frame_scheduler->SetPageInBackground(page_in_background_);
+    frame_scheduler->setPageVisible(page_visible_);
   }
 }
 
@@ -53,7 +52,7 @@ scoped_ptr<WebFrameSchedulerImpl>
 WebViewSchedulerImpl::createWebFrameSchedulerImpl() {
   scoped_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this));
-  frame_scheduler->SetPageInBackground(page_in_background_);
+  frame_scheduler->setPageVisible(page_visible_);
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
 }

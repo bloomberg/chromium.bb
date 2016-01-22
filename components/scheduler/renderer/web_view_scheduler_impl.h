@@ -35,7 +35,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   ~WebViewSchedulerImpl() override;
 
   // blink::WebViewScheduler implementation:
-  void setPageInBackground(bool page_in_background) override;
+  void setPageVisible(bool page_visible) override;
   blink::WebPassOwnPtr<blink::WebFrameScheduler> createFrameScheduler()
       override;
 
@@ -52,7 +52,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   blink::WebView* web_view_;
   RendererSchedulerImpl* renderer_scheduler_;
-  bool page_in_background_;
+  bool page_visible_;
   bool disable_background_timer_throttling_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);

@@ -31,12 +31,11 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   ~WebFrameSchedulerImpl() override;
 
   // blink::WebFrameScheduler implementation:
-  void setFrameVisible(bool visible) override;
+  void setFrameVisible(bool frame_visible) override;
+  void setPageVisible(bool page_visible) override;
   blink::WebTaskRunner* loadingTaskRunner() override;
   blink::WebTaskRunner* timerTaskRunner() override;
   void setFrameOrigin(const blink::WebSecurityOrigin& origin) override;
-
-  void SetPageInBackground(bool page_in_background);
 
  private:
   friend class WebViewSchedulerImpl;
@@ -51,8 +50,8 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   blink::WebSecurityOrigin origin_;
-  bool visible_;
-  bool page_in_background_;
+  bool frame_visible_;
+  bool page_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameSchedulerImpl);
 };
