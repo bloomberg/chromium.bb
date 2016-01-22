@@ -167,11 +167,22 @@ def CMDbuilders(parser, args):
       ]
     }
   """
-  _, args = parser.parse_args(args)
+  parser.add_option('--include-experimental', action='store_true')
+  parser.add_option('--exclude-experimental', action='store_false',
+                    dest='include_experimental')
+  parser.add_option('--include-triggered', action='store_true')
+  parser.add_option('--exclude-triggered', action='store_false',
+                    dest='include_triggered')
+  # The defaults have been chosen because of backward compatbility.
+  parser.set_defaults(include_experimental=True, include_triggered=True)
+  options, args = parser.parse_args(args)
   if len(args) != 1:
     parser.error('Expected a single path to CQ config. Got: %s' %
                  ' '.join(args))
-  print json.dumps(get_master_builder_map(args[0]))
+  print json.dumps(get_master_builder_map(
+      args[0],
+      include_experimental=options.include_experimental,
+      include_triggered=options.include_triggered))
 
 CMDbuilders.func_usage_more = '<path-to-cq-config>'
 
