@@ -640,7 +640,12 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
                                     base::trace_event::TracedValue* state) {
   state->BeginDictionary();
   state->SetString("posted_from", task.posted_from.ToString());
+#ifndef NDEBUG
+  if (task.enqueue_order_set())
+    state->SetInteger("enqueue_order", task.enqueue_order());
+#else
   state->SetInteger("enqueue_order", task.enqueue_order());
+#endif
   state->SetInteger("sequence_num", task.sequence_num);
   state->SetBoolean("nestable", task.nestable);
   state->SetBoolean("is_high_res", task.is_high_res);

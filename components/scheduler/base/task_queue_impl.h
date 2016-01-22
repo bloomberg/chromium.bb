@@ -66,6 +66,10 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
       enqueue_order_ = enqueue_order;
     }
 
+#ifndef NDEBUG
+    bool enqueue_order_set() const { return enqueue_order_set_; }
+#endif
+
    private:
 #ifndef NDEBUG
     bool enqueue_order_set_;
