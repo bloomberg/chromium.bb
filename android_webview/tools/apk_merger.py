@@ -173,10 +173,11 @@ def main():
     UnpackApk(args.apk_64bit, tmp_dir_64)
     UnpackApk(args.apk_32bit, tmp_dir_32)
 
+    # TODO(sgurun) remove WebViewPlatformBridge.apk from this list crbug/580678
     dcmp = filecmp.dircmp(
         tmp_dir_64,
         tmp_dir_32,
-        ignore=['META-INF', 'AndroidManifest.xml'])
+        ignore=['META-INF', 'AndroidManifest.xml', 'WebViewPlatformBridge.apk'])
 
     diff_files = GetDiffFiles(dcmp, tmp_dir_32)
 
