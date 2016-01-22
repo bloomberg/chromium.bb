@@ -361,7 +361,7 @@ IOSChromeIOThread::system_url_request_context_getter() {
 }
 
 void IOSChromeIOThread::Init() {
-  TRACE_EVENT0("startup", "IOSChromeIOThread::InitAsync");
+  TRACE_EVENT0("startup", "IOSChromeIOThread::Init");
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
 
   net::SetMessageLoopForNSSHttpIO();
@@ -457,8 +457,6 @@ void IOSChromeIOThread::Init() {
       base::Bind(&IOSChromeIOThread::InitSystemRequestContext,
                  weak_factory_.GetWeakPtr()));
 }
-
-void IOSChromeIOThread::InitAsync() {}
 
 void IOSChromeIOThread::CleanUp() {
   net::ShutdownNSSHttpIO();

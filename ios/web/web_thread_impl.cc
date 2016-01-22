@@ -151,11 +151,6 @@ void WebThreadImpl::Init() {
       reinterpret_cast<WebThreadDelegate*>(stored_pointer);
   if (delegate) {
     delegate->Init();
-    message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&WebThreadDelegate::InitAsync,
-                                        // Delegate is expected to exist for the
-                                        // duration of the thread's lifetime
-                                        base::Unretained(delegate)));
   }
 
   if (WebThread::CurrentlyOn(WebThread::IO)) {

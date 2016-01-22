@@ -8,17 +8,9 @@
 namespace web {
 
 // A class with this type may be registered via WebThread::SetDelegate.
-// TODO(stuartmorgan): Currently the above is not actually true; because
-// web can currently be build with either its own thread implementation, or
-// the content thread implementation, WebThread doesn't have SetDelegate
-// (since it can't be easily be passed through to BrowserThread::SetDelegate).
-// Once BrowserThread isn't being used by Chrome, SetDelegate will become
-// public.
 //
 // If registered as such, it will schedule to run Init() before the
-// message loop begins and the schedule InitAsync() as the first
-// task on its message loop (after the WebThread has done its own
-// initialization), and receive a CleanUp call right after the message
+// message loop begins, and receive a CleanUp() call right after the message
 // loop ends (and before the WebThread has done its own clean-up).
 class WebThreadDelegate {
  public:
@@ -26,9 +18,6 @@ class WebThreadDelegate {
 
   // Called prior to starting the message loop
   virtual void Init() = 0;
-
-  // Called as the first task on the thread's message loop.
-  virtual void InitAsync() = 0;
 
   // Called just after the message loop ends.
   virtual void CleanUp() = 0;
