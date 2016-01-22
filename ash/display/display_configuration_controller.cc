@@ -82,7 +82,7 @@ void DisplayConfigurationController::SetDisplayLayout(
 
 void DisplayConfigurationController::SetMirrorMode(bool mirror,
                                                    bool user_action) {
-  if (display_manager_->GetNumDisplays() <= 1 ||
+  if (display_manager_->num_connected_displays() <= 1 ||
       display_manager_->IsInMirrorMode() == mirror || IsLimited()) {
     return;
   }
