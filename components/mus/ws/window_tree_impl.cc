@@ -1060,7 +1060,7 @@ void WindowTreeImpl::SetFocus(uint32_t change_id, Id transport_window_id) {
   // TODO(sky): this doesn't work to clear focus. That is because if window is
   // null, then |host| is null and we fail.
   WindowTreeHostImpl* host = GetHost(window);
-  const bool success = window && window->IsDrawn() &&
+  const bool success = window && window->IsDrawn() && window->can_focus() &&
                        access_policy_->CanSetFocus(window) && host;
   if (success) {
     Operation op(this, connection_manager_, OperationType::SET_FOCUS);

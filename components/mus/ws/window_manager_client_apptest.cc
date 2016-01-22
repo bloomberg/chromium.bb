@@ -764,6 +764,24 @@ TEST_F(WindowServerTest, Focus) {
   }
 }
 
+TEST_F(WindowServerTest, FocusNonFocusableWindow) {
+  Window* window = window_manager()->NewWindow();
+  window->SetVisible(true);
+  GetFirstWMRoot()->AddChild(window);
+
+  WindowTreeConnection* connection = Embed(window).connection;
+  ASSERT_NE(nullptr, connection);
+  ASSERT_FALSE(connection->GetRoots().empty());
+  Window* client_window = *connection->GetRoots().begin();
+  client_window->SetCanFocus(false);
+
+  client_window->SetFocus();
+  ASSERT_TRUE(client_window->HasFocus());
+
+  WaitForNoWindowToHaveFocus(connection);
+  ASSERT_FALSE(client_window->HasFocus());
+}
+
 TEST_F(WindowServerTest, Activation) {
   Window* parent = NewVisibleWindow(GetFirstWMRoot(), window_manager());
   Window* child1 = NewVisibleWindow(parent, window_manager());

@@ -177,6 +177,9 @@ bool FocusController::CanBeActivated(ServerWindow* window) const {
   if (!delegate_->CanHaveActiveChildren(window->parent()))
     return false;
 
+  if (!window->can_focus())
+    return false;
+
   // The window must be drawn, or if it's not drawn, it must be minimized.
   if (!window->IsDrawn()) {
     bool is_minimized = false;
