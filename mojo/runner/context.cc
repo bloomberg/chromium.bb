@@ -224,10 +224,7 @@ bool Context::Init(const base::FilePath& shell_file_root) {
   RegisterLocalAliases(package_manager_);
 
   scoped_ptr<shell::NativeRunnerFactory> runner_factory;
-  if (command_line.HasSwitch(switches::kEnableMultiprocess)) {
-    runner_factory.reset(
-        new OutOfProcessNativeRunnerFactory(task_runners_->blocking_pool()));
-  } else {
+  if (command_line.HasSwitch(switches::kMojoSingleProcess)) {
 #if defined(COMPONENT_BUILD)
     LOG(ERROR) << "Running Mojo in single process component build, which isn't "
                << "supported because statics in apps interact. Use static build"
@@ -235,6 +232,9 @@ bool Context::Init(const base::FilePath& shell_file_root) {
 #endif
     runner_factory.reset(
         new InProcessNativeRunnerFactory(task_runners_->blocking_pool()));
+  } else {
+    runner_factory.reset(
+        new OutOfProcessNativeRunnerFactory(task_runners_->blocking_pool()));
   }
   application_manager_.reset(new shell::ApplicationManager(
       make_scoped_ptr(package_manager_), std::move(runner_factory),
