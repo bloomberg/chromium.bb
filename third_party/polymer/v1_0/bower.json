@@ -18,6 +18,7 @@
     "iron-icon": "PolymerElements/iron-icon#^1.0.0",
     "iron-icons": "PolymerElements/iron-icons#^1.0.0",
     "iron-iconset-svg": "PolymerElements/iron-iconset-svg#^1.0.0",
+    "iron-image": "PolymerElements/iron-image#^1.0.0",
     "iron-input": "PolymerElements/iron-input#^1.0.0",
     "iron-list": "PolymerElements/iron-list#^1.0.0",
     "iron-media-query": "PolymerElements/iron-media-query#^1.0.0",
