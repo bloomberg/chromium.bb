@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -112,22 +114,26 @@ EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
   // eglInitialize can be called multiple times, prevent InitializeOneOff from
   // being called multiple times.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
+    base::CommandLine::StringVector argv;
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    std::vector<std::string> args;
-    std::string env_args;
-    if (env->GetVar("CHROME_COMMAND_BUFFER_GLES2_ARGS", &env_args)) {
-      args = base::SplitString(env_args, " ", base::TRIM_WHITESPACE,
-                               base::SPLIT_WANT_NONEMPTY);
-    }
-    if (args.empty()) {
-      args.push_back("dummy");
-    }
-    scoped_ptr<const char* []> argv(new const char*[args.size()]);
-    for (size_t i = 0; i < args.size(); ++i) {
-      argv[i] = args[i].c_str();
-    }
-    base::CommandLine::Init(static_cast<int>(args.size()), argv.get());
+    std::string env_string;
+    env->GetVar("CHROME_COMMAND_BUFFER_GLES2_ARGS", &env_string);
+#if defined(OS_WIN)
+    argv = base::SplitString(base::UTF8ToUTF16(env_string),
+                             base::kWhitespaceUTF16, base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY);
+    argv.insert(argv.begin(), base::UTF8ToUTF16("dummy"));
+#else
+    argv = base::SplitString(env_string,
+                             base::kWhitespaceASCII, base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY);
+    argv.insert(argv.begin(), "dummy");
+#endif
+    base::CommandLine::Init(0, nullptr);
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    // Need to call both Init and InitFromArgv, since Windows does not use
+    // argc, argv in CommandLine::Init(argc, argv).
+    command_line->InitFromArgv(argv);
     if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
       gpu::ApplyGpuDriverBugWorkarounds(command_line);
     }
