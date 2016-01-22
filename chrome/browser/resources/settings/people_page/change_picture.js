@@ -30,22 +30,13 @@ Polymer({
 
   properties: {
     /**
-     * The currently selected profile image URL. May be a data URL.
-     * @private {string}
+     * The currently selected item. This property is bound to the iron-selector
+     * and never directly assigned.
+     * @private {Element}
      */
-    selectedImageUrl_: {
-      type: String,
+    selectedItem_: {
+      type: Element,
       notify: settings_test.changePictureOptions.notifyPropertyChangesForTest,
-    },
-
-    /**
-     * True only if the user has selected the camera icon. Old photos captured
-     * from the camera are represented as the 'old' image.
-     * @private {boolean}
-     */
-    cameraActive_: {
-      type: Boolean,
-      value: false,
     },
 
     /**
@@ -70,10 +61,15 @@ Polymer({
 
     /**
      * The url of the 'old' image, which is the existing image sourced from
-     * the camera, a file, or a deprecated default image.
+     * the camera, a file, or a deprecated default image. It defaults to an
+     * empty string instead of undefined, because Polymer bindings don't behave
+     * as expected with undefined properties.
      * @private {string}
      */
-    oldImageUrl_: String,
+    oldImageUrl_: {
+      type: String,
+      value: '',
+    },
 
     /**
      * The url of the profile image.
@@ -107,12 +103,16 @@ Polymer({
       }.bind(this),
 
       /**
-       * Called from C++ to provide the URL of the selected image.
+       * Called from C++ to provide the URL of the selected image. Is only
+       * called with default images.
        * @param {string} imageUrl
        */
       receiveSelectedImage: function(imageUrl) {
-        this.cameraActive_ = false;
-        this.selectedImageUrl_ = imageUrl;
+        var index = this.$.selector.items.findIndex(function(image) {
+          return image.dataset.type == 'default' && image.src == imageUrl;
+        });
+        assert(index != -1, 'Default image not found: ' + imageUrl);
+        this.$.selector.select(index);
       }.bind(this),
 
       /**
@@ -123,9 +123,8 @@ Polymer({
        * @param {string} imageUrl
        */
       receiveOldImage: function(imageUrl) {
-        this.cameraActive_ = false;
         this.oldImageUrl_ = imageUrl;
-        this.selectedImageUrl_ = imageUrl;
+        this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
       }.bind(this),
 
       /**
@@ -135,10 +134,8 @@ Polymer({
        */
       receiveProfileImage: function(imageUrl, selected) {
         this.profileImageUrl_ = imageUrl;
-        if (selected) {
-          this.cameraActive_ = false;
-          this.selectedImageUrl_ = imageUrl;
-        }
+        if (selected)
+          this.$.selector.select(this.$.selector.indexOf(this.$.profileImage));
       }.bind(this),
 
       /**
@@ -161,64 +158,49 @@ Polymer({
   },
 
   /**
-   * Handler for when the user clicks the camera image.
-   * @private
-   */
-  onCameraImageTap_: function() {
-    this.cameraActive_ = true;
-  },
-
-  /**
-   * Handler for when the user clicks a new profile image.
-   * @private
+   * Handler for when the an image is activated.
    * @param {!Event} event
+   * @private
    */
-  onDefaultImageTap_: function(event) {
-    var element = Polymer.dom(event).rootTarget;
-
-    var imageUrl = null;
-    if (element.nodeName == 'IMG')
-      imageUrl = element.src;
-    else if (element.dataset && element.dataset.imageUrl)
-      imageUrl = element.dataset.imageUrl;
-
-    if (imageUrl != null) {
-      settings.ChangePicturePrivateApi.selectDefaultImage(imageUrl);
-      // Button toggle state is instead controlled by the selected image URL.
-      event.preventDefault();
+  onImageActivate_: function(event) {
+    var selectedImage = event.detail.item;
+    switch (selectedImage.dataset.type) {
+      case 'camera':
+        // TODO(tommycli): Implement camera functionality.
+        break;
+      case 'profile':
+        settings.ChangePicturePrivateApi.selectProfileImage();
+        break;
+      case 'old':
+        settings.ChangePicturePrivateApi.selectOldImage();
+        break;
+      case 'default':
+        settings.ChangePicturePrivateApi.selectDefaultImage(selectedImage.src);
+        break;
+      default:
+        assertNotReached('Selected unknown image type');
     }
   },
 
   /**
-   * Handler for when the user clicks the 'old' image.
-   * @private
-   * @param {!Event} event
-   */
-  onOldImageTap_: function(event) {
-    settings.ChangePicturePrivateApi.selectOldImage();
-    // Button toggle state is instead controlled by the selected image URL.
-    event.preventDefault();
-  },
-
-  /**
-   * Handler for when the user clicks the 'profile' image.
-   * @private
-   * @param {!Event} event
-   */
-  onProfileImageTap_: function(event) {
-    settings.ChangePicturePrivateApi.selectProfileImage();
-    // Button toggle state is instead controlled by the selected image URL.
-    event.preventDefault();
-  },
-
-  /**
-   * Computed binding determining which profile image button is toggled on.
-   * @private
-   * @param {string} imageUrl
-   * @param {string} selectedImageUrl
+   * True if there is no old image and the selection icon should be hidden.
+   * @param {string} oldImageUrl
    * @return {boolean}
+   * @private
    */
-  isActiveImage_: function(cameraActive, imageUrl, selectedImageUrl) {
-    return !cameraActive && (imageUrl == selectedImageUrl);
+  isOldImageHidden_: function(oldImageUrl) {
+    return oldImageUrl.length == 0;
+  },
+
+  /**
+   * True if the preview image is hidden and the camera controls are shown.
+   * @param {!Element} selectedItem
+   * @return {boolean}
+   * @private
+   */
+  isPreviewImageHidden_: function(selectedItem) {
+    // The selected item can be undefined on initial load and between selection
+    // changes. In those cases, show the preview image.
+    return selectedItem != undefined && selectedItem.dataset.type == 'camera';
   },
 });

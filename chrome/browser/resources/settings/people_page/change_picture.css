@@ -7,8 +7,17 @@
   margin-top: 16px;
 }
 
-#available-icons paper-button {
-  padding: 4px;
+#available-icons img {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  height: 64px;
+  padding: 3px;
+  width: 64px;
+}
+
+#available-icons img.iron-selected {
+  border: 2px solid rgb(0, 102, 204);
+  padding: 2px;
 }
 
 #preview-pane {
@@ -23,9 +32,4 @@
   max-height: 220px;
   max-width: 220px;
   padding: 3px;
-}
-
-.user-image {
-  height: 64px;
-  width: 64px;
 }

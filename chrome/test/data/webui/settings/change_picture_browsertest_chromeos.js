@@ -55,95 +55,83 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
   assertTrue(!!changePicture);
 
   /**
-   * Registers a callback to be called once when the selected image URL changes.
-   * @param {!function()} callback
+   * Returns a promise that resolves once the selected item is updated.
+   * @param {function()} action is executed after the listener is set up.
+   * @return {!Promise} a Promise fulfilled when the selected item changes.
    */
-  function whenSelectedImageUrlChanged() {
+  function runAndResolveWhenSelectedItemChanged(action) {
     return new Promise(function(resolve, reject) {
       var handler = function() {
-        changePicture.removeEventListener('selected-image-url_-changed',
-                                          handler);
+        changePicture.removeEventListener('selected-item_-changed', handler);
         resolve();
       };
-      changePicture.addEventListener('selected-image-url_-changed', handler);
+      changePicture.addEventListener('selected-item_-changed', handler);
+      action();
     });
   }
 
   suite('SettingsChangePicturePage', function() {
     setup(function() {
       // Reset the selected image to nothing.
-      changePicture.selectedImageUrl_ = '';
+      changePicture.$.selector.selected = -1;
     });
 
     test('select camera image', function() {
-      var cameraImage = changePicture.$$('#camera-image');
+      var cameraImage = changePicture.$$('img[data-type="camera"]');
       assertTrue(!!cameraImage);
 
-      assertFalse(changePicture.cameraActive_);
       expectFalse(changePicture.$.previewImage.hidden);
 
       MockInteractions.tap(cameraImage);
 
       Polymer.dom.flush();
 
-      expectTrue(changePicture.cameraActive_);
+      expectEquals('camera', changePicture.selectedItem_.dataset.type);
       expectTrue(changePicture.$.previewImage.hidden);
     });
 
     test('select profile image', function() {
-      var profileImage = changePicture.$$('#profile-image');
+      var profileImage = changePicture.$$('img[data-type="profile"]');
       assertTrue(!!profileImage);
 
-      MockInteractions.tap(profileImage);
-
-      return whenSelectedImageUrlChanged().then(function() {
-        expectEquals(changePicture.selectedImageUrl_,
-                     changePicture.profileImageUrl_);
-
+      return runAndResolveWhenSelectedItemChanged(function() {
+        MockInteractions.tap(profileImage);
+      }).then(function() {
         Polymer.dom.flush();
-        expectTrue(profileImage.active);
+        expectEquals('profile', changePicture.selectedItem_.dataset.type);
         expectFalse(changePicture.$.previewImage.hidden);
       });
     });
 
     test('select old images', function() {
-      // By default there is no old image.
-      var oldImage = changePicture.$$('#old-image');
-      assertFalse(!!oldImage);
+      // By default there is no old image and the element is hidden.
+      var oldImage = changePicture.$$('img[data-type="old"]');
+      assertTrue(!!oldImage);
+      assertTrue(oldImage.hidden);
 
-      // The promise must start listening for the property change before
-      // we make the fake API call.
-      var promise = whenSelectedImageUrlChanged();
+      return runAndResolveWhenSelectedItemChanged(function() {
+        settings.ChangePicturePage.receiveOldImage('fake-old-image.jpg');
+      }).then(function() {
+        Polymer.dom.flush();
 
-      settings.ChangePicturePage.receiveOldImage('fake-old-image.jpg');
-
-      return promise.then(function() {
         // Expect the old image to be selected once an old image is sent via
         // the native interface.
-        expectEquals(changePicture.selectedImageUrl_,
-                     changePicture.oldImageUrl_);
-
-        Polymer.dom.flush();
-        var oldImage = changePicture.$$('#old-image');
-        assertTrue(!!oldImage);
-        expectTrue(oldImage.active);
+        expectEquals('old', changePicture.selectedItem_.dataset.type);
+        expectFalse(oldImage.hidden);
         expectFalse(changePicture.$.previewImage.hidden);
       });
     });
 
     test('select first default image', function() {
-      var firstDefaultImage = changePicture.$$('.default-image');
+      var firstDefaultImage = changePicture.$$('img[data-type="default"]');
       assertTrue(!!firstDefaultImage);
 
-      MockInteractions.tap(firstDefaultImage);
-
-      return whenSelectedImageUrlChanged().then(function() {
-        // Expect the first default image to be selected.
-        expectEquals(changePicture.selectedImageUrl_,
-                     changePicture.defaultImages_[0].url);
-
+      return runAndResolveWhenSelectedItemChanged(function() {
+        MockInteractions.tap(firstDefaultImage);
+      }).then(function() {
         Polymer.dom.flush();
-        expectTrue(firstDefaultImage.active);
+        expectEquals('default', changePicture.selectedItem_.dataset.type);
+        expectEquals(firstDefaultImage, changePicture.selectedItem_);
         expectFalse(changePicture.$.previewImage.hidden);
       });
     });

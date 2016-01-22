@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://md-settings/people_page/change_picture_private_api.html">
 
 <dom-module id="settings-change-picture">
@@ -11,35 +11,23 @@
     <div class="settings-box">
       <div class="split">
         <div id="available-icons" class="start">
-          <paper-button id="camera-image" toggles active="[[cameraActive_]]"
-              on-tap="onCameraImageTap_">
-            <img class="user-image" src="[[cameraImageUrl_]]"
-                alt="[[cameraImageTitle_]]">
-          </paper-button>
-          <paper-button id="profile-image" toggles
-              active="{{isActiveImage_(cameraActive_, profileImageUrl_, selectedImageUrl_)}}"
-              on-tap="onProfileImageTap_">
-            <img class="user-image" src="[[profileImageUrl_]]"
+          <iron-selector id="selector" on-iron-activate="onImageActivate_"
+              selected-item="{{selectedItem_}}">
+            <img id="cameraImage" data-type="camera"
+                src="[[cameraImageUrl_]]" alt="[[cameraImageTitle_]]">
+            <img id="profileImage" data-type="profile"
+                src="[[profileImageUrl_]]"
                 alt="[[i18n('profilePhotoLoading')]]">
-          </paper-button>
-          <template is="dom-if" if="[[oldImageUrl_]]">
-            <paper-button id="old-image" toggles
-                active="{{isActiveImage_(cameraActive_, oldImageUrl_, selectedImageUrl_)}}"
-                on-tap="onOldImageTap_">
-              <img class="user-image" src="[[oldImageUrl_]]">
-            </paper-button>
-          </template>
-          <template is="dom-repeat" items="[[defaultImages_]]">
-            <paper-button class="default-image" toggles
-                active="{{isActiveImage_(cameraActive_, item.url, selectedImageUrl_)}}"
-                on-tap="onDefaultImageTap_" data-image-url$="[[item.url]]">
-              <img class="user-image" src="[[item.url]]" alt="[[item.title]]">
-            </paper-button>
-          </template>
+            <img id="oldImage" data-type="old"
+                src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
+            <template is="dom-repeat" items="[[defaultImages_]]">
+              <img data-type="default" src="[[item.url]]" alt="[[item.title]]">
+            </template>
+          </iron-selector>
         </div>
         <div id="preview-pane">
-          <img id="previewImage" src="[[selectedImageUrl_]]"
-              hidden="[[cameraActive_]]">
+          <img id="previewImage" src="[[selectedItem_.src]]"
+              hidden="[[isPreviewImageHidden_(selectedItem_)]]">
         </div>
       </div>
     </div>

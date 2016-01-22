@@ -7,6 +7,7 @@
       'target_name': 'change_picture',
       'variables': {
         'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',
