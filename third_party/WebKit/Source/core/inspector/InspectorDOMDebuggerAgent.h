@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/v8/EventListenerInfo.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -43,7 +44,6 @@ namespace blink {
 
 class Element;
 class Event;
-class EventListener;
 class EventTarget;
 class InjectedScriptManager;
 class InspectorDOMAgent;
@@ -60,6 +60,8 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InjectedScriptManager*, InspectorDOMAgent*, V8DebuggerAgent*);
+
+    static void eventListenersInfoForTarget(v8::Isolate*, v8::Local<v8::Value>, EventListenerInfoMap& listeners);
 
     ~InspectorDOMDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -119,7 +121,7 @@ private:
     void setEnabled(bool);
 
     void eventListeners(InjectedScript&, v8::Local<v8::Value>, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray);
-    PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(InjectedScript&, v8::Local<v8::Object> handler, bool useCapture, const String& type, const String& objectGroupId);
+    PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(InjectedScript&, const EventListenerInfo&, const String& objectGroupId);
 
     InjectedScriptManager* m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

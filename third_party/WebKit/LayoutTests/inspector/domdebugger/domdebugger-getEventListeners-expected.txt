@@ -18,18 +18,18 @@ location: 16, 79
 handler: function boo() {}
 sourceURL: domdebugger-getEventListeners.html
 
-type: mouseout
-useCapture: false
-location: 16, 78
-handler: function foo() {}
-sourceURL: domdebugger-getEventListeners.html
-
 type: click
 useCapture: false
 location: 37, 75
 handler: function onclick(event) {
   return 42;
 }
+sourceURL: domdebugger-getEventListeners.html
+
+type: mouseout
+useCapture: false
+location: 16, 78
+handler: function foo() {}
 sourceURL: domdebugger-getEventListeners.html
 
 

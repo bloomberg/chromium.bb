@@ -31,13 +31,13 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
+#include "bindings/core/v8/V8EventTarget.h"
 #include "core/InspectorFrontend.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -45,6 +45,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/RemoteObjectId.h"
+#include "core/inspector/v8/EventListenerInfo.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "platform/JSONValues.h"
 
@@ -91,6 +92,46 @@ static const char enabled[] = "enabled";
 PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, V8DebuggerAgent* debuggerAgent)
 {
     return adoptPtrWillBeNoop(new InspectorDOMDebuggerAgent(injectedScriptManager, domAgent, debuggerAgent));
+}
+
+void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate, v8::Local<v8::Value> value, EventListenerInfoMap& eventInformation)
+{
+    EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
+    // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
+    if (!target)
+        target = toDOMWindow(isolate, value);
+    if (!target || !target->executionContext())
+        return;
+
+    ExecutionContext* executionContext = target->executionContext();
+
+    // Nodes and their Listeners for the concerned event types (order is top to bottom)
+    Vector<AtomicString> eventTypes = target->eventTypes();
+    for (size_t j = 0; j < eventTypes.size(); ++j) {
+        AtomicString& type = eventTypes[j];
+        EventListenerVector* listeners = target->getEventListeners(type);
+        if (!listeners)
+            continue;
+        for (size_t k = 0; k < listeners->size(); ++k) {
+            RefPtrWillBeRawPtr<EventListener> eventListener = listeners->at(k).listener;
+            if (eventListener->type() != EventListener::JSEventListenerType)
+                continue;
+            V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(eventListener.get());
+            v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
+            // Hide listeners from other contexts.
+            if (context != isolate->GetCurrentContext())
+                continue;
+            // getListenerObject() may cause JS in the event attribute to get
+            // compiled, potentially unsuccessfully.  In that case, the function
+            // returns the empty handle without an exception.
+            v8::Local<v8::Object> handler = v8Listener->getListenerObject(executionContext);
+            if (handler.IsEmpty())
+                continue;
+            if (!eventInformation.get(type))
+                eventInformation.set(type, adoptPtr(new Vector<EventListenerInfo>()));
+            eventInformation.get(type)->append(EventListenerInfo(type, listeners->at(k).useCapture, handler));
+        }
+    }
 }
 
 InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, V8DebuggerAgent* debuggerAgent)
@@ -327,35 +368,34 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
 void InspectorDOMDebuggerAgent::eventListeners(InjectedScript& injectedScript, v8::Local<v8::Value> object, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
 {
     ScriptState* state = injectedScript.scriptState();
-    EventTarget* eventTarget = InjectedScriptHost::eventTargetFromV8Value(state->isolate(), object);
-    if (!eventTarget)
-        return;
-    ExecutionContext* executionContext = eventTarget->executionContext();
-    if (!executionContext)
-        return;
-
-    WillBeHeapVector<EventListenerInfo> eventInformation;
-    EventListenerInfo::getEventListeners(eventTarget, eventInformation, false);
-    if (eventInformation.isEmpty())
-        return;
-    RegisteredEventListenerIterator iterator(eventInformation);
-    while (const RegisteredEventListener* listener = iterator.nextRegisteredEventListener()) {
-        const EventListenerInfo& info = iterator.currentEventListenerInfo();
-        v8::Local<v8::Object> handler = eventListenerHandler(executionContext, listener->listener.get());
-        RefPtr<TypeBuilder::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(injectedScript, handler, listener->useCapture, info.eventType, objectGroup);
-        if (listenerObject)
-            listenersArray->addItem(listenerObject);
+    EventListenerInfoMap eventInformation;
+    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(state->isolate(), object, eventInformation);
+    for (const auto& it : eventInformation) {
+        for (const auto& it2 : *it.value) {
+            if (!it2.useCapture)
+                continue;
+            RefPtr<TypeBuilder::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(injectedScript, it2, objectGroup);
+            if (listenerObject)
+                listenersArray->addItem(listenerObject);
+        }
+        for (auto& it2 : *it.value) {
+            if (it2.useCapture)
+                continue;
+            RefPtr<TypeBuilder::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(injectedScript, it2, objectGroup);
+            if (listenerObject)
+                listenersArray->addItem(listenerObject);
+        }
     }
 }
 
-PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(InjectedScript& injectedScript, v8::Local<v8::Object> handler, bool useCapture, const String& type, const String& objectGroupId)
+PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(InjectedScript& injectedScript, const EventListenerInfo& info, const String& objectGroupId)
 {
-    if (handler.IsEmpty())
+    if (info.handler.IsEmpty())
         return nullptr;
 
     ScriptState* scriptState = injectedScript.scriptState();
     v8::Isolate* isolate = scriptState->isolate();
-    v8::Local<v8::Function> function = eventListenerEffectiveFunction(isolate, handler);
+    v8::Local<v8::Function> function = eventListenerEffectiveFunction(isolate, info.handler);
     if (function.IsEmpty())
         return nullptr;
 
@@ -369,12 +409,12 @@ PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::b
         .setLineNumber(lineNumber);
     location->setColumnNumber(columnNumber);
     RefPtr<TypeBuilder::DOMDebugger::EventListener> value = TypeBuilder::DOMDebugger::EventListener::create()
-        .setType(type)
-        .setUseCapture(useCapture)
+        .setType(info.eventType)
+        .setUseCapture(info.useCapture)
         .setLocation(location);
     if (!objectGroupId.isEmpty()) {
         value->setHandler(injectedScript.wrapObject(ScriptValue(scriptState, function), objectGroupId));
-        value->setOriginalHandler(injectedScript.wrapObject(ScriptValue(scriptState, handler), objectGroupId));
+        value->setOriginalHandler(injectedScript.wrapObject(ScriptValue(scriptState, info.handler), objectGroupId));
     }
     return value.release();
 }

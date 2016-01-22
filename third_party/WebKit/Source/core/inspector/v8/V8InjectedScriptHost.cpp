@@ -10,37 +10,25 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
-#include "bindings/core/v8/V8Event.h"
-#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/events/EventTarget.h"
-#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/v8/EventListenerInfo.h"
 #include "core/inspector/v8/InspectorWrapper.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
-#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
+#include "core/inspector/v8/V8DebuggerImpl.h"
 #include "platform/JSONValues.h"
+#include "wtf/NonCopyingSort.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
 
 namespace blink {
-
-EventTarget* InjectedScriptHost::eventTargetFromV8Value(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
-    // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
-    if (!target)
-        target = toDOMWindow(isolate, value);
-    if (!target || !target->executionContext())
-        return nullptr;
-    return target;
-}
 
 void V8InjectedScriptHost::clearConsoleMessagesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -228,31 +216,15 @@ void V8InjectedScriptHost::getInternalPropertiesCallback(const v8::FunctionCallb
     v8SetReturnValue(info, properties);
 }
 
-static v8::Local<v8::Array> getJSListenerFunctions(v8::Isolate* isolate, ExecutionContext* executionContext, const EventListenerInfo& listenerInfo)
+static v8::Local<v8::Array> wrapListenerFunctions(v8::Isolate* isolate, const Vector<EventListenerInfo>& listeners)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate);
-    size_t handlersCount = listenerInfo.eventListenerVector.size();
+    size_t handlersCount = listeners.size();
     for (size_t i = 0, outputIndex = 0; i < handlersCount; ++i) {
-        EventListener* listener = listenerInfo.eventListenerVector[i].listener.get();
-        RefPtrWillBeRawPtr<EventListener> protect(listener);
-        if (listener->type() != EventListener::JSEventListenerType) {
-            ASSERT_NOT_REACHED();
-            continue;
-        }
-        V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-        v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
-        // Hide listeners from other contexts.
-        if (context != isolate->GetCurrentContext())
-            continue;
-        // getListenerObject() may cause JS in the event attribute to get
-        // compiled, potentially unsuccessfully.  In that case, the function
-        // returns the empty handle without an exception.
-        v8::Local<v8::Object> function = v8Listener->getListenerObject(executionContext);
-        if (function.IsEmpty())
-            continue;
+        v8::Local<v8::Object> function = listeners[i].handler;
         v8::Local<v8::Object> listenerEntry = v8::Object::New(isolate);
         listenerEntry->Set(v8AtomicString(isolate, "listener"), function);
-        listenerEntry->Set(v8AtomicString(isolate, "useCapture"), v8::Boolean::New(isolate, listenerInfo.eventListenerVector[i].useCapture));
+        listenerEntry->Set(v8AtomicString(isolate, "useCapture"), v8::Boolean::New(isolate, listeners[i].useCapture));
         result->Set(v8::Number::New(isolate, outputIndex++), listenerEntry);
     }
     return result;
@@ -263,20 +235,21 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     if (info.Length() < 1)
         return;
 
-    EventTarget* target = InjectedScriptHost::eventTargetFromV8Value(info.GetIsolate(), info[0]);
-    if (!target)
-        return;
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    WillBeHeapVector<EventListenerInfo> listenersArray;
-    host->getEventListenersImpl(target, listenersArray);
+    V8DebuggerClient* client = static_cast<V8DebuggerImpl&>(host->debugger()).client();
+    EventListenerInfoMap listenerInfo;
+    client->eventListeners(info.GetIsolate(), info[0], listenerInfo);
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
-    for (size_t i = 0; i < listenersArray.size(); ++i) {
-        v8::Local<v8::Array> listeners = getJSListenerFunctions(info.GetIsolate(), target->executionContext(), listenersArray[i]);
+    Vector<String> types;
+    for (auto& it : listenerInfo)
+        types.append(it.key);
+    nonCopyingSort(types.begin(), types.end(), WTF::codePointCompareLessThan);
+    for (const String& type : types) {
+        v8::Local<v8::Array> listeners = wrapListenerFunctions(info.GetIsolate(), *listenerInfo.get(type));
         if (!listeners->Length())
             continue;
-        AtomicString eventType = listenersArray[i].eventType;
-        result->Set(v8String(info.GetIsolate(), eventType), listeners);
+        result->Set(v8String(info.GetIsolate(), type), listeners);
     }
 
     v8SetReturnValue(info, result);

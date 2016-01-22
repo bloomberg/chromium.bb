@@ -89,6 +89,7 @@ public:
     v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue) override;
 
     v8::Isolate* isolate() const { return m_isolate; }
+    V8DebuggerClient* client() { return m_client; }
 
 private:
     void enable();

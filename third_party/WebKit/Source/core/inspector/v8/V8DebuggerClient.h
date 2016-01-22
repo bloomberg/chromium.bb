@@ -6,6 +6,7 @@
 #define V8DebuggerClient_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/v8/EventListenerInfo.h"
 #include "wtf/Allocator.h"
 
 #include <v8.h>
@@ -19,6 +20,7 @@ public:
     virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;
     virtual void quitMessageLoopOnPause() = 0;
+    virtual void eventListeners(v8::Isolate*, v8::Local<v8::Value>, EventListenerInfoMap&) = 0;
 };
 
 } // namespace blink

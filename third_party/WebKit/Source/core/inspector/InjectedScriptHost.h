@@ -74,8 +74,6 @@ public:
         m_client = std::move(injectedScriptHostClient);
     }
 
-    static EventTarget* eventTargetFromV8Value(v8::Isolate*, v8::Local<v8::Value>);
-
     void disconnect();
 
     class InspectableObject {
@@ -89,7 +87,6 @@ public:
     InspectableObject* inspectedObject(unsigned num);
 
     void inspectImpl(PassRefPtr<JSONValue> objectToInspect, PassRefPtr<JSONValue> hints);
-    void getEventListenersImpl(EventTarget*, WillBeHeapVector<EventListenerInfo>& listenersArray);
 
     void clearConsoleMessages();
     void debugFunction(const String& scriptId, int lineNumber, int columnNumber);

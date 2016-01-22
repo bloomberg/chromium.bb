@@ -7,9 +7,9 @@ function test()
     var windowObject;
     var divWithHandlers;
     var divWithoutHandlers;
-
     function dumpListeners(next, listeners)
     {
+        listeners.sort((a, b) => a.type().localeCompare(b.type()));
         for (var i = 0; i < listeners.length; ++i) {
             delete listeners[i]._location.scriptId;
             var sourceURL = listeners[i]._sourceURL;

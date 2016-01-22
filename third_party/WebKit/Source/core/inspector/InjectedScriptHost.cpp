@@ -31,7 +31,6 @@
 #include "core/inspector/InjectedScriptHost.h"
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
@@ -74,11 +73,6 @@ void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JS
         RefPtr<TypeBuilder::Runtime::RemoteObject> remoteObject = TypeBuilder::Runtime::RemoteObject::runtimeCast(object);
         (*m_inspectCallback)(remoteObject, hints->asObject());
     }
-}
-
-void InjectedScriptHost::getEventListenersImpl(EventTarget* target, WillBeHeapVector<EventListenerInfo>& listenersArray)
-{
-    EventListenerInfo::getEventListeners(target, listenersArray, false);
 }
 
 void InjectedScriptHost::clearConsoleMessages()
