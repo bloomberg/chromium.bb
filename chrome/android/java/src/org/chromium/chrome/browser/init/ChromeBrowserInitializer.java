@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
+import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
@@ -137,6 +138,7 @@ public class ChromeBrowserInitializer {
     private void warmUpSharedPrefs() {
         PreferenceManager.getDefaultSharedPreferences(mApplication);
         DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+        ActivityAssigner.warmUpSharedPrefs(mApplication);
     }
 
     private void preInflationStartup() {
