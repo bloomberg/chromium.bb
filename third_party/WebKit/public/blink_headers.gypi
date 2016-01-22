@@ -7,6 +7,7 @@
     'blink_public_sources': [
       "platform/Platform.h",
       "platform/URLConversion.h",
+      "platform/WebApiKeyValidator.h",
       "platform/WebApplicationCacheHost.h",
       "platform/WebApplicationCacheHostClient.h",
       "platform/WebAudioBus.h",

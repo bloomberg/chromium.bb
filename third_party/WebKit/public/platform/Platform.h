@@ -59,6 +59,7 @@ class GrContext;
 
 namespace blink {
 
+class WebApiKeyValidator;
 class WebAudioBus;
 class WebBlobRegistry;
 class WebCanvasCaptureHandler;
@@ -639,6 +640,10 @@ public:
     // Background Sync API------------------------------------------------------------
 
     virtual WebSyncProvider* backgroundSyncProvider() { return nullptr; }
+
+    // Experimental Framework ----------------------------------------------
+
+    virtual WebApiKeyValidator* apiKeyValidator() { return nullptr; }
 
 protected:
     BLINK_PLATFORM_EXPORT Platform();

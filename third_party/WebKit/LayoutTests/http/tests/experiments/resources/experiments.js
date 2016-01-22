@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-<title>Test Sample API when experiment is disabled (no API key)</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script>
+// The sample API integrates experiment checks at various entry points.
 
-// The sample API integrates experiment checks at various entry points. The
-// experiment is not enabled, as no API key is provided. The tests verify that
-// any gated parts of the API are not available.
+// These tests verify that any gated parts of the API are not available.
+expect_failure = () => {
 test(() => {
     assert_idl_attribute(window.internals, 'frobulate');
     assert_throws("NotSupportedError", () => { window.internals.frobulate; },
@@ -20,5 +13,14 @@ test(() => {
     assert_true(window.internals.frobulateNoEnabledCheck,
         'Attribute should return boolean value');
   }, 'Attribute should exist and return value, with experiment disabled');
+};
 
-</script>
+
+// These tests verify that the API functions correctly with an enabled
+// experiment.
+expect_success = () => {
+test(() => {
+    assert_idl_attribute(window.internals, 'frobulate');
+    assert_true(window.internals.frobulate, 'Attribute should return boolean value');
+  }, 'Attribute should exist and return value');
+};

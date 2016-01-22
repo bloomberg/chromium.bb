@@ -10,6 +10,8 @@
 #include "core/html/HTMLMetaElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebApiKeyValidator.h"
 
 namespace blink {
 
@@ -28,7 +30,7 @@ String getDisabledMessage(const String& apiName)
     return "The '" + apiName + "' API is currently enabled in limited experiments. Please see [Chrome experiments website URL] for information on enabling this experiment on your site.";
 }
 
-bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, String* errorMessage)
+bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, String* errorMessage, WebApiKeyValidator* validator)
 {
     bool foundAnyKey = false;
     String origin = getCurrentOrigin(executionContext);
@@ -39,8 +41,11 @@ bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, S
         for (HTMLMetaElement* metaElement = head ? Traversal<HTMLMetaElement>::firstChild(*head) : 0; metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
             if (equalIgnoringCase(metaElement->name(), kExperimentsMetaName)) {
                 foundAnyKey = true;
-                if (equalIgnoringCase(metaElement->content(), apiName))
+                String keyString = metaElement->content();
+                // Check with the validator service to verify the signature.
+                if (validator->validateApiKey(keyString, origin, apiName)) {
                     return true;
+                }
             }
         }
     }
@@ -58,7 +63,7 @@ bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, S
 } // namespace
 
 // static
-bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String& apiName, String* errorMessage)
+bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String& apiName, String* errorMessage, WebApiKeyValidator* validator)
 {
     if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
         if (errorMessage) {
@@ -80,7 +85,17 @@ bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String&
         return false;
     }
 
-    return hasValidAPIKey(executionContext, apiName, errorMessage);
+    if (!validator) {
+        validator = Platform::current()->apiKeyValidator();
+        if (!validator) {
+            if (errorMessage) {
+                *errorMessage = "Experimental Framework is not enabled.";
+            }
+            return false;
+        }
+    }
+
+    return hasValidAPIKey(executionContext, apiName, errorMessage, validator);
 }
 
 // static

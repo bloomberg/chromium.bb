@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class WebApiKeyValidator;
+
 // The Experimental Framework (EF) provides limited access to experimental APIs,
 // on a per-origin basis.  This class provides the implementation to check if
 // the experimental API should be enabled for the current context.  This class
@@ -24,6 +26,12 @@ namespace blink {
 // The EF code does not maintain an enum or constant list for experiment names.
 // Instead, the EF validates the name provided by the API implementation against
 // any provided API keys.
+//
+// This class is not intended to be instantiated. Any required state is kept
+// with a WebApiKeyValidator object held in the Platform object.
+// The static methods in this class may be called either from the main thread
+// or from a worker thread.
+//
 // TODO(chasej): Link to documentation, or provide more detail on keys, .etc
 class CORE_EXPORT Experiments {
 public:
@@ -36,9 +44,13 @@ private:
     friend class ExperimentalFeatures;
     friend class ExperimentsTest;
 
-    explicit Experiments();
+    Experiments();
 
-    static bool isApiEnabled(ExecutionContext*, const String& apiName, String* errorMessage);
+    // Returns true if the API should be considered enabled for the current
+    // execution context. This method usually makes use of the API key validator
+    // object in the platform, but this may be overridden if a custom validator
+    // is required (for testing, for instance).
+    static bool isApiEnabled(ExecutionContext*, const String& apiName, String* errorMessage, WebApiKeyValidator* = nullptr);
 };
 
 } // namespace blink

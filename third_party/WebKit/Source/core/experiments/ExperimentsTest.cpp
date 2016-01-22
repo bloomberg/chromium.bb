@@ -14,6 +14,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebApiKeyValidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -24,6 +25,47 @@ const char* kFrobulateAPIName = "Frobulate";
 const char* kFrobulateEnabledOrigin = "https://www.example.com";
 const char* kFrobulateEnabledOriginUnsecure = "http://www.example.com";
 
+// API Key which will appear valid
+const char* kGoodAPIKey = "AnySignatureWillDo|https://www.example.com|Frobulate|2000000000";
+
+class MockApiKeyValidator : public WebApiKeyValidator {
+public:
+    MockApiKeyValidator()
+        : m_response(false)
+        , m_callCount(0)
+    {
+    }
+    ~MockApiKeyValidator() override {}
+
+    // blink::WebApiKeyValidator implementation
+    bool validateApiKey(const blink::WebString& apiKey, const blink::WebString& origin, const blink::WebString& apiName) override
+    {
+        m_callCount++;
+        return m_response;
+    }
+
+    // Useful methods for controlling the validator
+    void setResponse(bool response)
+    {
+        m_response = response;
+    }
+    void reset()
+    {
+        m_response = false;
+        m_callCount = 0;
+    }
+    int callCount()
+    {
+        return m_callCount;
+    }
+
+private:
+    bool m_response;
+    int m_callCount;
+
+    DISALLOW_COPY_AND_ASSIGN(MockApiKeyValidator);
+};
+
 } // namespace
 
 class ExperimentsTest : public ::testing::Test {
@@ -31,6 +73,7 @@ protected:
     ExperimentsTest()
         : m_page(DummyPageHolder::create())
         , m_frameworkWasEnabled(RuntimeEnabledFeatures::experimentalFrameworkEnabled())
+        , m_apiKeyValidator(adoptPtr(new MockApiKeyValidator()))
     {
         if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
             RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
@@ -59,6 +102,7 @@ protected:
     }
 
     ExecutionContext* executionContext() { return &(m_page->document()); }
+    MockApiKeyValidator* apiKeyValidator() { return m_apiKeyValidator.get(); }
     HTMLDocument& document() const { return *m_document; }
 
     void setPageOrigin(const String& origin)
@@ -74,22 +118,23 @@ protected:
         document().view()->updateAllLifecyclePhases();
     }
 
-    void addApiKey(const char* keyValue)
+    void addApiKey(const String& keyValue)
     {
         HTMLElement* head = document().head();
         ASSERT_TRUE(head);
 
         RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(document());
         meta->setAttribute(HTMLNames::nameAttr, "api-experiments");
-        meta->setAttribute(HTMLNames::contentAttr, keyValue);
+        AtomicString value(keyValue);
+        meta->setAttribute(HTMLNames::contentAttr, value);
         head->appendChild(meta.release());
     }
 
-    bool isApiEnabled(const String& origin, const String& apiName, const char* apiKeyValue, String* errorMessage)
+    bool isApiEnabled(const String& origin, const String& apiName, const String& apiKeyValue, String* errorMessage)
     {
         setPageOrigin(origin);
         addApiKey(apiKeyValue);
-        return Experiments::isApiEnabled(executionContext(), apiName, errorMessage);
+        return Experiments::isApiEnabled(executionContext(), apiName, errorMessage, apiKeyValidator());
     }
 
     bool isApiEnabledWithoutErrorMessage(const String& origin, const String& apiName, const char* apiKeyValue)
@@ -101,6 +146,7 @@ private:
     OwnPtr<DummyPageHolder> m_page;
     RefPtrWillBePersistent<HTMLDocument> m_document;
     const bool m_frameworkWasEnabled;
+    OwnPtr<MockApiKeyValidator> m_apiKeyValidator;
 };
 
 TEST_F(ExperimentsTest, EnabledNonExistingAPI)
@@ -108,7 +154,7 @@ TEST_F(ExperimentsTest, EnabledNonExistingAPI)
     String errorMessage;
     bool isNonExistingApiEnabled = isApiEnabled(kFrobulateEnabledOrigin,
         kNonExistingAPIName,
-        kFrobulateAPIName /* Use existing api name as the key value */,
+        kGoodAPIKey,
         &errorMessage);
     EXPECT_FALSE(isNonExistingApiEnabled);
     EXPECT_EQ(("The provided key(s) are not valid for the 'This API does not exist' API."), errorMessage);
@@ -119,7 +165,7 @@ TEST_F(ExperimentsTest, EnabledNonExistingAPIWithoutErrorMessage)
     bool isNonExistingApiEnabled = isApiEnabledWithoutErrorMessage(
         kFrobulateEnabledOrigin,
         kNonExistingAPIName,
-        kFrobulateAPIName /* Use existing api name as the key value */);
+        kGoodAPIKey);
     EXPECT_FALSE(isNonExistingApiEnabled);
 }
 
@@ -127,21 +173,40 @@ TEST_F(ExperimentsTest, EnabledNonExistingAPIWithoutErrorMessage)
 TEST_F(ExperimentsTest, EnabledSecureRegisteredOrigin)
 {
     String errorMessage;
+    apiKeyValidator()->setResponse(true);
     bool isOriginEnabled = isApiEnabled(kFrobulateEnabledOrigin,
         kFrobulateAPIName,
-        kFrobulateAPIName /* Use just the api name as the key value */,
+        kGoodAPIKey,
         &errorMessage);
     EXPECT_TRUE(isOriginEnabled);
-    EXPECT_TRUE(errorMessage.isEmpty());
+    EXPECT_TRUE(errorMessage.isEmpty()) << "Message should be empty, was: " << errorMessage;
+    EXPECT_EQ(1, apiKeyValidator()->callCount());
+}
+
+// ... but if the browser says it's invalid for any reason, that's enough to
+// reject.
+TEST_F(ExperimentsTest, InvalidKeyResponseFromPlatform)
+{
+    String errorMessage;
+    apiKeyValidator()->setResponse(false);
+    bool isOriginEnabled = isApiEnabled(kFrobulateEnabledOrigin,
+        kFrobulateAPIName,
+        kGoodAPIKey,
+        &errorMessage);
+    EXPECT_FALSE(isOriginEnabled);
+    EXPECT_EQ(("The provided key(s) are not valid for the 'Frobulate' API."), errorMessage);
+    EXPECT_EQ(1, apiKeyValidator()->callCount());
 }
 
 TEST_F(ExperimentsTest, EnabledSecureRegisteredOriginWithoutErrorMessage)
 {
+    apiKeyValidator()->setResponse(true);
     bool isOriginEnabled = isApiEnabledWithoutErrorMessage(
         kFrobulateEnabledOrigin,
         kFrobulateAPIName,
-        kFrobulateAPIName /* Use just the api name as the key value */);
+        kGoodAPIKey);
     EXPECT_TRUE(isOriginEnabled);
+    EXPECT_EQ(1, apiKeyValidator()->callCount());
 }
 
 // The API should not be enabled if the origin is unsecure, even if a valid
@@ -151,10 +216,11 @@ TEST_F(ExperimentsTest, EnabledNonSecureRegisteredOrigin)
     String errorMessage;
     bool isOriginEnabled = isApiEnabled(kFrobulateEnabledOriginUnsecure,
         kFrobulateAPIName,
-        kFrobulateAPIName /* Use just the api name as the key value */,
+        kGoodAPIKey,
         &errorMessage);
     EXPECT_FALSE(isOriginEnabled);
     EXPECT_TRUE(errorMessage.contains("secure origin")) << "Message should indicate only secure origins are allowed, was: " << errorMessage;
+    EXPECT_EQ(0, apiKeyValidator()->callCount());
 }
 
 TEST_F(ExperimentsTest, DisabledException)

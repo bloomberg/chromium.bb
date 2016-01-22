@@ -86,6 +86,8 @@
       'child/dwrite_font_proxy/dwrite_font_proxy_win.h',
       'child/dwrite_font_proxy/dwrite_localized_strings_win.cc',
       'child/dwrite_font_proxy/dwrite_localized_strings_win.h',
+      'child/experiments/api_key_validator.cc',
+      'child/experiments/api_key_validator.h',
       'child/file_info_util.cc',
       'child/file_info_util.h',
       'child/fileapi/file_system_dispatcher.cc',
