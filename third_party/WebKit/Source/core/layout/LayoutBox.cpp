@@ -2221,16 +2221,21 @@ static bool isStretchingColumnFlexItem(const LayoutObject* flexitem)
     return false;
 }
 
-// TODO (lajava) can/should move this inside specific layout classes (flex. grid)  ? Can we reactoring columnFlexItemHasStretchAlignment logic ?
+// TODO (lajava) Can/Should we move this inside specific layout classes (flex. grid)? Can we refactor columnFlexItemHasStretchAlignment logic?
 bool LayoutBox::hasStretchedLogicalWidth() const
 {
-    LayoutBlock* cb = containingBlock();
     const ComputedStyle& style = styleRef();
-    bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
-    bool allowedToStretch = style.logicalWidth().isAuto() && !style.marginStart().isAuto() && !style.marginEnd().isAuto();
-    if (hasPerpendicularContainingBlock)
-        return allowedToStretch && ComputedStyle::resolveAlignment(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
-    return allowedToStretch && ComputedStyle::resolveJustification(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
+    if (!style.logicalWidth().isAuto() || style.marginStart().isAuto() || style.marginEnd().isAuto())
+        return false;
+    LayoutBlock* cb = containingBlock();
+    if (!cb) {
+        // We are evaluating align-self/justify-self, which default to 'normal' for the root element.
+        // The 'normal' value behaves like 'start' except for Flexbox Items, which obviously should have a container.
+        return false;
+    }
+    if (cb->isHorizontalWritingMode() != isHorizontalWritingMode())
+        return ComputedStyle::resolveAlignment(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
+    return ComputedStyle::resolveJustification(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
 }
 
 bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
