@@ -295,16 +295,8 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
 
     PseudoId dynamicPseudo = result.dynamicPseudo;
-    // a selector is invalid if something follows a pseudo-element
-    // We make an exception for scrollbar pseudo elements and allow a set of pseudo classes (but nothing else)
-    // to follow the pseudo elements.
     nextContext.hasScrollbarPseudo = dynamicPseudo != NOPSEUDO && (context.scrollbar || dynamicPseudo == SCROLLBAR_CORNER || dynamicPseudo == RESIZER);
     nextContext.hasSelectionPseudo = dynamicPseudo == SELECTION;
-    if ((context.inRightmostCompound || m_mode == CollectingCSSRules || m_mode == CollectingStyleRules || m_mode == QueryingRules) && dynamicPseudo != NOPSEUDO
-        && !nextContext.hasSelectionPseudo
-        && !(nextContext.hasScrollbarPseudo && nextContext.selector->match() == CSSSelector::PseudoClass))
-        return SelectorFailsCompletely;
-
     nextContext.isSubSelector = true;
     return matchSelector(nextContext, result);
 }
