@@ -17,9 +17,16 @@
 #include "base/values.h"
 
 namespace {
+
 // Initialize histogram statistics gathering system.
 base::LazyInstance<base::StatisticsRecorder>::Leaky g_statistics_recorder_ =
     LAZY_INSTANCE_INITIALIZER;
+
+bool HistogramNameLesser(const base::HistogramBase* a,
+                         const base::HistogramBase* b) {
+  return a->histogram_name() < b->histogram_name();
+}
+
 }  // namespace
 
 namespace base {
@@ -142,6 +149,7 @@ void StatisticsRecorder::WriteHTMLGraph(const std::string& query,
 
   Histograms snapshot;
   GetSnapshot(query, &snapshot);
+  std::sort(snapshot.begin(), snapshot.end(), &HistogramNameLesser);
   for (const HistogramBase* histogram : snapshot) {
     histogram->WriteHTMLGraph(output);
     output->append("<br><hr><br>");
@@ -160,6 +168,7 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
 
   Histograms snapshot;
   GetSnapshot(query, &snapshot);
+  std::sort(snapshot.begin(), snapshot.end(), &HistogramNameLesser);
   for (const HistogramBase* histogram : snapshot) {
     histogram->WriteAscii(output);
     output->append("\n");
