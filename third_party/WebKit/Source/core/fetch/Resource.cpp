@@ -1159,8 +1159,9 @@ bool Resource::isLoadEventBlockingResourceType() const
     return false;
 }
 
-#if !LOG_DISABLED
-const char* ResourceTypeName(Resource::Type type)
+// Do not modify existing strings below because they are used as UMA names.
+// https://crbug.com/579496
+const char* Resource::resourceTypeName(Resource::Type type)
 {
     switch (type) {
     case Resource::MainResource:
@@ -1195,6 +1196,5 @@ const char* ResourceTypeName(Resource::Type type)
     ASSERT_NOT_REACHED();
     return "Unknown";
 }
-#endif // !LOG_DISABLED
 
 } // namespace blink

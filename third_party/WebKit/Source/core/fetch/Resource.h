@@ -265,6 +265,7 @@ public:
     virtual void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const;
 
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
+    static const char* resourceTypeName(Type);
 
     // TODO(japhet): Remove once oilpan ships, it doesn't need the WeakPtr.
     WeakPtrWillBeRawPtr<Resource> asWeakPtr();
@@ -441,11 +442,6 @@ protected:
 
     Resource::Type m_type;
 };
-
-#if !LOG_DISABLED
-// Intended to be used in LOG statements.
-const char* ResourceTypeName(Resource::Type);
-#endif
 
 #define DEFINE_RESOURCE_TYPE_CASTS(typeName) \
     DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->type() == Resource::typeName, resource.type() == Resource::typeName); \

@@ -3030,6 +3030,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.MemoryCache.RevalidationPolicy"
+    enum="RevalidationPolicy">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    RevalidationPolicy used for each resource type. https://crbug.com/579496
+  </summary>
+</histogram>
+
 <histogram name="Blink.RestoredCachedStyleSheet"
     enum="RestoredCachedStyleSheet">
   <obsolete>
@@ -76155,6 +76163,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Cached StyleSheetContents was reused"/>
 </enum>
 
+<enum name="RevalidationPolicy" type="int">
+  <int value="0" label="Use"/>
+  <int value="1" label="Revalidate"/>
+  <int value="2" label="Reload"/>
+  <int value="3" label="Load"/>
+</enum>
+
 <enum name="RunningMode" type="int">
   <int value="0" label="Document Mode"/>
   <int value="1" label="Tabbed Mode"/>
@@ -85901,6 +85916,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ResourceScheduler.ClientLoadedTime.Other"/>
   <affected-histogram
       name="ResourceScheduler.ClientLoadedTime.Other.SwitchedToActive"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourceType" separator=".">
+  <suffix name="MainResource"/>
+  <suffix name="Image"/>
+  <suffix name="CSSStyleSheet"/>
+  <suffix name="Script"/>
+  <suffix name="Font"/>
+  <suffix name="Raw"/>
+  <suffix name="SVGDocument"/>
+  <suffix name="XSLStyleSheet"/>
+  <suffix name="LinkPrefetch"/>
+  <suffix name="LinkSubresource"/>
+  <suffix name="TextTrack"/>
+  <suffix name="ImportResource"/>
+  <suffix name="Media"/>
+  <suffix name="Manifest"/>
+  <affected-histogram name="Blink.MemoryCache.RevalidationPolicy"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SafeBrowsingLists" separator=".">

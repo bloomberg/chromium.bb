@@ -349,7 +349,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     KURL url = request.resourceRequest().url();
     TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url", urlForTraceEvent(url));
 
-    WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), ResourceTypeName(factory.type()));
+    WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), Resource::resourceTypeName(factory.type()));
 
     // If only the fragment identifiers differ, it is the same resource.
     url = MemoryCache::removeFragmentIdentifierIfNeeded(url);
@@ -386,6 +386,11 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     moveCachedNonBlockingResourceToBlocking(resource.get(), request);
 
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
+
+    String histogramName = "Blink.MemoryCache.RevalidationPolicy.";
+    histogramName.append(Resource::resourceTypeName(factory.type()));
+    Platform::current()->histogramEnumeration(histogramName.utf8().data(), policy, Load + 1);
+
     switch (policy) {
     case Reload:
         memoryCache()->remove(resource.get());
