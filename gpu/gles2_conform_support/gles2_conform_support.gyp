@@ -12,17 +12,9 @@
       'native/main.cc',
     ],
    'conditions': [
-     ['OS=="linux"', {
+     ['OS=="linux" or OS=="win"', {
        'bootstrap_sources_native': [
          'native/egl_native.cc',
-         'native/egl_native_aura.cc',
-         'native/egl_native_x11.cc',
-       ],
-     }],
-     ['OS=="win"', {
-       'bootstrap_sources_native': [
-         'native/egl_native.cc',
-         'native/egl_native_win.cc',
        ],
      }],
    ],
