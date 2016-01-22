@@ -210,6 +210,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_CONIC_MEASURE
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAPS
+#   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAPS
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_GETTOPDEVICE
 #   define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
