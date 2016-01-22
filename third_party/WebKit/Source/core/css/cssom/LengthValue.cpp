@@ -62,7 +62,7 @@ LengthValue* LengthValue::fromDictionary(const CalcDictionary& dictionary, Excep
     return StyleCalcLength::create(dictionary, exceptionState);
 }
 
-LengthValue* LengthValue::clone()
+LengthValue* LengthValue::clone() const
 {
     if (type() == SimpleLengthType) {
         const SimpleLength* simpleLengthThis = toSimpleLength(this);
