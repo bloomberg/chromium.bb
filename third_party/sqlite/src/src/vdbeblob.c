@@ -76,7 +76,7 @@ static int blobSeekToRow(Incrblob *p, sqlite3_int64 iRow, char **pzErr){
     }else{
       p->iOffset = pC->aType[p->iCol + pC->nField];
       p->nByte = sqlite3VdbeSerialTypeLen(type);
-      p->pCsr =  pC->pCursor;
+      p->pCsr =  pC->uc.pCursor;
       sqlite3BtreeIncrblobCursor(p->pCsr);
     }
   }
@@ -153,8 +153,18 @@ int sqlite3_blob_open(
   Parse *pParse = 0;
   Incrblob *pBlob = 0;
 
-  flags = !!flags;                /* flags = (flags ? 1 : 0); */
+#ifdef SQLITE_ENABLE_API_ARMOR
+  if( ppBlob==0 ){
+    return SQLITE_MISUSE_BKPT;
+  }
+#endif
   *ppBlob = 0;
+#ifdef SQLITE_ENABLE_API_ARMOR
+  if( !sqlite3SafetyCheckOk(db) || zTable==0 ){
+    return SQLITE_MISUSE_BKPT;
+  }
+#endif
+  flags = !!flags;                /* flags = (flags ? 1 : 0); */
 
   sqlite3_mutex_enter(db->mutex);
 
@@ -237,7 +247,8 @@ int sqlite3_blob_open(
       for(pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext){
         int j;
         for(j=0; j<pIdx->nKeyCol; j++){
-          if( pIdx->aiColumn[j]==iCol ){
+          /* FIXME: Be smarter about indexes that use expressions */
+          if( pIdx->aiColumn[j]==iCol || pIdx->aiColumn[j]==XN_EXPR ){
             zFault = "indexed";
           }
         }
@@ -368,10 +379,9 @@ static int blobReadWrite(
   sqlite3_mutex_enter(db->mutex);
   v = (Vdbe*)p->pStmt;
 
-  if( n<0 || iOffset<0 || (iOffset+n)>p->nByte ){
+  if( n<0 || iOffset<0 || ((sqlite3_int64)iOffset+n)>p->nByte ){
     /* Request is out of range. Return a transient error. */
     rc = SQLITE_ERROR;
-    sqlite3Error(db, SQLITE_ERROR);
   }else if( v==0 ){
     /* If there is no statement handle, then the blob-handle has
     ** already been invalidated. Return SQLITE_ABORT in this case.
@@ -389,10 +399,10 @@ static int blobReadWrite(
       sqlite3VdbeFinalize(v);
       p->pStmt = 0;
     }else{
-      db->errCode = rc;
       v->rc = rc;
     }
   }
+  sqlite3Error(db, rc);
   rc = sqlite3ApiExit(db, rc);
   sqlite3_mutex_leave(db->mutex);
   return rc;

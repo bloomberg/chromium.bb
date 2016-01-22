@@ -212,40 +212,38 @@ distinct CLs.
 
 Prerequisites: The test suite requires tcl-dev and libicu-dev.  Install those on
 Ubuntu like:
-  sudo apt-get install tcl8.5-dev libicu-dev
-On OSX, I use Homebrew:
+  sudo apt-get install tcl8.6-dev libicu-dev
+On OSX, I use MacPorts:
   sudo port install tcl
-TODO(shess): OSX works fine with either tcl8.5 or tcl8.6, but on Ubuntu 14.04.1
-with tcl8.6, I see crashes in some of the WAL tests.  Revisit using tcl8.6 on
-next import of SQLite.
-TODO(shess): That Homebrew command has installed tcl8.6 for a few years, so the
-above may require some adaptation of the build files.
 
 cd third_party/sqlite/src
 mkdir build
 cd build
-make -j -f ../Makefile.linux-gcc testfixture sqlite3
+# This sometimes gives integer-size warnings on the differences between
+# Tcl_WideInt and sqlite3_int64 and int64.  Usually this is easily fixed by
+# changing a variable to Tcl_WideInt.
+make -j -f ../Makefile.linux-gcc testfixture sqlite3 sqlite3_analyzer sqldiff
 make -f ../Makefile.linux-gcc test > /tmp/test.log
 egrep 'errors out of' /tmp/test.log 
 # Show broken tests:
 egrep 'Failures on these tests:' /tmp/test.log
 # Broken tests will also show lines ending in "..." instead of "... Ok".
 
-In version 3.8.7.4 on OSX 10.9.5, I see:
-   6 errors out of 138390 tests
+In version 3.10.2 on OSX 10.11.2, I see:
+   6 errors out of 139819 tests
 The failed tests are:
    pager4-1.3 pager4-1.4 pager4-1.5 pager4-1.9 pager4-1.10 pager4-1.11
 This is due to the change in os_unix.c fileHasMoved() to support WebDatabase.
 Commenting out the early return allows them to succeed.
 
-In version 3.8.7.4 on Ubuntu 14.04 I see:
-   9 errors out of 138920 tests
+In version 3.10.2 on Ubuntu 14.04.3 I see:
+   9 errors out of 140309 tests
 The failed tests are:
    oserror-1.1.1 oserror-1.1.2 oserror-1.1.3
    pager4-1.3 pager4-1.4 pager4-1.5 pager4-1.9 pager4-1.10 pager4-1.11
 The oserror tests fail because there are too many fds available, and can be
 fixed by running "ulimit -n 1024" before the test.  The pager4 tests are failing
-for the same reason as above.
+for the same reason as for OSX.
 
 --
 

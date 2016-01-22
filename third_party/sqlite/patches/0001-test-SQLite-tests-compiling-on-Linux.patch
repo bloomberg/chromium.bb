@@ -1,14 +1,15 @@
-From 3418fd3e3a60fe9f8b6c52f2aad93dcdf3b7af93 Mon Sep 17 00:00:00 2001
+From 35703557681c70acd710c1ee83f1ef54eef06df8 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Fri, 16 Jan 2015 10:24:30 -0800
-Subject: [PATCH 01/16] [test] SQLite tests compiling on Linux.
+Subject: [PATCH 01/10] [test] SQLite tests compiling on Linux.
 
 ---
- third_party/sqlite/src/Makefile.linux-gcc | 42 ++++++++++++++++++++++---------
- 1 file changed, 30 insertions(+), 12 deletions(-)
+ third_party/sqlite/src/Makefile.linux-gcc | 41 ++++++++++++++++++++++---------
+ third_party/sqlite/src/main.mk            |  2 +-
+ 2 files changed, 30 insertions(+), 13 deletions(-)
 
 diff --git a/third_party/sqlite/src/Makefile.linux-gcc b/third_party/sqlite/src/Makefile.linux-gcc
-index 1c9f24f..6d67ba7 100644
+index 1491a4b..a1dec21 100644
 --- a/third_party/sqlite/src/Makefile.linux-gcc
 +++ b/third_party/sqlite/src/Makefile.linux-gcc
 @@ -14,7 +14,7 @@
@@ -71,7 +72,7 @@ index 1c9f24f..6d67ba7 100644
  
  #### The suffix to add to executable files.  ".exe" for windows.
  #    Nothing for unix.
-@@ -70,7 +88,7 @@ EXE =
+@@ -70,7 +87,7 @@ EXE =
  #    will run on the target platform.  This is usually the same
  #    as BCC, unless you are cross-compiling.
  #
@@ -80,12 +81,12 @@ index 1c9f24f..6d67ba7 100644
  #TCC = gcc -g -O0 -Wall
  #TCC = gcc -g -O0 -Wall -fprofile-arcs -ftest-coverage
  #TCC = /opt/mingw/bin/i386-mingw32-gcc -O6
-@@ -91,16 +109,16 @@ SHPREFIX = lib
+@@ -91,16 +108,16 @@ SHPREFIX = lib
  
  #### Extra compiler options needed for programs that use the TCL library.
  #
 -#TCL_FLAGS =
-+TCL_FLAGS = -I/usr/include/tcl8.5
++TCL_FLAGS = -I/usr/include/tcl8.6
  #TCL_FLAGS = -DSTATIC_BUILD=1
 -TCL_FLAGS = -I/home/drh/tcltk/8.5linux
 +#TCL_FLAGS = -I/home/drh/tcltk/8.5linux
@@ -96,11 +97,24 @@ index 1c9f24f..6d67ba7 100644
  #
 -#LIBTCL = -ltcl -lm -ldl
 -LIBTCL = /home/drh/tcltk/8.5linux/libtcl8.5g.a -lm -ldl
-+LIBTCL = -ltcl8.5 -lm -ldl
++LIBTCL = -ltcl8.6 -lm -ldl
 +#LIBTCL = /home/drh/tcltk/8.5linux/libtcl8.5g.a -lm -ldl
  #LIBTCL = /home/drh/tcltk/8.5win/libtcl85s.a -lmsvcrt
  #LIBTCL = /home/drh/tcltk/8.3hpux/libtcl8.3.a -ldld -lm -lc
  
+diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
+index e6ca1ac..fcc0270 100644
+--- a/third_party/sqlite/src/main.mk
++++ b/third_party/sqlite/src/main.mk
+@@ -714,7 +714,7 @@ sqlite3_analyzer.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/spaceanal.tcl
+ 	echo "; return zMainloop; }" >> $@
+ 
+ sqlite3_analyzer$(EXE): sqlite3_analyzer.c
+-	$(TCCX) $(TCL_FLAGS) sqlite3_analyzer.c -o $@ $(LIBTCL) $(THREADLIB) 
++	$(TCCX) $(TCL_FLAGS) sqlite3_analyzer.c -o $@ $(LIBTCL) $(TLIBS) $(THREADLIB)
+ 
+ # Rules to build the 'testfixture' application.
+ #
 -- 
-2.2.1
+2.7.0
 

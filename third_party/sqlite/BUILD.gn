@@ -80,6 +80,11 @@ if (!use_system_sqlite) {
       # TODO(shess): Upstream the ability to use this define.
       "SQLITE_MMAP_READ_ONLY=1",
 
+      # By default SQLite pre-allocates 100 pages of pcache data, which will not
+      # be released until the handle is closed.  This is contrary to Chromium's
+      # memory-usage goals.
+      "SQLITE_DEFAULT_PCACHE_INITSZ=0",
+
       # NOTE(shess): Some defines can affect the amalgamation.  Those should be
       # added to google_generate_amalgamation.sh, and the amalgamation
       # re-generated.  Usually this involves disabling features which include

@@ -25,6 +25,14 @@
 **                        hundreds of new commands used for testing
 **                        SQLite.  This option implies -DSQLITE_TCLMD5.
 */
+
+/*
+** If requested, include the SQLite compiler options file for MSVC.
+*/
+#if defined(INCLUDE_MSVC_H)
+#include "msvc.h"
+#endif
+
 #include "tcl.h"
 #include <errno.h>
 
@@ -635,6 +643,7 @@ static int DbWalHandler(
   Tcl_Interp *interp = pDb->interp;
   assert(pDb->pWalHook);
 
+  assert( db==pDb->db );
   p = Tcl_DuplicateObj(pDb->pWalHook);
   Tcl_IncrRefCount(p);
   Tcl_ListObjAppendElement(interp, p, Tcl_NewStringObj(zDb, -1));
@@ -652,9 +661,9 @@ static int DbWalHandler(
 #if defined(SQLITE_TEST) && defined(SQLITE_ENABLE_UNLOCK_NOTIFY)
 static void setTestUnlockNotifyVars(Tcl_Interp *interp, int iArg, int nArg){
   char zBuf[64];
-  sprintf(zBuf, "%d", iArg);
+  sqlite3_snprintf(sizeof(zBuf), zBuf, "%d", iArg);
   Tcl_SetVar(interp, "sqlite_unlock_notify_arg", zBuf, TCL_GLOBAL_ONLY);
-  sprintf(zBuf, "%d", nArg);
+  sqlite3_snprintf(sizeof(zBuf), zBuf, "%d", nArg);
   Tcl_SetVar(interp, "sqlite_unlock_notify_argcount", zBuf, TCL_GLOBAL_ONLY);
 }
 #else
@@ -1084,10 +1093,10 @@ static int dbPrepareAndBind(
   SqlPreparedStmt **ppPreStmt     /* OUT: Object used to cache statement */
 ){
   const char *zSql = zIn;         /* Pointer to first SQL statement in zIn */
-  sqlite3_stmt *pStmt;            /* Prepared statement object */
+  sqlite3_stmt *pStmt = 0;        /* Prepared statement object */
   SqlPreparedStmt *pPreStmt;      /* Pointer to cached statement */
   int nSql;                       /* Length of zSql in bytes */
-  int nVar;                       /* Number of variables in statement */
+  int nVar = 0;                   /* Number of variables in statement */
   int iParm = 0;                  /* Next free entry in apParm */
   char c;
   int i;
@@ -1182,7 +1191,7 @@ static int dbPrepareAndBind(
         int n;
         u8 *data;
         const char *zType = (pVar->typePtr ? pVar->typePtr->name : "");
-        char c = zType[0];
+        c = zType[0];
         if( zVar[0]=='@' ||
            (c=='b' && strcmp(zType,"bytearray")==0 && pVar->bytes==0) ){
           /* Load a BLOB type if the Tcl variable is a bytearray and
@@ -2289,7 +2298,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       }
       Tcl_DecrRefCount(pRet);
     }else{
-      ClientData cd[2];
+      ClientData cd2[2];
       DbEvalContext *p;
       Tcl_Obj *pArray = 0;
       Tcl_Obj *pScript;
@@ -2303,42 +2312,57 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       p = (DbEvalContext *)Tcl_Alloc(sizeof(DbEvalContext));
       dbEvalInit(p, pDb, objv[2], pArray);
 
-      cd[0] = (void *)p;
-      cd[1] = (void *)pScript;
-      rc = DbEvalNextCmd(cd, interp, TCL_OK);
+      cd2[0] = (void *)p;
+      cd2[1] = (void *)pScript;
+      rc = DbEvalNextCmd(cd2, interp, TCL_OK);
     }
     break;
   }
 
   /*
-  **     $db function NAME [-argcount N] SCRIPT
+  **     $db function NAME [-argcount N] [-deterministic] SCRIPT
   **
   ** Create a new SQL function called NAME.  Whenever that function is
   ** called, invoke SCRIPT to evaluate the function.
   */
   case DB_FUNCTION: {
+    int flags = SQLITE_UTF8;
     SqlFunc *pFunc;
     Tcl_Obj *pScript;
     char *zName;
     int nArg = -1;
-    if( objc==6 ){
-      const char *z = Tcl_GetString(objv[3]);
+    int i;
+    if( objc<4 ){
+      Tcl_WrongNumArgs(interp, 2, objv, "NAME ?SWITCHES? SCRIPT");
+      return TCL_ERROR;
+    }
+    for(i=3; i<(objc-1); i++){
+      const char *z = Tcl_GetString(objv[i]);
       int n = strlen30(z);
       if( n>2 && strncmp(z, "-argcount",n)==0 ){
-        if( Tcl_GetIntFromObj(interp, objv[4], &nArg) ) return TCL_ERROR;
+        if( i==(objc-2) ){
+          Tcl_AppendResult(interp, "option requires an argument: ", z, 0);
+          return TCL_ERROR;
+        }
+        if( Tcl_GetIntFromObj(interp, objv[i+1], &nArg) ) return TCL_ERROR;
         if( nArg<0 ){
           Tcl_AppendResult(interp, "number of arguments must be non-negative",
                            (char*)0);
           return TCL_ERROR;
         }
+        i++;
+      }else
+      if( n>2 && strncmp(z, "-deterministic",n)==0 ){
+        flags |= SQLITE_DETERMINISTIC;
+      }else{
+        Tcl_AppendResult(interp, "bad option \"", z, 
+            "\": must be -argcount or -deterministic", 0
+        );
+        return TCL_ERROR;
       }
-      pScript = objv[5];
-    }else if( objc!=4 ){
-      Tcl_WrongNumArgs(interp, 2, objv, "NAME [-argcount N] SCRIPT");
-      return TCL_ERROR;
-    }else{
-      pScript = objv[3];
     }
+
+    pScript = objv[objc-1];
     zName = Tcl_GetStringFromObj(objv[2], 0);
     pFunc = findSqlFunc(pDb, zName);
     if( pFunc==0 ) return TCL_ERROR;
@@ -2348,7 +2372,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     pFunc->pScript = pScript;
     Tcl_IncrRefCount(pScript);
     pFunc->useEvalObjv = safeToUseEvalObjv(interp, pScript);
-    rc = sqlite3_create_function(pDb->db, zName, nArg, SQLITE_UTF8,
+    rc = sqlite3_create_function(pDb->db, zName, nArg, flags,
         pFunc, tclSqlFunc, 0, 0);
     if( rc!=SQLITE_OK ){
       rc = TCL_ERROR;
@@ -3101,7 +3125,7 @@ static int DbMain(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 ** The EXTERN macros are required by TCL in order to work on windows.
 */
 EXTERN int Sqlite3_Init(Tcl_Interp *interp){
-  int rc = Tcl_InitStubs(interp, "8.4", 0)==0 ? TCL_ERROR : TCL_OK;
+  int rc = Tcl_InitStubs(interp, "8.4", 0) ? TCL_OK : TCL_ERROR;
   if( rc==TCL_OK ){
     Tcl_CreateObjCommand(interp, "sqlite3", (Tcl_ObjCmdProc*)DbMain, 0, 0);
 #ifndef SQLITE_3_SUFFIX_ONLY
@@ -3420,7 +3444,7 @@ static void MD5DigestToBase10x8(unsigned char digest[16], char zDigest[50]){
   for(i=j=0; i<16; i+=2){
     x = digest[i]*256 + digest[i+1];
     if( i>0 ) zDigest[j++] = '-';
-    sprintf(&zDigest[j], "%05u", x);
+    sqlite3_snprintf(50-j, &zDigest[j], "%05u", x);
     j += 5;
   }
   zDigest[j] = 0;
@@ -3641,7 +3665,46 @@ static int db_use_legacy_prepare_cmd(
   Tcl_ResetResult(interp);
   return TCL_OK;
 }
-#endif
+
+/*
+** Tclcmd: db_last_stmt_ptr DB
+**
+**   If the statement cache associated with database DB is not empty,
+**   return the text representation of the most recently used statement
+**   handle.
+*/
+static int db_last_stmt_ptr(
+  ClientData cd,
+  Tcl_Interp *interp,
+  int objc,
+  Tcl_Obj *CONST objv[]
+){
+  extern int sqlite3TestMakePointerStr(Tcl_Interp*, char*, void*);
+  Tcl_CmdInfo cmdInfo;
+  SqliteDb *pDb;
+  sqlite3_stmt *pStmt = 0;
+  char zBuf[100];
+
+  if( objc!=2 ){
+    Tcl_WrongNumArgs(interp, 1, objv, "DB");
+    return TCL_ERROR;
+  }
+
+  if( !Tcl_GetCommandInfo(interp, Tcl_GetString(objv[1]), &cmdInfo) ){
+    Tcl_AppendResult(interp, "no such db: ", Tcl_GetString(objv[1]), (char*)0);
+    return TCL_ERROR;
+  }
+  pDb = (SqliteDb*)cmdInfo.objClientData;
+
+  if( pDb->stmtList ) pStmt = pDb->stmtList->pStmt;
+  if( sqlite3TestMakePointerStr(interp, zBuf, pStmt) ){
+    return TCL_ERROR;
+  }
+  Tcl_SetResult(interp, zBuf, TCL_VOLATILE);
+
+  return TCL_OK;
+}
+#endif /* SQLITE_TEST */
 
 /*
 ** Configure the interpreter passed as the first argument to have access
@@ -3661,17 +3724,6 @@ static void init_all(Tcl_Interp *interp){
   Md5_Init(interp);
 #endif
 
-  /* Install the [register_dbstat_vtab] command to access the implementation
-  ** of virtual table dbstat (source file test_stat.c). This command is
-  ** required for testfixture and sqlite3_analyzer, but not by the production
-  ** Tcl extension.  */
-#if defined(SQLITE_TEST) || TCLSH==2
-  {
-    extern int SqlitetestStat_Init(Tcl_Interp*);
-    SqlitetestStat_Init(interp);
-  }
-#endif
-
 #ifdef SQLITE_TEST
   {
     extern int Sqliteconfig_Init(Tcl_Interp*);
@@ -3686,6 +3738,7 @@ static void init_all(Tcl_Interp *interp){
     extern int Sqlitetest9_Init(Tcl_Interp*);
     extern int Sqlitetestasync_Init(Tcl_Interp*);
     extern int Sqlitetest_autoext_Init(Tcl_Interp*);
+    extern int Sqlitetest_blob_Init(Tcl_Interp*);
     extern int Sqlitetest_demovfs_Init(Tcl_Interp *);
     extern int Sqlitetest_func_Init(Tcl_Interp*);
     extern int Sqlitetest_hexio_Init(Tcl_Interp*);
@@ -3707,7 +3760,8 @@ static void init_all(Tcl_Interp *interp){
     extern int Sqlitemultiplex_Init(Tcl_Interp*);
     extern int SqliteSuperlock_Init(Tcl_Interp*);
     extern int SqlitetestSyscall_Init(Tcl_Interp*);
-
+    extern int Fts5tcl_Init(Tcl_Interp *);
+    extern int SqliteRbu_Init(Tcl_Interp*);
 #if defined(SQLITE_ENABLE_FTS3) || defined(SQLITE_ENABLE_FTS4)
     extern int Sqlitetestfts3_Init(Tcl_Interp *interp);
 #endif
@@ -3729,6 +3783,7 @@ static void init_all(Tcl_Interp *interp){
     Sqlitetest9_Init(interp);
     Sqlitetestasync_Init(interp);
     Sqlitetest_autoext_Init(interp);
+    Sqlitetest_blob_Init(interp);
     Sqlitetest_demovfs_Init(interp);
     Sqlitetest_func_Init(interp);
     Sqlitetest_hexio_Init(interp);
@@ -3749,6 +3804,8 @@ static void init_all(Tcl_Interp *interp){
     Sqlitemultiplex_Init(interp);
     SqliteSuperlock_Init(interp);
     SqlitetestSyscall_Init(interp);
+    Fts5tcl_Init(interp);
+    SqliteRbu_Init(interp);
 
 #if defined(SQLITE_ENABLE_FTS3) || defined(SQLITE_ENABLE_FTS4)
     Sqlitetestfts3_Init(interp);
@@ -3760,6 +3817,9 @@ static void init_all(Tcl_Interp *interp){
     Tcl_CreateObjCommand(
         interp, "db_use_legacy_prepare", db_use_legacy_prepare_cmd, 0, 0
     );
+    Tcl_CreateObjCommand(
+        interp, "db_last_stmt_ptr", db_last_stmt_ptr, 0, 0
+    );
 
 #ifdef SQLITE_SSE
     Sqlitetestsse_Init(interp);
@@ -3767,6 +3827,11 @@ static void init_all(Tcl_Interp *interp){
   }
 #endif
 }
+
+/* Needed for the setrlimit() system call on unix */
+#if defined(unix)
+#include <sys/resource.h>
+#endif
 
 #define TCLSH_MAIN main   /* Needed to fake out mktclapp */
 int TCLSH_MAIN(int argc, char **argv){
@@ -3780,6 +3845,17 @@ int TCLSH_MAIN(int argc, char **argv){
     fgetc(stdin);
   }
 #endif
+
+  /* Since the primary use case for this binary is testing of SQLite,
+  ** be sure to generate core files if we crash */
+#if defined(SQLITE_TEST) && defined(unix)
+  { struct rlimit x;
+    getrlimit(RLIMIT_CORE, &x);
+    x.rlim_cur = x.rlim_max;
+    setrlimit(RLIMIT_CORE, &x);
+  }
+#endif /* SQLITE_TEST && unix */
+
 
   /* Call sqlite3_shutdown() once before doing anything else. This is to
   ** test that sqlite3_shutdown() can be safely called by a process before

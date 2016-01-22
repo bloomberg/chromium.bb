@@ -25,7 +25,7 @@
 **
 ** This memory allocator uses the following algorithm:
 **
-**   1.  All memory allocations sizes are rounded up to a power of 2.
+**   1.  All memory allocation sizes are rounded up to a power of 2.
 **
 **   2.  If two adjacent free blocks are the halves of a larger block,
 **       then the two blocks are coalesced into the single larger block.
@@ -117,7 +117,7 @@ static SQLITE_WSD struct Mem5Global {
   /*
   ** Lists of free blocks.  aiFreelist[0] is a list of free blocks of
   ** size mem5.szAtom.  aiFreelist[1] holds blocks of size szAtom*2.
-  ** and so forth.
+  ** aiFreelist[2] holds free blocks of size szAtom*4.  And so forth.
   */
   int aiFreelist[LOGMAX+1];
 
@@ -183,9 +183,7 @@ static void memsys5Link(int i, int iLogsize){
 }
 
 /*
-** If the STATIC_MEM mutex is not already held, obtain it now. The mutex
-** will already be held (obtained by code in malloc.c) if
-** sqlite3GlobalConfig.bMemStat is true.
+** Obtain or release the mutex needed to access global data structures.
 */
 static void memsys5Enter(void){
   sqlite3_mutex_enter(mem5.mutex);
@@ -195,17 +193,15 @@ static void memsys5Leave(void){
 }
 
 /*
-** Return the size of an outstanding allocation, in bytes.  The
-** size returned omits the 8-byte header overhead.  This only
-** works for chunks that are currently checked out.
+** Return the size of an outstanding allocation, in bytes.
+** This only works for chunks that are currently checked out.
 */
 static int memsys5Size(void *p){
-  int iSize = 0;
-  if( p ){
-    int i = (int)(((u8 *)p-mem5.zPool)/mem5.szAtom);
-    assert( i>=0 && i<mem5.nBlock );
-    iSize = mem5.szAtom * (1 << (mem5.aCtrl[i]&CTRL_LOGSIZE));
-  }
+  int iSize, i;
+  assert( p!=0 );
+  i = (int)(((u8 *)p-mem5.zPool)/mem5.szAtom);
+  assert( i>=0 && i<mem5.nBlock );
+  iSize = mem5.szAtom * (1 << (mem5.aCtrl[i]&CTRL_LOGSIZE));
   return iSize;
 }
 
@@ -231,18 +227,14 @@ static void *memsys5MallocUnsafe(int nByte){
   /* Keep track of the maximum allocation request.  Even unfulfilled
   ** requests are counted */
   if( (u32)nByte>mem5.maxRequest ){
+    /* Abort if the requested allocation size is larger than the largest
+    ** power of two that we can represent using 32-bit signed integers. */
+    if( nByte > 0x40000000 ) return 0;
     mem5.maxRequest = nByte;
   }
 
-  /* Abort if the requested allocation size is larger than the largest
-  ** power of two that we can represent using 32-bit signed integers.
-  */
-  if( nByte > 0x40000000 ){
-    return 0;
-  }
-
   /* Round nByte up to the next valid power of two */
-  for(iFullSz=mem5.szAtom, iLogsize=0; iFullSz<nByte; iFullSz *= 2, iLogsize++){}
+  for(iFullSz=mem5.szAtom,iLogsize=0; iFullSz<nByte; iFullSz*=2,iLogsize++){}
 
   /* Make sure mem5.aiFreelist[iLogsize] contains at least one free
   ** block.  If not, then split a block of the next larger power of
@@ -399,13 +391,11 @@ static void *memsys5Realloc(void *pPrior, int nBytes){
   if( nBytes<=nOld ){
     return pPrior;
   }
-  memsys5Enter();
-  p = memsys5MallocUnsafe(nBytes);
+  p = memsys5Malloc(nBytes);
   if( p ){
     memcpy(p, pPrior, nOld);
-    memsys5FreeUnsafe(pPrior);
+    memsys5Free(pPrior);
   }
-  memsys5Leave();
   return p;
 }
 

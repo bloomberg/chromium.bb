@@ -17,6 +17,11 @@
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 set testprefix sort2
+db close
+sqlite3_shutdown
+sqlite3_config_pmasz 10
+sqlite3_initialize
+sqlite3 db test.db
 
 foreach {tn script} {
   1 { }
@@ -62,7 +67,6 @@ foreach {tn script} {
   
   do_execsql_test $tn.2.4 { PRAGMA integrity_check } {ok}
   
-  breakpoint
   do_execsql_test $tn.3 {
     PRAGMA cache_size = 5;
     WITH r(x,y) AS (

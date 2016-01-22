@@ -4,6 +4,10 @@ This repository contains the complete source code for the SQLite database
 engine.  Some test scripts are also include.  However, many other test scripts
 and most of the documentation are managed separately.
 
+If you are reading this on a Git mirror someplace, you are doing it wrong.
+The [official repository](https://www.sqlite.org/src/) is better.  Go there
+now.
+
 ## Compiling
 
 First create a directory in which to place
@@ -53,10 +57,10 @@ to the "sqlite3.dll" command line above.  When debugging into the SQLite
 code, adding the "DEBUG=1" argument to one of the above command lines is
 recommended.
 
-SQLite does not require Tcl to run, but a Tcl installation is required
-by the makefiles (including those for MSVC).  SQLite contains a lot of
-generated code and Tcl is used to do much of that code generation.  The
-makefiles also require AWK.
+SQLite does not require [Tcl](http://www.tcl.tk/) to run, but a Tcl installation
+is required by the makefiles (including those for MSVC).  SQLite contains
+a lot of generated code and Tcl is used to do much of that code generation.
+The makefiles also require AWK.
 
 ## Source Code Tour
 
@@ -95,14 +99,14 @@ manually-edited files and automatically-generated files.
 
 The SQLite interface is defined by the **sqlite3.h** header file, which is
 generated from src/sqlite.h.in, ./manifest.uuid, and ./VERSION.  The
-Tcl script at tool/mksqlite3h.tcl does the conversion.  The manifest.uuid
-file contains the SHA1 hash of the particular check-in and is used to generate
-the SQLITE_SOURCE_ID macro.  The VERSION file contains the current SQLite
-version number.  The sqlite3.h header is really just a copy of src/sqlite.h.in
-with the source-id and version number inserted at just the right spots.
-Note that comment text in the sqlite3.h file is used to generate much of
-the SQLite API documentation.  The Tcl scripts used to generate that
-documentation are in a separate source repository.
+[Tcl script](http://www.tcl.tk) at tool/mksqlite3h.tcl does the conversion.
+The manifest.uuid file contains the SHA1 hash of the particular check-in
+and is used to generate the SQLITE\_SOURCE\_ID macro.  The VERSION file
+contains the current SQLite version number.  The sqlite3.h header is really
+just a copy of src/sqlite.h.in with the source-id and version number inserted
+at just the right spots. Note that comment text in the sqlite3.h file is
+used to generate much of the SQLite API documentation.  The Tcl scripts
+used to generate that documentation are in a separate source repository.
 
 The SQL language parser is **parse.c** which is generate from a grammar in
 the src/parse.y file.  The conversion of "parse.y" into "parse.c" is done
@@ -174,7 +178,7 @@ complex code.  So there is a lot of complexity in the SQLite implementation.
 
 Key files:
 
-  *  **sqlite3.h** - This file defines the public interface to the SQLite
+  *  **sqlite.h.in** - This file defines the public interface to the SQLite
      library.  Readers will need to be familiar with this interface before
      trying to understand how the library works internally.
 
@@ -182,7 +186,7 @@ Key files:
      used internally by SQLite.
 
   *  **parse.y** - This file describes the LALR(1) grammer that SQLite uses
-     to parse SQL statements, and the actions that are taken at each stop
+     to parse SQL statements, and the actions that are taken at each step
      in the parsing process.
 
   *  **vdbe.c** - This file implements the virtual machine that runs
@@ -205,6 +209,17 @@ Key files:
   *  **os_unix.c** and **os_win.c** - These two files implement the interface
      between SQLite and the underlying operating system using the run-time
      pluggable VFS interface.
+
+  *  **shell.c** - This file is not part of the core SQLite library.  This
+     is the file that, when linked against sqlite3.a, generates the
+     "sqlite3.exe" command-line shell.
+
+  *  **tclsqlite.c** - This file implements the Tcl bindings for SQLite.  It
+     is not part of the core SQLite library.  But as most of the tests in this
+     repository are written in Tcl, the Tcl language bindings are important.
+
+There are many other source files.  Each has a suscinct header comment that
+describes its purpose and role within the larger system.
 
 
 ## Contacts

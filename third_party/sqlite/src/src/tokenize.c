@@ -102,7 +102,11 @@ const char sqlite3IsEbcdicIdChar[] = {
 };
 #define IdChar(C)  (((c=C)>=0x42 && sqlite3IsEbcdicIdChar[c-0x40]))
 #endif
+
+/* Make the IdChar function accessible from ctime.c */
+#ifndef SQLITE_OMIT_COMPILEOPTION_DIAGS
 int sqlite3IsIdChar(u8 c){ return IdChar(c); }
+#endif
 
 
 /*
@@ -365,8 +369,8 @@ int sqlite3GetToken(const unsigned char *z, int *tokenType){
         break;
       }
       for(i=1; IdChar(z[i]); i++){}
-      *tokenType = keywordCode((char*)z, i);
-      return i;
+      *tokenType = TK_ID;
+      return keywordCode((char*)z, i, tokenType);
     }
   }
   *tokenType = TK_ILLEGAL;
@@ -390,7 +394,7 @@ int sqlite3RunParser(Parse *pParse, const char *zSql, char **pzErrMsg){
   sqlite3 *db = pParse->db;       /* The database connection */
   int mxSqlLen;                   /* Max length of an SQL string */
 
-
+  assert( zSql!=0 );
   mxSqlLen = db->aLimit[SQLITE_LIMIT_SQL_LENGTH];
   if( db->nVdbeActive==0 ){
     db->u1.isInterrupted = 0;
@@ -399,6 +403,7 @@ int sqlite3RunParser(Parse *pParse, const char *zSql, char **pzErrMsg){
   pParse->zTail = zSql;
   i = 0;
   assert( pzErrMsg!=0 );
+  /* sqlite3ParserTrace(stdout, "parser: "); */
   pEngine = sqlite3ParserAlloc(sqlite3Malloc);
   if( pEngine==0 ){
     db->mallocFailed = 1;
@@ -411,7 +416,7 @@ int sqlite3RunParser(Parse *pParse, const char *zSql, char **pzErrMsg){
   assert( pParse->azVar==0 );
   enableLookaside = db->lookaside.bEnabled;
   if( db->lookaside.pStart ) db->lookaside.bEnabled = 1;
-  while( !db->mallocFailed && zSql[i]!=0 ){
+  while( zSql[i]!=0 ){
     assert( i>=0 );
     pParse->sLastToken.z = &zSql[i];
     pParse->sLastToken.n = sqlite3GetToken((unsigned char*)&zSql[i],&tokenType);
@@ -420,48 +425,42 @@ int sqlite3RunParser(Parse *pParse, const char *zSql, char **pzErrMsg){
       pParse->rc = SQLITE_TOOBIG;
       break;
     }
-    switch( tokenType ){
-      case TK_SPACE: {
-        if( db->u1.isInterrupted ){
-          sqlite3ErrorMsg(pParse, "interrupt");
-          pParse->rc = SQLITE_INTERRUPT;
-          goto abort_parse;
-        }
+    if( tokenType>=TK_SPACE ){
+      assert( tokenType==TK_SPACE || tokenType==TK_ILLEGAL );
+      if( db->u1.isInterrupted ){
+        sqlite3ErrorMsg(pParse, "interrupt");
+        pParse->rc = SQLITE_INTERRUPT;
         break;
       }
-      case TK_ILLEGAL: {
-        sqlite3DbFree(db, *pzErrMsg);
-        *pzErrMsg = sqlite3MPrintf(db, "unrecognized token: \"%T\"",
+      if( tokenType==TK_ILLEGAL ){
+        sqlite3ErrorMsg(pParse, "unrecognized token: \"%T\"",
                         &pParse->sLastToken);
-        nErr++;
-        goto abort_parse;
-      }
-      case TK_SEMI: {
-        pParse->zTail = &zSql[i];
-        /* Fall thru into the default case */
-      }
-      default: {
-        sqlite3Parser(pEngine, tokenType, pParse->sLastToken, pParse);
-        lastTokenParsed = tokenType;
-        if( pParse->rc!=SQLITE_OK ){
-          goto abort_parse;
-        }
         break;
       }
+    }else{
+      if( tokenType==TK_SEMI ) pParse->zTail = &zSql[i];
+      sqlite3Parser(pEngine, tokenType, pParse->sLastToken, pParse);
+      lastTokenParsed = tokenType;
+      if( pParse->rc!=SQLITE_OK || db->mallocFailed ) break;
     }
   }
-abort_parse:
-  if( zSql[i]==0 && nErr==0 && pParse->rc==SQLITE_OK ){
+  assert( nErr==0 );
+  if( pParse->rc==SQLITE_OK && db->mallocFailed==0 ){
+    assert( zSql[i]==0 );
     if( lastTokenParsed!=TK_SEMI ){
       sqlite3Parser(pEngine, TK_SEMI, pParse->sLastToken, pParse);
       pParse->zTail = &zSql[i];
     }
-    sqlite3Parser(pEngine, 0, pParse->sLastToken, pParse);
+    if( pParse->rc==SQLITE_OK && db->mallocFailed==0 ){
+      sqlite3Parser(pEngine, 0, pParse->sLastToken, pParse);
+    }
   }
 #ifdef YYTRACKMAXSTACKDEPTH
-  sqlite3StatusSet(SQLITE_STATUS_PARSER_STACK,
+  sqlite3_mutex_enter(sqlite3MallocMutex());
+  sqlite3StatusHighwater(SQLITE_STATUS_PARSER_STACK,
       sqlite3ParserStackPeak(pEngine)
   );
+  sqlite3_mutex_leave(sqlite3MallocMutex());
 #endif /* YYDEBUG */
   sqlite3ParserFree(pEngine, sqlite3_free);
   db->lookaside.bEnabled = enableLookaside;
@@ -469,7 +468,7 @@ abort_parse:
     pParse->rc = SQLITE_NOMEM;
   }
   if( pParse->rc!=SQLITE_OK && pParse->rc!=SQLITE_DONE && pParse->zErrMsg==0 ){
-    sqlite3SetString(&pParse->zErrMsg, db, "%s", sqlite3ErrStr(pParse->rc));
+    pParse->zErrMsg = sqlite3MPrintf(db, "%s", sqlite3ErrStr(pParse->rc));
   }
   assert( pzErrMsg!=0 );
   if( pParse->zErrMsg ){
@@ -501,7 +500,7 @@ abort_parse:
     sqlite3DeleteTable(db, pParse->pNewTable);
   }
 
-  if( pParse->bFreeWith ) sqlite3WithDelete(db, pParse->pWith);
+  sqlite3WithDelete(db, pParse->pWithToFree);
   sqlite3DeleteTrigger(db, pParse->pNewTrigger);
   for(i=pParse->nzVar-1; i>=0; i--) sqlite3DbFree(db, pParse->azVar[i]);
   sqlite3DbFree(db, pParse->azVar);
@@ -515,8 +514,6 @@ abort_parse:
     pParse->pZombieTab = p->pNextZombie;
     sqlite3DeleteTable(db, p);
   }
-  if( nErr>0 && pParse->rc==SQLITE_OK ){
-    pParse->rc = SQLITE_ERROR;
-  }
+  assert( nErr==0 || pParse->rc!=SQLITE_OK );
   return nErr;
 }

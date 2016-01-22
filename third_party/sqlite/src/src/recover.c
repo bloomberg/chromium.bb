@@ -219,7 +219,8 @@
  * DbPage.pData, .pPager, and .pgno
  * sqlite3 struct.
  * sqlite3BtreePager() and sqlite3BtreeGetPageSize()
- * sqlite3PagerAcquire() and sqlite3PagerUnref()
+ * sqlite3BtreeGetOptimalReserve()
+ * sqlite3PagerGet() and sqlite3PagerUnref()
  * getVarint().
  */
 #include "sqliteInt.h"
@@ -405,7 +406,8 @@ static int GetPager(sqlite3 *db, const char *zName,
   }
 
   *pPager = sqlite3BtreePager(pBt);
-  *pnPageSize = sqlite3BtreeGetPageSize(pBt) - sqlite3BtreeGetReserve(pBt);
+  *pnPageSize =
+      sqlite3BtreeGetPageSize(pBt) - sqlite3BtreeGetOptimalReserve(pBt);
   return SQLITE_OK;
 }
 
@@ -777,7 +779,7 @@ static int interiorCursorNextPage(RecoverInteriorCursor **ppCursor,
       if( interiorCursorPageInUse(pCursor, iPage) ){
         fprintf(stderr, "Loop detected at %d\n", iPage);
       }else{
-        int rc = sqlite3PagerAcquire(pCursor->pPage->pPager, iPage, ppPage, 0);
+        int rc = sqlite3PagerGet(pCursor->pPage->pPager, iPage, ppPage, 0);
         if( rc==SQLITE_OK ){
           return SQLITE_ROW;
         }
@@ -921,7 +923,7 @@ static int overflowMaybeCreate(DbPage *pPage, unsigned nPageSize,
   while( iNextPage && nBytes<nRecordBytes ){
     RecoverOverflow *pOverflow;  /* New overflow page for the list. */
 
-    rc = sqlite3PagerAcquire(pPage->pPager, iNextPage, &pPage, 0);
+    rc = sqlite3PagerGet(pPage->pPager, iNextPage, &pPage, 0);
     if( rc!=SQLITE_OK ){
       break;
     }
@@ -1250,7 +1252,7 @@ static int leafCursorCreate(Pager *pPager, unsigned nPageSize,
   int rc;
 
   /* Start out with the root page. */
-  rc = sqlite3PagerAcquire(pPager, iRootPage, &pPage, 0);
+  rc = sqlite3PagerGet(pPager, iRootPage, &pPage, 0);
   if( rc!=SQLITE_OK ){
     return rc;
   }

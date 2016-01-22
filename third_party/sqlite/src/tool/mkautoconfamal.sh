@@ -43,20 +43,16 @@ cp $TOP/sqlite3.1     $TMPSPACE
 cp $TOP/sqlite3.pc.in $TMPSPACE
 cp $TOP/src/shell.c   $TMPSPACE
 
-chmod 755 $TMPSPACE/install-sh
-chmod 755 $TMPSPACE/missing
-chmod 755 $TMPSPACE/depcomp
-chmod 755 $TMPSPACE/config.sub
-chmod 755 $TMPSPACE/config.guess
-
 cat $TMPSPACE/configure.ac |
-sed "s/AC_INIT(sqlite, .*, http:\/\/www.sqlite.org)/AC_INIT(sqlite, $VERSION, http:\/\/www.sqlite.org)/" > $TMPSPACE/tmp
+sed "s/--SQLITE-VERSION--/$VERSION/" > $TMPSPACE/tmp
 mv $TMPSPACE/tmp $TMPSPACE/configure.ac
 
 cd $TMPSPACE
-aclocal
-autoconf
-automake
+autoreconf -i
+#libtoolize
+#aclocal
+#autoconf
+#automake --add-missing
 
 mkdir -p tea/generic
 echo "#ifdef USE_SYSTEM_SQLITE"      > tea/generic/tclsqlite3.c 
@@ -66,9 +62,9 @@ echo "#include \"sqlite3.c\""       >> tea/generic/tclsqlite3.c
 echo "#endif"                       >> tea/generic/tclsqlite3.c
 cat  $TOP/src/tclsqlite.c           >> tea/generic/tclsqlite3.c
 
-cat tea/configure.in | 
+cat tea/configure.ac | 
   sed "s/AC_INIT(\[sqlite\], .*)/AC_INIT([sqlite], [$VERSION])/" > tmp
-mv tmp tea/configure.in
+mv tmp tea/configure.ac
 
 cd tea
 autoconf
@@ -80,4 +76,3 @@ tar -xzf sqlite-$VERSION.tar.gz
 mv sqlite-$VERSION sqlite-autoconf-$ARTIFACT
 tar -czf sqlite-autoconf-$ARTIFACT.tar.gz sqlite-autoconf-$ARTIFACT
 mv sqlite-autoconf-$ARTIFACT.tar.gz ..
-

@@ -19,7 +19,7 @@
 /* TODO: This definition is just included so other modules compile. It
 ** needs to be revisited.
 */
-#define SQLITE_N_BTREE_META 10
+#define SQLITE_N_BTREE_META 16
 
 /*
 ** If defined as non-zero, auto-vacuum is enabled by default. Otherwise
@@ -63,6 +63,7 @@ int sqlite3BtreeOpen(
 
 int sqlite3BtreeClose(Btree*);
 int sqlite3BtreeSetCacheSize(Btree*,int);
+int sqlite3BtreeSetSpillSize(Btree*,int);
 #if SQLITE_MAX_MMAP_SIZE>0
   int sqlite3BtreeSetMmapLimit(Btree*,sqlite3_int64);
 #endif
@@ -73,10 +74,8 @@ int sqlite3BtreeGetPageSize(Btree*);
 int sqlite3BtreeMaxPageCount(Btree*,int);
 u32 sqlite3BtreeLastPage(Btree*);
 int sqlite3BtreeSecureDelete(Btree*,int);
-int sqlite3BtreeGetReserve(Btree*);
-#if defined(SQLITE_HAS_CODEC) || defined(SQLITE_DEBUG)
+int sqlite3BtreeGetOptimalReserve(Btree*);
 int sqlite3BtreeGetReserveNoMutex(Btree *p);
-#endif
 int sqlite3BtreeSetAutoVacuum(Btree *, int);
 int sqlite3BtreeGetAutoVacuum(Btree *);
 int sqlite3BtreeBeginTrans(Btree*,int);
@@ -134,6 +133,11 @@ int sqlite3BtreeNewDb(Btree *p);
 ** For example, the free-page-count field is located at byte offset 36 of
 ** the database file header. The incr-vacuum-flag field is located at
 ** byte offset 64 (== 36+4*7).
+**
+** The BTREE_DATA_VERSION value is not really a value stored in the header.
+** It is a read-only number computed by the pager.  But we merge it with
+** the header value access routines since its access pattern is the same.
+** Call it a "virtual meta value".
 */
 #define BTREE_FREE_PAGE_COUNT     0
 #define BTREE_SCHEMA_VERSION      1
@@ -144,12 +148,68 @@ int sqlite3BtreeNewDb(Btree *p);
 #define BTREE_USER_VERSION        6
 #define BTREE_INCR_VACUUM         7
 #define BTREE_APPLICATION_ID      8
+#define BTREE_DATA_VERSION        15  /* A virtual meta-value */
 
 /*
-** Values that may be OR'd together to form the second argument of an
-** sqlite3BtreeCursorHints() call.
+** Kinds of hints that can be passed into the sqlite3BtreeCursorHint()
+** interface.
+**
+** BTREE_HINT_RANGE  (arguments: Expr*, Mem*)
+**
+**     The first argument is an Expr* (which is guaranteed to be constant for
+**     the lifetime of the cursor) that defines constraints on which rows
+**     might be fetched with this cursor.  The Expr* tree may contain
+**     TK_REGISTER nodes that refer to values stored in the array of registers
+**     passed as the second parameter.  In other words, if Expr.op==TK_REGISTER
+**     then the value of the node is the value in Mem[pExpr.iTable].  Any
+**     TK_COLUMN node in the expression tree refers to the Expr.iColumn-th
+**     column of the b-tree of the cursor.  The Expr tree will not contain
+**     any function calls nor subqueries nor references to b-trees other than
+**     the cursor being hinted.
+**
+**     The design of the _RANGE hint is aid b-tree implementations that try
+**     to prefetch content from remote machines - to provide those
+**     implementations with limits on what needs to be prefetched and thereby
+**     reduce network bandwidth.
+**
+** Note that BTREE_HINT_FLAGS with BTREE_BULKLOAD is the only hint used by
+** standard SQLite.  The other hints are provided for extentions that use
+** the SQLite parser and code generator but substitute their own storage
+** engine.
 */
-#define BTREE_BULKLOAD 0x00000001
+#define BTREE_HINT_RANGE 0       /* Range constraints on queries */
+
+/*
+** Values that may be OR'd together to form the argument to the
+** BTREE_HINT_FLAGS hint for sqlite3BtreeCursorHint():
+**
+** The BTREE_BULKLOAD flag is set on index cursors when the index is going
+** to be filled with content that is already in sorted order.
+**
+** The BTREE_SEEK_EQ flag is set on cursors that will get OP_SeekGE or
+** OP_SeekLE opcodes for a range search, but where the range of entries
+** selected will all have the same key.  In other words, the cursor will
+** be used only for equality key searches.
+**
+*/
+#define BTREE_BULKLOAD 0x00000001  /* Used to full index in sorted order */
+#define BTREE_SEEK_EQ  0x00000002  /* EQ seeks only - no range seeks */
+
+/* 
+** Flags passed as the third argument to sqlite3BtreeCursor().
+**
+** For read-only cursors the wrFlag argument is always zero. For read-write
+** cursors it may be set to either (BTREE_WRCSR|BTREE_FORDELETE) or
+** (BTREE_WRCSR). If the BTREE_FORDELETE flag is set, then the cursor will
+** only be used by SQLite for the following:
+**
+**   * to seek to and delete specific entries, and/or
+**
+**   * to read values that will be used to create keys that other
+**     BTREE_FORDELETE cursors will seek to and delete.
+*/
+#define BTREE_WRCSR     0x00000004     /* read-write cursor */
+#define BTREE_FORDELETE 0x00000008     /* Cursor is for seek/delete only */
 
 int sqlite3BtreeCursor(
   Btree*,                              /* BTree containing table to open */
@@ -160,6 +220,10 @@ int sqlite3BtreeCursor(
 );
 int sqlite3BtreeCursorSize(void);
 void sqlite3BtreeCursorZero(BtCursor*);
+void sqlite3BtreeCursorHintFlags(BtCursor*, unsigned);
+#ifdef SQLITE_ENABLE_CURSOR_HINTS
+void sqlite3BtreeCursorHint(BtCursor*, int, ...);
+#endif
 
 int sqlite3BtreeCloseCursor(BtCursor*);
 int sqlite3BtreeMovetoUnpacked(
@@ -171,7 +235,7 @@ int sqlite3BtreeMovetoUnpacked(
 );
 int sqlite3BtreeCursorHasMoved(BtCursor*);
 int sqlite3BtreeCursorRestore(BtCursor*, int*);
-int sqlite3BtreeDelete(BtCursor*);
+int sqlite3BtreeDelete(BtCursor*, int);
 int sqlite3BtreeInsert(BtCursor*, const void *pKey, i64 nKey,
                                   const void *pData, int nData,
                                   int nZero, int bias, int seekResult);
@@ -194,8 +258,9 @@ int sqlite3BtreePutData(BtCursor*, u32 offset, u32 amt, void*);
 void sqlite3BtreeIncrblobCursor(BtCursor *);
 void sqlite3BtreeClearCursor(BtCursor *);
 int sqlite3BtreeSetVersion(Btree *pBt, int iVersion);
-void sqlite3BtreeCursorHints(BtCursor *, unsigned int mask);
+int sqlite3BtreeCursorHasHint(BtCursor*, unsigned int mask);
 int sqlite3BtreeIsReadonly(Btree *pBt);
+int sqlite3HeaderSizeBtree(void);
 
 #ifndef NDEBUG
 int sqlite3BtreeCursorIsValid(BtCursor*);
