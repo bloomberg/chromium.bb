@@ -41,8 +41,6 @@
       'curve25519.h',
       'curve25519_nss.cc',
       'curve25519_openssl.cc',
-      'ghash.cc',
-      'ghash.h',
       'ec_private_key.h',
       'ec_private_key_nss.cc',
       'ec_private_key_openssl.cc',
