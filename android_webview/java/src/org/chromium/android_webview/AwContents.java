@@ -2903,16 +2903,20 @@ public class AwContents implements SmartClipProvider,
             }
 
             mScrollOffsetManager.syncScrollOffsetFromOnDraw();
+            int scrollX = mContainerView.getScrollX();
+            int scrollY = mContainerView.getScrollY();
             Rect globalVisibleRect = getGlobalVisibleRect();
-            boolean did_draw = nativeOnDraw(
-                    mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
-                    mContainerView.getScrollX(), mContainerView.getScrollY(),
-                    globalVisibleRect.left, globalVisibleRect.top,
-                    globalVisibleRect.right, globalVisibleRect.bottom);
+            boolean did_draw = nativeOnDraw(mNativeAwContents, canvas,
+                    canvas.isHardwareAccelerated(), scrollX, scrollY, globalVisibleRect.left,
+                    globalVisibleRect.top, globalVisibleRect.right, globalVisibleRect.bottom);
             if (did_draw && canvas.isHardwareAccelerated() && !FORCE_AUXILIARY_BITMAP_RENDERING) {
                 did_draw = mNativeGLDelegate.requestDrawGL(canvas, false, mContainerView);
             }
-            if (!did_draw) {
+            if (did_draw) {
+                int scrollXDiff = mContainerView.getScrollX() - scrollX;
+                int scrollYDiff = mContainerView.getScrollY() - scrollY;
+                canvas.translate(-scrollXDiff, -scrollYDiff);
+            } else {
                 TraceEvent.instant("NativeDrawFailed");
                 canvas.drawColor(getEffectiveBackgroundColor());
             }
