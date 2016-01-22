@@ -2486,7 +2486,6 @@
     'default_apps_list': [
       'browser/resources/default_apps/external_extensions.json',
       'browser/resources/default_apps/gmail.crx',
-      'browser/resources/default_apps/search.crx',
       'browser/resources/default_apps/youtube.crx',
       'browser/resources/default_apps/drive.crx',
       'browser/resources/default_apps/docs.crx',
@@ -2494,7 +2493,6 @@
     'default_apps_list_linux_dest': [
       '<(PRODUCT_DIR)/default_apps/external_extensions.json',
       '<(PRODUCT_DIR)/default_apps/gmail.crx',
-      '<(PRODUCT_DIR)/default_apps/search.crx',
       '<(PRODUCT_DIR)/default_apps/youtube.crx',
       '<(PRODUCT_DIR)/default_apps/drive.crx',
       '<(PRODUCT_DIR)/default_apps/docs.crx',

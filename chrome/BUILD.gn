@@ -595,7 +595,6 @@ if (is_chrome_branded) {
       "browser/resources/default_apps/drive.crx",
       "browser/resources/default_apps/external_extensions.json",
       "browser/resources/default_apps/gmail.crx",
-      "browser/resources/default_apps/search.crx",
       "browser/resources/default_apps/youtube.crx",
     ]
     outputs = [
