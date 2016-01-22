@@ -10,52 +10,52 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
+#include "content/browser/gamepad/gamepad_provider.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_android.h"
 #elif defined(OS_WIN)
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_win.h"
+#include "content/browser/gamepad/raw_input_data_fetcher_win.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_mac.h"
+#include "content/browser/gamepad/xbox_data_fetcher_mac.h"
 #elif defined(OS_LINUX)
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_linux.h"
 #endif
 
 namespace content {
 
+void AddGamepadPlatformDataFetchers(GamepadProvider* provider) {
 #if defined(OS_ANDROID)
 
-typedef GamepadPlatformDataFetcherAndroid GamepadPlatformDataFetcher;
+  provider->AddGamepadDataFetcher(scoped_ptr<GamepadDataFetcher>(
+      new GamepadPlatformDataFetcherAndroid()));
 
 #elif defined(OS_WIN)
 
-typedef GamepadPlatformDataFetcherWin GamepadPlatformDataFetcher;
+  provider->AddGamepadDataFetcher(scoped_ptr<GamepadDataFetcher>(
+      new GamepadPlatformDataFetcherWin()));
+  provider->AddGamepadDataFetcher(scoped_ptr<GamepadDataFetcher>(
+      new RawInputDataFetcher()));
 
 #elif defined(OS_MACOSX)
 
-typedef GamepadPlatformDataFetcherMac GamepadPlatformDataFetcher;
+  provider->AddGamepadDataFetcher(scoped_ptr<GamepadDataFetcher>(
+      new GamepadPlatformDataFetcherMac()));
+  provider->AddGamepadDataFetcher(scoped_ptr<GamepadDataFetcher>(
+      new XboxDataFetcher()));
 
 #elif defined(OS_LINUX) && defined(USE_UDEV)
 
-typedef GamepadPlatformDataFetcherLinux GamepadPlatformDataFetcher;
-
-#else
-
-class GamepadDataFetcherEmpty : public GamepadDataFetcher {
- public:
-  GamepadDataFetcherEmpty();
-
-  void GetGamepadData(blink::WebGamepads* pads,
-                      bool devices_changed_hint) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GamepadDataFetcherEmpty);
-};
-typedef GamepadDataFetcherEmpty GamepadPlatformDataFetcher;
+  provider->AddGamepadDataFetcher(scoped_ptr<GamepadDataFetcher>(
+      new GamepadPlatformDataFetcherLinux()));
 
 #endif
+}
 
 }  // namespace content
 

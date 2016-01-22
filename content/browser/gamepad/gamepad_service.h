@@ -79,6 +79,8 @@ class CONTENT_EXPORT GamepadService {
   // Called on IO thread when a gamepad is disconnected.
   void OnGamepadDisconnected(int index, const blink::WebGamepad& pad);
 
+  GamepadProvider* provider() { return provider_.get(); }
+
  private:
   friend struct base::DefaultSingletonTraits<GamepadService>;
   friend class GamepadServiceTestConstructor;
@@ -88,11 +90,11 @@ class CONTENT_EXPORT GamepadService {
 
   // Constructor for testing. This specifies the data fetcher to use for a
   // provider, bypassing the default platform one.
-  GamepadService(scoped_ptr<GamepadDataFetcher> fetcher);
+  explicit GamepadService(scoped_ptr<GamepadDataFetcher> fetcher);
 
   virtual ~GamepadService();
 
-  static void SetInstance(GamepadService*);
+  static void SetInstance(GamepadService* instance);
 
   void OnUserGesture();
 

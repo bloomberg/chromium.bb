@@ -57,13 +57,12 @@ const uint32_t kAxisMinimumUsageNumber = 0x30;
 }  // namespace
 
 GamepadPlatformDataFetcherMac::GamepadPlatformDataFetcherMac()
-    : enabled_(true), paused_(false) {
+    : enabled_(true),
+      paused_(false) {
   memset(associated_, 0, sizeof(associated_));
+}
 
-  xbox_fetcher_.reset(new XboxDataFetcher(this));
-  if (!xbox_fetcher_->RegisterForNotifications())
-    xbox_fetcher_.reset();
-
+void GamepadPlatformDataFetcherMac::OnAddedToProvider() {
   hid_manager_ref_.reset(IOHIDManagerCreate(kCFAllocatorDefault,
                                             kIOHIDOptionsTypeNone));
   if (CFGetTypeID(hid_manager_ref_) != IOHIDManagerGetTypeID()) {
@@ -107,9 +106,6 @@ void GamepadPlatformDataFetcherMac::RegisterForNotifications() {
 
   enabled_ = IOHIDManagerOpen(hid_manager_ref_,
                               kIOHIDOptionsTypeNone) == kIOReturnSuccess;
-
-  if (xbox_fetcher_)
-    xbox_fetcher_->RegisterForNotifications();
 }
 
 void GamepadPlatformDataFetcherMac::UnregisterFromNotifications() {
@@ -118,8 +114,6 @@ void GamepadPlatformDataFetcherMac::UnregisterFromNotifications() {
       CFRunLoopGetCurrent(),
       kCFRunLoopDefaultMode);
   IOHIDManagerClose(hid_manager_ref_, kIOHIDOptionsTypeNone);
-  if (xbox_fetcher_)
-    xbox_fetcher_->UnregisterFromNotifications();
 }
 
 void GamepadPlatformDataFetcherMac::PauseHint(bool pause) {
@@ -157,10 +151,10 @@ void GamepadPlatformDataFetcherMac::ValueChangedCallback(void* context,
 }
 
 bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
+                                                      PadState* state,
                                                       size_t slot) {
-  WebGamepad& pad = pad_state_[slot].data;
+  WebGamepad& pad = state->data;
   AssociatedData& associated = associated_[slot];
-  CHECK(!associated.is_xbox);
 
   pad.axesLength = 0;
   pad.buttonsLength = 0;
@@ -178,18 +172,18 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
         usage_page == kButtonUsagePage) {
       uint32_t button_index = usage - 1;
       if (button_index < WebGamepad::buttonsLengthCap) {
-        associated.hid.button_elements[button_index] = element;
+        associated.button_elements[button_index] = element;
         pad.buttonsLength = std::max(pad.buttonsLength, button_index + 1);
       }
     }
     else if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc) {
       uint32_t axis_index = usage - kAxisMinimumUsageNumber;
       if (axis_index < WebGamepad::axesLengthCap) {
-        associated.hid.axis_minimums[axis_index] =
+        associated.axis_minimums[axis_index] =
             IOHIDElementGetLogicalMin(element);
-        associated.hid.axis_maximums[axis_index] =
+        associated.axis_maximums[axis_index] =
             IOHIDElementGetLogicalMax(element);
-        associated.hid.axis_elements[axis_index] = element;
+        associated.axis_elements[axis_index] = element;
         pad.axesLength = std::max(pad.axesLength, axis_index + 1);
       } else {
         mapped_all_axes = false;
@@ -208,15 +202,15 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
           usage - kAxisMinimumUsageNumber >= WebGamepad::axesLengthCap &&
           usage_page <= kGameControlsUsagePage) {
         for (; next_index < WebGamepad::axesLengthCap; ++next_index) {
-          if (associated.hid.axis_elements[next_index] == NULL)
+          if (associated.axis_elements[next_index] == NULL)
             break;
         }
         if (next_index < WebGamepad::axesLengthCap) {
-          associated.hid.axis_minimums[next_index] =
+          associated.axis_minimums[next_index] =
               IOHIDElementGetLogicalMin(element);
-          associated.hid.axis_maximums[next_index] =
+          associated.axis_maximums[next_index] =
               IOHIDElementGetLogicalMax(element);
-          associated.hid.axis_elements[next_index] = element;
+          associated.axis_elements[next_index] = element;
           pad.axesLength = std::max(pad.axesLength, next_index + 1);
         }
       }
@@ -232,7 +226,7 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
 size_t GamepadPlatformDataFetcherMac::GetEmptySlot() {
   // Find a free slot for this device.
   for (size_t slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
-    if (!pad_state_[slot].data.connected)
+    if (associated_[slot].device_ref == nullptr)
       return slot;
   }
   return WebGamepads::itemsLengthCap;
@@ -242,30 +236,8 @@ size_t GamepadPlatformDataFetcherMac::GetSlotForDevice(IOHIDDeviceRef device) {
   for (size_t slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
     // If we already have this device, and it's already connected, don't do
     // anything now.
-    if (pad_state_[slot].data.connected &&
-        !associated_[slot].is_xbox &&
-        associated_[slot].hid.device_ref == device)
+    if (associated_[slot].device_ref == device)
       return WebGamepads::itemsLengthCap;
-  }
-  return GetEmptySlot();
-}
-
-size_t GamepadPlatformDataFetcherMac::GetSlotForXboxDevice(
-    XboxController* device) {
-  for (size_t slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
-    if (associated_[slot].is_xbox &&
-        associated_[slot].xbox.location_id == device->location_id()) {
-      if (pad_state_[slot].data.connected) {
-        // The device is already connected. No idea why we got a second "device
-        // added" call, but let's not add it twice.
-        DCHECK_EQ(associated_[slot].xbox.device, device);
-        return WebGamepads::itemsLengthCap;
-      } else {
-        // A device with the same location ID was previously connected, so put
-        // it in the same slot.
-        return slot;
-      }
-    }
   }
   return GetEmptySlot();
 }
@@ -277,9 +249,12 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   if (!enabled_)
     return;
 
+  NSNumber* location_id = CFToNSCast(CFCastStrict<CFNumberRef>(
+      IOHIDDeviceGetProperty(device, CFSTR(kIOHIDLocationIDKey))));
+  int location_int = [location_id intValue];
+
   // Find an index for this device.
   size_t slot = GetSlotForDevice(device);
-
   // We can't handle this many connected devices.
   if (slot == WebGamepads::itemsLengthCap)
     return;
@@ -287,10 +262,16 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   // Clear some state that may have been left behind by previous gamepads
   memset(&associated_[slot], 0, sizeof(AssociatedData));
 
+  PadState* state = provider()->GetPadState(GAMEPAD_SOURCE_MAC_HID,
+                                            location_int);
+  if (!state)
+    return; // No available slot for this device
+
   NSNumber* vendor_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey))));
   NSNumber* product_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey))));
+
   NSString* product = CFToNSCast(CFCastStrict<CFStringRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey))));
   int vendor_int = [vendor_id intValue];
@@ -299,39 +280,38 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   char vendor_as_str[5], product_as_str[5];
   snprintf(vendor_as_str, sizeof(vendor_as_str), "%04x", vendor_int);
   snprintf(product_as_str, sizeof(product_as_str), "%04x", product_int);
-  pad_state_[slot].mapper =
+  state->mapper =
       GetGamepadStandardMappingFunction(vendor_as_str, product_as_str);
 
   NSString* ident = [NSString stringWithFormat:
       @"%@ (%sVendor: %04x Product: %04x)",
       product,
-      pad_state_[slot].mapper ? "STANDARD GAMEPAD " : "",
+      state->mapper ? "STANDARD GAMEPAD " : "",
       vendor_int,
       product_int];
   CopyNSStringAsUTF16LittleEndian(
       ident,
-      pad_state_[slot].data.id,
-      sizeof(pad_state_[slot].data.id));
+      state->data.id,
+      sizeof(state->data.id));
 
-  if (pad_state_[slot].mapper) {
+  if (state->mapper) {
     CopyNSStringAsUTF16LittleEndian(
       @"standard",
-      pad_state_[slot].data.mapping,
-      sizeof(pad_state_[slot].data.mapping));
+      state->data.mapping,
+      sizeof(state->data.mapping));
   } else {
-    pad_state_[slot].data.mapping[0] = 0;
+    state->data.mapping[0] = 0;
   }
 
   base::ScopedCFTypeRef<CFArrayRef> elements(
       IOHIDDeviceCopyMatchingElements(device, NULL, kIOHIDOptionsTypeNone));
 
-  if (!AddButtonsAndAxes(CFToNSCast(elements), slot))
+  if (!AddButtonsAndAxes(CFToNSCast(elements), state, slot))
     return;
 
-  associated_[slot].hid.device_ref = device;
-  pad_state_[slot].data.connected = true;
-  pad_state_[slot].axis_mask = 0;
-  pad_state_[slot].button_mask = 0;
+  associated_[slot].location_id = location_int;
+  associated_[slot].device_ref = device;
+  state->data.connected = true;
 }
 
 void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
@@ -341,15 +321,14 @@ void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
   // Find the index for this device.
   size_t slot;
   for (slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
-    if (pad_state_[slot].data.connected &&
-        !associated_[slot].is_xbox &&
-        associated_[slot].hid.device_ref == device)
+    if (associated_[slot].device_ref == device)
       break;
   }
   DCHECK(slot < WebGamepads::itemsLengthCap);
   // Leave associated device_ref so that it will be reconnected in the same
   // location. Simply mark it as disconnected.
-  pad_state_[slot].data.connected = false;
+  associated_[slot].location_id = 0;
+  associated_[slot].device_ref = nullptr;
 }
 
 void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
@@ -362,15 +341,18 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   // Find device slot.
   size_t slot;
   for (slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
-    if (pad_state_[slot].data.connected &&
-        !associated_[slot].is_xbox &&
-        associated_[slot].hid.device_ref == device)
+    if (associated_[slot].device_ref == device)
       break;
   }
   if (slot == WebGamepads::itemsLengthCap)
     return;
 
-  WebGamepad& pad = pad_state_[slot].data;
+  PadState* state = provider()->GetPadState(GAMEPAD_SOURCE_MAC_HID,
+                                            associated_[slot].location_id);
+  if (!state)
+    return;
+
+  WebGamepad& pad = state->data;
   AssociatedData& associated = associated_[slot];
 
   uint32_t value_length = IOHIDValueGetLength(value);
@@ -382,7 +364,7 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
 
   // Find and fill in the associated button event, if any.
   for (size_t i = 0; i < pad.buttonsLength; ++i) {
-    if (associated.hid.button_elements[i] == element) {
+    if (associated.button_elements[i] == element) {
       pad.buttons[i].pressed = IOHIDValueGetIntegerValue(value);
       pad.buttons[i].value = pad.buttons[i].pressed ? 1.f : 0.f;
       pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
@@ -392,119 +374,27 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
 
   // Find and fill in the associated axis event, if any.
   for (size_t i = 0; i < pad.axesLength; ++i) {
-    if (associated.hid.axis_elements[i] == element) {
+    if (associated.axis_elements[i] == element) {
       pad.axes[i] = NormalizeAxis(IOHIDValueGetIntegerValue(value),
-                                  associated.hid.axis_minimums[i],
-                                  associated.hid.axis_maximums[i]);
+                                  associated.axis_minimums[i],
+                                  associated.axis_maximums[i]);
       pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
       return;
     }
   }
 }
 
-void GamepadPlatformDataFetcherMac::XboxDeviceAdd(XboxController* device) {
+void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
   if (!enabled_)
     return;
 
-  size_t slot = GetSlotForXboxDevice(device);
-
-  // We can't handle this many connected devices.
-  if (slot == WebGamepads::itemsLengthCap)
-    return;
-
-  device->SetLEDPattern(
-      (XboxController::LEDPattern)(XboxController::LED_FLASH_TOP_LEFT + slot));
-
-  NSString* ident =
-      [NSString stringWithFormat:
-          @"%@ (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
-              device->GetControllerType() == XboxController::XBOX_360_CONTROLLER
-                  ? @"Xbox 360 Controller"
-                  : @"Xbox One Controller",
-              device->GetProductId(), device->GetVendorId()];
-  CopyNSStringAsUTF16LittleEndian(
-      ident,
-      pad_state_[slot].data.id,
-      sizeof(pad_state_[slot].data.id));
-
-  CopyNSStringAsUTF16LittleEndian(
-    @"standard",
-    pad_state_[slot].data.mapping,
-    sizeof(pad_state_[slot].data.mapping));
-
-  associated_[slot].is_xbox = true;
-  associated_[slot].xbox.device = device;
-  associated_[slot].xbox.location_id = device->location_id();
-  pad_state_[slot].data.connected = true;
-  pad_state_[slot].data.axesLength = 4;
-  pad_state_[slot].data.buttonsLength = 17;
-  pad_state_[slot].data.timestamp = 0;
-  pad_state_[slot].mapper = 0;
-  pad_state_[slot].axis_mask = 0;
-  pad_state_[slot].button_mask = 0;
-}
-
-void GamepadPlatformDataFetcherMac::XboxDeviceRemove(XboxController* device) {
-  if (!enabled_)
-    return;
-
-  // Find the index for this device.
-  size_t slot;
-  for (slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
-    if (pad_state_[slot].data.connected &&
-        associated_[slot].is_xbox &&
-        associated_[slot].xbox.device == device)
-      break;
+  // Loop through and GetPadState to indicate the devices are still connected.
+  for (size_t slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
+    if (associated_[slot].device_ref != nullptr) {
+      provider()->GetPadState(GAMEPAD_SOURCE_MAC_HID,
+                              associated_[slot].location_id);
+    }
   }
-  DCHECK(slot < WebGamepads::itemsLengthCap);
-  // Leave associated location id so that the controller will be reconnected in
-  // the same slot if it is plugged in again. Simply mark it as disconnected.
-  pad_state_[slot].data.connected = false;
-}
-
-void GamepadPlatformDataFetcherMac::XboxValueChanged(
-    XboxController* device, const XboxController::Data& data) {
-  // Find device slot.
-  size_t slot;
-  for (slot = 0; slot < WebGamepads::itemsLengthCap; ++slot) {
-    if (pad_state_[slot].data.connected &&
-        associated_[slot].is_xbox &&
-        associated_[slot].xbox.device == device)
-      break;
-  }
-  if (slot == WebGamepads::itemsLengthCap)
-    return;
-
-  WebGamepad& pad = pad_state_[slot].data;
-
-  for (size_t i = 0; i < 6; i++) {
-    pad.buttons[i].pressed = data.buttons[i];
-    pad.buttons[i].value = data.buttons[i] ? 1.0f : 0.0f;
-  }
-  pad.buttons[6].pressed = data.triggers[0] > kDefaultButtonPressedThreshold;
-  pad.buttons[6].value = data.triggers[0];
-  pad.buttons[7].pressed = data.triggers[1] > kDefaultButtonPressedThreshold;
-  pad.buttons[7].value = data.triggers[1];
-  for (size_t i = 8; i < 17; i++) {
-    pad.buttons[i].pressed = data.buttons[i - 2];
-    pad.buttons[i].value = data.buttons[i - 2] ? 1.0f : 0.0f;
-  }
-  for (size_t i = 0; i < arraysize(data.axes); i++) {
-    pad.axes[i] = data.axes[i];
-  }
-
-  pad.timestamp = base::TimeTicks::Now().ToInternalValue();
-}
-
-void GamepadPlatformDataFetcherMac::GetGamepadData(WebGamepads* pads, bool) {
-  if (!enabled_ && !xbox_fetcher_) {
-    pads->length = 0;
-    return;
-  }
-
-  pads->length = WebGamepads::itemsLengthCap;
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
-    MapAndSanitizeGamepadData(&pad_state_[i], &pads->items[i]);
 }
 
 }  // namespace content
