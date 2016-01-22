@@ -39,6 +39,18 @@ class RenderViewHostFactory {
     return !!factory_;
   }
 
+  // Returns true if the RenderViewHost instance is not a test instance.
+  CONTENT_EXPORT static bool is_real_render_view_host() {
+    return is_real_render_view_host_;
+  }
+
+  // Sets the is_real_render_view_host flag which indicates that the
+  // RenderViewHost instance is not a test instance.
+  CONTENT_EXPORT static void set_is_real_render_view_host(
+      bool is_real_render_view_host) {
+    is_real_render_view_host_ = is_real_render_view_host;
+  }
+
  protected:
   RenderViewHostFactory() {}
   virtual ~RenderViewHostFactory() {}
@@ -66,6 +78,10 @@ class RenderViewHostFactory {
   // The current globally registered factory. This is NULL when we should
   // create the default RenderViewHosts.
   CONTENT_EXPORT static RenderViewHostFactory* factory_;
+
+  // Set to true if the RenderViewHost is not a test instance. Defaults to
+  // false.
+  CONTENT_EXPORT static bool is_real_render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostFactory);
 };

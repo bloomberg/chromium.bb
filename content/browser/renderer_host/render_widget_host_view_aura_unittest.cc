@@ -31,8 +31,10 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
@@ -41,8 +43,12 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
+#include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/test_render_view_host.h"
+#include "content/test/test_web_contents.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -3643,6 +3649,141 @@ TEST_F(RenderWidgetHostViewAuraTest, SurfaceIdNamespaceInitialized) {
   view_->OnSwapCompositorFrame(0,
                                MakeDelegatedFrame(1.f, size, gfx::Rect(size)));
   EXPECT_EQ(view_->GetSurfaceIdNamespace(), base::get<0>(params));
+}
+
+// This class provides functionality to test a RenderWidgetHostViewAura
+// instance which has been hooked up to a test RenderViewHost instance and
+// a WebContents instance.
+class RenderWidgetHostViewAuraWithViewHarnessTest
+    : public RenderViewHostImplTestHarness {
+ public:
+   RenderWidgetHostViewAuraWithViewHarnessTest()
+      : view_(nullptr) {}
+   ~RenderWidgetHostViewAuraWithViewHarnessTest() override {}
+
+ protected:
+  void SetUp() override {
+    ImageTransportFactory::InitializeForUnitTests(
+        scoped_ptr<ImageTransportFactory>(
+            new NoTransportImageTransportFactory));
+    RenderViewHostImplTestHarness::SetUp();
+    // Delete the current RenderWidgetHostView instance before setting
+    // the RWHVA as the view.
+    delete contents()->GetRenderViewHost()->GetWidget()->GetView();
+    // This instance is destroyed in the TearDown method below.
+    view_ = new RenderWidgetHostViewAura(
+        contents()->GetRenderViewHost()->GetWidget(),
+        false);
+  }
+
+  void TearDown() override {
+    view_->Destroy();
+    RenderViewHostImplTestHarness::TearDown();
+    ImageTransportFactory::Terminate();
+  }
+
+  RenderWidgetHostViewAura* view() {
+    return view_;
+  }
+
+ private:
+  RenderWidgetHostViewAura* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraWithViewHarnessTest);
+};
+
+// Provides a mock implementation of the WebContentsViewDelegate class.
+// Currently provides functionality to validate the ShowContextMenu
+// callback.
+class MockWebContentsViewDelegate : public WebContentsViewDelegate {
+ public:
+  MockWebContentsViewDelegate()
+      : context_menu_request_received_(false) {}
+
+  ~MockWebContentsViewDelegate() override {}
+
+  bool context_menu_request_received() const {
+    return context_menu_request_received_;
+  }
+
+  ui::MenuSourceType context_menu_source_type() const {
+    return context_menu_params_.source_type;
+  }
+
+  // WebContentsViewDelegate overrides.
+  void ShowContextMenu(RenderFrameHost* render_frame_host,
+                       const ContextMenuParams& params) override {
+    context_menu_request_received_ = true;
+    context_menu_params_ = params;
+  }
+
+  void ClearState() {
+    context_menu_request_received_ = false;
+    context_menu_params_.source_type = ui::MENU_SOURCE_NONE;
+  }
+
+ private:
+  bool context_menu_request_received_;
+  ContextMenuParams context_menu_params_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockWebContentsViewDelegate);
+};
+
+// On Windows we don't want the context menu to be displayed in the context of
+// a long press gesture. It should be displayed when the touch is released.
+// On other platforms we should display the context menu in the long press
+// gesture.
+// This test validates this behavior.
+TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
+       ContextMenuTest) {
+  // This instance will be destroyed when the WebContents instance is
+  // destroyed.
+  MockWebContentsViewDelegate* delegate = new MockWebContentsViewDelegate;
+  static_cast<WebContentsViewAura*>(
+      contents()->GetView())->SetDelegateForTesting(delegate);
+
+  RenderViewHostFactory::set_is_real_render_view_host(true);
+
+  // A context menu request with the MENU_SOURCE_MOUSE source type should
+  // result in the MockWebContentsViewDelegate::ShowContextMenu method
+  // getting called. This means that the request worked correctly.
+  ContextMenuParams context_menu_params;
+  context_menu_params.source_type = ui::MENU_SOURCE_MOUSE;
+  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
+                              context_menu_params);
+  EXPECT_TRUE(delegate->context_menu_request_received());
+  EXPECT_EQ(delegate->context_menu_source_type(), ui::MENU_SOURCE_MOUSE);
+
+  // A context menu request with the MENU_SOURCE_TOUCH source type should
+  // result in the MockWebContentsViewDelegate::ShowContextMenu method
+  // getting called on non Windows platforms. This means that the request
+  // worked correctly. On Windows this should be blocked.
+  delegate->ClearState();
+  context_menu_params.source_type = ui::MENU_SOURCE_TOUCH;
+  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
+                              context_menu_params);
+#if defined(OS_WIN)
+  EXPECT_FALSE(delegate->context_menu_request_received());
+#else
+  EXPECT_TRUE(delegate->context_menu_request_received());
+#endif
+
+#if defined(OS_WIN)
+  // On Windows the context menu request blocked above should be received when
+  // the ET_GESTURE_LONG_TAP gesture is sent to the RenderWidgetHostViewAura
+  // instance. This means that the touch was released.
+  delegate->ClearState();
+
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_TAP);
+  ui::GestureEvent gesture_event(
+      100, 100, 0, ui::EventTimeForNow(), event_details);
+  view()->OnGestureEvent(&gesture_event);
+
+  EXPECT_TRUE(delegate->context_menu_request_received());
+  EXPECT_EQ(delegate->context_menu_source_type(), ui::MENU_SOURCE_MOUSE);
+#endif
+
+  RenderViewHostFactory::set_is_real_render_view_host(false);
 }
 
 }  // namespace content

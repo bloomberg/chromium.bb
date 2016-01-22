@@ -15,6 +15,9 @@ namespace content {
 RenderViewHostFactory* RenderViewHostFactory::factory_ = nullptr;
 
 // static
+bool RenderViewHostFactory::is_real_render_view_host_ = false;
+
+// static
 RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,

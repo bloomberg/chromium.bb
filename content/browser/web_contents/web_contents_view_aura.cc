@@ -91,8 +91,10 @@ bool IsScrollEndEffectEnabled() {
 
 RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
-  if (!view || RenderViewHostFactory::has_factory())
+  if (!view || (RenderViewHostFactory::has_factory() &&
+      !RenderViewHostFactory::is_real_render_view_host())) {
     return NULL;  // Can't cast to RenderWidgetHostViewAura in unit tests.
+  }
 
   RenderViewHost* rvh = RenderViewHost::From(view->GetRenderWidgetHost());
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
@@ -662,6 +664,11 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       is_or_was_visible_(false) {
 }
 
+void WebContentsViewAura::SetDelegateForTesting(
+    WebContentsViewDelegate* delegate) {
+  delegate_.reset(delegate);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, private:
 
@@ -951,11 +958,12 @@ void WebContentsViewAura::ShowContextMenu(RenderFrameHost* render_frame_host,
       selection_controller_client->HandleContextMenu(params)) {
     return;
   }
+
   if (delegate_) {
     RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
         web_contents_->GetRenderWidgetHostView());
-    if (view)
-      view->OnShowContextMenu();
+    if (view && !view->OnShowContextMenu(params))
+      return;
 
     delegate_->ShowContextMenu(render_frame_host, params);
     // WARNING: we may have been deleted during the call to ShowContextMenu().

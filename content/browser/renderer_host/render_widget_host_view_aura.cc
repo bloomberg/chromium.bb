@@ -2718,10 +2718,19 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   has_snapped_to_boundary_ = true;
 }
 
-void RenderWidgetHostViewAura::OnShowContextMenu() {
+bool RenderWidgetHostViewAura::OnShowContextMenu(
+    const ContextMenuParams& params) {
 #if defined(OS_WIN)
+  last_context_menu_params_.reset();
+
+  if (params.source_type == ui::MENU_SOURCE_TOUCH) {
+    last_context_menu_params_.reset(new ContextMenuParams);
+    *last_context_menu_params_ = params;
+    return false;
+  }
   showing_context_menu_ = true;
 #endif
+  return true;
 }
 
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
@@ -2929,15 +2938,57 @@ void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
       }
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      selection_controller_->OnScrollBeginEvent();
       selection_controller_client_->OnScrollStarted();
       break;
     case ui::ET_GESTURE_SCROLL_END:
       selection_controller_client_->OnScrollCompleted();
       break;
+#if defined(OS_WIN)
+    case ui::ET_GESTURE_LONG_TAP: {
+      if (!last_context_menu_params_)
+        break;
+
+      scoped_ptr<ContextMenuParams> context_menu_params =
+          std::move(last_context_menu_params_);
+
+      // On Windows we want to display the context menu when the long press
+      // gesture is released. To achieve that, we switch the saved context
+      // menu params source type to MENU_SOURCE_MOUSE. This is to ensure that
+      // the RenderWidgetHostViewAura::OnShowContextMenu function which is
+      // called from the ShowContextMenu call below, does not treat it as
+      // a context menu request coming in from touch.
+      DCHECK(context_menu_params->source_type == ui::MENU_SOURCE_TOUCH);
+      context_menu_params->source_type = ui::MENU_SOURCE_MOUSE;
+
+      RenderViewHostDelegateView* delegate_view =
+          GetRenderViewHostDelegateView();
+      if (delegate_view)
+        delegate_view->ShowContextMenu(GetFocusedFrame(),
+                                       *context_menu_params);
+
+      event->SetHandled();
+      // WARNING: we may have been deleted during the call to ShowContextMenu().
+      break;
+    }
+#endif
     default:
       break;
   }
+}
+
+RenderViewHostDelegateView*
+RenderWidgetHostViewAura::GetRenderViewHostDelegateView() {
+  // Use RenderViewHostDelegate to get to the WebContentsViewAura, which will
+  // actually show the disambiguation popup.
+  RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (!rvh)
+    return nullptr;
+
+  RenderViewHostDelegate* delegate = rvh->GetDelegate();
+  if (!delegate)
+    return nullptr;
+
+  return delegate->GetDelegateView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

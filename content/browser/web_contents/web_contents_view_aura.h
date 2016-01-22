@@ -39,8 +39,8 @@ class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
 
-class WebContentsViewAura
-    : public WebContentsView,
+class CONTENT_EXPORT WebContentsViewAura
+    : NON_EXPORTED_BASE(public WebContentsView),
       public RenderViewHostDelegateView,
       public OverscrollControllerDelegate,
       public aura::WindowDelegate,
@@ -49,6 +49,9 @@ class WebContentsViewAura
  public:
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
+
+  // Allow the WebContentsViewDelegate to be set explicitly.
+  void SetDelegateForTesting(WebContentsViewDelegate* delegate);
 
  private:
   class WindowObserver;
