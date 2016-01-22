@@ -5730,12 +5730,6 @@
       },
       {
         "args": [
-          "--isolate-extensions"
-        ],
-        "test": "ash_unittests"
-      },
-      {
-        "args": [
           "--isolate-extensions",
           "--test-launcher-filter-file=src/testing/buildbot/filters/isolate-extensions.browser_tests.filter"
         ],
