@@ -265,15 +265,12 @@ Test: commits without activation
 }
 Test: Idle frames
 {
-    cpuTime : 12.999
+    cpuTime : 0
     duration : 14.001
     endTime : 1014.001
     idle : false
     startTime : 1000
     timeByCategory : {
-        other : 0.003
-        painting : 7.999
-        scripting : 4.997
     }
 }
 {
