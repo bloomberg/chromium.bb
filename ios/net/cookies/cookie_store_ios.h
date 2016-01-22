@@ -103,10 +103,6 @@ class CookieStoreIOS : public net::CookieStore,
   // |NSHTTPCookieStorage sharedHTTPCookieStorage|.
   static void NotifySystemCookiesChanged();
 
-  // Saves the cookies to the cookie monster.
-  // Note: ignores the write cookie operation if |write_on_flush_| is false.
-  void Flush(const base::Closure& callback);
-
   // Unsynchronizes the cookie store if it is currently synchronized.
   void UnSynchronize();
 
@@ -141,6 +137,7 @@ class CookieStoreIOS : public net::CookieStore,
       const GURL& url,
       const DeleteCallback& callback) override;
   void DeleteSessionCookiesAsync(const DeleteCallback& callback) override;
+  void FlushStore(const base::Closure& callback) override;
 
   scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
       const GURL& url,

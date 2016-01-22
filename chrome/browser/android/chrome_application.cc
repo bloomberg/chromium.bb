@@ -22,7 +22,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ChromeApplication_jni.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -34,10 +33,7 @@ namespace {
 void FlushCookiesOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  getter->GetURLRequestContext()
-      ->cookie_store()
-      ->GetCookieMonster()
-      ->FlushStore(base::Closure());
+  getter->GetURLRequestContext()->cookie_store()->FlushStore(base::Closure());
 }
 
 void FlushStoragePartition(content::StoragePartition* partition) {

@@ -63,6 +63,8 @@ class DelayedCookieMonster : public CookieStore {
 
   void DeleteSessionCookiesAsync(const DeleteCallback&) override;
 
+  void FlushStore(const base::Closure& callback) override;
+
   CookieMonster* GetCookieMonster() override;
 
   scoped_ptr<CookieStore::CookieChangedSubscription>

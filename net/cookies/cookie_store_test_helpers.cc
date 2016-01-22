@@ -150,6 +150,10 @@ void DelayedCookieMonster::DeleteSessionCookiesAsync(const DeleteCallback&) {
   ADD_FAILURE();
 }
 
+void DelayedCookieMonster::FlushStore(const base::Closure& callback) {
+  ADD_FAILURE();
+}
+
 CookieMonster* DelayedCookieMonster::GetCookieMonster() {
   return cookie_monster_.get();
 }

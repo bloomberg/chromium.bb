@@ -51,10 +51,8 @@ class ParsedCookie;
 // This class IS thread-safe. Normally, it is only used on the I/O thread, but
 // is also accessed directly through Automation for UI testing.
 //
-// All cookie tasks are handled asynchronously. Tasks may be deferred if
-// all affected cookies are not yet loaded from the backing store. Otherwise,
-// the callback may be invoked immediately (prior to return of the asynchronous
-// function).
+// Tasks may be deferred if all affected cookies are not yet loaded from the
+// backing store. Otherwise, callbacks may be invoked immediately.
 //
 // A cookie task is either pending loading of the entire cookie store, or
 // loading of cookies for a specfic domain key(eTLD+1). In the former case, the
@@ -204,64 +202,33 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   const DeleteCookieCallback& callback);
 
-  // Flush the backing store (if any) to disk and post the given callback when
-  // done.
-  // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
-  // It may be posted to the current thread, or it may run on the thread that
-  // actually does the flushing. Your Task should generally post a notification
-  // to the thread you actually want to be notified on.
-  void FlushStore(const base::Closure& callback);
-
   // Replaces all the cookies by |list|. This method does not flush the backend.
   void SetAllCookiesAsync(const CookieList& list,
                           const SetCookiesCallback& callback);
 
   // CookieStore implementation.
-
-  // Sets the cookies specified by |cookie_list| returned from |url|
-  // with options |options| in effect.
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const CookieOptions& options,
                                  const SetCookiesCallback& callback) override;
-
-  // Gets all cookies that apply to |url| given |options|.
-  // The returned cookies are ordered by longest path, then earliest
-  // creation date.
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const CookieOptions& options,
                                   const GetCookiesCallback& callback) override;
-
-  // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
-  // only cookies.
   void GetAllCookiesForURLAsync(const GURL& url,
                                 const GetCookieListCallback& callback) override;
-
-  // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   void DeleteCookieAsync(const GURL& url,
                          const std::string& cookie_name,
                          const base::Closure& callback) override;
-
-  // Deletes all of the cookies that have a creation_date greater than or equal
-  // to |delete_begin| and less than |delete_end|.
-  // Returns the number of cookies that have been deleted.
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
                                     const base::Time& delete_end,
                                     const DeleteCallback& callback) override;
-
-  // Deletes all of the cookies that match the host of the given URL
-  // regardless of path and that have a creation_date greater than or
-  // equal to |delete_begin| and less then |delete_end|. This includes
-  // all http_only and secure cookies, but does not include any domain
-  // cookies that may apply to this host.
-  // Returns the number of cookies deleted.
   void DeleteAllCreatedBetweenForHostAsync(
       const base::Time delete_begin,
       const base::Time delete_end,
       const GURL& url,
       const DeleteCallback& callback) override;
-
   void DeleteSessionCookiesAsync(const DeleteCallback&) override;
+  void FlushStore(const base::Closure& callback) override;
 
   CookieMonster* GetCookieMonster() override;
 

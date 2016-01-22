@@ -26,6 +26,10 @@ class CookieMonster;
 
 // An interface for storing and retrieving cookies. Implementations need to
 // be thread safe as its methods can be accessed from IO as well as UI threads.
+//
+// All async functions may either invoke the callback asynchronously on the same
+// thread, or they may be invoked immediately (prior to return of the
+// asynchronous function).
 class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
  public:
   // Callback definitions.
@@ -39,7 +43,9 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       CookieChangedCallbackList;
   typedef CookieChangedCallbackList::Subscription CookieChangedSubscription;
 
-  // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
+  // Sets the cookies specified by |cookie_list| returned from |url|
+  // with options |options| in effect.  Expects a cookie line, like
+  // "a=1; domain=b.com".
   //
   // Fails either if the cookie is invalid or if this is a non-HTTPONLY cookie
   // and it would overwrite an existing HTTPONLY cookie.
@@ -55,19 +61,23 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // Note: Some sites, such as Facebook, occasionally use Cookie headers >4k.
   //
   // Simple interface, gets a cookie string "a=b; c=d" for the given URL.
-  // Use options to access httponly cookies.
+  // Gets all cookies that apply to |url| given |options|. Use options to
+  // access httponly cookies.
+  //
+  // The returned cookies are ordered by longest path, then earliest
+  // creation date.
   virtual void GetCookiesWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,
       const GetCookiesCallback& callback) = 0;
 
-  // Returns all matching cookies without marking them as accessed,
-  // including HTTP only cookies.
+  // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
+  // only cookies.
   virtual void GetAllCookiesForURLAsync(
       const GURL& url,
       const GetCookieListCallback& callback) = 0;
 
-  // Deletes the passed in cookie for the specified URL.
+  // Deletes all cookies that might apply to |url| that have |cookie_name|.
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,
                                  const base::Closure& callback) = 0;
@@ -92,6 +102,17 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const DeleteCallback& callback) = 0;
 
   virtual void DeleteSessionCookiesAsync(const DeleteCallback&) = 0;
+
+  // Flush the backing store (if any) to disk and post the given callback when
+  // done.
+  // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
+  // It may be posted to the current thread, or it may run on the thread that
+  // actually does the flushing. Your Task should generally post a notification
+  // to the thread you actually want to be notified on.
+  // TODO(mmenke):  Once this class is no longer thread-safe, this will always
+  // be invoked on the CookieStore's thread, and this comment can be removed.
+  // https://crbug.com/46185
+  virtual void FlushStore(const base::Closure& callback) = 0;
 
   // Returns the underlying CookieMonster.
   virtual CookieMonster* GetCookieMonster() = 0;

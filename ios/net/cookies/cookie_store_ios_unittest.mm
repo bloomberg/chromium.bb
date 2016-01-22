@@ -132,6 +132,11 @@ class RoundTripTestCookieStore : public net::CookieStore {
     store_->DeleteSessionCookiesAsync(callback);
   }
 
+  void FlushStore(const base::Closure& callback) override {
+    RoundTrip();
+    store_->FlushStore(callback);
+  }
+
   scoped_ptr<CookieStore::CookieChangedSubscription> AddCallbackForCookie(
       const GURL& url,
       const std::string& name,
@@ -507,7 +512,7 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
       [NSHTTPCookieStorage sharedHTTPCookieStorage];
   EXPECT_EQ(0u, [[system_store cookies] count]);
   // Flushing should not have any effect.
-  cookie_store->Flush(base::Closure());
+  cookie_store->FlushStore(base::Closure());
   // Check we can get the cookie even though cookies are disabled.
   GetAllCookiesCallback callback;
   cookie_store->GetAllCookiesForURLAsync(
@@ -717,7 +722,7 @@ TEST_F(CookieStoreIOSWithBackend, ManualFlush) {
   EXPECT_FALSE(backend_->flushed());
 
   // The store should be flushed even if it is not dirty.
-  store_->Flush(base::Closure());
+  store_->FlushStore(base::Closure());
   EXPECT_TRUE(backend_->flushed());
 
   store_->UnSynchronize();
