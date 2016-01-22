@@ -6,7 +6,6 @@
 #define ScaleTransformComponent_h
 
 #include "core/css/cssom/TransformComponent.h"
-#include "platform/transforms/ScaleTransformOperation.h"
 
 namespace blink {
 
@@ -30,7 +29,6 @@ public:
 
     TransformComponentType type() const override { return m_is2D ? ScaleType : Scale3DType; }
 
-    String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
 
 private:

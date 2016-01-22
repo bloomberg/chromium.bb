@@ -54,7 +54,6 @@ public:
 
     TransformComponentType type() const override { return m_is2D ? MatrixType : Matrix3DType; }
 
-    String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
 
 private:

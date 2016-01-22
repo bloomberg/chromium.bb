@@ -33,7 +33,11 @@ public:
             && transformType != Translate3DType;
     }
 
-    virtual String cssString() const = 0;
+    String cssString() const
+    {
+        return toCSSValue()->cssText();
+    }
+
     virtual PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

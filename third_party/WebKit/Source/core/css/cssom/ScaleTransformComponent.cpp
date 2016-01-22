@@ -4,18 +4,21 @@
 
 #include "core/css/cssom/ScaleTransformComponent.h"
 
-namespace blink {
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValuePool.h"
 
-String ScaleTransformComponent::cssString() const
-{
-    // TODO: implement
-    return emptyString();
-}
+namespace blink {
 
 PassRefPtrWillBeRawPtr<CSSFunctionValue> ScaleTransformComponent::toCSSValue() const
 {
-    // TODO: implement
-    return nullptr;
+    RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(m_is2D ? CSSValueScale : CSSValueScale3d);
+
+    result->append(cssValuePool().createValue(m_x, CSSPrimitiveValue::UnitType::Number));
+    result->append(cssValuePool().createValue(m_y, CSSPrimitiveValue::UnitType::Number));
+    if (!m_is2D)
+        result->append(cssValuePool().createValue(m_z, CSSPrimitiveValue::UnitType::Number));
+
+    return result.release();
 }
 
 } // namespace blink
