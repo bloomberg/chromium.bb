@@ -30,12 +30,14 @@
 
 #include "web/ExternalPopupMenu.h"
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatQuad.h"
@@ -71,11 +73,10 @@ DEFINE_TRACE(ExternalPopupMenu)
     PopupMenu::trace(visitor);
 }
 
-void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, int index)
+bool ExternalPopupMenu::showInternal()
 {
-    IntRect rect(controlPosition.enclosingBoundingBox());
-    // WebCore reuses the PopupMenu of an element.
-    // For simplicity, we do recreate the actual external popup everytime.
+    // Blink core reuses the PopupMenu of an element.  For simplicity, we do
+    // recreate the actual external popup everytime.
     if (m_webExternalPopupMenu) {
         m_webExternalPopupMenu->close();
         m_webExternalPopupMenu = 0;
@@ -84,29 +85,45 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, i
     WebPopupMenuInfo info;
     getPopupMenuInfo(info, *m_ownerElement);
     if (info.items.isEmpty())
-        return;
+        return false;
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(m_localFrame.get());
     m_webExternalPopupMenu = webframe->client()->createExternalPopupMenu(info, this);
     if (m_webExternalPopupMenu) {
+        LayoutObject* layoutObject = m_ownerElement->layoutObject();
+        if (!layoutObject || !layoutObject->isBox())
+            return false;
+        FloatQuad quad(toLayoutBox(layoutObject)->localToAbsoluteQuad(FloatQuad(toLayoutBox(layoutObject)->borderBoundingBox())));
+        IntRect rect(quad.enclosingBoundingBox());
         IntRect rectInViewport = m_localFrame->view()->soonToBeRemovedContentsToUnscaledViewport(rect);
+        // TODO(tkent): If the anchor rectangle is not visible, we should not
+        // show a popup.
         m_webExternalPopupMenu->show(rectInViewport);
-#if OS(MACOSX)
-        const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
-        if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
-            m_syntheticEvent = adoptPtr(new WebMouseEvent);
-            *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
-            m_syntheticEvent->type = WebInputEvent::MouseUp;
-            m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
-            // FIXME: show() is asynchronous. If preparing a popup is slow and
-            // a user released the mouse button before showing the popup,
-            // mouseup and click events are correctly dispatched. Dispatching
-            // the synthetic mouseup event is redundant in this case.
-        }
-#endif
+        m_shownDOMTreeVersion = m_ownerElement->document().domTreeVersion();
+        return true;
     } else {
         // The client might refuse to create a popup (when there is already one pending to be shown for example).
         didCancel();
+        return false;
     }
+}
+
+void ExternalPopupMenu::show(const FloatQuad&, const IntSize&, int)
+{
+    if (!showInternal())
+        return;
+#if OS(MACOSX)
+    const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
+    if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
+        m_syntheticEvent = adoptPtr(new WebMouseEvent);
+        *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
+        m_syntheticEvent->type = WebInputEvent::MouseUp;
+        m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
+        // FIXME: show() is asynchronous. If preparing a popup is slow and a
+        // user released the mouse button before showing the popup, mouseup and
+        // click events are correctly dispatched. Dispatching the synthetic
+        // mouseup event is redundant in this case.
+    }
+#endif
 }
 
 void ExternalPopupMenu::dispatchEvent(Timer<ExternalPopupMenu>*)
@@ -127,6 +144,31 @@ void ExternalPopupMenu::hide()
 
 void ExternalPopupMenu::updateFromElement()
 {
+    if (m_needsUpdate)
+        return;
+    // TOOD(tkent): Even if DOMTreeVersion is not changed, we should update the
+    // popup location/content in some cases.  e.g. Updating ComputedStyle of the
+    // SELECT element affects popup position and OPTION style.
+    if (m_shownDOMTreeVersion == m_ownerElement->document().domTreeVersion())
+        return;
+    m_needsUpdate = true;
+    m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, PassRefPtrWillBeRawPtr<ExternalPopupMenu>(this)));
+}
+
+void ExternalPopupMenu::update()
+{
+    if (!m_webExternalPopupMenu || !m_ownerElement)
+        return;
+    m_ownerElement->document().updateLayoutTreeIfNeeded();
+    // disconnectClient() might have been called.
+    if (!m_ownerElement)
+        return;
+    m_needsUpdate = false;
+
+    if (showInternal())
+        return;
+    // We failed to show a popup.  Notify it to the owner.
+    hide();
 }
 
 void ExternalPopupMenu::disconnectClient()
