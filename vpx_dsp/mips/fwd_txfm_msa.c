@@ -186,9 +186,9 @@ void vpx_fdct4x4_msa(const int16_t *input, int16_t *output,
     in0 += vec;
   }
 
-  VP9_FDCT4(in0, in1, in2, in3, in0, in1, in2, in3);
+  VPX_FDCT4(in0, in1, in2, in3, in0, in1, in2, in3);
   TRANSPOSE4x4_SH_SH(in0, in1, in2, in3, in0, in1, in2, in3);
-  VP9_FDCT4(in0, in1, in2, in3, in0, in1, in2, in3);
+  VPX_FDCT4(in0, in1, in2, in3, in0, in1, in2, in3);
   TRANSPOSE4x4_SH_SH(in0, in1, in2, in3, in0, in1, in2, in3);
   ADD4(in0, 1, in1, 1, in2, 1, in3, 1, in0, in1, in2, in3);
   SRA_4V(in0, in1, in2, in3, 2);
@@ -203,11 +203,11 @@ void vpx_fdct8x8_msa(const int16_t *input, int16_t *output,
   LD_SH8(input, src_stride, in0, in1, in2, in3, in4, in5, in6, in7);
   SLLI_4V(in0, in1, in2, in3, 2);
   SLLI_4V(in4, in5, in6, in7, 2);
-  VP9_FDCT8(in0, in1, in2, in3, in4, in5, in6, in7,
+  VPX_FDCT8(in0, in1, in2, in3, in4, in5, in6, in7,
             in0, in1, in2, in3, in4, in5, in6, in7);
   TRANSPOSE8x8_SH_SH(in0, in1, in2, in3, in4, in5, in6, in7,
                      in0, in1, in2, in3, in4, in5, in6, in7);
-  VP9_FDCT8(in0, in1, in2, in3, in4, in5, in6, in7,
+  VPX_FDCT8(in0, in1, in2, in3, in4, in5, in6, in7,
             in0, in1, in2, in3, in4, in5, in6, in7);
   TRANSPOSE8x8_SH_SH(in0, in1, in2, in3, in4, in5, in6, in7,
                      in0, in1, in2, in3, in4, in5, in6, in7);
