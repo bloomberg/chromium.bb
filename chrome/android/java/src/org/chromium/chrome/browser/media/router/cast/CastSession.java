@@ -816,14 +816,20 @@ public class CastSession implements MediaNotificationListener {
 
             JSONObject jsonMessage = new JSONObject();
             jsonMessage.put("sessionId", mSessionId);
-            jsonMessage.put("appId", mApplicationMetadata.getApplicationId());
-            jsonMessage.put("displayName", mApplicationMetadata.getName());
             jsonMessage.put("statusText", mApplicationStatus);
             jsonMessage.put("receiver", jsonReceiver);
-            jsonMessage.put("namespaces", extractNamespaces(mApplicationMetadata));
+            jsonMessage.put("namespaces", extractNamespaces());
             jsonMessage.put("media", new JSONArray());
             jsonMessage.put("status", "connected");
             jsonMessage.put("transportId", "web-4");
+
+            if (mApplicationMetadata != null) {
+                jsonMessage.put("appId", mApplicationMetadata.getApplicationId());
+                jsonMessage.put("displayName", mApplicationMetadata.getName());
+            } else {
+                jsonMessage.put("appId", mSource.getApplicationId());
+                jsonMessage.put("displayName", mCastDevice.getFriendlyName());
+            }
 
             return jsonMessage.toString();
         } catch (JSONException e) {
@@ -861,7 +867,7 @@ public class CastSession implements MediaNotificationListener {
         return jsonCapabilities;
     }
 
-    private JSONArray extractNamespaces(ApplicationMetadata metadata) throws JSONException {
+    private JSONArray extractNamespaces() throws JSONException {
         JSONArray jsonNamespaces = new JSONArray();
         // TODO(avayvod): Need a way to retrieve all the supported namespaces (e.g. YouTube).
         // See crbug.com/529680.
