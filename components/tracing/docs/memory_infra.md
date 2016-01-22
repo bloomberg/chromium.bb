@@ -98,8 +98,10 @@ and it is discounted from malloc and the blue columns.
 
 ## Related Pages
 
+ * [Adding MemoryInfra Tracing to a Component](adding_memory_infra_tracing.md)
  * [GPU Memory Tracing](memory_infra_gpu.md)
  * [Heap Profiling with MemoryInfra](heap_profiler.md)
+ * [Startup Tracing with MemoryInfra](memory_infra_startup_tracing.md)
 
 ## Rationale
 
