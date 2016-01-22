@@ -140,6 +140,8 @@ const DisplayItem::Type backgroundType = DisplayItem::BoxDecorationBackground;
 const DisplayItem::Type cachedBackgroundType = DisplayItem::drawingTypeToCachedDrawingType(backgroundType);
 const DisplayItem::Type foregroundType = DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground);
 const DisplayItem::Type cachedForegroundType = DisplayItem::drawingTypeToCachedDrawingType(foregroundType);
+const DisplayItem::Type documentBackgroundType = DisplayItem::DocumentBackground;
+const DisplayItem::Type cachedDocumentBackgroundType = DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::DocumentBackground);
 
 } // namespace blink
 

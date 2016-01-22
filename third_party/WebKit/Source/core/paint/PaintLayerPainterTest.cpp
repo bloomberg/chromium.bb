@@ -40,7 +40,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
-        TestDisplayItem(layoutView(), backgroundType),
+        TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundType),
@@ -57,7 +57,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     bool needsCommit = paintWithoutCommit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
-        TestDisplayItem(layoutView(), cachedBackgroundType),
+        TestDisplayItem(layoutView(), cachedDocumentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, cachedBackgroundType),
@@ -70,7 +70,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
         commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
-        TestDisplayItem(layoutView(), backgroundType),
+        TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundType),
@@ -119,7 +119,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Content2b is out of the interest rect and output nothing;
     // Container3 is partly in the interest rect.
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 15,
-        TestDisplayItem(layoutView(), backgroundType),
+        TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundType),
@@ -145,7 +145,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Content2b is out of the interest rect and outputs nothing;
     // Container3 becomes out of the interest rect and outputs empty subsequence pair..
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), cachedBackgroundType),
+        TestDisplayItem(layoutView(), cachedDocumentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::CachedSubsequence),
         TestDisplayItem(container2Layer, DisplayItem::Subsequence),
@@ -161,7 +161,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
         commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 14,
-        TestDisplayItem(layoutView(), backgroundType),
+        TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundType),
@@ -199,7 +199,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
-        TestDisplayItem(layoutView(), backgroundType),
+        TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundType),
@@ -216,7 +216,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
     bool needsCommit = paintWithoutCommit(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
-        TestDisplayItem(layoutView(), cachedBackgroundType),
+        TestDisplayItem(layoutView(), cachedDocumentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, cachedBackgroundType),
@@ -229,7 +229,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
         commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
-        TestDisplayItem(layoutView(), backgroundType),
+        TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundType),

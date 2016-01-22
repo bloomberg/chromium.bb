@@ -359,8 +359,15 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
 void GraphicsLayer::notifyFirstPaintToClient()
 {
     if (!m_painted) {
-        m_painted = true;
-        m_client->notifyFirstPaint();
+        DisplayItemList& itemList = m_paintController->newDisplayItemList();
+        for (DisplayItem& item : itemList) {
+            DisplayItem::Type type = item.type();
+            if (DisplayItem::isDrawingType(type) && type != DisplayItem::DocumentBackground && type != DisplayItem::DebugRedFill && static_cast<const DrawingDisplayItem&>(item).picture()) {
+                m_painted = true;
+                m_client->notifyFirstPaint();
+                break;
+            }
+        }
     }
     if (!m_textPainted && m_paintController->textPainted()) {
         m_textPainted = true;

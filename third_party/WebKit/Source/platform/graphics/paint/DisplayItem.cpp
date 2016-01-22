@@ -73,6 +73,7 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(Caret);
         DEBUG_STRING_CASE(ColumnRules);
         DEBUG_STRING_CASE(DebugRedFill);
+        DEBUG_STRING_CASE(DocumentBackground);
         DEBUG_STRING_CASE(DragImage);
         DEBUG_STRING_CASE(SVGImage);
         DEBUG_STRING_CASE(LinkHighlight);

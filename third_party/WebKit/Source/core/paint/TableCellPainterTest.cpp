@@ -32,7 +32,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
-        TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
 
     updateLifecyclePhasesBeforePaint();
@@ -40,7 +40,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
-        TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
         TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
 }
 

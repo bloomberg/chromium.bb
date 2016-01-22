@@ -64,6 +64,7 @@ public:
         Caret,
         ColumnRules,
         DebugRedFill,
+        DocumentBackground,
         DragImage,
         SVGImage,
         LinkHighlight,
