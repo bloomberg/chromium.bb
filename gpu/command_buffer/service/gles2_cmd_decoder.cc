@@ -621,7 +621,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   const ContextState* GetContextState() override { return &state_; }
 
   void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
-  void SetWaitSyncPointCallback(const WaitSyncPointCallback& callback) override;
   void SetFenceSyncReleaseCallback(
       const FenceSyncReleaseCallback& callback) override;
   void SetWaitFenceSyncCallback(const WaitFenceSyncCallback& callback) override;
@@ -1962,7 +1961,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   scoped_ptr<ImageManager> image_manager_;
 
-  WaitSyncPointCallback wait_sync_point_callback_;
   FenceSyncReleaseCallback fence_sync_release_callback_;
   WaitFenceSyncCallback wait_fence_sync_callback_;
 
@@ -3968,11 +3966,6 @@ ErrorState* GLES2DecoderImpl::GetErrorState() {
 void GLES2DecoderImpl::SetShaderCacheCallback(
     const ShaderCacheCallback& callback) {
   shader_cache_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetWaitSyncPointCallback(
-    const WaitSyncPointCallback& callback) {
-  wait_sync_point_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetFenceSyncReleaseCallback(

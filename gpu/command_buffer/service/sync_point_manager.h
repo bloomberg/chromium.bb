@@ -284,31 +284,12 @@ class GPU_EXPORT SyncPointManager {
   scoped_refptr<SyncPointClientState> GetSyncPointClientState(
     CommandBufferNamespace namespace_id, uint64_t client_id);
 
-  // Generates a sync point, returning its ID. This can me called on any thread.
-  // IDs start at a random number. Never return 0.
-  uint32_t GenerateSyncPoint();
-
-  // Retires a sync point. This will call all the registered callbacks for this
-  // sync point. This can only be called on the main thread.
-  void RetireSyncPoint(uint32_t sync_point);
-
-  // Adds a callback to the sync point. The callback will be called when the
-  // sync point is retired, or immediately (from within that function) if the
-  // sync point was already retired (or not created yet). This can only be
-  // called on the main thread.
-  void AddSyncPointCallback(uint32_t sync_point, const base::Closure& callback);
-
-  bool IsSyncPointRetired(uint32_t sync_point);
-
  private:
   friend class SyncPointClient;
   friend class SyncPointOrderData;
 
-  typedef std::vector<base::Closure> ClosureList;
-  typedef base::hash_map<uint32_t, ClosureList> SyncPointMap;
   typedef base::hash_map<uint64_t, SyncPointClient*> ClientMap;
 
-  bool IsSyncPointRetiredLocked(uint32_t sync_point);
   uint32_t GenerateOrderNumber();
   void DestroySyncPointClient(CommandBufferNamespace namespace_id,
                               uint64_t client_id);
@@ -319,12 +300,6 @@ class GPU_EXPORT SyncPointManager {
   // Client map holds a map of clients id to client for each namespace.
   base::Lock client_maps_lock_;
   ClientMap client_maps_[NUM_COMMAND_BUFFER_NAMESPACES];
-
-  // Protects the 2 fields below. Note: callbacks shouldn't be called with this
-  // held.
-  base::Lock lock_;
-  SyncPointMap sync_point_map_;
-  uint32_t next_sync_point_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);
 };

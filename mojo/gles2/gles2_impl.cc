@@ -25,11 +25,6 @@ const int32_t kNone = 0x3038;  // EGL_NONE
 base::LazyInstance<base::ThreadLocalPointer<gpu::gles2::GLES2Interface> >::Leaky
     g_gpu_interface;
 
-void RunSignalSyncCallback(MojoGLES2SignalSyncPointCallback callback,
-                           void* closure) {
-  callback(closure);
-}
-
 }  // namespace
 
 extern "C" {
@@ -72,16 +67,6 @@ void MojoGLES2MakeCurrent(MojoGLES2Context context) {
 void MojoGLES2SwapBuffers() {
   DCHECK(g_gpu_interface.Get().Get());
   g_gpu_interface.Get().Get()->SwapBuffers();
-}
-
-void MojoGLES2SignalSyncPoint(
-    MojoGLES2Context context,
-    uint32_t sync_point,
-    MojoGLES2SignalSyncPointCallback callback,
-    void* closure) {
-  DCHECK(context);
-  static_cast<GLES2Context*>(context)->context_support()->SignalSyncPoint(
-      sync_point, base::Bind(&RunSignalSyncCallback, callback, closure));
 }
 
 void* MojoGLES2GetGLES2Interface(MojoGLES2Context context) {

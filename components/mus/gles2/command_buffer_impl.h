@@ -94,7 +94,6 @@ class CommandBufferImpl : public mojom::CommandBuffer {
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<CommandBufferDriver> driver_;
   scoped_ptr<mojo::Binding<CommandBuffer>> binding_;
-  std::deque<uint32_t> sync_points_;
   CommandBufferImplObserver* observer_;
   mojom::CommandBufferLostContextObserverPtr loss_observer_;
 

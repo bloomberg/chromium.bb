@@ -65,7 +65,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                                 public CommonDecoder {
  public:
   typedef error::Error Error;
-  typedef base::Callback<bool(uint32_t id)> WaitSyncPointCallback;
   typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
   typedef base::Callback<bool(gpu::CommandBufferNamespace namespace_id,
                               uint64_t command_buffer_id,
@@ -231,11 +230,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // A callback for messages from the decoder.
   virtual void SetShaderCacheCallback(const ShaderCacheCallback& callback) = 0;
-
-  // Sets the callback for waiting on a sync point. The callback returns the
-  // scheduling status (i.e. true if the channel is still scheduled).
-  virtual void SetWaitSyncPointCallback(
-      const WaitSyncPointCallback& callback) = 0;
 
   // Sets the callback for fence sync release and wait calls. The wait call
   // returns true if the channel is still scheduled.

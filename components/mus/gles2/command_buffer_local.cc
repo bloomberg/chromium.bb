@@ -293,25 +293,6 @@ int32_t CommandBufferLocal::CreateGpuMemoryBufferImage(size_t width,
   return CreateImage(buffer->AsClientBuffer(), width, height, internal_format);
 }
 
-uint32_t CommandBufferLocal::InsertSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-uint32_t CommandBufferLocal::InsertFutureSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-void CommandBufferLocal::RetireSyncPoint(uint32_t sync_point) {
-  NOTREACHED();
-}
-
-void CommandBufferLocal::SignalSyncPoint(uint32_t sync_point,
-                                         const base::Closure& callback) {
-  NOTREACHED();
-}
-
 void CommandBufferLocal::SignalQuery(uint32_t query_id,
                                      const base::Closure& callback) {
   DCHECK(CalledOnValidThread());

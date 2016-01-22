@@ -108,11 +108,6 @@ class MockClientGpuControl : public GpuControl {
                        size_t height,
                        unsigned internalformat,
                        unsigned usage));
-  MOCK_METHOD0(InsertSyncPoint, uint32_t());
-  MOCK_METHOD0(InsertFutureSyncPoint, uint32_t());
-  MOCK_METHOD1(RetireSyncPoint, void(uint32_t id));
-  MOCK_METHOD2(SignalSyncPoint,
-               void(uint32_t id, const base::Closure& callback));
   MOCK_METHOD2(SignalQuery,
                void(uint32_t query, const base::Closure& callback));
   MOCK_METHOD1(CreateStreamTexture, uint32_t(uint32_t));

@@ -128,8 +128,6 @@ bool CommandBufferDriver::Initialize(
   sync_point_client_ = gpu_state_->sync_point_manager()->CreateSyncPointClient(
       sync_point_order_data_, GetNamespaceID(), command_buffer_id_);
   decoder_->set_engine(scheduler_.get());
-  decoder_->SetWaitSyncPointCallback(base::Bind(
-      &CommandBufferDriver::OnWaitSyncPoint, base::Unretained(this)));
   decoder_->SetFenceSyncReleaseCallback(base::Bind(
       &CommandBufferDriver::OnFenceSyncRelease, base::Unretained(this)));
   decoder_->SetWaitFenceSyncCallback(base::Bind(
@@ -442,19 +440,6 @@ void CommandBufferDriver::OnUpdateVSyncParameters(
     client_->UpdateVSyncParameters(timebase.ToInternalValue(),
                                    interval.ToInternalValue());
   }
-}
-
-bool CommandBufferDriver::OnWaitSyncPoint(uint32_t sync_point) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(scheduler_->scheduled());
-  if (!sync_point)
-    return true;
-
-  scheduler_->SetScheduled(false);
-  gpu_state_->sync_point_manager()->AddSyncPointCallback(
-      sync_point, base::Bind(&gpu::GpuScheduler::SetScheduled,
-                             scheduler_->AsWeakPtr(), true));
-  return scheduler_->scheduled();
 }
 
 void CommandBufferDriver::OnFenceSyncRelease(uint64_t release) {

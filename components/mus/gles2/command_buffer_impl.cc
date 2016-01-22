@@ -67,9 +67,6 @@ void CommandBufferImpl::DidLoseContext(uint32_t reason) {
 }
 
 CommandBufferImpl::~CommandBufferImpl() {
-  // Retire all sync points.
-  for (uint32_t sync_point : sync_points_)
-    gpu_state_->sync_point_manager()->RetireSyncPoint(sync_point);
   if (observer_)
     observer_->OnCommandBufferImplDestroyed();
 }

@@ -308,25 +308,6 @@ int32_t Display::CreateGpuMemoryBufferImage(size_t width,
   return -1;
 }
 
-uint32_t Display::InsertSyncPoint() {
-  NOTIMPLEMENTED();
-  return 0u;
-}
-
-uint32_t Display::InsertFutureSyncPoint() {
-  NOTIMPLEMENTED();
-  return 0u;
-}
-
-void Display::RetireSyncPoint(uint32_t sync_point) {
-  NOTIMPLEMENTED();
-}
-
-void Display::SignalSyncPoint(uint32_t sync_point,
-                              const base::Closure& callback) {
-  NOTIMPLEMENTED();
-}
-
 void Display::SignalQuery(uint32_t query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

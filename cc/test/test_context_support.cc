@@ -19,14 +19,6 @@ TestContextSupport::TestContextSupport()
 
 TestContextSupport::~TestContextSupport() {}
 
-void TestContextSupport::SignalSyncPoint(uint32_t sync_point,
-                                         const base::Closure& callback) {
-  sync_point_callbacks_.push_back(callback);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
 void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
                                          const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
@@ -69,15 +61,6 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
 }
 
 void TestContextSupport::Swap() {
-}
-
-uint32_t TestContextSupport::InsertFutureSyncPointCHROMIUM() {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-void TestContextSupport::RetireSyncPointCHROMIUM(uint32_t sync_point) {
-  NOTIMPLEMENTED();
 }
 
 void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {

@@ -484,25 +484,6 @@ void GLManager::DestroyImage(int32_t id) {
   image_manager->RemoveImage(id);
 }
 
-uint32_t GLManager::InsertSyncPoint() {
-  NOTIMPLEMENTED();
-  return 0u;
-}
-
-uint32_t GLManager::InsertFutureSyncPoint() {
-  NOTIMPLEMENTED();
-  return 0u;
-}
-
-void GLManager::RetireSyncPoint(uint32_t sync_point) {
-  NOTIMPLEMENTED();
-}
-
-void GLManager::SignalSyncPoint(uint32_t sync_point,
-                                const base::Closure& callback) {
-  NOTIMPLEMENTED();
-}
-
 void GLManager::SignalQuery(uint32_t query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

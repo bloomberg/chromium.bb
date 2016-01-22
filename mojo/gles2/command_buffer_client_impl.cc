@@ -271,26 +271,6 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
-uint32_t CommandBufferClientImpl::InsertSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-uint32_t CommandBufferClientImpl::InsertFutureSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-void CommandBufferClientImpl::RetireSyncPoint(uint32_t sync_point) {
-  NOTREACHED();
-}
-
-void CommandBufferClientImpl::SignalSyncPoint(uint32_t sync_point,
-                                              const base::Closure& callback) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-}
-
 void CommandBufferClientImpl::SignalQuery(uint32_t query,
                                           const base::Closure& callback) {
   // TODO(piman)

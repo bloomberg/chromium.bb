@@ -236,25 +236,6 @@ int32_t PpapiCommandBufferProxy::GetExtraCommandBufferData() const {
   return 0;
 }
 
-uint32_t PpapiCommandBufferProxy::InsertSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-uint32_t PpapiCommandBufferProxy::InsertFutureSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-void PpapiCommandBufferProxy::RetireSyncPoint(uint32_t sync_point) {
-  NOTREACHED();
-}
-
-void PpapiCommandBufferProxy::SignalSyncPoint(uint32_t sync_point,
-                                              const base::Closure& callback) {
-  NOTREACHED();
-}
-
 void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
                                           const base::Closure& callback) {
   NOTREACHED();

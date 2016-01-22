@@ -20,8 +20,6 @@
 
 namespace gpu {
 
-static const int kMaxSyncBase = INT_MAX;
-
 namespace {
 
 void RunOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -340,11 +338,7 @@ SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
       namespace_id_(namespace_id),
       client_id_(client_id) {}
 
-SyncPointManager::SyncPointManager(bool allow_threaded_wait)
-    : // To reduce the risk that a sync point created in a previous GPU process
-      // will be in flight in the next GPU process, randomize the starting sync
-      // point number. http://crbug.com/373452
-      next_sync_point_(base::RandInt(1, kMaxSyncBase)) {
+SyncPointManager::SyncPointManager(bool allow_threaded_wait) {
   global_order_num_.GetNext();
 }
 
@@ -387,63 +381,6 @@ scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(
     }
   }
   return nullptr;
-}
-
-uint32_t SyncPointManager::GenerateSyncPoint() {
-  base::AutoLock lock(lock_);
-  uint32_t sync_point = next_sync_point_++;
-  // When an integer overflow occurs, don't return 0.
-  if (!sync_point)
-    sync_point = next_sync_point_++;
-
-  // Note: wrapping would take days for a buggy/compromized renderer that would
-  // insert sync points in a loop, but if that were to happen, better explicitly
-  // crash the GPU process than risk worse.
-  // For normal operation (at most a few per frame), it would take ~a year to
-  // wrap.
-  CHECK(sync_point_map_.find(sync_point) == sync_point_map_.end());
-  sync_point_map_.insert(std::make_pair(sync_point, ClosureList()));
-  return sync_point;
-}
-
-void SyncPointManager::RetireSyncPoint(uint32_t sync_point) {
-  ClosureList list;
-  {
-    base::AutoLock lock(lock_);
-    SyncPointMap::iterator it = sync_point_map_.find(sync_point);
-    if (it == sync_point_map_.end()) {
-      LOG(ERROR) << "Attempted to retire sync point that"
-                    " didn't exist or was already retired.";
-      return;
-    }
-    list.swap(it->second);
-    sync_point_map_.erase(it);
-  }
-  for (ClosureList::iterator i = list.begin(); i != list.end(); ++i)
-    i->Run();
-}
-
-void SyncPointManager::AddSyncPointCallback(uint32_t sync_point,
-                                            const base::Closure& callback) {
-  {
-    base::AutoLock lock(lock_);
-    SyncPointMap::iterator it = sync_point_map_.find(sync_point);
-    if (it != sync_point_map_.end()) {
-      it->second.push_back(callback);
-      return;
-    }
-  }
-  callback.Run();
-}
-
-bool SyncPointManager::IsSyncPointRetired(uint32_t sync_point) {
-  base::AutoLock lock(lock_);
-  return IsSyncPointRetiredLocked(sync_point);
-}
-
-bool SyncPointManager::IsSyncPointRetiredLocked(uint32_t sync_point) {
-  lock_.AssertAcquired();
-  return sync_point_map_.find(sync_point) == sync_point_map_.end();
 }
 
 uint32_t SyncPointManager::GenerateOrderNumber() {

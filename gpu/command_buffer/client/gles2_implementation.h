@@ -211,8 +211,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                             unsigned overlay_texture_id,
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& uv_rect) override;
-  GLuint InsertFutureSyncPointCHROMIUM() override;
-  void RetireSyncPointCHROMIUM(GLuint sync_point) override;
   uint64_t ShareGroupTracingGUID() const override;
 
   void GetProgramInfoCHROMIUMHelper(GLuint program,
@@ -257,8 +255,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void FreeEverything();
 
   // ContextSupport implementation.
-  void SignalSyncPoint(uint32_t sync_point,
-                       const base::Closure& callback) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;

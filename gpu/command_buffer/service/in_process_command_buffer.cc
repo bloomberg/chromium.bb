@@ -823,25 +823,6 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
-uint32_t InProcessCommandBuffer::InsertSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-uint32_t InProcessCommandBuffer::InsertFutureSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-
-void InProcessCommandBuffer::RetireSyncPoint(uint32_t sync_point) {
-  NOTREACHED();
-}
-
-void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
-                                             const base::Closure& callback) {
-  NOTREACHED();
-}
-
 void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
   DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
   gles2::MailboxManager* mailbox_manager =

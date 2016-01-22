@@ -620,29 +620,6 @@ bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
   return true;
 }
 
-uint32_t CommandBufferProxyImpl::InsertSyncPoint() {
-  CheckLock();
-  NOTREACHED();
-  return 0;
-}
-
-uint32_t CommandBufferProxyImpl::InsertFutureSyncPoint() {
-  CheckLock();
-  NOTREACHED();
-  return 0;
-}
-
-void CommandBufferProxyImpl::RetireSyncPoint(uint32_t sync_point) {
-  CheckLock();
-  NOTREACHED();
-}
-
-void CommandBufferProxyImpl::SignalSyncPoint(uint32_t sync_point,
-                                             const base::Closure& callback) {
-  CheckLock();
-  NOTREACHED();
-}
-
 void CommandBufferProxyImpl::SignalQuery(uint32_t query,
                                          const base::Closure& callback) {
   CheckLock();

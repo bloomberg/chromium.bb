@@ -313,15 +313,6 @@ void GLES2Implementation::RunIfContextNotLost(const base::Closure& callback) {
     callback.Run();
 }
 
-void GLES2Implementation::SignalSyncPoint(uint32_t sync_point,
-                                          const base::Closure& callback) {
-  gpu_control_->SignalSyncPoint(
-      sync_point,
-      base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
 void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
                                           const base::Closure& callback) {
   if (sync_token.HasData() &&
@@ -5545,22 +5536,6 @@ GLboolean GLES2Implementation::UnmapBufferCHROMIUM(GLuint target) {
   buffer->set_mapped(false);
   CheckGLError();
   return true;
-}
-
-GLuint GLES2Implementation::InsertFutureSyncPointCHROMIUM() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInsertFutureSyncPointCHROMIUM");
-  DCHECK(capabilities_.future_sync_points);
-  return gpu_control_->InsertFutureSyncPoint();
-}
-
-void GLES2Implementation::RetireSyncPointCHROMIUM(GLuint sync_point) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glRetireSyncPointCHROMIUM("
-                     << sync_point << ")");
-  DCHECK(capabilities_.future_sync_points);
-  helper_->CommandBufferHelper::Flush();
-  gpu_control_->RetireSyncPoint(sync_point);
 }
 
 uint64_t GLES2Implementation::ShareGroupTracingGUID() const {
