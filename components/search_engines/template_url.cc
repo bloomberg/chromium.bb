@@ -151,8 +151,7 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       append_extra_query_params(false),
       force_instant_results(false),
       from_app_list(false),
-      contextual_search_params(ContextualSearchParams()) {
-}
+      contextual_search_params(ContextualSearchParams()) {}
 
 TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
 }
@@ -594,6 +593,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == "google:instantExtendedEnabledKey") {
     url->insert(start, google_util::kInstantExtendedAPIParam);
+  } else if (parameter == "google:iOSSearchLanguage") {
+    replacements->push_back(Replacement(GOOGLE_IOS_SEARCH_LANGUAGE, start));
   } else if (parameter == "google:contextualSearchVersion") {
     replacements->push_back(
         Replacement(GOOGLE_CONTEXTUAL_SEARCH_VERSION, start));
@@ -1117,6 +1118,13 @@ std::string TemplateURLRef::HandleReplacements(
         HandleReplacement(
             std::string(), search_terms_data.GoogleImageSearchSource(), *i,
             &url);
+        break;
+
+      case GOOGLE_IOS_SEARCH_LANGUAGE:
+#if defined(OS_IOS)
+        HandleReplacement("hl", search_terms_data.GetApplicationLocale(), *i,
+                          &url);
+#endif
         break;
 
       default:
