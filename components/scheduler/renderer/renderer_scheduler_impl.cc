@@ -24,7 +24,7 @@ namespace {
 // second on a mobile device) so we take a very pesimistic view when estimating
 // the cost of loading tasks.
 const int kLoadingTaskEstimationSampleCount = 1000;
-const double kLoadingTaskEstimationPercentile = 98;
+const double kLoadingTaskEstimationPercentile = 99;
 const int kTimerTaskEstimationSampleCount = 200;
 const double kTimerTaskEstimationPercentile = 90;
 const int kShortIdlePeriodDurationSampleCount = 10;
