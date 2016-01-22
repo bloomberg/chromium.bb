@@ -8,6 +8,7 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"
@@ -21,6 +22,7 @@ public:
     virtual ~LinkPreloadResourceClient() { }
 
     void triggerEvents(const Resource*);
+    virtual void clear() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -48,6 +50,9 @@ public:
     }
 
     virtual String debugName() const { return "LinkPreloadScript"; }
+    virtual ~LinkPreloadScriptResourceClient() { }
+
+    void clear() override { clearResource(); }
 
     void notifyFinished(Resource* resource) override
     {
@@ -79,6 +84,9 @@ public:
     }
 
     virtual String debugName() const { return "LinkPreloadStyle"; }
+    virtual ~LinkPreloadStyleResourceClient() { }
+
+    void clear() override { clearResource(); }
 
     void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource* resource) override
     {

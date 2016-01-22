@@ -282,6 +282,9 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttri
     if (m_client->shouldLoadLink())
         createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as, LinkCalledFromMarkup));
 
+    if (href.isEmpty() || !href.isValid())
+        released();
+
     // FIXME(crbug.com/323096): Should take care of import.
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document.frame()) {
         if (!m_client->shouldLoadLink())
@@ -323,6 +326,8 @@ void LinkLoader::released()
         m_prerender->cancel();
         m_prerender.clear();
     }
+    if (m_linkPreloadResourceClient)
+        m_linkPreloadResourceClient->clear();
 }
 
 DEFINE_TRACE(LinkLoader)
