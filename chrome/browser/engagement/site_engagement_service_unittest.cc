@@ -103,6 +103,12 @@ class SiteEngagementScoreTest : public testing::Test {
  public:
   SiteEngagementScoreTest() : score_(&test_clock_) {}
 
+  void SetUp() override {
+    testing::Test::SetUp();
+    // Disable the first engagement bonus for tests.
+    SiteEngagementScore::DisableFirstDailyEngagementBonusForTesting();
+  }
+
  protected:
   void VerifyScore(const SiteEngagementScore& score,
                    double expected_raw_score,
@@ -143,6 +149,11 @@ class SiteEngagementScoreTest : public testing::Test {
     EXPECT_TRUE(initial_score.UpdateScoreDict(score_dict));
     SiteEngagementScore updated_score(&test_clock_, *score_dict);
     VerifyScore(updated_score, 5, 10, different_day);
+  }
+
+  void SetFirstDailyEngagementPointsForTesting(double points) {
+    SiteEngagementScore::param_values
+        [SiteEngagementScore::FIRST_DAILY_ENGAGEMENT] = points;
   }
 
   base::SimpleTestClock test_clock_;
@@ -370,6 +381,46 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
   TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
 }
 
+// Ensure bonus engagement is awarded for the first engagement of a day.
+TEST_F(SiteEngagementScoreTest, FirstDailyEngagementBonus) {
+  SetFirstDailyEngagementPointsForTesting(0.5);
+
+  SiteEngagementScore score1(&test_clock_);
+  SiteEngagementScore score2(&test_clock_);
+  base::Time current_day = GetReferenceTime();
+
+  test_clock_.SetNow(current_day);
+
+  // The first engagement event gets the bonus.
+  score1.AddPoints(0.5);
+  EXPECT_EQ(1.0, score1.Score());
+
+  // Subsequent events do not.
+  score1.AddPoints(0.5);
+  EXPECT_EQ(1.5, score1.Score());
+
+  // Bonuses are awarded independently between scores.
+  score2.AddPoints(1.0);
+  EXPECT_EQ(1.5, score2.Score());
+  score2.AddPoints(1.0);
+  EXPECT_EQ(2.5, score2.Score());
+
+  test_clock_.SetNow(current_day + base::TimeDelta::FromDays(1));
+
+  // The first event for the next day gets the bonus.
+  score1.AddPoints(0.5);
+  EXPECT_EQ(2.5, score1.Score());
+
+  // Subsequent events do not.
+  score1.AddPoints(0.5);
+  EXPECT_EQ(3.0, score1.Score());
+
+  score2.AddPoints(1.0);
+  EXPECT_EQ(4.0, score2.Score());
+  score2.AddPoints(1.0);
+  EXPECT_EQ(5.0, score2.Score());
+}
+
 // Test that resetting a score has the correct properties.
 TEST_F(SiteEngagementScoreTest, Reset) {
   base::Time current_day = GetReferenceTime();
@@ -405,6 +456,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     g_temp_history_dir = temp_dir_.path();
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
+    SiteEngagementScore::DisableFirstDailyEngagementBonusForTesting();
   }
 
   void NavigateWithTransitionAndExpectHigherScore(
@@ -633,9 +685,14 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
 
   histograms.ExpectTotalCount(
       SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram, 1);
-  histograms.ExpectUniqueSample(
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram, 4);
+  histograms.ExpectBucketCount(
       SiteEngagementMetrics::kEngagementTypeHistogram,
       SiteEngagementMetrics::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH, 2);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 2);
 
   EXPECT_DOUBLE_EQ(2.0, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(7.0, service->GetScore(url2));
@@ -746,7 +803,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 2);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              4);
+                              6);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -756,6 +813,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
                                1);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 2);
 
   // Navigations are still logged within the 1 hour refresh period
   clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(59));
@@ -764,7 +824,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              6);
+                              8);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 3);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -774,6 +834,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
                                1);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 2);
 
   // Update the hourly histograms again.
   clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(1));
@@ -805,7 +868,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 3);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              9);
+                              12);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 4);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -821,6 +884,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
                                1);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 3);
 
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
@@ -829,7 +895,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              14);
+                              17);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 6);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -841,6 +907,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                                1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_WHEEL, 1);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 3);
 
   // Advance an origin to the max for a day and advance the clock an hour before
   // the last increment before max. Expect the histogram to be updated.
@@ -873,10 +942,13 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 4);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              21);
+                              24);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION,
                                13);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 3);
 
   for (const std::string& histogram_name : engagement_bucket_histogram_names)
     histograms.ExpectTotalCount(histogram_name, 3);

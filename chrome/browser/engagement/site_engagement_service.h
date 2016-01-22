@@ -56,6 +56,10 @@ class SiteEngagementScore {
     // following a launch; each new launch resets the ten days.
     WEB_APP_INSTALLED_POINTS,
 
+    // The number of points given for the first engagement event of the day for
+    // each site.
+    FIRST_DAILY_ENGAGEMENT,
+
     MAX_VARIATION
   };
 
@@ -70,6 +74,7 @@ class SiteEngagementScore {
   static double GetVisibleMediaPoints();
   static double GetHiddenMediaPoints();
   static double GetWebAppInstalledPoints();
+  static double GetFirstDailyEngagementPoints();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations();
@@ -88,7 +93,7 @@ class SiteEngagementScore {
   void Reset(double points);
 
   // Returns true if the maximum number of points today has been added.
-  bool MaxPointsPerDayAdded();
+  bool MaxPointsPerDayAdded() const;
 
   // Get/set the last time this origin was launched from an installed shortcut.
   base::Time last_shortcut_launch_time() { return last_shortcut_launch_time_; }
@@ -104,7 +109,10 @@ class SiteEngagementScore {
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PartiallyEmptyDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, Reset);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, FirstDailyEngagementBonus);
+  friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
+  friend class SiteEngagementServiceTest;
 
   // Array holding the values corresponding to each item in Variation array.
   static double param_values[];
@@ -123,6 +131,8 @@ class SiteEngagementScore {
 
   // Determine any score bonus from having installed shortcuts.
   double BonusScore() const;
+
+  static void DisableFirstDailyEngagementBonusForTesting();
 
   // The clock used to vend times. Enables time travelling in tests. Owned by
   // the SiteEngagementService.
