@@ -108,13 +108,17 @@ QuicBufferAllocator::~QuicBufferAllocator() = default;
 void StreamBufferDeleter::operator()(char* buffer) const {
   if (allocator_ != nullptr && buffer != nullptr) {
     allocator_->Delete(buffer);
+    if (!FLAGS_use_stream_frame_freelist) {
+      allocator_->MarkAllocatorIdle();
+    }
   }
 }
 
 UniqueStreamBuffer NewStreamBuffer(QuicBufferAllocator* allocator,
                                    size_t size) {
-  return UniqueStreamBuffer(allocator->New(size),
-                            StreamBufferDeleter(allocator));
+  return UniqueStreamBuffer(
+      allocator->New(size, FLAGS_use_stream_frame_freelist),
+      StreamBufferDeleter(allocator));
 }
 
 QuicStreamFrame::QuicStreamFrame()

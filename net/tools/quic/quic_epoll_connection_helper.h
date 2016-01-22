@@ -32,6 +32,8 @@ class RetransmissionAlarm;
 class SendAlarm;
 class TimeoutAlarm;
 
+using QuicStreamBufferAllocator = SimpleBufferAllocator;
+
 class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
  public:
   explicit QuicEpollConnectionHelper(EpollServer* eps);
@@ -56,7 +58,7 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
 
   const QuicEpollClock clock_;
   QuicRandom* random_generator_;
-  SimpleBufferAllocator buffer_allocator_;
+  QuicStreamBufferAllocator buffer_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicEpollConnectionHelper);
 };

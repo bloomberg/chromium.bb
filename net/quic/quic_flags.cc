@@ -164,3 +164,7 @@ bool FLAGS_quic_time_wait_list_manager_use_shared_writer = true;
 
 // When turn on, log packet loss into transport connection stats LossEvent.
 bool FLAGS_quic_log_loss_event = true;
+
+// If true, use a free list for the stream frame buffer allocations in
+// QuicPacketCreator.
+bool FLAGS_use_stream_frame_freelist = true;

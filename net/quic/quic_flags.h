@@ -52,5 +52,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_require_strike_register_or_server_nonce;
 NET_EXPORT_PRIVATE extern bool
     FLAGS_quic_time_wait_list_manager_use_shared_writer;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_log_loss_event;
+NET_EXPORT_PRIVATE extern bool FLAGS_use_stream_frame_freelist;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_
