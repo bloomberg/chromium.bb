@@ -379,8 +379,31 @@ TEST_F(WindowServerTest, SetBounds) {
 }
 
 // Verifies that bounds changes applied to a window owned by a different
-// connection are refused.
+// connection can be refused.
 TEST_F(WindowServerTest, SetBoundsSecurity) {
+  class TestWindowManagerDelegate : public WindowManagerDelegate {
+   public:
+    TestWindowManagerDelegate() {}
+    ~TestWindowManagerDelegate() override {}
+
+    // WindowManagerDelegate:
+    bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override {
+      return false;
+    }
+    bool OnWmSetProperty(Window* window,
+                         const std::string& name,
+                         scoped_ptr<std::vector<uint8_t>>* new_data) override {
+      return true;
+    }
+    Window* OnWmCreateTopLevelWindow(
+        std::map<std::string, std::vector<uint8_t>>* properties) override {
+      return nullptr;
+    }
+  };
+
+  TestWindowManagerDelegate wm_delegate;
+  set_window_manager_delegate(&wm_delegate);
+
   Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
   GetFirstWMRoot()->AddChild(window);
@@ -399,6 +422,7 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
   // local bounds accordingly.
   ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
   EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
+  set_window_manager_delegate(nullptr);
 }
 
 // Verifies that a root window can always be destroyed.

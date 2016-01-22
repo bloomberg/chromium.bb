@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -24,6 +25,7 @@ class WindowServerTestBase
     : public mojo::test::ApplicationTestBase,
       public mojo::ApplicationDelegate,
       public WindowTreeDelegate,
+      public WindowManagerDelegate,
       public mojo::InterfaceFactory<mojom::WindowTreeClient> {
  public:
   WindowServerTestBase();
@@ -51,6 +53,10 @@ class WindowServerTestBase
     return most_recent_connection_;
   }
 
+  void set_window_manager_delegate(WindowManagerDelegate* delegate) {
+    window_manager_delegate_ = delegate;
+  }
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
@@ -66,6 +72,14 @@ class WindowServerTestBase
   void OnEmbed(Window* root) override;
   void OnConnectionLost(WindowTreeConnection* connection) override;
 
+  // WindowManagerDelegate:
+  bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override;
+  bool OnWmSetProperty(Window* window,
+                       const std::string& name,
+                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
+  Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) override;
+
   // InterfaceFactory<WindowTreeClient>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
@@ -80,6 +94,10 @@ class WindowServerTestBase
   // The window server connection held by the window manager (app running at
   // the root window).
   WindowTreeConnection* window_manager_;
+
+  // A test can override the WM-related behaviour by installing its own
+  // WindowManagerDelegate during the test.
+  WindowManagerDelegate* window_manager_delegate_;
 
   bool window_tree_connection_destroyed_;
 

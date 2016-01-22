@@ -29,6 +29,7 @@ void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
 WindowServerTestBase::WindowServerTestBase()
     : most_recent_connection_(nullptr),
       window_manager_(nullptr),
+      window_manager_delegate_(nullptr),
       window_tree_connection_destroyed_(false) {}
 
 WindowServerTestBase::~WindowServerTestBase() {}
@@ -65,7 +66,7 @@ void WindowServerTestBase::SetUp() {
 
   CreateSingleWindowTreeHost(application_impl(),
                              mojom::WindowTreeHostClientPtr(), this, &host_,
-                             nullptr, nullptr);
+                             nullptr, this);
 
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);
@@ -93,6 +94,28 @@ void WindowServerTestBase::OnEmbed(Window* root) {
 
 void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
   window_tree_connection_destroyed_ = true;
+}
+
+bool WindowServerTestBase::OnWmSetBounds(Window* window, gfx::Rect* bounds) {
+  return window_manager_delegate_
+             ? window_manager_delegate_->OnWmSetBounds(window, bounds)
+             : true;
+}
+
+bool WindowServerTestBase::OnWmSetProperty(
+    Window* window,
+    const std::string& name,
+    scoped_ptr<std::vector<uint8_t>>* new_data) {
+  return window_manager_delegate_
+             ? window_manager_delegate_->OnWmSetProperty(window, name, new_data)
+             : true;
+}
+
+Window* WindowServerTestBase::OnWmCreateTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  return window_manager_delegate_
+             ? window_manager_delegate_->OnWmCreateTopLevelWindow(properties)
+             : nullptr;
 }
 
 void WindowServerTestBase::Create(
