@@ -51,7 +51,7 @@ public:
     const String& lang() const { return m_lang; }
     void setLang(const String& lang) { m_lang = lang; }
 
-    PlatformSpeechSynthesisVoice* voice() const { return m_voice; }
+    PlatformSpeechSynthesisVoice* voice() const { return m_voice.get(); }
     void setVoice(PlatformSpeechSynthesisVoice* voice) { m_voice = voice; }
 
     // Range = [0, 1] where 1 is the default.
@@ -79,7 +79,7 @@ private:
     Member<PlatformSpeechSynthesisUtteranceClient> m_client;
     String m_text;
     String m_lang;
-    Member<PlatformSpeechSynthesisVoice> m_voice;
+    RefPtr<PlatformSpeechSynthesisVoice> m_voice;
     float m_volume;
     float m_rate;
     float m_pitch;

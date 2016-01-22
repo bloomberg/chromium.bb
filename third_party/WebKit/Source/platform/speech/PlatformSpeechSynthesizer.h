@@ -63,7 +63,7 @@ public:
 
     virtual ~PlatformSpeechSynthesizer();
 
-    const HeapVector<Member<PlatformSpeechSynthesisVoice>>& voiceList() const { return m_voiceList; }
+    const Vector<RefPtr<PlatformSpeechSynthesisVoice>>& voiceList() const { return m_voiceList; }
     virtual void speak(PlatformSpeechSynthesisUtterance*);
     virtual void pause();
     virtual void resume();
@@ -71,7 +71,7 @@ public:
 
     PlatformSpeechSynthesizerClient* client() const { return m_speechSynthesizerClient; }
 
-    void setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice>>&);
+    void setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice>>&);
 
     // Eager finalization is required to promptly release the owned WebSpeechSynthesizer.
     //
@@ -89,7 +89,7 @@ protected:
 
     virtual void initializeVoiceList();
 
-    HeapVector<Member<PlatformSpeechSynthesisVoice>> m_voiceList;
+    Vector<RefPtr<PlatformSpeechSynthesisVoice>> m_voiceList;
 
 private:
     Member<PlatformSpeechSynthesizerClient> m_speechSynthesizerClient;

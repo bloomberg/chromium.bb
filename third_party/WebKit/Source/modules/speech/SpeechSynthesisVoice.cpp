@@ -27,19 +27,18 @@
 
 namespace blink {
 
-SpeechSynthesisVoice* SpeechSynthesisVoice::create(PlatformSpeechSynthesisVoice* voice)
+SpeechSynthesisVoice* SpeechSynthesisVoice::create(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
 {
     return new SpeechSynthesisVoice(voice);
 }
 
-SpeechSynthesisVoice::SpeechSynthesisVoice(PlatformSpeechSynthesisVoice* voice)
+SpeechSynthesisVoice::SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
     : m_platformVoice(voice)
 {
 }
 
-DEFINE_TRACE(SpeechSynthesisVoice)
+SpeechSynthesisVoice::~SpeechSynthesisVoice()
 {
-    visitor->trace(m_platformVoice);
 }
 
 } // namespace blink

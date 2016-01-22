@@ -27,15 +27,16 @@
 #define PlatformSpeechSynthesisVoice_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT PlatformSpeechSynthesisVoice final : public GarbageCollectedFinalized<PlatformSpeechSynthesisVoice> {
+class PLATFORM_EXPORT PlatformSpeechSynthesisVoice final : public RefCounted<PlatformSpeechSynthesisVoice> {
 public:
-    static PlatformSpeechSynthesisVoice* create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault);
-    static PlatformSpeechSynthesisVoice* create();
+    static PassRefPtr<PlatformSpeechSynthesisVoice> create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault);
+    static PassRefPtr<PlatformSpeechSynthesisVoice> create();
 
     const String& voiceURI() const { return m_voiceURI; }
     void setVoiceURI(const String& voiceURI) { m_voiceURI = voiceURI; }
@@ -51,8 +52,6 @@ public:
 
     bool isDefault() const { return m_default; }
     void setIsDefault(bool isDefault) { m_default = isDefault; }
-
-    DEFINE_INLINE_TRACE() { }
 
 private:
     PlatformSpeechSynthesisVoice(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault);

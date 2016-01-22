@@ -60,37 +60,36 @@ void PlatformSpeechSynthesizer::speak(PlatformSpeechSynthesisUtterance* utteranc
 
 void PlatformSpeechSynthesizer::pause()
 {
-    if (m_webSpeechSynthesizer.get())
+    if (m_webSpeechSynthesizer)
         m_webSpeechSynthesizer->pause();
 }
 
 void PlatformSpeechSynthesizer::resume()
 {
-    if (m_webSpeechSynthesizer.get())
+    if (m_webSpeechSynthesizer)
         m_webSpeechSynthesizer->resume();
 }
 
 void PlatformSpeechSynthesizer::cancel()
 {
-    if (m_webSpeechSynthesizer.get())
+    if (m_webSpeechSynthesizer)
         m_webSpeechSynthesizer->cancel();
 }
 
-void PlatformSpeechSynthesizer::setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice>>& voices)
+void PlatformSpeechSynthesizer::setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice>>& voices)
 {
     m_voiceList = voices;
 }
 
 void PlatformSpeechSynthesizer::initializeVoiceList()
 {
-    if (m_webSpeechSynthesizer.get())
+    if (m_webSpeechSynthesizer)
         m_webSpeechSynthesizer->updateVoiceList();
 }
 
 DEFINE_TRACE(PlatformSpeechSynthesizer)
 {
     visitor->trace(m_speechSynthesizerClient);
-    visitor->trace(m_voiceList);
     visitor->trace(m_webSpeechSynthesizerClient);
 }
 

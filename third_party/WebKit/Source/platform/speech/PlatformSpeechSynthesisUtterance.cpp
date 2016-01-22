@@ -43,7 +43,6 @@ PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(PlatformSpeec
 DEFINE_TRACE(PlatformSpeechSynthesisUtterance)
 {
     visitor->trace(m_client);
-    visitor->trace(m_voice);
 }
 
 } // namespace blink

@@ -41,7 +41,7 @@ WebSpeechSynthesizerClientImpl::~WebSpeechSynthesizerClientImpl()
 
 void WebSpeechSynthesizerClientImpl::setVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices)
 {
-    HeapVector<Member<PlatformSpeechSynthesisVoice>> outVoices;
+    Vector<RefPtr<PlatformSpeechSynthesisVoice>> outVoices;
     for (size_t i = 0; i < voices.size(); i++)
         outVoices.append(voices[i]);
     m_synthesizer->setVoiceList(outVoices);

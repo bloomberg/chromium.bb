@@ -27,14 +27,14 @@
 
 namespace blink {
 
-PlatformSpeechSynthesisVoice* PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
+PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
 {
-    return new PlatformSpeechSynthesisVoice(voiceURI, name, lang, localService, isDefault);
+    return adoptRef(new PlatformSpeechSynthesisVoice(voiceURI, name, lang, localService, isDefault));
 }
 
-PlatformSpeechSynthesisVoice* PlatformSpeechSynthesisVoice::create()
+PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create()
 {
-    return new PlatformSpeechSynthesisVoice();
+    return adoptRef(new PlatformSpeechSynthesisVoice);
 }
 
 PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
