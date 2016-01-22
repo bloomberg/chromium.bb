@@ -15,10 +15,13 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
 struct IndexedDBDatabaseMetadata;
@@ -198,12 +201,22 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnAbort(int32_t ipc_database_id, int64_t transaction_id);
     void OnCommit(int32_t ipc_database_id, int64_t transaction_id);
+    void OnGotUsageAndQuotaForCommit(int32_t ipc_database_id,
+                                     int64_t transaction_id,
+                                     storage::QuotaStatusCode status,
+                                     int64_t usage,
+                                     int64_t quota);
+
     IndexedDBDispatcherHost* parent_;
     IDMap<IndexedDBConnection, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
     TransactionIDToSizeMap transaction_size_map_;
     TransactionIDToURLMap transaction_url_map_;
     TransactionIDToDatabaseIDMap transaction_database_map_;
+
+    // Weak pointers are used when an asynchronous quota request is made, in
+    // case the dispatcher is torn down before the response returns.
+    base::WeakPtrFactory<DatabaseDispatcherHost> weak_factory_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DatabaseDispatcherHost);

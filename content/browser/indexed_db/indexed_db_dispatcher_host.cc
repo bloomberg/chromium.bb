@@ -33,6 +33,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "url/gurl.h"
@@ -187,6 +188,7 @@ void IndexedDBDispatcherHost::RegisterTransactionId(int64_t host_transaction_id,
                                                     const GURL& url) {
   if (!database_dispatcher_host_)
     return;
+  database_dispatcher_host_->transaction_size_map_[host_transaction_id] = 0;
   database_dispatcher_host_->transaction_url_map_[host_transaction_id] = url;
 }
 
@@ -446,7 +448,7 @@ void IndexedDBDispatcherHost::DestroyObject(MapType* map,
 
 IndexedDBDispatcherHost::DatabaseDispatcherHost::DatabaseDispatcherHost(
     IndexedDBDispatcherHost* parent)
-    : parent_(parent) {
+    : parent_(parent), weak_factory_(this) {
   map_.set_check_on_null_data(true);
 }
 
@@ -566,8 +568,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
   int64_t host_transaction_id =
       parent_->HostTransactionId(params.transaction_id);
 
-  if (transaction_database_map_.find(host_transaction_id) !=
-      transaction_database_map_.end()) {
+  if (ContainsKey(transaction_database_map_, host_transaction_id)) {
     DLOG(ERROR) << "Duplicate host_transaction_id.";
     return;
   }
@@ -723,11 +724,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
                               params.put_mode,
                               callbacks,
                               params.index_keys);
-  TransactionIDToSizeMap* map =
-      &parent_->database_dispatcher_host_->transaction_size_map_;
   // Size can't be big enough to overflow because it represents the
   // actual bytes passed through IPC.
-  (*map)[host_transaction_id] += params.value.bits.size();
+  transaction_size_map_[host_transaction_id] += params.value.bits.size();
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
@@ -859,17 +858,50 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
     return;
 
   int64_t host_transaction_id = parent_->HostTransactionId(transaction_id);
+  // May have been aborted by back end before front-end could request commit.
+  if (!ContainsKey(transaction_size_map_, host_transaction_id))
+    return;
   int64_t transaction_size = transaction_size_map_[host_transaction_id];
-  if (transaction_size &&
-      parent_->context()->WouldBeOverQuota(
-          transaction_url_map_[host_transaction_id], transaction_size)) {
-    connection->database()->Abort(
-        host_transaction_id,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
+
+  // Always allow empty or delete-only transactions.
+  if (!transaction_size) {
+    connection->database()->Commit(host_transaction_id);
     return;
   }
 
-  connection->database()->Commit(host_transaction_id);
+  parent_->context()->quota_manager_proxy()->GetUsageAndQuota(
+      parent_->context()->TaskRunner(),
+      transaction_url_map_[host_transaction_id], storage::kStorageTypeTemporary,
+      base::Bind(&IndexedDBDispatcherHost::DatabaseDispatcherHost::
+                     OnGotUsageAndQuotaForCommit,
+                 weak_factory_.GetWeakPtr(), ipc_database_id, transaction_id));
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::
+    OnGotUsageAndQuotaForCommit(int32_t ipc_database_id,
+                                int64_t transaction_id,
+                                storage::QuotaStatusCode status,
+                                int64_t usage,
+                                int64_t quota) {
+  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
+  IndexedDBConnection* connection = map_.Lookup(ipc_database_id);
+  // May have disconnected while quota check was pending.
+  if (!connection || !connection->IsConnected())
+    return;
+  int64_t host_transaction_id = parent_->HostTransactionId(transaction_id);
+  // May have aborted while quota check was pending.
+  if (!ContainsKey(transaction_size_map_, host_transaction_id))
+    return;
+  int64_t transaction_size = transaction_size_map_[host_transaction_id];
+
+  if (status == storage::kQuotaStatusOk &&
+      usage + transaction_size <= quota) {
+    connection->database()->Commit(host_transaction_id);
+  } else {
+    connection->database()->Abort(
+        host_transaction_id,
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
+  }
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
