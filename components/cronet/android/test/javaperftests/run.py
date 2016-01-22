@@ -43,7 +43,9 @@ import urllib
 REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
-sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'telemetry'))
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
+from chrome_telemetry_build import chromium_config
+sys.path.append(chromium_config.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
 
 import lighttpd_server

@@ -11,11 +11,11 @@ This script DOES NOT run benchmarks. run_benchmark does that.
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
+import chrome_proxy_config
+
+sys.path.insert(1, chrome_proxy_config.TELEMETRY_DIR)
 
 from telemetry.testing import unittest_runner
-
-import chrome_proxy_config
 
 
 if __name__ == '__main__':

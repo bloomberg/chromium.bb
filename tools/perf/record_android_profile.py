@@ -7,7 +7,8 @@ import os
 import sys
 import tempfile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'telemetry'))
+from chrome_telemetry_build import chromium_config
+sys.path.insert(1, chromium_config.GetTelemetryDir())
 
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options

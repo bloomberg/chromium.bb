@@ -43,7 +43,7 @@ def _CheckWprShaFiles(input_api, output_api):
     catapult_path = os.path.abspath(os.path.join(
         perf_dir, '..', '..', 'third_party', 'catapult', 'catapult_base'))
     sys.path.insert(1, catapult_path)
-    from catapult_base import cloud_storage
+    from catapult_base import cloud_storage  # pylint: disable=import-error
   finally:
     sys.path = old_sys_path
 

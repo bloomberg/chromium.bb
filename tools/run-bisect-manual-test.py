@@ -28,7 +28,9 @@ _TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 _BISECT_SCRIPT_PATH = os.path.join(
     _TOOLS_DIR, 'auto_bisect', 'bisect_perf_regression.py')
 
-sys.path.append(os.path.join(_TOOLS_DIR, 'telemetry'))
+sys.path.append(os.path.join(_TOOLS_DIR, 'perf'))
+from chrome_telemetry_build import chromium_config
+sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry.internal.browser import browser_options
 
 

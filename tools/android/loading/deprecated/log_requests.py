@@ -24,7 +24,9 @@ from devil.android import device_utils
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 import devil_chromium
 
-sys.path.append(os.path.join(_SRC_DIR, 'tools', 'telemetry'))
+sys.path.append(os.path.join(_SRC_DIR, 'tools', 'perf'))
+from chrome_telemetry_build import chromium_config
+sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
 

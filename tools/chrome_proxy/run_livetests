@@ -6,11 +6,12 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
+import chrome_proxy_config
+
+sys.path.insert(1, chrome_proxy_config.TELEMETRY_DIR)
 
 from telemetry import benchmark_runner
 
-import chrome_proxy_config
 
 if __name__ == '__main__':
   sys.exit(benchmark_runner.main(chrome_proxy_config.Config(

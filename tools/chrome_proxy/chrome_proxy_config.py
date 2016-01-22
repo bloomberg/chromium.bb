@@ -9,6 +9,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'perf'))
 
 from chrome_telemetry_build import chromium_config
 
+TELEMETRY_DIR = chromium_config.GetTelemetryDir()
+
 _top_level_dir = os.path.dirname(os.path.realpath(__file__))
 
 def Config(benchmark_subdirs):

@@ -10,8 +10,12 @@ import time
 
 # Add the telemetry directory to Python's search paths.
 current_directory = os.path.dirname(os.path.realpath(__file__))
-telemetry_dir = os.path.realpath(
-    os.path.join(current_directory, '..', '..', '..', 'tools', 'telemetry'))
+perf_dir = os.path.realpath(
+    os.path.join(current_directory, '..', '..', '..', 'tools', 'perf'))
+if perf_dir not in sys.path:
+  sys.path.append(perf_dir)
+from chrome_telemetry_build import chromium_config
+telemetry_dir = chromium_config.GetTelemetryDir()
 if telemetry_dir not in sys.path:
   sys.path.append(telemetry_dir)
 

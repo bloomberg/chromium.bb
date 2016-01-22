@@ -25,7 +25,9 @@ from devil.android.sdk import intent
 from pylib import constants
 from pylib import flag_changer
 
-sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'telemetry'))
+sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'perf'))
+from chrome_telemetry_build import chromium_config
+sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry.internal.util import webpagereplay
 
 sys.path.append(os.path.join(sys.path[0], '..', '..',

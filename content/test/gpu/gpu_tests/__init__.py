@@ -9,7 +9,13 @@ def Init():
   chromium_src_dir = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..'))
 
-  telemetry_path = os.path.join(chromium_src_dir, 'tools', 'telemetry')
+  perf_path = os.path.join(chromium_src_dir, 'tools', 'perf')
+  absolute_perf_path = os.path.abspath(perf_path)
+
+  sys.path.append(absolute_perf_path)
+  from chrome_telemetry_build import chromium_config
+
+  telemetry_path = chromium_config.GetTelemetryDir()
   if telemetry_path not in sys.path:
     sys.path.append(telemetry_path)
 

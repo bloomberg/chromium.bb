@@ -11,7 +11,11 @@ Typically used as by the run-bisect-manual-test.py script.
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             'perf'))
+from chrome_telemetry_build import chromium_config
+sys.path.append(chromium_config.GetTelemetryDir())
+
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options
 
