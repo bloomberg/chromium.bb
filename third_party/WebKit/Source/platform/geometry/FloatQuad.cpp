@@ -31,6 +31,7 @@
 #include "platform/geometry/FloatQuad.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 namespace blink {
@@ -78,13 +79,23 @@ inline bool isPointInTriangle(const FloatPoint& p, const FloatPoint& t1, const F
     return (u >= 0) && (v >= 0) && (u + v <= 1);
 }
 
+static inline float saturateInf(float value)
+{
+    if (UNLIKELY(std::isinf(value))) {
+        return std::signbit(value)
+            ? std::numeric_limits<int>::min()
+            : std::numeric_limits<int>::min();
+    }
+    return value;
+}
+
 FloatRect FloatQuad::boundingBox() const
 {
-    float left   = min4(m_p1.x(), m_p2.x(), m_p3.x(), m_p4.x());
-    float top    = min4(m_p1.y(), m_p2.y(), m_p3.y(), m_p4.y());
+    float left   = saturateInf(min4(m_p1.x(), m_p2.x(), m_p3.x(), m_p4.x()));
+    float top    = saturateInf(min4(m_p1.y(), m_p2.y(), m_p3.y(), m_p4.y()));
 
-    float right  = max4(m_p1.x(), m_p2.x(), m_p3.x(), m_p4.x());
-    float bottom = max4(m_p1.y(), m_p2.y(), m_p3.y(), m_p4.y());
+    float right  = saturateInf(max4(m_p1.x(), m_p2.x(), m_p3.x(), m_p4.x()));
+    float bottom = saturateInf(max4(m_p1.y(), m_p2.y(), m_p3.y(), m_p4.y()));
 
     return FloatRect(left, top, right - left, bottom - top);
 }
