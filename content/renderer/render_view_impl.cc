@@ -680,13 +680,13 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
     if (main_render_frame_) {
-      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
+      CHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
       RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
           main_render_frame_, params.proxy_routing_id,
           blink::WebTreeScopeType::Document);
       main_render_frame_->set_render_frame_proxy(proxy);
     } else {
-      DCHECK(SiteIsolationPolicy::IsSwappedOutStateForbidden());
+      CHECK(SiteIsolationPolicy::IsSwappedOutStateForbidden());
       // Pass MSG_ROUTING_NONE for opener, since actual opener (if any) will be
       // set separately below.
       RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id, routing_id(),
