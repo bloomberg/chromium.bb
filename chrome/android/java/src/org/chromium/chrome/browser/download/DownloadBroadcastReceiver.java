@@ -28,7 +28,8 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
                 openDownload(context, intent);
                 break;
             case DownloadNotificationService.ACTION_DOWNLOAD_RESUME:
-                resumeDownload(context, intent);
+            case DownloadNotificationService.ACTION_DOWNLOAD_CANCEL:
+                performDownloadOperation(context, intent);
                 break;
             default:
                 break;
@@ -67,13 +68,13 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Called to handle download resumption. This will call the DownloadNotificationService
-     * to start the browser process asynchronously, and resume the download afterwards.
+     * Called to perform a download operation. This will call the DownloadNotificationService
+     * to start the browser process asynchronously, and resume or cancel the download afterwards.
      * @param context Context of the receiver.
-     * @param intent Intent from the android DownloadManager.
+     * @param intent Intent retrieved from the notification.
      */
-    private void resumeDownload(final Context context, Intent intent) {
-        if (DownloadNotificationService.isDownloadResumptionIntent(intent)) {
+    private void performDownloadOperation(final Context context, Intent intent) {
+        if (DownloadNotificationService.isDownloadOperationIntent(intent)) {
             Intent launchIntent = new Intent(intent);
             launchIntent.setComponent(new ComponentName(
                     context.getPackageName(), DownloadNotificationService.class.getName()));

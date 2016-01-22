@@ -30,12 +30,15 @@ class DownloadManagerService : public content::DownloadManager::Observer {
   ~DownloadManagerService() override;
 
   // Called to resume downloading the item that has ID equal to |download_id|.
-  // If the DownloadItem is not yet created, put the ID into
-  // |pending_download_ids_|.
+  // If the DownloadItem is not yet created, retry after a while.
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
                       uint32_t download_id,
                       jstring fileName);
+
+  // Called to cancel a download item that has ID equal to |download_id|.
+  // If the DownloadItem is not yet created, retry after a while.
+  void CancelDownload(JNIEnv* env, jobject obj, uint32_t download_id);
 
   // content::DownloadManager::Observer methods.
   void ManagerGoingDown(content::DownloadManager* manager) override;
@@ -53,6 +56,10 @@ class DownloadManagerService : public content::DownloadManager::Observer {
   void ResumeDownloadInternal(uint32_t download_id,
                               const std::string& fileName,
                               bool retry);
+
+  // Helper function to cancel a download. If |retry| is true,
+  // chrome will retry the cancellation if the download item is not loaded.
+  void CancelDownloadInternal(uint32_t download_id, bool retry);
 
   // Called to notify the java side that download resumption failed.
   void OnResumptionFailed(uint32_t download_id, const std::string& fileName);

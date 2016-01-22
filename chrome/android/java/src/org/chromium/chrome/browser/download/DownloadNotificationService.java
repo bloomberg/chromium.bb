@@ -39,6 +39,8 @@ import java.util.Locale;
 public class DownloadNotificationService extends Service {
     static final String EXTRA_DOWNLOAD_ID = "DownloadId";
     static final String EXTRA_DOWNLOAD_FILE_NAME = "DownloadFileName";
+    static final String ACTION_DOWNLOAD_CANCEL =
+            "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
     static final String ACTION_DOWNLOAD_RESUME =
             "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
     static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
@@ -86,28 +88,9 @@ public class DownloadNotificationService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (isDownloadResumptionIntent(intent)) {
-            final int downloadId = IntentUtils.safeGetIntExtra(
-                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
-            final String fileName = IntentUtils.safeGetStringExtra(
-                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
-            BrowserParts parts = new EmptyBrowserParts() {
-                @Override
-                public void finishNativeInitialization() {
-                    DownloadManagerService service =
-                            DownloadManagerService.getDownloadManagerService(
-                                    getApplicationContext());
-                    service.resumeDownload(downloadId, fileName);
-                }
-            };
-            try {
-                ChromeBrowserInitializer.getInstance(mContext).handlePreNativeStartup(parts);
-                ChromeBrowserInitializer.getInstance(mContext).handlePostNativeStartup(true, parts);
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Unable to load native library.", e);
-                ChromeApplication.reportStartupErrorAndExit(e);
-            }
+    public int onStartCommand(final Intent intent, int flags, int startId) {
+        if (isDownloadOperationIntent(intent)) {
+            handleDownloadOperation(intent);
         }
 
         // This should restart the service after Chrome gets killed. However, this
@@ -143,6 +126,9 @@ public class DownloadNotificationService extends Service {
             builder.setContentText(duration).setContentInfo(percentText);
         }
         if (startTime > 0) builder.setWhen(startTime);
+        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                mContext.getResources().getString(R.string.download_notification_cancel_button),
+                buildPendingIntent(ACTION_DOWNLOAD_CANCEL, downloadId, fileName));
         updateNotification(downloadId, builder.build());
     }
 
@@ -165,17 +151,16 @@ public class DownloadNotificationService extends Service {
                 android.R.drawable.ic_media_pause,
                 fileName,
                 mContext.getResources().getString(R.string.download_notification_paused));
+        PendingIntent cancelIntent =
+                buildPendingIntent(ACTION_DOWNLOAD_CANCEL, downloadId, fileName);
+        builder.setDeleteIntent(cancelIntent);
+        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                mContext.getResources().getString(R.string.download_notification_cancel_button),
+                cancelIntent);
         if (isResumable) {
-            ComponentName component = new ComponentName(
-                    mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
-            Intent intent = new Intent(ACTION_DOWNLOAD_RESUME);
-            intent.setComponent(component);
-            intent.putExtra(EXTRA_DOWNLOAD_ID, downloadId);
-            intent.putExtra(EXTRA_DOWNLOAD_FILE_NAME, fileName);
             builder.addAction(android.R.drawable.stat_sys_download_done,
                     mContext.getResources().getString(R.string.download_notification_resume_button),
-                    PendingIntent.getBroadcast(
-                            mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+                    buildPendingIntent(ACTION_DOWNLOAD_RESUME, downloadId, fileName));
         }
         updateNotification(downloadId, builder.build());
     }
@@ -229,6 +214,16 @@ public class DownloadNotificationService extends Service {
         }
     }
 
+    private PendingIntent buildPendingIntent(String action, int downloadId, String fileName) {
+        ComponentName component = new ComponentName(
+                mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
+        Intent intent = new Intent(action);
+        intent.setComponent(component);
+        intent.putExtra(EXTRA_DOWNLOAD_ID, downloadId);
+        intent.putExtra(EXTRA_DOWNLOAD_FILE_NAME, fileName);
+        return PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
     /**
      * Builds a notification to be displayed.
      * @param iconId Id of the notification icon.
@@ -248,6 +243,47 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
+     * Helper method to launch the browser process and handle a download operation that is included
+     * in the given intent.
+     * @param intent Intent with the download operation.
+     */
+    private void handleDownloadOperation(final Intent intent) {
+        final int downloadId = IntentUtils.safeGetIntExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
+        final String fileName = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
+        BrowserParts parts = new EmptyBrowserParts() {
+            @Override
+            public void finishNativeInitialization() {
+                DownloadManagerService service =
+                        DownloadManagerService.getDownloadManagerService(getApplicationContext());
+                switch (intent.getAction()) {
+                    case ACTION_DOWNLOAD_CANCEL:
+                        // TODO(qinmin): Alternatively, we can delete the downloaded content on
+                        // SD card, and remove the download ID from the SharedPreferences so we
+                        // don't need to restart the browser process. http://crbug.com/579643.
+                        service.cancelDownload(downloadId);
+                        cancelNotification(downloadId);
+                        break;
+                    case ACTION_DOWNLOAD_RESUME:
+                        service.resumeDownload(downloadId, fileName);
+                        break;
+                    default:
+                        Log.e(TAG, "Unrecognized intent action.", intent);
+                        break;
+                }
+            }
+        };
+        try {
+            ChromeBrowserInitializer.getInstance(mContext).handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance(mContext).handlePostNativeStartup(true, parts);
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to load native library.", e);
+            ChromeApplication.reportStartupErrorAndExit(e);
+        }
+    }
+
+    /**
      * Update the notification with id.
      * @param id Id of the notification that has to be updated.
      * @param notification the notification object that needs to be updated.
@@ -258,11 +294,15 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Checks if an intent is about to resume a download.
+     * Checks if an intent requires operations on a download.
      * @param intent An intent to validate.
-     * @return true if the intent is for download resumption, or false otherwise.
+     * @return true if the intent requires actions, or false otherwise.
      */
-    static boolean isDownloadResumptionIntent(Intent intent) {
+    static boolean isDownloadOperationIntent(Intent intent) {
+        if (!ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
+                && !ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
+            return false;
+        }
         if (!intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_ID)
                 || !intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME)) {
             return false;

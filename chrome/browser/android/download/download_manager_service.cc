@@ -18,12 +18,12 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 
 namespace {
-// The retry interval when resuming a download. This is needed because
+// The retry interval when resuming/canceling a download. This is needed because
 // when the browser process is launched, we have to wait until the download
-// history get loaded before a download can be resumed. However, we don't want
-// to retry after a long period of time as the same download Id can be reused
-// later.
-const int kResumeRetryIntervalInMilliseconds = 3000;
+// history get loaded before a download can be resumed/cancelled. However,
+// we don't want to retry after a long period of time as the same download Id
+// can be reused later.
+const int kRetryIntervalInMilliseconds = 3000;
 }
 
 // static
@@ -59,6 +59,12 @@ void DownloadManagerService::ResumeDownload(JNIEnv* env,
                                             jstring fileName) {
   ResumeDownloadInternal(download_id, ConvertJavaStringToUTF8(env, fileName),
                          true);
+}
+
+void DownloadManagerService::CancelDownload(JNIEnv* env,
+                                            jobject obj,
+                                            uint32_t download_id) {
+  CancelDownloadInternal(download_id, true);
 }
 
 void DownloadManagerService::ManagerGoingDown(
@@ -105,7 +111,24 @@ void DownloadManagerService::ResumeDownloadInternal(uint32_t download_id,
       FROM_HERE,
       base::Bind(&DownloadManagerService::ResumeDownloadInternal,
                  base::Unretained(this), download_id, fileName, false),
-      base::TimeDelta::FromMilliseconds(kResumeRetryIntervalInMilliseconds));
+      base::TimeDelta::FromMilliseconds(kRetryIntervalInMilliseconds));
+}
+
+void DownloadManagerService::CancelDownloadInternal(uint32_t download_id,
+                                                    bool retry) {
+  if (!manager_)
+    return;
+  content::DownloadItem* item = manager_->GetDownload(download_id);
+  if (item) {
+    item->Cancel(true);
+    return;
+  }
+  if (retry) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&DownloadManagerService::CancelDownloadInternal,
+                              base::Unretained(this), download_id, false),
+        base::TimeDelta::FromMilliseconds(kRetryIntervalInMilliseconds));
+  }
 }
 
 void DownloadManagerService::OnResumptionFailed(uint32_t download_id,
