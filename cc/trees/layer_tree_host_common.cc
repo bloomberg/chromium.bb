@@ -668,7 +668,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   // The opacity of a layer always applies to its children (either implicitly
   // via a render surface or explicitly if the parent preserves 3D), so the
   // entire subtree can be skipped if this layer is fully transparent.
-  return !layer->opacity();
+  return !layer->EffectiveOpacity();
 }
 
 static inline void SavePaintPropertiesLayer(LayerImpl* layer) {}
@@ -1515,7 +1515,7 @@ static void CalculateDrawPropertiesInternal(
   // the right results.
   const bool layer_is_visible =
       data_from_ancestor.subtree_is_visible_from_ancestor &&
-      !layer->hide_layer_and_subtree();
+      layer->EffectiveOpacity() != 0;
   const bool layer_is_drawn = layer_is_visible || layer->HasCopyRequest();
 
   // The root layer cannot skip CalcDrawProperties.
@@ -2327,11 +2327,21 @@ enum PropertyTreeOption {
 };
 
 void CalculateRenderTargetInternal(LayerImpl* layer,
+                                   PropertyTrees* property_trees,
                                    bool subtree_visible_from_ancestor,
-                                   bool can_render_to_separate_surface) {
-  const bool layer_is_visible =
-      subtree_visible_from_ancestor && !layer->hide_layer_and_subtree();
-  const bool layer_is_drawn = layer_is_visible || layer->HasCopyRequest();
+                                   bool can_render_to_separate_surface,
+                                   bool use_property_trees) {
+  bool layer_is_drawn;
+  if (use_property_trees) {
+    DCHECK_GE(layer->effect_tree_index(), 0);
+    layer_is_drawn =
+        property_trees->effect_tree.Node(layer->effect_tree_index())
+            ->data.is_drawn;
+  } else {
+    layer_is_drawn =
+        (subtree_visible_from_ancestor && layer->EffectiveOpacity() != 0) ||
+        layer->HasCopyRequest();
+  }
 
   // The root layer cannot be skipped.
   if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
@@ -2364,7 +2374,8 @@ void CalculateRenderTargetInternal(LayerImpl* layer,
   for (size_t i = 0; i < layer->children().size(); ++i) {
     CalculateRenderTargetInternal(
         LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i),
-        layer_is_drawn, can_render_to_separate_surface);
+        property_trees, layer_is_drawn, can_render_to_separate_surface,
+        use_property_trees);
   }
 }
 
@@ -2395,14 +2406,17 @@ void CalculateRenderSurfaceLayerListInternal(
 
   // |can_render_to_separate_surface| and |current_render_surface_layer_list_id|
   // are settings that should stay the same during recursion.
-
-  // Layers that are marked as hidden will hide themselves and their subtree.
-  // Exception: Layers with copy requests, whether hidden or not, must be drawn
-  // anyway.  In this case, we will inform their subtree they are visible to get
-  // the right results.
-  const bool layer_is_visible =
-      subtree_visible_from_ancestor && !layer->hide_layer_and_subtree();
-  const bool layer_is_drawn = layer_is_visible || layer->HasCopyRequest();
+  bool layer_is_drawn = false;
+  if (use_property_trees) {
+    DCHECK_GE(layer->effect_tree_index(), 0);
+    layer_is_drawn =
+        property_trees->effect_tree.Node(layer->effect_tree_index())
+            ->data.is_drawn;
+  } else {
+    layer_is_drawn =
+        (subtree_visible_from_ancestor && layer->EffectiveOpacity() != 0) ||
+        layer->HasCopyRequest();
+  }
 
   // The root layer cannot be skipped.
   if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
@@ -2451,10 +2465,14 @@ void CalculateRenderSurfaceLayerListInternal(
       // target.
       layer->render_surface()->set_contributes_to_drawn_surface(false);
     } else {
-      // Even if the |layer_is_drawn|, it only contributes to a drawn surface
-      // when the |layer_is_visible|.
+      bool contributes_to_drawn_surface =
+          use_property_trees
+              ? property_trees->effect_tree.ContributesToDrawnSurface(
+                    layer->effect_tree_index())
+              : subtree_visible_from_ancestor &&
+                    layer->EffectiveOpacity() != 0.f;
       layer->render_surface()->set_contributes_to_drawn_surface(
-          layer_is_visible);
+          contributes_to_drawn_surface);
     }
 
     // Ignore occlusion from outside the surface when surface contents need to
@@ -2619,8 +2637,10 @@ void CalculateRenderSurfaceLayerListInternal(
 
 void CalculateRenderTarget(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
-  CalculateRenderTargetInternal(inputs->root_layer, true,
-                                inputs->can_render_to_separate_surface);
+  CalculateRenderTargetInternal(
+      inputs->root_layer, inputs->property_trees, true,
+      inputs->can_render_to_separate_surface,
+      inputs->verify_property_trees || inputs->use_property_trees);
 }
 
 void CalculateRenderSurfaceLayerList(

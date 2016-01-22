@@ -174,7 +174,7 @@ void OcclusionTracker::FinishedRenderTarget(const LayerImpl* finished_target) {
   // Readbacks always happen on render targets so we only need to check
   // for readbacks here.
   bool target_is_only_for_copy_request =
-      finished_target->HasCopyRequest() && finished_target->LayerIsHidden();
+      finished_target->HasCopyRequest() && finished_target->IsHidden();
 
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
