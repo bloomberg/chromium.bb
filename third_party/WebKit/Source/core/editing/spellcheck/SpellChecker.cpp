@@ -710,10 +710,8 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // of marker that contains the word in question, and remove marker on that whole range.
     Document* document = frame().document();
     ASSERT(document);
-    Node* startNode = startOfFirstWord.deepEquivalent().computeContainerNode();
-    int startOffset = startOfFirstWord.deepEquivalent().computeOffsetInContainerNode();
-    int endOffset = endOfLastWord.deepEquivalent().computeOffsetInContainerNode();
-    document->markers().removeMarkers(startNode, startOffset, endOffset - startOffset, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
+    const EphemeralRange wordRange(startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
+    document->markers().removeMarkers(wordRange, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }
 
 void SpellChecker::didEndEditingOnTextField(Element* e)
