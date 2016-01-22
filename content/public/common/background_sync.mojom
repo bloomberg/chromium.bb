@@ -11,12 +11,6 @@ enum BackgroundSyncNetworkState {
   MAX=ONLINE
 };
 
-enum BackgroundSyncPowerState {
-  AUTO,
-  AVOID_DRAINING,
-  MAX=AVOID_DRAINING
-};
-
 enum BackgroundSyncPeriodicity {
   PERIODIC,
   ONE_SHOT,
@@ -29,5 +23,4 @@ struct SyncRegistration {
   string tag = "";
   uint64 min_period_ms = 0;
   BackgroundSyncNetworkState network_state = ONLINE;
-  BackgroundSyncPowerState power_state = AUTO;
 };

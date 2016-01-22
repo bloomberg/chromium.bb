@@ -18,12 +18,6 @@ struct WebSyncRegistration {
         NetworkStateLast = NetworkStateOnline
     };
 
-    enum PowerState {
-        PowerStateAuto = 0,
-        PowerStateAvoidDraining,
-        PowerStateLast = PowerStateAvoidDraining
-    };
-
     enum { UNREGISTERED_SYNC_ID = -1};
 
     enum Periodicity {
@@ -38,19 +32,17 @@ struct WebSyncRegistration {
         , tag("")
         , minPeriodMs(0)
         , networkState(NetworkState::NetworkStateOnline)
-        , powerState(PowerState::PowerStateAuto)
     {
     }
 
     WebSyncRegistration(int64_t id, Periodicity periodicity,
         const WebString& registrationTag, unsigned long minPeriodMs,
-        NetworkState networkState, PowerState powerState)
+        NetworkState networkState)
         : id(id)
         , periodicity(periodicity)
         , tag(registrationTag)
         , minPeriodMs(minPeriodMs)
         , networkState(networkState)
-        , powerState(powerState)
     {
     }
 
@@ -71,7 +63,6 @@ struct WebSyncRegistration {
     unsigned long minPeriodMs;
 
     NetworkState networkState;
-    PowerState powerState;
 };
 
 } // namespace blink

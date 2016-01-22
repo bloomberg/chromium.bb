@@ -37,7 +37,6 @@
 namespace content {
 
 class BackgroundSyncNetworkObserver;
-class BackgroundSyncPowerObserver;
 class ServiceWorkerContextWrapper;
 
 // BackgroundSyncManager manages and stores the set of background sync
@@ -362,7 +361,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void OnStorageWipedImpl(const base::Closure& callback);
 
   void OnNetworkChanged();
-  void OnPowerChanged();
 
   // SetMaxSyncAttempts callback
   void SetMaxSyncAttemptsImpl(int max_sync_attempts,
@@ -404,7 +402,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   base::CancelableCallback<void()> delayed_sync_task_;
 
   scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;
-  scoped_ptr<BackgroundSyncPowerObserver> power_observer_;
 
   // The registrations that clients have handles to.
   IDMap<scoped_refptr<RefCountedRegistration>,

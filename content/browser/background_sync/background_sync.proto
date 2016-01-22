@@ -14,11 +14,6 @@ enum SyncNetworkState {
   NETWORK_STATE_ONLINE = 2;
 }
 
-enum SyncPowerState {
-  POWER_STATE_AUTO = 0;
-  POWER_STATE_AVOID_DRAINING = 1;
-}
-
 enum SyncPeriodicity {
   SYNC_PERIODIC = 0;
   SYNC_ONE_SHOT = 1;
@@ -30,7 +25,7 @@ message BackgroundSyncRegistrationProto {
   required SyncPeriodicity periodicity = 3;
   required int64 min_period = 4;
   required SyncNetworkState network_state = 5;
-  required SyncPowerState power_state = 6;
+  // required SyncPowerState power_state = 6;
   required int32 num_attempts = 7;
   required int64 delay_until = 8;
 }

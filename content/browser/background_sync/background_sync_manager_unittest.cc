@@ -12,8 +12,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_entropy_provider.h"
@@ -103,18 +101,6 @@ void NotifyWhenFinishedCallback(bool* was_called,
   *out_status = status;
   *out_state = state;
 }
-
-class TestPowerSource : public base::PowerMonitorSource {
- public:
-  void GeneratePowerStateEvent(bool on_battery_power) {
-    test_on_battery_power_ = on_battery_power;
-    ProcessPowerEvent(POWER_STATE_EVENT);
-  }
-
- private:
-  bool IsOnBatteryPowerImpl() final { return test_on_battery_power_; }
-  bool test_on_battery_power_ = false;
-};
 
 class TestBackgroundSyncController : public BackgroundSyncController {
  public:
@@ -304,12 +290,10 @@ class BackgroundSyncManagerTest : public testing::Test {
     sync_options_1_.tag = "foo";
     sync_options_1_.periodicity = SYNC_ONE_SHOT;
     sync_options_1_.network_state = NETWORK_STATE_ONLINE;
-    sync_options_1_.power_state = POWER_STATE_AUTO;
 
     sync_options_2_.tag = "bar";
     sync_options_2_.periodicity = SYNC_ONE_SHOT;
     sync_options_2_.network_state = NETWORK_STATE_ONLINE;
-    sync_options_2_.power_state = POWER_STATE_AUTO;
   }
 
   void SetUp() override {
@@ -329,13 +313,6 @@ class BackgroundSyncManagerTest : public testing::Test {
         nullptr, nullptr, nullptr, nullptr));
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
-
-    power_monitor_source_ = new TestPowerSource();
-    // power_monitor_ takes ownership of power_monitor_source.
-    power_monitor_.reset(new base::PowerMonitor(
-        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_)));
-
-    SetOnBatteryPower(false);
 
     scoped_ptr<TestBackgroundSyncController> background_sync_controller(
         new TestBackgroundSyncController());
@@ -396,11 +373,6 @@ class BackgroundSyncManagerTest : public testing::Test {
           connection_type);
       base::RunLoop().RunUntilIdle();
     }
-  }
-
-  void SetOnBatteryPower(bool on_battery_power) {
-    power_monitor_source_->GeneratePowerStateEvent(on_battery_power);
-    base::RunLoop().RunUntilIdle();
   }
 
   void StatusAndRegistrationCallback(
@@ -665,8 +637,6 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  TestPowerSource* power_monitor_source_ = nullptr;  // owned by power_monitor_
-  scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_ptr<BackgroundSyncManager> background_sync_manager_;
   scoped_ptr<StoragePartitionImpl> storage_partition_impl_;
@@ -1104,15 +1074,6 @@ TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsPowerState) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options()->power_state = POWER_STATE_AUTO;
-  reg_2.options()->power_state = POWER_STATE_AVOID_DRAINING;
-  EXPECT_FALSE(reg_1.Equals(reg_2));
-}
-
 TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
   BackgroundSyncRegistrationOptions options;
   // Set non-default values for each field.
@@ -1122,8 +1083,6 @@ TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
   options.min_period += 1;
   EXPECT_NE(NETWORK_STATE_ANY, options.network_state);
   options.network_state = NETWORK_STATE_ANY;
-  EXPECT_NE(POWER_STATE_AUTO, options.power_state);
-  options.power_state = POWER_STATE_AUTO;
 
   // Store the registration.
   EXPECT_TRUE(Register(options));
@@ -1391,21 +1350,21 @@ TEST_F(BackgroundSyncManagerTest,
 
 TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
   // An overwritten pending registration should complete with
-  // BackgroundSyncState::UNREGISTERED.
-  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
+  // BACKGROUND_SYNC_STATE_UNREGISTERED.
+  sync_options_1_.network_state = NETWORK_STATE_AVOID_CELLULAR;
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(POWER_STATE_AVOID_DRAINING,
-            callback_registration_handle_->options()->power_state);
+  EXPECT_EQ(NETWORK_STATE_AVOID_CELLULAR,
+            callback_registration_handle_->options()->network_state);
   scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
       std::move(callback_registration_handle_);
 
   // Overwrite the pending registration.
-  sync_options_1_.power_state = POWER_STATE_AUTO;
+  sync_options_1_.network_state = NETWORK_STATE_ONLINE;
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(POWER_STATE_AUTO,
-            callback_registration_handle_->options()->power_state);
+  EXPECT_EQ(NETWORK_STATE_ONLINE,
+            callback_registration_handle_->options()->network_state);
 
   EXPECT_TRUE(NotifyWhenFinished(original_handle.get()));
   EXPECT_EQ(BackgroundSyncState::UNREGISTERED, FinishedState());
@@ -1417,7 +1376,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichSucceeds) {
   // BackgroundSyncState::SUCCESS if firing completes successfully.
   InitDelayedSyncEventTest();
 
-  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
+  sync_options_1_.network_state = NETWORK_STATE_AVOID_CELLULAR;
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
   scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
       std::move(callback_registration_handle_);
@@ -1426,7 +1385,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichSucceeds) {
   InitSyncEventTest();
 
   // Overwrite the firing registration.
-  sync_options_1_.power_state = POWER_STATE_AUTO;
+  sync_options_1_.network_state = NETWORK_STATE_ONLINE;
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_FALSE(NotifyWhenFinished(original_handle.get()));
 
@@ -1441,7 +1400,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichFails) {
   // BackgroundSyncState::FAILED if firing fails.
   InitDelayedSyncEventTest();
 
-  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
+  sync_options_1_.network_state = NETWORK_STATE_AVOID_CELLULAR;
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
   scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
       std::move(callback_registration_handle_);
@@ -1450,7 +1409,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichFails) {
   InitSyncEventTest();
 
   // Overwrite the firing registration.
-  sync_options_1_.power_state = POWER_STATE_AUTO;
+  sync_options_1_.network_state = NETWORK_STATE_ONLINE;
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_FALSE(NotifyWhenFinished(original_handle.get()));
 
@@ -1496,42 +1455,6 @@ TEST_F(BackgroundSyncManagerTest, DisableWhileFiringNotifiesFinished) {
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(BackgroundSyncState::SUCCESS, FinishedState());
-}
-
-// TODO(jkarlin): Change this to a periodic test as one-shots can't be power
-// dependent according to spec.
-TEST_F(BackgroundSyncManagerTest, OneShotFiresOnPowerChange) {
-  InitSyncEventTest();
-  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
-
-  SetOnBatteryPower(true);
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_EQ(0, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-
-  SetOnBatteryPower(false);
-  EXPECT_EQ(1, sync_events_called_);
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-}
-
-// TODO(jkarlin): Change this to a periodic test as one-shots can't be power
-// dependent according to spec.
-TEST_F(BackgroundSyncManagerTest, MultipleOneShotsFireOnPowerChange) {
-  InitSyncEventTest();
-  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
-  sync_options_2_.power_state = POWER_STATE_AVOID_DRAINING;
-
-  SetOnBatteryPower(true);
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_EQ(0, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(GetRegistration(sync_options_2_));
-
-  SetOnBatteryPower(false);
-  EXPECT_EQ(2, sync_events_called_);
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-  EXPECT_FALSE(GetRegistration(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, OneShotFiresOnNetworkChange) {

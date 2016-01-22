@@ -10,7 +10,7 @@ bool BackgroundSyncRegistrationOptions::Equals(
     const BackgroundSyncRegistrationOptions& other) const {
   return tag == other.tag && min_period == other.min_period &&
          network_state == other.network_state &&
-         power_state == other.power_state && periodicity == other.periodicity;
+         periodicity == other.periodicity;
 }
 
 }  // namespace content

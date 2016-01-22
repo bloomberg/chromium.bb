@@ -25,7 +25,6 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
 
   out.tag = in->tag;
   out.min_period = in->min_period_ms;
-  out.power_state = static_cast<SyncPowerState>(in->power_state);
   out.network_state = static_cast<SyncNetworkState>(in->network_state);
   out.periodicity = static_cast<SyncPeriodicity>(in->periodicity);
   return out;
@@ -39,8 +38,6 @@ SyncRegistrationPtr ToMojoRegistration(
   out->min_period_ms = in.options()->min_period;
   out->periodicity = static_cast<content::BackgroundSyncPeriodicity>(
       in.options()->periodicity);
-  out->power_state =
-      static_cast<content::BackgroundSyncPowerState>(in.options()->power_state);
   out->network_state = static_cast<content::BackgroundSyncNetworkState>(
       in.options()->network_state);
   return out;
@@ -75,13 +72,6 @@ COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ONLINE,
                              SyncNetworkState::NETWORK_STATE_ONLINE);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
                              SyncNetworkState::NETWORK_STATE_ONLINE);
-
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::AUTO,
-                             SyncPowerState::POWER_STATE_AUTO);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::AVOID_DRAINING,
-                             SyncPowerState::POWER_STATE_AVOID_DRAINING);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::MAX,
-                             SyncPowerState::POWER_STATE_AVOID_DRAINING);
 
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::PERIODIC,
                              SyncPeriodicity::SYNC_PERIODIC);

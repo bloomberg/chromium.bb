@@ -49,23 +49,6 @@ struct CONTENT_EXPORT TypeConverter<content::BackgroundSyncNetworkState,
       blink::WebSyncRegistration::NetworkState input);
 };
 
-// blink::WebSyncRegistration::PowerState <=>
-//     content::BackgroundSyncPowerState
-
-template <>
-struct CONTENT_EXPORT TypeConverter<blink::WebSyncRegistration::PowerState,
-                     content::BackgroundSyncPowerState> {
-  static blink::WebSyncRegistration::PowerState Convert(
-      content::BackgroundSyncPowerState input);
-};
-
-template <>
-struct CONTENT_EXPORT TypeConverter<content::BackgroundSyncPowerState,
-                     blink::WebSyncRegistration::PowerState> {
-  static content::BackgroundSyncPowerState Convert(
-      blink::WebSyncRegistration::PowerState input);
-};
-
 // blink::WebSyncRegistration <=>
 //     content::SyncRegistration
 

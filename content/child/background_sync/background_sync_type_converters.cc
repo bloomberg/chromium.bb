@@ -31,14 +31,6 @@ COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
                              WebSyncRegistration::NetworkStateOnline);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
                              WebSyncRegistration::NetworkStateLast);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::AUTO,
-                             WebSyncRegistration::PowerStateAuto);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::AVOID_DRAINING,
-                             WebSyncRegistration::PowerStateAvoidDraining);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::MAX,
-                             WebSyncRegistration::PowerStateAvoidDraining);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::MAX,
-                             WebSyncRegistration::PowerStateLast);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
                              WebServiceWorkerContextProxy::IsNotLastChance);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncEventLastChance::IS_LAST_CHANCE,
@@ -77,22 +69,6 @@ content::BackgroundSyncNetworkState
 }
 
 // static
-blink::WebSyncRegistration::PowerState
-    TypeConverter<blink::WebSyncRegistration::PowerState,
-                  content::BackgroundSyncPowerState>::Convert(
-        content::BackgroundSyncPowerState input) {
-  return static_cast<blink::WebSyncRegistration::PowerState>(input);
-}
-
-// static
-content::BackgroundSyncPowerState
-    TypeConverter<content::BackgroundSyncPowerState,
-                  blink::WebSyncRegistration::PowerState>::Convert(
-        blink::WebSyncRegistration::PowerState input) {
-  return static_cast<content::BackgroundSyncPowerState>(input);
-}
-
-// static
 scoped_ptr<blink::WebSyncRegistration> TypeConverter<
     scoped_ptr<blink::WebSyncRegistration>,
     content::SyncRegistrationPtr>::Convert(
@@ -106,8 +82,6 @@ scoped_ptr<blink::WebSyncRegistration> TypeConverter<
   result->minPeriodMs = input->min_period_ms;
   result->networkState =
       ConvertTo<blink::WebSyncRegistration::NetworkState>(input->network_state);
-  result->powerState =
-      ConvertTo<blink::WebSyncRegistration::PowerState>(input->power_state);
   return result;
 }
 
@@ -125,8 +99,6 @@ content::SyncRegistrationPtr TypeConverter<
   result->min_period_ms = input.minPeriodMs;
   result->network_state =
       ConvertTo<content::BackgroundSyncNetworkState>(input.networkState);
-  result->power_state =
-      ConvertTo<content::BackgroundSyncPowerState>(input.powerState);
   return result;
 }
 

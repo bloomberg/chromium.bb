@@ -61,8 +61,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
         WebSyncRegistration::PeriodicityOneShot,
         tag,
         0 /* minPeriod */,
-        WebSyncRegistration::NetworkStateOnline /* networkState */,
-        WebSyncRegistration::PowerStateAuto /* powerState */
+        WebSyncRegistration::NetworkStateOnline /* networkState */
     );
     backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), context->isServiceWorkerGlobalScope(), new SyncRegistrationCallbacks(resolver, m_registration));
 
