@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/filesystem/util.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
@@ -91,6 +92,28 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
   DCHECK_LE(static_cast<size_t>(num_bytes_read), num_bytes_to_read);
   bytes_read.resize(static_cast<size_t>(num_bytes_read));
   callback.Run(FileError::OK, std::move(bytes_read));
+}
+
+void FileImpl::ReadEntireFile(const ReadEntireFileCallback& callback) {
+  if (!file_.IsValid()) {
+    callback.Run(GetError(file_), mojo::Array<uint8_t>());
+    return;
+  }
+
+  // Seek to the front of the file.
+  if (file_.Seek(base::File::FROM_BEGIN, 0) == -1) {
+    callback.Run(FileError::FAILED, mojo::Array<uint8_t>());
+    return;
+  }
+
+  std::string contents;
+  const int kBufferSize = 1 << 16;
+  scoped_ptr<char[]> buf(new char[kBufferSize]);
+  size_t len;
+  while ((len = file_.ReadAtCurrentPos(buf.get(), kBufferSize)) > 0)
+    contents.append(buf.get(), len);
+
+  callback.Run(FileError::OK, mojo::Array<uint8_t>::From(contents));
 }
 
 // TODO(vtl): Move the implementation to a thread pool.

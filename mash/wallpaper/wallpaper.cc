@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "components/filesystem/public/cpp/prefs/pref_service_factory.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/c/system/main.h"
@@ -42,6 +44,10 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
   WallpaperApplicationDelegate() {}
   ~WallpaperApplicationDelegate() override {}
 
+  void OnLoaded(bool whatever) {
+    // TODO(erg): Now do something with this result.
+  }
+
  private:
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
@@ -49,6 +55,12 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
 
     aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
     views::WindowManagerConnection::Create(app);
+
+    scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
+    registry->RegisterStringPref("filename", "", 0);
+    pref_service_ = filesystem::CreatePrefService(app, registry.get());
+    pref_service_->AddPrefInitObserver(base::Bind(
+        &WallpaperApplicationDelegate::OnLoaded, base::Unretained(this)));
 
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
@@ -69,6 +81,7 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
 
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;
+  scoped_ptr<PrefService> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperApplicationDelegate);
 };

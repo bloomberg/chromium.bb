@@ -62,6 +62,7 @@ mojo_native_application("apptests") {
   deps = [
     "//base",
     "//components/filesystem/public/interfaces",
+    "//mojo/common",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/cpp:test_support",

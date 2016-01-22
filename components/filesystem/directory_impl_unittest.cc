@@ -103,7 +103,7 @@ TEST_F(DirectoryImplTest, BasicRenameDelete) {
   directory->OpenFile("my_file", nullptr, kFlagRead | kFlagOpen,
                       Capture(&error));
   ASSERT_TRUE(directory.WaitForIncomingResponse());
-  EXPECT_EQ(FileError::FAILED, error);
+  EXPECT_EQ(FileError::NOT_FOUND, error);
 
   // Opening my_new_file should succeed.
   error = FileError::FAILED;
@@ -122,7 +122,7 @@ TEST_F(DirectoryImplTest, BasicRenameDelete) {
   directory->OpenFile("my_new_file", nullptr, kFlagRead | kFlagOpen,
                       Capture(&error));
   ASSERT_TRUE(directory.WaitForIncomingResponse());
-  EXPECT_EQ(FileError::FAILED, error);
+  EXPECT_EQ(FileError::NOT_FOUND, error);
 }
 
 TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {

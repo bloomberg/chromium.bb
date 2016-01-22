@@ -13,6 +13,9 @@ mojo_native_application("wallpaper") {
 
   deps = [
     "//base",
+    "//base:prefs",
+    "//components/filesystem/public/cpp/prefs",
+    "//components/filesystem/public/interfaces",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mash/wm/public/interfaces",

@@ -70,7 +70,7 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
 
   base::File base_file(path, open_flags);
   if (!base_file.IsValid()) {
-    callback.Run(FileError::FAILED);
+    callback.Run(GetError(base_file));
     return;
   }
 
@@ -203,7 +203,7 @@ void DirectoryImpl::IsWritable(const mojo::String& raw_path,
 void DirectoryImpl::Flush(const FlushCallback& callback) {
   base::File file(directory_path_, base::File::FLAG_READ);
   if (!file.IsValid()) {
-    callback.Run(FileError::FAILED);
+    callback.Run(GetError(file));
     return;
   }
 
