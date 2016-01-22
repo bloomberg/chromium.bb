@@ -19,7 +19,6 @@
 #include "base/threading/thread.h"
 #include "tools/battor_agent/battor_agent.h"
 #include "tools/battor_agent/battor_error.h"
-#include "tools/battor_agent/battor_finder.h"
 
 using std::cout;
 using std::endl;
@@ -48,11 +47,12 @@ void PrintSupportsExplicitClockSync() {
   cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
 }
 
-// Retrieves argument argnum from the argument list, or an empty string if the
-// argument doesn't exist.
+// Retrieves argument argnum from the argument list, printing the usage
+// guidelines and exiting with an error code if the argument doesn't exist.
 std::string GetArg(int argnum, int argc, char* argv[]) {
   if (argnum >= argc) {
-    return std::string();
+    PrintUsage();
+    exit(1);
   }
 
   return argv[argnum];
@@ -89,10 +89,6 @@ class BattOrAgentBin : public BattOrAgent::Listener {
   // Runs the BattOr binary and returns the exit code.
   int Run(int argc, char* argv[]) {
     std::string cmd = GetArg(1, argc, argv);
-    if (cmd.empty()) {
-      PrintUsage();
-      exit(1);
-    }
 
     // SupportsExplicitClockSync doesn't need to use the serial connection, so
     // handle it separately.
@@ -102,18 +98,6 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     }
 
     std::string path = GetArg(2, argc, argv);
-    // If no path is specified, see if we can find a BattOr and use that.
-    if (path.empty())
-      path = BattOrFinder::FindBattOr();
-
-    // If we don't have any BattOr to use, exit.
-    if (path.empty()) {
-      cout << "Unable to find a BattOr, and no explicit BattOr path was "
-              "specified."
-           << endl;
-      exit(1);
-    }
-
     SetUp(path);
 
     if (cmd == "StartTracing") {
