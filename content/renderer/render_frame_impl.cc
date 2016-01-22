@@ -148,6 +148,7 @@
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -684,36 +685,42 @@ bool IsContentWithCertificateErrorsRelevantToUI(
 }
 
 #if defined(OS_ANDROID)
-// Returns true if WMPI is enabled and is expected to be able to play the URL,
-// false if WMPA should be used instead.
+// Returns true if WMPI must be used for playback because WMPA will not work.
+bool MustUseWebMediaPlayerImpl(blink::WebMediaPlayer::LoadType load_type,
+                               const GURL& url) {
+  // WMPA can't play MSE if MediaCodec is unavailable. In this case WMPI may
+  // still work (via libvpx).
+  return (load_type == blink::WebMediaPlayer::LoadTypeMediaSource &&
+          !media::MediaCodecUtil::IsMediaCodecAvailable());
+}
+
+// Returns true if WMPI can be used for playback, false if it may not work.
 //
 // Note that HLS and WebM detection are pre-redirect and path-based. It is
-// possible to load such a URL and find different content, in which case
-// playback may fail.
-bool CanUseWebMediaPlayerImpl(const GURL& url) {
+// possible to load such a URL and find different content.
+bool CanUseWebMediaPlayerImpl(blink::WebMediaPlayer::LoadType load_type,
+                              const GURL& url) {
+  if (MustUseWebMediaPlayerImpl(load_type, url))
+    return true;
+
   // WMPI does not support HLS.
   if (media::MediaCodecUtil::IsHLSPath(url))
     return false;
 
-  // If --enable-unified-media-pipeline was passed, always use WMPI. (This
-  // allows for testing the new path.)
+  // Otherwise --enable-unified-media-pipeline always enables WMPI.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUnifiedMediaPipeline)) {
     return true;
   }
 
-  // Don't use WMPI for blob URLs (MSE in particular) yet.
-  if (url.SchemeIsBlob())
-    return false;
-
-  // WMPI can play VPX even without AVDA.
+  // WMPI can always play WebM (via libvpx).
   if (base::EndsWith(url.path(), ".webm", base::CompareCase::INSENSITIVE_ASCII))
     return true;
 
-  // Only use WMPI if AVDA is available.
-  return (media::MediaCodecUtil::IsMediaCodecAvailable() &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableAcceleratedVideoDecode));
+  // Otherwise, WMPI can only be used if AVDA is working.
+  return (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableAcceleratedVideoDecode) &&
+          media::MediaCodecUtil::IsMediaCodecAvailable());
 }
 #endif  // defined(OS_ANDROID)
 
@@ -2376,6 +2383,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
+    blink::WebMediaPlayer::LoadType load_type,
     const blink::WebURL& url,
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
@@ -2416,9 +2424,9 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       GetMediaPermission(), initial_cdm);
 
 #if defined(OS_ANDROID)
-  if (!CanUseWebMediaPlayerImpl(url)) {
+  if (!CanUseWebMediaPlayerImpl(load_type, url)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
-  } else {
+  } else if (!MustUseWebMediaPlayerImpl(load_type, url)) {
     // TODO(dalecurtis): This experiment is temporary and should be removed once
     // we have enough data to support the primacy of the unified media pipeline;
     // see http://crbug.com/533190 for details.

@@ -311,6 +311,7 @@ HTMLFrame::~HTMLFrame() {
 
 blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
     blink::WebLocalFrame* frame,
+    blink::WebMediaPlayer::LoadType load_type,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,

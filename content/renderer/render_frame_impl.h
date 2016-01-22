@@ -38,6 +38,7 @@
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -73,7 +74,6 @@ namespace blink {
 class WebGeolocationClient;
 class WebMouseEvent;
 class WebContentDecryptionModule;
-class WebMediaPlayer;
 class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
@@ -414,6 +414,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
+      blink::WebMediaPlayer::LoadType load_type,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,

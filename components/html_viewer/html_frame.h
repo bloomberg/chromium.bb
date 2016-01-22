@@ -20,6 +20,7 @@
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
@@ -161,6 +162,7 @@ class HTMLFrame : public blink::WebFrameClient,
   // WebFrameClient methods:
   blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
+      blink::WebMediaPlayer::LoadType load_type,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
