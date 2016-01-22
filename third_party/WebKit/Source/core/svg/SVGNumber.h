@@ -67,7 +67,7 @@ protected:
     explicit SVGNumber(float);
 
     template<typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
+    SVGParsingError parse(const CharType*& ptr, const CharType* end);
 
     float m_value;
 };

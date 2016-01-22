@@ -80,7 +80,7 @@ private:
     explicit SVGPoint(const FloatPoint&);
 
     template<typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
+    SVGParsingError parse(const CharType*& ptr, const CharType* end);
 
     FloatPoint m_value;
 };

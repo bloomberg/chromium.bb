@@ -65,7 +65,7 @@ private:
     SVGPointList();
 
     template <typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
+    SVGParsingError parse(const CharType*& ptr, const CharType* end);
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPointList);

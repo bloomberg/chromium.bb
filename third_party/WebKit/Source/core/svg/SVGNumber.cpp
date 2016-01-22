@@ -51,44 +51,33 @@ String SVGNumber::valueAsString() const
 }
 
 template<typename CharType>
-bool SVGNumber::parse(const CharType*& ptr, const CharType* end)
+SVGParsingError SVGNumber::parse(const CharType*& ptr, const CharType* end)
 {
-    if (!parseNumber(ptr, end, m_value, AllowLeadingAndTrailingWhitespace)) {
-        m_value = 0;
-        return false;
-    }
-
-    if (ptr != end) {
-        m_value = 0;
-        return false;
-    }
-
-    return true;
+    float value = 0;
+    const CharType* start = ptr;
+    if (!parseNumber(ptr, end, value, AllowLeadingAndTrailingWhitespace))
+        return SVGParsingError(SVGParseStatus::ExpectedNumber, ptr - start);
+    if (ptr != end)
+        return SVGParsingError(SVGParseStatus::TrailingGarbage, ptr - start);
+    m_value = value;
+    return SVGParseStatus::NoError;
 }
 
 SVGParsingError SVGNumber::setValueAsString(const String& string)
 {
-    if (string.isEmpty()) {
-        m_value = 0;
-        return SVGParseStatus::NoError;
-    }
+    m_value = 0;
 
-    bool valid = false;
+    if (string.isEmpty())
+        return SVGParseStatus::NoError;
+
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        valid = parse(ptr, end);
-    } else {
-        const UChar* ptr = string.characters16();
-        const UChar* end = ptr + string.length();
-        valid = parse(ptr, end);
+        return parse(ptr, end);
     }
-
-    if (!valid) {
-        m_value = 0;
-        return SVGParseStatus::ParsingFailed;
-    }
-    return SVGParseStatus::NoError;
+    const UChar* ptr = string.characters16();
+    const UChar* end = ptr + string.length();
+    return parse(ptr, end);
 }
 
 void SVGNumber::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)

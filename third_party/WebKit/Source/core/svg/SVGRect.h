@@ -81,7 +81,7 @@ private:
     SVGRect(const FloatRect&);
 
     template<typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
+    SVGParsingError parse(const CharType*& ptr, const CharType* end);
 
     bool m_isValid;
     FloatRect m_value;

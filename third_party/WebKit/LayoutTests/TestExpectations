@@ -12,6 +12,16 @@ crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
 
 crbug.com/580422 [ Mac ] editing/spelling/spelling-huge-text-sync.html [ Failure Pass ]
 
+crbug.com/231612 fast/parser/changing-attrbutes-crash.html [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/viewbox-syntax.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/poly-parsing-error.html [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/polyline-invalid-points.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/polyline-setattribute-points-null.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/use-property-synchronization-crash.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/dom/points-parser.html [ NeedsRebaseline ]
+crbug.com/231612 svg/hixie/error/010.xml [ NeedsRebaseline ]
+crbug.com/231612 svg/hixie/error/011.xml [ NeedsRebaseline ]
+
 # TODO(wangxianzhu): Triage the failures
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
 crbug.com/524134 crbug.com/539546 virtual/spv2/paint/selection/text-selection-drag.html [ Pass Failure ]

@@ -32,6 +32,8 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
         return std::make_pair("Expected 'true' or 'false', ", ".");
     case SVGParseStatus::ExpectedEnumeration:
         return std::make_pair("Unrecognized enumerated value, ", ".");
+    case SVGParseStatus::ExpectedNumber:
+        return std::make_pair("Expected number, ", ".");
     case SVGParseStatus::NegativeValue:
         return std::make_pair("A negative value is not valid. (", ")");
     case SVGParseStatus::ParsingFailed:

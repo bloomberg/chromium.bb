@@ -41,6 +41,7 @@ enum class SVGParseStatus {
     TrailingGarbage,
     ExpectedBoolean,
     ExpectedEnumeration,
+    ExpectedNumber,
 
     // Semantic errors
     NegativeValue,

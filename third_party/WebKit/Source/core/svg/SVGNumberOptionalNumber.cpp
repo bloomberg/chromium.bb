@@ -78,7 +78,7 @@ SVGParsingError SVGNumberOptionalNumber::setValueAsString(const String& value)
     float x, y;
     SVGParsingError parseStatus;
     if (!parseNumberOptionalNumber(value, x, y)) {
-        parseStatus = SVGParseStatus::ParsingFailed;
+        parseStatus = SVGParseStatus::ExpectedNumber;
         x = y = 0;
     }
 

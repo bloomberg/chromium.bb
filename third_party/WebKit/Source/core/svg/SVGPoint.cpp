@@ -53,24 +53,21 @@ PassRefPtrWillBeRawPtr<SVGPoint> SVGPoint::clone() const
 }
 
 template<typename CharType>
-bool SVGPoint::parse(const CharType*& ptr, const CharType* end)
+SVGParsingError SVGPoint::parse(const CharType*& ptr, const CharType* end)
 {
-    skipOptionalSVGSpaces(ptr, end);
-
-    float x = 0.0f;
-    float y = 0.0f;
-    bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y, DisallowWhitespace);
-
-    if (!valid)
-        return false;
+    float x = 0;
+    float y = 0;
+    if (!parseNumber(ptr, end, x)
+        || !parseNumber(ptr, end, y, DisallowWhitespace))
+        return SVGParseStatus::ExpectedNumber;
 
     if (skipOptionalSVGSpaces(ptr, end)) {
         // Nothing should come after the second number.
-        return false;
+        return SVGParseStatus::TrailingGarbage;
     }
 
     m_value = FloatPoint(x, y);
-    return true;
+    return SVGParseStatus::NoError;
 }
 
 FloatPoint SVGPoint::matrixTransform(const AffineTransform& transform) const
@@ -87,17 +84,14 @@ SVGParsingError SVGPoint::setValueAsString(const String& string)
         return SVGParseStatus::NoError;
     }
 
-    bool valid;
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        valid = parse(ptr, end);
-    } else {
-        const UChar* ptr = string.characters16();
-        const UChar* end = ptr + string.length();
-        valid = parse(ptr, end);
+        return parse(ptr, end);
     }
-    return valid ? SVGParseStatus::NoError : SVGParseStatus::ParsingFailed;
+    const UChar* ptr = string.characters16();
+    const UChar* end = ptr + string.length();
+    return parse(ptr, end);
 }
 
 String SVGPoint::valueAsString() const
