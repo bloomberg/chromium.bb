@@ -26,7 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.browser.ChildProcessConnection;
+import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public class ChildProcessService extends Service {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
-    private static final String TAG = "cr.ChildProcessService";
+    private static final String TAG = "ChildProcessService";
     private IChildProcessCallback mCallback;
 
     // This is the native "Main" thread for the renderer / utility process.
@@ -90,33 +90,7 @@ public class ChildProcessService extends Service {
         @Override
         public int setupConnection(Bundle args, IChildProcessCallback callback) {
             mCallback = callback;
-            // Required to unparcel FileDescriptorInfo.
-            args.setClassLoader(getClassLoader());
-            synchronized (mMainThread) {
-                // Allow the command line to be set via bind() intent or setupConnection, but
-                // the FD can only be transferred here.
-                if (mCommandLineParams == null) {
-                    mCommandLineParams = args.getStringArray(
-                            ChildProcessConnection.EXTRA_COMMAND_LINE);
-                }
-                // We must have received the command line by now
-                assert mCommandLineParams != null;
-                mCpuCount = args.getInt(ChildProcessConnection.EXTRA_CPU_COUNT);
-                mCpuFeatures = args.getLong(ChildProcessConnection.EXTRA_CPU_FEATURES);
-                assert mCpuCount > 0;
-                Parcelable[] fdInfosAsParcelable =
-                        args.getParcelableArray(ChildProcessConnection.EXTRA_FILES);
-                // For why this arraycopy is necessary:
-                // http://stackoverflow.com/questions/8745893/i-dont-get-why-this-classcastexception-occurs
-                mFdInfos = new FileDescriptorInfo[fdInfosAsParcelable.length];
-                System.arraycopy(fdInfosAsParcelable, 0, mFdInfos, 0, fdInfosAsParcelable.length);
-                Bundle sharedRelros = args.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
-                if (sharedRelros != null) {
-                    getLinker().useSharedRelros(sharedRelros);
-                    sharedRelros = null;
-                }
-                mMainThread.notifyAll();
-            }
+            getServiceInfo(args);
             return Process.myPid();
         }
 
@@ -268,18 +242,65 @@ public class ChildProcessService extends Service {
         // child processes do not currently support reconnect; they must be initialized from
         // scratch every time.
         stopSelf();
+        initializeParams(intent);
+        return mBinder;
+    }
 
+    /**
+     * Helper method to initialize the params from intent.
+     * @param intent Intent to launch the service.
+     */
+    protected void initializeParams(Intent intent) {
         synchronized (mMainThread) {
-            mCommandLineParams = intent.getStringArrayExtra(
-                    ChildProcessConnection.EXTRA_COMMAND_LINE);
+            mCommandLineParams =
+                    intent.getStringArrayExtra(ChildProcessConstants.EXTRA_COMMAND_LINE);
             // mLinkerParams is never used if Linker.isUsed() returns false.
             // See onCreate().
             mLinkerParams = new ChromiumLinkerParams(intent);
             mIsBound = true;
             mMainThread.notifyAll();
         }
+    }
 
-        return mBinder;
+    /**
+     * Helper method to get the information about the service from a given bundle.
+     * @param bundle Bundle that contains the information to start the service.
+     */
+    void getServiceInfo(Bundle bundle) {
+        // Required to unparcel FileDescriptorInfo.
+        bundle.setClassLoader(getClassLoader());
+        synchronized (mMainThread) {
+            // Allow the command line to be set via bind() intent or setupConnection, but
+            // the FD can only be transferred here.
+            if (mCommandLineParams == null) {
+                mCommandLineParams =
+                        bundle.getStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE);
+            }
+            // We must have received the command line by now
+            assert mCommandLineParams != null;
+            mCpuCount = bundle.getInt(ChildProcessConstants.EXTRA_CPU_COUNT);
+            mCpuFeatures = bundle.getLong(ChildProcessConstants.EXTRA_CPU_FEATURES);
+            assert mCpuCount > 0;
+            Parcelable[] fdInfosAsParcelable =
+                    bundle.getParcelableArray(ChildProcessConstants.EXTRA_FILES);
+            if (fdInfosAsParcelable != null) {
+                // For why this arraycopy is necessary:
+                // http://stackoverflow.com/questions/8745893/i-dont-get-why-this-classcastexception-occurs
+                mFdInfos = new FileDescriptorInfo[fdInfosAsParcelable.length];
+                System.arraycopy(fdInfosAsParcelable, 0, mFdInfos, 0, fdInfosAsParcelable.length);
+            } else {
+                // TODO(qinmin): On earlier androird versions, a started service running in another
+                // process can get killed after Chrome is killed. To work around this issue, client
+                // will never bind to the service. As a result, the file descriptors needs to be
+                // passed through an intent when starting the service.
+            }
+            Bundle sharedRelros = bundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
+            if (sharedRelros != null) {
+                getLinker().useSharedRelros(sharedRelros);
+                sharedRelros = null;
+            }
+            mMainThread.notifyAll();
+        }
     }
 
     /**

@@ -130,7 +130,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                     TraceEvent.begin("ChildProcessConnectionImpl.ChildServiceConnection.bind");
                     final Intent intent = createServiceBindIntent();
                     if (commandLine != null) {
-                        intent.putExtra(EXTRA_COMMAND_LINE, commandLine);
+                        intent.putExtra(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
                     }
                     if (mLinkerParams != null) {
                         mLinkerParams.addIntentExtras(intent);
@@ -332,11 +332,13 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             assert mConnectionParams != null;
 
             Bundle bundle = new Bundle();
-            bundle.putStringArray(EXTRA_COMMAND_LINE, mConnectionParams.mCommandLine);
-            bundle.putParcelableArray(EXTRA_FILES, mConnectionParams.mFilesToBeMapped);
+            bundle.putStringArray(
+                    ChildProcessConstants.EXTRA_COMMAND_LINE, mConnectionParams.mCommandLine);
+            bundle.putParcelableArray(
+                    ChildProcessConstants.EXTRA_FILES, mConnectionParams.mFilesToBeMapped);
             // Add the CPU properties now.
-            bundle.putInt(EXTRA_CPU_COUNT, CpuFeatures.getCount());
-            bundle.putLong(EXTRA_CPU_FEATURES, CpuFeatures.getMask());
+            bundle.putInt(ChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
+            bundle.putLong(ChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
             bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
                              mConnectionParams.mSharedRelros);
             try {
