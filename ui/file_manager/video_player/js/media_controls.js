@@ -340,26 +340,27 @@ MediaControls.prototype.onProgressDrag_ = function() {
 };
 
 /**
- * Handles ArrowRight/ArrowLeft key on progress slider to skip forward/backword.
+ * Handles arrow keys on progress slider to skip forward/backword.
  * @param {!Event} event
  * @private
  */
 MediaControls.prototype.onProgressKeyDownOrKeyPress_ = function(event) {
-  if (event.code !== 'ArrowRight' && event.code !== 'ArrowLeft')
+  if (event.code !== 'ArrowRight' && event.code !== 'ArrowLeft' &&
+      event.code !== 'ArrowUp' && event.code !== 'ArrowDown') {
     return;
+  }
 
   event.preventDefault();
 
   if (this.media_ && this.media_.duration > 0) {
-    // On left/right key for progress bar, min(5 seconds, 10% of video) should
-    // be skipped.
+    // Skip 5 seconds or 10% of duration, whichever is smaller.
     var secondsToSkip = Math.min(
         MediaControls.PROGRESS_MAX_SECONDS_TO_SKIP,
         this.media_.duration * MediaControls.PROGRESS_MAX_RATIO_TO_SKIP);
     var stepsToSkip = MediaControls.PROGRESS_RANGE *
         (secondsToSkip / this.media_.duration);
 
-    if (event.code === 'ArrowRight') {
+    if (event.code === 'ArrowRight' || event.code === 'ArrowUp') {
       this.progressSlider_.value = Math.min(
           this.progressSlider_.value + stepsToSkip,
           this.progressSlider_.max);
