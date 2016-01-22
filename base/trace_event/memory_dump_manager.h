@@ -264,6 +264,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   static void FinalizeDumpAndAddToTrace(
       scoped_ptr<ProcessMemoryDumpAsyncState> pmd_async_state);
 
+  // Enable heap profiling if kEnableHeapProfiling is specified.
+  void EnableHeapProfilingIfNeeded();
+
   // Internal, used only by MemoryDumpManagerDelegate.
   // Creates a memory dump for the current process and appends it to the trace.
   // |callback| will be invoked asynchronously upon completion on the same

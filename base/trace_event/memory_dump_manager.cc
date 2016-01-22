@@ -126,20 +126,32 @@ MemoryDumpManager::MemoryDumpManager()
       is_coordinator_(false),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
-      dumper_registrations_ignored_for_testing_(false) {
+      dumper_registrations_ignored_for_testing_(false),
+      heap_profiling_enabled_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 
-  heap_profiling_enabled_ = CommandLine::InitializedForCurrentProcess()
-                                ? CommandLine::ForCurrentProcess()->HasSwitch(
-                                      switches::kEnableHeapProfiling)
-                                : false;
-
-  if (heap_profiling_enabled_)
-    AllocationContextTracker::SetCaptureEnabled(true);
+  // At this point the command line may not be initialized but we try to
+  // enable the heap profiler to capture allocations as soon as possible.
+  EnableHeapProfilingIfNeeded();
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
   TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+}
+
+void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
+  if (heap_profiling_enabled_)
+    return;
+
+  if (!CommandLine::InitializedForCurrentProcess() ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHeapProfiling))
+    return;
+
+  AllocationContextTracker::SetCaptureEnabled(true);
+  for (auto mdp : dump_providers_)
+    mdp->dump_provider->OnHeapProfilingEnabled(true);
+  heap_profiling_enabled_ = true;
 }
 
 void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
@@ -150,6 +162,7 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
     DCHECK(!delegate_);
     delegate_ = delegate;
     is_coordinator_ = is_coordinator;
+    EnableHeapProfilingIfNeeded();
   }
 
 // Enable the core dump providers.
