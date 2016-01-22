@@ -21,7 +21,7 @@ namespace ui {
 class DrmDisplayHostManager;
 class DrmCursor;
 class DrmGpuPlatformSupportHost;
-class DrmOverlayCandidatesHost;
+class DrmOverlayCandidatesHostCore;
 class DrmGpuWindow;
 class DrmWindowHostManager;
 class EventFactoryEvdev;
@@ -81,7 +81,7 @@ class DrmWindowHost : public PlatformWindow,
   void OnChannelEstablished() override;
   void OnChannelDestroyed() override;
 
-  void SetOverlayCandidatesHost(DrmOverlayCandidatesHost* host);
+  void SetOverlayCandidatesHost(DrmOverlayCandidatesHostCore* host);
 
  private:
   void SendBoundsChange();
@@ -92,7 +92,7 @@ class DrmWindowHost : public PlatformWindow,
   DrmCursor* cursor_;                                  // Not owned.
   DrmWindowHostManager* window_manager_;               // Not owned.
   DrmDisplayHostManager* display_manager_;             // Not owned.
-  DrmOverlayCandidatesHost* overlay_candidates_host_;  // Not owned.
+  DrmOverlayCandidatesHostCore* overlay_candidates_host_;  // Not owned.
 
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;

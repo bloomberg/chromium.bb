@@ -195,7 +195,8 @@ void DrmWindowHost::OnChannelEstablished() {
 void DrmWindowHost::OnChannelDestroyed() {
 }
 
-void DrmWindowHost::SetOverlayCandidatesHost(DrmOverlayCandidatesHost* host) {
+void DrmWindowHost::SetOverlayCandidatesHost(
+    DrmOverlayCandidatesHostCore* host) {
   overlay_candidates_host_ = host;
 }
 
