@@ -8,6 +8,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
@@ -313,6 +315,42 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
 
   // Advance the clock for more than the protection time.
   test_clock_.Advance(base::TimeDelta::FromMinutes(protection_time / 2 + 2));
+
+  // Should be able to discard the background tab now.
+  EXPECT_TRUE(tab_manager->DiscardTab());
+}
+
+// Makes sure that tabs using media devices are protected.
+IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  ASSERT_TRUE(tab_manager);
+
+  // Open 2 tabs, the second one being in the background.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIAboutURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  auto tab = browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Simulate that a video stream is now being captured.
+  content::MediaStreamDevice fake_media_device(
+      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_media_device",
+      "fake_media_device");
+  content::MediaStreamDevices video_devices(1, fake_media_device);
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaCaptureDevicesDispatcher::GetInstance();
+  dispatcher->SetTestVideoCaptureDevices(video_devices);
+  scoped_ptr<content::MediaStreamUI> video_stream_ui =
+      dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
+          tab, video_devices);
+  video_stream_ui->OnStarted(base::Closure());
+
+  // Should not be able to discard a tab.
+  ASSERT_FALSE(tab_manager->DiscardTab());
+
+  // Remove the video stream.
+  video_stream_ui.reset();
 
   // Should be able to discard the background tab now.
   EXPECT_TRUE(tab_manager->DiscardTab());

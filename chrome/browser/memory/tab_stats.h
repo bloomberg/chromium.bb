@@ -21,7 +21,7 @@ struct TabStats {
   ~TabStats();
   bool is_app;            // Browser window is an app.
   bool is_internal_page;  // Internal page, such as NTP or Settings.
-  bool is_playing_audio;
+  bool is_media;  // Playing audio, acessing cam/mic or mirroring display.
   bool is_pinned;
   bool is_selected;  // Selected in the currently active browser window.
   bool is_discarded;

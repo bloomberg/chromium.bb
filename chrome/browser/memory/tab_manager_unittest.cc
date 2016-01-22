@@ -126,7 +126,7 @@ TEST_F(TabManagerTest, Comparator) {
   {
     TabStats stats;
     stats.last_active = now;
-    stats.is_playing_audio = true;
+    stats.is_media = true;
     stats.child_process_host_id = kPlayingAudio;
     test_list.push_back(stats);
   }

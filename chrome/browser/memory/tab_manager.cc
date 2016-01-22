@@ -30,6 +30,8 @@
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -427,7 +429,7 @@ void TabManager::AddTabStats(BrowserList* browser_list,
         stats.is_app = is_browser_for_app;
         stats.is_internal_page =
             IsInternalPage(contents->GetLastCommittedURL());
-        stats.is_playing_audio = IsAudioTab(contents);
+        stats.is_media = IsMediaTab(contents);
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = GetWebContentsData(contents)->IsDiscarded();
@@ -505,10 +507,11 @@ bool TabManager::CanDiscardTab(int64_t target_web_contents_id) const {
   if (web_contents->GetPageImportanceSignals().had_form_interaction)
     return false;
 
-  // Do not discard tabs that are playing audio as it's too distruptive to the
-  // user experience. Note that tabs that have recently stopped playing audio by
-  // at least |kAudioProtectionTimeSeconds| seconds are protected as well.
-  if (IsAudioTab(web_contents))
+  // Do not discard tabs that are playing either playing audio or accessing the
+  // microphone or camera as it's too distruptive to the user experience. Note
+  // that tabs that have recently stopped playing audio by at least
+  // |kAudioProtectionTimeSeconds| seconds are protected as well.
+  if (IsMediaTab(web_contents))
     return false;
 
   // Do not discard PDFs as they might contain entry that is not saved and they
@@ -594,9 +597,18 @@ void TabManager::OnMemoryPressure(
   // calling PurgeBrowserMemory() before CRITICAL is reached.
 }
 
-bool TabManager::IsAudioTab(WebContents* contents) const {
+bool TabManager::IsMediaTab(WebContents* contents) const {
   if (contents->WasRecentlyAudible())
     return true;
+
+  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
+  if (media_indicator->IsCapturingUserMedia(contents) ||
+      media_indicator->IsBeingMirrored(contents)) {
+    return true;
+  }
+
   auto delta = NowTicks() - GetWebContentsData(contents)->LastAudioChangeTime();
   return delta < TimeDelta::FromSeconds(kAudioProtectionTimeSeconds);
 }
@@ -621,8 +633,8 @@ bool TabManager::CompareTabStats(TabStats first, TabStats second) {
 
   // Protect streaming audio and video conferencing tabs as these are similar to
   // active tabs.
-  if (first.is_playing_audio != second.is_playing_audio)
-    return first.is_playing_audio;
+  if (first.is_media != second.is_media)
+    return first.is_media;
 
   // Tab with internal web UI like NTP or Settings are good choices to discard,
   // so protect non-Web UI and let the other conditionals finish the sort.

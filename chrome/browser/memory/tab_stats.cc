@@ -10,7 +10,7 @@ namespace memory {
 TabStats::TabStats()
     : is_app(false),
       is_internal_page(false),
-      is_playing_audio(false),
+      is_media(false),
       is_pinned(false),
       is_selected(false),
       is_discarded(false),

@@ -167,8 +167,9 @@ class TabManager : public TabStripModelObserver {
                         int reason) override;
 
   // Returns true if the tab is currently playing audio or has played audio
-  // recently.
-  bool IsAudioTab(content::WebContents* contents) const;
+  // recently, or if the tab is currently accessing the camera, microphone or
+  // mirroring the display.
+  bool IsMediaTab(content::WebContents* contents) const;
 
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
