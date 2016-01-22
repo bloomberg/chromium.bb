@@ -938,6 +938,20 @@
       TRACE_EVENT_PHASE_DELETE_OBJECT, category_group, name,         \
       TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
 
+// Entering and leaving trace event contexts. |category_group| and |name|
+// specify the context category and type. |context| represents a snapshotted
+// context object.
+#define TRACE_EVENT_ENTER_CONTEXT(category_group, name, context)                      \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ENTER_CONTEXT, category_group, \
+        name, TRACE_ID_DONT_MANGLE(context),                                          \
+        TRACE_EVENT_FLAG_NONE)
+#define TRACE_EVENT_LEAVE_CONTEXT(category_group, name, context)                      \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_LEAVE_CONTEXT, category_group, \
+        name, TRACE_ID_DONT_MANGLE(context),                                          \
+        TRACE_EVENT_FLAG_NONE)
+#define TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context) \
+    INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context)
+
 // Macro to efficiently determine if a given category group is enabled.
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(category_group, ret)             \
   do {                                                                      \
@@ -1000,6 +1014,8 @@
 #define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
 #define TRACE_EVENT_PHASE_MEMORY_DUMP ('v')
 #define TRACE_EVENT_PHASE_MARK ('R')
+#define TRACE_EVENT_PHASE_ENTER_CONTEXT ('(')
+#define TRACE_EVENT_PHASE_LEAVE_CONTEXT (')')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
 #define TRACE_EVENT_FLAG_NONE (static_cast<unsigned int>(0))

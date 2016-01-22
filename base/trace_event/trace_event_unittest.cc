@@ -503,6 +503,12 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
 
     TRACE_EVENT1(kControlCharacters, kControlCharacters,
                  kControlCharacters, kControlCharacters);
+
+    TraceContext context(reinterpret_cast<TraceContext>(0x20151021));
+    TRACE_EVENT_ENTER_CONTEXT("all", "TRACE_EVENT_ENTER_CONTEXT call", context);
+    TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call", context);
+    TRACE_EVENT_SCOPED_CONTEXT("all", "TRACE_EVENT_SCOPED_CONTEXT call",
+                               context);
   }  // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)
@@ -850,6 +856,53 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
 
   EXPECT_FIND_(kControlCharacters);
   EXPECT_SUB_FIND_(kControlCharacters);
+
+  EXPECT_FIND_("TRACE_EVENT_ENTER_CONTEXT call");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("(", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("0x20151021", id);
+  }
+
+  EXPECT_FIND_("TRACE_EVENT_LEAVE_CONTEXT call");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ(")", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("0x20151021", id);
+  }
+
+  std::vector<const DictionaryValue*> scoped_context_calls =
+      FindTraceEntries(trace_parsed, "TRACE_EVENT_SCOPED_CONTEXT call");
+  EXPECT_EQ(2u, scoped_context_calls.size());
+  {
+    item = scoped_context_calls[0];
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("(", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("0x20151021", id);
+  }
+
+  {
+    item = scoped_context_calls[1];
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ(")", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("0x20151021", id);
+  }
 }
 
 void TraceManyInstantEvents(int thread_id, int num_events,

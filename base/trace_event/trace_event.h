@@ -336,6 +336,12 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
     }                                                                         \
   } while (0)
 
+// Implementation detail: internal macro to enter and leave a context based on
+// the current scope.
+#define INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context) \
+  trace_event_internal::TraceScopedContext INTERNAL_TRACE_EVENT_UID(       \
+      scoped_trace)(category_group, name, context)
+
 namespace trace_event_internal {
 
 // Specify these values when the corresponding argument of AddTraceEvent is not
@@ -883,10 +889,34 @@ class TraceEventSamplingStateScope {
   const char* previous_state_;
 };
 
+using TraceContext = const void*;
+
+class TraceScopedContext {
+ public:
+  TraceScopedContext(const char* category_group,
+                     const char* name,
+                     TraceContext context)
+      : category_group_(category_group), name_(name), context_(context) {
+    TRACE_EVENT_ENTER_CONTEXT(category_group_, name_, context_);
+  }
+
+  ~TraceScopedContext() {
+    TRACE_EVENT_LEAVE_CONTEXT(category_group_, name_, context_);
+  }
+
+ private:
+  const char* category_group_;
+  const char* name_;
+  TraceContext context_;
+  DISALLOW_COPY_AND_ASSIGN(TraceScopedContext);
+};
+
 }  // namespace trace_event_internal
 
 namespace base {
 namespace trace_event {
+
+using trace_event_internal::TraceContext;
 
 template<typename IDType> class TraceScopedTrackableObject {
  public:
