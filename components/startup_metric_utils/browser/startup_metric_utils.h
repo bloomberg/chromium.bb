@@ -32,11 +32,13 @@ enum StartupTemperature {
   // mostly already resident in memory and effectively no hard faults were
   // observed.
   WARM_STARTUP_TEMPERATURE = 1,
-  // The startup type couldn't quite be classified as warm of cold, but rather
+  // The startup type couldn't quite be classified as warm or cold, but rather
   // was somewhere in between.
-  UNCERTAIN_STARTUP_TEMPERATURE = 2,
-  // This must be last.
-  STARTUP_TEMPERATURE_MAX
+  LUKEWARM_STARTUP_TEMPERATURE = 2,
+  // This must be after all meaningful values.
+  STARTUP_TEMPERATURE_COUNT,
+  // Startup temperature wasn't yet determined.
+  UNDETERMINED_STARTUP_TEMPERATURE
 };
 
 #if defined(OS_WIN)

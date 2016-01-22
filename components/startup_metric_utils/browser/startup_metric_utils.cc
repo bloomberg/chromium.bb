@@ -52,7 +52,7 @@ base::LazyInstance<base::TimeTicks>::Leaky g_renderer_main_entry_point_ticks =
 base::LazyInstance<base::Time>::Leaky g_browser_main_entry_point_time =
     LAZY_INSTANCE_INITIALIZER;
 
-StartupTemperature g_startup_temperature = UNCERTAIN_STARTUP_TEMPERATURE;
+StartupTemperature g_startup_temperature = UNDETERMINED_STARTUP_TEMPERATURE;
 
 #if defined(OS_WIN)
 
@@ -108,7 +108,7 @@ typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
 
 // Helper macro for splitting out an UMA histogram based on cold or warm start.
 // |type| is the histogram type, and corresponds to an UMA macro like
-// UMA_HISTOGRAM_LONG_TIMES. It must be itself be a macro that only takes two
+// UMA_HISTOGRAM_LONG_TIMES. It must itself be a macro that only takes two
 // parameters.
 // |basename| is the basename of the histogram. A histogram of this name will
 // always be recorded to. If the startup is either cold or warm then a value
@@ -118,17 +118,30 @@ typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
 // will be evaluated exactly once and cached, so side effects are not an issue.
 // A metric logged using this macro must have an affected-histogram entry in the
 // definition of the StartupTemperature suffix in histograms.xml.
-#define UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename, value_expr) \
-  {                                                                        \
-    const auto kValue = value_expr;                                        \
-    /* Always record to the base histogram. */                             \
-    type(basename, kValue);                                                \
-    /* Record to the cold/warm suffixed histogram as appropriate. */       \
-    if (g_startup_temperature == COLD_STARTUP_TEMPERATURE) {               \
-      type(basename ".ColdStartup", kValue);                               \
-    } else if (g_startup_temperature == WARM_STARTUP_TEMPERATURE) {        \
-      type(basename ".WarmStartup", kValue);                               \
-    }                                                                      \
+// This macro must only be used in code that runs after |g_startup_temperature|
+// has been initialized.
+#define UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename, value_expr)    \
+  {                                                                           \
+    const auto kValue = value_expr;                                           \
+    /* Always record to the base histogram. */                                \
+    type(basename, kValue);                                                   \
+    /* Record to the cold/warm/lukewarm suffixed histogram as appropriate. */ \
+    switch (g_startup_temperature) {                                          \
+      case COLD_STARTUP_TEMPERATURE:                                          \
+        type(basename ".ColdStartup", kValue);                                \
+        break;                                                                \
+      case WARM_STARTUP_TEMPERATURE:                                          \
+        type(basename ".WarmStartup", kValue);                                \
+        break;                                                                \
+      case LUKEWARM_STARTUP_TEMPERATURE:                                      \
+        type(basename ".LukewarmStartup", kValue);                            \
+        break;                                                                \
+      case UNDETERMINED_STARTUP_TEMPERATURE:                                  \
+        break;                                                                \
+      case STARTUP_TEMPERATURE_COUNT:                                         \
+        NOTREACHED();                                                         \
+        break;                                                                \
+    }                                                                         \
   }
 
 #define UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(                     \
@@ -171,8 +184,6 @@ void RecordSystemUptimeHistogram() {
 // On Windows, records the number of hard-faults that have occurred in the
 // current chrome.exe process since it was started. This is a nop on other
 // platforms.
-// crbug.com/476923
-// TODO(chrisha): If this proves useful, use it to split startup stats in two.
 void RecordHardFaultHistogram(bool is_first_run) {
 #if defined(OS_WIN)
   uint32_t hard_fault_count = 0;
@@ -198,16 +209,18 @@ void RecordHardFaultHistogram(bool is_first_run) {
   }
 
   // Determine the startup type based on the number of observed hard faults.
-  DCHECK_EQ(UNCERTAIN_STARTUP_TEMPERATURE, g_startup_temperature);
+  DCHECK_EQ(UNDETERMINED_STARTUP_TEMPERATURE, g_startup_temperature);
   if (hard_fault_count < WARM_START_HARD_FAULT_COUNT_THRESHOLD) {
     g_startup_temperature = WARM_STARTUP_TEMPERATURE;
   } else if (hard_fault_count >= COLD_START_HARD_FAULT_COUNT_THRESHOLD) {
     g_startup_temperature = COLD_STARTUP_TEMPERATURE;
+  } else {
+    g_startup_temperature = LUKEWARM_STARTUP_TEMPERATURE;
   }
 
   // Record the startup 'temperature'.
   UMA_HISTOGRAM_ENUMERATION(
-      "Startup.Temperature", g_startup_temperature, STARTUP_TEMPERATURE_MAX);
+      "Startup.Temperature", g_startup_temperature, STARTUP_TEMPERATURE_COUNT);
 #endif  // defined(OS_WIN)
 }
 
