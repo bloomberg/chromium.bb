@@ -330,14 +330,14 @@ void LayoutTableSection::populateSpanningRowsHeightFromCell(LayoutTableCell* cel
     spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing += borderSpacingForRow(rowIndex + rowSpan - 1);
 }
 
-void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCell* cell, int totalPercent, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
+void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCell* cell, float totalPercent, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
 {
     if (!extraRowSpanningHeight || !totalPercent)
         return;
 
     const unsigned rowSpan = cell->rowSpan();
     const unsigned rowIndex = cell->rowIndex();
-    int percent = std::min(totalPercent, 100);
+    float percent = std::min(totalPercent, 100.0f);
     const int tableHeight = m_rowPos[m_grid.size()] + extraRowSpanningHeight;
 
     // Our algorithm matches Firefox. Extra spanning height would be distributed Only in first percent height rows
@@ -347,9 +347,7 @@ void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCe
         if (percent > 0 && extraRowSpanningHeight > 0) {
             // TODO(alancutter): Make this work correctly for calc lengths.
             if (m_grid[row].logicalHeight.hasPercent()) {
-                int toAdd = (tableHeight * m_grid[row].logicalHeight.percent() / 100) - rowsHeight[row - rowIndex];
-                // FIXME: Note that this is wrong if we have a percentage above 100% and may make us grow
-                // above the available space.
+                int toAdd = (tableHeight * std::min(m_grid[row].logicalHeight.percent(), percent) / 100) - rowsHeight[row - rowIndex];
 
                 toAdd = std::max(std::min(toAdd, extraRowSpanningHeight), 0);
                 accumulatedPositionIncrease += toAdd;
