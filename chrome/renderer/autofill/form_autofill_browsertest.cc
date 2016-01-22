@@ -99,6 +99,10 @@ const char kFormHtml[] =
     "    <OPTION value='CA' selected>California</OPTION>"
     "    <OPTION value='TX'>Texas</OPTION>"
     "  </SELECT>"
+    "  <SELECT id='select-displaynone' style='display:none'>"
+    "    <OPTION value='CA' selected>California</OPTION>"
+    "    <OPTION value='TX'>Texas</OPTION>"
+    "  </SELECT>"
     "  <TEXTAREA id='textarea'></TEXTAREA>"
     "  <TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
     "  <INPUT type='submit' name='reply-send' value='Send'/>"
@@ -130,6 +134,10 @@ const char kUnownedFormHtml[] =
     "  <OPTION value='TX'>Texas</OPTION>"
     "</SELECT>"
     "<SELECT id='select-unchanged'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<SELECT id='select-displaynone' style='display:none'>"
     "  <OPTION value='CA' selected>California</OPTION>"
     "  <OPTION value='TX'>Texas</OPTION>"
     "</SELECT>"
@@ -165,6 +173,10 @@ const char kUnownedUntitledFormHtml[] =
     "  <OPTION value='CA' selected>California</OPTION>"
     "  <OPTION value='TX'>Texas</OPTION>"
     "</SELECT>"
+    "<SELECT id='select-displaynone' style='display:none'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
     "<TEXTAREA id='textarea'></TEXTAREA>"
     "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
     "<INPUT type='submit' name='reply-send' value='Send'/>";
@@ -195,6 +207,10 @@ const char kUnownedNonEnglishFormHtml[] =
     "  <OPTION value='TX'>Texas</OPTION>"
     "</SELECT>"
     "<SELECT id='select-unchanged'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<SELECT id='select-displaynone' style='display:none'>"
     "  <OPTION value='CA' selected>California</OPTION>"
     "  <OPTION value='TX'>Texas</OPTION>"
     "</SELECT>"
@@ -478,6 +494,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
       // Select fields should not be autofilled if no new value is passed from
       // autofill profile. The existing value should not be overriden.
       {"select-one", "select-unchanged", "CA", "", false, "CA", "CA"},
+      // Select fields that are not focusable should always be filled.
+      {"select-one", "select-displaynone", "CA", "", true, "CA", "CA"},
       // Regular textarea elements should be autofilled.
       {"textarea",
         "textarea",
@@ -552,6 +570,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
       // Select fields should not be previewed if no suggestion is passed from
       // autofill profile.
       {"select-one", "select-unchanged", "CA", "", false, "", ""},
+      // Select fields that are not focusable should always be filled.
+      {"select-one", "select-displaynone", "CA", "", true, "CA", "CA"},
       // Normal textarea elements should be previewed.
       {"textarea",
         "textarea",
@@ -2684,6 +2704,8 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
       // Select fields should not be autofilled if no new value is passed from
       // autofill profile. The existing value should not be overriden.
       {"select-one", "select-unchanged", "CA", "", false, "CA", "CA"},
+      // Select fields that are not focusable should always be filled.
+      {"select-one", "select-displaynone", "CA", "", true, "CA", "CA"},
       // Regular textarea elements should be autofilled.
       {"textarea",
        "textarea",
@@ -3852,7 +3874,6 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
   expected.name = ASCIIToUTF16("dayphone4");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
 }
-
 
 TEST_F(FormAutofillTest, MaxLengthFields) {
   LoadHTML("<FORM name='TestForm' action='http://cnn.com' method='post'>"
