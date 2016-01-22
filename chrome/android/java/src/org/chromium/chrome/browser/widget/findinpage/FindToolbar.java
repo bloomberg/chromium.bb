@@ -220,6 +220,8 @@ public class FindToolbar extends LinearLayout
         mFindQuery.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (mFindInPageBridge == null) return;
+
                 mAccessibilityDidActivateResult = false;
                 setPrevNextEnabled(s.length() > 0);
 
@@ -259,6 +261,8 @@ public class FindToolbar extends LinearLayout
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && event.getAction() == KeyEvent.ACTION_UP) return false;
+
+                if (mFindInPageBridge == null) return false;
 
                 // Only trigger a new find if the text was set programmatically.
                 // Otherwise just revisit the current active match.
@@ -308,6 +312,8 @@ public class FindToolbar extends LinearLayout
     }
 
     private void hideKeyboardAndStartFinding(boolean forward) {
+        if (mFindInPageBridge == null) return;
+
         final String findQuery = mFindQuery.getText().toString();
         if (findQuery.length() == 0) return;
 
@@ -369,6 +375,8 @@ public class FindToolbar extends LinearLayout
     @Override
     public void onFindResult(FindNotificationDetails result) {
         if (mResultBar != null) mResultBar.mWaitingForActivateAck = false;
+
+        assert mFindInPageBridge != null;
 
         if ((result.activeMatchOrdinal == -1 || result.numberOfMatches == 1)
                 && !result.finalUpdate) {
@@ -571,6 +579,7 @@ public class FindToolbar extends LinearLayout
         }
 
         mFindInPageBridge.destroy();
+        mFindInPageBridge = null;
         mActive = false;
     }
 
@@ -605,6 +614,8 @@ public class FindToolbar extends LinearLayout
      * Restores the last text searched in this tab, or the global last search.
      */
     private void initializeFindText() {
+        assert mFindInPageBridge != null;
+
         mSettingFindTextProgrammatically = true;
         String findText = null;
         if (mSettingFindTextProgrammatically) {
@@ -631,6 +642,8 @@ public class FindToolbar extends LinearLayout
     private void setResultsBarVisibility(boolean visibility) {
         if (visibility && mResultBar == null && mCurrentTab != null
                 && mCurrentTab.getContentViewCore() != null) {
+            assert mFindInPageBridge != null;
+
             mResultBar = new FindResultBar(getContext(), mCurrentTab, mFindInPageBridge);
         } else if (!visibility) {
             if (mResultBar != null) {
