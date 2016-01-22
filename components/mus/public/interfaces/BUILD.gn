@@ -10,6 +10,7 @@ mojom("interfaces") {
     "command_buffer.mojom",
     "compositor_frame.mojom",
     "cursor.mojom",
+    "display.mojom",
     "gpu.mojom",
     "gpu_capabilities.mojom",
     "input_event_constants.mojom",

@@ -81,6 +81,7 @@ class WindowResizeHelperMac;
 }
 
 namespace views {
+class ScreenMus;
 class WindowManagerConnection;
 }
 
@@ -233,6 +234,7 @@ class BASE_EXPORT ThreadRestrictions {
 #if !defined(OFFICIAL_BUILD)
   friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
 #endif
+  friend class views::ScreenMus;
   friend class views::WindowManagerConnection;
 // END USAGE THAT NEEDS TO BE FIXED.
 

@@ -312,6 +312,7 @@ class TestDisplayManager : public DisplayManager {
   void SetViewportSize(const gfx::Size& size) override {}
   void SetTitle(const base::string16& title) override {}
   void SetCursorById(int32_t cursor) override { *cursor_id_storage_ = cursor; }
+  mojom::Rotation GetRotation() override { return mojom::Rotation::VALUE_0; }
   const mojom::ViewportMetrics& GetViewportMetrics() override {
     return display_metrices_;
   }
