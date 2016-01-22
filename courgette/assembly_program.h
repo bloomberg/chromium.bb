@@ -151,7 +151,8 @@ class AssemblyProgram {
   // otherwise returns NULL.
   Label* InstructionRel32Label(const Instruction* instruction) const;
 
-  // Trim underused labels
+  // Removes underused Labels. Thresholds used (may be 0, i.e., no trimming) is
+  // dependent on architecture. Returns true on success, and false otherwise.
   CheckBool TrimLabels();
 
  private:

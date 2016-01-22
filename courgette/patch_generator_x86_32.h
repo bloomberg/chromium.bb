@@ -82,19 +82,6 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
       return new_parse_status;
     }
 
-    // Trim labels below a certain threshold
-    Status trim_old_status = TrimLabels(old_program);
-    if (trim_old_status != C_OK) {
-      DeleteAssemblyProgram(old_program);
-      return trim_old_status;
-    }
-
-    Status trim_new_status = TrimLabels(new_program);
-    if (trim_new_status != C_OK) {
-      DeleteAssemblyProgram(new_program);
-      return trim_new_status;
-    }
-
     EncodedProgram* old_encoded = NULL;
     Status old_encode_status = Encode(old_program, &old_encoded);
     if (old_encode_status != C_OK) {

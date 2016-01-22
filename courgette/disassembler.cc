@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
-
+#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
 #include "courgette/disassembler_elf_32_arm.h"
@@ -76,24 +76,22 @@ Status DetectExecutableType(const void* buffer, size_t length,
 
 Status ParseDetectedExecutable(const void* buffer, size_t length,
                                AssemblyProgram** output) {
-  *output = NULL;
+  *output = nullptr;
 
-  Disassembler* disassembler = DetectDisassembler(buffer, length);
-
-  if (!disassembler) {
+  scoped_ptr<Disassembler> disassembler(DetectDisassembler(buffer, length));
+  if (!disassembler)
     return C_INPUT_NOT_RECOGNIZED;
-  }
 
-  AssemblyProgram* program = new AssemblyProgram(disassembler->kind());
+  scoped_ptr<AssemblyProgram> program(
+      new AssemblyProgram(disassembler->kind()));
 
-  if (!disassembler->Disassemble(program)) {
-    delete program;
-    delete disassembler;
+  if (!disassembler->Disassemble(program.get()))
     return C_DISASSEMBLY_FAILED;
-  }
 
-  delete disassembler;
-  *output = program;
+  if (!program->TrimLabels())
+    return C_TRIM_FAILED;
+
+  *output = program.release();
   return C_OK;
 }
 

@@ -109,10 +109,6 @@ Status DetectExecutableType(const void* buffer, size_t length,
 Status ParseDetectedExecutable(const void* buffer, size_t length,
                                AssemblyProgram** output);
 
-// Trims labels used fewer than a given number of times from an
-// assembly program in-place.
-Status TrimLabels(AssemblyProgram* program);
-
 // Converts |program| into encoded form, returning it as |*output|.
 // Returns C_OK if succeeded, otherwise returns an error status and
 // sets |*output| to NULL

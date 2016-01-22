@@ -530,13 +530,6 @@ CheckBool AssemblyProgram::TrimLabels() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Status TrimLabels(AssemblyProgram* program) {
-  if (program->TrimLabels())
-    return C_OK;
-  else
-    return C_TRIM_FAILED;
-}
-
 Status Encode(AssemblyProgram* program, EncodedProgram** output) {
   *output = NULL;
   EncodedProgram *encoded = program->Encode();

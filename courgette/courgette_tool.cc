@@ -82,14 +82,7 @@ void Disassemble(const base::FilePath& input_file,
                                          &program);
 
   if (parse_status != courgette::C_OK)
-    Problem("Can't parse input.");
-
-  // Trim labels below a certain threshold
-  const courgette::Status trim_status = TrimLabels(program);
-  if (trim_status != courgette::C_OK) {
-    courgette::DeleteAssemblyProgram(program);
-    Problem("Can't trim labels.");
-  }
+    Problem("Can't parse input (code = %d).", parse_status);
 
   courgette::EncodedProgram* encoded = NULL;
   const courgette::Status encode_status = Encode(program, &encoded);
@@ -172,7 +165,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
                                          program_buffer.length(),
                                          &program);
   if (parse_program_status != courgette::C_OK)
-    Problem("Can't parse program input.");
+    Problem("Can't parse program input (code = %d).", parse_program_status);
 
   courgette::AssemblyProgram* model = NULL;
   const courgette::Status parse_model_status =
@@ -180,7 +173,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
                                          model_buffer.length(),
                                          &model);
   if (parse_model_status != courgette::C_OK)
-    Problem("Can't parse model input.");
+    Problem("Can't parse model input (code = %d).", parse_model_status);
 
   const courgette::Status adjust_status = Adjust(*model, program);
   if (adjust_status != courgette::C_OK)
@@ -228,7 +221,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
                                          model_buffer.length(),
                                          &model);
   if (parse_model_status != courgette::C_OK)
-    Problem("Can't parse model input.");
+    Problem("Can't parse model input (code = %d).", parse_model_status);
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_program_status =
@@ -236,7 +229,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
                                          program_buffer.length(),
                                          &program);
   if (parse_program_status != courgette::C_OK)
-    Problem("Can't parse program input.");
+    Problem("Can't parse program input (code = %d).", parse_program_status);
 
   if (adjust) {
     const courgette::Status adjust_status = Adjust(*model, program);

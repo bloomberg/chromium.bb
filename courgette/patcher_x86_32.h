@@ -55,13 +55,6 @@ class PatcherX86_32 : public TransformationPatcher {
     if (status != C_OK)
       return status;
 
-    // Trim labels below a certain threshold
-    Status trim_status = TrimLabels(program);
-    if (trim_status != C_OK) {
-      DeleteAssemblyProgram(program);
-      return trim_status;
-    }
-
     EncodedProgram* encoded = NULL;
     status = Encode(program, &encoded);
     DeleteAssemblyProgram(program);
