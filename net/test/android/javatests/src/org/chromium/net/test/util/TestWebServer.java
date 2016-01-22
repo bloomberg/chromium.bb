@@ -510,6 +510,11 @@ public class TestWebServer {
         }
         StatusLine sl = httpResponse.getStatusLine();
         Log.i(TAG, sl.getStatusCode() + "(" + sl.getReasonPhrase() + ")");
+
+        if (path.endsWith(".js")) {
+            httpResponse.addHeader("Content-Type", "application/javascript");
+        }
+
         setDateHeaders(httpResponse);
         return httpResponse;
     }

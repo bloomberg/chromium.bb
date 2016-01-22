@@ -66,6 +66,10 @@ class AwContentsIoThreadClient {
   static scoped_ptr<AwContentsIoThreadClient> FromID(int render_process_id,
                                                      int render_frame_id);
 
+  // Returns the global thread client for service worker related callbacks.
+  // An empty scoped_ptr is a valid return value.
+  static scoped_ptr<AwContentsIoThreadClient> GetServiceWorkerIoThreadClient();
+
   // Called on the IO thread when a subframe is created.
   static void SubFrameCreated(int render_process_id,
                               int parent_render_frame_id,

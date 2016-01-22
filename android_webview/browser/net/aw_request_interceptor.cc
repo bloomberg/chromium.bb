@@ -114,6 +114,29 @@ class ShouldInterceptRequestAdaptor
   DISALLOW_COPY_AND_ASSIGN(ShouldInterceptRequestAdaptor);
 };
 
+scoped_ptr<AwContentsIoThreadClient> GetCorrespondingIoThreadClient(
+    net::URLRequest* request) {
+  int render_process_id, render_frame_id;
+  if (!content::ResourceRequestInfo::GetRenderFrameForRequest(
+      request, &render_process_id, &render_frame_id)) {
+    // When there is no associated render frame, or the frame_id is
+    // invalid we assume the request come from a service worker.
+    // TODO: add a more explicit service worker check.
+    return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
+  }
+
+  scoped_ptr<AwContentsIoThreadClient> io_thread_client =
+      AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
+
+  if (!io_thread_client) {
+    // This means the frame id is invalid/not set, this currently happens
+    // with e.g. fetch requests coming from service workers.
+    return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
+  }
+
+  return io_thread_client;
+}
+
 }  // namespace
 
 AwRequestInterceptor::AwRequestInterceptor() {}
@@ -129,14 +152,8 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
   if (request->GetUserData(kRequestAlreadyHasJobDataKey))
     return nullptr;
 
-  int render_process_id, render_frame_id;
-  if (!content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request, &render_process_id, &render_frame_id)) {
-    return nullptr;
-  }
-
   scoped_ptr<AwContentsIoThreadClient> io_thread_client =
-      AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
+      GetCorrespondingIoThreadClient(request);
 
   if (!io_thread_client)
     return nullptr;

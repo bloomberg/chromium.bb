@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_version_info_values.h"
+#include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -101,6 +102,17 @@ ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env,
                                               const JavaParamRef<jclass>&) {
   return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION);
 }
+
+// static
+void SetServiceWorkerIoThreadClient(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&,
+    const base::android::JavaParamRef<jobject>& io_thread_client,
+    const base::android::JavaParamRef<jobject>& browser_context) {
+  AwContentsIoThreadClientImpl::SetServiceWorkerIoThreadClient(
+      io_thread_client, browser_context);
+}
+
 
 bool RegisterAwContentsStatics(JNIEnv* env) {
   return RegisterNativesImpl(env);

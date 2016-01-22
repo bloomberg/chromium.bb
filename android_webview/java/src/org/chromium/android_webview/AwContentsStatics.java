@@ -90,6 +90,11 @@ public class AwContentsStatics {
         return nativeGetProductVersion();
     }
 
+    public static void setServiceWorkerIoThreadClient(AwContentsIoThreadClient ioThreadClient,
+            AwBrowserContext browserContext) {
+        nativeSetServiceWorkerIoThreadClient(ioThreadClient, browserContext);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -99,4 +104,6 @@ public class AwContentsStatics {
     private static native String nativeGetUnreachableWebDataUrl();
     private static native void nativeSetLegacyCacheRemovalDelayForTest(long timeoutMs);
     private static native String nativeGetProductVersion();
+    private static native void nativeSetServiceWorkerIoThreadClient(
+            AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
 }

@@ -27,10 +27,13 @@ public class AwBrowserContext {
     private HttpAuthDatabase mHttpAuthDatabase;
     private AwMessagePortService mMessagePortService;
     private AwMetricsServiceClient mMetricsServiceClient;
+    private AwServiceWorkerController mServiceWorkerController;
+    private Context mApplicationContext;
 
     public AwBrowserContext(SharedPreferences sharedPreferences, Context applicationContext) {
         mSharedPreferences = sharedPreferences;
         mMetricsServiceClient = new AwMetricsServiceClient(applicationContext);
+        mApplicationContext = applicationContext;
     }
 
     public AwGeolocationPermissions getGeolocationPermissions() {
@@ -63,6 +66,13 @@ public class AwBrowserContext {
 
     public AwMetricsServiceClient getMetricsServiceClient() {
         return mMetricsServiceClient;
+    }
+
+    public AwServiceWorkerController getServiceWorkerController() {
+        if (mServiceWorkerController == null) {
+            mServiceWorkerController = new AwServiceWorkerController(mApplicationContext, this);
+        }
+        return mServiceWorkerController;
     }
 
     /**

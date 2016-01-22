@@ -40,6 +40,12 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   static void Associate(content::WebContents* web_contents,
                         const base::android::JavaRef<jobject>& jclient);
 
+  // Sets the |jclient| java instance to which service worker related
+  // callbacks should be delegated.
+  static void SetServiceWorkerIoThreadClient(
+      const base::android::JavaRef<jobject>& jclient,
+      const base::android::JavaRef<jobject>& browser_context);
+
   // Either |pending_associate| is true or |jclient| holds a non-null
   // Java object.
   AwContentsIoThreadClientImpl(bool pending_associate,
