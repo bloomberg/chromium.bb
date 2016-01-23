@@ -573,7 +573,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
   EXPECT_EQ(0ul, full_hashes.size());
 }
 
-// Adds an entry with an SOCIAL_ENGINEERING threat type.
+// Adds an entry with a SOCIAL_ENGINEERING threat type.
 TEST_F(SafeBrowsingProtocolManagerTest,
     TestParseV4HashResponseSocialEngineeringThreatType) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));

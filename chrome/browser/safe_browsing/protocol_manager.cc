@@ -75,6 +75,36 @@ base::TimeDelta GetNextUpdateIntervalFromFinch() {
   return base::TimeDelta::FromMinutes(finch_next_update_interval_minutes);
 }
 
+// Enumerate V4 parsing failures for histogramming purposes.  DO NOT CHANGE
+// THE ORDERING OF THESE VALUES.
+enum ParseResultType {
+  // Error parsing the protocol buffer from a string.
+  PARSE_FROM_STRING_ERROR = 0,
+
+  // A match in the response had an unexpected THREAT_ENTRY_TYPE.
+  UNEXPECTED_THREAT_ENTRY_TYPE_ERROR = 1,
+
+  // A match in the response had an unexpected THREAT_TYPE.
+  UNEXPECTED_THREAT_TYPE_ERROR = 2,
+
+  // A match in the response had an unexpected PLATFORM_TYPE.
+  UNEXPECTED_PLATFORM_TYPE_ERROR = 3,
+
+  // A match in teh response contained no metadata where metadata was
+  // expected.
+  NO_METADATA_ERROR = 4,
+
+  // Memory space for histograms is determined by the max.  ALWAYS
+  // ADD NEW VALUES BEFORE THIS ONE.
+  PARSE_GET_HASH_RESULT_MAX = 5
+};
+
+// Record parsing errors of a GetHash result.
+void RecordParseGetHashResult(ParseResultType result_type) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.ParseV4HashResult", result_type,
+                            PARSE_GET_HASH_RESULT_MAX);
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -314,7 +344,7 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
   FindFullHashesResponse response;
 
   if (!response.ParseFromString(data)) {
-    // TODO(kcarattini): Add UMA.
+    RecordParseGetHashResult(PARSE_FROM_STRING_ERROR);
     return false;
   }
 
@@ -336,7 +366,8 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
     if (!(match.has_threat_entry_type() &&
           match.threat_entry_type() == URL_EXPRESSION &&
           match.has_threat())) {
-      continue;
+      RecordParseGetHashResult(UNEXPECTED_THREAT_ENTRY_TYPE_ERROR);
+      return false;
     }
 
     // Fill in the full hash.
@@ -350,19 +381,27 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
     }
 
     // Different threat types will handle the metadata differently.
-    if (match.has_threat_type() && match.threat_type() == API_ABUSE &&
-        match.has_platform_type() &&
-        match.platform_type() == CHROME_PLATFORM &&
-        match.has_threat_entry_metadata()) {
-      // For API Abuse, store a csv of the returned permissions.
-      for (const ThreatEntryMetadata::MetadataEntry& m :
-               match.threat_entry_metadata().entries()) {
-        if (m.key() == "permission") {
-          result.metadata += m.value() + ",";
+    if (match.has_threat_type() && match.threat_type() == API_ABUSE) {
+      if (match.has_platform_type() &&
+          match.platform_type() == CHROME_PLATFORM) {
+        if (match.has_threat_entry_metadata()) {
+          // For API Abuse, store a csv of the returned permissions.
+          for (const ThreatEntryMetadata::MetadataEntry& m :
+                   match.threat_entry_metadata().entries()) {
+            if (m.key() == "permission") {
+              result.metadata += m.value() + ",";
+            }
+          }
+        } else {
+          RecordParseGetHashResult(NO_METADATA_ERROR);
+          return false;
         }
+      } else {
+        RecordParseGetHashResult(UNEXPECTED_PLATFORM_TYPE_ERROR);
+        return false;
       }
     } else {
-      // TODO(kcarattini): Add UMA for unexpected threat type match.
+      RecordParseGetHashResult(UNEXPECTED_THREAT_TYPE_ERROR);
       return false;
     }
 

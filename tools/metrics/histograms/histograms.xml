@@ -40555,6 +40555,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.ParseV4HashResult"
+    enum="SafeBrowsingParseV4HashResult">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    Track the parsing results of a status 200 GetV4Hash request.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.Pref.Extended" enum="BooleanEnabled">
   <owner>nparker@chromium.org</owner>
   <summary>
@@ -76190,6 +76198,14 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SadTabKind" type="int">
   <int value="0" label="Crash (Aw, Snap!)"/>
   <int value="1" label="Kill (He's dead, Jim!)"/>
+</enum>
+
+<enum name="SafeBrowsingParseV4HashResult" type="int">
+  <int value="0" label="PARSE_FROM_STRING_ERROR"/>
+  <int value="1" label="UNEXPECTED_THREAT_ENTRY_TYPE_ERROR"/>
+  <int value="2" label="UNEXPECTED_THREAT_TYPE_ERROR"/>
+  <int value="3" label="UNEXPECTED_PLATFORM_TYPE_ERROR"/>
+  <int value="4" label="NO_METADATA_ERROR"/>
 </enum>
 
 <enum name="SavePasswordPromptResponseType" type="int">
