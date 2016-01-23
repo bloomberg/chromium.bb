@@ -201,8 +201,11 @@ int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
   }
 
   int thickness = FrameBorderThickness(restored);
+  // The tab top inset is equal to the height of any shadow region above the
+  // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
+  // shadow region off the top of the screen but leave the top stroke.
   if (!restored && delegate_->IsTabStripVisible() && IsTitleBarCondensed())
-    thickness -= kTabstripTopShadowThickness;
+    thickness -= GetLayoutInsets(TAB).top() - 1;
   return thickness;
 }
 
