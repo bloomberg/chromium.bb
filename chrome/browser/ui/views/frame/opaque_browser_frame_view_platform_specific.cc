@@ -17,7 +17,7 @@ OpaqueBrowserFrameViewPlatformSpecific*
 OpaqueBrowserFrameViewPlatformSpecific::Create(
     OpaqueBrowserFrameView* view,
     OpaqueBrowserFrameViewLayout* layout,
-    Profile* profile) {
+    ThemeService* theme_service) {
   return new OpaqueBrowserFrameViewPlatformSpecific();
 }
 

@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
@@ -144,7 +145,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   UpdateAvatar();
 
   platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
-      this, layout_, browser_view->browser()->profile()));
+      this, layout_,
+      ThemeServiceFactory::GetForProfile(browser_view->browser()->profile())));
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {

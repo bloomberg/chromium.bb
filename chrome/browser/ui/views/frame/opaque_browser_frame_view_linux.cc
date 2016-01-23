@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_linux.h"
 
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -16,10 +15,10 @@
 OpaqueBrowserFrameViewLinux::OpaqueBrowserFrameViewLinux(
     OpaqueBrowserFrameView* view,
     OpaqueBrowserFrameViewLayout* layout,
-    Profile* profile)
+    ThemeService* theme_service)
     : view_(view),
       layout_(layout),
-      theme_service_(ThemeServiceFactory::GetForProfile(profile)) {
+      theme_service_(theme_service) {
   views::LinuxUI* ui = views::LinuxUI::instance();
   if (ui)
     ui->AddWindowButtonOrderObserver(this);
@@ -61,8 +60,8 @@ void OpaqueBrowserFrameViewLinux::OnWindowButtonOrderingChange(
 // static
 OpaqueBrowserFrameViewPlatformSpecific*
 OpaqueBrowserFrameViewPlatformSpecific::Create(
-      OpaqueBrowserFrameView* view,
-      OpaqueBrowserFrameViewLayout* layout,
-      Profile* profile) {
-  return new OpaqueBrowserFrameViewLinux(view, layout, profile);
+    OpaqueBrowserFrameView* view,
+    OpaqueBrowserFrameViewLayout* layout,
+    ThemeService* theme_service) {
+  return new OpaqueBrowserFrameViewLinux(view, layout, theme_service);
 }

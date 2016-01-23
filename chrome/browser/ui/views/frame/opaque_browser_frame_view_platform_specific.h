@@ -7,7 +7,7 @@
 
 class OpaqueBrowserFrameView;
 class OpaqueBrowserFrameViewLayout;
-class Profile;
+class ThemeService;
 
 // Handles platform specific configuration concepts.
 class OpaqueBrowserFrameViewPlatformSpecific {
@@ -26,7 +26,7 @@ class OpaqueBrowserFrameViewPlatformSpecific {
   static OpaqueBrowserFrameViewPlatformSpecific* Create(
       OpaqueBrowserFrameView* view,
       OpaqueBrowserFrameViewLayout* layout,
-      Profile* profile);
+      ThemeService* theme_service);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_PLATFORM_SPECIFIC_H_
