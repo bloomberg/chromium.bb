@@ -101,4 +101,66 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
   EXPECT_EQ(IDLE, job->priority());
 }
 
+TEST_P(HttpStreamFactoryImplRequestTest, DelayMainJob) {
+  SpdySessionDependencies session_deps(GetParam(),
+                                       ProxyService::CreateDirect());
+
+  scoped_ptr<HttpNetworkSession> session =
+      SpdySessionDependencies::SpdyCreateSession(&session_deps);
+
+  StaticSocketDataProvider socket_data;
+  socket_data.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+
+  HttpStreamFactoryImpl* factory =
+      static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory());
+
+  DoNothingRequestDelegate request_delegate;
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.google.com");
+
+  HttpStreamFactoryImpl::Request request(
+      request_info.url, factory, &request_delegate, NULL, BoundNetLog(),
+      HttpStreamFactoryImpl::Request::HTTP_STREAM);
+
+  HostPortPair server = HostPortPair::FromURL(request_info.url);
+  GURL original_url = factory->ApplyHostMappingRules(request_info.url, &server);
+
+  HttpStreamFactoryImpl::Job* job = new HttpStreamFactoryImpl::Job(
+      factory, session.get(), request_info, DEFAULT_PRIORITY, SSLConfig(),
+      SSLConfig(), server, original_url, NULL);
+  request.AttachJob(job);
+  EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
+
+  AlternativeService alternative_service(net::NPN_HTTP_2, server);
+  HttpStreamFactoryImpl::Job* alternative_job = new HttpStreamFactoryImpl::Job(
+      factory, session.get(), request_info, DEFAULT_PRIORITY, SSLConfig(),
+      SSLConfig(), server, original_url, alternative_service, NULL);
+  request.AttachJob(alternative_job);
+
+  job->WaitFor(alternative_job);
+  EXPECT_EQ(HttpStreamFactoryImpl::Job::STATE_NONE, job->next_state_);
+
+  // Test |alternative_job| resuming the |job| after delay.
+  int wait_time = 1;
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(wait_time);
+  job->Resume(alternative_job, delay);
+
+  // Verify |job| has |wait_time_| and there is no |blocking_job_|
+  EXPECT_EQ(delay, job->wait_time_);
+  EXPECT_TRUE(!job->blocking_job_);
+
+  // Start the |job| and verify |job|'s |wait_time_| is cleared.
+  job->Start(&request);
+
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(wait_time + 1));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_NE(delay, job->wait_time_);
+  EXPECT_TRUE(job->wait_time_.is_zero());
+  EXPECT_EQ(HttpStreamFactoryImpl::Job::STATE_INIT_CONNECTION_COMPLETE,
+            job->next_state_);
+}
+
 }  // namespace net

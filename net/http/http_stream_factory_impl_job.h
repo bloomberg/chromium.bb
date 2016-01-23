@@ -113,6 +113,8 @@ class HttpStreamFactoryImpl::Job {
   void MarkOtherJobComplete(const Job& job);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryImplRequestTest, DelayMainJob);
+
   enum State {
     STATE_START,
     STATE_RESOLVE_PROXY,
@@ -133,6 +135,8 @@ class HttpStreamFactoryImpl::Job {
     // The npn-spdy job will Resume() the http job if, in
     // STATE_INIT_CONNECTION_COMPLETE, it detects an error or does not find an
     // existing SpdySession. In that case, the http and npn-spdy jobs will race.
+    // When QUIC protocol is used by the npn-spdy job, then http job will wait
+    // for |wait_time_| when the http job was resumed.
     STATE_WAIT_FOR_JOB,
     STATE_WAIT_FOR_JOB_COMPLETE,
 
@@ -200,6 +204,9 @@ class HttpStreamFactoryImpl::Job {
     const GURL origin_url_;
     const bool is_spdy_alternative_;
   };
+
+  // Resume the |this| job after the specified |wait_time_|.
+  void ResumeAfterDelay();
 
   void OnStreamReadyCallback();
   void OnBidirectionalStreamJobReadyCallback();
@@ -351,6 +358,8 @@ class HttpStreamFactoryImpl::Job {
   // If |this| is unable to do so, we'll notify |waiting_job_| that it's ok to
   // proceed and then race the two Jobs.
   Job* waiting_job_;
+
+  base::TimeDelta wait_time_;
 
   // True if handling a HTTPS request, or using SPDY with SSL
   bool using_ssl_;

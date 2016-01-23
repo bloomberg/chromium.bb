@@ -1029,6 +1029,12 @@ EVENT_TYPE(HTTP_STREAM_REQUEST_PROTO)
 // Job. The orphaned Job will continue to run to completion.
 EVENT_TYPE(HTTP_STREAM_JOB_ORPHANED)
 
+// Emitted when a job is asked to resume after non-zero microseconds.
+//   {
+//     "resume_after_ms": <Number of milliseconds until job will be unblocked>
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_DELAYED)
+
 // ------------------------------------------------------------------------
 // HttpNetworkTransaction
 // ------------------------------------------------------------------------

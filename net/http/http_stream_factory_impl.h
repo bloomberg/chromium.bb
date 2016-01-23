@@ -69,6 +69,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryImplRequestTest, SetPriority);
+  FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryImplRequestTest, DelayMainJob);
 
   class NET_EXPORT_PRIVATE Request;
   class NET_EXPORT_PRIVATE Job;

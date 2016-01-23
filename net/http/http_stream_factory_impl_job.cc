@@ -76,6 +76,15 @@ scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
   return std::move(dict);
 }
 
+// Returns parameters associated with the delay of the HTTP stream job.
+scoped_ptr<base::Value> NetLogHttpStreamJobDelayCallback(
+    base::TimeDelta delay,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetInteger("resume_after_ms", static_cast<int>(delay.InMilliseconds()));
+  return std::move(dict);
+}
+
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
 scoped_ptr<base::Value> NetLogHttpStreamProtoCallback(
@@ -234,19 +243,32 @@ void HttpStreamFactoryImpl::Job::WaitFor(Job* job) {
   job->waiting_job_ = this;
 }
 
+void HttpStreamFactoryImpl::Job::ResumeAfterDelay() {
+  DCHECK(!blocking_job_);
+  DCHECK_EQ(STATE_WAIT_FOR_JOB_COMPLETE, next_state_);
+
+  net_log_.AddEvent(NetLog::TYPE_HTTP_STREAM_JOB_DELAYED,
+                    base::Bind(&NetLogHttpStreamJobDelayCallback, wait_time_));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&HttpStreamFactoryImpl::Job::OnIOComplete,
+                            ptr_factory_.GetWeakPtr(), OK),
+      wait_time_);
+}
+
 void HttpStreamFactoryImpl::Job::Resume(Job* job,
                                         const base::TimeDelta& delay) {
   DCHECK_EQ(blocking_job_, job);
   blocking_job_ = NULL;
 
+  // If |this| job is not past STATE_WAIT_FOR_JOB_COMPLETE state, then it will
+  // be delayed by the |wait_time_| when it resumes.
+  if (next_state_ == STATE_NONE || next_state_ <= STATE_WAIT_FOR_JOB_COMPLETE)
+    wait_time_ = delay;
+
   // We know we're blocked if the next_state_ is STATE_WAIT_FOR_JOB_COMPLETE.
   // Unblock |this|.
-  if (next_state_ == STATE_WAIT_FOR_JOB_COMPLETE) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&HttpStreamFactoryImpl::Job::OnIOComplete,
-                              ptr_factory_.GetWeakPtr(), OK),
-        delay);
-  }
+  if (next_state_ == STATE_WAIT_FOR_JOB_COMPLETE)
+    ResumeAfterDelay();
 }
 
 void HttpStreamFactoryImpl::Job::Orphan(const Request* request) {
@@ -831,10 +853,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
     return result;
   }
 
-  if (blocking_job_)
-    next_state_ = STATE_WAIT_FOR_JOB;
-  else
-    next_state_ = STATE_INIT_CONNECTION;
+  next_state_ = STATE_WAIT_FOR_JOB;
   return OK;
 }
 
@@ -845,14 +864,26 @@ bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
 }
 
 int HttpStreamFactoryImpl::Job::DoWaitForJob() {
-  DCHECK(blocking_job_);
+  if (!blocking_job_ && wait_time_.is_zero()) {
+    // There is no |blocking_job_| and there is no |wait_time_|.
+    next_state_ = STATE_INIT_CONNECTION;
+    return OK;
+  }
+
   next_state_ = STATE_WAIT_FOR_JOB_COMPLETE;
+  if (!wait_time_.is_zero()) {
+    // If there is a waiting_time, then resume the job after the wait_time_.
+    DCHECK(!blocking_job_);
+    ResumeAfterDelay();
+  }
+
   return ERR_IO_PENDING;
 }
 
 int HttpStreamFactoryImpl::Job::DoWaitForJobComplete(int result) {
   DCHECK(!blocking_job_);
   DCHECK_EQ(OK, result);
+  wait_time_ = base::TimeDelta();
   next_state_ = STATE_INIT_CONNECTION;
   return OK;
 }
