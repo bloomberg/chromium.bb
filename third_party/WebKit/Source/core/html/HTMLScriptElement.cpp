@@ -72,7 +72,7 @@ void HTMLScriptElement::childrenChanged(const ChildrenChange& change)
 
 void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
 {
-    ScriptRunner::movePendingAsyncScript(oldDocument, document(), m_loader.get());
+    ScriptRunner::movePendingScript(oldDocument, document(), m_loader.get());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 

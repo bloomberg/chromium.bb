@@ -61,7 +61,7 @@ public:
     void notifyScriptReady(ScriptLoader*, ExecutionType);
     void notifyScriptLoadError(ScriptLoader*, ExecutionType);
 
-    static void movePendingAsyncScript(Document&, Document&, ScriptLoader*);
+    static void movePendingScript(Document&, Document&, ScriptLoader*);
 
     DECLARE_TRACE();
 
@@ -70,9 +70,8 @@ private:
 
     explicit ScriptRunner(Document*);
 
-    void addPendingAsyncScript(ScriptLoader*);
-
-    void movePendingAsyncScript(ScriptRunner*, ScriptLoader*);
+    void movePendingScript(ScriptRunner*, ScriptLoader*);
+    bool removePendingInOrderScript(ScriptLoader*);
 
     void postTask(const WebTraceLocation&);
 
@@ -99,7 +98,6 @@ private:
 #endif
 
 #if !ENABLE(OILPAN)
-    bool m_isDisposed;
     WeakPtrFactory<ScriptRunner> m_weakPointerFactoryForTasks;
 #endif
 };

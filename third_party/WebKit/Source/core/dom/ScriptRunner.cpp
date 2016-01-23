@@ -42,7 +42,6 @@ ScriptRunner::ScriptRunner(Document* document)
     , m_numberOfInOrderScriptsWithPendingNotification(0)
     , m_isSuspended(false)
 #if !ENABLE(OILPAN)
-    , m_isDisposed(false)
     , m_weakPointerFactoryForTasks(this)
 #endif
 {
@@ -98,27 +97,20 @@ void ScriptRunner::dispose()
     m_pendingAsyncScripts.clear();
     m_inOrderScriptsToExecuteSoon.clear();
     m_asyncScriptsToExecuteSoon.clear();
-    m_isDisposed = true;
+    m_numberOfInOrderScriptsWithPendingNotification = 0;
 }
 #endif
-
-void ScriptRunner::addPendingAsyncScript(ScriptLoader* scriptLoader)
-{
-    m_document->incrementLoadEventDelayCount();
-    m_pendingAsyncScripts.add(scriptLoader);
-}
 
 void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
     ASSERT(scriptLoader);
-
+    m_document->incrementLoadEventDelayCount();
     switch (executionType) {
     case ASYNC_EXECUTION:
-        addPendingAsyncScript(scriptLoader);
+        m_pendingAsyncScripts.add(scriptLoader);
         break;
 
     case IN_ORDER_EXECUTION:
-        m_document->incrementLoadEventDelayCount();
         m_pendingInOrderScripts.append(scriptLoader);
         m_numberOfInOrderScriptsWithPendingNotification++;
         break;
@@ -191,47 +183,40 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
     }
 }
 
+bool ScriptRunner::removePendingInOrderScript(ScriptLoader* scriptLoader)
+{
+    for (auto it = m_pendingInOrderScripts.begin(); it != m_pendingInOrderScripts.end(); ++it) {
+        if (*it == scriptLoader) {
+            m_pendingInOrderScripts.remove(it);
+            RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
+            m_numberOfInOrderScriptsWithPendingNotification--;
+            return true;
+        }
+    }
+    return false;
+}
+
 void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
     switch (executionType) {
     case ASYNC_EXECUTION: {
-        bool foundLoader = m_pendingAsyncScripts.contains(scriptLoader);
-#if !ENABLE(OILPAN)
-        // If the document and ScriptRunner has been disposed of, there's
-        // no bookkeeping to be done here.
-        foundLoader = foundLoader || m_isDisposed;
-#endif
         // RELEASE_ASSERT makes us crash in a controlled way in error cases
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
         // to detach).
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
         m_pendingAsyncScripts.remove(scriptLoader);
         break;
     }
     case IN_ORDER_EXECUTION:
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
-        m_numberOfInOrderScriptsWithPendingNotification--;
-
-        bool foundPendingScript = false;
-        for (auto it = m_pendingInOrderScripts.begin(); it != m_pendingInOrderScripts.end(); ++it) {
-            if (*it == scriptLoader) {
-                m_pendingInOrderScripts.remove(it);
-                foundPendingScript = true;
-                break;
-            }
-        }
-#if !ENABLE(OILPAN)
-        foundPendingScript = foundPendingScript || m_isDisposed;
-#endif
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundPendingScript);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(removePendingInOrderScript(scriptLoader));
         break;
     }
     scriptLoader->detach();
     m_document->decrementLoadEventDelayCount();
 }
 
-void ScriptRunner::movePendingAsyncScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
+void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
 {
     RefPtrWillBeRawPtr<Document> newContextDocument = newDocument.contextDocument().get();
     if (!newContextDocument) {
@@ -254,14 +239,19 @@ void ScriptRunner::movePendingAsyncScript(Document& oldDocument, Document& newDo
         oldContextDocument = &oldDocument;
     }
     if (oldContextDocument != newContextDocument)
-        oldContextDocument->scriptRunner()->movePendingAsyncScript(newContextDocument->scriptRunner(), scriptLoader);
+        oldContextDocument->scriptRunner()->movePendingScript(newContextDocument->scriptRunner(), scriptLoader);
 }
 
-void ScriptRunner::movePendingAsyncScript(ScriptRunner* newRunner, ScriptLoader* scriptLoader)
+void ScriptRunner::movePendingScript(ScriptRunner* newRunner, ScriptLoader* scriptLoader)
 {
     if (m_pendingAsyncScripts.contains(scriptLoader)) {
-        newRunner->addPendingAsyncScript(scriptLoader);
+        newRunner->queueScriptForExecution(scriptLoader, ASYNC_EXECUTION);
         m_pendingAsyncScripts.remove(scriptLoader);
+        m_document->decrementLoadEventDelayCount();
+        return;
+    }
+    if (removePendingInOrderScript(scriptLoader)) {
+        newRunner->queueScriptForExecution(scriptLoader, IN_ORDER_EXECUTION);
         m_document->decrementLoadEventDelayCount();
     }
 }

@@ -467,9 +467,9 @@ void ScriptLoader::notifyFinished(Resource* resource)
     ScriptRunner::ExecutionType runOrder = m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION;
     if (m_resource->errorOccurred()) {
         dispatchErrorEvent();
-        // dispatchErrorEvent might move the HTMLScriptElement to a new
-        // document. In that case, we must notify the ScriptRunner of the new
-        // document, not the ScriptRunner of the old docuemnt.
+        // The error handler can move the HTMLScriptElement to a new document.
+        // In that case, we must notify the ScriptRunner of the new document,
+        // not the ScriptRunner of the old docuemnt.
         contextDocument = m_element->document().contextDocument().get();
         if (!contextDocument)
             return;
