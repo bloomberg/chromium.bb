@@ -579,6 +579,7 @@ endef
 #
 ifeq (x86_32,$(SYSARCH))
 LIB_NAME = lib32
+else
 ifeq (x86_64,$(SYSARCH))
 LIB_NAME = lib64
 else

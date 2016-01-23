@@ -32,6 +32,7 @@ GETOS := python $(NACL_SDK_ROOT)/tools/getos.py
 NACL_CONFIG := python $(NACL_SDK_ROOT)/tools/nacl_config.py
 FIXDEPS := python $(NACL_SDK_ROOT)/tools/fix_deps.py -c
 OSNAME := $(shell $(GETOS))
+SYSARCH := $(shell $(GETOS) --nacl-arch)
 
 
 #
@@ -468,7 +469,6 @@ PPAPI_DEBUG = $(abspath $(OSNAME)/Debug/$(TARGET)$(HOST_EXT));application/x-ppap
 PPAPI_RELEASE = $(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-ppapi-release
 
 
-SYSARCH := $(shell $(GETOS) --nacl-arch)
 SEL_LDR_PATH := python $(NACL_SDK_ROOT)/tools/sel_ldr.py
 
 ifndef STANDALONE
