@@ -15,9 +15,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/runner/desktop/launcher_process.h"
-#include "mojo/runner/host/child_process.h"
-#include "mojo/runner/host/switches.h"
-#include "mojo/runner/init.h"
+#include "mojo/shell/runner/host/child_process.h"
+#include "mojo/shell/runner/host/switches.h"
+#include "mojo/shell/runner/init.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -36,15 +36,15 @@ int RunnerMain(int argc, char** argv,
       *base::CommandLine::ForCurrentProcess();
 
   base::AtExitManager at_exit;
-  InitializeLogging();
-  WaitForDebuggerIfNecessary();
+  shell::InitializeLogging();
+  shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
 #endif
 
   if (command_line.HasSwitch(switches::kChildProcess))
-    return ChildProcessMain();
+    return shell::ChildProcessMain();
 
   return LauncherProcessMain(mojo_url, callback);
 }

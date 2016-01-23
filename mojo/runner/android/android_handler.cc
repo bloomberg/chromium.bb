@@ -17,8 +17,8 @@
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/runner/android/run_android_application_function.h"
-#include "mojo/runner/host/native_application_support.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/runner/host/native_application_support.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
@@ -47,7 +47,7 @@ void RunAndroidApplication(JNIEnv* env,
   // Load the library, so that we can set the application context there if
   // needed.
   // TODO(vtl): We'd use a ScopedNativeLibrary, but it doesn't have .get()!
-  base::NativeLibrary app_library = LoadNativeApplication(app_path);
+  base::NativeLibrary app_library = shell::LoadNativeApplication(app_path);
   if (!app_library)
     return;
 
@@ -68,7 +68,7 @@ void RunAndroidApplication(JNIEnv* env,
   }
 
   // Run the application.
-  RunNativeApplication(app_library, std::move(application_request));
+  shell::RunNativeApplication(app_library, std::move(application_request));
   // TODO(vtl): See note about unloading and thread-local destructors above
   // declaration of |LoadNativeApplication()|.
   base::UnloadNativeLibrary(app_library);

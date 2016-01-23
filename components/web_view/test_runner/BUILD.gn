@@ -23,7 +23,7 @@ executable("test_runner") {
     "//mojo/environment:chromium",
     "//mojo/runner:lib",
     "//mojo/runner:register_local_aliases_fwd",
-    "//mojo/runner/host:lib",
+    "//mojo/shell/runner/host:lib",
     "//url",
   ]
 

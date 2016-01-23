@@ -28,9 +28,9 @@
 #include "mojo/runner/android/context_init.h"
 #include "mojo/runner/android/ui_application_loader_android.h"
 #include "mojo/runner/context.h"
-#include "mojo/runner/host/child_process.h"
-#include "mojo/runner/init.h"
 #include "mojo/shell/application_loader.h"
+#include "mojo/shell/runner/host/child_process.h"
+#include "mojo/shell/runner/init.h"
 #include "ui/gl/gl_surface_egl.h"
 
 using base::LazyInstance;
@@ -120,8 +120,8 @@ static void Init(JNIEnv* env,
   base::CommandLine::Init(0, nullptr);
   base::CommandLine::ForCurrentProcess()->InitFromArgv(parameters);
 
-  InitializeLogging();
-  mojo::runner::WaitForDebuggerIfNecessary();
+  mojo::shell::InitializeLogging();
+  mojo::shell::WaitForDebuggerIfNecessary();
 
   InitializeRedirection();
 
@@ -183,6 +183,6 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::runner::InitializeLogging();
-  return mojo::runner::ChildProcessMain();
+  mojo::shell::InitializeLogging();
+  return mojo::shell::ChildProcessMain();
 }

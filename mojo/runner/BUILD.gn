@@ -11,8 +11,6 @@ group("runner") {
 
   deps = [
     ":mojo_runner",
-    "//mojo/runner/child",
-    "//mojo/runner/host",
   ]
 }
 
@@ -37,8 +35,8 @@ source_set("mojo_runner_lib") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
-    "//mojo/runner/host:lib",
-    "//mojo/runner/host:switches",
+    "//mojo/shell/runner/host:lib",
+    "//mojo/shell/runner/host:switches",
   ]
 
   if (!is_android) {
@@ -94,20 +92,6 @@ executable("mojo_runner") {
   }
 }
 
-source_set("init") {
-  sources = [
-    "init.cc",
-    "init.h",
-  ]
-
-  deps = [
-    "//base",
-    "//base:base_static",
-    "//base:i18n",
-    "//mojo/runner/host:switches",
-  ]
-}
-
 source_set("lib") {
   sources = [
     "context.cc",
@@ -121,7 +105,6 @@ source_set("lib") {
   ]
 
   deps = [
-    ":init",
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
@@ -129,14 +112,15 @@ source_set("lib") {
     "//components/devtools_service/public/interfaces",
     "//components/tracing:startup_tracing",
     "//mojo/message_pump",
-    "//mojo/runner/child:interfaces",
-    "//mojo/runner/host:lib",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
     "//mojo/shell",
     "//mojo/shell/package_manager",
     "//mojo/shell/public/cpp",
+    "//mojo/shell/runner:init",
+    "//mojo/shell/runner/child:interfaces",
+    "//mojo/shell/runner/host:lib",
     "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/gl",
@@ -144,9 +128,9 @@ source_set("lib") {
   ]
 
   public_deps = [
-    ":init",
     ":switches",
     "//mojo/shell",
+    "//mojo/shell/runner:init",
   ]
 
   if (!is_component_build) {

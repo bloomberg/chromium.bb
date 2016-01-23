@@ -11,9 +11,9 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "mojo/converters/network/network_type_converters.h"
-#include "mojo/runner/child/runner_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/runner/child/runner_connection.h"
 
 namespace content {
 namespace {
@@ -65,7 +65,7 @@ MojoShellConnectionImpl::~MojoShellConnectionImpl() {
 void MojoShellConnectionImpl::WaitForShell(
     mojo::ScopedMessagePipeHandle handle) {
   mojo::InterfaceRequest<mojo::Application> application_request;
-  runner_connection_.reset(mojo::runner::RunnerConnection::ConnectToRunner(
+  runner_connection_.reset(mojo::shell::RunnerConnection::ConnectToRunner(
       &application_request, std::move(handle)));
   application_impl_.reset(
       new mojo::ApplicationImpl(this, std::move(application_request)));

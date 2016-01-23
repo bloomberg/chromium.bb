@@ -14,7 +14,7 @@
 #include "mojo/shell/public/cpp/application_delegate.h"
 
 namespace mojo {
-namespace runner {
+namespace shell {
 class RunnerConnection;
 }
 }
@@ -65,7 +65,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   void WaitForShell(mojo::ScopedMessagePipeHandle handle);
 
   bool initialized_;
-  scoped_ptr<mojo::runner::RunnerConnection> runner_connection_;
+  scoped_ptr<mojo::shell::RunnerConnection> runner_connection_;
   scoped_ptr<mojo::ApplicationImpl> application_impl_;
   std::vector<Listener*> listeners_;
 

@@ -24,7 +24,10 @@ group("mojo") {
     deps += [ "//mojo/android" ]
   }
 
-  deps += [ "//mojo/runner" ]
+  deps += [
+    "//mojo/runner",
+    "//mojo/shell:all",
+  ]
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.

@@ -627,7 +627,7 @@ source_set("browser") {
     deps += [
       "//components/mus/public/cpp",
       "//content/public/common",
-      "//mojo/runner/child:lib",
+      "//mojo/shell/runner/child:lib",
       "//ui/aura",
       "//ui/compositor",
       "//ui/keyboard",

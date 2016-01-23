@@ -3,8 +3,9 @@ include_rules = [
   "+components/mus/public",
   "+components/test_runner",
   "+components/web_view/public",
-  "+mojo/shell/public",
   "+mojo/public",
   "+mojo/runner",
+  "+mojo/shell/public",
+  "+mojo/shell/runner",
   "+ui/gfx",
 ]

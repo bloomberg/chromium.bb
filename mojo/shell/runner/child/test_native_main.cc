@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/shell/runner/child/test_native_main.h"
+
 #include <utility>
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "mash/example/window_type_launcher/window_type_launcher.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/runner/child/runner_connection.h"
 #include "mojo/shell/runner/init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 
+namespace mojo {
+namespace shell {
 namespace {
 
 class ProcessDelegate : public mojo::embedder::ProcessDelegate {
@@ -35,13 +35,9 @@ class ProcessDelegate : public mojo::embedder::ProcessDelegate {
   DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
 };
 
-}
+}  // namespace
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit;
-  base::CommandLine::Init(argc, argv);
-
-  mojo::shell::InitializeLogging();
+int TestNativeMain(mojo::ApplicationDelegate* application_delegate) {
   mojo::shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
@@ -60,18 +56,17 @@ int main(int argc, char** argv) {
     base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread.StartWithOptions(io_thread_options));
 
-    mojo::embedder::InitIPCSupport(mojo::embedder::ProcessType::NONE,
-                                   &process_delegate,
-                                   io_thread.task_runner().get(),
-                                   mojo::embedder::ScopedPlatformHandle());
+    mojo::embedder::InitIPCSupport(
+        mojo::embedder::ProcessType::NONE, &process_delegate,
+        io_thread.task_runner().get(), mojo::embedder::ScopedPlatformHandle());
 
     mojo::InterfaceRequest<mojo::Application> application_request;
     scoped_ptr<mojo::shell::RunnerConnection> connection(
         mojo::shell::RunnerConnection::ConnectToRunner(
-            &application_request, mojo::ScopedMessagePipeHandle()));
+            &application_request, ScopedMessagePipeHandle()));
     base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
-    WindowTypeLauncher delegate;
-    mojo::ApplicationImpl impl(&delegate, std::move(application_request));
+    mojo::ApplicationImpl impl(application_delegate,
+                               std::move(application_request));
     loop.Run();
 
     mojo::embedder::ShutdownIPCSupport();
@@ -79,3 +74,6 @@ int main(int argc, char** argv) {
 
   return 0;
 }
+
+}  // namespace shell
+}  // namespace mojo

@@ -22,14 +22,14 @@
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/runner/child/test_native_main.h"
-#include "mojo/runner/init.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/runner/child/test_native_main.h"
+#include "mojo/shell/runner/init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
@@ -170,8 +170,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::runner::InitializeLogging();
+  mojo::shell::InitializeLogging();
 
   TargetApplicationDelegate delegate;
-  return mojo::runner::TestNativeMain(&delegate);
+  return mojo::shell::TestNativeMain(&delegate);
 }

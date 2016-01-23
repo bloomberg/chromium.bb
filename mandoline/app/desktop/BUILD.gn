@@ -22,10 +22,10 @@ executable("mandoline") {
     "//mojo/environment:chromium",
     "//mojo/runner:lib",
     "//mojo/runner:register_local_aliases_fwd",
-    "//mojo/runner/host:lib",
-    "//mojo/runner/host:switches",
     "//mojo/shell",
     "//mojo/shell/package_manager",
+    "//mojo/shell/runner/host:lib",
+    "//mojo/shell/runner/host:switches",
   ]
 
   data_deps = [

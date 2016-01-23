@@ -29,8 +29,6 @@
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "components/tracing/tracing_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/runner/host/in_process_native_runner.h"
-#include "mojo/runner/host/out_of_process_native_runner.h"
 #include "mojo/runner/register_local_aliases.h"
 #include "mojo/runner/switches.h"
 #include "mojo/runner/tracer.h"
@@ -45,6 +43,8 @@
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/query_util.h"
+#include "mojo/shell/runner/host/in_process_native_runner.h"
+#include "mojo/shell/runner/host/out_of_process_native_runner.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -230,11 +230,11 @@ bool Context::Init(const base::FilePath& shell_file_root) {
                << "supported because statics in apps interact. Use static build"
                << " or don't pass --single-process.";
 #endif
-    runner_factory.reset(
-        new InProcessNativeRunnerFactory(task_runners_->blocking_pool()));
+    runner_factory.reset(new shell::InProcessNativeRunnerFactory(
+        task_runners_->blocking_pool()));
   } else {
-    runner_factory.reset(
-        new OutOfProcessNativeRunnerFactory(task_runners_->blocking_pool()));
+    runner_factory.reset(new shell::OutOfProcessNativeRunnerFactory(
+        task_runners_->blocking_pool()));
   }
   application_manager_.reset(new shell::ApplicationManager(
       make_scoped_ptr(package_manager_), std::move(runner_factory),
