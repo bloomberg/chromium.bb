@@ -9,8 +9,8 @@ Tests that evaluating an expression with an exception in the console provide cor
             foo();
         }
         boo();
-VM:4 Uncaught Object {a: 239}foo @ VM:4boo @ VM:8(anonymous function) @ VM:10
-call frame:foo at :4
-call frame:boo at :8
-call frame: at :10
+VM:3 Uncaught Object {a: 239}foo @ VM:3boo @ VM:7(anonymous function) @ VM:9
+call frame:foo at :3
+call frame:boo at :7
+call frame: at :9
 

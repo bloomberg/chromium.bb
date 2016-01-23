@@ -45,6 +45,9 @@ public:
     static void bindCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void objectForIdCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void idToObjectGroupNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+
+    static v8::Local<v8::Symbol> commandLineAPISymbol(v8::Isolate*);
+    static bool isCommandLineAPIMethod(const AtomicString& name);
 };
 
 } // namespace blink

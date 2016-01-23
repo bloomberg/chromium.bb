@@ -55,7 +55,9 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/V8InjectedScriptHost.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -295,6 +297,31 @@ static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String
     return false;
 }
 
+static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const AtomicString& nameString, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!InspectorInstrumentation::hasFrontends())
+        return false;
+
+    if (!V8InjectedScriptHost::isCommandLineAPIMethod(nameString))
+        return false;
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+    v8::Local<v8::Object> global = context->Global();
+    v8::Local<v8::Value> commandLineAPI;
+
+    if (v8Call(global->Get(context, V8InjectedScriptHost::commandLineAPISymbol(isolate)), commandLineAPI)) {
+        v8::Local<v8::Value> value;
+        if (commandLineAPI->IsObject() && v8Call(commandLineAPI->ToObject(isolate)->Get(context, name), value)) {
+            v8SetReturnValue(info, value);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     auto nameString = name.As<v8::String>();
@@ -323,6 +350,9 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
         return;
 
     if (installTestInterfaceIfNeeded(toLocalFrame(*frame), nameString, info))
+        return;
+
+    if (installCommandLineAPIIfNeeded(name, propName, info))
         return;
 
     // Search named items in the document.

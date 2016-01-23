@@ -850,18 +850,11 @@ InjectedScript.prototype = {
         // the window object properties still take more precedent than our API functions.
 
         var scopeExtensionForEval = (callFrame && injectCommandLineAPI) ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined;
-
-        injectCommandLineAPI = !scopeExtensionForEval && !callFrame && injectCommandLineAPI && !("__commandLineAPI" in inspectedGlobalObject);
         var injectScopeChain = scopeChain && scopeChain.length && !("__scopeChainForEval" in inspectedGlobalObject);
 
         try {
             var prefix = "";
             var suffix = "";
-            if (injectCommandLineAPI) {
-                InjectedScriptHost.setNonEnumProperty(inspectedGlobalObject, "__commandLineAPI", new CommandLineAPI(this._commandLineAPIImpl, callFrame));
-                prefix = "with (typeof __commandLineAPI !== 'undefined' ? __commandLineAPI : { __proto__: null }) {";
-                suffix = "}";
-            }
             if (injectScopeChain) {
                 InjectedScriptHost.setNonEnumProperty(inspectedGlobalObject, "__scopeChainForEval", scopeChain);
                 for (var i = 0; i < scopeChain.length; ++i) {
@@ -875,17 +868,11 @@ InjectedScript.prototype = {
 
             if (prefix)
                 expression = prefix + "\n" + expression + "\n" + suffix;
-            var wrappedResult = callFrame ? callFrame.evaluateWithExceptionDetails(expression, scopeExtensionForEval) : InjectedScriptHost.evaluateWithExceptionDetails(expression);
+            var wrappedResult = callFrame ? callFrame.evaluateWithExceptionDetails(expression, scopeExtensionForEval) : InjectedScriptHost.evaluateWithExceptionDetails(expression, injectCommandLineAPI ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined);
             if (objectGroup === "console" && !wrappedResult.exceptionDetails)
                 this._lastResult = wrappedResult.result;
             return wrappedResult;
         } finally {
-            if (injectCommandLineAPI) {
-                try {
-                    delete inspectedGlobalObject["__commandLineAPI"];
-                } catch(e) {
-                }
-            }
             if (injectScopeChain) {
                 try {
                     delete inspectedGlobalObject["__scopeChainForEval"];
@@ -1655,7 +1642,8 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
     this.__proto__ = null;
 }
 
-// NOTE: Please keep the list of API methods below snchronized to that in WebInspector.RuntimeModel!
+// NOTE: Please keep the list of API methods below synchronized to that in WebInspector.RuntimeModel
+// and V8InjectedScriptHost!
 // NOTE: Argument names of these methods will be printed in the console, so use pretty names!
 /**
  * @type {!Array.<string>}

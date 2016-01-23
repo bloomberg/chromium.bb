@@ -317,6 +317,7 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
     v8::Local<v8::Object> wrappedResult = v8::Object::New(isolate);
     if (wrappedResult.IsEmpty())
         return;
+
     v8::TryCatch tryCatch(isolate);
     v8::Local<v8::Script> script;
     v8::Local<v8::Value> result;
@@ -324,11 +325,21 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
         return;
     }
+
+    v8::Local<v8::Symbol> commandLineAPISymbolValue = commandLineAPISymbol(isolate);
+    v8::Local<v8::Object> global = isolate->GetCurrentContext()->Global();
+    if (info.Length() >= 2 && info[1]->IsObject()) {
+        v8::Local<v8::Object> commandLineAPI = info[1]->ToObject(isolate);
+        global->Set(commandLineAPISymbolValue, commandLineAPI);
+    }
+
     if (!v8Call(V8ScriptRunner::runCompiledScript(isolate, script, currentExecutionContext(isolate)), result, tryCatch)) {
+        global->Delete(isolate->GetCurrentContext(), commandLineAPISymbolValue);
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
         return;
     }
 
+    global->Delete(isolate->GetCurrentContext(), commandLineAPISymbolValue);
     wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result);
     wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));
     v8SetReturnValue(info, wrappedResult);
@@ -508,6 +519,24 @@ void V8InjectedScriptHost::idToObjectGroupNameCallback(const v8::FunctionCallbac
     String groupName = injectedScriptNative->groupName(id);
     if (!groupName.isEmpty())
         info.GetReturnValue().Set(v8String(info.GetIsolate(), groupName));
+}
+
+v8::Local<v8::Symbol> V8InjectedScriptHost::commandLineAPISymbol(v8::Isolate* isolate)
+{
+    return v8::Symbol::ForApi(isolate, v8AtomicString(isolate, "commandLineAPI"));
+}
+
+bool V8InjectedScriptHost::isCommandLineAPIMethod(const AtomicString& name)
+{
+    DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
+    if (methods.size() == 0) {
+        const char* members[] = { "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
+            "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
+            "debug", "undebug", "monitor", "unmonitor", "table", "$_", "$0", "$1", "$2", "$3", "$4" };
+        for (size_t i = 0; i < sizeof(members) / sizeof(const char*); ++i)
+            methods.add(members[i]);
+    }
+    return methods.find(name) != methods.end();
 }
 
 namespace {

@@ -7,7 +7,7 @@ Set timer for test function.
 Script execution paused.
 Call stack:
     0) simpleTestFunction (debug-console-command.html:10)
-    1)  (:2)
+    1)  (:1)
 Breakpoint removed.
 Script execution resumed.
 
@@ -17,7 +17,7 @@ Set timer for test function.
 Script execution paused.
 Call stack:
     0) simpleTestFunction1 (debug-console-command.html:15)
-    1)  (:2)
+    1)  (:1)
 Breakpoint removed.
 Script execution resumed.
 
@@ -27,7 +27,7 @@ Set timer for test function.
 Script execution paused.
 Call stack:
     0) simpleTestFunction2 (debug-console-command.html:15)
-    1)  (:2)
+    1)  (:1)
 Breakpoint removed.
 Script execution resumed.
 
