@@ -113,7 +113,7 @@ LinkHeader status=stable
 FractionalScrollOffsets status=experimental
 Media status=stable
 MediaCapture
-MediaCaptureFromElement status=test
+MediaCaptureFromElement status=experimental
 MediaConstraints status=test
 MediaDevices status=stable
 MediaRecorder status=stable
