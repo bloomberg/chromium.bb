@@ -56,7 +56,8 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   // |fill_center| indicates whether to draw the center quad or not.
   void SetLayout(const gfx::Rect& image_aperture,
                  const gfx::Rect& border,
-                 bool fill_center);
+                 bool fill_center,
+                 bool nearest_neighbor);
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
@@ -82,6 +83,8 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   gfx::Rect border_;
 
   bool fill_center_;
+
+  bool nearest_neighbor_;
 
   DISALLOW_COPY_AND_ASSIGN(NinePatchLayerImpl);
 };

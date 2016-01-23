@@ -53,6 +53,7 @@ class TabLayer : public Layer {
                      int contour_resource_id,
                      int back_logo_resource_id,
                      int border_resource_id,
+                     int border_inner_shadow_resource_id,
                      int default_background_color,
                      int back_logo_color,
                      bool is_portrait,
@@ -70,6 +71,7 @@ class TabLayer : public Layer {
                      float rotation_y,
                      float alpha,
                      float border_alpha,
+                     float border_inner_shadow_alpha,
                      float contour_alpha,
                      float shadow_alpha,
                      float close_alpha,
@@ -130,6 +132,7 @@ class TabLayer : public Layer {
   scoped_refptr<cc::SolidColorLayer> padding_;
   scoped_refptr<cc::UIResourceLayer> close_button_;
   scoped_refptr<cc::NinePatchLayer> front_border_;
+  scoped_refptr<cc::NinePatchLayer> front_border_inner_shadow_;
   scoped_refptr<cc::NinePatchLayer> contour_shadow_;
   scoped_refptr<cc::NinePatchLayer> shadow_;
   scoped_refptr<cc::UIResourceLayer> back_logo_;

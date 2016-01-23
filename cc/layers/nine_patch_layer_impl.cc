@@ -16,7 +16,8 @@ namespace cc {
 
 NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id)
     : UIResourceLayerImpl(tree_impl, id),
-      fill_center_(false) {}
+      fill_center_(false),
+      nearest_neighbor_(false) {}
 
 NinePatchLayerImpl::~NinePatchLayerImpl() {}
 
@@ -29,7 +30,8 @@ void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   UIResourceLayerImpl::PushPropertiesTo(layer);
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
-  layer_impl->SetLayout(image_aperture_, border_, fill_center_);
+  layer_impl->SetLayout(image_aperture_, border_, fill_center_,
+                        nearest_neighbor_);
 }
 
 static gfx::RectF NormalizedRect(float x,
@@ -46,18 +48,20 @@ static gfx::RectF NormalizedRect(float x,
 
 void NinePatchLayerImpl::SetLayout(const gfx::Rect& aperture,
                                    const gfx::Rect& border,
-                                   bool fill_center) {
+                                   bool fill_center,
+                                   bool nearest_neighbor) {
   // This check imposes an ordering on the call sequence.  An UIResource must
   // exist before SetLayout can be called.
   DCHECK(ui_resource_id_);
 
-  if (image_aperture_ == aperture &&
-      border_ == border && fill_center_ == fill_center)
+  if (image_aperture_ == aperture && border_ == border &&
+      fill_center_ == fill_center && nearest_neighbor_ == nearest_neighbor)
     return;
 
   image_aperture_ = aperture;
   border_ = border;
   fill_center_ = fill_center;
+  nearest_neighbor_ = nearest_neighbor;
 
   NoteLayerPropertyChanged();
 }
@@ -101,7 +105,6 @@ void NinePatchLayerImpl::AppendQuads(
     return;
 
   static const bool flipped = false;
-  static const bool nearest_neighbor = false;
   static const bool premultiplied_alpha = true;
 
   DCHECK(!bounds().IsEmpty());
@@ -219,18 +222,10 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_top_left,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_top_left.origin(),
-                 uv_top_left.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_top_left, opaque_rect, visible_rect,
+                 resource, premultiplied_alpha, uv_top_left.origin(),
+                 uv_top_left.bottom_right(), SK_ColorTRANSPARENT,
+                 vertex_opacity, flipped, nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -241,18 +236,10 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_top_right,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_top_right.origin(),
-                 uv_top_right.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_top_right, opaque_rect, visible_rect,
+                 resource, premultiplied_alpha, uv_top_right.origin(),
+                 uv_top_right.bottom_right(), SK_ColorTRANSPARENT,
+                 vertex_opacity, flipped, nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -263,18 +250,11 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_bottom_left,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_bottom_left.origin(),
-                 uv_bottom_left.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_bottom_left, opaque_rect,
+                 visible_rect, resource, premultiplied_alpha,
+                 uv_bottom_left.origin(), uv_bottom_left.bottom_right(),
+                 SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                 nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -285,18 +265,11 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_bottom_right,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_bottom_right.origin(),
-                 uv_bottom_right.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_bottom_right, opaque_rect,
+                 visible_rect, resource, premultiplied_alpha,
+                 uv_bottom_right.origin(), uv_bottom_right.bottom_right(),
+                 SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                 nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -307,18 +280,10 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_top,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_top.origin(),
-                 uv_top.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_top, opaque_rect, visible_rect,
+                 resource, premultiplied_alpha, uv_top.origin(),
+                 uv_top.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
+                 flipped, nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -329,18 +294,10 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_left,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_left.origin(),
-                 uv_left.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_left, opaque_rect, visible_rect,
+                 resource, premultiplied_alpha, uv_left.origin(),
+                 uv_left.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
+                 flipped, nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -351,18 +308,10 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_right,
-                 opaque_rect,
-                 layer_right,
-                 resource,
-                 premultiplied_alpha,
-                 uv_right.origin(),
-                 uv_right.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_right, opaque_rect, layer_right,
+                 resource, premultiplied_alpha, uv_right.origin(),
+                 uv_right.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
+                 flipped, nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -373,18 +322,10 @@ void NinePatchLayerImpl::AppendQuads(
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 layer_bottom,
-                 opaque_rect,
-                 visible_rect,
-                 resource,
-                 premultiplied_alpha,
-                 uv_bottom.origin(),
-                 uv_bottom.bottom_right(),
-                 SK_ColorTRANSPARENT,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetNew(shared_quad_state, layer_bottom, opaque_rect, visible_rect,
+                 resource, premultiplied_alpha, uv_bottom.origin(),
+                 uv_bottom.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
+                 flipped, nearest_neighbor_);
     ValidateQuadResources(quad);
   }
 
@@ -396,18 +337,10 @@ void NinePatchLayerImpl::AppendQuads(
     if (!visible_rect.IsEmpty()) {
       TextureDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      quad->SetNew(shared_quad_state,
-                   layer_center,
-                   opaque_rect,
-                   visible_rect,
-                   resource,
-                   premultiplied_alpha,
-                   uv_center.origin(),
-                   uv_center.bottom_right(),
-                   SK_ColorTRANSPARENT,
-                   vertex_opacity,
-                   flipped,
-                   nearest_neighbor);
+      quad->SetNew(shared_quad_state, layer_center, opaque_rect, visible_rect,
+                   resource, premultiplied_alpha, uv_center.origin(),
+                   uv_center.bottom_right(), SK_ColorTRANSPARENT,
+                   vertex_opacity, flipped, nearest_neighbor_);
       ValidateQuadResources(quad);
     }
   }

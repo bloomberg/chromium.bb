@@ -545,6 +545,13 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     }
 
     /**
+     * @return The current alpha value at which the tab border inner shadow is drawn.
+     */
+    public float getBorderInnerShadowAlpha() {
+        return mBorderAlpha * (1.0f - mToolbarAlpha);
+    }
+
+    /**
      * @param alpha The maximum alpha value of the close button on the border.
      */
     public void setBorderCloseButtonAlpha(float alpha) {
