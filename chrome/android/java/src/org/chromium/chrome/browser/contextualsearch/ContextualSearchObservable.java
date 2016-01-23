@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.content.browser.ContentViewCore;
@@ -19,7 +20,7 @@ import javax.annotation.Nullable;
  */
 public class ContextualSearchObservable {
 
-    protected final ContextualSearchPolicy mPolicy;
+    protected ContextualSearchPolicy mPolicy;
 
     private final ObserverList<ContextualSearchObserver> mObservers =
             new ObserverList<ContextualSearchObserver>();
@@ -27,6 +28,14 @@ public class ContextualSearchObservable {
 
     ContextualSearchObservable(ChromeActivity activity) {
         mPolicy = new ContextualSearchPolicy(activity);
+    }
+
+    /**
+     * @param policy The {@link ContextualSearchPolicy} for testing.
+     */
+    @VisibleForTesting
+    protected void setContextualSearchPolicy(ContextualSearchPolicy policy) {
+        mPolicy = policy;
     }
 
     /**

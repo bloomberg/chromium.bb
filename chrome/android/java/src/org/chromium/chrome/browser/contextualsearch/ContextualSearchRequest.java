@@ -187,7 +187,7 @@ class ContextualSearchRequest {
      *         {@code query} and {@code alternateTerm} inserted as parameters and contextual
      *         search and prefetch parameters conditionally set.
      */
-    private Uri getUriTemplate(String query, @Nullable String alternateTerm,
+    protected Uri getUriTemplate(String query, @Nullable String alternateTerm,
             boolean shouldPrefetch) {
         return Uri.parse(TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
                 query, alternateTerm, shouldPrefetch));

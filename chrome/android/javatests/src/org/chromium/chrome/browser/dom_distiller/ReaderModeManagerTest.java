@@ -9,10 +9,10 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModeBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
@@ -27,7 +27,7 @@ import org.chromium.content_public.browser.WebContentsObserver;
  */
 public class ReaderModeManagerTest extends InstrumentationTestCase {
 
-    MockOverlayPanelManager mPanelManager;
+    OverlayPanelManagerWrapper mPanelManager;
     ReaderModeManagerWrapper mReaderManager;
     MockReaderModePanel mPanel;
 
@@ -43,35 +43,6 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
                             return new Tab(id, incognito, null);
                         }
                     });
-        }
-    }
-
-    /**
-     * Mock OverlayPanelManager for recording but not actually performing events. This will also
-     * detect calls to show/hide panel that do not pass through the ReaderModeManager's methods.
-     */
-    private static class MockOverlayPanelManager extends OverlayPanelManager {
-        private int mRequestPanelShowCount;
-        private int mPanelHideCount;
-
-        @Override
-        public void requestPanelShow(OverlayPanel panel, StateChangeReason reason) {
-            mRequestPanelShowCount++;
-            super.requestPanelShow(panel, reason);
-        }
-
-        @Override
-        public void notifyPanelClosed(OverlayPanel panel, StateChangeReason reason) {
-            mPanelHideCount++;
-            super.notifyPanelClosed(panel, reason);
-        }
-
-        public int getRequestPanelShowCount() {
-            return mRequestPanelShowCount;
-        }
-
-        public int getPanelHideCount() {
-            return mPanelHideCount;
         }
     }
 
@@ -150,7 +121,7 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mPanelManager = new MockOverlayPanelManager();
+        mPanelManager = new OverlayPanelManagerWrapper();
         mReaderManager = new ReaderModeManagerWrapper();
         mPanel = new MockReaderModePanel(getInstrumentation().getTargetContext(), mPanelManager);
         mReaderManager.setReaderModePanel(mPanel);
