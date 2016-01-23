@@ -360,6 +360,9 @@ int main(int argc, const char* argv[]) {
   auto in_blink_namespace =
       decl(hasAncestor(namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
                                      hasParent(translationUnitDecl()))));
+  // The ^gen/ rule is used for production code, but the /gen/ one exists here
+  // too for making testing easier.
+  auto not_generated = decl(unless(isExpansionInFileMatching("^gen/|/gen/")));
 
   // Field and variable declarations ========
   // Given
@@ -368,8 +371,10 @@ int main(int argc, const char* argv[]) {
   //     int y;
   //   };
   // matches |x| and |y|.
-  auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
-  auto var_decl_matcher = id("decl", varDecl(in_blink_namespace));
+  auto field_decl_matcher =
+      id("decl", fieldDecl(in_blink_namespace, not_generated));
+  auto var_decl_matcher =
+      id("decl", varDecl(in_blink_namespace, not_generated));
 
   FieldDeclRewriter field_decl_rewriter(&replacements);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
@@ -409,7 +414,7 @@ int main(int argc, const char* argv[]) {
               // Out-of-line overloaded operators have special names and should
               // never be renamed.
               isOverloadedOperator())),
-          in_blink_namespace));
+          in_blink_namespace, not_generated));
   FunctionDeclRewriter function_decl_rewriter(&replacements);
   match_finder.addMatcher(function_decl_matcher, &function_decl_rewriter);
 
@@ -446,12 +451,13 @@ int main(int argc, const char* argv[]) {
                                    // considered for renaming.
                                    cxxConstructorDecl(), cxxDestructorDecl(),
                                    cxxConversionDecl())),
-                               in_blink_namespace));
+                               in_blink_namespace, not_generated));
   // Note that the matcher for overridden methods doesn't need to filter for
   // special member functions: see implementation of FunctionDeclRewriter for
   // the full explanation.
-  auto non_blink_overridden_method_decl_matcher =
-      id("decl", cxxMethodDecl(isOverride(), unless(in_blink_namespace)));
+  auto non_blink_overridden_method_decl_matcher = id(
+      "decl",
+      cxxMethodDecl(isOverride(), unless(in_blink_namespace), not_generated));
   MethodDeclRewriter method_decl_rewriter(&replacements);
   match_finder.addMatcher(blink_method_decl_matcher, &method_decl_rewriter);
   match_finder.addMatcher(non_blink_overridden_method_decl_matcher,
