@@ -1,4 +1,4 @@
-# Copyright (C) 2011 Google Inc. All rights reserved.
+﻿# Copyright (C) 2011 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -41,7 +41,6 @@ from webkitpy.common.memoized import memoized
 #      TestExpectationsParser._configuration_tokens_list
 
 _exact_matches = {
-    "WebKit XP": {"port_name": "win-xp", "specifiers": ['XP', 'Release']},
     "WebKit Win7": {"port_name": "win-win7", "specifiers": ['Win7', 'Release']},
     "WebKit Win7 (dbg)": {"port_name": "win-win7", "specifiers": ['Win7', 'Debug']},
     "WebKit Win10": {"port_name": "win-win10", "specifiers": ['Win10', 'Release']},
