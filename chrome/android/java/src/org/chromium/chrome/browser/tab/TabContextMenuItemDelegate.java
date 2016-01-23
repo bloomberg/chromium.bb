@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -29,14 +29,12 @@ import java.util.Locale;
 public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     private final Clipboard mClipboard;
     private final Tab mTab;
-    private final ChromeActivity mActivity;
 
     /**
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
-    public TabContextMenuItemDelegate(Tab tab, ChromeActivity activity) {
+    public TabContextMenuItemDelegate(Tab tab) {
         mTab = tab;
-        mActivity = activity;
         mClipboard = new Clipboard(mTab.getApplicationContext());
     }
 
@@ -70,7 +68,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         RecordUserAction.record("MobileNewTabOpened");
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        mActivity.getTabModelSelector().openNewTab(loadUrlParams,
+        mTab.getTabModelSelector().openNewTab(loadUrlParams,
                 TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
     }
 
@@ -87,7 +85,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onOpenInNewIncognitoTab(String url) {
         RecordUserAction.record("MobileNewTabOpened");
-        mActivity.getTabModelSelector().openNewTab(new LoadUrlParams(url),
+        mTab.getTabModelSelector().openNewTab(new LoadUrlParams(url),
                 TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
     }
 
@@ -107,7 +105,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onOpenInChrome(String linkUrl, String pageUrl) {
         Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
-        chromeIntent.setPackage(mActivity.getPackageName());
+        chromeIntent.setPackage(mTab.getApplicationContext().getPackageName());
         chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         boolean activityStarted = false;
@@ -116,7 +114,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
                 URI pageUri = URI.create(pageUrl);
                 if (UrlUtilities.isInternalScheme(pageUri)) {
                     IntentHandler.startChromeLauncherActivityForTrustedIntent(
-                            chromeIntent, mActivity);
+                            chromeIntent, mTab.getApplicationContext());
                     activityStarted = true;
                 }
             } catch (IllegalArgumentException ex) {
@@ -126,7 +124,9 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         }
 
         if (!activityStarted) {
-            mActivity.startActivity(chromeIntent);
+            Context context = mTab.getActivity();
+            if (context == null) context = mTab.getApplicationContext();
+            context.startActivity(chromeIntent);
             activityStarted = true;
         }
     }

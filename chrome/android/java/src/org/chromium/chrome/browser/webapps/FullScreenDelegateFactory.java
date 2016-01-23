@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Context;
 import android.content.Intent;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -24,15 +24,16 @@ public class FullScreenDelegateFactory extends TabDelegateFactory {
     private static class FullScreenTabWebContentsDelegateAndroid
             extends TabWebContentsDelegateAndroid {
 
-        public FullScreenTabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
-            super(tab, activity);
+        public FullScreenTabWebContentsDelegateAndroid(Tab tab) {
+            super(tab);
         }
 
         @Override
         public void activateContents() {
-            if (!(mActivity instanceof WebappActivity)) return;
+            Context context = mTab.getWindowAndroid().getContext().get();
+            if (!(context instanceof WebappActivity)) return;
 
-            WebappInfo webappInfo = ((WebappActivity) mActivity).getWebappInfo();
+            WebappInfo webappInfo = ((WebappActivity) context).getWebappInfo();
             String url = webappInfo.uri().toString();
 
             // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
@@ -41,25 +42,23 @@ public class FullScreenDelegateFactory extends TabDelegateFactory {
             // it the hard way.
             Intent intent = new Intent();
             intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
-            intent.setPackage(mActivity.getPackageName());
+            intent.setPackage(context.getPackageName());
             webappInfo.setWebappIntentExtras(intent);
 
-            intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(mActivity, url));
+            intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(context, url));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mActivity.getApplicationContext().startActivity(intent);
+            context.getApplicationContext().startActivity(intent);
         }
     }
 
     @Override
-    public FullScreenTabWebContentsDelegateAndroid createWebContentsDelegate(
-            Tab tab, ChromeActivity activity) {
-        return new FullScreenTabWebContentsDelegateAndroid(tab, activity);
+    public FullScreenTabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
+        return new FullScreenTabWebContentsDelegateAndroid(tab);
     }
 
     @Override
-    public ContextMenuPopulator createContextMenuPopulator(Tab tab, final ChromeActivity activity) {
-        return new ChromeContextMenuPopulator(
-                new TabContextMenuItemDelegate(tab, activity),
+    public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
                 ChromeContextMenuPopulator.FULLSCREEN_TAB_MODE);
     }
 

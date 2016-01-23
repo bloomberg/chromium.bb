@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.document;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -23,8 +22,8 @@ public class DocumentTabDelegateFactory extends TabDelegateFactory {
             extends TabWebContentsDelegateAndroid {
         private boolean mIsIncognito;
 
-        public DocumentTabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
-            super(tab, activity);
+        public DocumentTabWebContentsDelegateAndroid(Tab tab) {
+            super(tab);
             mIsIncognito = tab.isIncognito();
         }
 
@@ -39,8 +38,7 @@ public class DocumentTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public TabWebContentsDelegateAndroid createWebContentsDelegate(
-            Tab tab, ChromeActivity activity) {
-        return new DocumentTabWebContentsDelegateAndroid(tab, activity);
+    public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
+        return new DocumentTabWebContentsDelegateAndroid(tab);
     }
 }

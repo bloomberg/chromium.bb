@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +23,6 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -64,8 +64,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     /** Used for logging. */
     private static final String TAG = "WebContentsDelegate";
 
-    private final Tab mTab;
-    protected final ChromeActivity mActivity;
+    protected final Tab mTab;
 
     private FindResultListener mFindResultListener;
 
@@ -77,23 +76,25 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     private final Runnable mCloseContentsRunnable = new Runnable() {
         @Override
         public void run() {
-            boolean isSelected = mActivity.getTabModelSelector().getCurrentTab() == mTab;
-            mActivity.getTabModelSelector().closeTab(mTab);
+            boolean isSelected = mTab.getTabModelSelector().getCurrentTab() == mTab;
+            mTab.getTabModelSelector().closeTab(mTab);
 
             // If the parent Tab belongs to another Activity, fire the Intent to bring it back.
             if (isSelected && mTab.getParentIntent() != null
-                    && mActivity.getIntent() != mTab.getParentIntent()) {
-                boolean mayLaunch = FeatureUtilities.isDocumentMode(mActivity)
+                    && mTab.getActivity().getIntent() != mTab.getParentIntent()) {
+                boolean mayLaunch = FeatureUtilities.isDocumentMode(mTab.getApplicationContext())
                         ? isParentInAndroidOverview() : true;
-                if (mayLaunch) mActivity.startActivity(mTab.getParentIntent());
+                if (mayLaunch) {
+                    mTab.getActivity().startActivity(mTab.getParentIntent());
+                }
             }
         }
 
         /** If the API allows it, returns whether a Task still exists for the parent Activity. */
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private boolean isParentInAndroidOverview() {
-            ActivityManager activityManager =
-                    (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
+            ActivityManager activityManager = (ActivityManager) mTab.getApplicationContext()
+                    .getSystemService(Context.ACTIVITY_SERVICE);
             for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
                 Intent taskIntent = DocumentUtils.getBaseIntentFromTask(task);
                 if (taskIntent != null && taskIntent.filterEquals(mTab.getParentIntent())) {
@@ -104,9 +105,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         }
     };
 
-    public TabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
+    public TabWebContentsDelegateAndroid(Tab tab) {
         mTab = tab;
-        mActivity = activity;
         mHandler = new Handler();
     }
 
@@ -217,7 +217,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                         mTab.getWebContents().getNavigationController().continuePendingReload();
                     }
                 });
-        warningDialog.show(mActivity.getFragmentManager(), null);
+        if (mTab.getActivity() == null) return;
+        warningDialog.show(mTab.getActivity().getFragmentManager(), null);
     }
 
     @Override
@@ -272,7 +273,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         mWebContentsUrlMapping = Pair.create(newWebContents, targetUrl);
 
         // TODO(dfalcantara): Re-remove this once crbug.com/508366 is fixed.
-        TabCreator tabCreator = mActivity.getTabCreator(mTab.isIncognito());
+        TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
 
         if (tabCreator != null && tabCreator.createsTabsAsynchronously()) {
             DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
@@ -310,13 +311,13 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     protected TabModel getTabModel() {
         // TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
         //                    can return a TabModelSelector that activateContents() can use.
-        return mActivity.getTabModelSelector().getModel(mTab.isIncognito());
+        return mTab.getTabModelSelector().getModel(mTab.isIncognito());
     }
 
     @CalledByNative
     public boolean shouldResumeRequestsForCreatedWindow() {
         // Pause the WebContents if an Activity has to be created for it first.
-        TabCreator tabCreator = mActivity.getTabCreator(mTab.isIncognito());
+        TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
         assert tabCreator != null;
         return !tabCreator.createsTabsAsynchronously();
     }
@@ -326,7 +327,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
             int disposition, Rect initialPosition, boolean userGesture) {
         assert mWebContentsUrlMapping.first == webContents;
 
-        TabCreator tabCreator = mActivity.getTabCreator(mTab.isIncognito());
+        TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
         assert tabCreator != null;
 
         // Grab the URL, which might not be available via the Tab.
@@ -356,7 +357,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     public void activateContents() {
         boolean activityIsDestroyed = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            activityIsDestroyed = mActivity.isDestroyed();
+            activityIsDestroyed = mTab.getActivity().isDestroyed();
         }
         if (activityIsDestroyed || !mTab.isInitialized()) {
             Log.e(TAG, "Activity destroyed before calling activateContents().  Bailing out.");
@@ -400,21 +401,23 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public boolean takeFocus(boolean reverse) {
+        Activity activity = mTab.getActivity();
+        if (activity == null) return false;
         if (reverse) {
-            View menuButton = mActivity.findViewById(R.id.menu_button);
+            View menuButton = activity.findViewById(R.id.menu_button);
             if (menuButton == null || !menuButton.isShown()) {
-                menuButton = mActivity.findViewById(R.id.document_menu_button);
+                menuButton = activity.findViewById(R.id.document_menu_button);
             }
             if (menuButton != null && menuButton.isShown()) {
                 return menuButton.requestFocus();
             }
 
-            View tabSwitcherButton = mActivity.findViewById(R.id.tab_switcher_button);
+            View tabSwitcherButton = activity.findViewById(R.id.tab_switcher_button);
             if (tabSwitcherButton != null && tabSwitcherButton.isShown()) {
                 return tabSwitcherButton.requestFocus();
             }
         } else {
-            View urlBar = mActivity.findViewById(R.id.url_bar);
+            View urlBar = activity.findViewById(R.id.url_bar);
             if (urlBar != null) return urlBar.requestFocus();
         }
         return false;
@@ -422,8 +425,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void handleKeyboardEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (mActivity.onKeyDown(event.getKeyCode(), event)) return;
+        if (event.getAction() == KeyEvent.ACTION_DOWN && mTab.getActivity() != null) {
+            if (mTab.getActivity().onKeyDown(event.getKeyCode(), event)) return;
 
             // Handle the Escape key here (instead of in KeyboardShortcuts.java), so it doesn't
             // interfere with other parts of the activity (e.g. the URL bar).
@@ -458,7 +461,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
             case KeyEvent.KEYCODE_MEDIA_CLOSE:
             case KeyEvent.KEYCODE_MEDIA_EJECT:
             case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
-                AudioManager am = (AudioManager) mActivity.getSystemService(
+                AudioManager am = (AudioManager) mTab.getApplicationContext().getSystemService(
                         Context.AUDIO_SERVICE);
                 am.dispatchMediaKeyEvent(e);
                 break;

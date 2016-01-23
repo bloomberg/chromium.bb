@@ -117,8 +117,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         /**
          * See {@link TabWebContentsDelegateAndroid}.
          */
-        public CustomTabWebContentsDelegate(Tab tab, CustomTabActivity activity) {
-            super(tab, activity);
+        public CustomTabWebContentsDelegate(Tab tab) {
+            super(tab);
         }
 
         @Override
@@ -136,10 +136,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     private ExternalNavigationHandler mNavigationHandler;
 
     @Override
-    public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab,
-            ChromeActivity activity) {
-        assert activity instanceof CustomTabActivity;
-        return new CustomTabWebContentsDelegate(tab, (CustomTabActivity) activity);
+    public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
+        return new CustomTabWebContentsDelegate(tab);
     }
 
     @Override
@@ -151,9 +149,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public ContextMenuPopulator createContextMenuPopulator(Tab tab, ChromeActivity activity) {
-        return new ChromeContextMenuPopulator(
-                new TabContextMenuItemDelegate(tab, activity),
+    public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
                 ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
     }
 

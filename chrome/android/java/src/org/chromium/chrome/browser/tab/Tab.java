@@ -1568,7 +1568,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
                     new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-            mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this, getActivity());
+            mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
             mWebContentsObserver =
                     new TabWebContentsObserver(mContentViewCore.getWebContents(), this);
 
@@ -1579,8 +1579,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert mNativeTabAndroid != 0;
             nativeInitWebContents(
                     mNativeTabAndroid, mIncognito, mContentViewCore, mWebContentsDelegate,
-                    new TabContextMenuPopulator(mDelegateFactory.createContextMenuPopulator(
-                            this, getActivity()), this));
+                    new TabContextMenuPopulator(mDelegateFactory.createContextMenuPopulator(this),
+                            this));
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
