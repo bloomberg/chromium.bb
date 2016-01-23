@@ -606,6 +606,21 @@ group("both_gn_and_gyp") {
   }
 }
 
+# This group contains all the targets needed to run mojo's apptest_runner.
+group("mojo_apptests") {
+  testonly = true
+
+  deps = []
+
+  if (is_win || is_linux) {
+    deps += [
+      "//mandoline:tests",
+      "//mash/wm:tests",
+      "//ui/views/mus:tests",
+    ]
+  }
+}
+
 group("gn_only") {
   testonly = true
 
@@ -625,8 +640,8 @@ group("gn_only") {
 
   if (is_win || is_linux) {
     deps += [
+      ":mojo_apptests",
       "//mash:all",
-      "//ui/views/mus:tests",
     ]
   }
 

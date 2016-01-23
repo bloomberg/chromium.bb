@@ -28,6 +28,8 @@ if config.target_os != config.OS_ANDROID:
   mus_apptests['args'] = [ '--use-x11-test-config',
                            '--override-use-gl-with-osmesa-for-tests' ]
 
+# WARNING: If you add a test make sure the gn target mojo_apptests depends upon
+# it.
 tests = [
   {
     'test': 'mojo:clipboard_apptests',
