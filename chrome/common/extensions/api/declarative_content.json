@@ -64,7 +64,7 @@
       },
       {
         "id": "SetIcon",
-        "description": "Declarative event action that sets the 19-<abbr title=\"device-independent pixel\">dip</abbr> square icon for the extension's $(ref:pageAction page action) or $(ref:browserAction browser action) while the corresponding conditions are met.  This action can be used without <a href=\"declare_permissions.html#host-permissions\">host permissions</a>, but the extension must have  page or browser action.<p>Exactly one of <code>imageData</code> or <code>path</code> must be specified.  Both are dictionaries mapping a number of pixels to an image representation. The image representation in <code>imageData</code> is an<a href=\"https://developer.mozilla.org/en-US/docs/Web/API/ImageData\">ImageData</a> object, for example from a <code>&lt;canvas></code> element, while the image representation in <code>path</code> is the path to an image file relative to he extension's manifest.  If <code>scale</code> screen pixels fit into a device-independent pixel, the <code>scale * 19</code> icon will be used.  If that scale is missing, the other image will be resized to the needed size.",
+        "description": "Declarative event action that sets the n-<abbr title=\"device-independent pixel\">dip</abbr> square icon for the extension's $(ref:pageAction page action) or $(ref:browserAction browser action) while the corresponding conditions are met.  This action can be used without <a href=\"declare_permissions.html#host-permissions\">host permissions</a>, but the extension must have  page or browser action.<p>Exactly one of <code>imageData</code> or <code>path</code> must be specified.  Both are dictionaries mapping a number of pixels to an image representation. The image representation in <code>imageData</code> is an<a href=\"https://developer.mozilla.org/en-US/docs/Web/API/ImageData\">ImageData</a> object, for example from a <code>&lt;canvas></code> element, while the image representation in <code>path</code> is the path to an image file relative to he extension's manifest.  If <code>scale</code> screen pixels fit into a device-independent pixel, the <code>scale * n</code> icon will be used.  If that scale is missing, another image will be resized to the needed size.",
         "type": "object",
         "properties": {
           "instanceType": {
@@ -76,28 +76,22 @@
               { "$ref": "ImageDataType" },
               {
                 "type": "object",
-                "properties": {
-                  "19": {"$ref": "ImageDataType", "optional": true},
-                  "38": {"$ref": "ImageDataType", "optional": true}
-                }
+                "additionalProperties": { "type": "any" }
               }
             ],
             "optional": true,
-            "description": "Either an ImageData object or a dictionary {size -> ImageData} representing icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals <code>scale</code>, then image with size <code>scale</code> * 19 will be selected. Initially only scales 1 and 2 will be supported. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'19': foo}'"
+            "description": "Either an ImageData object or a dictionary {size -> ImageData} representing icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals <code>scale</code>, then image with size <code>scale</code> * n will be selected, where n is the size of the icon in the UI. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'16': foo}'"
           }
 //          TODO: "path": {
 //            "choices": [
 //              { "type": "string" },
 //              {
 //                "type": "object",
-//                "properties": {
-//                  "19": {"type": "string", "optional": true},
-//                  "38": {"type": "string", "optional": true}
-//                }
+//                "additionalProperties": { "type": "any" }
 //              }
 //            ],
 //            "optional": true,
-//            "description": "Either a relative image path or a dictionary {size -> relative image path} pointing to icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals <code>scale</code>, then image with size <code>scale</code> * 19 will be selected. Initially only scales 1 and 2 will be supported. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.imageData = {'19': foo}'"
+//            "description": "Either a relative image path or a dictionary {size -> relative image path} pointing to icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals <code>scale</code>, then image with size <code>scale</code> * n will be selected, where n is the size of the icon in the UI. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.path = {'16': foo}'"
 //          }
         }
       },

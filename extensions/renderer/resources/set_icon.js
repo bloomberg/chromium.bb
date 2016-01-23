@@ -5,15 +5,15 @@
 var SetIconCommon = requireNative('setIcon').SetIconCommon;
 var sendRequest = require('sendRequest').sendRequest;
 
-function loadImagePath(path, iconSize, callback) {
+function loadImagePath(path, callback) {
   var img = new Image();
   img.onerror = function() {
     console.error('Could not load action icon \'' + path + '\'.');
   };
   img.onload = function() {
     var canvas = document.createElement('canvas');
-    canvas.width = img.width > iconSize ? iconSize : img.width;
-    canvas.height = img.height > iconSize ? iconSize : img.height;
+    canvas.width = img.width;
+    canvas.height = img.height;
 
     var canvas_context = canvas.getContext('2d');
     canvas_context.clearRect(0, 0, canvas.width, canvas.height);
@@ -25,26 +25,22 @@ function loadImagePath(path, iconSize, callback) {
   img.src = path;
 }
 
-function verifyImageData(imageData, iconSize) {
-  // Verify that this at least looks like an ImageData element.
+function smellsLikeImageData(imageData) {
+  // See if this object at least looks like an ImageData element.
   // Unfortunately, we cannot use instanceof because the ImageData
   // constructor is not public.
   //
   // We do this manually instead of using JSONSchema to avoid having these
   // properties show up in the doc.
-  if (!('width' in imageData) ||
-      !('height' in imageData) ||
-      !('data' in imageData)) {
+  return (typeof imageData == 'object') && ('width' in imageData) &&
+         ('height' in imageData) && ('data' in imageData);
+}
+
+function verifyImageData(imageData) {
+  if (!smellsLikeImageData(imageData)) {
     throw new Error(
         'The imageData property must contain an ImageData object or' +
         ' dictionary of ImageData objects.');
-  }
-
-  if (imageData.width > iconSize ||
-      imageData.height > iconSize) {
-    throw new Error(
-        'The imageData property must contain an ImageData object that ' +
-        'is no larger than ' + iconSize + ' pixels square.');
   }
 }
 
@@ -59,7 +55,6 @@ function verifyImageData(imageData, iconSize) {
  *   callback may be called reentrantly.
  */
 function setIcon(details, callback) {
-  var iconSizes = [19, 38];
   // Note that iconIndex is actually deprecated, and only available to the
   // pageAction API.
   // TODO(kalman): Investigate whether this is for the pageActions API, and if
@@ -70,24 +65,19 @@ function setIcon(details, callback) {
   }
 
   if ('imageData' in details) {
-    var isEmpty = true;
-    for (var i = 0; i < iconSizes.length; i++) {
-      var sizeKey = iconSizes[i].toString();
-      if (sizeKey in details.imageData) {
-        verifyImageData(details.imageData[sizeKey], iconSizes[i]);
-        isEmpty =false;
-      }
-    }
-
-    if (isEmpty) {
-      // If details.imageData is not dictionary with keys in set {'19', '38'},
-      // it must be an ImageData object.
-      var sizeKey = iconSizes[0].toString();
+    if (smellsLikeImageData(details.imageData)) {
       var imageData = details.imageData;
       details.imageData = {};
-      details.imageData[sizeKey] = imageData;
-      verifyImageData(details.imageData[sizeKey], iconSizes[0]);
+      details.imageData[imageData.width.toString()] = imageData;
+    } else if (typeof details.imageData == 'object' &&
+               Object.getOwnPropertyNames(details.imageData).length !== 0) {
+      for (var sizeKey in details.imageData) {
+        verifyImageData(details.imageData[sizeKey]);
+      }
+    } else {
+      verifyImageData(false);
     }
+
     callback(SetIconCommon(details));
     return;
   }
@@ -95,37 +85,23 @@ function setIcon(details, callback) {
   if ('path' in details) {
     if (typeof details.path == 'object') {
       details.imageData = {};
-      var isEmpty = true;
-      var processIconSize = function(index) {
-        if (index == iconSizes.length) {
-          delete details.path;
-          if (isEmpty)
-            throw new Error('The path property must not be empty.');
-          callback(SetIconCommon(details));
-          return;
-        }
-        var sizeKey = iconSizes[index].toString();
-        if (!(sizeKey in details.path)) {
-          processIconSize(index + 1);
-          return;
-        }
-        isEmpty = false;
-        loadImagePath(details.path[sizeKey], iconSizes[index],
-          function(imageData) {
-            details.imageData[sizeKey] = imageData;
-            processIconSize(index + 1);
-          });
-      }
-      processIconSize(0);
-    } else if (typeof details.path == 'string') {
-      var sizeKey = iconSizes[0].toString();
-      details.imageData = {};
-      loadImagePath(details.path, iconSizes[0],
-          function(imageData) {
-            details.imageData[sizeKey] = imageData;
-            delete details.path;
+      var detailKeyCount = 0;
+      for (var iconSize in details.path) {
+        ++detailKeyCount;
+        loadImagePath(details.path[iconSize], function(size, imageData) {
+          details.imageData[size] = imageData;
+          if (--detailKeyCount == 0)
             callback(SetIconCommon(details));
-            return;
+        }.bind(null, iconSize));
+      }
+      if (detailKeyCount == 0)
+        throw new Error('The path property must not be empty.');
+    } else if (typeof details.path == 'string') {
+      details.imageData = {};
+      loadImagePath(details.path, function(imageData) {
+        details.imageData[imageData.width.toString()] = imageData;
+        delete details.path;
+        callback(SetIconCommon(details));
       });
     }
     return;

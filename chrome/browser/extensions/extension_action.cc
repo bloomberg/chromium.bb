@@ -130,8 +130,12 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
   for (base::DictionaryValue::Iterator iter(dict); !iter.IsAtEnd();
        iter.Advance()) {
     int icon_size = 0;
-    if (!base::StringToInt(iter.key(), &icon_size))
+    // Chrome helpfully scales the provided icon(s), but let's not go overboard.
+    const int kActionIconMaxSize = 10 * extension_misc::EXTENSION_ICON_ACTION;
+    if (!base::StringToInt(iter.key(), &icon_size) || icon_size <= 0 ||
+        icon_size > kActionIconMaxSize) {
       continue;
+    }
 
     const base::BinaryValue* image_data;
     std::string binary_string64;

@@ -41,6 +41,7 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/skia_util.h"
 
 using content::WebContents;
@@ -68,26 +69,19 @@ const char kEmptyImageDataError[] =
     "of ImageData objects.";
 const char kEmptyPathError[] = "The path property must not be empty.";
 
-// Views platforms have the icon superimposed over a button's background.
-// Macs don't, but still need a 29x29-sized image (and the easiest way to do
-// that is to superimpose the icon over a blank background).
-gfx::ImageSkia AddBackground(const gfx::ImageSkia& icon) {
-#if !defined(OS_MACOSX)
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION);
-#else
-  const gfx::Size size(29, 29);  // Size of browser actions buttons.
-  gfx::ImageSkia bg(new BlankImageSource(size), size);
-#endif
-  return gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon);
-}
+// Makes sure |bar_rendering| has |model_icon| in the middle (there's additional
+// padding that correlates to the rest of the button, and this is ignored).
+void VerifyIconsMatch(const gfx::Image& bar_rendering,
+                      const gfx::Image& model_icon) {
+  gfx::Rect icon_portion(gfx::Point(), bar_rendering.Size());
+  icon_portion.ClampToCenteredSize(model_icon.Size());
 
-bool ImagesAreEqualAtScale(const gfx::ImageSkia& i1,
-                           const gfx::ImageSkia& i2,
-                           float scale) {
-  SkBitmap bitmap1 = i1.GetRepresentation(scale).sk_bitmap();
-  SkBitmap bitmap2 = i2.GetRepresentation(scale).sk_bitmap();
-  return gfx::BitmapsAreEqual(bitmap1, bitmap2);
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(
+      model_icon.AsImageSkia().GetRepresentation(1.0f).sk_bitmap(),
+      gfx::ImageSkiaOperations::ExtractSubset(bar_rendering.AsImageSkia(),
+                                              icon_portion)
+          .GetRepresentation(1.0f)
+          .sk_bitmap()));
 }
 
 class BrowserActionApiTest : public ExtensionApiTest {
@@ -188,140 +182,147 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   ASSERT_EQ(action_icon_last_id,
             icon_factory.GetIcon(0).ToSkBitmap()->getGenerationID());
 
-  uint32_t action_icon_current_id = 0;
+  gfx::Image last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
+  EXPECT_TRUE(gfx::test::AreImagesEqual(last_bar_icon,
+                                        GetBrowserActionsBar()->GetIcon(0)));
 
-  ResultCatcher catcher;
+  // The reason we don't test more standard scales (like 1x, 2x, etc.) is that
+  // these may be generated from the provided scales.
+  float kSmallIconScale = 21.f / ExtensionAction::ActionIconSize();
+  float kLargeIconScale = 42.f / ExtensionAction::ActionIconSize();
+  ASSERT_FALSE(ui::IsSupportedScale(kSmallIconScale));
+  ASSERT_FALSE(ui::IsSupportedScale(kLargeIconScale));
 
   // Tell the extension to update the icon using ImageData object.
+  ResultCatcher catcher;
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = icon_factory.GetIcon(0);
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
 
-  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  action_icon = icon_factory.GetIcon(0);
+  uint32_t action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
+  VerifyIconsMatch(last_bar_icon, action_icon);
 
-  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            1.0f));
+  // Check that only the smaller size was set (only a 21px icon was provided).
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(kLargeIconScale));
 
   // Tell the extension to update the icon using path.
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = icon_factory.GetIcon(0);
+  // Make sure the browser action bar updated.
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
 
+  action_icon = icon_factory.GetIcon(0);
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
+  VerifyIconsMatch(last_bar_icon, action_icon);
 
-  EXPECT_FALSE(
-      action_icon.ToImageSkia()->HasRepresentation(2.0f));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            1.0f));
+  // Check that only the smaller size was set (only a 21px icon was provided).
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(kLargeIconScale));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects.
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = icon_factory.GetIcon(0);
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
 
+  action_icon = icon_factory.GetIcon(0);
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
+  VerifyIconsMatch(last_bar_icon, action_icon);
 
-  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            1.0f));
+  // Check both sizes were set (as two icon sizes were provided).
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_TRUE(action_icon.AsImageSkia().HasRepresentation(kLargeIconScale));
 
   // Tell the extension to update the icon using dictionary of paths.
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = icon_factory.GetIcon(0);
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
 
+  action_icon = icon_factory.GetIcon(0);
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
+  VerifyIconsMatch(last_bar_icon, action_icon);
 
-  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            1.0f));
+  // Check both sizes were set (as two icon sizes were provided).
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_TRUE(action_icon.AsImageSkia().HasRepresentation(kLargeIconScale));
 
   // Tell the extension to update the icon using dictionary of ImageData
-  // objects, but setting only size 19.
+  // objects, but setting only one size.
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = icon_factory.GetIcon(0);
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
 
+  action_icon = icon_factory.GetIcon(0);
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
+  VerifyIconsMatch(last_bar_icon, action_icon);
 
-  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            1.0f));
+  // Check that only the smaller size was set (only a 21px icon was provided).
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(kLargeIconScale));
 
   // Tell the extension to update the icon using dictionary of paths, but
-  // setting only size 19.
+  // setting only one size.
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = icon_factory.GetIcon(0);
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
 
+  action_icon = icon_factory.GetIcon(0);
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
+  VerifyIconsMatch(last_bar_icon, action_icon);
 
-  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            1.0f));
+  // Check that only the smaller size was set (only a 21px icon was provided).
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(kLargeIconScale));
 
   // Tell the extension to update the icon using dictionary of ImageData
-  // objects, but setting only size 38.
+  // objects, but setting only size 42.
   GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
+  EXPECT_FALSE(gfx::test::AreImagesEqual(last_bar_icon,
+                                         GetBrowserActionsBar()->GetIcon(0)));
+  last_bar_icon = GetBrowserActionsBar()->GetIcon(0);
+
   action_icon = icon_factory.GetIcon(0);
-
-  const gfx::ImageSkia* action_icon_skia = action_icon.ToImageSkia();
-
-  EXPECT_FALSE(action_icon_skia->HasRepresentation(1.0f));
-  EXPECT_TRUE(action_icon_skia->HasRepresentation(2.0f));
-
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
 
-  EXPECT_TRUE(gfx::BitmapsAreEqual(
-      *action_icon.ToSkBitmap(),
-      action_icon_skia->GetRepresentation(2.0f).sk_bitmap()));
-
-  EXPECT_TRUE(
-      ImagesAreEqualAtScale(AddBackground(*action_icon_skia),
-                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
-                            2.0f));
+  // Check that only the larger size was set (only a 42px icon was provided).
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(kSmallIconScale));
+  EXPECT_TRUE(action_icon.AsImageSkia().HasRepresentation(kLargeIconScale));
 
   // Try setting icon with empty dictionary of ImageData objects.
   GetBrowserActionsBar()->Press(0);

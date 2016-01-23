@@ -90,14 +90,13 @@ SkPaint* GetBadgeTextPaintSingleton() {
 }
 
 gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
+                                    int target_width,
                                     float target_scale) {
-  gfx::Size scaled_size =
-      gfx::ScaleToCeiledSize(rep.pixel_size(), target_scale / rep.scale());
-  return gfx::ImageSkiaRep(skia::ImageOperations::Resize(
-      rep.sk_bitmap(),
-      skia::ImageOperations::RESIZE_BEST,
-      scaled_size.width(),
-      scaled_size.height()), target_scale);
+  return gfx::ImageSkiaRep(
+      skia::ImageOperations::Resize(rep.sk_bitmap(),
+                                    skia::ImageOperations::RESIZE_BEST,
+                                    target_width, target_width),
+      target_scale);
 }
 
 }  // namespace
@@ -129,11 +128,10 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
     return;
 
   gfx::ImageSkia skia = icon_.AsImageSkia();
-  // TODO(estade): Fix setIcon and enable this on !MD.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
-    if (rep.scale() != canvas->image_scale())
-      skia.AddRepresentation(ScaleImageSkiaRep(rep, canvas->image_scale()));
+  gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
+  if (rep.scale() != canvas->image_scale()) {
+    skia.AddRepresentation(
+        ScaleImageSkiaRep(rep, skia.width(), canvas->image_scale()));
   }
   if (grayscale_)
     skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});

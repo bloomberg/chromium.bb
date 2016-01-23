@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var canvas = document.getElementById("canvas").getContext('2d').
-    getImageData(0, 0, 19, 19);
-var canvasHD = document.getElementById("canvas").getContext('2d').
-    getImageData(0, 0, 38, 38);
+var canvas = document.getElementById("canvas").getContext('2d').getImageData(
+    0, 0, 21, 21);
+var canvasHD = document.getElementById("canvas").getContext('2d').getImageData(
+    0, 0, 42, 42);
 
 var setIconParamQueue = [
   {imageData: canvas},
   {path: 'icon.png'},
-  {imageData: {'19': canvas, '38': canvasHD}},
-  {path: {'19': 'icon.png', '38': 'icon.png'}},
-  {imageData: {'19': canvas}},
-  {path: {'19': 'icon.png'}},
-  {imageData: {'38': canvasHD}},
+  {imageData: {'21': canvas, '42': canvasHD}},
+  {path: {'21': 'icon.png', '42': 'icon2.png'}},
+  {imageData: {'21': canvas}},
+  {path: {'21': 'icon.png'}},
+  {imageData: {'42': canvasHD}},
   {imageData: {}},
   {path: {}},
 ];

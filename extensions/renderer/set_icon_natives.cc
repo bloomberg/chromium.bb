@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/script_context.h"
@@ -21,7 +22,6 @@
 
 namespace {
 
-const char* kImageSizeKeys[] = {"19", "38"};
 const char kInvalidDimensions[] = "ImageData has invalid dimensions.";
 const char kInvalidData[] = "ImageData data length does not match dimensions.";
 const char kNoMemory[] = "Chrome was unable to initialize icon.";
@@ -115,18 +115,20 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
           ->ToObject(isolate);
 
   DCHECK(bitmap_set_value);
-  for (size_t i = 0; i < arraysize(kImageSizeKeys); i++) {
-    if (!image_data_set->Has(
-            v8::String::NewFromUtf8(isolate, kImageSizeKeys[i])))
+
+  v8::Local<v8::Array> property_names(image_data_set->GetOwnPropertyNames());
+  for (size_t i = 0; i < property_names->Length(); ++i) {
+    v8::Local<v8::Value> key(property_names->Get(i));
+    v8::String::Utf8Value utf8_key(key);
+    int size;
+    if (!base::StringToInt(std::string(*utf8_key), &size))
       continue;
     v8::Local<v8::Object> image_data =
-        image_data_set->Get(v8::String::NewFromUtf8(isolate, kImageSizeKeys[i]))
-            ->ToObject(isolate);
+        image_data_set->Get(key)->ToObject(isolate);
     v8::Local<v8::Value> image_data_bitmap;
     if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
       return false;
-    (*bitmap_set_value)->Set(
-        v8::String::NewFromUtf8(isolate, kImageSizeKeys[i]), image_data_bitmap);
+    (*bitmap_set_value)->Set(key, image_data_bitmap);
   }
   return true;
 }

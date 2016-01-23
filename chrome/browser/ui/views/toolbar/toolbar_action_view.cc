@@ -155,12 +155,8 @@ void ToolbarActionView::UpdateState() {
       view_controller_->GetIcon(web_contents,
                                 GetPreferredSize()).AsImageSkia());
 
-  if (!icon.isNull()) {
-    gfx::ImageSkia bg = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_BROWSER_ACTION);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
-  }
+  if (!icon.isNull())
+    SetImage(views::Button::STATE_NORMAL, icon);
 
   SetTooltipText(view_controller_->GetTooltip(web_contents));
   SetAccessibleName(view_controller_->GetAccessibleName(web_contents));
