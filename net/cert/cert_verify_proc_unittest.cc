@@ -516,6 +516,18 @@ TEST_F(CertVerifyProcTest, GoogleDigiNotarTest) {
   EXPECT_NE(OK, error);
 }
 
+// Ensures the CertVerifyProc blacklist remains in sorted order, so that it
+// can be binary-searched.
+TEST_F(CertVerifyProcTest, BlacklistIsSorted) {
+// Defines kBlacklistedSPKIs.
+#include "net/cert/cert_verify_proc_blacklist.inc"
+  for (size_t i = 0; i < arraysize(kBlacklistedSPKIs) - 1; ++i) {
+    EXPECT_GT(0, memcmp(kBlacklistedSPKIs[i], kBlacklistedSPKIs[i + 1],
+                        crypto::kSHA256Length))
+        << " at index " << i;
+  }
+}
+
 TEST_F(CertVerifyProcTest, DigiNotarCerts) {
   static const char* const kDigiNotarFilenames[] = {
     "diginotar_root_ca.pem",
@@ -538,12 +550,12 @@ TEST_F(CertVerifyProcTest, DigiNotarCerts) {
     base::StringPiece spki;
     ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(der_bytes, &spki));
 
-    std::string spki_sha1 = base::SHA1HashString(spki.as_string());
+    std::string spki_sha256 = crypto::SHA256HashString(spki.as_string());
 
     HashValueVector public_keys;
-    HashValue hash(HASH_VALUE_SHA1);
-    ASSERT_EQ(hash.size(), spki_sha1.size());
-    memcpy(hash.data(), spki_sha1.data(), spki_sha1.size());
+    HashValue hash(HASH_VALUE_SHA256);
+    ASSERT_EQ(hash.size(), spki_sha256.size());
+    memcpy(hash.data(), spki_sha256.data(), spki_sha256.size());
     public_keys.push_back(hash);
 
     EXPECT_TRUE(CertVerifyProc::IsPublicKeyBlacklisted(public_keys)) <<

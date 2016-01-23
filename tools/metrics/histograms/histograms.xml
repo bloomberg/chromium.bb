@@ -27272,6 +27272,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLCertBlacklisted">
+  <obsolete>
+    Removed on 01/2016. Only ever measured blacklisted Comodo serials, not any
+    of the other blacklisted certificates and keys.
+  </obsolete>
   <owner>agl@chromium.org</owner>
   <summary>
     Counts the number of times that users have hit blacklisted certificates. The
