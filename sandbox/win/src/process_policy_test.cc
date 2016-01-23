@@ -319,7 +319,9 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
             runner.RunTest(L"Process_RunApp6 findstr.exe"));
 
 #if !defined(_WIN64)
-  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
+  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA &&
+      base::win::OSInfo::GetInstance()->architecture() !=
+          base::win::OSInfo::X86_ARCHITECTURE) {  // http://crbug.com/580800
     // WinXP results are not reliable.
     EXPECT_EQ(SBOX_TEST_SECOND_ERROR,
         runner.RunTest(L"Process_RunApp4 calc.exe"));
