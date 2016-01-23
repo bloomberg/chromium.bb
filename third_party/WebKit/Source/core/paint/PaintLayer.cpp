@@ -94,38 +94,6 @@ namespace blink {
 
 namespace {
 
-#if !OS(WIN) // Compiler on windows seems to combine bit fields of inner structs.
-
-struct SameSizeAsPaintLayer {
-    virtual ~SameSizeAsPaintLayer() { } // Allocate vtable pointer.
-    int type;
-    int bitFields;
-    void* pointers[13];
-    LayoutUnit layoutUnits[8];
-    int intFields[6];
-    uint64_t compositingReasons[2];
-    struct {
-        IntRect rect;
-        void* pointers[8];
-        int bitFields;
-    } ancestorCompositingInputs;
-    struct {
-        int bitFields;
-    } descendantCompositingInputs;
-    struct {
-        void* pointers[2];
-    } clipper;
-    struct {
-        IntSize size;
-        void* pointer;
-        LayoutRect rect;
-    } previousPaintStatus;
-};
-
-static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer), "PaintLayer should stay small");
-
-#endif // !OS(WIN)
-
 static CompositingQueryMode gCompositingQueryMode =
     CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
 
