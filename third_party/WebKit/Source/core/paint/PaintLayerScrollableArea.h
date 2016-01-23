@@ -188,6 +188,7 @@ public:
     GraphicsLayer* layerForScrollCorner() const override;
 
     bool usesCompositedScrolling() const override;
+    bool shouldScrollOnMainThread() const override;
     void scrollControlWasSetNeedsPaintInvalidation() override;
     bool shouldUseIntegerScrollOffset() const override;
     bool isActive() const override;

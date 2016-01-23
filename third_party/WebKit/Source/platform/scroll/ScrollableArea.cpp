@@ -517,6 +517,14 @@ void ScrollableArea::cancelProgrammaticScrollAnimation()
         programmaticScrollAnimator->cancelAnimation();
 }
 
+bool ScrollableArea::shouldScrollOnMainThread() const
+{
+    if (GraphicsLayer* layer = layerForScrolling()) {
+        return layer->platformLayer()->shouldScrollOnMainThread();
+    }
+    return true;
+}
+
 DoubleRect ScrollableArea::visibleContentRectDouble(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     return visibleContentRect(scrollbarInclusion);

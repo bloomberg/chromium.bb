@@ -398,6 +398,10 @@ public:
     // TODO(liberato): remove once autoplay gesture override experiment concludes.
     void triggerAutoplayViewportCheck(HTMLMediaElement*);
 
+    // Returns the run state of the node's scroll animator (see ScrollAnimatorCompositorCoordinater::RunState),
+    // or -1 if the node does not have a scrollable area.
+    int getScrollAnimationState(Node*) const;
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

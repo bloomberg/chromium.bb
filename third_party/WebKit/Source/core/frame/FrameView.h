@@ -356,6 +356,7 @@ public:
     IntRect scrollableAreaBoundingBox() const override;
     bool scrollAnimatorEnabled() const override;
     bool usesCompositedScrolling() const override;
+    bool shouldScrollOnMainThread() const override;
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
@@ -729,7 +730,7 @@ private:
 
     bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 
-    ScrollingCoordinator* scrollingCoordinator();
+    ScrollingCoordinator* scrollingCoordinator() const;
 
     void prepareLayoutAnalyzer();
     PassRefPtr<TracedValue> analyzerCounters();

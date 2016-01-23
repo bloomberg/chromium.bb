@@ -357,4 +357,6 @@
 
     // TODO(liberato): remove once autoplay gesture override experiment concludes.
     void triggerAutoplayViewportCheck(HTMLMediaElement mediaElement);
+
+    int getScrollAnimationState(Node node);
 };

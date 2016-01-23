@@ -57,6 +57,8 @@ protected:
     // WebCompositorAnimationPlayerClient implementation.
     WebCompositorAnimationPlayer* compositorPlayer() const override;
 
+    friend class Internals;
+
     enum class RunState {
         // No animation.
         Idle,

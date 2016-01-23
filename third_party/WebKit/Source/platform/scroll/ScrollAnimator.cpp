@@ -235,30 +235,27 @@ void ScrollAnimator::updateCompositorAnimations()
         }
 
         bool sentToCompositor = false;
-        if (GraphicsLayer* layer = m_scrollableArea->layerForScrolling()) {
-            ASSERT(layer->scrollableArea() == m_scrollableArea);
-            if (!layer->platformLayer()->shouldScrollOnMainThread()) {
-                OwnPtr<WebCompositorAnimation> animation = adoptPtr(
-                    Platform::current()->compositorSupport()->createAnimation(
-                        *m_animationCurve,
-                        WebCompositorAnimation::TargetPropertyScrollOffset));
-                // Being here means that either there is an animation that needs
-                // to be sent to the compositor, or an animation that needs to
-                // be updated (a new scroll event before the previous animation
-                // is finished). In either case, the start time is when the
-                // first animation was initiated. This re-targets the animation
-                // using the current time on main thread.
-                animation->setStartTime(m_startTime);
+        if (!m_scrollableArea->shouldScrollOnMainThread()) {
+            OwnPtr<WebCompositorAnimation> animation = adoptPtr(
+                Platform::current()->compositorSupport()->createAnimation(
+                    *m_animationCurve,
+                    WebCompositorAnimation::TargetPropertyScrollOffset));
+            // Being here means that either there is an animation that needs
+            // to be sent to the compositor, or an animation that needs to
+            // be updated (a new scroll event before the previous animation
+            // is finished). In either case, the start time is when the
+            // first animation was initiated. This re-targets the animation
+            // using the current time on main thread.
+            animation->setStartTime(m_startTime);
 
-                int animationId = animation->id();
-                int animationGroupId = animation->group();
+            int animationId = animation->id();
+            int animationGroupId = animation->group();
 
-                sentToCompositor = addAnimation(animation.release());
-                if (sentToCompositor) {
-                    m_runState = RunState::RunningOnCompositor;
-                    m_compositorAnimationId = animationId;
-                    m_compositorAnimationGroupId = animationGroupId;
-                }
+            sentToCompositor = addAnimation(animation.release());
+            if (sentToCompositor) {
+                m_runState = RunState::RunningOnCompositor;
+                m_compositorAnimationId = animationId;
+                m_compositorAnimationGroupId = animationGroupId;
             }
         }
 

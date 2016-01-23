@@ -188,6 +188,24 @@ static SpellCheckRequester* spellCheckRequester(Document* document)
     return &document->frame()->spellChecker().spellCheckRequester();
 }
 
+static ScrollableArea* scrollableAreaForNode(Node* node)
+{
+    if (!node)
+        return nullptr;
+
+    if (node->isDocumentNode()) {
+        // This can be removed after root layer scrolling is enabled.
+        if (FrameView* frameView = toDocument(node)->view())
+            return frameView->scrollableArea();
+    }
+
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject || !layoutObject->isBox())
+        return nullptr;
+
+    return toLayoutBox(layoutObject)->scrollableArea();
+}
+
 const char* Internals::internalsId = "internals";
 
 Internals* Internals::create(ScriptState* scriptState)
@@ -2511,16 +2529,9 @@ void Internals::setSelectionPaintingWithoutSelectionGapsEnabled(bool enabled)
 
 bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
 {
-    LayoutObject* layoutObject = node->layoutObject();
-    if (!layoutObject)
-        return false;
-    PaintLayer* layer = layoutObject->enclosingLayer();
-    if (!layer)
-        return false;
-    ScrollableArea* scrollableArea = layer->scrollableArea();
-    if (!scrollableArea)
-        return false;
-    return layer->scrollableArea()->scrollAnimator().setScrollbarsVisibleForTesting(visible);
+    if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
+        return scrollableArea->scrollAnimator().setScrollbarsVisibleForTesting(visible);
+    return false;
 }
 
 void Internals::forceRestrictIFramePermissions()
@@ -2551,6 +2562,13 @@ void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement, int 
 void Internals::triggerAutoplayViewportCheck(HTMLMediaElement* element)
 {
     element->triggerAutoplayViewportCheckForTesting();
+}
+
+int Internals::getScrollAnimationState(Node* node) const
+{
+    if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
+        return static_cast<int>(scrollableArea->scrollAnimator().m_runState);
+    return -1;
 }
 
 } // namespace blink

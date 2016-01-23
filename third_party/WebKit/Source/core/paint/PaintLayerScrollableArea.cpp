@@ -1386,6 +1386,17 @@ bool PaintLayerScrollableArea::usesCompositedScrolling() const
     return layer()->hasCompositedLayerMapping() && layer()->compositedLayerMapping()->scrollingLayer();
 }
 
+bool PaintLayerScrollableArea::shouldScrollOnMainThread() const
+{
+    if (LocalFrame* frame = box().frame()) {
+        if (Page* page = frame->page()) {
+            if (page->scrollingCoordinator()->shouldUpdateScrollLayerPositionOnMainThread())
+                return true;
+        }
+    }
+    return ScrollableArea::shouldScrollOnMainThread();
+}
+
 static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode mode, const PaintLayer* layer)
 {
     if (!layer->scrollsOverflow())

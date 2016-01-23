@@ -112,19 +112,17 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
     if (m_runState == RunState::WaitingToSendToCompositor) {
         bool sentToCompositor = false;
 
-        if (GraphicsLayer* layer = m_scrollableArea->layerForScrolling()) {
-            if (!layer->platformLayer()->shouldScrollOnMainThread()) {
-                OwnPtr<WebCompositorAnimation> animation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*m_animationCurve, WebCompositorAnimation::TargetPropertyScrollOffset));
+        if (!m_scrollableArea->shouldScrollOnMainThread()) {
+            OwnPtr<WebCompositorAnimation> animation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*m_animationCurve, WebCompositorAnimation::TargetPropertyScrollOffset));
 
-                int animationId = animation->id();
-                int animationGroupId = animation->group();
+            int animationId = animation->id();
+            int animationGroupId = animation->group();
 
-                if (addAnimation(animation.release())) {
-                    sentToCompositor = true;
-                    m_runState = RunState::RunningOnCompositor;
-                    m_compositorAnimationId = animationId;
-                    m_compositorAnimationGroupId = animationGroupId;
-                }
+            if (addAnimation(animation.release())) {
+                sentToCompositor = true;
+                m_runState = RunState::RunningOnCompositor;
+                m_compositorAnimationId = animationId;
+                m_compositorAnimationGroupId = animationGroupId;
             }
         }
 

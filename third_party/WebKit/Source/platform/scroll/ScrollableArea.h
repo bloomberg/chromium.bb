@@ -222,6 +222,7 @@ public:
     void notifyCompositorAnimationAborted(int groupId);
 
     virtual bool usesCompositedScrolling() const { return false; }
+    virtual bool shouldScrollOnMainThread() const;
 
     // Returns true if the GraphicsLayer tree needs to be rebuilt.
     virtual bool updateAfterCompositingChange() { return false; }

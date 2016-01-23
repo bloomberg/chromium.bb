@@ -441,7 +441,7 @@ LayoutView* FrameView::layoutView() const
     return frame().contentLayoutObject();
 }
 
-ScrollingCoordinator* FrameView::scrollingCoordinator()
+ScrollingCoordinator* FrameView::scrollingCoordinator() const
 {
     Page* p = page();
     return p ? p->scrollingCoordinator() : 0;
@@ -664,6 +664,15 @@ bool FrameView::usesCompositedScrolling() const
     if (m_frame->settings() && m_frame->settings()->preferCompositingToLCDTextEnabled())
         return layoutView->compositor()->inCompositingMode();
     return false;
+}
+
+bool FrameView::shouldScrollOnMainThread() const
+{
+    if (ScrollingCoordinator* sc = scrollingCoordinator()) {
+        if (sc->shouldUpdateScrollLayerPositionOnMainThread())
+            return true;
+    }
+    return ScrollableArea::shouldScrollOnMainThread();
 }
 
 GraphicsLayer* FrameView::layerForScrolling() const
