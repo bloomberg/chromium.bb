@@ -73,17 +73,27 @@ options.ColorProfile;
  *   availableColorProfiles: !Array<!options.ColorProfile>,
  *   bounds: !options.DisplayBounds,
  *   colorProfileId: number,
- *   div: ?Element,
  *   id: string,
  *   isInternal: boolean,
  *   isPrimary: boolean,
  *   resolutions: !Array<!options.DisplayMode>,
  *   name: string,
- *   rotation: number,
- *   originalPosition: ?options.DisplayPosition
+ *   rotation: number
  * }}
  */
 options.DisplayInfo;
+
+/**
+ * @typedef {{
+ *   bounds: !options.DisplayBounds,
+ *   div: ?HTMLElement,
+ *   id: string,
+ *   isPrimary: boolean,
+ *   name: string,
+ *   originalPosition: !options.DisplayPosition
+ * }}
+ */
+options.DisplayLayout;
 
 cr.define('options', function() {
   var Page = cr.ui.pageManager.Page;
@@ -163,7 +173,7 @@ cr.define('options', function() {
      * @type {options.DisplayLayoutType}
      * @private
      */
-    layout_: options.DisplayLayoutType.RIGHT,
+    layoutType_: options.DisplayLayoutType.RIGHT,
 
     /**
      * The array of current output displays.  It also contains the display
@@ -174,34 +184,41 @@ cr.define('options', function() {
     displays_: [],
 
     /**
-     * The index of the currently focused display, or -1 for none.
-     * @type {number}
+     * An object containing DisplayLayout objects for each entry in |displays_|.
+     * @type {!Object<!options.DisplayLayout>}
      * @private
      */
-    focusedIndex_: -1,
+    displayLayoutMap_: {},
 
     /**
-     * The primary display edit info.
-     * @type {?options.DisplayInfo}
+     * The id of the currently focused display, or empty for none.
+     * @type {string}
      * @private
      */
-    primaryDisplay_: null,
+    focusedId_: '',
 
     /**
-     * The secondary display edit info.
-     * @type {?options.DisplayInfo}
+     * The primary display id.
+     * @type {string}
      * @private
      */
-    secondaryDisplay_: null,
+    primaryDisplayId_: '',
+
+    /**
+     * The secondary display id.
+     * @type {string}
+     * @private
+     */
+    secondaryDisplayId_: '',
 
     /**
      * Drag info.
-     * @type {?{display: !options.DisplayInfo,
+     * @type {?{displayId: string,
      *          originalLocation: !options.DisplayPosition,
      *          eventLocation: !options.DisplayPosition}}
      * @private
      */
-    dragging_: null,
+    dragInfo_: null,
 
     /**
      * The container div element which contains all of the display rectangles.
@@ -251,28 +268,25 @@ cr.define('options', function() {
       container.ontouchend = this.endDragging_.bind(this);
 
       $('display-options-set-primary').onclick = (function() {
-        chrome.send('setPrimary', [this.displays_[this.focusedIndex_].id]);
+        chrome.send('setPrimary', [this.focusedId_]);
       }).bind(this);
       $('display-options-resolution-selection').onchange = (function(ev) {
-        var display = this.displays_[this.focusedIndex_];
+        var display = this.getDisplayInfoFromId(this.focusedId_);
         var resolution = display.resolutions[ev.target.value];
-        chrome.send('setDisplayMode', [display.id, resolution]);
+        chrome.send('setDisplayMode', [this.focusedId_, resolution]);
       }).bind(this);
       $('display-options-orientation-selection').onchange = (function(ev) {
-        var displayIndex =
-          (this.focusedIndex_ == -1) ? 0 : this.focusedIndex_;
         var rotation = parseInt(ev.target.value, 10);
-        chrome.send('setRotation', [this.displays_[displayIndex].id, rotation]);
+        chrome.send('setRotation', [this.focusedId_, rotation]);
       }).bind(this);
       $('display-options-color-profile-selection').onchange = (function(ev) {
-        chrome.send('setColorProfile', [this.displays_[this.focusedIndex_].id,
-                                        ev.target.value]);
+        chrome.send('setColorProfile', [this.focusedId_, ev.target.value]);
       }).bind(this);
       $('selected-display-start-calibrating-overscan').onclick = (function() {
         // Passes the target display ID. Do not specify it through URL hash,
         // we do not care back/forward.
         var displayOverscan = options.DisplayOverscan.getInstance();
-        displayOverscan.setDisplayId(this.displays_[this.focusedIndex_].id);
+        displayOverscan.setDisplayId(this.focusedId_);
         PageManager.showPageByName('displayOverscan');
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_DisplaySetOverscan']);
@@ -394,22 +408,33 @@ cr.define('options', function() {
     },
 
     /**
+     * @param {string} id
+     * @return {options.DisplayInfo}
+     */
+    getDisplayInfoFromId(id) {
+      return this.displays_.find(function(display) {
+        return display.id == id;
+      });
+    },
+
+    /**
      * Collects the current data and sends it to Chrome.
      * @private
      */
-    applyResult_: function() {
+    sendDragResult_: function() {
       // Offset is calculated from top or left edge.
-      var primary = this.primaryDisplay_;
-      var secondary = this.secondaryDisplay_;
+      var primary = this.displayLayoutMap_[this.primaryDisplayId_];
+      var secondary = this.displayLayoutMap_[this.secondaryDisplayId_];
       var offset;
-      if (this.layout_ == options.DisplayLayoutType.LEFT ||
-          this.layout_ == options.DisplayLayoutType.RIGHT) {
+      if (this.layoutType_ == options.DisplayLayoutType.LEFT ||
+          this.layoutType_ == options.DisplayLayoutType.RIGHT) {
         offset = secondary.div.offsetTop - primary.div.offsetTop;
       } else {
         offset = secondary.div.offsetLeft - primary.div.offsetLeft;
       }
       offset = Math.floor(offset / this.visualScale_);
-      chrome.send('setDisplayLayout', [secondary.id, this.layout_, offset]);
+      chrome.send(
+          'setDisplayLayout', [secondary.id, this.layoutType_, offset]);
     },
 
     /**
@@ -447,17 +472,7 @@ cr.define('options', function() {
      * @private
      */
     processDragging_: function(e, eventLocation) {
-      if (!this.dragging_)
-        return true;
-
-      var index = -1;
-      for (var i = 0; i < this.displays_.length; i++) {
-        if (this.displays_[i] == this.dragging_.display) {
-          index = i;
-          break;
-        }
-      }
-      if (index < 0)
+      if (!this.dragInfo_)
         return true;
 
       e.preventDefault();
@@ -465,82 +480,83 @@ cr.define('options', function() {
       // Note that current code of moving display-rectangles doesn't work
       // if there are >=3 displays.  This is our assumption for M21.
       // TODO(mukai): Fix the code to allow >=3 displays.
-      var newPosition = {
-        x: this.dragging_.originalLocation.x +
-            (eventLocation.x - this.dragging_.eventLocation.x),
-        y: this.dragging_.originalLocation.y +
-            (eventLocation.y - this.dragging_.eventLocation.y)
+      var dragInfo = this.dragInfo_;
+      var dragLayout = this.displayLayoutMap_[dragInfo.displayId];
+      /** @type {options.DisplayPosition} */ var newPosition = {
+        x: dragInfo.originalLocation.x +
+            (eventLocation.x - dragInfo.eventLocation.x),
+        y: dragInfo.originalLocation.y +
+            (eventLocation.y - dragInfo.eventLocation.y)
       };
 
-      var baseDiv = this.dragging_.display.isPrimary ?
-          this.secondaryDisplay_.div : this.primaryDisplay_.div;
-      var draggingDiv = this.dragging_.display.div;
+      var baseDisplayId = dragLayout.isPrimary ? this.secondaryDisplayId_ :
+                                                 this.primaryDisplayId_;
+      var baseDiv = this.displayLayoutMap_[baseDisplayId].div;
+      var draggingDiv = dragLayout.div;
 
       newPosition.x = this.snapToEdge_(newPosition.x, draggingDiv.offsetWidth,
                                        baseDiv.offsetLeft, baseDiv.offsetWidth);
       newPosition.y = this.snapToEdge_(newPosition.y, draggingDiv.offsetHeight,
                                        baseDiv.offsetTop, baseDiv.offsetHeight);
 
-      var newCenter =  /** {!options.DisplayPosition} */({
+      /** @type {!options.DisplayPosition} */ var newCenter = {
         x: newPosition.x + draggingDiv.offsetWidth / 2,
         y: newPosition.y + draggingDiv.offsetHeight / 2
-      });
+      };
 
-      var baseBounds = /** {!options.DisplayBounds} */({
+      /** @type {!options.DisplayBounds} */ var baseBounds = {
         left: baseDiv.offsetLeft,
         top: baseDiv.offsetTop,
         width: baseDiv.offsetWidth,
         height: baseDiv.offsetHeight
-      });
+      };
+
+      var isPrimary = dragLayout.isPrimary;
+      var layoutType = this.layoutType_;
+
       switch (getPositionToRectangle(baseBounds, newCenter)) {
         case options.DisplayLayoutType.RIGHT:
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.LEFT :
-              options.DisplayLayoutType.RIGHT;
+          layoutType = isPrimary ? options.DisplayLayoutType.LEFT :
+                                   options.DisplayLayoutType.RIGHT;
           break;
         case options.DisplayLayoutType.LEFT:
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.RIGHT :
-              options.DisplayLayoutType.LEFT;
+          layoutType = isPrimary ? options.DisplayLayoutType.RIGHT :
+                                   options.DisplayLayoutType.LEFT;
           break;
         case options.DisplayLayoutType.TOP:
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.BOTTOM :
-              options.DisplayLayoutType.TOP;
+          layoutType = isPrimary ? options.DisplayLayoutType.BOTTOM :
+                                   options.DisplayLayoutType.TOP;
           break;
         case options.DisplayLayoutType.BOTTOM:
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.TOP :
-              options.DisplayLayoutType.BOTTOM;
+          layoutType = isPrimary ? options.DisplayLayoutType.TOP :
+                                   options.DisplayLayoutType.BOTTOM;
           break;
       }
 
-      if (this.layout_ == options.DisplayLayoutType.LEFT ||
-          this.layout_ == options.DisplayLayoutType.RIGHT) {
+      if (layoutType == options.DisplayLayoutType.LEFT ||
+          layoutType == options.DisplayLayoutType.RIGHT) {
         if (newPosition.y > baseDiv.offsetTop + baseDiv.offsetHeight)
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.TOP :
-              options.DisplayLayoutType.BOTTOM;
+          layoutType = isPrimary ? options.DisplayLayoutType.TOP :
+                                   options.DisplayLayoutType.BOTTOM;
         else if (newPosition.y + draggingDiv.offsetHeight < baseDiv.offsetTop)
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.BOTTOM :
-              options.DisplayLayoutType.TOP;
+          layoutType = isPrimary ? options.DisplayLayoutType.BOTTOM :
+                                   options.DisplayLayoutType.TOP;
       } else {
         if (newPosition.x > baseDiv.offsetLeft + baseDiv.offsetWidth)
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.LEFT :
-              options.DisplayLayoutType.RIGHT;
+          layoutType = isPrimary ? options.DisplayLayoutType.LEFT :
+                                   options.DisplayLayoutType.RIGHT;
         else if (newPosition.x + draggingDiv.offsetWidth < baseDiv.offsetLeft)
-          this.layout_ = this.dragging_.display.isPrimary ?
-              options.DisplayLayoutType.RIGHT :
-              options.DisplayLayoutType.LEFT;
+          layoutType = isPrimary ? options.DisplayLayoutType.RIGHT :
+                                   options.DisplayLayoutType.LEFT;
       }
 
+      this.layoutType_ = layoutType;
+
       var layoutToBase;
-      if (!this.dragging_.display.isPrimary) {
-        layoutToBase = this.layout_;
+      if (!isPrimary) {
+        layoutToBase = layoutType;
       } else {
-        switch (this.layout_) {
+        switch (layoutType) {
           case options.DisplayLayoutType.RIGHT:
             layoutToBase = options.DisplayLayoutType.LEFT;
             break;
@@ -589,34 +605,38 @@ cr.define('options', function() {
      * @private
      */
     startDragging_: function(target, eventLocation) {
-      var oldFocusedIndex = this.focusedIndex_;
+      var oldFocusedId = this.focusedId_;
+      var newFocusedId;
       var willUpdateDisplayDescription = false;
-      this.focusedIndex_ = -1;
       for (var i = 0; i < this.displays_.length; i++) {
-        var display = this.displays_[i];
-        if (display.div == target ||
-            (target.offsetParent && target.offsetParent == display.div)) {
-          this.focusedIndex_ = i;
-          if (oldFocusedIndex !== null && oldFocusedIndex != i)
-            willUpdateDisplayDescription = true;
+        var displayLayout = this.displayLayoutMap_[this.displays_[i].id];
+        if (displayLayout.div == target ||
+            (target.offsetParent && target.offsetParent == displayLayout.div)) {
+          newFocusedId = displayLayout.id;
           break;
         }
       }
+      if (!newFocusedId)
+        return false;
+
+      this.focusedId_ = newFocusedId;
+      willUpdateDisplayDescription = newFocusedId != oldFocusedId;
 
       for (var i = 0; i < this.displays_.length; i++) {
-        var display = this.displays_[i];
-        display.div.className = 'displays-display';
-        if (i != this.focusedIndex_)
+        var displayLayout = this.displayLayoutMap_[this.displays_[i].id];
+        displayLayout.div.className = 'displays-display';
+        if (displayLayout.id != this.focusedId_)
           continue;
 
-        display.div.classList.add('displays-focused');
+        displayLayout.div.classList.add('displays-focused');
         if (this.displays_.length > 1) {
-          this.dragging_ = {
-            display: display,
+          this.dragInfo_ = {
+            displayId: displayLayout.id,
             originalLocation: {
-              x: display.div.offsetLeft, y: display.div.offsetTop
+              x: displayLayout.div.offsetLeft,
+              y: displayLayout.div.offsetTop
             },
-            eventLocation: eventLocation
+            eventLocation: {x: eventLocation.x, y: eventLocation.y}
           };
         }
       }
@@ -633,36 +653,39 @@ cr.define('options', function() {
      */
     endDragging_: function(e) {
       this.lastTouchLocation_ = null;
-      if (this.dragging_) {
-        // Make sure the dragging location is connected.
-        var baseDiv = this.dragging_.display.isPrimary ?
-            this.secondaryDisplay_.div :
-            this.primaryDisplay_.div;
-        var draggingDiv = this.dragging_.display.div;
-        if (this.layout_ == options.DisplayLayoutType.LEFT ||
-            this.layout_ == options.DisplayLayoutType.RIGHT) {
-          var top = Math.max(
-              draggingDiv.offsetTop, baseDiv.offsetTop -
-                  draggingDiv.offsetHeight + MIN_OFFSET_OVERLAP);
-          top = Math.min(
-              top,
-              baseDiv.offsetTop + baseDiv.offsetHeight - MIN_OFFSET_OVERLAP);
-          draggingDiv.style.top = top + 'px';
-        } else {
-          var left = Math.max(
-              draggingDiv.offsetLeft, baseDiv.offsetLeft -
-                  draggingDiv.offsetWidth + MIN_OFFSET_OVERLAP);
-          left = Math.min(
-              left,
-              baseDiv.offsetLeft + baseDiv.offsetWidth - MIN_OFFSET_OVERLAP);
-          draggingDiv.style.left = left + 'px';
-        }
-        var originalPosition = this.dragging_.display.originalPosition;
-        if (originalPosition.x != draggingDiv.offsetLeft ||
-            originalPosition.y != draggingDiv.offsetTop)
-          this.applyResult_();
-        this.dragging_ = null;
+      if (!this.dragInfo_)
+        return false;
+
+      // Make sure the dragging location is connected.
+      var dragLayout = this.displayLayoutMap_[this.dragInfo_.displayId];
+      var baseDisplayId = dragLayout.isPrimary ? this.secondaryDisplayId_ :
+                                                 this.primaryDisplayId_;
+      var baseDiv = this.displayLayoutMap_[baseDisplayId].div;
+      var draggingDiv = dragLayout.div;
+      if (this.layoutType_ == options.DisplayLayoutType.LEFT ||
+          this.layoutType_ == options.DisplayLayoutType.RIGHT) {
+        var top = Math.max(
+            draggingDiv.offsetTop,
+            baseDiv.offsetTop - draggingDiv.offsetHeight + MIN_OFFSET_OVERLAP);
+        top = Math.min(
+            top, baseDiv.offsetTop + baseDiv.offsetHeight - MIN_OFFSET_OVERLAP);
+        draggingDiv.style.top = top + 'px';
+      } else {
+        var left = Math.max(
+            draggingDiv.offsetLeft,
+            baseDiv.offsetLeft - draggingDiv.offsetWidth + MIN_OFFSET_OVERLAP);
+        left = Math.min(
+            left,
+            baseDiv.offsetLeft + baseDiv.offsetWidth - MIN_OFFSET_OVERLAP);
+        draggingDiv.style.left = left + 'px';
       }
+      if (dragLayout.originalPosition.x != draggingDiv.offsetLeft ||
+          dragLayout.originalPosition.y != draggingDiv.offsetTop) {
+        this.sendDragResult_();
+      }
+
+      this.dragInfo_ = null;
+
       return false;
     },
 
@@ -715,14 +738,15 @@ cr.define('options', function() {
      * @private
      */
     updateSelectedDisplaySectionForDisplay_: function(display) {
+      var displayLayout = this.displayLayoutMap_[display.id];
       var arrow = $('display-configuration-arrow');
       arrow.hidden = false;
       // Adding 1 px to the position to fit the border line and the border in
       // arrow precisely.
       arrow.style.top = $('display-configurations').offsetTop -
           arrow.offsetHeight / 2 + 'px';
-      arrow.style.left = display.div.offsetLeft +
-          display.div.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
+      arrow.style.left = displayLayout.div.offsetLeft +
+          displayLayout.div.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
 
       $('display-options-set-primary').disabled = display.isPrimary;
       $('display-options-select-mirroring').disabled =
@@ -804,12 +828,11 @@ cr.define('options', function() {
 
       if (this.mirroring_) {
         this.updateSelectedDisplaySectionMirroring_();
-      } else if (this.focusedIndex_ == -1 ||
-          this.displays_[this.focusedIndex_] == null) {
+      } else if (this.focusedId_ == '') {
         this.updateSelectedDisplaySectionNoSelected_();
       } else {
         this.updateSelectedDisplaySectionForDisplay_(
-            this.displays_[this.focusedIndex_]);
+            this.getDisplayInfoFromId(this.focusedId_));
       }
     },
 
@@ -856,7 +879,7 @@ cr.define('options', function() {
           $('display-options-displays-view').offsetWidth / 2 - totalWidth / 2;
 
       for (var i = 0; i < numDisplays; i++) {
-        var div = document.createElement('div');
+        var div = /** @type {HTMLElement} */ (document.createElement('div'));
         div.className = 'displays-display';
         div.style.top = i * MIRRORING_OFFSET_PIXELS + 'px';
         div.style.left = i * MIRRORING_OFFSET_PIXELS + offsetX + 'px';
@@ -867,60 +890,121 @@ cr.define('options', function() {
         if (i != numDisplays - 1)
           div.classList.add('display-mirrored');
         this.displaysView_.appendChild(div);
+
+        // Not currently used but set for consistency / debugging.
+        this.displayLayoutMap_[this.displays_[i].id].div = div;
       }
     },
 
     /**
-     * Creates a div element representing the specified display.
-     * @param {!options.DisplayInfo} display The display object.
-     * @param {boolean} focused True if it's focused.
+     * Creates a DisplayLayout object representing the display.
+     * @param {!options.DisplayInfo} display
+     * @return {!options.DisplayLayout}
      * @private
      */
-    createDisplayRectangle_: function(display, focused) {
-      var div = document.createElement('div');
-      display.div = div;
+    createDisplayLayout_: function(display) {
+      /** @type {options.DisplayLayout} */ var displayLayout = {
+        bounds: display.bounds,
+        div: null,
+        id: display.id,
+        isPrimary: display.isPrimary,
+        name: display.name,
+        originalPosition: {x: 0, y: 0}
+      };
+      return displayLayout;
+    },
+
+    /**
+     * Creates a div element representing the specified display.
+     * @param {!options.DisplayLayout} displayLayout
+     * @param {options.DisplayLayoutType} layoutType The layout type for the
+     *     secondary display.
+     * @param {!options.DisplayPosition} offset The offset to the center of the
+     *     display area.
+     * @private
+     */
+    createDisplayLayoutDiv_: function(displayLayout, layoutType, offset) {
+      var div = /** @type {!HTMLElement} */ (document.createElement('div'));
       div.className = 'displays-display';
-      if (focused)
-        div.classList.add('displays-focused');
+      div.classList.toggle(
+          'displays-focused', displayLayout.id == this.focusedId_);
 
       // div needs to be added to the DOM tree first, otherwise offsetHeight for
       // nameContainer below cannot be computed.
       this.displaysView_.appendChild(div);
 
       var nameContainer = document.createElement('div');
-      nameContainer.textContent = display.name;
+      nameContainer.textContent = displayLayout.name;
       div.appendChild(nameContainer);
-      div.style.width =
-          Math.floor(display.bounds.width * this.visualScale_) + 'px';
-      var newHeight = Math.floor(display.bounds.height * this.visualScale_);
+
+      var bounds = displayLayout.bounds;
+      div.style.width = Math.floor(bounds.width * this.visualScale_) + 'px';
+      var newHeight = Math.floor(bounds.height * this.visualScale_);
       div.style.height = newHeight + 'px';
       nameContainer.style.marginTop =
           (newHeight - nameContainer.offsetHeight) / 2 + 'px';
 
       div.onmousedown = this.onMouseDown_.bind(this);
       div.ontouchstart = this.onTouchStart_.bind(this);
-      return div;
+
+      if (displayLayout.isPrimary) {
+        div.style.left =
+            Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
+        div.style.top =
+            Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
+      } else {
+        // Don't trust the secondary display's x or y, because it may cause a
+        // 1px gap due to rounding, which will create a fake update on end
+        // dragging. See crbug.com/386401
+        var primaryDiv = this.displayLayoutMap_[this.primaryDisplayId_].div;
+        switch (layoutType) {
+          case options.DisplayLayoutType.TOP:
+            div.style.left =
+                Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
+            div.style.top = primaryDiv.offsetTop - div.offsetHeight + 'px';
+            break;
+          case options.DisplayLayoutType.RIGHT:
+            div.style.left =
+                primaryDiv.offsetLeft + primaryDiv.offsetWidth + 'px';
+            div.style.top =
+                Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
+            break;
+          case options.DisplayLayoutType.BOTTOM:
+            div.style.left =
+                Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
+            div.style.top =
+                primaryDiv.offsetTop + primaryDiv.offsetHeight + 'px';
+            break;
+          case options.DisplayLayoutType.LEFT:
+            div.style.left = primaryDiv.offsetLeft - div.offsetWidth + 'px';
+            div.style.top =
+                Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
+            break;
+        }
+      }
+
+      displayLayout.div = div;
+      displayLayout.originalPosition.x = div.offsetLeft;
+      displayLayout.originalPosition.y = div.offsetTop;
     },
 
     /**
      * Layouts the display rectangles according to the current layout_.
+     * @param {options.DisplayLayoutType} layoutType
      * @private
      */
-    layoutDisplays_: function() {
+    layoutDisplays_: function(layoutType) {
       var maxWidth = 0;
       var maxHeight = 0;
       var boundingBox = {left: 0, right: 0, top: 0, bottom: 0};
-      this.primaryDisplay_ = null;
-      this.secondaryDisplay_ = null;
-      var focusedDisplay = null;
+      this.primaryDisplayId_ = '';
+      this.secondaryDisplayId_ = '';
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         if (display.isPrimary)
-          this.primaryDisplay_ = display;
-        else
-          this.secondaryDisplay_ = display;
-        if (i == this.focusedIndex_)
-          focusedDisplay = display;
+          this.primaryDisplayId_ = display.id;
+        else if (this.secondaryDisplayId_ == '')
+          this.secondaryDisplayId_ = display.id;
 
         var bounds = display.bounds;
         boundingBox.left = Math.min(boundingBox.left, bounds.left);
@@ -932,7 +1016,7 @@ cr.define('options', function() {
         maxWidth = Math.max(maxWidth, bounds.width);
         maxHeight = Math.max(maxHeight, bounds.height);
       }
-      if (!this.primaryDisplay_)
+      if (this.primaryDisplayId_ == '')
         return;
 
       // Make the margin around the bounding box.
@@ -958,106 +1042,56 @@ cr.define('options', function() {
             (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2)
       };
 
-      // Layouting the display rectangles. First layout the primaryDisplay and
-      // then layout the secondary which is attaching to the primary.
-      var primaryDiv = this.createDisplayRectangle_(
-          this.primaryDisplay_, this.primaryDisplay_ == focusedDisplay);
-      primaryDiv.style.left =
-          Math.floor(this.primaryDisplay_.bounds.left * this.visualScale_) +
-          offset.x + 'px';
-      primaryDiv.style.top =
-          Math.floor(this.primaryDisplay_.bounds.top * this.visualScale_) +
-          offset.y + 'px';
-      this.primaryDisplay_.originalPosition = {
-        x: primaryDiv.offsetLeft,
-        y: primaryDiv.offsetTop
-      };
-
-      if (this.secondaryDisplay_) {
-        var secondaryDiv = this.createDisplayRectangle_(
-            this.secondaryDisplay_, this.secondaryDisplay_ == focusedDisplay);
-        // Don't trust the secondary display's x or y, because it may cause a
-        // 1px gap due to rounding, which will create a fake update on end
-        // dragging. See crbug.com/386401
-        var bounds = this.secondaryDisplay_.bounds;
-        switch (this.layout_) {
-          case options.DisplayLayoutType.TOP:
-            secondaryDiv.style.left =
-                Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
-            secondaryDiv.style.top =
-                primaryDiv.offsetTop - secondaryDiv.offsetHeight + 'px';
-            break;
-          case options.DisplayLayoutType.RIGHT:
-            secondaryDiv.style.left =
-                primaryDiv.offsetLeft + primaryDiv.offsetWidth + 'px';
-            secondaryDiv.style.top =
-                Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
-            break;
-          case options.DisplayLayoutType.BOTTOM:
-            secondaryDiv.style.left =
-                Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
-            secondaryDiv.style.top =
-                primaryDiv.offsetTop + primaryDiv.offsetHeight + 'px';
-            break;
-          case options.DisplayLayoutType.LEFT:
-            secondaryDiv.style.left =
-                primaryDiv.offsetLeft - secondaryDiv.offsetWidth + 'px';
-            secondaryDiv.style.top =
-                Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
-            break;
-        }
-        this.secondaryDisplay_.originalPosition = {
-          x: secondaryDiv.offsetLeft,
-          y: secondaryDiv.offsetTop
-        };
+      // Layout the display rectangles. First layout the primary display and
+      // then layout the secondary which is attached to the primary.
+      for (var i = 0; i < this.displays_.length; i++) {
+        this.createDisplayLayoutDiv_(
+            this.displayLayoutMap_[this.displays_[i].id], layoutType, offset);
       }
     },
 
     /**
      * Called when the display arrangement has changed.
      * @param {options.MultiDisplayMode} mode multi display mode.
-     * @param {Array<options.DisplayInfo>} displays The list of the display
+     * @param {!Array<!options.DisplayInfo>} displays The list of the display
      *     information.
-     * @param {options.DisplayLayoutType} layout The layout strategy.
+     * @param {options.DisplayLayoutType} layoutType The layout strategy.
      * @param {number} offset The offset of the secondary display.
      * @private
      */
-    onDisplayChanged_: function(mode, displays, layout, offset) {
+    onDisplayChanged_: function(mode, displays, layoutType, offset) {
       if (!this.visible)
         return;
 
-      var hasExternal = false;
+      this.displays_ = displays;
+      this.displayLayoutMap_ = {};
       for (var i = 0; i < displays.length; i++) {
-        if (!displays[i].isInternal) {
-          hasExternal = true;
-          break;
-        }
+        var display = displays[i];
+        this.displayLayoutMap_[display.id] = this.createDisplayLayout_(display);
       }
-
-      this.layout_ = layout;
 
       var mirroring = mode == options.MultiDisplayMode.MIRRORING;
       var unifiedDesktopEnabled = mode == options.MultiDisplayMode.UNIFIED;
 
-      // Focus to the first display next to the primary one when |displays| list
+      // Focus to the first display next to the primary one when |displays_|
       // is updated.
       if (mirroring) {
-        this.focusedIndex_ = -1;
-      } else if (this.mirroring_ != mirroring ||
-                 this.unifiedDesktopEnabled_ != unifiedDesktopEnabled ||
-                 this.displays_.length != displays.length) {
-        this.focusedIndex_ = 0;
+        this.focusedId_ = '';
+      } else if (
+          this.focusedId_ == '' || this.mirroring_ != mirroring ||
+          this.unifiedDesktopEnabled_ != unifiedDesktopEnabled ||
+          this.displays_.length != displays.length) {
+        this.focusedId_ = displays.length > 0 ? displays[0].id : '';
       }
 
       this.mirroring_ = mirroring;
       this.unifiedDesktopEnabled_ = unifiedDesktopEnabled;
-      this.displays_ = displays;
 
       this.resetDisplaysView_();
       if (this.mirroring_)
         this.layoutMirroringDisplays_();
       else
-        this.layoutDisplays_();
+        this.layoutDisplays_(layoutType);
 
       $('display-options-select-mirroring').value =
           mirroring ? 'mirroring' : 'extended';
@@ -1081,9 +1115,9 @@ cr.define('options', function() {
   };
 
   DisplayOptions.setDisplayInfo = function(
-      mode, displays, layout, offset) {
+      mode, displays, layoutType, offset) {
     DisplayOptions.getInstance().onDisplayChanged_(
-        mode, displays, layout, offset);
+        mode, displays, layoutType, offset);
   };
 
   // Export
