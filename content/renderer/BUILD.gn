@@ -87,9 +87,11 @@ source_set("renderer") {
     "//ui/surface",
     "//v8",
   ]
+  allow_circular_includes_from = []
 
   if (use_aura) {
     deps += [ "//content/renderer/mus" ]
+    allow_circular_includes_from += [ "//content/renderer/mus" ]
   }
 
   if (is_mac) {

@@ -17,9 +17,16 @@ source_set("mus") {
   deps = [
     "//base",
     "//cc",
+    "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//content/common:mojo_bindings",
+    "//content/public/common:common_sources",
+    "//mojo/common",
     "//mojo/converters/blink",
+    "//mojo/converters/geometry",
+    "//mojo/converters/surfaces",
+    "//mojo/shell/public/cpp",
     "//third_party/WebKit/public:blink",
+    "//ui/events:events_base",
   ]
 }
