@@ -174,6 +174,11 @@ for PLATFORM in ${PLATFORMS}; do
   CXXFLAGS="-arch ${ARCH2:-${ARCH}} -isysroot ${SDKROOT} ${OPT_FLAGS}
             -miphoneos-version-min=6.0"
 
+  # enable bitcode if available
+  if [ "${SDK_MAJOR_VERSION}" -gt 8 ]; then
+    CXXFLAGS="${CXXFLAGS} -fembed-bitcode"
+  fi
+
   # Build using the legacy makefile (instead of generating via cmake).
   eval make -f Makefile.unix libwebm.a CXXFLAGS=\"${CXXFLAGS}\" ${devnull}
 
