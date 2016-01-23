@@ -53,7 +53,7 @@ class Uint8ClampedArray;
 class Uint16Array;
 class Uint32Array;
 
-}
+} // namespace WTF
 
 using WTF::Function;
 using WTF::OwnPtr;

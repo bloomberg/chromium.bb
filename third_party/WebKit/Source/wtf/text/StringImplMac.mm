@@ -44,4 +44,4 @@ StringImpl::operator NSString *()
     return HardAutorelease(createCFString().leakRef());
 }
 
-}
+} // namespace WTF

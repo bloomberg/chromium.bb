@@ -354,7 +354,7 @@ PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundAr
 
 typedef Function<void()> Closure;
 
-}
+} // namespace WTF
 
 using WTF::Function;
 using WTF::bind;

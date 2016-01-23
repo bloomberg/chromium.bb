@@ -738,7 +738,7 @@ struct NeedsTracing<LinkedHashSet<T, U, V>> {
 };
 #endif
 
-}
+} // namespace WTF
 
 using WTF::LinkedHashSet;
 

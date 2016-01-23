@@ -122,7 +122,7 @@ static CFAllocatorRef allocator()
     return allocator;
 }
 
-}
+} // namespace StringWrapperCFAllocator
 
 RetainPtr<CFStringRef> StringImpl::createCFString()
 {
@@ -157,6 +157,6 @@ RetainPtr<CFStringRef> StringImpl::createCFString()
 // more calls to createCFString than calls to the create functions with the appropriate
 // allocator, so it's probably not urgent optimize that case.
 
-}
+} // namespace WTF
 
 #endif // OS(MACOSX)

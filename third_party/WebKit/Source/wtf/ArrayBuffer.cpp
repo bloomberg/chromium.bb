@@ -102,4 +102,4 @@ void ArrayBuffer::removeView(ArrayBufferView* view)
     view->m_prevView = view->m_nextView = 0;
 }
 
-}
+} // namespace WTF

@@ -98,4 +98,4 @@ void StringStatics::init()
     new (NotNull, (void*)&xmlnsWithColon) String("xmlns:");
 }
 
-}
+} // namespace WTF

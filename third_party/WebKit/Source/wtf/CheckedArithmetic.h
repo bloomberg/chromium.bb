@@ -705,7 +705,7 @@ template <typename U, typename V, typename OverflowHandler> static inline Checke
     return Checked<U, OverflowHandler>(lhs) * rhs;
 }
 
-}
+} // namespace WTF
 
 using WTF::Checked;
 using WTF::CheckedState;

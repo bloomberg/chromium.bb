@@ -67,7 +67,7 @@ private:
     bool m_lowerFirst;
 };
 
-}
+} // namespace WTF
 
 using WTF::Collator;
 

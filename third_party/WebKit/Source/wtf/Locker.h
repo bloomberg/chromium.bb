@@ -43,7 +43,7 @@ private:
     T& m_lockable;
 };
 
-}
+} // namespace WTF
 
 using WTF::Locker;
 

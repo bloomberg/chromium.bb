@@ -16,4 +16,4 @@ TEST(ASCIICTypeTest, ASCIICaseFoldTable)
     }
 }
 
-}
+} // namespace WTF

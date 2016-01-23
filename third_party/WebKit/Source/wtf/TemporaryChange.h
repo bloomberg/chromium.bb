@@ -61,7 +61,7 @@ private:
     T m_originalValue;
 };
 
-}
+} // namespace WTF
 
 using WTF::TemporaryChange;
 

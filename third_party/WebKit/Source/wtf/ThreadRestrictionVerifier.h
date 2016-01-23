@@ -81,7 +81,7 @@ private:
     ThreadIdentifier m_owningThread;
 };
 
-}
+} // namespace WTF
 
 #endif // ENABLE(ASSERT)
 #endif // ThreadRestrictionVerifier_h

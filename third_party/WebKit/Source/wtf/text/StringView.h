@@ -103,7 +103,7 @@ private:
     unsigned m_length;
 };
 
-}
+} // namespace WTF
 
 using WTF::StringView;
 

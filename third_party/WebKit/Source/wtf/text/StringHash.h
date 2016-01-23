@@ -161,7 +161,7 @@ struct AlreadyHashed : IntHash<unsigned> {
     }
 };
 
-}
+} // namespace WTF
 
 using WTF::AlreadyHashed;
 using WTF::CaseFoldingHash;

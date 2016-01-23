@@ -91,4 +91,4 @@ const char* ArrayBufferView::typeName()
     return "Unknown";
 }
 
-}
+} // namespace WTF

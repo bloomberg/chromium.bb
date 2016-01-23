@@ -48,4 +48,4 @@ void cryptographicallyRandomValues(void* buffer, size_t length)
     base::RandBytes(buffer, length);
 }
 
-}
+} // namespace WTF

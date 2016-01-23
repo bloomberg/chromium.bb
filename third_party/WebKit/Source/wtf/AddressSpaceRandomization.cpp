@@ -77,7 +77,7 @@ uint32_t ranval(ranctx* x)
 
 static struct ranctx s_ranctx;
 
-}
+} // namespace
 
 // Calculates a random preferred mapping address. In calculating an
 // address, we balance good ASLR against not fragmenting the address
@@ -130,4 +130,4 @@ void* getRandomPageBase()
     return reinterpret_cast<void*>(random);
 }
 
-}
+} // namespace WTF

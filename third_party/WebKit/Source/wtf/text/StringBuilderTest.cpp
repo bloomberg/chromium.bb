@@ -57,7 +57,7 @@ void expectEmpty(const StringBuilder& builder)
     EXPECT_EQ(0, builder.characters8());
 }
 
-}
+} // namespace
 
 TEST(StringBuilderTest, DefaultConstructor)
 {

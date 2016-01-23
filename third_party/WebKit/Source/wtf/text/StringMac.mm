@@ -47,4 +47,4 @@ String::String(NSString* str)
     }
 }
 
-}
+} // namespace WTF

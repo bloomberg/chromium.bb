@@ -65,4 +65,4 @@ TEST(WTFTestHelpersTest, StringPrinter)
 
 }
 
-}
+} // namespace

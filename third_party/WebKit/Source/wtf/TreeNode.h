@@ -197,7 +197,7 @@ inline typename TreeNode<T>::NodeType* traverseNextPostOrder(const TreeNode<T>* 
     return next;
 }
 
-}
+} // namespace WTF
 
 using WTF::TreeNode;
 using WTF::traverseNext;

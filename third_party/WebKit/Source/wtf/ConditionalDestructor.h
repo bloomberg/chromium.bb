@@ -23,6 +23,6 @@ public:
 template<typename Derived>
 class ConditionalDestructor<Derived, true> { };
 
-}
+} // namespace WTF
 
 #endif // ConditionalDestructor_h

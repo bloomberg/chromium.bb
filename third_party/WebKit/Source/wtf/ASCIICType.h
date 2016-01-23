@@ -176,7 +176,7 @@ template<typename CharType> inline bool isASCIIAlphaCaselessEqual(CharType cssCh
     return LIKELY(toASCIILowerUnchecked(cssCharacter) == character);
 }
 
-}
+} // namespace WTF
 
 using WTF::isASCII;
 using WTF::isASCIIAlpha;

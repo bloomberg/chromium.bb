@@ -769,7 +769,7 @@ template<> struct DefaultHash<RefPtr<StringImpl>> {
     typedef StringHash Hash;
 };
 
-}
+} // namespace WTF
 
 using WTF::StringImpl;
 using WTF::equal;
