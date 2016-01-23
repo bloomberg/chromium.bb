@@ -33,7 +33,7 @@
             android:layout_width="wrap_content" 
             android:layout_height="match_parent" 
             android:src="@drawable/item_more_black"
-            android:contentDescription="about webview"
+            android:contentDescription="@string/menu_about"
             android:onClick="showPopup" />
     </LinearLayout>
 </LinearLayout>
