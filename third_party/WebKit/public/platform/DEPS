@@ -1,5 +1,7 @@
 include_rules = [
     "-bindings",
+    "+cc",
+    "-cc/blink",
     "-core",
     "-modules",
     "+platform",

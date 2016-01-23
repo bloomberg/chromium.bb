@@ -852,6 +852,7 @@
       'plugins/PluginListBuilder.h',
       'scheduler/CancellableTaskFactory.cpp',
       'scheduler/CancellableTaskFactory.h',
+      'scroll/MainThreadScrollingReason.h',
       'scroll/ProgrammaticScrollAnimator.cpp',
       'scroll/ProgrammaticScrollAnimator.h',
       'scroll/ScrollAnimatorBase.cpp',

@@ -343,51 +343,15 @@ bool WebLayerImpl::haveScrollEventHandlers() const {
   return layer_->have_scroll_event_handlers();
 }
 
-static_assert(static_cast<uint32_t>(
-                  blink::WebMainThreadScrollingReason::NotScrollingOnMain) ==
-                  cc::MainThreadScrollingReason::kNotScrollingOnMain,
-              "MainThreadScrollingReason and "
-              "WebMainThreadScrollingReason enums must match");
-static_assert(
-    static_cast<uint32_t>(blink::WebMainThreadScrollingReason::
-                              HasBackgroundAttachmentFixedObjects) ==
-        cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
-    "MainThreadScrollingReason and "
-    "WebMainThreadScrollingReason enums must match");
-static_assert(
-    static_cast<uint32_t>(blink::WebMainThreadScrollingReason::
-                              HasNonLayerViewportConstrainedObjects) ==
-        cc::MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
-    "MainThreadScrollingReason and "
-    "WebMainThreadScrollingReason enums must match");
-static_assert(
-    static_cast<uint32_t>(
-        blink::WebMainThreadScrollingReason::ThreadedScrollingDisabled) ==
-        cc::MainThreadScrollingReason::kThreadedScrollingDisabled,
-    "MainThreadScrollingReason and "
-    "WebMainThreadScrollingReason enums must match");
-static_assert(static_cast<uint32_t>(
-                  blink::WebMainThreadScrollingReason::ScrollBarScrolling) ==
-                  cc::MainThreadScrollingReason::kScrollbarScrolling,
-              "MainThreadScrollingReason and "
-              "WebMainThreadScrollingReason enums must match");
-static_assert(
-    static_cast<uint32_t>(blink::WebMainThreadScrollingReason::PageOverlay) ==
-        cc::MainThreadScrollingReason::kPageOverlay,
-    "MainThreadScrollingReason and "
-    "WebMainThreadScrollingReason enums must match");
-
 void WebLayerImpl::addMainThreadScrollingReasons(
-    blink::WebMainThreadScrollingReason::WebMainThreadScrollingReason
-        main_thread_scrolling_reasons) {
+    uint32_t main_thread_scrolling_reasons) {
   DCHECK(main_thread_scrolling_reasons);
   // WebLayerImpl should only know about non-transient scrolling
   // reasons. Transient scrolling reasons are computed per hit test.
-  DCHECK_LE(
-      main_thread_scrolling_reasons,
-      static_cast<
-          blink::WebMainThreadScrollingReason::WebMainThreadScrollingReason>(
-          cc::MainThreadScrollingReason::kMaxNonTransientScrollingReason));
+  // TODO(tdresser): This is comparing less than a bit flag but that's not valid
+  // if there is more than one reason given in |main_thread_scrolling_reasons|.
+  DCHECK_LE(main_thread_scrolling_reasons,
+            cc::MainThreadScrollingReason::kMaxNonTransientScrollingReason);
   layer_->AddMainThreadScrollingReasons(main_thread_scrolling_reasons);
 }
 

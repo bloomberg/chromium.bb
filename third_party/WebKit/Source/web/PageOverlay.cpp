@@ -35,6 +35,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
+#include "platform/scroll/MainThreadScrollingReason.h"
 #include "public/platform/WebLayer.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
@@ -85,7 +86,7 @@ void PageOverlay::update()
 
         // This is required for contents of overlay to stay in sync with the page while scrolling.
         WebLayer* platformLayer = m_layer->platformLayer();
-        platformLayer->addMainThreadScrollingReasons(WebMainThreadScrollingReason::PageOverlay);
+        platformLayer->addMainThreadScrollingReasons(MainThreadScrollingReason::kPageOverlay);
         page->frameHost().visualViewport().containerLayer()->addChild(m_layer.get());
     }
 

@@ -22,7 +22,6 @@
 #include "third_party/WebKit/public/platform/WebDoublePoint.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
-#include "third_party/WebKit/public/platform/WebMainThreadScrollingReason.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -130,8 +129,7 @@ class WebLayerImpl : public blink::WebLayer {
   void setHaveScrollEventHandlers(bool have_scroll_event_handlers) override;
   bool haveScrollEventHandlers() const override;
   void addMainThreadScrollingReasons(
-      blink::WebMainThreadScrollingReason::WebMainThreadScrollingReason
-          main_thread_scrolling_reasons) override;
+      uint32_t main_thread_scrolling_reasons) override;
   void clearMainThreadScrollingReasons() override;
   bool shouldScrollOnMainThread() const override;
   void setNonFastScrollableRegion(

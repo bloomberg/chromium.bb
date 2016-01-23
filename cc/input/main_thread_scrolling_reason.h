@@ -7,11 +7,7 @@
 
 namespace cc {
 
-// Ensure this stays in sync with MainThreadScrollingReason in histograms.xml,
-// and that this extends ScrollingCoordinator::MainThreadScrollingReason.
-// ScrollingCoordinator::MainThreadScrollingReason contains the flags
-// which are associated with a layer. The flags only contained in
-// MainThreadScrollingReason are computed for each scroll begin.
+// Ensure this stays in sync with MainThreadScrollingReason in histograms.xml.
 struct MainThreadScrollingReason {
   // Non-transient scrolling reasons.
   enum : uint32_t { kNotScrollingOnMain = 0 };
@@ -22,7 +18,7 @@ struct MainThreadScrollingReason {
   enum : uint32_t { kPageOverlay = 1 << 4 };
   enum : uint32_t { kMaxNonTransientScrollingReason = kPageOverlay };
 
-  // Transient scrolling reasons.
+  // Transient scrolling reasons. These are computed for each scroll begin.
   enum : uint32_t { kNonFastScrollableRegion = 1 << 5 };
   enum : uint32_t { kEventHandlers = 1 << 6 };
   enum : uint32_t { kFailedHitTest = 1 << 7 };

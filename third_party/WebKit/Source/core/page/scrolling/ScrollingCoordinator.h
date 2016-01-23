@@ -30,8 +30,8 @@
 #include "core/layout/LayoutObject.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "public/platform/WebMainThreadScrollingReason.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
@@ -41,7 +41,7 @@ class WebScrollbarLayer;
 
 namespace blink {
 
-typedef unsigned MainThreadScrollingReasons;
+using MainThreadScrollingReasons = uint32_t;
 
 class LocalFrame;
 class FrameView;
