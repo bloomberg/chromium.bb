@@ -231,7 +231,7 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
         mNativeAudioManagerAndroid = nativeAudioManagerAndroid;
         mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         mContentResolver = mContext.getContentResolver();
-        mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        mUsbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
     }
 
     /**
@@ -741,7 +741,15 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
         boolean hasUsbAudio = false;
-        Map<String, UsbDevice> devices = mUsbManager.getDeviceList();
+        // UsbManager fails internally with NullPointerException on the emulator created without
+        // Google APIs.
+        Map<String, UsbDevice> devices;
+        try {
+            devices = mUsbManager.getDeviceList();
+        } catch (NullPointerException e) {
+            return false;
+        }
+
         for (UsbDevice device : devices.values()) {
             // A USB device with USB_CLASS_AUDIO and USB_CLASS_COMM interface is
             // considerred as a USB audio device here.
