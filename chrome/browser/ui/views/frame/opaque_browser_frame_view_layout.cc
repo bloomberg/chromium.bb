@@ -428,7 +428,6 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
       incognito_icon.width(),
       delegate_->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
   if (avatar_button_) {
-    avatar_button_->set_button_on_right(avatar_on_right);
     avatar_button_->SetBoundsRect(avatar_bounds_);
 
     int edge_offset = kAvatarOuterSpacing + incognito_icon.width();

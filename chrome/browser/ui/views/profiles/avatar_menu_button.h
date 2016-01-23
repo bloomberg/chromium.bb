@@ -46,11 +46,6 @@ class AvatarMenuButton : public views::MenuButton,
   // to Chrome avatar icons, will be resized and modified for the title bar.
   virtual void SetAvatarIcon(const gfx::Image& icon, bool is_rectangle);
 
-  void set_button_on_right(bool button_on_right) {
-    button_on_right_ = button_on_right;
-  }
-  bool button_on_right() { return button_on_right_; }
-
   // Get avatar images for the BrowserView. |avatar| is used in the browser
   // window whereas |taskbar_badge_avatar| is used for the OS taskbar. If
   // |taskbar_badge_avatar| is empty then |avatar| should be used for the
@@ -80,8 +75,6 @@ class AvatarMenuButton : public views::MenuButton,
   gfx::ImageSkia button_icon_;
   bool is_rectangle_;
   int old_height_;
-  // True if the avatar button is on the right side of the browser window.
-  bool button_on_right_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuButton);
 };

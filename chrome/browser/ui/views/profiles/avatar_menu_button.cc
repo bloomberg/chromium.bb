@@ -41,8 +41,7 @@ AvatarMenuButton::AvatarMenuButton(BrowserView* browser_view)
       browser_view_(browser_view),
       enabled_(browser_view_->IsRegularOrGuestSession()),
       is_rectangle_(false),
-      old_height_(0),
-      button_on_right_(false) {
+      old_height_(0) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
   EnableCanvasFlippingForRTLUI(true);
 
