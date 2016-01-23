@@ -82,7 +82,7 @@ Run
 to disable debug symbols altogether, this makes both full rebuilds and linking
 faster (at the cost of not getting symbolized backtraces in gdb).
 
-You might also want to [install ccache](ccache_cac.md) to speed up the build.
+You might also want to [install ccache](ccache_mac.md) to speed up the build.
 
 ## Running
 
