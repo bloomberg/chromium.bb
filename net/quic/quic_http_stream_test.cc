@@ -125,8 +125,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   struct PacketToWrite {
     PacketToWrite(IoMode mode, QuicEncryptedPacket* packet)
         : mode(mode), packet(packet) {}
+    PacketToWrite(IoMode mode, int rv) : mode(mode), packet(nullptr), rv(rv) {}
     IoMode mode;
     QuicEncryptedPacket* packet;
+    int rv;
   };
 
   QuicHttpStreamTest()
@@ -157,6 +159,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     writes_.push_back(PacketToWrite(SYNCHRONOUS, packet.release()));
   }
 
+  void AddWrite(IoMode mode, int rv) {
+    writes_.push_back(PacketToWrite(mode, rv));
+  }
+
   // Returns the packet to be written at position |pos|.
   QuicEncryptedPacket* GetWrite(size_t pos) { return writes_[pos].packet; }
 
@@ -173,8 +179,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   void Initialize() {
     mock_writes_.reset(new MockWrite[writes_.size()]);
     for (size_t i = 0; i < writes_.size(); i++) {
-      mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].packet->data(),
-                                  writes_[i].packet->length());
+      if (writes_[i].packet == nullptr) {
+        mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].rv, i);
+      } else {
+        mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].packet->data(),
+                                    writes_[i].packet->length());
+      }
     };
 
     socket_data_.reset(new StaticSocketDataProvider(
@@ -934,6 +944,49 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());
   EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  AddWrite(SYNCHRONOUS, ERR_FAILED);
+  Initialize();
+
+  ChunkedUploadDataStream upload_data_stream(0);
+
+  request_.method = "POST";
+  request_.url = GURL("http://www.google.com/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback()));
+
+  ASSERT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
+}
+
+TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(SYNCHRONOUS, ERR_FAILED);
+  Initialize();
+
+  ChunkedUploadDataStream upload_data_stream(0);
+  size_t chunk_size = strlen(kUploadData);
+  upload_data_stream.AppendData(kUploadData, chunk_size, false);
+
+  request_.method = "POST";
+  request_.url = GURL("http://www.google.com/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback()));
+
+  ASSERT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
 }
 
 }  // namespace test

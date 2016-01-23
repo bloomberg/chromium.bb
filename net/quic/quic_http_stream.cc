@@ -471,6 +471,10 @@ int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
   if (rv < 0)
     return rv;
 
+  // If the stream is already closed, don't continue.
+  if (!stream_)
+    return response_status_;
+
   request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), rv);
   if (rv == 0) {  // Reached the end.
     DCHECK(request_body_stream_->IsEOF());
@@ -503,6 +507,10 @@ int QuicHttpStream::DoSendBody() {
 int QuicHttpStream::DoSendBodyComplete(int rv) {
   if (rv < 0)
     return rv;
+
+  // If the stream is already closed, don't continue.
+  if (!stream_)
+    return response_status_;
 
   request_body_buf_->DidConsume(request_body_buf_->BytesRemaining());
 
