@@ -136,7 +136,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     private static boolean isPdfIntent(Intent intent) {
-        if (intent == null) return false;
+        if (intent == null || intent.getData() == null) return false;
         String filename = intent.getData().getLastPathSegment();
         return (filename != null && filename.endsWith(PDF_SUFFIX))
                 || PDF_MIME.equals(intent.getType());
