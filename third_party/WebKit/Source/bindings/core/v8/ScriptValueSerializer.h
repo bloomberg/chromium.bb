@@ -24,6 +24,7 @@ class DOMArrayBufferView;
 class DOMSharedArrayBuffer;
 class File;
 class FileList;
+class ImageData;
 class StaticBitmapImage;
 
 typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
@@ -135,7 +136,9 @@ public:
     void writeFileListIndex(const Vector<int>& blobIndices);
     void writeArrayBuffer(const DOMArrayBuffer&);
     void writeArrayBufferView(const DOMArrayBufferView&);
+    void doWriteImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength);
     void writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength);
+    void writeImageBitmap(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength);
     void writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags);
     void writeTransferredMessagePort(uint32_t index);
     void writeTransferredArrayBuffer(uint32_t index);
@@ -400,6 +403,7 @@ private:
     StateBase* writeFile(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeFileList(v8::Local<v8::Value>, StateBase* next);
     void writeImageData(v8::Local<v8::Value>);
+    StateBase* writeImageBitmap(v8::Local<v8::Value>, StateBase* next);
     void writeRegExp(v8::Local<v8::Value>);
     StateBase* writeAndGreyArrayBufferView(v8::Local<v8::Object>, StateBase* next);
     StateBase* writeArrayBuffer(v8::Local<v8::Value>, StateBase* next);
@@ -531,7 +535,9 @@ private:
     bool readDate(v8::Local<v8::Value>*);
     bool readNumber(v8::Local<v8::Value>*);
     bool readNumberObject(v8::Local<v8::Value>*);
+    ImageData* doReadImageData();
     bool readImageData(v8::Local<v8::Value>*);
+    bool readImageBitmap(v8::Local<v8::Value>*);
     bool readCompositorProxy(v8::Local<v8::Value>*);
     PassRefPtr<DOMArrayBuffer> doReadArrayBuffer();
     bool readArrayBuffer(v8::Local<v8::Value>*);

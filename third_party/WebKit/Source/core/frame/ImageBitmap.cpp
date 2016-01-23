@@ -167,6 +167,15 @@ PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapI
     return adoptRefWillBeNoop(new ImageBitmap(image));
 }
 
+PassOwnPtr<uint8_t[]> ImageBitmap::copyBitmapData()
+{
+    SkImageInfo info = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+    OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[width() * height() * info.bytesPerPixel()]);
+    size_t dstRowBytes = 4 * width();
+    m_image->imageForCurrentFrame()->readPixels(info, dstPixels.get(), dstRowBytes, 0, 0);
+    return dstPixels.release();
+}
+
 unsigned long ImageBitmap::width() const
 {
     if (!m_image)

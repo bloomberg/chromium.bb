@@ -294,13 +294,25 @@ void SerializedScriptValueWriter::writeArrayBufferView(const DOMArrayBufferView&
     doWriteUint32(arrayBufferView.byteLength());
 }
 
-void SerializedScriptValueWriter::writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength)
+// Helper function shared by writeImageData and writeImageBitmap
+void SerializedScriptValueWriter::doWriteImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength)
 {
-    append(ImageDataTag);
     doWriteUint32(width);
     doWriteUint32(height);
     doWriteUint32(pixelDataLength);
     append(pixelData, pixelDataLength);
+}
+
+void SerializedScriptValueWriter::writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength)
+{
+    append(ImageDataTag);
+    doWriteImageData(width, height, pixelData, pixelDataLength);
+}
+
+void SerializedScriptValueWriter::writeImageBitmap(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength)
+{
+    append(ImageBitmapTag);
+    doWriteImageData(width, height, pixelData, pixelDataLength);
 }
 
 void SerializedScriptValueWriter::writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags flags)
@@ -798,6 +810,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             writeImageData(value);
         } else if (value->IsRegExp()) {
             writeRegExp(value);
+        } else if (V8ImageBitmap::hasInstance(value, isolate())) {
+            return writeImageBitmap(value, next);
         } else if (V8ArrayBuffer::hasInstance(value, isolate())) {
             return writeArrayBuffer(value, next);
         } else if (V8CompositorProxy::hasInstance(value, isolate())) {
@@ -989,6 +1003,18 @@ void ScriptValueSerializer::writeImageData(v8::Local<v8::Value> value)
         return;
     DOMUint8ClampedArray* pixelArray = imageData->data();
     m_writer.writeImageData(imageData->width(), imageData->height(), pixelArray->data(), pixelArray->length());
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeImageBitmap(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+{
+    ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(value.As<v8::Object>());
+    if (!imageBitmap)
+        return nullptr;
+    if (imageBitmap->isNeutered())
+        return handleError(DataCloneError, "An ImageBitmap is neutered and could not be cloned.", next);
+    OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData();
+    m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
+    return nullptr;
 }
 
 void ScriptValueSerializer::writeRegExp(v8::Local<v8::Value> value)
@@ -1256,6 +1282,11 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
 
     case ImageDataTag:
         if (!readImageData(value))
+            return false;
+        creator.pushObjectReference(*value);
+        break;
+    case ImageBitmapTag:
+        if (!readImageBitmap(value))
             return false;
         creator.pushObjectReference(*value);
         break;
@@ -1566,26 +1597,47 @@ bool SerializedScriptValueReader::readNumberObject(v8::Local<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
+// Helper function shared by readImageData and readImageBitmap
+ImageData* SerializedScriptValueReader::doReadImageData()
 {
     uint32_t width;
     uint32_t height;
     uint32_t pixelDataLength;
     if (!doReadUint32(&width))
-        return false;
+        return nullptr;
     if (!doReadUint32(&height))
-        return false;
+        return nullptr;
     if (!doReadUint32(&pixelDataLength))
-        return false;
+        return nullptr;
     if (m_position + pixelDataLength > m_length)
-        return false;
+        return nullptr;
     ImageData* imageData = ImageData::create(IntSize(width, height));
     DOMUint8ClampedArray* pixelArray = imageData->data();
     ASSERT(pixelArray);
     ASSERT(pixelArray->length() >= pixelDataLength);
     memcpy(pixelArray->data(), m_buffer + m_position, pixelDataLength);
     m_position += pixelDataLength;
+    return imageData;
+}
+
+bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
+{
+    ImageData* imageData = doReadImageData();
+    if (!imageData)
+        return false;
     *value = toV8(imageData, m_scriptState->context()->Global(), isolate());
+    return !value->IsEmpty();
+}
+
+bool SerializedScriptValueReader::readImageBitmap(v8::Local<v8::Value>* value)
+{
+    ImageData* imageData = doReadImageData();
+    if (!imageData)
+        return false;
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(imageData, IntRect(0, 0, imageData->width(), imageData->height()));
+    if (!imageBitmap.get())
+        return false;
+    *value = toV8(imageBitmap.get(), m_scriptState->context()->Global(), isolate());
     return !value->IsEmpty();
 }
 

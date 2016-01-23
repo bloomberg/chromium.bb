@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="canvas" width="3" height="2"></canvas>
+<script src="../../resources/js-test.js"></script>
+<script>
+jsTestIsAsync = true;
+var worker = new Worker('./resources/canvas-ImageBitmap-structured-clone.js');
+
+description("Tests that ImageBitmap supports structured clone and that the pixel data survives the trip between main <--> worker");
+
+function shouldNotBeCalled() {
+    testFailed("createImageBitmap promise rejected.");
+    finishJSTest();
+}
+
+var imageWidth1 = 3;
+var imageHeight1 = 2;
+var imageWidth2 = 1;
+var imageHeight2 = 1;
+var bitmapWidth;
+var bitmapHeight;
+var newImage1;
+var newImage2;
+var imageBitmap1;
+var imageBitmap2;
+var newImageBitmap;
+var image1 = new ImageData(new Uint8ClampedArray(
+            [255, 0, 0, 255,
+            0, 255, 0, 255,
+            255, 255, 255, 127,
+            0, 0, 0, 64,
+            12, 34, 56, 64,
+            12, 34, 56, 127]),
+            imageWidth1, imageHeight1);
+var image2 = new ImageData(new Uint8ClampedArray([255, 128, 64, 127]), imageWidth2, imageHeight2);
+var context = document.getElementById("canvas").getContext("2d");
+
+var p1 = createImageBitmap(image1).then(function(image) {imageBitmap1 = image});
+var p2 = createImageBitmap(image2).then(function(image) {imageBitmap2 = image});
+Promise.all([p1, p2]).then(function() {
+  bitmapWidth = imageBitmap1.width;
+  bitmapHeight = imageBitmap1.height;
+  shouldBe("bitmapWidth", "imageWidth1");
+  shouldBe("bitmapHeight", "imageHeight1");
+
+  worker.postMessage({label:'bitmap1', data:imageBitmap1});
+
+  // Structured cloning should not neuter the source ImageBitmap
+  bitmapWidth = imageBitmap1.width;
+  bitmapHeight = imageBitmap1.height;
+  shouldBe("bitmapWidth", "imageWidth1");
+  shouldBe("bitmapHeight", "imageHeight1");
+}, shouldNotBeCalled);
+
+worker.onmessage = function(e) {
+  newImageBitmap = e.data.data;
+  bitmapWidth = newImageBitmap.width;
+  bitmapHeight = newImageBitmap.height;
+  context.clearRect(0, 0, imageWidth1, imageHeight1);
+  context.drawImage(newImageBitmap, 0, 0, bitmapWidth, bitmapHeight);
+  newImage = context.getImageData(0, 0, bitmapWidth, bitmapHeight);
+
+  switch (e.data.label) {
+    case 'bitmap1':
+      shouldBe("bitmapWidth", "imageWidth1");
+      shouldBe("bitmapHeight", "imageHeight1");
+
+      // newImage is not necessary the same as imageData because of
+      // multiplying and dividing by alpha during the round trip, but
+      // they should be close.
+      // The alpha channel should be exactly the same.
+      shouldBeCloseTo("newImage.data[0]", "image1.data[0]", 5);
+      shouldBeCloseTo("newImage.data[1]", "image1.data[1]", 5);
+      shouldBeCloseTo("newImage.data[2]", "image1.data[2]", 5);
+      shouldBe("newImage.data[3]", "image1.data[3]");
+
+      shouldBeCloseTo("newImage.data[4]", "image1.data[4]", 5);
+      shouldBeCloseTo("newImage.data[5]", "image1.data[5]", 5);
+      shouldBeCloseTo("newImage.data[6]", "image1.data[6]", 5);
+      shouldBe("newImage.data[7]", "image1.data[7]");
+
+      shouldBeCloseTo("newImage.data[8]", "image1.data[8]", 5);
+      shouldBeCloseTo("newImage.data[9]", "image1.data[9]", 5);
+      shouldBeCloseTo("newImage.data[10]", "image1.data[10]", 5);
+      shouldBe("newImage.data[11]", "image1.data[11]");
+
+      shouldBeCloseTo("newImage.data[12]", "image1.data[12]", 5);
+      shouldBeCloseTo("newImage.data[13]", "image1.data[13]", 5);
+      shouldBeCloseTo("newImage.data[14]", "image1.data[14]", 5);
+      shouldBe("newImage.data[15]", "image1.data[15]");
+
+      shouldBeCloseTo("newImage.data[16]", "image1.data[16]", 5);
+      shouldBeCloseTo("newImage.data[17]", "image1.data[17]", 5);
+      shouldBeCloseTo("newImage.data[18]", "image1.data[18]", 5);
+      shouldBe("newImage.data[19]", "image1.data[19]");
+
+      shouldBeCloseTo("newImage.data[20]", "image1.data[20]", 5);
+      shouldBeCloseTo("newImage.data[21]", "image1.data[21]", 5);
+      shouldBeCloseTo("newImage.data[22]", "image1.data[22]", 5);
+      shouldBe("newImage.data[23]", "image1.data[23]");
+
+      bitmapWidth = imageBitmap2.width;
+      bitmapHeight = imageBitmap2.height;
+      shouldBe("bitmapWidth", "imageWidth2");
+      shouldBe("bitmapHeight", "imageHeight2");
+
+      worker.postMessage({label:'bitmap2', data:imageBitmap2});
+
+      // Structured cloning should not neuter the source ImageBitmap
+      bitmapWidth = imageBitmap2.width;
+      bitmapHeight = imageBitmap2.height;
+      shouldBe("bitmapWidth", "imageWidth2");
+      shouldBe("bitmapHeight", "imageHeight2");
+      break;
+    case 'bitmap2':
+      shouldBe("bitmapWidth", "imageWidth2");
+      shouldBe("bitmapHeight", "imageHeight2");
+
+      shouldBeCloseTo("newImage.data[0]", "image2.data[0]", 5);
+      shouldBeCloseTo("newImage.data[1]", "image2.data[1]", 5);
+      shouldBeCloseTo("newImage.data[2]", "image2.data[2]", 5);
+      shouldBe("newImage.data[3]", "image2.data[3]");
+      finishJSTest();
+      break;
+  }
+}
+</script>
+</body>
+</html>

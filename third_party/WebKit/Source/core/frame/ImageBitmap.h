@@ -38,6 +38,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
+    PassOwnPtr<uint8_t[]> copyBitmapData();
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;
