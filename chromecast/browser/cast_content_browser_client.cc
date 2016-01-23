@@ -31,7 +31,6 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
-#include "chromecast/media/audio/cast_audio_manager_factory.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -48,7 +47,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
-#include "media/audio/audio_manager_factory.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gl/gl_switches.h"
@@ -86,11 +84,6 @@ scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
 }
 
 #if !defined(OS_ANDROID)
-scoped_ptr<::media::AudioManagerFactory>
-CastContentBrowserClient::CreateAudioManagerFactory() {
-  return make_scoped_ptr(new media::CastAudioManagerFactory());
-}
-
 scoped_refptr<media::CmaMediaPipelineClient>
 CastContentBrowserClient::CreateCmaMediaPipelineClient() {
   return make_scoped_refptr(new media::CmaMediaPipelineClient());

@@ -21,7 +21,6 @@ class CrashHandlerHostLinux;
 }
 
 namespace media {
-class AudioManagerFactory;
 class BrowserCdmFactory;
 }
 
@@ -63,8 +62,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       net::URLRequestContextGetter* request_context_getter);
 
 #if !defined(OS_ANDROID)
-  virtual scoped_ptr<::media::AudioManagerFactory> CreateAudioManagerFactory();
-
   // Creates a CmaMediaPipelineClient which is responsible to create (CMA
   // backend)
   // for media playback and watch media pipeline status, called once per media

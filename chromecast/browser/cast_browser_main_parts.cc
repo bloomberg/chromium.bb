@@ -35,6 +35,7 @@
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/platform_client_auth.h"
+#include "chromecast/media/audio/cast_audio_manager_factory.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/base/video_plane_controller.h"
@@ -48,7 +49,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_manager_factory.h"
 #include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
 
@@ -317,9 +317,7 @@ int CastBrowserMainParts::PreCreateThreads() {
 
   // AudioManager is created immediately after threads are created, requiring
   // AudioManagerFactory to be set beforehand.
-  scoped_ptr< ::media::AudioManagerFactory> audio_manager_factory =
-      cast_browser_process_->browser_client()->CreateAudioManagerFactory();
-  ::media::AudioManager::SetFactory(audio_manager_factory.release());
+  ::media::AudioManager::SetFactory(new media::CastAudioManagerFactory());
 #endif
 
 #if defined(USE_AURA)
