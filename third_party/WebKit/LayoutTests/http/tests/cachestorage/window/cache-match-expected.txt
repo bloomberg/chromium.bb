@@ -12,6 +12,7 @@ PASS Cache.match with string fragment "http" as query
 PASS Cache.match with responses containing "Vary" header 
 PASS Cache.match with Request and Response objects with different URLs 
 PASS Cache.match invoked multiple times for the same Request/Response 
+PASS Cache.match blob should be sliceable 
 FAIL Cache.match with POST Request assert_equals: Cache.match should not find a match expected (undefined) undefined but got (object) object "[object Response]"
 PASS Cache.match with a non-2xx Response 
 PASS Cache.match with a network error Response 

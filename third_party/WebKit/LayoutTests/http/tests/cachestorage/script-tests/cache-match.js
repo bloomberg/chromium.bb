@@ -159,6 +159,36 @@ cache_test(function(cache) {
         });
   }, 'Cache.match invoked multiple times for the same Request/Response');
 
+cache_test(function(cache) {
+    var request_url = new URL('../resources/simple.txt', location.href).href;
+    return fetch(request_url)
+      .then(function(fetch_result) {
+          return cache.put(new Request(request_url), fetch_result);
+        })
+      .then(function() {
+          return cache.match(request_url);
+        })
+      .then(function(result) {
+          return result.blob();
+        })
+      .then(function(blob) {
+          sliced = blob.slice(2,8);
+
+          return new Promise(function (resolve, reject) {
+              reader = new FileReader();
+              reader.onloadend = function(event) {
+                resolve(event.target.result);
+              }
+              reader.readAsText(sliced);
+            });
+        })
+      .then(function(text) {
+          assert_equals(text, 'simple',
+                        'A Response blob returned by Cache.match should be ' +
+                        'sliceable.' );
+        });
+  }, 'Cache.match blob should be sliceable');
+
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     var request = new Request(entries.a.request.clone(), {method: 'POST'});
     return cache.match(request)

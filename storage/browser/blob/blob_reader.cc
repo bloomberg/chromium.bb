@@ -449,9 +449,10 @@ BlobReader::Status BlobReader::ReadDiskCacheEntryItem(const BlobDataItem& item,
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
 
   const int result = item.disk_cache_entry()->ReadData(
-      item.disk_cache_stream_index(), current_item_offset_, read_buf_.get(),
-      bytes_to_read, base::Bind(&BlobReader::DidReadDiskCacheEntry,
-                                weak_factory_.GetWeakPtr()));
+      item.disk_cache_stream_index(), item.offset() + current_item_offset_,
+      read_buf_.get(), bytes_to_read,
+      base::Bind(&BlobReader::DidReadDiskCacheEntry,
+                 weak_factory_.GetWeakPtr()));
   if (result >= 0) {
     AdvanceBytesRead(result);
     return Status::DONE;
