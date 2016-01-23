@@ -272,6 +272,16 @@ std::string StripDigitsIfRequired(const base::string16& input) {
   return return_string;
 }
 
+std::ostream& operator<<(
+    std::ostream& out,
+    const autofill::AutofillQueryResponseContents& response) {
+  out << "upload_required: " << response.upload_required();
+  for (const auto& field : response.field()) {
+    out << "\nautofill_type: " << field.autofill_type();
+  }
+  return out;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -432,6 +442,8 @@ void FormStructure::ParseQueryResponse(std::string payload,
   AutofillQueryResponseContents response;
   if (!response.ParseFromString(payload))
     return;
+
+  VLOG(1) << "Autofill query response was successfully parsed:\n" << response;
 
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
 

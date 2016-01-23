@@ -91,6 +91,53 @@ GURL GetRequestUrl(AutofillDownloadManager::RequestType request_type) {
               RequestTypeToString(request_type) + "?client=" + kClientName);
 }
 
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillQueryContents& query) {
+  out << "client_version: " << query.client_version();
+  for (const auto& form : query.form()) {
+    out << "\nForm\n signature: " << form.signature();
+    for (const auto& field : form.field()) {
+      out << "\n Field\n  signature: " << field.signature();
+      if (!field.name().empty())
+        out << "\n  name: " << field.name();
+      if (!field.type().empty())
+        out << "\n  type: " << field.type();
+      if (!field.label().empty())
+        out << "\n  label: " << field.label();
+    }
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillUploadContents& upload) {
+  out << "client_version: " << upload.client_version() << "\n";
+  out << "form_signature: " << upload.form_signature() << "\n";
+  out << "data_present: " << upload.data_present() << "\n";
+  out << "submission: " << upload.submission() << "\n";
+  if (!upload.action_signature())
+    out << "action_signature: " << upload.action_signature() << "\n";
+  if (!upload.login_form_signature())
+    out << "login_form_signature: " << upload.login_form_signature() << "\n";
+  if (!upload.form_name().empty())
+    out << "form_name: " << upload.form_name() << "\n";
+
+  for (const auto& field : upload.field()) {
+    out << "\n Field"
+      << "\n signature: " << field.signature()
+      << "\n autofill_type: " << field.autofill_type();
+    if (!field.name().empty())
+      out << "\n name: " << field.name();
+    if (!field.autocomplete().empty())
+      out << "\n autocomplete: " << field.autocomplete();
+    if (!field.type().empty())
+      out << "\n type: " << field.type();
+    if (!field.label().empty())
+      out << "\n label: " << field.label();
+  }
+  return out;
+}
+
 }  // namespace
 
 struct AutofillDownloadManager::FormRequestData {
@@ -147,6 +194,8 @@ bool AutofillDownloadManager::StartQueryRequest(
     return true;
   }
 
+  VLOG(1) << "Sending Autofill Query Request:\n" << query;
+
   return StartRequest(request_data);
 }
 
@@ -176,6 +225,8 @@ bool AutofillDownloadManager::StartUploadRequest(
   request_data.form_signatures.push_back(form.FormSignature());
   request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
   request_data.payload = payload;
+
+  VLOG(1) << "Sending Autofill Upload Request:\n" << upload;
 
   return StartRequest(request_data);
 }
@@ -219,10 +270,6 @@ bool AutofillDownloadManager::StartRequest(
       fetcher->GetOriginalURL(), driver_->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
-
-  VLOG(1) << "Sending AutofillDownloadManager "
-          << RequestTypeToString(request_data.request_type)
-          << " request (compressed to " << compression_ratio << "%)";
 
   return true;
 }
@@ -312,13 +359,12 @@ void AutofillDownloadManager::OnURLFetchComplete(
   } else {
     std::string response_body;
     source->GetResponseAsString(&response_body);
-    VLOG(1) << "AutofillDownloadManager: " << request_type
-            << " request has succeeded.";
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
       observer_->OnLoadedServerPredictions(std::move(response_body),
                                            it->second.form_signatures);
     } else {
+      VLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
       observer_->OnUploadedPossibleFieldTypes();
     }
   }
