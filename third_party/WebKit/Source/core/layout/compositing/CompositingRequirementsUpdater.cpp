@@ -228,7 +228,8 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
     if (currentRecursionData.m_hasCompositedScrollingAncestor && layer->layoutObject()->styleRef().hasViewportConstrainedPosition())
         directReasons |= CompositingReasonPositionFixed;
 
-    if (compositor->canBeComposited(layer)) {
+    bool canBeComposited = compositor->canBeComposited(layer);
+    if (canBeComposited) {
         reasonsToComposite |= directReasons;
 
         if (layer->isRootLayer() && compositor->rootShouldAlwaysComposite())
@@ -299,7 +300,7 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
     RecursionData childRecursionData = currentRecursionData;
     childRecursionData.m_subtreeIsCompositing = false;
 
-    bool willBeCompositedOrSquashed = compositor->canBeComposited(layer) && requiresCompositingOrSquashing(reasonsToComposite);
+    bool willBeCompositedOrSquashed = canBeComposited && requiresCompositingOrSquashing(reasonsToComposite);
     if (willBeCompositedOrSquashed) {
         // This layer now acts as the ancestor for kids.
         childRecursionData.m_compositingAncestor = layer;
@@ -406,7 +407,7 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         // Now check for reasons to become composited that depend on the state of descendant layers.
         CompositingReasons subtreeCompositingReasons = subtreeReasonsForCompositing(layer, childRecursionData.m_subtreeIsCompositing, anyDescendantHas3DTransform);
         reasonsToComposite |= subtreeCompositingReasons;
-        if (!willBeCompositedOrSquashed && compositor->canBeComposited(layer) && requiresCompositingOrSquashing(subtreeCompositingReasons)) {
+        if (!willBeCompositedOrSquashed && canBeComposited && requiresCompositingOrSquashing(subtreeCompositingReasons)) {
             childRecursionData.m_compositingAncestor = layer;
             // FIXME: this context push is effectively a no-op but needs to exist for
             // now, because the code is designed to push overlap information to the
@@ -437,7 +438,7 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.
         // Note that if the layer clips its descendants, there's no reason to propagate the child animation to the parent layers. That's because
         // we know for sure the animation is contained inside the clipping rectangle, which is already added to the overlap map.
-        bool isCompositedClippingLayer = compositor->canBeComposited(layer) && (reasonsToComposite & CompositingReasonClipsCompositingDescendants);
+        bool isCompositedClippingLayer = canBeComposited && (reasonsToComposite & CompositingReasonClipsCompositingDescendants);
         bool isCompositedWithInlineTransform = reasonsToComposite & CompositingReasonInlineTransform;
         if ((!childRecursionData.m_testingOverlap && !isCompositedClippingLayer) || layer->layoutObject()->style()->hasCurrentTransformAnimation() || isCompositedWithInlineTransform)
             currentRecursionData.m_testingOverlap = false;
