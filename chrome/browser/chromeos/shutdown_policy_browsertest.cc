@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -290,9 +290,7 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
         content::NotificationService::AllSources()).Wait();
-    LoginDisplayHostImpl* host =
-        static_cast<LoginDisplayHostImpl*>(
-            LoginDisplayHostImpl::default_host());
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
     WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
     ASSERT_TRUE(web_ui_login_view);
@@ -307,7 +305,7 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
 
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
-    if (LoginDisplayHostImpl::default_host()) {
+    if (LoginDisplayHost::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
                                              base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();

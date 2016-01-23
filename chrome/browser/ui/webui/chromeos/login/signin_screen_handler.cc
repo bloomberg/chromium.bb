@@ -998,8 +998,8 @@ void SigninScreenHandler::HandleShowSupervisedUserCreationScreen() {
     LOG(ERROR) << "Managed users not allowed.";
     return;
   }
-  LoginDisplayHostImpl::default_host()->
-      StartWizard(WizardController::kSupervisedUserCreationScreenName);
+  LoginDisplayHost::default_host()->StartWizard(
+      WizardController::kSupervisedUserCreationScreenName);
 }
 
 void SigninScreenHandler::HandleLaunchPublicSession(
@@ -1081,7 +1081,7 @@ void SigninScreenHandler::HandleToggleKioskEnableScreen() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (delegate_ && !connector->IsEnterpriseManaged() &&
-      LoginDisplayHostImpl::default_host()) {
+      LoginDisplayHost::default_host()) {
     delegate_->ShowKioskEnableScreen();
   }
 }
@@ -1142,7 +1142,7 @@ void SigninScreenHandler::HandleSignOutUser() {
 }
 
 void SigninScreenHandler::HandleOpenProxySettings() {
-  LoginDisplayHostImpl::default_host()->OpenProxySettings();
+  LoginDisplayHost::default_host()->OpenProxySettings();
 }
 
 void SigninScreenHandler::HandleLoginVisible(const std::string& source) {

@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -80,11 +80,9 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    host_ = LoginDisplayHostImpl::default_host();
-    CHECK(host_);
+    host_ = LoginDisplayHost::default_host();
     content::WebContents* web_contents =
-        LoginDisplayHostImpl::default_host()->GetWebUILoginView()->
-            GetWebContents();
+        host_->GetWebUILoginView()->GetWebContents();
     captive_portal_window_proxy_.reset(
         new CaptivePortalWindowProxy(&delegate_, web_contents));
   }
@@ -214,8 +212,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, PRE_OpenPortalDialog) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
-  LoginDisplayHostImpl* host =
-      static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host());
+  LoginDisplayHost* host = LoginDisplayHost::default_host();
   ASSERT_TRUE(host);
   OobeUI* oobe = host->GetOobeUI();
   ASSERT_TRUE(oobe);

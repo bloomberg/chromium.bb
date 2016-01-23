@@ -94,8 +94,8 @@ void LoginManagerTest::SetUp() {
 
 void LoginManagerTest::TearDownOnMainThread() {
   MixinBasedBrowserTest::TearDownOnMainThread();
-  if (LoginDisplayHostImpl::default_host())
-    LoginDisplayHostImpl::default_host()->Finalize();
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->Finalize();
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
@@ -218,7 +218,7 @@ void LoginManagerTest::JSExpect(const std::string& expression) {
 }
 
 void LoginManagerTest::InitializeWebContents() {
-  LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+  LoginDisplayHost* host = LoginDisplayHost::default_host();
   EXPECT_TRUE(host != NULL);
 
   content::WebContents* web_contents =

@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/reset_view.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
@@ -207,7 +207,7 @@ void ResetScreen::OnLearnMore() {
   VLOG(1) << "Trying to view the help article about reset options.";
   if (!help_app_.get()) {
     help_app_ = new HelpAppLauncher(
-        LoginDisplayHostImpl::default_host()->GetNativeWindow());
+        LoginDisplayHost::default_host()->GetNativeWindow());
   }
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_POWERWASH);
 #endif

@@ -21,13 +21,14 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -375,9 +376,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 
   // Select the second pod (belonging to user 1).
   ASSERT_TRUE(content::ExecuteScript(
-      static_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->
-              web_ui()->GetWebContents(),
+      LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
       "document.getElementsByClassName('pod')[1].focus();"));
   RunUntilWallpaperChangeCount(2);
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());

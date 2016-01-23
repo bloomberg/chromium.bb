@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -42,7 +42,7 @@ class SystemUse24HourClockPolicyTest
 
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
-    if (LoginDisplayHostImpl::default_host()) {
+    if (LoginDisplayHost::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
                                              base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();

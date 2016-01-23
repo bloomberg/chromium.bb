@@ -17,8 +17,9 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -154,11 +155,10 @@ class OobeLocalizationTest
   void RunLocalizationTest();
 
   void WaitUntilJSIsReady() {
-    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host());
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
     if (!host)
       return;
-    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+    OobeUI* oobe_ui = host->GetOobeUI();
     if (!oobe_ui)
       return;
     base::RunLoop run_loop;
@@ -325,17 +325,13 @@ void OobeLocalizationTest::RunLocalizationTest() {
       first_language.c_str());
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      static_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host())
-          ->GetOobeUI()
-          ->web_ui()
-          ->GetWebContents(),
-      waiting_script,
-      &done));
+      LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
+      waiting_script, &done));
 
-  checker.set_web_contents(static_cast<chromeos::LoginDisplayHostImpl*>(
-                           chromeos::LoginDisplayHostImpl::default_host())->
-                           GetOobeUI()->web_ui()->GetWebContents());
+  checker.set_web_contents(LoginDisplayHost::default_host()
+                               ->GetOobeUI()
+                               ->web_ui()
+                               ->GetWebContents());
 
   if (!VerifyInitialOptions(kLocaleSelect, expected_locale.c_str(), true)) {
     LOG(ERROR) << "Actual value of " << kLocaleSelect << ":\n"
@@ -362,7 +358,7 @@ void OobeLocalizationTest::RunLocalizationTest() {
   EXPECT_EQ(expected_keyboard_select, DumpOptions(kKeyboardSelect));
 
   // Shut down the display host.
-  chromeos::LoginDisplayHostImpl::default_host()->Finalize();
+  LoginDisplayHost::default_host()->Finalize();
   base::MessageLoopForUI::current()->RunUntilIdle();
 
   // Clear the locale pref so the statistics provider is pinged next time.

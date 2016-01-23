@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -101,7 +101,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 
   user_manager::UserManager::Get()->SessionStarted();
 
-  LoginDisplayHostImpl::default_host()->Finalize();
+  LoginDisplayHost::default_host()->Finalize();
 }
 
 void DemoAppLauncher::OnProfileLoadFailed(KioskAppLaunchError::Error error) {

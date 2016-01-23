@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
@@ -606,8 +605,7 @@ void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
   if (connector->GetDeviceMode() == policy::DEVICE_MODE_LEGACY_RETAIL_MODE) {
     // If we're in legacy retail mode, the best thing we can do is launch the
     // new offline demo mode.
-    LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
-    host->StartDemoAppLaunch();
+    LoginDisplayHost::default_host()->StartDemoAppLaunch();
     return;
   }
 

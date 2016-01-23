@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/platform_util.h"
@@ -75,8 +75,8 @@ MobileSetupDialogDelegate* MobileSetupDialogDelegate::GetInstance() {
   return base::Singleton<MobileSetupDialogDelegate>::get();
 }
 
-MobileSetupDialogDelegate::MobileSetupDialogDelegate() : dialog_window_(NULL) {
-}
+MobileSetupDialogDelegate::MobileSetupDialogDelegate()
+    : dialog_window_(nullptr) {}
 
 MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
 }
@@ -84,13 +84,11 @@ MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
 void MobileSetupDialogDelegate::ShowDialog(const std::string& service_path) {
   service_path_ = service_path;
 
-  gfx::NativeWindow parent = NULL;
+  gfx::NativeWindow parent = nullptr;
   // If we're on the login screen.
-  if (chromeos::LoginDisplayHostImpl::default_host()) {
-    chromeos::LoginDisplayHostImpl* webui_host =
-        static_cast<chromeos::LoginDisplayHostImpl*>(
-            chromeos::LoginDisplayHostImpl::default_host());
-    chromeos::WebUILoginView* login_view = webui_host->GetWebUILoginView();
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::WebUILoginView* login_view =
+        chromeos::LoginDisplayHost::default_host()->GetWebUILoginView();
     if (login_view)
       parent = login_view->GetNativeWindow();
   }
@@ -128,7 +126,7 @@ std::string MobileSetupDialogDelegate::GetDialogArgs() const {
 }
 
 void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
-  dialog_window_ = NULL;
+  dialog_window_ = nullptr;
 }
 
 void MobileSetupDialogDelegate::OnCloseContents(WebContents* source,

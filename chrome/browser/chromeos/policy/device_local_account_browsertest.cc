@@ -51,7 +51,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
@@ -477,9 +476,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
         content::NotificationService::AllSources()).Wait();
 
-    chromeos::LoginDisplayHostImpl* host =
-        reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
-            chromeos::LoginDisplayHostImpl::default_host());
+    chromeos::LoginDisplayHost* host =
+        chromeos::LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
     chromeos::WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
     ASSERT_TRUE(web_ui_login_view);
@@ -724,9 +722,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   void StartLogin(const std::string& locale,
                   const std::string& input_method) {
     // Start login into the device-local account.
-    chromeos::LoginDisplayHostImpl* host =
-        reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
-            chromeos::LoginDisplayHostImpl::default_host());
+    chromeos::LoginDisplayHost* host =
+        chromeos::LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
     host->StartSignInScreen(LoginScreenContext());
     chromeos::ExistingUserController* controller =

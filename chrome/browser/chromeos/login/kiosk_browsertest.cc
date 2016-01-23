@@ -678,8 +678,7 @@ class KioskTest : public OobeBaseTest {
     EXPECT_TRUE(window);
 
     // Login screen should be gone or fading out.
-    chromeos::LoginDisplayHost* login_display_host =
-        chromeos::LoginDisplayHostImpl::default_host();
+    LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
     EXPECT_TRUE(
         login_display_host == NULL ||
         login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() ==
@@ -766,8 +765,7 @@ class KioskTest : public OobeBaseTest {
     JsExpect("$('splash-config-network').hidden == false");
 
     // Set up fake user manager with an owner for the test.
-    static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host())
-        ->GetOobeUI()->ShowOobeUI(false);
+    LoginDisplayHost::default_host()->GetOobeUI()->ShowOobeUI(false);
 
     // Configure network should bring up lock screen for owner.
     OobeScreenWaiter lock_screen_waiter(OobeDisplay::SCREEN_ACCOUNT_PICKER);
@@ -791,8 +789,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   AppLaunchController* GetAppLaunchController() {
-    return chromeos::LoginDisplayHostImpl::default_host()
-        ->GetAppLaunchController();
+    return LoginDisplayHost::default_host()->GetAppLaunchController();
   }
 
   // Returns a lock that is holding a task on the FILE thread. Any tasks posted
@@ -1237,8 +1234,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
       content::NotificationService::AllSources()).Wait();
 
   // Show signin screen again.
-  chromeos::LoginDisplayHostImpl::default_host()->StartSignInScreen(
-      LoginScreenContext());
+  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
   OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
 
   // Show kiosk enable screen again.
@@ -1327,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
   // Trigger the code that handles auto-launch on enterprise devices. This would
   // normally be called from ShowLoginWizard(), which runs so early that it is
   // not possible to inject an auto-launch policy before it runs.
-  LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
+  LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
   ASSERT_TRUE(login_display_host);
   login_display_host->StartAppLaunch(test_app_id(), false, true);
 

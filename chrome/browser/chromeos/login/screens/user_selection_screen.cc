@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -346,7 +346,7 @@ void UserSelectionScreen::SendUserList() {
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
   bool single_user = users_.size() == 1;
-  bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
+  bool is_signin_to_add = LoginDisplayHost::default_host() &&
                           user_manager::UserManager::Get()->IsUserLoggedIn();
   std::string owner_email;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,

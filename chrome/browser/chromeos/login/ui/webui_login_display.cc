@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -97,11 +97,9 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
     ClearAndEnablePassword();
   }
 
-  if (chromeos::LoginDisplayHost* host =
-          chromeos::LoginDisplayHostImpl::default_host()) {
-    if (chromeos::WebUILoginView* login_view = host->GetWebUILoginView())
-      login_view->SetUIEnabled(is_enabled);
-  }
+  LoginDisplayHost* host = LoginDisplayHost::default_host();
+  if (host && host->GetWebUILoginView())
+    host->GetWebUILoginView()->SetUIEnabled(is_enabled);
 }
 
 void WebUILoginDisplay::ShowError(int error_msg_id,

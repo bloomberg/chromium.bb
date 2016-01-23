@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_view.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/simple_web_view_dialog.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "content/public/browser/interstitial_page.h"
@@ -64,9 +64,8 @@ class SimpleWebViewDialogTest : public LoginManagerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SimpleWebViewDialogTest, Interstitial) {
-  content::WebContents* web_contents = LoginDisplayHostImpl::default_host()
-                                           ->GetWebUILoginView()
-                                           ->GetWebContents();
+  content::WebContents* web_contents =
+      LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents();
   StubDelegate delegate;
   CaptivePortalWindowProxy proxy(&delegate, web_contents);
   proxy.Show();

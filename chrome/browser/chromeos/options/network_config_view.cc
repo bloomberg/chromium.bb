@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_property_ui_data.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
@@ -40,11 +40,13 @@
 
 using views::Widget;
 
+namespace chromeos {
+
 namespace {
 
 gfx::NativeWindow GetParentForUnhostedDialog() {
-  if (chromeos::LoginDisplayHostImpl::default_host()) {
-    return chromeos::LoginDisplayHostImpl::default_host()->GetNativeWindow();
+  if (LoginDisplayHost::default_host()) {
+    return LoginDisplayHost::default_host()->GetNativeWindow();
   } else {
     Browser* browser = chrome::FindTabbedBrowser(
         ProfileManager::GetPrimaryUserProfile(),
@@ -53,35 +55,33 @@ gfx::NativeWindow GetParentForUnhostedDialog() {
     if (browser)
       return browser->window()->GetNativeWindow();
   }
-  return NULL;
+  return nullptr;
 }
 
 // Avoid global static initializer.
-chromeos::NetworkConfigView** GetActiveDialogPointer() {
-  static chromeos::NetworkConfigView* active_dialog = NULL;
+NetworkConfigView** GetActiveDialogPointer() {
+  static NetworkConfigView* active_dialog = nullptr;
   return &active_dialog;
 }
 
-chromeos::NetworkConfigView* GetActiveDialog() {
+NetworkConfigView* GetActiveDialog() {
   return *(GetActiveDialogPointer());
 }
 
-void SetActiveDialog(chromeos::NetworkConfigView* dialog) {
+void SetActiveDialog(NetworkConfigView* dialog) {
   *(GetActiveDialogPointer()) = dialog;
 }
 
 }  // namespace
 
-namespace chromeos {
-
 // static
 const int ChildNetworkConfigView::kInputFieldMinWidth = 270;
 
 NetworkConfigView::NetworkConfigView()
-    : child_config_view_(NULL),
-      delegate_(NULL),
-      advanced_button_(NULL) {
-  DCHECK(GetActiveDialog() == NULL);
+    : child_config_view_(nullptr),
+      delegate_(nullptr),
+      advanced_button_(nullptr) {
+  DCHECK(GetActiveDialog() == nullptr);
   SetActiveDialog(this);
 }
 
@@ -96,7 +96,7 @@ bool NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
   } else if (network->type() == shill::kTypeVPN) {
     child_config_view_ = new VPNConfigView(this, service_path);
   }
-  return child_config_view_ != NULL;
+  return child_config_view_ != nullptr;
 }
 
 bool NetworkConfigView::InitWithType(const std::string& type) {
@@ -111,18 +111,18 @@ bool NetworkConfigView::InitWithType(const std::string& type) {
     child_config_view_ = new VPNConfigView(this,
                                            "" /* service_path */);
   }
-  return child_config_view_ != NULL;
+  return child_config_view_ != nullptr;
 }
 
 NetworkConfigView::~NetworkConfigView() {
   DCHECK(GetActiveDialog() == this);
-  SetActiveDialog(NULL);
+  SetActiveDialog(nullptr);
 }
 
 // static
 void NetworkConfigView::Show(const std::string& service_path,
                              gfx::NativeWindow parent) {
-  if (GetActiveDialog() != NULL)
+  if (GetActiveDialog() != nullptr)
     return;
   NetworkConfigView* view = new NetworkConfigView();
   const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
@@ -144,7 +144,7 @@ void NetworkConfigView::Show(const std::string& service_path,
 // static
 void NetworkConfigView::ShowForType(const std::string& type,
                                     gfx::NativeWindow parent) {
-  if (GetActiveDialog() != NULL)
+  if (GetActiveDialog() != nullptr)
     return;
   NetworkConfigView* view = new NetworkConfigView();
   if (!view->InitWithType(type)) {
@@ -276,13 +276,13 @@ void NetworkConfigView::ViewHierarchyChanged(
 }
 
 void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
-  if (parent == NULL)
+  if (parent == nullptr)
     parent = GetParentForUnhostedDialog();
   // Failed connections may result in a pop-up with no natural parent window,
   // so provide a fallback context on the primary display. This is necessary
-  // becase one of parent or context must be non NULL.
+  // becase one of parent or context must be non nullptr.
   gfx::NativeWindow context =
-      parent ? NULL : ash::Shell::GetPrimaryRootWindow();
+      parent ? nullptr : ash::Shell::GetPrimaryRootWindow();
   Widget* window = DialogDelegate::CreateDialogWidget(this, context, parent);
   window->SetAlwaysOnTop(true);
   window->Show();
@@ -315,15 +315,13 @@ void ChildNetworkConfigView::GetShareStateForLoginState(bool* default_value,
 // ControlledSettingIndicatorView
 
 ControlledSettingIndicatorView::ControlledSettingIndicatorView()
-    : managed_(false),
-      image_view_(NULL) {
+    : managed_(false), image_view_(nullptr) {
   Init();
 }
 
 ControlledSettingIndicatorView::ControlledSettingIndicatorView(
     const NetworkPropertyUIData& ui_data)
-    : managed_(false),
-      image_view_(NULL) {
+    : managed_(false), image_view_(nullptr) {
   Init();
   Update(ui_data);
 }

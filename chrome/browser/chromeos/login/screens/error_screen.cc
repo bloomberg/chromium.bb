@@ -11,12 +11,13 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/certificate_manager_dialog.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/screens/network_error_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -146,9 +147,8 @@ void ErrorScreen::AllowOfflineLogin(bool allowed) {
 
 void ErrorScreen::FixCaptivePortal() {
   if (!captive_portal_window_proxy_.get()) {
-    content::WebContents* web_contents = LoginDisplayHostImpl::default_host()
-                                             ->GetWebUILoginView()
-                                             ->GetWebContents();
+    content::WebContents* web_contents =
+        LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents();
     captive_portal_window_proxy_.reset(new CaptivePortalWindowProxy(
         network_state_informer_.get(), web_contents));
   }
@@ -260,7 +260,7 @@ void ErrorScreen::DefaultHideCallback() {
 
 void ErrorScreen::OnConfigureCerts() {
   gfx::NativeWindow native_window =
-      LoginDisplayHostImpl::default_host()->GetNativeWindow();
+      LoginDisplayHost::default_host()->GetNativeWindow();
   CertificateManagerDialog* dialog = new CertificateManagerDialog(
       GetAppProfile(), NULL, native_window);
   dialog->Show();
@@ -284,7 +284,7 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
 
   user_manager::UserManager::Get()->SessionStarted();
 
-  LoginDisplayHostImpl::default_host()->Finalize();
+  LoginDisplayHost::default_host()->Finalize();
 }
 
 void ErrorScreen::OnLaunchOobeGuestSession() {

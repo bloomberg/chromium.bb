@@ -39,7 +39,7 @@
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -182,7 +182,7 @@ void QuitLoopOnAutoEnrollmentProgress(
 void WaitForAutoEnrollmentState(policy::AutoEnrollmentState state) {
   base::RunLoop loop;
   AutoEnrollmentController* auto_enrollment_controller =
-      LoginDisplayHostImpl::default_host()->GetAutoEnrollmentController();
+      LoginDisplayHost::default_host()->GetAutoEnrollmentController();
   scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
       progress_subscription(
           auto_enrollment_controller->RegisterProgressCallback(
@@ -256,15 +256,10 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
                WizardController::default_controller())->GetErrorScreen();
   }
 
-  OobeUI* GetOobeUI() {
-    OobeUI* oobe_ui = static_cast<LoginDisplayHostImpl*>(
-                          LoginDisplayHostImpl::default_host())->GetOobeUI();
-    return oobe_ui;
-  }
+  OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
 
   content::WebContents* GetWebContents() {
-    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host());
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
     if (!host)
       return NULL;
     WebUILoginView* webui_login_view = host->GetWebUILoginView();
@@ -274,8 +269,7 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
   }
 
   void WaitUntilJSIsReady() {
-    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host());
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
     if (!host)
       return;
     chromeos::OobeUI* oobe_ui = host->GetOobeUI();
@@ -710,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowWrongHWIDScreenFromLogin) {
   CheckCurrentScreen(WizardController::kNetworkScreenName);
 
-  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
+  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->ShowWrongHWIDScreen();
 
@@ -814,10 +808,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
                        ControlFlowNoForcedReEnrollmentOnFirstBoot) {
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
-  EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
-            LoginDisplayHostImpl::default_host()
-                ->GetAutoEnrollmentController()
-                ->state());
+  EXPECT_NE(
+      policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+      LoginDisplayHost::default_host()->GetAutoEnrollmentController()->state());
 
   CheckCurrentScreen(WizardController::kNetworkScreenName);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
@@ -840,10 +833,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
   CheckCurrentScreen(WizardController::kAutoEnrollmentCheckScreenName);
   mock_auto_enrollment_check_screen_->RealShow();
-  EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
-            LoginDisplayHostImpl::default_host()
-                ->GetAutoEnrollmentController()
-                ->state());
+  EXPECT_EQ(
+      policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+      LoginDisplayHost::default_host()->GetAutoEnrollmentController()->state());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
@@ -1006,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
 
   CheckCurrentScreen(WizardController::kNetworkScreenName);
 
-  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
+  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
   auth_needed_waiter.Wait();
 }
 

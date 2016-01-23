@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "content/public/test/test_utils.h"
@@ -138,7 +138,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   // Setup the enrollment screen.
   void ShowEnrollmentScreen() {
-    LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
     ASSERT_TRUE(host != nullptr);
     host->StartWizard(WizardController::kEnrollmentScreenName);
     OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENROLLMENT).Wait();

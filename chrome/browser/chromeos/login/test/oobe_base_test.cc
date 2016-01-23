@@ -102,9 +102,8 @@ void OobeBaseTest::SetUpOnMainThread() {
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()));
 
-  js_checker_.set_web_contents(LoginDisplayHostImpl::default_host()
-                                   ->GetWebUILoginView()
-                                   ->GetWebContents());
+  js_checker_.set_web_contents(
+      LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents());
 
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
@@ -117,7 +116,7 @@ void OobeBaseTest::SetUpOnMainThread() {
 
 void OobeBaseTest::TearDownOnMainThread() {
   // If the login display is still showing, exit gracefully.
-  if (LoginDisplayHostImpl::default_host()) {
+  if (LoginDisplayHost::default_host()) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(&chrome::AttemptExit));
     content::RunMessageLoop();
@@ -202,8 +201,7 @@ void OobeBaseTest::JsExpect(const std::string& expression) {
 }
 
 content::WebUI* OobeBaseTest::GetLoginUI() {
-  return static_cast<chromeos::LoginDisplayHostImpl*>(
-      chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
+  return LoginDisplayHost::default_host()->GetOobeUI()->web_ui();
 }
 
 WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {

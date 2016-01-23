@@ -11,7 +11,6 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 
@@ -94,8 +93,7 @@ void DemoModeDetector::OnIdle() {
   if (demo_launched_)
     return;
   demo_launched_ = true;
-  LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
-  host->StartDemoAppLaunch();
+  LoginDisplayHost::default_host()->StartDemoAppLaunch();
 }
 
 void DemoModeDetector::OnOobeTimerUpdate() {

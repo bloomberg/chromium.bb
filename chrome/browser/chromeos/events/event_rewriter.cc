@@ -18,7 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -664,7 +664,7 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   // when user logs in as guest.
   // TODO(kpschoedel): check whether this is still necessary.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      LoginDisplayHostImpl::default_host())
+      LoginDisplayHost::default_host())
     return false;
 
   const PrefService* pref_service = GetPrefService();

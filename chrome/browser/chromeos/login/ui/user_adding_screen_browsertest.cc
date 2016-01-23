@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +58,7 @@ class UserAddingScreenTest : public LoginManagerTest,
 
   void CheckScreenIsVisible() {
     views::View* web_view =
-        LoginDisplayHostImpl::default_host()->GetWebUILoginView()->child_at(0);
+        LoginDisplayHost::default_host()->GetWebUILoginView()->child_at(0);
     for (views::View* current_view = web_view;
          current_view;
          current_view = current_view->parent()) {
@@ -119,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
             ash::Shell::GetInstance()->session_state_delegate()->
                 GetSessionState());
 
-  EXPECT_TRUE(LoginDisplayHostImpl::default_host() == NULL);
+  EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
   EXPECT_EQ(kTestUsers[0],
             user_manager::UserManager::Get()->GetActiveUser()->email());
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
     EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_ACTIVE,
               ash::Shell::GetInstance()->session_state_delegate()->
                   GetSessionState());
-    EXPECT_TRUE(LoginDisplayHostImpl::default_host() == NULL);
+    EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
     ASSERT_EQ(unsigned(i + 1), user_manager->GetLoggedInUsers().size());
   }
 
@@ -176,9 +177,9 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
       ProfileHelper::Get()
           ->GetProfileByUserUnsafe(user_manager->GetLoggedInUsers()[2])
           ->GetPrefs();
-  ASSERT_TRUE(prefs1 != NULL);
-  ASSERT_TRUE(prefs2 != NULL);
-  ASSERT_TRUE(prefs3 != NULL);
+  ASSERT_TRUE(prefs1 != nullptr);
+  ASSERT_TRUE(prefs2 != nullptr);
+  ASSERT_TRUE(prefs3 != nullptr);
   prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
   prefs2->SetBoolean(prefs::kEnableAutoScreenLock, false);
   prefs3->SetBoolean(prefs::kEnableAutoScreenLock, false);

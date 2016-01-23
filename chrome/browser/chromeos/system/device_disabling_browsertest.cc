@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -175,12 +175,11 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // When the ephemeral users policy is enabled, Chrome OS removes any non-owner
   // cryptohomes on startup. At the end of that process, JavaScript attempts to
   // show the login screen. Simulate this.
-  const LoginDisplayHostImpl* const host =
-      static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host());
+  const LoginDisplayHost* host = LoginDisplayHost::default_host();
   ASSERT_TRUE(host);
-  WebUILoginView* const webui_login_view = host->GetWebUILoginView();
+  WebUILoginView* webui_login_view = host->GetWebUILoginView();
   ASSERT_TRUE(webui_login_view);
-  content::WebContents* const web_contents = webui_login_view->GetWebContents();
+  content::WebContents* web_contents = webui_login_view->GetWebContents();
   ASSERT_TRUE(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents,
                                      "Oobe.showAddUserForTesting();"));

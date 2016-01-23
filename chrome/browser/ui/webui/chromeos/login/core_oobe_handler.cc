@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -172,11 +172,9 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
     if (wizard_controller && !wizard_controller->login_screen_started()) {
       wizard_controller->AdvanceToScreen(WizardController::kResetScreenName);
     } else {
-      DCHECK(LoginDisplayHostImpl::default_host());
-      if (LoginDisplayHostImpl::default_host()) {
-        LoginDisplayHostImpl::default_host()->StartWizard(
-            WizardController::kResetScreenName);
-      }
+      DCHECK(LoginDisplayHost::default_host());
+      LoginDisplayHost::default_host()->StartWizard(
+          WizardController::kResetScreenName);
     }
   }
 }
@@ -419,7 +417,7 @@ void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
 }
 
 void CoreOobeHandler::HandleHeaderBarVisible() {
-  LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
+  LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
   if (login_display_host)
     login_display_host->SetStatusAreaVisible(true);
   if (ScreenLocker::default_screen_locker())

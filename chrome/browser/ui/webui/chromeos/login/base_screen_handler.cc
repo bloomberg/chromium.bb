@@ -6,7 +6,8 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -81,7 +82,7 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
 }
 
 gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
-  return LoginDisplayHostImpl::default_host()->GetNativeWindow();
+  return LoginDisplayHost::default_host()->GetNativeWindow();
 }
 
 void BaseScreenHandler::SetBaseScreen(BaseScreen* base_screen) {

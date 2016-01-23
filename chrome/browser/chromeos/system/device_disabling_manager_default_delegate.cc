@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
 
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 
@@ -20,7 +19,7 @@ void DeviceDisablingManagerDefaultDelegate::RestartToLoginScreen() {
 }
 
 void DeviceDisablingManagerDefaultDelegate::ShowDeviceDisabledScreen() {
-  LoginDisplayHostImpl::default_host()->StartWizard(
+  LoginDisplayHost::default_host()->StartWizard(
       WizardController::kDeviceDisabledScreenName);
 }
 

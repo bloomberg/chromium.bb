@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -72,9 +72,7 @@ class FocusPODWaiter {
 
  private:
   OobeUI* GetOobeUI() {
-    OobeUI* oobe_ui =
-        static_cast<chromeos::LoginDisplayHostImpl*>(
-            chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI();
+    OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
     CHECK(oobe_ui);
     return oobe_ui;
   }

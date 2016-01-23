@@ -10,8 +10,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -102,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
                        MAYBE_ProxyAuthDialogOnUserBoardScreen) {
-  LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
+  LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
   WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
   OobeUI* oobe_ui =
       static_cast<OobeUI*>(web_ui_login_view->GetWebUI()->GetController());

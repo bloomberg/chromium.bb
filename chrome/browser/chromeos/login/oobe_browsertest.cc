@@ -42,7 +42,7 @@ class OobeTest : public OobeBaseTest {
 
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
-    if (LoginDisplayHostImpl::default_host()) {
+    if (LoginDisplayHost::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
                                              base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();
@@ -51,17 +51,13 @@ class OobeTest : public OobeBaseTest {
     OobeBaseTest::TearDownOnMainThread();
   }
 
-  chromeos::WebUILoginDisplay* GetLoginDisplay() {
-    chromeos::ExistingUserController* controller =
-        chromeos::ExistingUserController::current_controller();
-    CHECK(controller);
-    return static_cast<chromeos::WebUILoginDisplay*>(
-        controller->login_display());
+  WebUILoginDisplay* GetLoginDisplay() {
+    return static_cast<WebUILoginDisplay*>(
+        ExistingUserController::current_controller()->login_display());
   }
 
   views::Widget* GetLoginWindowWidget() {
-    return static_cast<chromeos::LoginDisplayHostImpl*>(
-        chromeos::LoginDisplayHostImpl::default_host())
+    return static_cast<LoginDisplayHostImpl*>(LoginDisplayHost::default_host())
         ->login_window_for_test();
   }
 

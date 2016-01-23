@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,8 +50,7 @@ void OobeScreenWaiter::OnCurrentScreenChanged(
 }
 
 OobeUI* OobeScreenWaiter::GetOobeUI() {
-  OobeUI* oobe_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
-      chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI();
+  OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
   CHECK(oobe_ui);
   return oobe_ui;
 }

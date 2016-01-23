@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -269,7 +269,7 @@ bool ShouldShowNotificationForVolume(
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked or running in kiosk app mode and make sure the file
   // manager is opened only for the active user.
-  if (chromeos::LoginDisplayHostImpl::default_host() ||
+  if (chromeos::LoginDisplayHost::default_host() ||
       chromeos::ScreenLocker::default_screen_locker() ||
       chrome::IsRunningInForcedAppMode() ||
       profile != ProfileManager::GetActiveUserProfile()) {

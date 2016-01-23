@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,7 +37,7 @@ namespace {
 // Gets the WebContents instance of current login display. If there is none,
 // returns nullptr.
 content::WebContents* GetLoginWebContents() {
-  LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+  LoginDisplayHost* host = LoginDisplayHost::default_host();
   if (!host || !host->GetWebUILoginView())
     return nullptr;
 
@@ -235,7 +235,7 @@ net::URLRequestContextGetter* GetSigninContext() {
     // Special case for unit tests. There's no LoginDisplayHost thus no
     // webview instance. TODO(nkostylev): Investigate if there's a better
     // place to address this like dependency injection. http://crbug.com/477402
-    if (!signin_partition && !LoginDisplayHostImpl::default_host())
+    if (!signin_partition && !LoginDisplayHost::default_host())
       return ProfileHelper::GetSigninProfile()->GetRequestContext();
 
     if (!signin_partition)

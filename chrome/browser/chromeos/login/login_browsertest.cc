@@ -228,8 +228,8 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
-  base::MessageLoop::current()->DeleteSoon(
-      FROM_HERE, LoginDisplayHostImpl::default_host());
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE,
+                                           LoginDisplayHost::default_host());
 
   TestSystemTrayIsVisible();
 }
