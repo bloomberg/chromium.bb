@@ -291,10 +291,6 @@ HICON ChromeViewsDelegate::GetSmallWindowIcon() const {
   return GetSmallAppIcon();
 }
 
-bool ChromeViewsDelegate::IsWindowInMetro(gfx::NativeWindow window) const {
-  return chrome::IsNativeViewInAsh(window);
-}
-
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
 gfx::ImageSkia* ChromeViewsDelegate::GetDefaultWindowIcon() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

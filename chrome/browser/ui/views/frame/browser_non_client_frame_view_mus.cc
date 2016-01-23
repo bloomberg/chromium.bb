@@ -70,6 +70,7 @@ const int kTabstripTopSpacingShort = 0;
 // to hit easily.
 const int kTabShadowHeight = 4;
 
+#if defined(FRAME_AVATAR_BUTTON)
 // Combines View::ConvertPointToTarget() and View::HitTest() for a given
 // |point|. Converts |point| from |src| to |dst| and hit tests it against |dst|.
 bool ConvertedHitTest(views::View* src,
@@ -81,6 +82,7 @@ bool ConvertedHitTest(views::View* src,
   views::View::ConvertPointToTarget(src, dst, &converted_point);
   return dst->HitTestPoint(converted_point);
 }
+#endif
 
 const views::WindowManagerFrameValues& frame_values() {
   return views::WindowManagerFrameValues::instance();
@@ -99,7 +101,6 @@ BrowserNonClientFrameViewMus::BrowserNonClientFrameViewMus(
     BrowserFrame* frame,
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
-      web_app_left_header_view_(nullptr),
       window_icon_(nullptr),
       tab_strip_(nullptr) {}
 
@@ -178,14 +179,9 @@ void BrowserNonClientFrameViewMus::UpdateThrobber(bool running) {
 }
 
 void BrowserNonClientFrameViewMus::UpdateToolbar() {
-  if (web_app_left_header_view_)
-    web_app_left_header_view_->Update();
 }
 
 views::View* BrowserNonClientFrameViewMus::GetLocationIconView() const {
-  if (web_app_left_header_view_)
-    return web_app_left_header_view_->GetLocationIconView();
-
   return nullptr;
 }
 
@@ -217,12 +213,6 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
     return HTCLIENT;
   }
 #endif
-
-  // See if the point is actually within the web app back button.
-  if (hit_test == HTCAPTION && web_app_left_header_view_ &&
-      ConvertedHitTest(this, web_app_left_header_view_, point)) {
-    return HTCLIENT;
-  }
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
@@ -268,9 +258,6 @@ void BrowserNonClientFrameViewMus::OnPaint(gfx::Canvas* canvas) {
     PaintImmersiveLightbarStyleHeader(canvas);
     return;
   }
-
-  if (web_app_left_header_view_)
-    web_app_left_header_view_->SetPaintAsActive(ShouldPaintAsActive());
 
   if (browser_view()->IsToolbarVisible())
     PaintToolbarBackground(canvas);

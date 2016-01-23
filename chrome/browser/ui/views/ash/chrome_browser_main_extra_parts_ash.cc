@@ -48,24 +48,7 @@ class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenTypeDelegateWin);
 };
-
-class ShellDialogsDelegateWin : public ui::ShellDialogsDelegate {
- public:
-  ShellDialogsDelegateWin() {}
-  bool IsWindowInMetro(gfx::NativeWindow window) override {
-#if defined(OS_WIN)
-    if (base::win::GetVersion() < base::win::VERSION_WIN8)
-      return false;
-#endif
-    return chrome::IsNativeViewInAsh(window);
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellDialogsDelegateWin);
-};
-
-base::LazyInstance<ShellDialogsDelegateWin> g_shell_dialogs_delegate;
-
-#endif
+#endif  // !OS_CHROMEOS
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
 }
@@ -84,8 +67,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   } else {
 #if !defined(OS_CHROMEOS)
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);
-    ui::SelectFileDialog::SetShellDialogsDelegate(
-        g_shell_dialogs_delegate.Pointer());
 #endif
   }
 #if defined(OS_CHROMEOS)

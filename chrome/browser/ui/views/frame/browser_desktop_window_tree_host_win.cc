@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/frame/browser_window_property_manager_win.h"
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/win/dpi.h"
@@ -29,41 +28,6 @@
 namespace {
 
 const int kClientEdgeThickness = 3;
-
-// DesktopThemeProvider maps resource ids using MapThemeImage(). This is
-// necessary for BrowserDesktopWindowTreeHostWin so that it uses the windows
-// theme images rather than the ash theme images.
-class DesktopThemeProvider : public ui::ThemeProvider {
- public:
-  explicit DesktopThemeProvider(const ui::ThemeProvider& delegate)
-      : delegate_(delegate) {}
-
-  gfx::ImageSkia* GetImageSkiaNamed(int id) const override {
-    return delegate_.GetImageSkiaNamed(
-        chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
-  }
-  SkColor GetColor(int id) const override { return delegate_.GetColor(id); }
-  int GetDisplayProperty(int id) const override {
-    return delegate_.GetDisplayProperty(id);
-  }
-  bool ShouldUseNativeFrame() const override {
-    return delegate_.ShouldUseNativeFrame();
-  }
-  bool HasCustomImage(int id) const override {
-    return delegate_.HasCustomImage(
-        chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
-  }
-  base::RefCountedMemory* GetRawData(
-      int id,
-      ui::ScaleFactor scale_factor) const override {
-    return delegate_.GetRawData(id, scale_factor);
-  }
-
- private:
-  const ui::ThemeProvider& delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopThemeProvider);
-};
 
 }  // namespace
 
@@ -80,10 +44,6 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
       browser_view_(browser_view),
       browser_frame_(browser_frame),
       did_gdi_clear_(false) {
-  scoped_ptr<ui::ThemeProvider> theme_provider(
-      new DesktopThemeProvider(ThemeService::GetThemeProviderForProfile(
-          browser_view->browser()->profile())));
-  browser_frame->SetThemeProvider(theme_provider.Pass());
 }
 
 BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {

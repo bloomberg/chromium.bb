@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -142,10 +141,7 @@ gfx::ImageSkia* BrowserNonClientFrameView::GetFrameImage() const {
 
   // Otherwise, never theme app and popup windows.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageSkiaNamed(
-      chrome::MapThemeImage(chrome::GetHostDesktopTypeForNativeWindow(
-                                browser_view_->GetNativeWindow()),
-                            resource_id));
+  return rb.GetImageSkiaNamed(resource_id);
 }
 
 gfx::ImageSkia* BrowserNonClientFrameView::GetFrameOverlayImage() const {

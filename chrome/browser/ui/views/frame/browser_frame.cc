@@ -105,11 +105,6 @@ void BrowserFrame::InitBrowserFrame() {
 #endif
 }
 
-void BrowserFrame::SetThemeProvider(scoped_ptr<ui::ThemeProvider> provider) {
-  owned_theme_provider_ = std::move(provider);
-  theme_provider_ = owned_theme_provider_.get();
-}
-
 int BrowserFrame::GetMinimizeButtonOffset() const {
   return native_browser_frame_->GetMinimizeButtonOffset();
 }

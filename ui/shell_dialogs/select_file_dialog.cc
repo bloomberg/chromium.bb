@@ -13,7 +13,6 @@
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "ui/shell_dialogs/shell_dialogs_delegate.h"
 
 #if defined(OS_WIN)
 #include "ui/shell_dialogs/select_file_dialog_win.h"
@@ -29,9 +28,6 @@ namespace {
 
 // Optional dialog factory. Leaked.
 ui::SelectFileDialogFactory* dialog_factory_ = NULL;
-
-// The global shell dialogs delegate.
-ui::ShellDialogsDelegate* g_shell_dialogs_delegate_ = NULL;
 
 }  // namespace
 
@@ -88,8 +84,6 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
 #endif
 
 #if defined(OS_WIN)
-  // TODO(ananta)
-  // Fix this for Chrome ASH on Windows.
   return CreateDefaultWinSelectFileDialog(listener, policy);
 #elif defined(OS_MACOSX) && !defined(USE_AURA)
   return CreateMacSelectFileDialog(listener, policy);
@@ -134,11 +128,6 @@ bool SelectFileDialog::HasMultipleFileTypeChoices() {
   return HasMultipleFileTypeChoicesImpl();
 }
 
-// static
-void SelectFileDialog::SetShellDialogsDelegate(ShellDialogsDelegate* delegate) {
-  g_shell_dialogs_delegate_ = delegate;
-}
-
 SelectFileDialog::SelectFileDialog(Listener* listener,
                                    ui::SelectFilePolicy* policy)
     : listener_(listener),
@@ -151,10 +140,6 @@ SelectFileDialog::~SelectFileDialog() {}
 void SelectFileDialog::CancelFileSelection(void* params) {
   if (listener_)
     listener_->FileSelectionCanceled(params);
-}
-
-ShellDialogsDelegate* SelectFileDialog::GetShellDialogsDelegate() {
-  return g_shell_dialogs_delegate_;
 }
 
 }  // namespace ui

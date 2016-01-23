@@ -1088,7 +1088,7 @@
       'test/base/interactive_ui_tests_main.cc',
       'test/base/view_event_test_platform_part.h',
       'test/base/view_event_test_platform_part_chromeos.cc',
-      'test/base/view_event_test_platform_part_mac.mm',
+      'test/base/view_event_test_platform_part_default.cc',
       'test/ppapi/ppapi_interactive_browsertest.cc',
     ],
     # Panels sources not related to UI toolkit. ChromeOS doesn't use panels.
@@ -1213,7 +1213,6 @@
       '../ash/wm/ash_native_cursor_manager_interactive_uitest.cc',
       'browser/ui/views/ash/tab_scrubber_browsertest.cc',
       'browser/ui/window_sizer/window_sizer_ash_uitest.cc',
-      'test/base/view_event_test_platform_part_ash.cc',
     ],
     'chrome_interactive_ui_test_non_desktop_linux_sources': [
       # TODO(port): Everything here times out. Attempts have been made to fix
@@ -1789,7 +1788,7 @@
             '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
 
             # Use only the _chromeos version on ChromeOS.
-            'test/base/view_event_test_platform_part_ash.cc',
+            'test/base/view_event_test_platform_part_default.cc',
           ],
         }, {  # Non-ChromeOS.
           # ChromeOS doesn't use panels, everybody else does.

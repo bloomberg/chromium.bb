@@ -2643,22 +2643,7 @@ bool Browser::ShouldHideUIForFullscreen() const {
 }
 
 bool Browser::ShouldStartShutdown() const {
-  if (BrowserList::GetInstance(host_desktop_type())->size() > 1)
-    return false;
-#if defined(OS_WIN)
-  // On Windows 8 the desktop and ASH environments could be active
-  // at the same time.
-  // We should not start the shutdown process in the following cases:-
-  // 1. If the desktop type of the browser going away is ASH and there
-  //    are browser windows open in the desktop.
-  // 2. If the desktop type of the browser going away is desktop and the ASH
-  //    environment is still active.
-  if (host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return !ash::Shell::HasInstance();
-  if (host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty();
-#endif
-  return true;
+  return BrowserList::GetInstance(host_desktop_type())->size() <= 1;
 }
 
 bool Browser::MaybeCreateBackgroundContents(

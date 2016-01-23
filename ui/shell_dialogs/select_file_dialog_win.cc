@@ -28,7 +28,6 @@
 #include "ui/base/win/open_file_name_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
-#include "ui/shell_dialogs/shell_dialogs_delegate.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {

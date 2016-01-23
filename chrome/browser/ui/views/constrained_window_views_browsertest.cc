@@ -40,13 +40,7 @@ class TestDialog : public views::DialogDelegateView {
   // Don't delete the delegate yet. Keep it around for inspection later.
   void DeleteDelegate() override {}
 
-  ui::ModalType GetModalType() const override {
-#if defined(USE_ASH)
-    return ui::MODAL_TYPE_CHILD;
-#else
-    return views::WidgetDelegate::GetModalType();
-#endif
-  }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDialog);

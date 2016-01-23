@@ -20,7 +20,7 @@ import("//build/config/headless_build.gni")
 declare_args() {
   # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
   # desktop-like environment for Aura. Requires use_aura = true
-  use_ash = (is_win || is_linux) && !is_chromecast && !is_headless
+  use_ash = is_chromeos && !is_chromecast && !is_headless
 
   # Indicates if Ozone is enabled. Ozone is a low-level library layer for Linux
   # that does not require X11. Enabling this feature disables use of glib, x11,

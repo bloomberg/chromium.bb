@@ -126,9 +126,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // the packaged app header style.
   void PaintContentEdge(gfx::Canvas* canvas);
 
-  // The holder for the buttons on the left side of the header. This is included
-  // for web app style frames, and includes a back button and location icon.
-  WebAppLeftHeaderView* web_app_left_header_view_;
+  // TODO(sky): Figure out how to support WebAppLeftHeaderView.
 
   // For popups, the window icon.
   TabIconView* window_icon_;

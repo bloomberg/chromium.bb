@@ -49,9 +49,6 @@ class BrowserFrame
   // Initialize the frame (creates the underlying native window).
   void InitBrowserFrame();
 
-  // Sets the ThemeProvider returned from GetThemeProvider().
-  void SetThemeProvider(scoped_ptr<ui::ThemeProvider> provider);
-
   // Determine the distance of the left edge of the minimize button from the
   // left edge of the window. Used in our Non-Client View's Layout.
   int GetMinimizeButtonOffset() const;
@@ -143,11 +140,6 @@ class BrowserFrame
   // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  // SetThemeProvider() triggers setting both |owned_theme_provider_| and
-  // |theme_provider_|. Initially |theme_provider_| is set to the ThemeService
-  // and |owned_theme_provider_| is null (as ThemeServices lifetime is managed
-  // externally).
-  scoped_ptr<ui::ThemeProvider> owned_theme_provider_;
   const ui::ThemeProvider* theme_provider_;
 
   scoped_ptr<ui::EventHandler> browser_command_handler_;

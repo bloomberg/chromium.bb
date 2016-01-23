@@ -111,10 +111,14 @@
           'branding%': 'Chromium',
 
           'conditions': [
-            # Windows and Linux (including Chrome OS) use Aura and Ash.
+            # Windows and Linux use Aura, but not Ash.
             ['OS=="win" or OS=="linux"', {
-              'use_ash%': 1,
               'use_aura%': 1,
+            }],
+
+            # ChromeOS uses Ash.
+            ['chromeos', {
+              'use_ash%': 1,
             }],
 
             ['chromecast==1', {

@@ -1364,7 +1364,6 @@
       'browser/ui/views/accelerator_table_unittest.cc',
       # Views implies app list is enabled (only disabled on mobile).
       'browser/ui/views/app_list/win/app_list_win_unittest.cc',
-      'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
       'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
       'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
@@ -1643,6 +1642,7 @@
     # ChromeOS only sources of app_list.
     'chrome_unit_tests_app_list_chromeos_sources': [
       'browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc',
+      'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
     ],
     # ARC only sources of app_list.
     'chrome_unit_tests_app_list_chromeos_arc_sources': [

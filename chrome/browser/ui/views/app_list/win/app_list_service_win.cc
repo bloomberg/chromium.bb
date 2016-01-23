@@ -56,22 +56,12 @@
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
-  if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kViewerConnect));
-    return AppListServiceAsh::GetInstance();
-  }
-
   return AppListServiceWin::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile,
                              const base::FilePath& profile_path) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kViewerConnect))
-    AppListServiceAsh::GetInstance()->Init(initial_profile);
-
   AppListServiceWin::GetInstance()->Init(initial_profile);
 }
 

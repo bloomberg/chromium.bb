@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/media_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
-#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -141,13 +140,6 @@ const int kTabCloseButtonSize = 16;
 // stroke inner edge is (GetUnscaledEndcapWidth() * scale) + 1.
 float GetUnscaledEndcapWidth() {
   return GetLayoutInsets(TAB).left() - 0.5f;
-}
-
-chrome::HostDesktopType GetHostDesktopType(views::View* view) {
-  // Widget is NULL when tabs are detached.
-  views::Widget* widget = view->GetWidget();
-  return chrome::GetHostDesktopTypeForNativeView(
-      widget ? widget->GetNativeView() : NULL);
 }
 
 // Stop()s |animation| and then deletes it. We do this rather than just deleting
@@ -1340,9 +1332,6 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   bool has_custom_image;
   int fill_id = controller_->GetBackgroundResourceId(&has_custom_image);
-  // Explicitly map the id so we cache correctly.
-  const chrome::HostDesktopType host_desktop_type = GetHostDesktopType(this);
-  fill_id = chrome::MapThemeImage(host_desktop_type, fill_id);
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background

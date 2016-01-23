@@ -35,7 +35,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #if defined(OS_WIN)
   HICON GetDefaultWindowIcon() const override;
   HICON GetSmallWindowIcon() const override;
-  bool IsWindowInMetro(gfx::NativeWindow window) const override;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   gfx::ImageSkia* GetDefaultWindowIcon() const override;
 #endif
