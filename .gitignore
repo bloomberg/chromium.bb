@@ -3,6 +3,7 @@
 *.ncb
 *.opensdf
 *.orig
+*.pdb
 *.props
 *.pyc
 *.pyproj
