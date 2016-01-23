@@ -99,10 +99,12 @@
     <dimen name="infobar_big_icon_margin">16dp</dimen>
 
     <!-- Contextual search dimensions -->
-    <dimen name="contextual_search_bar_height">56dp</dimen>
-    <dimen name="contextual_search_text_size">18sp</dimen>
     <dimen name="contextual_search_peek_promo_height">48dp</dimen>
     <dimen name="contextual_search_peek_promo_padding">12dp</dimen>
+
+    <!-- Overlay panel dimensions -->
+    <dimen name="overlay_panel_bar_height">56dp</dimen>
+    <dimen name="overlay_panel_text_size">18sp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>

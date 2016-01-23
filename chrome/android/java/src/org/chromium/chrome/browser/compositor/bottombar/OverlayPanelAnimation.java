@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
+package org.chromium.chrome.browser.compositor.bottombar;
 
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
 
@@ -18,10 +18,10 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.util.MathUtils;
 
 /**
- * Base abstract class for animating the Contextual Search Panel.
+ * Base abstract class for animating the Overlay Panel.
  */
-public abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
-        implements Animatable<ContextualSearchPanelAnimation.Property> {
+public abstract class OverlayPanelAnimation extends OverlayPanelBase
+        implements Animatable<OverlayPanelAnimation.Property> {
 
     /**
      * Animation properties.
@@ -36,12 +36,12 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      * The base duration of animations in milliseconds. This value is based on
      * the Kennedy specification for slow animations.
      */
-    protected static final long BASE_ANIMATION_DURATION_MS = 218;
+    public static final long BASE_ANIMATION_DURATION_MS = 218;
 
     /**
      * The maximum animation duration in milliseconds.
      */
-    static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
+    public static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
 
     /**
      * The minimum animation duration in milliseconds.
@@ -91,7 +91,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      * @param context The current Android {@link Context}.
      * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
      */
-    public ContextualSearchPanelAnimation(Context context, LayoutUpdateHost updateHost) {
+    public OverlayPanelAnimation(Context context, LayoutUpdateHost updateHost) {
         super(context);
         mUpdateHost = updateHost;
     }
@@ -107,7 +107,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Animates the Contextual Search Panel to its maximized state.
+     * Animates the Overlay Panel to its maximized state.
      *
      * @param reason The reason for the change of panel state.
      */
@@ -116,7 +116,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Animates the Contextual Search Panel to its intermediary state.
+     * Animates the Overlay Panel to its intermediary state.
      *
      * @param reason The reason for the change of panel state.
      */
@@ -125,7 +125,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Animates the Contextual Search Panel to its peeked state.
+     * Animates the Overlay Panel to its peeked state.
      *
      * @param reason The reason for the change of panel state.
      */
@@ -165,7 +165,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Animates the Contextual Search Panel to a given |state| with a default duration.
+     * Animates the Overlay Panel to a given |state| with a default duration.
      *
      * @param state The state to animate to.
      * @param reason The reason for the change of panel state.
@@ -175,7 +175,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Animates the Contextual Search Panel to a given |state| with a custom |duration|.
+     * Animates the Overlay Panel to a given |state| with a custom |duration|.
      *
      * @param state The state to animate to.
      * @param reason The reason for the change of panel state.
@@ -190,7 +190,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Resizes the Contextual Search Panel to a given |state|.
+     * Resizes the Overlay Panel to a given |state|.
      *
      * @param state The state to resize to.
      * @param reason The reason for the change of panel state.
@@ -341,7 +341,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     // ============================================================================================
 
     /**
-     * Animates the Contextual Search Panel to a given |height| with a custom |duration|.
+     * Animates the Overlay Panel to a given |height| with a custom |duration|.
      *
      * @param height The height to animate to.
      * @param duration The animation duration in milliseconds.
@@ -351,7 +351,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     /**
-     * Animates the Contextual Search Panel.
+     * Animates the Overlay Panel.
      *
      * @param property The property which will be animated.
      * @param start The initial value.
@@ -446,7 +446,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      * and adds it to the animation.
      * Automatically sets the start value at the beginning of the animation.
      */
-    protected <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
+    public <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
             float end, long duration, long startTime) {
         addToAnimation(object, prop, start, end, duration, startTime, false);
     }
@@ -455,7 +455,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
      * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}
      * and adds it to the animation. Uses a deceleration interpolator by default.
      */
-    protected <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
+    public <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
             float end, long duration, long startTime, boolean setStartValueAfterDelay) {
         addToAnimation(object, prop, start, end, duration, startTime, setStartValueAfterDelay,
                 ChromeAnimation.getDecelerateInterpolator());

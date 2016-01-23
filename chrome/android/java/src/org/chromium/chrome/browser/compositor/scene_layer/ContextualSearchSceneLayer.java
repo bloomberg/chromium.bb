@@ -104,14 +104,14 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float searchPanelWidth = panel.getWidth();
         float searchPanelHeight = panel.getHeight();
 
-        float searchBarMarginSide = panel.getSearchBarMarginSide();
-        float searchBarHeight = panel.getSearchBarHeight();
+        float searchBarMarginSide = panel.getBarMarginSide();
+        float searchBarHeight = panel.getBarHeight();
 
-        boolean searchBarBorderVisible = panel.isSearchBarBorderVisible();
-        float searchBarBorderHeight = panel.getSearchBarBorderHeight();
+        boolean searchBarBorderVisible = panel.isBarBorderVisible();
+        float searchBarBorderHeight = panel.getBarBorderHeight();
 
-        boolean searchBarShadowVisible = panel.getSearchBarShadowVisible();
-        float searchBarShadowOpacity = panel.getSearchBarShadowOpacity();
+        boolean searchBarShadowVisible = panel.getBarShadowVisible();
+        float searchBarShadowOpacity = panel.getBarShadowOpacity();
 
         float arrowIconOpacity = panel.getArrowIconOpacity();
         float arrowIconRotation = panel.getArrowIconRotation();

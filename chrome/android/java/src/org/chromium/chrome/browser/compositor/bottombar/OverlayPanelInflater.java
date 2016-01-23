@@ -1,22 +1,20 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
+package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceInflater;
 
 /**
- * A helper class for inflating Contextual Search Views.
- * TODO(mdjones): Refactor to OverlayPanelInflater.
+ * A helper class for inflating Overlay Panel Views.
  */
-public abstract class ContextualSearchInflater extends ViewResourceInflater {
+public abstract class OverlayPanelInflater extends ViewResourceInflater {
 
     /**
      * The panel delegate used to get information about the panel layout.
@@ -25,7 +23,7 @@ public abstract class ContextualSearchInflater extends ViewResourceInflater {
 
     /**
      * Object Replacement Character that is used in place of HTML objects that cannot be represented
-     * as text (e.g. images). Contextual search panel should not be displaying such characters as
+     * as text (e.g. images). Overlay panel should not be displaying such characters as
      * they get shown as [obj] character.
      */
     private static final String OBJ_CHARACTER = "\uFFFC";
@@ -38,7 +36,7 @@ public abstract class ContextualSearchInflater extends ViewResourceInflater {
      * @param container         The container View used to inflate the View.
      * @param resourceLoader    The resource loader that will handle the snapshot capturing.
      */
-    public ContextualSearchInflater(OverlayPanel panel,
+    public OverlayPanelInflater(OverlayPanel panel,
                                     int layoutId,
                                     int viewId,
                                     Context context,
@@ -86,7 +84,7 @@ public abstract class ContextualSearchInflater extends ViewResourceInflater {
     }
 
     /**
-     * Sanitizes a string to be displayed on the Contextual Search Bar.
+     * Sanitizes a string to be displayed on the Overlay Panel Bar.
      * @param text The text to be sanitized.
      * @return The sanitized text.
      */

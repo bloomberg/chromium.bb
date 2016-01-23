@@ -14,7 +14,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelAnimation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
@@ -27,8 +26,8 @@ import org.chromium.ui.resources.ResourceManager;
 /**
  * Controls the Overlay Panel.
  */
-public class OverlayPanel extends ContextualSearchPanelAnimation
-        implements ActivityStateListener, OverlayPanelContentFactory {
+public class OverlayPanel extends OverlayPanelAnimation implements ActivityStateListener,
+        OverlayPanelContentFactory {
 
     /**
      * The extra dp added around the close button touch target.
@@ -328,7 +327,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
                     return super.getDesiredWidthMeasureSpec();
                 } else {
                     return MeasureSpec.makeMeasureSpec(
-                            getSearchContentViewWidthPx(),
+                            getContentViewWidthPx(),
                             MeasureSpec.EXACTLY);
                 }
             }
@@ -339,7 +338,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
                     return super.getDesiredHeightMeasureSpec();
                 } else {
                     return MeasureSpec.makeMeasureSpec(
-                            getSearchContentViewHeightPx(),
+                            getContentViewHeightPx(),
                             MeasureSpec.EXACTLY);
                 }
             }
@@ -650,7 +649,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     public boolean isCoordinateInsideBar(float x, float y) {
         return isCoordinateInsideOverlayPanel(x, y)
-                && y >= getOffsetY() && y <= (getOffsetY() + getSearchBarContainerHeight());
+                && y >= getOffsetY() && y <= (getOffsetY() + getBarContainerHeight());
     }
 
     /**
@@ -674,7 +673,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      * @return The vertical offset of the Overlay Content View in dp.
      */
     public float getContentY() {
-        return getOffsetY() + getSearchBarContainerHeight() + getPromoHeight();
+        return getOffsetY() + getBarContainerHeight() + getPromoHeight();
     }
 
     /**

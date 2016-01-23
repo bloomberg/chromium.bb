@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
 
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 
 /**
@@ -117,7 +118,7 @@ public class ContextualSearchIconSpriteControl implements
         mIsVisible = true;
         if (!mIsAnimationDisabledByTrial) {
             mPanel.addToAnimation(this, AnimationType.APPEARANCE, 0.f, 1.f,
-                    ContextualSearchPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS, 0);
+                    OverlayPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS, 0);
         } else {
             mCompletionPercentage = 1.f;
         }
