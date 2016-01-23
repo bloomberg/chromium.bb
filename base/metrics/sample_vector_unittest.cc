@@ -44,6 +44,33 @@ TEST(SampleVectorTest, AccumulateTest) {
   EXPECT_EQ(samples.TotalCount(), samples.redundant_count());
 }
 
+TEST(SampleVectorTest, Accumulate_LargeValuesDontOverflow) {
+  // Custom buckets: [1, 250000000) [250000000, 500000000)
+  BucketRanges ranges(3);
+  ranges.set_range(0, 1);
+  ranges.set_range(1, 250000000);
+  ranges.set_range(2, 500000000);
+  SampleVector samples(1, &ranges);
+
+  samples.Accumulate(240000000, 200);
+  samples.Accumulate(249999999, -300);
+  EXPECT_EQ(-100, samples.GetCountAtIndex(0));
+
+  samples.Accumulate(250000000, 200);
+  EXPECT_EQ(200, samples.GetCountAtIndex(1));
+
+  EXPECT_EQ(23000000300LL, samples.sum());
+  EXPECT_EQ(100, samples.redundant_count());
+  EXPECT_EQ(samples.TotalCount(), samples.redundant_count());
+
+  samples.Accumulate(250000000, -100);
+  EXPECT_EQ(100, samples.GetCountAtIndex(1));
+
+  EXPECT_EQ(-1999999700LL, samples.sum());
+  EXPECT_EQ(0, samples.redundant_count());
+  EXPECT_EQ(samples.TotalCount(), samples.redundant_count());
+}
+
 TEST(SampleVectorTest, AddSubtractTest) {
   // Custom buckets: [0, 1) [1, 2) [2, 3) [3, INT_MAX)
   BucketRanges ranges(5);

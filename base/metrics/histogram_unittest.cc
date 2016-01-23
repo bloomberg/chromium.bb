@@ -235,7 +235,6 @@ TEST_F(HistogramTest, CustomHistogramWithOnly2Buckets) {
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges->range(2));
 }
 
-// Test the AddCount function.
 TEST_F(HistogramTest, AddCountTest) {
   const size_t kBucketCount = 50;
   Histogram* histogram = static_cast<Histogram*>(
@@ -245,7 +244,7 @@ TEST_F(HistogramTest, AddCountTest) {
   histogram->AddCount(20, 15);
   histogram->AddCount(30, 14);
 
-  scoped_ptr<SampleVector> samples = histogram->SnapshotSampleVector();
+  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
   EXPECT_EQ(29, samples->TotalCount());
   EXPECT_EQ(15, samples->GetCount(20));
   EXPECT_EQ(14, samples->GetCount(30));
@@ -253,10 +252,34 @@ TEST_F(HistogramTest, AddCountTest) {
   histogram->AddCount(20, 25);
   histogram->AddCount(30, 24);
 
-  scoped_ptr<SampleVector> samples2 = histogram->SnapshotSampleVector();
+  scoped_ptr<HistogramSamples> samples2 = histogram->SnapshotSamples();
   EXPECT_EQ(78, samples2->TotalCount());
   EXPECT_EQ(40, samples2->GetCount(20));
   EXPECT_EQ(38, samples2->GetCount(30));
+}
+
+TEST_F(HistogramTest, AddCount_LargeValuesDontOverflow) {
+  const size_t kBucketCount = 50;
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("AddCountHistogram", 10, 1000000000, kBucketCount,
+                            HistogramBase::kNoFlags));
+
+  histogram->AddCount(200000000, 15);
+  histogram->AddCount(300000000, 14);
+
+  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
+  EXPECT_EQ(29, samples->TotalCount());
+  EXPECT_EQ(15, samples->GetCount(200000000));
+  EXPECT_EQ(14, samples->GetCount(300000000));
+
+  histogram->AddCount(200000000, 25);
+  histogram->AddCount(300000000, 24);
+
+  scoped_ptr<HistogramSamples> samples2 = histogram->SnapshotSamples();
+  EXPECT_EQ(78, samples2->TotalCount());
+  EXPECT_EQ(40, samples2->GetCount(200000000));
+  EXPECT_EQ(38, samples2->GetCount(300000000));
+  EXPECT_EQ(19400000000LL, samples2->sum());
 }
 
 // Make sure histogram handles out-of-bounds data gracefully.
@@ -358,7 +381,7 @@ TEST_F(HistogramTest, CorruptBucketBounds) {
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
-  scoped_ptr<SampleVector> snapshot = histogram->SnapshotSampleVector();
+  scoped_ptr<HistogramSamples> snapshot = histogram->SnapshotSamples();
   EXPECT_EQ(HistogramBase::NO_INCONSISTENCIES,
             histogram->FindCorruption(*snapshot));
 

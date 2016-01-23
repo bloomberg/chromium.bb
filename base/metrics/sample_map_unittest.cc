@@ -24,6 +24,20 @@ TEST(SampleMapTest, AccumulateTest) {
   EXPECT_EQ(samples.redundant_count(), samples.TotalCount());
 }
 
+TEST(SampleMapTest, Accumulate_LargeValuesDontOverflow) {
+  SampleMap samples(1);
+
+  samples.Accumulate(250000000, 100);
+  samples.Accumulate(500000000, 200);
+  samples.Accumulate(250000000, -200);
+  EXPECT_EQ(-100, samples.GetCount(250000000));
+  EXPECT_EQ(200, samples.GetCount(500000000));
+
+  EXPECT_EQ(75000000000LL, samples.sum());
+  EXPECT_EQ(100, samples.TotalCount());
+  EXPECT_EQ(samples.redundant_count(), samples.TotalCount());
+}
+
 TEST(SampleMapTest, AddSubtractTest) {
   SampleMap samples1(1);
   SampleMap samples2(2);
