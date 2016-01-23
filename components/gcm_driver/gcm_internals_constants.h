@@ -37,7 +37,6 @@ extern const char kRegistrationInfo[];
 extern const char kResendQueueSize[];
 extern const char kSendInfo[];
 extern const char kSendQueueSize[];
-extern const char kDecryptionFailureInfo[];
 
 }  // namespace gcm_driver
 

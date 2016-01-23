@@ -64,14 +64,6 @@ struct SendingActivity : Activity {
   std::string message_id;
 };
 
-// Contains relevant data of a message decryption failure.
-struct DecryptionFailureActivity : Activity {
-  DecryptionFailureActivity();
-  ~DecryptionFailureActivity() override;
-
-  std::string app_id;
-};
-
 struct RecordedActivities {
   RecordedActivities();
   virtual ~RecordedActivities();
@@ -81,7 +73,6 @@ struct RecordedActivities {
   std::vector<RegistrationActivity> registration_activities;
   std::vector<ReceivingActivity> receiving_activities;
   std::vector<SendingActivity> sending_activities;
-  std::vector<DecryptionFailureActivity> decryption_failure_activities;
 };
 
 }  // namespace gcm

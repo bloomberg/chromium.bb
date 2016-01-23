@@ -25,7 +25,6 @@ GCMStatsRecorderAndroid::~GCMStatsRecorderAndroid() {}
 void GCMStatsRecorderAndroid::Clear() {
   registration_activities_.clear();
   receiving_activities_.clear();
-  decryption_failure_activities_.clear();
 }
 
 void GCMStatsRecorderAndroid::CollectActivities(
@@ -40,10 +39,6 @@ void GCMStatsRecorderAndroid::CollectActivities(
       recorded_activities->receiving_activities.begin(),
       receiving_activities_.begin(),
       receiving_activities_.end());
-  recorded_activities->decryption_failure_activities.insert(
-      recorded_activities->decryption_failure_activities.begin(),
-      decryption_failure_activities_.begin(),
-      decryption_failure_activities_.end());
 }
 
 void GCMStatsRecorderAndroid::RecordRegistrationSent(
@@ -116,25 +111,6 @@ void GCMStatsRecorderAndroid::RecordDataMessageReceived(
   receiving_activities_.push_front(activity);
   if (receiving_activities_.size() > MAX_LOGGED_ACTIVITY_COUNT)
     receiving_activities_.pop_back();
-
-  if (delegate_)
-    delegate_->OnActivityRecorded();
-}
-
-void GCMStatsRecorderAndroid::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionFailure reason) {
-  if (!is_recording_)
-    return;
-
-  DecryptionFailureActivity activity;
-  activity.app_id = app_id;
-  activity.details =
-      GCMEncryptionProvider::ToDecryptionFailureDetailsString(reason);
-
-  decryption_failure_activities_.push_front(activity);
-  if (decryption_failure_activities_.size() > MAX_LOGGED_ACTIVITY_COUNT)
-    decryption_failure_activities_.pop_back();
 
   if (delegate_)
     delegate_->OnActivityRecorded();

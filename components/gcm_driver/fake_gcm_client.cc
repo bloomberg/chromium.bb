@@ -158,26 +158,14 @@ void FakeGCMClient::Send(const std::string& app_id,
                             weak_ptr_factory_.GetWeakPtr(), app_id, message));
 }
 
-void FakeGCMClient::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionFailure reason) {
-  recorder_.RecordDecryptionFailure(app_id, reason);
-}
-
 void FakeGCMClient::SetRecording(bool recording) {
-  recorder_.set_is_recording(recording);
 }
 
 void FakeGCMClient::ClearActivityLogs() {
-  recorder_.Clear();
 }
 
 GCMClient::GCMStatistics FakeGCMClient::GetStatistics() const {
-  GCMClient::GCMStatistics statistics;
-  statistics.is_recording = recorder_.is_recording();
-
-  recorder_.CollectActivities(&statistics.recorded_activities);
-  return statistics;
+  return GCMClient::GCMStatistics();
 }
 
 void FakeGCMClient::SetAccountTokens(
