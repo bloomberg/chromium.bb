@@ -144,6 +144,12 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintClientEdge(gfx::Canvas* canvas);
+  void FillClientEdgeRects(int x,
+                           int y,
+                           int right,
+                           int bottom,
+                           SkColor color,
+                           gfx::Canvas* canvas) const;
 
   // Our layout manager also calculates various bounds.
   OpaqueBrowserFrameViewLayout* layout_;

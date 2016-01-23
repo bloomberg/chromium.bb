@@ -468,18 +468,22 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   const int x = client_bounds.x();
   // Pre-Material Design, the client edge images start below the toolbar.  In MD
   // the client edge images start at the top of the toolbar.
-  y += toolbar_bounds.bottom();
-  const int img_y = ui::MaterialDesignController::IsModeMaterial() ?
-      (y - toolbar_bounds.height()) : y;
+  const bool md = ui::MaterialDesignController::IsModeMaterial();
+  y += md ? toolbar_bounds.y() : toolbar_bounds.bottom();
   const int w = client_bounds.width();
   const int right = client_bounds.right();
   const int bottom = std::max(y, height() - NonClientBorderThickness(false));
-  const int height = bottom - img_y;
+  const int height = bottom - y;
 
-  // Draw the client edge images.
+  // Draw the client edge images.  For non-MD, we fill the toolbar color
+  // underneath these images so they will lighten/darken it appropriately to
+  // create a "3D shaded" effect.  For MD, where we want a flatter appearance,
+  // we do the filling afterwards so the user sees the unmodified toolbar color.
+  if (!md)
+    FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
   gfx::ImageSkia* right_image = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   const int img_w = right_image->width();
-  canvas->TileImageInt(*right_image, right, img_y, img_w, height);
+  canvas->TileImageInt(*right_image, right, y, img_w, height);
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
                        right, bottom);
   gfx::ImageSkia* bottom_image =
@@ -488,19 +492,24 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
                        x - img_w, bottom);
   canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
-                       img_y, img_w, height);
+                       y, img_w, height);
+  if (md)
+    FillClientEdgeRects(x, y, right, bottom, toolbar_color, canvas);
+}
 
-  // Draw the toolbar color so that the client edges show the right color even
-  // where not covered by the toolbar image.  NOTE: We do this after drawing the
-  // images because the images are meant to alpha-blend atop the frame whereas
-  // these rects are meant to be fully opaque, without anything overlaid.
+void GlassBrowserFrameView::FillClientEdgeRects(int x,
+                                                int y,
+                                                int right,
+                                                int bottom,
+                                                SkColor color,
+                                                gfx::Canvas* canvas) const {
   gfx::Rect side(x - kClientEdgeThickness, y, kClientEdgeThickness,
                  bottom + kClientEdgeThickness - y);
-  canvas->FillRect(side, toolbar_color);
-  canvas->FillRect(gfx::Rect(x, bottom, w, kClientEdgeThickness),
-                   toolbar_color);
+  canvas->FillRect(side, color);
+  canvas->FillRect(gfx::Rect(x, bottom, right - x, kClientEdgeThickness),
+                   color);
   side.set_x(right);
-  canvas->FillRect(side, toolbar_color);
+  canvas->FillRect(side, color);
 }
 
 void GlassBrowserFrameView::LayoutNewStyleAvatar() {

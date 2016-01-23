@@ -77,6 +77,12 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   // Paint various sub-components of this view.
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintClientEdge(gfx::Canvas* canvas);
+  void FillClientEdgeRects(int x,
+                           int y,
+                           int right,
+                           int bottom,
+                           SkColor color,
+                           gfx::Canvas* canvas) const;
 
   // Layout various sub-components of this view.
   void LayoutIncognitoIcon();
