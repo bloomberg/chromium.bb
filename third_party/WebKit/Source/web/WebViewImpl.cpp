@@ -4013,9 +4013,15 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     m_userGestureObserved = false;
 }
 
-void WebViewImpl::documentElementAvailable(WebLocalFrameImpl* webframe)
+void WebViewImpl::mainFrameDocumentElementAvailable()
 {
-    if (webframe != mainFrameImpl())
+    // This check is necessary to avoid provisional frames
+    // (see WebLocalFrame::createProvisional) leaking
+    // their calls into WebViewImpl.
+    // See http://crbug.com/578349 for details.
+    // TODO(dcheng): Remove this when the provisional frames
+    // bite the dust.
+    if (!mainFrameImpl())
         return;
 
     // For non-HTML documents the willInsertBody notification won't happen
@@ -4027,9 +4033,15 @@ void WebViewImpl::documentElementAvailable(WebLocalFrameImpl* webframe)
         resumeTreeViewCommitsIfRenderingReady();
 }
 
-void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
+void WebViewImpl::willInsertMainFrameDocumentBody()
 {
-    if (webframe != mainFrameImpl())
+    // This check is necessary to avoid provisional frames
+    // (see WebLocalFrame::createProvisional) leaking
+    // their calls into WebViewImpl.
+    // See http://crbug.com/578349 for details.
+    // TODO(dcheng): Remove this when the provisional frames
+    // bite the dust.
+    if (!mainFrameImpl())
         return;
 
     // If we get to the <body> try to resume commits since we should have content
@@ -4040,14 +4052,12 @@ void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
     resumeTreeViewCommitsIfRenderingReady();
 }
 
-void WebViewImpl::didFinishDocumentLoad(WebLocalFrameImpl* webframe)
+void WebViewImpl::didFinishMainFrameDocumentLoad()
 {
-    if (webframe != mainFrameImpl())
-        return;
     resumeTreeViewCommitsIfRenderingReady();
 #if OS(ANDROID)
-    if (!isInternalURL(webframe->frame()->document()->baseURL()) && page()->settings().usesEncodingDetector()) {
-        const Document& document = *webframe->frame()->document();
+    if (!isInternalURL(mainFrameImpl()->frame()->document()->baseURL()) && page()->settings().usesEncodingDetector()) {
+        const Document& document = *mainFrameImpl()->frame()->document();
 
         // "AutodetectEncoding.Attempted" is of boolean type - either 0 or 1. Use 2 for the boundary value.
         Platform::current()->histogramEnumeration("AutodetectEncoding.Attempted", document.attemptedToDetermineEncodingFromContentSniffing(), 2);
@@ -4059,11 +4069,8 @@ void WebViewImpl::didFinishDocumentLoad(WebLocalFrameImpl* webframe)
 #endif
 }
 
-void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
+void WebViewImpl::didRemoveAllPendingStylesheetsInMainFrameDocument()
 {
-    if (webframe != mainFrameImpl())
-        return;
-
     Document& document = *mainFrameImpl()->frame()->document();
 
     // For HTML if we have no more stylesheets to load and we're past the body

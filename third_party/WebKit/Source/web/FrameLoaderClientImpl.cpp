@@ -178,8 +178,11 @@ void FrameLoaderClientImpl::documentElementAvailable()
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDocumentElement(m_webFrame);
 
+    if (m_webFrame->parent())
+        return;
+
     if (m_webFrame->viewImpl())
-        m_webFrame->viewImpl()->documentElementAvailable(m_webFrame);
+        m_webFrame->viewImpl()->mainFrameDocumentElementAvailable();
 }
 
 void FrameLoaderClientImpl::didCreateScriptContext(v8::Local<v8::Context> context, int extensionGroup, int worldId)
@@ -208,6 +211,10 @@ void FrameLoaderClientImpl::didChangeScrollOffset()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didChangeScrollOffset(m_webFrame);
+
+    if (m_webFrame->parent())
+        return;
+
     if (WebViewImpl* webview = m_webFrame->viewImpl())
         webview->devToolsEmulator()->viewportChanged();
 }
@@ -218,11 +225,14 @@ void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()
         m_webFrame->client()->didUpdateCurrentHistoryItem(m_webFrame);
 }
 
+// TODO(dglazkov): Can this be plumbing be streamlined out?
 void FrameLoaderClientImpl::didRemoveAllPendingStylesheet()
 {
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview)
-        webview->didRemoveAllPendingStylesheet(m_webFrame);
+    if (m_webFrame->parent())
+        return;
+
+    if (WebViewImpl* webview = m_webFrame->viewImpl())
+        webview->didRemoveAllPendingStylesheetsInMainFrameDocument();
 }
 
 bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
@@ -419,8 +429,10 @@ void FrameLoaderClientImpl::dispatchDidFinishLoading(DocumentLoader* loader,
 
 void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad(bool documentIsEmpty)
 {
-    if (WebViewImpl* webview = m_webFrame->viewImpl())
-        webview->didFinishDocumentLoad(m_webFrame);
+    if (!m_webFrame->parent()) {
+        if (WebViewImpl* webview = m_webFrame->viewImpl())
+            webview->didFinishMainFrameDocumentLoad();
+    }
 
     // TODO(dglazkov): Sadly, workers are WebFrameClients, and they can totally
     // destroy themselves when didFinishDocumentLoad is invoked, and in turn destroy
@@ -451,6 +463,7 @@ void FrameLoaderClientImpl::dispatchDidReceiveServerRedirectForProvisionalLoad()
 void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(HistoryItem* item, HistoryCommitType commitType)
 {
     bool shouldCreateHistoryEntry = commitType == StandardCommit;
+    // TODO(dglazkov): Does this need to be called for subframes?
     m_webFrame->viewImpl()->didCommitLoad(shouldCreateHistoryEntry, true);
     if (m_webFrame->client())
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType));
@@ -949,8 +962,11 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
     if (m_webFrame->client())
         m_webFrame->client()->willInsertBody(m_webFrame);
 
+    if (m_webFrame->parent())
+        return;
+
     if (m_webFrame->viewImpl())
-        m_webFrame->viewImpl()->willInsertBody(m_webFrame);
+        m_webFrame->viewImpl()->willInsertMainFrameDocumentBody();
 }
 
 v8::Local<v8::Value> FrameLoaderClientImpl::createTestInterface(const AtomicString& name)

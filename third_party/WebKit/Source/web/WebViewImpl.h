@@ -386,10 +386,10 @@ public:
     // unless the view did not need a layout.
     void layoutUpdated(WebLocalFrameImpl*);
 
-    void documentElementAvailable(WebLocalFrameImpl*);
-    void willInsertBody(WebLocalFrameImpl*);
-    void didRemoveAllPendingStylesheet(WebLocalFrameImpl*);
-    void didFinishDocumentLoad(WebLocalFrameImpl*);
+    void mainFrameDocumentElementAvailable();
+    void willInsertMainFrameDocumentBody();
+    void didRemoveAllPendingStylesheetsInMainFrameDocument();
+    void didFinishMainFrameDocumentLoad();
     void didChangeContentsSize();
     void pageScaleFactorChanged();
 
