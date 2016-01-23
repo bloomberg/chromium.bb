@@ -9,6 +9,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -277,6 +278,32 @@ TEST(WebCursorTest, CursorScaleFactor) {
   cursor.SetDisplayInfo(display);
 
   EXPECT_EQ(40.1f, cursor.GetCursorScaleFactor());
+}
+
+TEST(WebCursorTest, UnscaledImageCopy) {
+  WebCursor::CursorInfo info;
+  info.type = WebCursorInfo::TypeCustom;
+  info.hotspot = gfx::Point(0, 1);
+
+  SkImageInfo image_info = SkImageInfo::MakeN32(2, 2, kUnpremul_SkAlphaType);
+  info.custom_image = SkBitmap();
+  info.custom_image.setInfo(image_info);
+  info.custom_image.allocN32Pixels(2, 2);
+  info.custom_image.eraseColor(0xFFFFFFFF);
+
+  WebCursor cursor;
+  cursor.InitFromCursorInfo(info);
+
+  SkBitmap image_copy;
+  gfx::Point hotspot;
+  cursor.CreateScaledBitmapAndHotspotFromCustomData(&image_copy, &hotspot);
+
+  EXPECT_EQ(kBGRA_8888_SkColorType, image_copy.colorType());
+  EXPECT_EQ(kUnpremul_SkAlphaType, image_copy.alphaType());
+  EXPECT_EQ(2, image_copy.width());
+  EXPECT_EQ(2, image_copy.height());
+  EXPECT_EQ(0, hotspot.x());
+  EXPECT_EQ(1, hotspot.y());
 }
 #endif
 

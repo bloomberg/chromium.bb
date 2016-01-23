@@ -120,11 +120,10 @@ float WebCursor::GetCursorScaleFactor() {
 void WebCursor::CreateScaledBitmapAndHotspotFromCustomData(
     SkBitmap* bitmap,
     gfx::Point* hotspot) {
-  if (custom_data_.size() <= 0)
+  if (custom_data_.empty())
     return;
+  ImageFromCustomData(bitmap);
   *hotspot = hotspot_;
-  bitmap->allocN32Pixels(custom_size_.width(), custom_size_.height());
-  memcpy(bitmap->getAddr32(0, 0), custom_data_.data(), custom_data_.size());
   ui::ScaleAndRotateCursorBitmapAndHotpoint(
       GetCursorScaleFactor(), gfx::Display::ROTATE_0, bitmap, hotspot);
 }

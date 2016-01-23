@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -115,6 +116,8 @@ class CONTENT_EXPORT WebCursor {
   void CreateScaledBitmapAndHotspotFromCustomData(
       SkBitmap* bitmap,
       gfx::Point* hotspot);
+  FRIEND_TEST_ALL_PREFIXES(WebCursorTest,
+                           CreateScaledBitmapAndHotspotFromCustomData);
 
 #elif defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
