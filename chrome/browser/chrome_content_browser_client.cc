@@ -384,7 +384,9 @@ GURL ReplaceURLHostAndPath(const GURL& url,
 // Maps "foo://bar/baz/" to "foo://chrome/bar/baz/".
 GURL AddUberHost(const GURL& url) {
   const std::string uber_host = chrome::kChromeUIUberHost;
-  const std::string new_path = url.host() + url.path();
+  std::string new_path;
+  url.host_piece().AppendToString(&new_path);
+  url.path_piece().AppendToString(&new_path);
 
   return ReplaceURLHostAndPath(url, uber_host, new_path);
 }
@@ -1118,7 +1120,7 @@ bool ChromeContentBrowserClient::ShouldAllowOpenURL(
   // the signin page may host untrusted web content.
   if (from_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL &&
       url.SchemeIs(content::kChromeUIScheme) &&
-      url.host() != chrome::kChromeUIChromeSigninHost) {
+      url.host_piece() != chrome::kChromeUIChromeSigninHost) {
     VLOG(1) << "Blocked navigation to " << url.spec() << " from "
             << chrome::kChromeUIChromeSigninURL;
     return false;

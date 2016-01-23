@@ -96,7 +96,7 @@ base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
   // If there is a query in the url fragment look for the corpus name there,
   // otherwise look for the corpus name in the query parameters.
   const std::string& query_str(google_util::HasGoogleSearchQueryParam(
-      url.ref()) ? url.ref() : url.query());
+      url.ref_piece()) ? url.ref() : url.query());
   url::Component query(0, query_str.length()), key, value;
   const char kChipKey[] = "sboxchip";
   while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {

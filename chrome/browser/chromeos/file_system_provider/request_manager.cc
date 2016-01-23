@@ -239,8 +239,8 @@ bool RequestManager::IsInteractingWithUser() const {
       const content::WebContents* const web_contents =
           tabs->GetWebContentsAt(i);
       const GURL& url = web_contents->GetURL();
-      if (url.scheme() == extensions::kExtensionScheme &&
-          url.host() == extension_id_) {
+      if (url.SchemeIs(extensions::kExtensionScheme) &&
+          url.host_piece() == extension_id_) {
         return true;
       }
     }

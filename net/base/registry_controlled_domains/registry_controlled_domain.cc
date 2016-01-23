@@ -65,10 +65,9 @@ namespace {
 const unsigned char* g_graph = kDafsa;
 size_t g_graph_length = sizeof(kDafsa);
 
-size_t GetRegistryLengthImpl(
-    const std::string& host,
-    UnknownRegistryFilter unknown_filter,
-    PrivateRegistryFilter private_filter) {
+size_t GetRegistryLengthImpl(base::StringPiece host,
+                             UnknownRegistryFilter unknown_filter,
+                             PrivateRegistryFilter private_filter) {
   DCHECK(!host.empty());
 
   // Skip leading dots.
@@ -148,8 +147,8 @@ size_t GetRegistryLengthImpl(
       (host.length() - curr_start) : 0;
 }
 
-std::string GetDomainAndRegistryImpl(
-    const std::string& host, PrivateRegistryFilter private_filter) {
+std::string GetDomainAndRegistryImpl(base::StringPiece host,
+                                     PrivateRegistryFilter private_filter) {
   DCHECK(!host.empty());
 
   // Find the length of the registry for this host.
@@ -171,8 +170,8 @@ std::string GetDomainAndRegistryImpl(
   // no dot.
   const size_t dot = host.rfind('.', host.length() - registry_length - 2);
   if (dot == std::string::npos)
-    return host;
-  return host.substr(dot + 1);
+    return host.as_string();
+  return host.substr(dot + 1).as_string();
 }
 
 }  // namespace
@@ -180,16 +179,14 @@ std::string GetDomainAndRegistryImpl(
 std::string GetDomainAndRegistry(
     const GURL& gurl,
     PrivateRegistryFilter filter) {
-  const url::Component host = gurl.parsed_for_possibly_invalid_spec().host;
-  if ((host.len <= 0) || gurl.HostIsIPAddress())
+  base::StringPiece host = gurl.host_piece();
+  if (host.empty() || gurl.HostIsIPAddress())
     return std::string();
-  return GetDomainAndRegistryImpl(std::string(
-      gurl.possibly_invalid_spec().data() + host.begin, host.len), filter);
+  return GetDomainAndRegistryImpl(host, filter);
 }
 
-std::string GetDomainAndRegistry(
-    const std::string& host,
-    PrivateRegistryFilter filter) {
+std::string GetDomainAndRegistry(base::StringPiece host,
+                                 PrivateRegistryFilter filter) {
   url::CanonHostInfo host_info;
   const std::string canon_host(CanonicalizeHost(host, &host_info));
   if (canon_host.empty() || host_info.IsIPAddress())
@@ -222,21 +219,17 @@ size_t GetRegistryLength(
     const GURL& gurl,
     UnknownRegistryFilter unknown_filter,
     PrivateRegistryFilter private_filter) {
-  const url::Component host = gurl.parsed_for_possibly_invalid_spec().host;
-  if (host.len <= 0)
+  base::StringPiece host = gurl.host_piece();
+  if (host.empty())
     return std::string::npos;
   if (gurl.HostIsIPAddress())
     return 0;
-  return GetRegistryLengthImpl(
-      std::string(gurl.possibly_invalid_spec().data() + host.begin, host.len),
-      unknown_filter,
-      private_filter);
+  return GetRegistryLengthImpl(host, unknown_filter, private_filter);
 }
 
-size_t GetRegistryLength(
-    const std::string& host,
-    UnknownRegistryFilter unknown_filter,
-    PrivateRegistryFilter private_filter) {
+size_t GetRegistryLength(base::StringPiece host,
+                         UnknownRegistryFilter unknown_filter,
+                         PrivateRegistryFilter private_filter) {
   url::CanonHostInfo host_info;
   const std::string canon_host(CanonicalizeHost(host, &host_info));
   if (canon_host.empty())

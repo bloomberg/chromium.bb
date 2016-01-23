@@ -34,11 +34,12 @@ void RecordGoogleCaptchaEvent(GoogleCaptchaEvent event) {
 }  // namespace
 
 bool IsGoogleCaptcha(const GURL& url) {
-  return (base::StartsWith(url.host(), "ipv4.google.",
+  return (base::StartsWith(url.host_piece(), "ipv4.google.",
                            base::CompareCase::SENSITIVE)
-          || base::StartsWith(url.host(), "ipv6.google.",
+          || base::StartsWith(url.host_piece(), "ipv6.google.",
                               base::CompareCase::SENSITIVE))
-      && base::StartsWith(url.path(), "/sorry", base::CompareCase::SENSITIVE);
+      && base::StartsWith(url.path_piece(), "/sorry",
+                          base::CompareCase::SENSITIVE);
 }
 
 GoogleCaptchaObserver::GoogleCaptchaObserver() : saw_solution_(false) {}

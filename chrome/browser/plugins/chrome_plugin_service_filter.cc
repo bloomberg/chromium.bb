@@ -281,9 +281,9 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
       return false;
     const GURL& origin = it->second.second;
     if (!origin.is_empty() &&
-        (policy_url.scheme() != origin.scheme() ||
-         policy_url.host() != origin.host() ||
-         policy_url.port() != origin.port())) {
+        (policy_url.scheme_piece() != origin.scheme_piece() ||
+         policy_url.host_piece() != origin.host_piece() ||
+         policy_url.port_piece() != origin.port_piece())) {
       return false;
     }
   }

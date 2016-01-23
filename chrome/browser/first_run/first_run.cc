@@ -398,13 +398,13 @@ void FirstRunBubbleLauncher::Observe(
   if (contents && contents->GetURL().SchemeIs(content::kChromeUIScheme)) {
 #if defined(OS_WIN)
     // Suppress the first run bubble if 'make chrome metro' flow is showing.
-    if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
+    if (contents->GetURL().host_piece() == chrome::kChromeUIMetroFlowHost)
       return;
 #endif
 
     // Suppress the first run bubble if the NTP sync promo bubble is showing
     // or if sign in is in progress.
-    if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
+    if (contents->GetURL().host_piece() == chrome::kChromeUINewTabHost) {
       Profile* profile =
           Profile::FromBrowserContext(contents->GetBrowserContext());
       SigninManagerBase* manager =

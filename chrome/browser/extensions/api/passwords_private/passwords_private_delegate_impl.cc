@@ -175,7 +175,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     if (!federation_url.is_empty()) {
       entry->federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
           IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(federation_url.host()))));
+          base::UTF8ToUTF16(federation_url.host_piece()))));
     }
 
     current_entries_.push_back(entry);

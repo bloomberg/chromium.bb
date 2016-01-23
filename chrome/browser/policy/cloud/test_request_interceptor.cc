@@ -208,7 +208,7 @@ net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
     net::NetworkDelegate* network_delegate) const {
   CHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
-  if (request->url().host() != hostname_) {
+  if (request->url().host_piece() != hostname_) {
     // Reject requests to other servers.
     return ErrorJobCallback(
         net::ERR_CONNECTION_REFUSED, request, network_delegate);

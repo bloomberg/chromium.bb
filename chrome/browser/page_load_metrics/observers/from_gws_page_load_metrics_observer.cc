@@ -17,9 +17,9 @@ bool IsFromGoogle(const GURL& url) {
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
       url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (!base::StartsWith(domain, "google.", base::CompareCase::SENSITIVE) ||
-      !base::StartsWith(url.host(), kGoogleSearchHostnamePrefix,
+      !base::StartsWith(url.host_piece(), kGoogleSearchHostnamePrefix,
                         base::CompareCase::SENSITIVE) ||
-      url.host().length() !=
+      url.host_piece().length() !=
           domain.length() + strlen(kGoogleSearchHostnamePrefix)) {
     return false;
   }

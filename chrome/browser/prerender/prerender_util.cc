@@ -72,18 +72,19 @@ bool MaybeGetQueryStringBasedAliasURL(
 }
 
 bool IsGoogleDomain(const GURL& url) {
-  return base::StartsWith(url.host(), "www.google.",
+  return base::StartsWith(url.host_piece(), "www.google.",
                           base::CompareCase::SENSITIVE);
 }
 
 bool IsGoogleSearchResultURL(const GURL& url) {
   if (!IsGoogleDomain(url))
     return false;
-  return (url.path().empty() ||
-          base::StartsWith(url.path(), "/search",
+  return (url.path_piece().empty() ||
+          base::StartsWith(url.path_piece(), "/search",
                            base::CompareCase::SENSITIVE) ||
           (url.path() == "/") ||
-          base::StartsWith(url.path(), "/webhp", base::CompareCase::SENSITIVE));
+          base::StartsWith(url.path_piece(), "/webhp",
+                           base::CompareCase::SENSITIVE));
 }
 
 void ReportPrerenderExternalURL() {

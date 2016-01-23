@@ -93,7 +93,7 @@ class StopTestOnCallback {
     for (size_t i = 0; i < arraysize(kTestHosts); ++i) {
       for (const auto& info : local_storage_info) {
         ASSERT_TRUE(info.origin_url.SchemeIs("http"));
-        if (info.origin_url.host() == kTestHosts[i]) {
+        if (info.origin_url.host_piece() == kTestHosts[i]) {
           ASSERT_FALSE(test_hosts_found[i]);
           test_hosts_found[i] = true;
         }

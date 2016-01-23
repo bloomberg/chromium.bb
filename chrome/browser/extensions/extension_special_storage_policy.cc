@@ -101,7 +101,7 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
     return true;
 
   if (origin.SchemeIs(content::kChromeDevToolsScheme) &&
-      origin.host() == chrome::kChromeUIDevToolsHost)
+      origin.host_piece() == chrome::kChromeUIDevToolsHost)
     return true;
 
   base::AutoLock locker(lock_);

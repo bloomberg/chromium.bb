@@ -354,7 +354,7 @@ UrlList Predictor::GetPredictedUrlListAtStartup(PrefService* user_prefs) {
   if (SessionStartupPref::URLS == tab_start_pref.type) {
     for (size_t i = 0; i < tab_start_pref.urls.size(); i++) {
       GURL gurl = tab_start_pref.urls[i];
-      if (!gurl.is_valid() || gurl.SchemeIsFile() || gurl.host().empty())
+      if (!gurl.is_valid() || gurl.SchemeIsFile() || gurl.host_piece().empty())
         continue;
       if (gurl.SchemeIsHTTPOrHTTPS())
         urls.push_back(gurl.GetWithEmptyPath());
@@ -966,7 +966,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
       evalution = PRECONNECTION;
       future_url->second.IncrementPreconnectionCount();
       int count = static_cast<int>(std::ceil(connection_expectation));
-      if (url.host() == future_url->first.host())
+      if (url.host_piece() == future_url->first.host_piece())
         ++count;
       PreconnectUrlOnIOThread(future_url->first, first_party_for_cookies,
                               motivation,

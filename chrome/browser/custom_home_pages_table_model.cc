@@ -41,15 +41,15 @@ bool ShouldAddPage(const GURL& url) {
     return false;
 
   if (url.SchemeIs(content::kChromeUIScheme)) {
-    if (url.host() == chrome::kChromeUISettingsHost ||
-        url.host() == chrome::kChromeUISettingsFrameHost) {
+    if (url.host_piece() == chrome::kChromeUISettingsHost ||
+        url.host_piece() == chrome::kChromeUISettingsFrameHost) {
       return false;
     }
 
     // For a settings page, the path will start with "/settings" not "settings"
     // so find() will return 1, not 0.
-    if (url.host() == chrome::kChromeUIUberHost &&
-        url.path().find(chrome::kChromeUISettingsHost) == 1) {
+    if (url.host_piece() == chrome::kChromeUIUberHost &&
+        url.path_piece().find(chrome::kChromeUISettingsHost) == 1) {
       return false;
     }
   }

@@ -110,14 +110,14 @@ NET_EXPORT std::string GetHostAndPort(const GURL& url);
 NET_EXPORT std::string GetHostAndOptionalPort(const GURL& url);
 
 // Returns the hostname by trimming the ending dot, if one exists.
-NET_EXPORT std::string TrimEndingDot(const base::StringPiece& host);
+NET_EXPORT std::string TrimEndingDot(base::StringPiece host);
 
 // Returns either the host from |url|, or, if the host is empty, the full spec.
 NET_EXPORT std::string GetHostOrSpecFromURL(const GURL& url);
 
 // Canonicalizes |host| and returns it.  Also fills |host_info| with
 // IP address information.  |host_info| must not be NULL.
-NET_EXPORT std::string CanonicalizeHost(const std::string& host,
+NET_EXPORT std::string CanonicalizeHost(base::StringPiece host,
                                         url::CanonHostInfo* host_info);
 
 // Returns true if |host| is not an IP address and is compliant with a set of

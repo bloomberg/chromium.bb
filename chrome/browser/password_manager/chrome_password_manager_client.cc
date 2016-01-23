@@ -184,7 +184,8 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
     // Do not fill nor save password when a user is signing in for sync. This
     // is because users need to remember their password if they are syncing as
     // this is effectively their master password.
-    is_enabled = entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
+    is_enabled =
+        entry->GetURL().host_piece() != chrome::kChromeUIChromeSigninHost;
   }
   if (log_manager_->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(

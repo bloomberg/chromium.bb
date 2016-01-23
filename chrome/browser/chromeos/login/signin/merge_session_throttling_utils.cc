@@ -172,7 +172,7 @@ bool ShouldDelayUrl(const GURL& url) {
   // we will show delayed loading page instead.
   return !net::NetworkChangeNotifier::IsOffline() &&
          !AreAllSessionMergedAlready() &&
-         google_util::IsGoogleHostname(url.host(),
+         google_util::IsGoogleHostname(url.host_piece(),
                                        google_util::ALLOW_SUBDOMAIN);
 }
 

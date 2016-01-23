@@ -231,7 +231,7 @@ std::string GetHostAndOptionalPort(const GURL& url) {
   return url.host();
 }
 
-std::string TrimEndingDot(const base::StringPiece& host) {
+std::string TrimEndingDot(base::StringPiece host) {
   base::StringPiece host_trimmed = host;
   size_t len = host_trimmed.length();
   if (len > 1 && host_trimmed[len - 1] == '.') {
@@ -244,13 +244,13 @@ std::string GetHostOrSpecFromURL(const GURL& url) {
   return url.has_host() ? TrimEndingDot(url.host_piece()) : url.spec();
 }
 
-std::string CanonicalizeHost(const std::string& host,
+std::string CanonicalizeHost(base::StringPiece host,
                              url::CanonHostInfo* host_info) {
   // Try to canonicalize the host.
   const url::Component raw_host_component(0, static_cast<int>(host.length()));
   std::string canon_host;
   url::StdStringCanonOutput canon_host_output(&canon_host);
-  url::CanonicalizeHostVerbose(host.c_str(), raw_host_component,
+  url::CanonicalizeHostVerbose(host.data(), raw_host_component,
                                &canon_host_output, host_info);
 
   if (host_info->out_host.is_nonempty() &&
