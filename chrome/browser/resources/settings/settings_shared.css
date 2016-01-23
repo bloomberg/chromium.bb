@@ -7,6 +7,19 @@
  * Common styles for Material Design settings.
  */
 
+h2 {
+  color: #9e9e9e;
+  font-size: 100%;
+  font-weight: normal;
+  margin-bottom: 20px;
+  margin-top: 30px;
+}
+
+
+iron-icon {
+  color: #969696;
+}
+
 paper-button {
   margin: 0;
   min-width: auto;
@@ -20,14 +33,6 @@ paper-button[toggles][active] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-h2 {
-  color: #9e9e9e;
-  font-size: 100%;
-  font-weight: normal;
-  margin-bottom: 20px;
-  margin-top: 30px;
 }
 
 .button-row {
