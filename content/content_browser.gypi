@@ -746,8 +746,8 @@
       'browser/frame_host/render_widget_host_view_guest.cc',
       'browser/frame_host/render_widget_host_view_guest.h',
       'browser/gamepad/gamepad_consumer.h',
-      'browser/gamepad/gamepad_data_fetcher.cc',
       'browser/gamepad/gamepad_data_fetcher.h',
+      'browser/gamepad/gamepad_data_fetcher.cc',
       'browser/gamepad/gamepad_platform_data_fetcher.h',
       'browser/gamepad/gamepad_platform_data_fetcher_android.cc',
       'browser/gamepad/gamepad_platform_data_fetcher_android.h',
@@ -768,7 +768,7 @@
       'browser/gamepad/gamepad_standard_mappings_win.cc',
       'browser/gamepad/raw_input_data_fetcher_win.cc',
       'browser/gamepad/raw_input_data_fetcher_win.h',
-      'browser/gamepad/xbox_data_fetcher_mac.mm',
+      'browser/gamepad/xbox_data_fetcher_mac.cc',
       'browser/gamepad/xbox_data_fetcher_mac.h',
       'browser/geofencing/geofencing_dispatcher_host.cc',
       'browser/geofencing/geofencing_dispatcher_host.h',
@@ -1843,6 +1843,11 @@
       'sources': [
         'browser/file_descriptor_info_impl.cc',
         'browser/file_descriptor_info_impl.h',
+      ]
+    }],
+    ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
+      'sources': [
+        'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
     ['OS=="ios"', {

@@ -40,8 +40,6 @@ struct RawGamepadInfo {
   RawGamepadInfo();
   ~RawGamepadInfo();
 
-  int source_id;
-  int enumeration_id;
   HANDLE handle;
   scoped_ptr<uint8_t[]> ppd_buffer;
   PHIDP_PREPARSED_DATA preparsed_data;
@@ -60,8 +58,7 @@ struct RawGamepadInfo {
 };
 
 class RawInputDataFetcher
-    : public GamepadDataFetcher,
-      public base::SupportsWeakPtr<RawInputDataFetcher>,
+    : public base::SupportsWeakPtr<RawInputDataFetcher>,
       public base::MessageLoop::DestructionObserver {
  public:
   explicit RawInputDataFetcher();
@@ -70,15 +67,14 @@ class RawInputDataFetcher
   // DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;
 
-  void GetGamepadData(bool devices_changed_hint) override;
-  void PauseHint(bool paused) override;
-
- private:
-  void OnAddedToProvider() override;
-
+  bool Available() { return rawinput_available_; }
   void StartMonitor();
   void StopMonitor();
-  void EnumerateDevices();
+
+  std::vector<RawGamepadInfo*> EnumerateDevices();
+  RawGamepadInfo* GetGamepadInfo(HANDLE handle);
+
+ private:
   RawGamepadInfo* ParseGamepadInfo(HANDLE hDevice);
   void UpdateGamepad(RAWINPUT* input, RawGamepadInfo* gamepad_info);
   // Handles WM_INPUT messages.
@@ -128,11 +124,8 @@ class RawInputDataFetcher
   bool rawinput_available_;
   bool filter_xinput_;
   bool events_monitored_;
-  int last_source_id_;
-  int last_enumeration_id_;
 
-  typedef std::map<HANDLE, RawGamepadInfo*> ControllerMap;
-  ControllerMap controllers_;
+  std::map<HANDLE, RawGamepadInfo*> controllers_;
 
   // Function pointers to HID functionality, retrieved in
   // |GetHidDllFunctions|.

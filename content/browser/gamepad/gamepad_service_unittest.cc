@@ -93,7 +93,6 @@ GamepadServiceTest::~GamepadServiceTest() {
 void GamepadServiceTest::SetUp() {
   fetcher_ = new MockGamepadDataFetcher(test_data_);
   service_ = new GamepadService(scoped_ptr<GamepadDataFetcher>(fetcher_));
-  service_->provider()->SetSanitizationEnabled(false);
   connection_listener_.reset((new ConnectionListener));
   service_->ConsumerBecameActive(connection_listener_.get());
 }

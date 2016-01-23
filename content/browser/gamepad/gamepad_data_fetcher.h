@@ -5,36 +5,55 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 
-#include "content/browser/gamepad/gamepad_provider.h"
-#include "content/common/content_export.h"
+#include <stdint.h>
+
+#include "build/build_config.h"
+#include "content/browser/gamepad/gamepad_standard_mappings.h"
+#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
 
-// Abstract interface for imlementing platform- (and test-) specific behavior
+// Abstract interface for imlementing platform- (and test-) specific behaviro
 // for getting the gamepad data.
-class CONTENT_EXPORT GamepadDataFetcher {
+class GamepadDataFetcher {
  public:
-  GamepadDataFetcher();
   virtual ~GamepadDataFetcher() {}
-
-  virtual void GetGamepadData(bool devices_changed_hint) = 0;
+  virtual void GetGamepadData(blink::WebGamepads* pads,
+                              bool devices_changed_hint) = 0;
   virtual void PauseHint(bool paused) {}
 
-  GamepadProvider* provider() { return provider_; }
+#if !defined(OS_ANDROID)
+  struct PadState {
+    // Gamepad data, unmapped.
+    blink::WebGamepad data;
+
+    // Functions to map from device data to standard layout, if available. May
+    // be null if no mapping is available.
+    GamepadStandardMappingFunction mapper;
+
+    // Sanitization masks
+    // axis_mask and button_mask are bitfields that represent the reset state of
+    // each input. If a button or axis has ever reported 0 in the past the
+    // corresponding bit will be set to 1.
+
+    // If we ever increase the max axis count this will need to be updated.
+    static_assert(blink::WebGamepad::axesLengthCap <=
+        std::numeric_limits<uint32_t>::digits,
+        "axis_mask is not large enough");
+    uint32_t axis_mask;
+
+    // If we ever increase the max button count this will need to be updated.
+    static_assert(blink::WebGamepad::buttonsLengthCap <=
+        std::numeric_limits<uint32_t>::digits,
+        "button_mask is not large enough");
+    uint32_t button_mask;
+  };
+
+  void MapAndSanitizeGamepadData(PadState* pad_state, blink::WebGamepad* pad);
 
  protected:
-  friend GamepadProvider;
-
-  // To be called by the GamepadProvider on the polling thread;
-  void InitializeProvider(GamepadProvider* provider);
-
-  // This call will happen on the gamepad polling thread. Any initialization
-  // that needs to happen on that thread should be done here, not in the
-  // constructor.
-  virtual void OnAddedToProvider() {}
-
- private:
-  GamepadProvider* provider_;
+  PadState pad_state_[blink::WebGamepads::itemsLengthCap];
+#endif
 };
 
 }  // namespace content

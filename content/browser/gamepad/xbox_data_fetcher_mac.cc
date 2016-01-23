@@ -17,10 +17,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 
-using blink::WebGamepad;
-
-namespace content {
-
 namespace {
 const int kVendorMicrosoft = 0x045e;
 const int kProductXbox360Controller = 0x028e;
@@ -235,13 +231,6 @@ void NormalizeXboxOneButtonData(const XboxOneButtonData& data,
                 kRightThumbDeadzone,
                 &normalized_data->axes[2],
                 &normalized_data->axes[3]);
-}
-
-void CopyNSStringAsUTF16LittleEndian(
-    NSString* src, blink::WebUChar* dest, size_t dest_len) {
-  NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
-  memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(blink::WebUChar)];
 }
 
 }  // namespace
@@ -634,8 +623,9 @@ void XboxController::WriteXboxOneInit() {
 
 //-----------------------------------------------------------------------------
 
-XboxDataFetcher::XboxDataFetcher()
-    : listening_(false),
+XboxDataFetcher::XboxDataFetcher(Delegate* delegate)
+    : delegate_(delegate),
+      listening_(false),
       source_(NULL),
       port_(NULL) {
 }
@@ -645,18 +635,6 @@ XboxDataFetcher::~XboxDataFetcher() {
     RemoveController(*controllers_.begin());
   }
   UnregisterFromNotifications();
-}
-
-void XboxDataFetcher::GetGamepadData(bool devices_changed_hint) {
-  // This just loops through all the connected pads and "pings" them to indicate
-  // that they're still active.
-  for (const auto& controller : controllers_) {
-    provider()->GetPadState(GAMEPAD_SOURCE_MAC_XBOX, controller->location_id());
-  }
-}
-
-void XboxDataFetcher::OnAddedToProvider() {
-  RegisterForNotifications();
 }
 
 void XboxDataFetcher::DeviceAdded(void* context, io_iterator_t iterator) {
@@ -797,46 +775,12 @@ void XboxDataFetcher::AddController(XboxController* controller) {
   DCHECK(!ControllerForLocation(controller->location_id()))
       << "Controller with location ID " << controller->location_id()
       << " already exists in the set of controllers.";
-
-  PadState* state = provider()->GetPadState(GAMEPAD_SOURCE_MAC_XBOX,
-                                            controller->location_id());
-  if (!state) {
-    delete controller;
-    return; // No available slot for this device
-  }
-
   controllers_.insert(controller);
-
-  controller->SetLEDPattern(
-      (XboxController::LEDPattern)(XboxController::LED_FLASH_TOP_LEFT +
-          controller->location_id()));
-
-  NSString* ident = [NSString stringWithFormat:
-      @"%@ (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
-          controller->GetControllerType() == XboxController::XBOX_360_CONTROLLER
-              ? @"Xbox 360 Controller"
-              : @"Xbox One Controller",
-          controller->GetProductId(), controller->GetVendorId()];
-  CopyNSStringAsUTF16LittleEndian(
-      ident,
-      state->data.id,
-      sizeof(state->data.id));
-
-  CopyNSStringAsUTF16LittleEndian(
-    @"standard",
-    state->data.mapping,
-    sizeof(state->data.mapping));
-
-  state->data.connected = true;
-  state->data.axesLength = 4;
-  state->data.buttonsLength = 17;
-  state->data.timestamp = 0;
-  state->mapper = 0;
-  state->axis_mask = 0;
-  state->button_mask = 0;
+  delegate_->XboxDeviceAdd(controller);
 }
 
 void XboxDataFetcher::RemoveController(XboxController* controller) {
+  delegate_->XboxDeviceRemove(controller);
   controllers_.erase(controller);
   delete controller;
 }
@@ -857,34 +801,9 @@ void XboxDataFetcher::RemoveControllerByLocationID(uint32_t location_id) {
 
 void XboxDataFetcher::XboxControllerGotData(XboxController* controller,
                                             const XboxController::Data& data) {
-  PadState* state = provider()->GetPadState(GAMEPAD_SOURCE_MAC_XBOX,
-                                            controller->location_id());
-  if (!state)
-    return; // No available slot for this device
-
-  WebGamepad& pad = state->data;
-
-  for (size_t i = 0; i < 6; i++) {
-    pad.buttons[i].pressed = data.buttons[i];
-    pad.buttons[i].value = data.buttons[i] ? 1.0f : 0.0f;
-  }
-  pad.buttons[6].pressed = data.triggers[0] > kDefaultButtonPressedThreshold;
-  pad.buttons[6].value = data.triggers[0];
-  pad.buttons[7].pressed = data.triggers[1] > kDefaultButtonPressedThreshold;
-  pad.buttons[7].value = data.triggers[1];
-  for (size_t i = 8; i < 17; i++) {
-    pad.buttons[i].pressed = data.buttons[i - 2];
-    pad.buttons[i].value = data.buttons[i - 2] ? 1.0f : 0.0f;
-  }
-  for (size_t i = 0; i < arraysize(data.axes); i++) {
-    pad.axes[i] = data.axes[i];
-  }
-
-  pad.timestamp = base::TimeTicks::Now().ToInternalValue();
+  delegate_->XboxValueChanged(controller, data);
 }
 
 void XboxDataFetcher::XboxControllerError(XboxController* controller) {
   RemoveController(controller);
 }
-
-} // namespace content

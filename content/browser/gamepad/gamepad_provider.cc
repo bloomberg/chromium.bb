@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <cmath>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -30,12 +31,6 @@
 using blink::WebGamepad;
 using blink::WebGamepads;
 
-namespace {
-
-const float kMinAxisResetValue = 0.1f;
-
-} // namespace
-
 namespace content {
 
 GamepadProvider::ClosureAndThread::ClosureAndThread(
@@ -51,8 +46,7 @@ GamepadProvider::GamepadProvider()
     : is_paused_(true),
       have_scheduled_do_poll_(false),
       devices_changed_(true),
-      ever_had_user_gesture_(false),
-      sanitize_(true) {
+      ever_had_user_gesture_(false) {
   Initialize(scoped_ptr<GamepadDataFetcher>());
 }
 
@@ -72,6 +66,7 @@ GamepadProvider::~GamepadProvider() {
   // Use Stop() to join the polling thread, as there may be pending callbacks
   // which dereference |polling_thread_|.
   polling_thread_->Stop();
+  data_fetcher_.reset();
 }
 
 base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandleForProcess(
@@ -137,9 +132,6 @@ void GamepadProvider::Initialize(scoped_ptr<GamepadDataFetcher> fetcher) {
   memset(hwbuf, 0, sizeof(GamepadHardwareBuffer));
   pad_states_.reset(new PadState[WebGamepads::itemsLengthCap]);
 
-  for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i)
-    ClearPadState(pad_states_.get()[i]);
-
   polling_thread_.reset(new base::Thread("Gamepad polling thread"));
 #if defined(OS_LINUX)
   // On Linux, the data fetcher needs to watch file descriptors, so the message
@@ -157,34 +149,59 @@ void GamepadProvider::Initialize(scoped_ptr<GamepadDataFetcher> fetcher) {
 #endif
   polling_thread_->StartWithOptions(base::Thread::Options(kMessageLoopType, 0));
 
-  if (fetcher) {
-    AddGamepadDataFetcher(std::move(fetcher));
-  } else {
-    AddGamepadPlatformDataFetchers(this);
-  }
-}
-
-void GamepadProvider::AddGamepadDataFetcher(
-    scoped_ptr<GamepadDataFetcher> fetcher) {
   polling_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GamepadProvider::DoAddGamepadDataFetcher,
+      FROM_HERE, base::Bind(&GamepadProvider::DoInitializePollingThread,
                             base::Unretained(this), base::Passed(&fetcher)));
 }
 
-void GamepadProvider::DoAddGamepadDataFetcher(
+void GamepadProvider::DoInitializePollingThread(
     scoped_ptr<GamepadDataFetcher> fetcher) {
   DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(!data_fetcher_.get());  // Should only initialize once.
 
-  fetcher->InitializeProvider(this);
-
-  data_fetchers_.push_back(std::move(fetcher));
+  if (!fetcher)
+    fetcher.reset(new GamepadPlatformDataFetcher);
+  data_fetcher_ = std::move(fetcher);
 }
 
 void GamepadProvider::SendPauseHint(bool paused) {
   DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
-  for (const auto& it : data_fetchers_) {
-    it->PauseHint(paused);
-  }
+  if (data_fetcher_)
+    data_fetcher_->PauseHint(paused);
+}
+
+bool GamepadProvider::PadState::Match(const WebGamepad& pad) const {
+  return connected_ == pad.connected &&
+         axes_length_ == pad.axesLength &&
+         buttons_length_ == pad.buttonsLength &&
+         memcmp(id_, pad.id, sizeof(id_)) == 0 &&
+         memcmp(mapping_, pad.mapping, sizeof(mapping_)) == 0;
+}
+
+void GamepadProvider::PadState::SetPad(const WebGamepad& pad) {
+  connected_ = pad.connected;
+  axes_length_ = pad.axesLength;
+  buttons_length_ = pad.buttonsLength;
+  memcpy(id_, pad.id, sizeof(id_));
+  memcpy(mapping_, pad.mapping, sizeof(mapping_));
+}
+
+void GamepadProvider::PadState::SetDisconnected() {
+  connected_ = false;
+  axes_length_ = 0;
+  buttons_length_ = 0;
+  memset(id_, 0, sizeof(id_));
+  memset(mapping_, 0, sizeof(mapping_));
+}
+
+void GamepadProvider::PadState::AsWebGamepad(WebGamepad* pad) {
+  pad->connected = connected_;
+  pad->axesLength = axes_length_;
+  pad->buttonsLength = buttons_length_;
+  memcpy(pad->id, id_, sizeof(id_));
+  memcpy(pad->mapping, mapping_, sizeof(mapping_));
+  memset(pad->axes, 0, sizeof(pad->axes));
+  memset(pad->buttons, 0, sizeof(pad->buttons));
 }
 
 void GamepadProvider::DoPoll() {
@@ -206,52 +223,29 @@ void GamepadProvider::DoPoll() {
     devices_changed_ = false;
   }
 
-  // Loop through each registered data fetcher and poll its gamepad data.
-  // It's expected that GetGamepadData will mark each gamepad as active (via
-  // GetPadState). If a gamepad is not marked as active during the calls to
-  // GetGamepadData then it's assumed to be disconnected.
-  for (const auto& it : data_fetchers_) {
-    it->GetGamepadData(changed);
-  }
-
-  // Send out disconnect events using the last polled data before we wipe it out
-  // in the mapping step.
-  if (ever_had_user_gesture_) {
-    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-      PadState& state = pad_states_.get()[i];
-
-      if (!state.active_state && state.source != GAMEPAD_SOURCE_NONE) {
-        OnGamepadConnectionChange(false, i, hwbuf->buffer.items[i]);
-        ClearPadState(state);
-      }
-    }
-  }
-
   {
     base::AutoLock lock(shared_memory_lock_);
 
     // Acquire the SeqLock. There is only ever one writer to this data.
     // See gamepad_hardware_buffer.h.
     hwbuf->sequence.WriteBegin();
-    hwbuf->buffer.length = 0;
-    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-      PadState& state = pad_states_.get()[i];
-      // Must run through the map+sanitize here or CheckForUserGesture may fail.
-      MapAndSanitizeGamepadData(&state, &hwbuf->buffer.items[i]);
-      if (state.active_state)
-        hwbuf->buffer.length++;
-    }
+    data_fetcher_->GetGamepadData(&hwbuf->buffer, changed);
     hwbuf->sequence.WriteEnd();
   }
 
   if (ever_had_user_gesture_) {
     for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+      WebGamepad& pad = hwbuf->buffer.items[i];
       PadState& state = pad_states_.get()[i];
-
-      if (state.active_state) {
-        if (state.active_state == GAMEPAD_NEWLY_ACTIVE)
-          OnGamepadConnectionChange(true, i, hwbuf->buffer.items[i]);
-        state.active_state = GAMEPAD_INACTIVE;
+      if (pad.connected && !state.connected()) {
+        OnGamepadConnectionChange(true, i, pad);
+      } else if (!pad.connected && state.connected()) {
+        OnGamepadConnectionChange(false, i, pad);
+      } else if (pad.connected && state.connected() && !state.Match(pad)) {
+        WebGamepad old_pad;
+        state.AsWebGamepad(&old_pad);
+        OnGamepadConnectionChange(false, i, old_pad);
+        OnGamepadConnectionChange(true, i, pad);
       }
     }
   }
@@ -281,6 +275,12 @@ void GamepadProvider::ScheduleDoPoll() {
 
 void GamepadProvider::OnGamepadConnectionChange(
     bool connected, int index, const WebGamepad& pad) {
+  PadState& state = pad_states_.get()[index];
+  if (connected)
+    state.SetPad(pad);
+  else
+    state.SetDisconnected();
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -310,6 +310,7 @@ void GamepadProvider::CheckForUserGesture() {
   if (user_gesture_observers_.empty() && ever_had_user_gesture_)
     return;
 
+  bool had_gesture_before = ever_had_user_gesture_;
   const WebGamepads& pads = SharedMemoryAsHardwareBuffer()->buffer;
   if (GamepadsHaveUserGesture(pads)) {
     ever_had_user_gesture_ = true;
@@ -319,92 +320,10 @@ void GamepadProvider::CheckForUserGesture() {
     }
     user_gesture_observers_.clear();
   }
-}
-
-void GamepadProvider::ClearPadState(PadState& state) {
-  memset(&state, 0, sizeof(PadState));
-}
-
-PadState* GamepadProvider::GetPadState(GamepadSource source, int source_id) {
-  // Check to see if the device already has a reserved slot
-  PadState* empty_slot = nullptr;
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    PadState& state = pad_states_.get()[i];
-    if (state.source == source &&
-        state.source_id == source_id) {
-      // Retrieving the pad state marks this gamepad as active.
-      state.active_state = GAMEPAD_ACTIVE;
-      return &state;
-    }
-    if (!empty_slot && state.source == GAMEPAD_SOURCE_NONE)
-      empty_slot = &state;
-  }
-  if (empty_slot) {
-    empty_slot->source = source;
-    empty_slot->source_id = source_id;
-    empty_slot->active_state = GAMEPAD_NEWLY_ACTIVE;
-  }
-  return empty_slot;
-}
-
-void GamepadProvider::MapAndSanitizeGamepadData(
-    PadState* pad_state, WebGamepad* pad) {
-  DCHECK(pad_state);
-  DCHECK(pad);
-
-  if (!pad_state->active_state) {
-    memset(pad, 0, sizeof(WebGamepad));
-    return;
-  }
-
-  // Copy the current state to the output buffer, using the mapping
-  // function, if there is one available.
-  if (pad_state->mapper)
-    pad_state->mapper(pad_state->data, pad);
-  else
-    *pad = pad_state->data;
-
-  pad->connected = true;
-
-  if (!sanitize_)
-    return;
-
-  // About sanitization: Gamepads may report input event if the user is not
-  // interacting with it, due to hardware problems or environmental ones (pad
-  // has something heavy leaning against an axis.) This may cause user gestures
-  // to be detected erroniously, exposing gamepad information when the user had
-  // no intention of doing so. To avoid this we require that each button or axis
-  // report being at rest (zero) at least once before exposing its value to the
-  // Gamepad API. This state is tracked by the axis_mask and button_mask
-  // bitfields. If the bit for an axis or button is 0 it means the axis has
-  // never reported being at rest, and the value will be forced to zero.
-
-  // We can skip axis sanitation if all available axes have been masked.
-  uint32_t full_axis_mask = (1 << pad->axesLength) - 1;
-  if (pad_state->axis_mask != full_axis_mask) {
-    for (size_t axis = 0; axis < pad->axesLength; ++axis) {
-      if (!(pad_state->axis_mask & 1 << axis)) {
-        if (fabs(pad->axes[axis]) < kMinAxisResetValue) {
-          pad_state->axis_mask |= 1 << axis;
-        } else {
-          pad->axes[axis] = 0.0f;
-        }
-      }
-    }
-  }
-
-  // We can skip button sanitation if all available buttons have been masked.
-  uint32_t full_button_mask = (1 << pad->buttonsLength) - 1;
-  if (pad_state->button_mask != full_button_mask) {
-    for (size_t button = 0; button < pad->buttonsLength; ++button) {
-      if (!(pad_state->button_mask & 1 << button)) {
-        if (!pad->buttons[button].pressed) {
-          pad_state->button_mask |= 1 << button;
-        } else {
-          pad->buttons[button].pressed = false;
-          pad->buttons[button].value = 0.0f;
-        }
-      }
+  if (!had_gesture_before && ever_had_user_gesture_) {
+    // Initialize pad_states_ for the first time.
+    for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+      pad_states_.get()[i].SetPad(pads.items[i]);
     }
   }
 }

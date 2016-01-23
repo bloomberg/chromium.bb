@@ -24,6 +24,7 @@
 #include "base/scoped_native_library.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
+#include "content/browser/gamepad/raw_input_data_fetcher_win.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
@@ -32,10 +33,14 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
  public:
   GamepadPlatformDataFetcherWin();
   ~GamepadPlatformDataFetcherWin() override;
-  void GetGamepadData(bool devices_changed_hint) override;
+  void GetGamepadData(blink::WebGamepads* pads,
+                      bool devices_changed_hint) override;
+  void PauseHint(bool paused) override;
 
  private:
-  void OnAddedToProvider() override;
+  // XInput-specific implementation for GetGamepadData.
+  bool GetXInputGamepadData(blink::WebGamepads* pads,
+                            bool devices_changed_hint);
 
   // The three function types we use from xinput1_3.dll.
   typedef void (WINAPI *XInputEnableFunc)(BOOL enable);
@@ -52,7 +57,14 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
 
   // Scan for connected XInput and DirectInput gamepads.
   void EnumerateDevices();
-  void GetXInputPadData(int i);
+  bool GetXInputPadConnectivity(int i, blink::WebGamepad* pad) const;
+
+  void GetXInputPadData(int i, blink::WebGamepad* pad);
+  void GetRawInputPadData(int i, blink::WebGamepad* pad);
+
+  int FirstAvailableGamepadId() const;
+  bool HasXInputGamepad(int index) const;
+  bool HasRawInputGamepad(const HANDLE handle) const;
 
   base::ScopedNativeLibrary xinput_dll_;
   bool xinput_available_;
@@ -63,7 +75,21 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   XInputGetCapabilitiesFunc xinput_get_capabilities_;
   XInputGetStateFunc xinput_get_state_;
 
-  bool xinput_connected_[XUSER_MAX_COUNT];
+  enum PadConnectionStatus {
+    DISCONNECTED,
+    XINPUT_CONNECTED,
+    RAWINPUT_CONNECTED
+  };
+
+  struct PlatformPadState {
+    PadConnectionStatus status;
+
+    int xinput_index; // XInput-only
+    HANDLE raw_input_handle;  // RawInput-only fields.
+  };
+  PlatformPadState platform_pad_state_[blink::WebGamepads::itemsLengthCap];
+
+  scoped_ptr<RawInputDataFetcher> raw_input_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherWin);
 };
