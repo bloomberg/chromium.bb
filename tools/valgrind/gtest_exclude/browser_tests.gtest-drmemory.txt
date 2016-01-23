@@ -109,3 +109,6 @@ SmartSessionRestoreTest.PRE_CorrectLoadingOrder
 
 # https://579666
 SearchEngineManagerWebUITest.testOpenSearchEngineManager
+
+# https://crbug.com/580668
+ZoomControllerBrowserTest.SettingsZoomAfterSigninWorks
