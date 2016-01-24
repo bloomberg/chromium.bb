@@ -360,19 +360,23 @@ if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
 fi
 
-# Detect cunit library
-PKG_CHECK_MODULES([CUNIT], [cunit >= 2.1], [have_cunit=yes], [have_cunit=no])
-# If pkg-config does not find cunit, check it using AC_CHECK_LIB.  We
-# do this because Debian (Ubuntu) lacks pkg-config file for cunit.
-# fixed in 2.1-2.dfsg-3: http://anonscm.debian.org/cgit/collab-maint/cunit.git/commit/?h=debian
-if test "x${have_cunit}" = "xno"; then
-	AC_CHECK_LIB([cunit], [CU_initialize_registry], [have_cunit=yes], [have_cunit=no])
-	if test "x${have_cunit}" = "xyes"; then
-		CUNIT_LIBS="-lcunit"
-		CUNIT_CFLAGS=""
-		AC_SUBST([CUNIT_LIBS])
-		AC_SUBST([CUNIT_CFLAGS])
+if test "x$AMDGPU" != xno; then
+	# Detect cunit library
+	PKG_CHECK_MODULES([CUNIT], [cunit >= 2.1], [have_cunit=yes], [have_cunit=no])
+	# If pkg-config does not find cunit, check it using AC_CHECK_LIB.  We
+	# do this because Debian (Ubuntu) lacks pkg-config file for cunit.
+	# fixed in 2.1-2.dfsg-3: http://anonscm.debian.org/cgit/collab-maint/cunit.git/commit/?h=debian
+	if test "x${have_cunit}" = "xno"; then
+		AC_CHECK_LIB([cunit], [CU_initialize_registry], [have_cunit=yes], [have_cunit=no])
+		if test "x${have_cunit}" = "xyes"; then
+			CUNIT_LIBS="-lcunit"
+			CUNIT_CFLAGS=""
+			AC_SUBST([CUNIT_LIBS])
+			AC_SUBST([CUNIT_CFLAGS])
+		fi
 	fi
+else
+	have_cunit=no
 fi
 AM_CONDITIONAL(HAVE_CUNIT, [test "x$have_cunit" != "xno"])
 
@@ -401,7 +405,9 @@ AC_ARG_ENABLE([cairo-tests],
               [AS_HELP_STRING([--enable-cairo-tests],
                               [Enable support for Cairo rendering in tests (default: auto)])],
               [CAIRO=$enableval], [CAIRO=auto])
-PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
+if test "x$CAIRO" != xno; then
+	PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
+fi
 AC_MSG_CHECKING([whether to enable Cairo tests])
 if test "x$CAIRO" = xauto; then
 	CAIRO="$HAVE_CAIRO"
@@ -446,7 +452,9 @@ AC_ARG_ENABLE(valgrind,
               [AS_HELP_STRING([--enable-valgrind],
                              [Build libdrm with  valgrind support (default: auto)])],
                              [VALGRIND=$enableval], [VALGRIND=auto])
-PKG_CHECK_MODULES(VALGRIND, [valgrind], [have_valgrind=yes], [have_valgrind=no])
+if test "x$VALGRIND" != xno; then
+	PKG_CHECK_MODULES(VALGRIND, [valgrind], [have_valgrind=yes], [have_valgrind=no])
+fi
 AC_MSG_CHECKING([whether to enable Valgrind support])
 if test "x$VALGRIND" = xauto; then
 	VALGRIND="$have_valgrind"
