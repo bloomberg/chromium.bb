@@ -5430,7 +5430,11 @@ interface TransformComponent
     method is2DComponent
 interface TransformValue : StyleValue
     method constructor
+    method entries
+    method forEach
     method is2D
+    method keys
+    method values
 interface TransitionEvent : Event
     getter elapsedTime
     getter propertyName

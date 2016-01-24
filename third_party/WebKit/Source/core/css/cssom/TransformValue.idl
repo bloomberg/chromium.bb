@@ -4,7 +4,9 @@
 
 [
     Constructor(),
+    Constructor(sequence<TransformComponent> transformComponents),
     RuntimeEnabled=CSSTypedOM
 ] interface TransformValue : StyleValue {
+    iterable<TransformComponent>;
     boolean is2D();
 };

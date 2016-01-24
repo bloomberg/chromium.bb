@@ -5,10 +5,39 @@
 <script>
 
 test(function() {
-	var transformValueObject = new TransformValue();
+  var transformValueObject = new TransformValue();
     assert_true(transformValueObject instanceof TransformValue);
     assert_true(transformValueObject instanceof StyleValue);
 }, "A TransformValue object can be constructed");
+
+test(function() {
+  var transformArray = [new ScaleTransformComponent(2,2),
+    new MatrixTransformComponent(1,1,1,1,1,1), new ScaleTransformComponent(5,6)];
+  var transformValue = new TransformValue(transformArray);
+  assert_true(transformValue.is2D());
+}, "is2D returns true for transformValues containing only 2D transformComponents");
+
+test(function() {
+  var transformArray = [new ScaleTransformComponent(2,2),
+    new MatrixTransformComponent(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), new ScaleTransformComponent(5,6)];
+  var transformValue = new TransformValue(transformArray);
+  assert_false(transformValue.is2D());
+}, "is2D returns false for transformValues containing both 2D and 3D transformComponents");
+
+test(function() {
+  var transformArray = [new ScaleTransformComponent(2,2),
+    new MatrixTransformComponent(1,1,1,1,1,1), new ScaleTransformComponent(5,6)];
+  var transformValue = new TransformValue(transformArray);
+
+  var newTransformArray = [];
+  for (var component of transformValue) {
+    newTransformArray.push(component);
+  }
+  assert_true(newTransformArray.length == 3);
+  assert_true(newTransformArray[0] instanceof ScaleTransformComponent);
+  assert_true(newTransformArray[1] instanceof MatrixTransformComponent);
+  assert_true(newTransformArray[2] instanceof ScaleTransformComponent);
+}, "TransformValue can iterate through all its all its transformComponent members");
 
 </script>
 
