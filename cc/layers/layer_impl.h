@@ -321,7 +321,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
-  float EffectiveOpacity() const;
   bool OpacityIsAnimating() const;
   bool HasPotentiallyRunningOpacityAnimation() const;
   bool OpacityIsAnimatingOnImplOnly() const;
@@ -686,7 +685,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
 
-  bool IsHidden() const;
+  void set_is_hidden_from_property_trees(bool is_hidden) {
+    if (is_hidden == is_hidden_from_property_trees_)
+      return;
+    is_hidden_from_property_trees_ = is_hidden;
+    SetNeedsPushProperties();
+  }
+  bool LayerIsHidden() const;
 
   float GetIdealContentsScale() const;
 
@@ -890,6 +895,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // If true, the layer or one of its descendants has a wheel or touch handler.
   bool layer_or_descendant_has_input_handler_;
   bool sorted_for_recursion_;
+  bool is_hidden_from_property_trees_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

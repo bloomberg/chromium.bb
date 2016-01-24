@@ -244,10 +244,6 @@ struct CC_EXPORT EffectNodeData {
   float screen_space_opacity;
 
   bool has_render_surface;
-  bool has_copy_request;
-  bool has_background_filters;
-  bool is_drawn;
-  bool screen_space_opacity_is_animating;
   int num_copy_requests_in_subtree;
   int transform_id;
   int clip_id;
@@ -503,14 +499,11 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void ClearCopyRequests();
 
-  bool ContributesToDrawnSurface(int id);
-
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);
 
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
-  void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {

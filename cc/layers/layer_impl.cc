@@ -100,7 +100,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       visited_(false),
       layer_or_descendant_is_drawn_(false),
       layer_or_descendant_has_input_handler_(false),
-      sorted_for_recursion_(false) {
+      sorted_for_recursion_(false),
+      is_hidden_from_property_trees_(false) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
@@ -658,6 +659,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetClipTreeIndex(clip_tree_index_);
   layer->SetEffectTreeIndex(effect_tree_index_);
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
+  layer->set_is_hidden_from_property_trees(is_hidden_from_property_trees_);
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {
@@ -960,7 +962,7 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     // started, but might have finished since then on the compositor thread.
     if (node->owner_id != id())
       return;
-    node->data.opacity = EffectiveOpacity();
+    node->data.opacity = opacity_;
     effect_tree.set_needs_update(true);
   }
 }
@@ -989,10 +991,7 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
 
 void LayerImpl::OnOpacityAnimated(float opacity) {
   SetOpacity(opacity);
-  // When hide_layer_and_subtree is true, the effective opacity is zero and we
-  // need not update the opacity on property trees.
-  if (!hide_layer_and_subtree_)
-    UpdatePropertyTreeOpacity();
+  UpdatePropertyTreeOpacity();
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
@@ -1247,10 +1246,6 @@ void LayerImpl::SetOpacity(float opacity) {
 
   opacity_ = opacity;
   NoteLayerPropertyChangedForSubtree();
-}
-
-float LayerImpl::EffectiveOpacity() const {
-  return hide_layer_and_subtree_ ? 0.f : opacity_;
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
@@ -1928,13 +1923,11 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
                                            gfx::Rect(scaled_bounds));
 }
 
-bool LayerImpl::IsHidden() const {
+bool LayerImpl::LayerIsHidden() const {
   if (layer_tree_impl()->settings().use_property_trees) {
-    EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
-    EffectNode* node = effect_tree.Node(effect_tree_index_);
-    return node->data.screen_space_opacity == 0.f;
+    return is_hidden_from_property_trees_;
   } else {
-    return EffectiveOpacity() == 0.f || (parent() && parent()->IsHidden());
+    return hide_layer_and_subtree_ || (parent() && parent()->LayerIsHidden());
   }
 }
 
