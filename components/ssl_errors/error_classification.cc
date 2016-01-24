@@ -66,7 +66,12 @@ void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
   }
 }
 
-size_t GetLevensteinDistance(const std::string& str1, const std::string& str2) {
+// Returns the Levenshtein distance between |str1| and |str2|.
+// Which is the minimum number of single-character edits (i.e. insertions,
+// deletions or substitutions) required to change one word into the other.
+// https://en.wikipedia.org/wiki/Levenshtein_distance
+size_t GetLevenshteinDistance(const std::string& str1,
+                              const std::string& str2) {
   if (str1 == str2)
     return 0;
   if (str1.size() == 0)
@@ -385,7 +390,7 @@ bool IsCertLikelyFromMultiTenantHosting(const GURL& request_url,
   static const size_t kMinimumEditDsitance = 5;
   for (size_t i = 0; i < dns_names_size; ++i) {
     for (size_t j = i + 1; j < dns_names_size; ++j) {
-      size_t edit_distance = GetLevensteinDistance(dns_names[i], dns_names[j]);
+      size_t edit_distance = GetLevenshteinDistance(dns_names[i], dns_names[j]);
       if (edit_distance < kMinimumEditDsitance)
         return false;
     }
