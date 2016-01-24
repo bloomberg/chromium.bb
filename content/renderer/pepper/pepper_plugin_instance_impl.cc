@@ -92,8 +92,6 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "printing/metafile_skia_wrapper.h"
-#include "printing/pdf_metafile_skia.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -125,6 +123,13 @@
 #include "ui/gfx/range/range.h"
 #include "url/origin.h"
 #include "v8/include/v8.h"
+
+#if defined(ENABLE_PRINTING)
+// nogncheck because dependency on //printing is conditional upon
+// enable_basic_printing or enable_print_preview flags.
+#include "printing/metafile_skia_wrapper.h"  // nogncheck
+#include "printing/pdf_metafile_skia.h"  // nogncheck
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "ui/events/keycodes/keyboard_codes_posix.h"
