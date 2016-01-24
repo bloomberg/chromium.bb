@@ -230,10 +230,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_HQ_DOWNSAMPLING
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_PATH_MEASURE_TVALUE
-#   define SK_SUPPORT_LEGACY_PATH_MEASURE_TVALUE
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_BITMAP_FILTER
 #   define SK_SUPPORT_LEGACY_BITMAP_FILTER
 #endif
