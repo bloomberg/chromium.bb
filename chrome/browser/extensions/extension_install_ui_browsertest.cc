@@ -71,23 +71,9 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   }
 };
 
-#if defined(OS_LINUX)
-// Fails consistently on bot chromium.chromiumos \ Linux.
-// See: http://crbug.com/120647.
-#define MAYBE_TestThemeInstallUndoResetsToDefault DISABLED_TestThemeInstallUndoResetsToDefault
-#else
-#define MAYBE_TestThemeInstallUndoResetsToDefault TestThemeInstallUndoResetsToDefault
-#endif
-
+// Fails on Linux and Windows (http://crbug.com/580907).
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       MAYBE_TestThemeInstallUndoResetsToDefault) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
+                       DISABLED_TestThemeInstallUndoResetsToDefault) {
   // Install theme once and undo to verify we go back to default theme.
   base::FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
