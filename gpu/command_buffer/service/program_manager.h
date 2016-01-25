@@ -255,10 +255,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   GLint GetFragDataIndex(const std::string& original_name) const;
 
   // Sets the sampler values for a uniform.
-  // This is safe to call for any location. If the location is not
-  // a sampler uniform nothing will happen.
-  // Returns false if fake_location is a sampler and any value
-  // is >= num_texture_units. Returns true otherwise.
+  // This should be called only for valid fake location pointing to
+  // an active uniform.
+  // If the location is not a sampler uniform nothing will happen.
+  // Returns false if fake_location is a sampler and any value is >=
+  // num_texture_units. Returns true otherwise.
   bool SetSamplers(
       GLint num_texture_units, GLint fake_location,
       GLsizei count, const GLint* value);

@@ -1405,16 +1405,12 @@ const Program::UniformInfo*
 bool Program::SetSamplers(
     GLint num_texture_units, GLint fake_location,
     GLsizei count, const GLint* value) {
-  if (fake_location < 0) {
-    return true;
-  }
+  // The caller has checked that the location is active and valid.
+  DCHECK(fake_location >= 0);
   size_t location_index =
       GetUniformLocationIndexFromFakeLocation(fake_location);
-  if (location_index >= uniform_infos_.size())
-    return false;
-
-  if (!uniform_locations_[location_index].IsActive())
-    return false;
+  DCHECK(location_index < uniform_locations_.size());
+  DCHECK(uniform_locations_[location_index].IsActive());
 
   UniformInfo* info = uniform_locations_[location_index].shader_variable();
 
