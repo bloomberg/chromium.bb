@@ -658,6 +658,16 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
 
   state_ = kError;
 
+  // If we have any bitstream buffers, then notify one that an error has
+  // occurred.  This guarantees that somebody finds out about the error.  If
+  // we don't do this, and if the max decodes are already in flight, then there
+  // won't be another decode request to report the error.
+  if (!bitstream_buffers_in_decoder_.empty()) {
+    auto it = bitstream_buffers_in_decoder_.begin();
+    it->second.done_cb.Run(kDecodeError);
+    bitstream_buffers_in_decoder_.erase(it);
+  }
+
   DLOG(ERROR) << "VDA Error: " << error;
   DestroyVDA();
 }

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/android/build_info.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -143,6 +144,13 @@ class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
   DISALLOW_COPY_AND_ASSIGN(OnFrameAvailableHandler);
 };
 
+// Time between when we notice an error, and when we actually notify somebody.
+// This is to prevent codec errors caused by SurfaceView fullscreen transitions
+// from breaking the pipeline, if we're about to be reset anyway.
+static inline const base::TimeDelta ErrorPostingDelay() {
+  return base::TimeDelta::FromSeconds(2);
+}
+
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
     const base::Callback<bool(void)>& make_context_current)
@@ -156,6 +164,8 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       gl_decoder_(decoder),
       cdm_registration_id_(0),
       pending_input_buf_index_(-1),
+      error_sequence_token_(0),
+      defer_errors_(false),
       weak_this_factory_(this) {
   if (UseDeferredRenderingStrategy())
     strategy_.reset(new AndroidDeferredRenderingBackingStrategy());
@@ -300,6 +310,7 @@ void AndroidVideoDecodeAccelerator::DoIOTask() {
 bool AndroidVideoDecodeAccelerator::QueueInput() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::QueueInput");
+  base::AutoReset<bool> auto_reset(&defer_errors_, true);
   if (bitstreams_notified_in_advance_.size() > kMaxBitstreamsNotifiedInAdvance)
     return false;
   if (pending_bitstream_buffers_.empty())
@@ -435,6 +446,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::DequeueOutput");
+  base::AutoReset<bool> auto_reset(&defer_errors_, true);
   if (picturebuffers_requested_ && output_picture_buffers_.empty())
     return false;
 
@@ -725,6 +737,14 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   if (state_ == WAITING_FOR_KEY)
     state_ = NO_ERROR;
 
+  // We might increment error_sequence_token here to cancel any delayed errors,
+  // but right now it's unclear that it's safe to do so.  If we are in an error
+  // state because of a codec error, then it would be okay.  Otherwise, it's
+  // less obvious that we are exiting the error state.  Since deferred errors
+  // are only intended for fullscreen transitions right now, we take the more
+  // conservative approach and let the errors post.
+  // TODO(liberato): revisit this once we sort out the error state a bit more.
+
   // When codec is not in error state we can quickly reset (internally calls
   // flush()) for JB-MR2 and beyond. Prior to JB-MR2, flush() had several bugs
   // (b/8125974, b/8347958) so we must stop() and reconfigure MediaCodec. The
@@ -744,8 +764,9 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
     media_codec_->Stop();
     // Changing the codec will also notify the strategy to forget about any
     // output buffers it has currently.
-    ConfigureMediaCodec();
     state_ = NO_ERROR;
+    if (!ConfigureMediaCodec())
+      POST_ERROR(PLATFORM_FAILURE, "Failed to create MediaCodec.");
   }
 }
 
@@ -781,6 +802,9 @@ void AndroidVideoDecodeAccelerator::Reset() {
   }
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount", 0);
   bitstreams_notified_in_advance_.clear();
+
+  // Any error that is waiting to post can be ignored.
+  error_sequence_token_++;
 
   ResetCodecState();
 
@@ -839,9 +863,11 @@ void AndroidVideoDecodeAccelerator::OnFrameAvailable() {
 void AndroidVideoDecodeAccelerator::PostError(
     const ::tracked_objects::Location& from_here,
     media::VideoDecodeAccelerator::Error error) {
-  base::MessageLoop::current()->PostTask(
-      from_here, base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
-                            weak_this_factory_.GetWeakPtr(), error));
+  base::MessageLoop::current()->PostDelayedTask(
+      from_here,
+      base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
+                 weak_this_factory_.GetWeakPtr(), error, error_sequence_token_),
+      (defer_errors_ ? ErrorPostingDelay() : base::TimeDelta()));
   state_ = ERROR;
 }
 
@@ -902,7 +928,13 @@ void AndroidVideoDecodeAccelerator::NotifyResetDone() {
 }
 
 void AndroidVideoDecodeAccelerator::NotifyError(
-    media::VideoDecodeAccelerator::Error error) {
+    media::VideoDecodeAccelerator::Error error,
+    int token) {
+  DVLOG(1) << __FUNCTION__ << ": error: " << error << " token: " << token
+           << " current: " << error_sequence_token_;
+  if (token != error_sequence_token_)
+    return;
+
   client_->NotifyError(error);
 }
 
