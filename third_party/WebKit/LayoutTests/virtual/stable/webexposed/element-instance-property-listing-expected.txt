@@ -363,6 +363,7 @@ html element button
 html element canvas
     property getContext
     property height
+    property toBlob
     property toDataURL
     property width
 html element caption

@@ -1369,6 +1369,7 @@ interface HTMLCanvasElement : HTMLElement
     getter width
     method constructor
     method getContext
+    method toBlob
     method toDataURL
     setter height
     setter width
