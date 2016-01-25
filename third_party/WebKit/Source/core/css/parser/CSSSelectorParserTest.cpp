@@ -5,6 +5,7 @@
 #include "core/css/parser/CSSSelectorParser.h"
 
 #include "core/css/CSSSelectorList.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -247,6 +248,25 @@ TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound)
         CSSTokenizer::Scope scope(testCase);
         CSSParserTokenRange range = scope.tokenRange();
         CSSSelectorList list = CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        EXPECT_FALSE(list.isValid());
+    }
+}
+
+TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix)
+{
+    const char* testCases[] = {
+        "ns|div",
+        "div ns|div",
+        "div ns|div "
+    };
+
+    CSSParserContext context(HTMLStandardMode, nullptr);
+    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
+
+    for (auto testCase : testCases) {
+        CSSTokenizer::Scope scope(testCase);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, context, sheet.get());
         EXPECT_FALSE(list.isValid());
     }
 }

@@ -304,8 +304,10 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
 
     if (!compoundSelector) {
         AtomicString namespaceURI = determineNamespace(namespacePrefix);
-        if (namespaceURI.isNull())
+        if (namespaceURI.isNull()) {
+            m_failedParsing = true;
             return nullptr;
+        }
         return CSSParserSelector::create(QualifiedName(namespacePrefix, elementName, namespaceURI));
     }
     prependTypeSelectorIfNeeded(namespacePrefix, elementName, compoundSelector.get());
