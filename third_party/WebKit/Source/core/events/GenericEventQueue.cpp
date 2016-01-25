@@ -131,4 +131,4 @@ bool GenericEventQueue::hasPendingEvents() const
     return m_pendingEvents.size();
 }
 
-}
+} // namespace blink

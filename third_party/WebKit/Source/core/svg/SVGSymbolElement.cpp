@@ -50,4 +50,4 @@ LayoutObject* SVGSymbolElement::createLayoutObject(const ComputedStyle&)
     return new LayoutSVGHiddenContainer(this);
 }
 
-}
+} // namespace blink

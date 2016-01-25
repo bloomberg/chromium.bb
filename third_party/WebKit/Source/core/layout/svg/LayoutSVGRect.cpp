@@ -143,4 +143,4 @@ bool LayoutSVGRect::definitelyHasSimpleStroke() const
         && svgStyle.strokeMiterLimit() >= 1.5;
 }
 
-}
+} // namespace blink

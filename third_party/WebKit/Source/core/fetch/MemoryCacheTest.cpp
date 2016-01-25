@@ -537,4 +537,4 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation)
     EXPECT_FALSE(memoryCache()->contains(resource3.get()));
 }
 
-} // namespace
+} // namespace blink

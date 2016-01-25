@@ -56,6 +56,6 @@ protected:
 
 DEFINE_TYPE_CASTS(StyleInterpolation, Interpolation, value, value->isStyleInterpolation(), value.isStyleInterpolation());
 
-}
+} // namespace blink
 
 #endif

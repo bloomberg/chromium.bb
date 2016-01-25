@@ -188,4 +188,4 @@ DEFINE_TRACE(DictionaryTest)
     visitor->trace(m_eventTargetOrNullMember);
 }
 
-}
+} // namespace blink

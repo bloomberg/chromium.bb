@@ -150,4 +150,4 @@ double ResourceLoadTiming::calculateMillisecondDelta(double time) const
     return time ? (time - m_requestTime) * 1000 : -1;
 }
 
-} // namespace
+} // namespace blink

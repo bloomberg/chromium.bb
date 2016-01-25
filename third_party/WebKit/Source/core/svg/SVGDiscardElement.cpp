@@ -54,4 +54,4 @@ bool SVGDiscardElement::hasValidAttributeName()
     return true;
 }
 
-}
+} // namespace blink

@@ -69,6 +69,6 @@ private:
     const HTMLEntityTableEntry* m_last;
 };
 
-}
+} // namespace blink
 
 #endif

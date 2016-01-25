@@ -61,6 +61,6 @@ private:
 
 DEFINE_DOCUMENT_TYPE_CASTS(PluginDocument);
 
-}
+} // namespace blink
 
 #endif // PluginDocument_h

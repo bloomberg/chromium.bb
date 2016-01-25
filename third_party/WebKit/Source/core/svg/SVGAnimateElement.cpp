@@ -415,4 +415,4 @@ DEFINE_TRACE(SVGAnimateElement)
     SVGAnimationElement::trace(visitor);
 }
 
-}
+} // namespace blink

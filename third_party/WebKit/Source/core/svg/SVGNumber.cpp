@@ -120,4 +120,4 @@ SVGNumberAcceptPercentage::SVGNumberAcceptPercentage(float value)
 {
 }
 
-}
+} // namespace blink

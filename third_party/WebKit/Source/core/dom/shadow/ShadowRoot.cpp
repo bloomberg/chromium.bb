@@ -376,4 +376,4 @@ DEFINE_TRACE(ShadowRoot)
     DocumentFragment::trace(visitor);
 }
 
-}
+} // namespace blink

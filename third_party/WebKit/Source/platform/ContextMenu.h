@@ -46,6 +46,6 @@ private:
     Vector<ContextMenuItem> m_items;
 };
 
-}
+} // namespace blink
 
 #endif // ContextMenu_h

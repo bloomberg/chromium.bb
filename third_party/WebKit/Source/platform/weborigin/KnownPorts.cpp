@@ -60,4 +60,4 @@ unsigned short defaultPortForProtocol(const WTF::String& protocol)
     return 0;
 }
 
-}
+} // namespace blink

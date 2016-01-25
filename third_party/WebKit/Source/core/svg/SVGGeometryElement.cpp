@@ -88,4 +88,4 @@ LayoutObject* SVGGeometryElement::createLayoutObject(const ComputedStyle&)
     return new LayoutSVGPath(this);
 }
 
-}
+} // namespace blink

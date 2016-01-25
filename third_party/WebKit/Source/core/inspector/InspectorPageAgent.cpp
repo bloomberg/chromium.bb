@@ -109,7 +109,7 @@ TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogTyp
     return TypeBuilder::Page::DialogType::Alert;
 }
 
-}
+} // namespace
 
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
 {

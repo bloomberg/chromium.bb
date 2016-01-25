@@ -31,7 +31,7 @@ bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
     return true;
 }
 
-}
+} // namespace
 
 Interpolation::Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     : m_start(start)
@@ -56,4 +56,4 @@ void Interpolation::interpolate(int iteration, double fraction)
     }
 }
 
-}
+} // namespace blink

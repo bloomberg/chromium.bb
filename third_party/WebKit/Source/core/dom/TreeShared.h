@@ -115,6 +115,6 @@ template<typename NodeType> void adopted(TreeShared<NodeType>* object)
 }
 #endif
 
-}
+} // namespace blink
 
 #endif // TreeShared.h

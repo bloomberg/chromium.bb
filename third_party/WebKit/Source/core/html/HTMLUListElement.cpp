@@ -59,4 +59,4 @@ void HTMLUListElement::collectStyleForPresentationAttribute(const QualifiedName&
     }
 }
 
-}
+} // namespace blink

@@ -168,4 +168,4 @@ float SVGLengthList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> t
     // FIXME: Distance calculation is not possible for SVGLengthList right now. We need the distance for every single value.
     return -1;
 }
-}
+} // namespace blink

@@ -64,6 +64,6 @@ private:
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceRadialGradient, RadialGradientResourceType);
 
-}
+} // namespace blink
 
 #endif

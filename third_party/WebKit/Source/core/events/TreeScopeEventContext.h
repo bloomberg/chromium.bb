@@ -143,6 +143,6 @@ inline bool TreeScopeEventContext::isExclusivePartOf(const TreeScopeEventContext
 }
 #endif
 
-}
+} // namespace blink
 
 #endif // TreeScopeEventContext_h

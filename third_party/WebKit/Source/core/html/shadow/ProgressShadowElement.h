@@ -76,6 +76,6 @@ private:
     explicit ProgressValueElement(Document&);
 };
 
-}
+} // namespace blink
 
 #endif // ProgressShadowElement_h

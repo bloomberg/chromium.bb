@@ -628,4 +628,4 @@ void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSe
         headerSet.add(value.stripWhiteSpace(isWhitespace));
 }
 
-}
+} // namespace blink

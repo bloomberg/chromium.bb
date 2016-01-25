@@ -72,6 +72,6 @@ private:
     bool m_isManifest : 1;
 };
 
-}
+} // namespace blink
 
 #endif

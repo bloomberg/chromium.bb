@@ -52,4 +52,4 @@ const QualifiedName& HTMLQuoteElement::subResourceAttributeName() const
     return citeAttr;
 }
 
-}
+} // namespace blink

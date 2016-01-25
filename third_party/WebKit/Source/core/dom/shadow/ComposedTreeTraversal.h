@@ -309,6 +309,6 @@ inline Node* ComposedTreeTraversal::traverseLastChild(const Node& node)
     return traverseChild(node, TraversalDirectionBackward);
 }
 
-} // namespace
+} // namespace blink
 
 #endif

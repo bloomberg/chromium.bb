@@ -59,6 +59,6 @@ private:
     bool m_needsUpdate;
 };
 
-}
+} // namespace blink
 
 #endif // PopupMenuImpl_h

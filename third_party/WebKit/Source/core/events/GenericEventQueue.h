@@ -62,6 +62,6 @@ private:
     bool m_isClosed;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -137,4 +137,4 @@ bool LayoutMultiColumnSpannerPlaceholder::nodeAtPoint(HitTestResult& result, con
     return !m_layoutObjectInFlowThread->hasSelfPaintingLayer() && m_layoutObjectInFlowThread->nodeAtPoint(result, locationInContainer, accumulatedOffset, action);
 }
 
-}
+} // namespace blink

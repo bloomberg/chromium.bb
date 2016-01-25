@@ -142,6 +142,6 @@ private:
     OwnPtr<HTMLMetaCharsetParser> m_charsetParser;
 };
 
-}
+} // namespace blink
 
 #endif

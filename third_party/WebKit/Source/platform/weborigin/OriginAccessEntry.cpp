@@ -74,7 +74,7 @@ bool IsSubdomainOfHost(const String& subdomain, const String& host)
 
     return true;
 }
-}
+} // namespace
 
 OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting subdomainSetting)
     : m_protocol(protocol.lower())

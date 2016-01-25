@@ -142,4 +142,4 @@ TEST_F(AnimationDoubleStyleInterpolationTest, ValueAutoMotionRotation)
     testValueListMotionRotation(value, 90, true);
 }
 
-}
+} // namespace blink

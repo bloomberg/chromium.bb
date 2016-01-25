@@ -59,4 +59,4 @@ void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name, const
     SVGAnimateElement::parseAttribute(name, oldValue, value);
 }
 
-}
+} // namespace blink

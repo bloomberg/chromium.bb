@@ -58,6 +58,6 @@ private:
     Position m_endOfLastParagraph;
 };
 
-}
+} // namespace blink
 
 #endif

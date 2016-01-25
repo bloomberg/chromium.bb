@@ -164,4 +164,4 @@ void InsertLineBreakCommand::doApply()
     rebalanceWhitespace();
 }
 
-}
+} // namespace blink

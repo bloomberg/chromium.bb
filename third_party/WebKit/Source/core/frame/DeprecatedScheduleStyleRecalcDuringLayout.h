@@ -23,6 +23,6 @@ private:
     bool m_wasInPerformLayout;
 };
 
-}
+} // namespace blink
 
 #endif

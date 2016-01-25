@@ -141,4 +141,4 @@ bool CallbackStack::hasCallbackForObject(const void* object)
 }
 #endif
 
-}
+} // namespace blink

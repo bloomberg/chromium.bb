@@ -195,6 +195,6 @@ private:
 // See platform/testing/TransformPrinters.h.
 void PrintTo(const AffineTransform&, std::ostream*);
 
-}
+} // namespace blink
 
 #endif

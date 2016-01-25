@@ -151,4 +151,4 @@ DEFINE_TRACE(DirectoryReader)
     DirectoryReaderBase::trace(visitor);
 }
 
-}
+} // namespace blink

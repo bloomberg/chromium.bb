@@ -570,4 +570,4 @@ bool unifiedTextCheckerEnabled(const LocalFrame* frame)
     return settings->unifiedTextCheckerEnabled();
 }
 
-}
+} // namespace blink

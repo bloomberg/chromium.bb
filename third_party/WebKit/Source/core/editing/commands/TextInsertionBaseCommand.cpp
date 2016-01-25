@@ -81,4 +81,4 @@ bool canAppendNewLineFeedToSelection(const VisibleSelection& selection)
     return event->text().length();
 }
 
-}
+} // namespace blink

@@ -91,7 +91,7 @@ public:
     void onNavigationStarted() override { }
 
 private:
-    Deque<OwnPtr<WebTaskRunner::Task>> m_tasks;
+    WTF::Deque<OwnPtr<WebTaskRunner::Task>> m_tasks;
     OwnPtr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
 };
 

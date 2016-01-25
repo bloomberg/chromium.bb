@@ -241,4 +241,4 @@ bool StyleLayoutData::operator==(const StyleLayoutData& other) const
         && d->equals(*other.d);
 }
 
-}
+} // namespace blink

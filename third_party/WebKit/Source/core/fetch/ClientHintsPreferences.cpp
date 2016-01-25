@@ -50,4 +50,4 @@ void ClientHintsPreferences::updateFromAcceptClientHintsHeader(const String& hea
     }
 }
 
-}
+} // namespace blink

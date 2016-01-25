@@ -37,4 +37,4 @@ LayoutObject* SVGDefsElement::createLayoutObject(const ComputedStyle&)
     return new LayoutSVGHiddenContainer(this);
 }
 
-}
+} // namespace blink

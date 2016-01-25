@@ -46,6 +46,6 @@ private:
     bool supportsFocus() const override;
 };
 
-}
+} // namespace blink
 
 #endif // HTMLSummaryElement_h

@@ -242,4 +242,4 @@ DEFINE_TRACE(MediaList)
     visitor->trace(m_parentRule);
 }
 
-}
+} // namespace blink

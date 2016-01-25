@@ -60,4 +60,4 @@ DEFINE_TRACE(ProgressEvent)
     Event::trace(visitor);
 }
 
-}
+} // namespace blink

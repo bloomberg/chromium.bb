@@ -237,4 +237,4 @@ void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(LayoutSVGText* textR
     walkTree(textRoot, stopAtLeaf, &data);
 }
 
-}
+} // namespace blink

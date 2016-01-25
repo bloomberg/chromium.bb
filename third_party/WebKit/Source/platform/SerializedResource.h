@@ -52,7 +52,7 @@ struct SerializedResource {
     }
 };
 
-}
+} // namespace blink
 
 #endif // SerializedResource_h
 

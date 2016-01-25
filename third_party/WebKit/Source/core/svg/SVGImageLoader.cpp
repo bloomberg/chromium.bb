@@ -41,4 +41,4 @@ void SVGImageLoader::dispatchLoadEvent()
     }
 }
 
-}
+} // namespace blink

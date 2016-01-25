@@ -161,4 +161,4 @@ DEFINE_TRACE(FontFaceCache)
 #endif
 }
 
-}
+} // namespace blink

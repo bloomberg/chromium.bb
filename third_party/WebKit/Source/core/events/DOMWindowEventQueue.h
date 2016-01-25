@@ -69,6 +69,6 @@ private:
     friend class DOMWindowEventQueueTimer;
 };
 
-}
+} // namespace blink
 
 #endif // DOMWindowEventQueue_h

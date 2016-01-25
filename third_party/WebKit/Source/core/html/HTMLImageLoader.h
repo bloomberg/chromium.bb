@@ -47,6 +47,6 @@ private:
     void ensureFallbackContent();
 };
 
-}
+} // namespace blink
 
 #endif

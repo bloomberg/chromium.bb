@@ -56,4 +56,4 @@ void SVGTitleElement::childrenChanged(const ChildrenChange& change)
         document().setTitleElement(this);
 }
 
-}
+} // namespace blink

@@ -44,6 +44,6 @@ public:
     virtual bool handleEvent(Database*) = 0;
 };
 
-}
+} // namespace blink
 
 #endif // DatabaseCallback_h

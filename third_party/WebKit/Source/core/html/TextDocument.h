@@ -44,6 +44,6 @@ private:
     String debugName() const override { return "TextDocument"; }
 };
 
-}
+} // namespace blink
 
 #endif

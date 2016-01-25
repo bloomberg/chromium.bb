@@ -193,4 +193,4 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
     return false;
 }
 
-}
+} // namespace blink

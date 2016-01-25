@@ -331,4 +331,4 @@ void LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(Layo
     }
 }
 
-}
+} // namespace blink

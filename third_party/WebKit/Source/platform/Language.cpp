@@ -123,4 +123,4 @@ size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vec
     return languageList.size();
 }
 
-}
+} // namespace blink

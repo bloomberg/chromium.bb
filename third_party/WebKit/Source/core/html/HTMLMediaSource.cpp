@@ -40,4 +40,4 @@ void HTMLMediaSource::setRegistry(URLRegistry* registry)
     s_registry = registry;
 }
 
-}
+} // namespace blink

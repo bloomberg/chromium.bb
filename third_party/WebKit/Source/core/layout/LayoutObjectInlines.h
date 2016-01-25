@@ -39,6 +39,6 @@ inline const ComputedStyle& LayoutObject::styleRef(bool firstLine) const
     return *style;
 }
 
-}
+} // namespace blink
 
 #endif

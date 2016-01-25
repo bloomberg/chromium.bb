@@ -41,4 +41,4 @@ bool CSSUnicodeRangeValue::equals(const CSSUnicodeRangeValue& other) const
     return m_from == other.m_from && m_to == other.m_to;
 }
 
-}
+} // namespace blink

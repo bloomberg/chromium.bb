@@ -73,7 +73,7 @@ private:
     OwnPtr<Locale> m_locale;
 };
 
-}
+} // namespace blink
 
 #endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 

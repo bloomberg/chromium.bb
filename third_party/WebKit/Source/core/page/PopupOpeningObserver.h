@@ -38,5 +38,5 @@ protected:
     virtual ~PopupOpeningObserver() { }
 };
 
-}
+} // namespace blink
 #endif

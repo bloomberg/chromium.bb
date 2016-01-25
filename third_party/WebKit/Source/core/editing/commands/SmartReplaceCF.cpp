@@ -69,4 +69,4 @@ bool isCharacterSmartReplaceExempt(UChar32 c, bool isPreviousCharacter)
     return CFCharacterSetIsLongCharacterMember(getSmartSet(isPreviousCharacter), c);
 }
 
-}
+} // namespace blink

@@ -146,4 +146,4 @@ WeakPtrWillBeRawPtr<MainThreadTaskRunner> MainThreadTaskRunner::createWeakPointe
 #endif
 }
 
-} // namespace
+} // namespace blink

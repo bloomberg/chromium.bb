@@ -67,6 +67,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSShadowValue, isShadowValue());
 
-} // namespace
+} // namespace blink
 
 #endif

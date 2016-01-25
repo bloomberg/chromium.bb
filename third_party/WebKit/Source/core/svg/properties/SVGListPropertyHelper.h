@@ -369,6 +369,6 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::adjustFromToListValues(PassRe
     return true;
 }
 
-}
+} // namespace blink
 
 #endif // SVGListPropertyHelper_h

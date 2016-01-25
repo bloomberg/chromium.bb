@@ -161,4 +161,4 @@ DEFINE_TRACE(CompositorPendingAnimations)
     visitor->trace(m_waitingForCompositorAnimationStart);
 }
 
-} // namespace
+} // namespace blink

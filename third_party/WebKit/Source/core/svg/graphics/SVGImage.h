@@ -140,6 +140,6 @@ private:
     ImageObserver* m_observer;
 };
 
-}
+} // namespace blink
 
 #endif // SVGImage_h

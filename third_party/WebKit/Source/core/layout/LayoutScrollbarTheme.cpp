@@ -150,4 +150,4 @@ void LayoutScrollbarTheme::paintTickmarks(GraphicsContext& context, const Scroll
     ScrollbarTheme::theme().paintTickmarks(context, scrollbar, rect);
 }
 
-}
+} // namespace blink

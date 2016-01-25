@@ -69,6 +69,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInlineText, isSVGInlineText());
 
-}
+} // namespace blink
 
 #endif // LayoutSVGInlineText_h

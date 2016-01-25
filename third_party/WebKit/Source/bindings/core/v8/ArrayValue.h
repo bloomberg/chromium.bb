@@ -65,6 +65,6 @@ private:
     mutable NonThrowableExceptionState m_exceptionState;
 };
 
-}
+} // namespace blink
 
 #endif // ArrayValue_h

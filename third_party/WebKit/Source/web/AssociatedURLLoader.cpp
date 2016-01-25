@@ -112,7 +112,7 @@ const HTTPHeaderSet& HTTPResponseHeaderValidator::blockedHeaders()
     return m_blockedHeaders;
 }
 
-}
+} // namespace
 
 // This class bridges the interface differences between WebCore and WebKit loader clients.
 // It forwards its ThreadableLoaderClient notifications to a WebURLLoaderClient.

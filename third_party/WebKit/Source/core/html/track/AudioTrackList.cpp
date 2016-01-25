@@ -35,4 +35,4 @@ const AtomicString& AudioTrackList::interfaceName() const
     return EventTargetNames::AudioTrackList;
 }
 
-}
+} // namespace blink

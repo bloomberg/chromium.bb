@@ -36,4 +36,4 @@ PassRefPtr<LightSource> SVGFEDistantLightElement::lightSource(Filter* filter) co
     return DistantLightSource::create(azimuth()->currentValue()->value(), elevation()->currentValue()->value());
 }
 
-}
+} // namespace blink

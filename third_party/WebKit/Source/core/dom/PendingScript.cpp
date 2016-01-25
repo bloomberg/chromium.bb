@@ -203,4 +203,4 @@ bool PendingScript::isReady() const
     return true;
 }
 
-}
+} // namespace blink

@@ -159,4 +159,4 @@ void DOMWindowEventQueue::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
         eventTarget->dispatchEvent(event);
 }
 
-}
+} // namespace blink

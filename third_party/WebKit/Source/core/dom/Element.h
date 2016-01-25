@@ -943,6 +943,6 @@ inline bool isAtShadowBoundary(const Element* element)
         return adoptRefWillBeNoop(new T(tagName, document)); \
     }
 
-} // namespace
+} // namespace blink
 
 #endif // Element_h

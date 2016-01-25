@@ -62,4 +62,4 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
     return "";
 }
 
-}
+} // namespace blink

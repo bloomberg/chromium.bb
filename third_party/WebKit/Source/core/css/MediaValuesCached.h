@@ -91,6 +91,6 @@ protected:
     MediaValuesCachedData m_data;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // MediaValuesCached_h

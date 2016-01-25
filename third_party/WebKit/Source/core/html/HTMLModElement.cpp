@@ -50,4 +50,4 @@ const QualifiedName& HTMLModElement::subResourceAttributeName() const
     return citeAttr;
 }
 
-}
+} // namespace blink

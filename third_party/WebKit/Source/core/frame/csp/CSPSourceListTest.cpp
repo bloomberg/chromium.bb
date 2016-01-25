@@ -177,4 +177,4 @@ TEST_F(CSPSourceListTest, RedirectMatching)
     EXPECT_FALSE(sourceList.matches(KURL(base, "http://example3.com/foo/"), ContentSecurityPolicy::DidRedirect));
 }
 
-} // namespace
+} // namespace blink

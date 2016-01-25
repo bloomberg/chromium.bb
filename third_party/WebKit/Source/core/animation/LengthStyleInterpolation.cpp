@@ -120,7 +120,7 @@ static Length lengthFromInterpolableValue(const InterpolableValue& value, Interp
     return Length(0, Fixed);
 }
 
-}
+} // namespace
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::fromInterpolableValue(const InterpolableValue& value, InterpolationRange range)
 {
@@ -179,4 +179,4 @@ void LengthStyleInterpolation::apply(StyleResolverState& state) const
     applyInterpolableValue(m_id, *m_cachedValue, m_range, state);
 }
 
-}
+} // namespace blink

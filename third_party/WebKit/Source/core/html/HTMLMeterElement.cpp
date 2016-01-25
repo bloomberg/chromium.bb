@@ -243,4 +243,4 @@ DEFINE_TRACE(HTMLMeterElement)
     LabelableElement::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

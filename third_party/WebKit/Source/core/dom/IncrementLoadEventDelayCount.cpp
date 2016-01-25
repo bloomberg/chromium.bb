@@ -30,4 +30,4 @@ void IncrementLoadEventDelayCount::documentChanged(Document& newDocument)
     m_document->decrementLoadEventDelayCount();
     m_document = &newDocument;
 }
-}
+} // namespace blink

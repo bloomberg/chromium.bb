@@ -214,6 +214,6 @@ struct ScrollResult {
 
 typedef unsigned ScrollbarControlPartMask;
 
-}
+} // namespace blink
 
 #endif

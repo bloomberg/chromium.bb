@@ -358,4 +358,4 @@ Node& ComposedTreeTraversal::lastWithinOrSelf(const Node& node)
     return result;
 }
 
-} // namespace
+} // namespace blink

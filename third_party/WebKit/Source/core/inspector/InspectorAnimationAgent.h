@@ -83,6 +83,6 @@ private:
     HashSet<String> m_clearedAnimations;
 };
 
-}
+} // namespace blink
 
 #endif // InspectorAnimationAgent_h

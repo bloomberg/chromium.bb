@@ -134,7 +134,7 @@ private:
     bool m_skipNextNewLine;
 };
 
-}
+} // namespace blink
 
 #endif // InputStreamPreprocessor_h
 

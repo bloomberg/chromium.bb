@@ -148,4 +148,4 @@ bool HTMLSummaryElement::willRespondToMouseClickEvents()
     return HTMLElement::willRespondToMouseClickEvents();
 }
 
-}
+} // namespace blink

@@ -1591,4 +1591,4 @@ DEFINE_TRACE(ApplyStyleCommand)
     CompositeEditCommand::trace(visitor);
 }
 
-}
+} // namespace blink

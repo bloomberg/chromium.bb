@@ -178,4 +178,4 @@ TEST(MediaQuerySetTest, Basic)
     }
 }
 
-} // namespace
+} // namespace blink

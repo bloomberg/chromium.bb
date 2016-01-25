@@ -52,7 +52,6 @@ private:
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridLineNamesValue, isGridLineNamesValue());
-}
-
+} // namespace blink
 
 #endif

@@ -98,6 +98,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue, isStepsTimingFunctionValue());
 
-} // namespace
+} // namespace blink
 
 #endif

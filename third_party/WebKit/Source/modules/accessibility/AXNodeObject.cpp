@@ -2747,4 +2747,4 @@ DEFINE_TRACE(AXNodeObject)
     AXObject::trace(visitor);
 }
 
-} // namespace blin
+} // namespace blink

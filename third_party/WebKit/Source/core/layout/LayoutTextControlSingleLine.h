@@ -98,6 +98,6 @@ private:
     bool hasLineIfEmpty() const override { return true; }
 };
 
-}
+} // namespace blink
 
 #endif

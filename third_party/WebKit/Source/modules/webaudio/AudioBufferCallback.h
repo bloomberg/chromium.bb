@@ -41,6 +41,6 @@ public:
     virtual void handleEvent(DOMException*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // AudioBufferCallback_h

@@ -77,6 +77,6 @@ public:
     ResourceClientType resourceClientType() const override { return expectedType(); }
 };
 
-}
+} // namespace blink
 
 #endif // DocumentResource_h

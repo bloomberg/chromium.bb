@@ -78,5 +78,5 @@ private:
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, isImageResource());
 
-}
+} // namespace blink
 #endif

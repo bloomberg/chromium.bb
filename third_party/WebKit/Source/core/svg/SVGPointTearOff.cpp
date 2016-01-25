@@ -70,4 +70,4 @@ PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPointTearOff::matrixTransform(PassRef
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
-}
+} // namespace blink

@@ -98,5 +98,5 @@ protected:
     inline thisType* to##thisType(const RefPtrWillBeMember<StyleImage>& styleImage) { return to##thisType(styleImage.get()); } \
     typedef int NeedsSemiColonAfterDefineStyleImageTypeCasts
 
-}
+} // namespace blink
 #endif

@@ -145,4 +145,4 @@ void LayoutSVGPath::processMarkerPositions()
     markerData.pathIsDone();
 }
 
-}
+} // namespace blink

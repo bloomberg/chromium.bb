@@ -206,6 +206,6 @@ inline bool operator==(const RangeBoundaryPoint& a, const RangeBoundaryPoint& b)
     return true;
 }
 
-}
+} // namespace blink
 
 #endif

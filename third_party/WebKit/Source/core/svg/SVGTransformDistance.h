@@ -49,6 +49,6 @@ private:
     float m_cy;
     AffineTransform m_transform; // for storing scale, translation or matrix transforms
 };
-}
+} // namespace blink
 
 #endif // SVGTransformDistance_h

@@ -109,4 +109,4 @@ void HTMLOListElement::recalculateItemCount()
     m_shouldRecalculateItemCount = false;
 }
 
-}
+} // namespace blink

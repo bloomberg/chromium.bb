@@ -40,4 +40,4 @@ bool LayoutWordBreak::isWordBreak() const
     return true;
 }
 
-}
+} // namespace blink

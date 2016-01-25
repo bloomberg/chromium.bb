@@ -81,6 +81,6 @@ inline PassOwnPtrWillBeRawPtr<MainThreadTaskRunner> MainThreadTaskRunner::create
     return adoptPtrWillBeNoop(new MainThreadTaskRunner(context));
 }
 
-} // namespace
+} // namespace blink
 
 #endif

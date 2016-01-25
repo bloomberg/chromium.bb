@@ -117,6 +117,6 @@ template <class R, class RR> bool operator!=(const RR* res, const ResourcePtr<R>
 {
     return h.get() != res;
 }
-}
+} // namespace blink
 
 #endif

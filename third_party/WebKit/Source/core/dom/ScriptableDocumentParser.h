@@ -65,6 +65,6 @@ private:
     ParserContentPolicy m_parserContentPolicy;
 };
 
-}
+} // namespace blink
 
 #endif // ScriptableDocumentParser_h

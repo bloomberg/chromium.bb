@@ -92,6 +92,6 @@ private:
     IndentTextOrNot m_indentText;
 };
 
-}
+} // namespace blink
 
 #endif // LineWidth_h

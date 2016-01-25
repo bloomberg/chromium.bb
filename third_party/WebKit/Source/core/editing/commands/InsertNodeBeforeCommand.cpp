@@ -69,4 +69,4 @@ DEFINE_TRACE(InsertNodeBeforeCommand)
     SimpleEditCommand::trace(visitor);
 }
 
-}
+} // namespace blink

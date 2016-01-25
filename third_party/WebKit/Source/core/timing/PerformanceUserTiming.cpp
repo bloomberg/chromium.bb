@@ -73,7 +73,7 @@ const RestrictedKeyMap& restrictedKeyMap()
     return map;
 }
 
-} // namespace anonymous
+} // namespace
 
 UserTiming::UserTiming(PerformanceBase& performance)
     : m_performance(&performance)

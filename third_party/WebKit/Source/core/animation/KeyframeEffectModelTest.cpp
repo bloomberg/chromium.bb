@@ -481,7 +481,7 @@ TEST(AnimationKeyframeEffectModel, ToKeyframeEffectModel)
     EXPECT_TRUE(toAnimatableValueKeyframeEffectModel(baseEffect));
 }
 
-} // namespace
+} // namespace blink
 
 namespace blink {
 

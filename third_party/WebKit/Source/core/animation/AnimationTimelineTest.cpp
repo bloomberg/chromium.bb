@@ -361,4 +361,4 @@ TEST_F(AnimationAnimationTimelineTest, UseAnimationAfterTimelineDeref)
     animation->setStartTime(0);
 }
 
-}
+} // namespace blink

@@ -46,6 +46,6 @@ private:
     LayoutObject* m_queryRootLayoutObject;
 };
 
-}
+} // namespace blink
 
 #endif

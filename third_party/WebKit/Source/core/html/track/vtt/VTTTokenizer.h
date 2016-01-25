@@ -54,6 +54,6 @@ private:
     InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;
 };
 
-}
+} // namespace blink
 
 #endif

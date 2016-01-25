@@ -25,4 +25,4 @@ DeprecatedScheduleStyleRecalcDuringLayout::~DeprecatedScheduleStyleRecalcDuringL
     }
 }
 
-}
+} // namespace blink

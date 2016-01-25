@@ -194,4 +194,4 @@ void MediaValuesCached::setViewportHeight(double height)
     m_data.viewportHeight = height;
 }
 
-} // namespace
+} // namespace blink

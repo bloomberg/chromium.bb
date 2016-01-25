@@ -206,4 +206,4 @@ void ScriptedAnimationController::scheduleAnimationIfNeeded()
         frameView->scheduleAnimation();
 }
 
-}
+} // namespace blink

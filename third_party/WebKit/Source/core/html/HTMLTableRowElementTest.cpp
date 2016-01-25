@@ -55,4 +55,4 @@ TEST(HTMLTableRowElementTest, rowIndex_inUnrelatedElementInTable)
         << "row index -1";
 }
 
-}
+} // namespace

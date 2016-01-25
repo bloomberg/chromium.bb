@@ -45,6 +45,6 @@ public:
     virtual void handleEvent(const EntryHeapVector&) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // EntriesCallback_h

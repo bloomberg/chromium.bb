@@ -186,4 +186,4 @@ DEFINE_TRACE(PluginDocument)
     HTMLDocument::trace(visitor);
 }
 
-}
+} // namespace blink

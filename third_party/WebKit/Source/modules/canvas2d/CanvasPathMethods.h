@@ -60,6 +60,6 @@ protected:
     }
     Path m_path;
 };
-}
+} // namespace blink
 
 #endif

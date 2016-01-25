@@ -44,6 +44,6 @@ public:
     virtual void handleEvent(FileWriter*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // FileWriterCallback_h

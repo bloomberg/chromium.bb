@@ -315,4 +315,4 @@ String MediaQueryExpValue::cssText() const
     return output.toString();
 }
 
-} // namespace
+} // namespace blink

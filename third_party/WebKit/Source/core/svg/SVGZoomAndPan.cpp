@@ -67,4 +67,4 @@ bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end)
     return parseZoomAndPanInternal(start, end, m_zoomAndPan);
 }
 
-}
+} // namespace blink

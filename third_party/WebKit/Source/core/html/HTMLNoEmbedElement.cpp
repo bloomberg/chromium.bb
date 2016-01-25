@@ -53,4 +53,4 @@ bool HTMLNoEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style)
     return Element::layoutObjectIsNeeded(style);
 }
 
-}
+} // namespace blink

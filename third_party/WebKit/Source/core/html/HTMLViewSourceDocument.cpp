@@ -326,4 +326,4 @@ DEFINE_TRACE(HTMLViewSourceDocument)
     HTMLDocument::trace(visitor);
 }
 
-}
+} // namespace blink

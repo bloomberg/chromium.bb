@@ -217,4 +217,4 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
     return true;
 }
 
-}
+} // namespace blink

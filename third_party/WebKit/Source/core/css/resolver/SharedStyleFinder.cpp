@@ -360,4 +360,4 @@ ComputedStyle* SharedStyleFinder::findSharedStyle()
     return shareElement->mutableComputedStyle();
 }
 
-}
+} // namespace blink

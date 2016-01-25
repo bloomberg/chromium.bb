@@ -93,6 +93,6 @@ private:
 
 DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
 
-}
+} // namespace blink
 
 #endif // ImageDocument_h

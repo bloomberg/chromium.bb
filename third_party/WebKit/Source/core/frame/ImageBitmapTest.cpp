@@ -224,4 +224,4 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
     }
 }
 
-} // namespace
+} // namespace blink

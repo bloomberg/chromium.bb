@@ -499,4 +499,4 @@ TEST(CSSTokenizerBlockTest, Basic)
     }
 }
 
-} // namespace
+} // namespace blink

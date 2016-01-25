@@ -115,7 +115,7 @@ inline size_t LinkedStack<T>::size()
     return m_size;
 }
 
-}
+} // namespace WTF
 
 using WTF::LinkedStack;
 

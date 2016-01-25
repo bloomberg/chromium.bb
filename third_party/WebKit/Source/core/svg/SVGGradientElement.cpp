@@ -109,4 +109,4 @@ Vector<Gradient::ColorStop> SVGGradientElement::buildStops()
     return stops;
 }
 
-}
+} // namespace blink

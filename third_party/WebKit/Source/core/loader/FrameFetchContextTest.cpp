@@ -530,4 +530,4 @@ TEST_F(FrameFetchContextTest, DisabledDataSaver)
     EXPECT_STREQ("", resourceRequest.httpHeaderField("Save-Data").utf8().data());
 }
 
-} // namespace
+} // namespace blink

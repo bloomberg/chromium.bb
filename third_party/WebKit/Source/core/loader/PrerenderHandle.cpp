@@ -114,4 +114,4 @@ DEFINE_TRACE(PrerenderHandle)
     DocumentLifecycleObserver::trace(visitor);
 }
 
-}
+} // namespace blink

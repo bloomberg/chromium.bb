@@ -86,6 +86,6 @@ private:
 
 typedef Vector<OwnPtr<XSSInfo>> XSSInfoStream;
 
-}
+} // namespace blink
 
 #endif

@@ -129,4 +129,4 @@ bool LayoutSVGEllipse::hasContinuousStroke() const
     return svgStyle.strokeDashArray()->isEmpty();
 }
 
-}
+} // namespace blink

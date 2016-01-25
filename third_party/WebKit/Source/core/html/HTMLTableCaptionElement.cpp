@@ -48,4 +48,4 @@ void HTMLTableCaptionElement::collectStyleForPresentationAttribute(const Qualifi
     }
 }
 
-}
+} // namespace blink

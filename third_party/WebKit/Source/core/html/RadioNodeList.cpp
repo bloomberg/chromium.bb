@@ -128,4 +128,4 @@ bool RadioNodeList::elementMatches(const Element& element) const
     return checkElementMatchesRadioNodeListFilter(element);
 }
 
-} // namespace
+} // namespace blink

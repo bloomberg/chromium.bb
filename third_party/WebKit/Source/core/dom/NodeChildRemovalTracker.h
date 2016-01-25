@@ -73,6 +73,6 @@ inline bool NodeChildRemovalTracker::isBeingRemoved(Node* node)
     return false;
 }
 
-} // namespace
+} // namespace blink
 
 #endif

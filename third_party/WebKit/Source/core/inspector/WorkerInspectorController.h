@@ -101,6 +101,6 @@ private:
     bool m_paused;
 };
 
-}
+} // namespace blink
 
 #endif // WorkerInspectorController_h

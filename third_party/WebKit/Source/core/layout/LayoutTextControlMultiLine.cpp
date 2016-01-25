@@ -102,4 +102,4 @@ LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(bool relayo
     return placeholderLayoutObject;
 }
 
-}
+} // namespace blink

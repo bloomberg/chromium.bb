@@ -36,4 +36,4 @@ LayoutObject* SVGTextElement::createLayoutObject(const ComputedStyle&)
     return new LayoutSVGText(this);
 }
 
-}
+} // namespace blink

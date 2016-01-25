@@ -54,4 +54,4 @@ bool StyleFlexibleBoxData::operator==(const StyleFlexibleBoxData& o) const
         && m_flexDirection == o.m_flexDirection && m_flexWrap == o.m_flexWrap;
 }
 
-}
+} // namespace blink

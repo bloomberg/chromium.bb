@@ -71,4 +71,4 @@ AffineTransform* SVGElementRareData::animateMotionTransform()
     return &m_animateMotionTransform;
 }
 
-}
+} // namespace blink

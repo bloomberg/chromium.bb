@@ -118,6 +118,6 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTe
     }
 }
 
-}
+} // namespace blink
 
 // vim:ts=4:noet

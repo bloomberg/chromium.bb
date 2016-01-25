@@ -94,4 +94,4 @@ void SVGFitToViewBox::updateViewBox(const FloatRect& rect)
     m_viewBox->baseValue()->setValue(rect);
 }
 
-}
+} // namespace blink

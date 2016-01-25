@@ -179,4 +179,4 @@ PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::rotateFromVector(doub
     return create(copy);
 }
 
-}
+} // namespace blink

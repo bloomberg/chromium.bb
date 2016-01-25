@@ -44,7 +44,7 @@ public:
     virtual ~DragClient() { }
 };
 
-}
+} // namespace blink
 
 #endif // !DragClient_h
 

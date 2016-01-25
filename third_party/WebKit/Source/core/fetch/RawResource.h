@@ -112,6 +112,6 @@ public:
     virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
 };
 
-}
+} // namespace blink
 
 #endif // RawResource_h

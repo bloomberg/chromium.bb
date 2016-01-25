@@ -54,6 +54,6 @@ private:
     String m_message;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

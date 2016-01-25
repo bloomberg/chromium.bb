@@ -49,7 +49,7 @@ void checkCacheQueryOptions(const CacheQueryOptions& options, ExecutionContext* 
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreVary' option yet. See http://crbug.com/499216"));
 }
 
-}
+} // namespace
 
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheStorage::Callbacks final : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {

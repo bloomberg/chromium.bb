@@ -104,4 +104,4 @@ TEST_F(AnimationDeferredLegacyStyleInterpolationTest, BackdropFilter)
     EXPECT_FALSE(test(CSSPropertyBackdropFilter, "sepia(1)"));
     EXPECT_TRUE(test(CSSPropertyBackdropFilter, "url(#svgfilter)"));
 }
-}
+} // namespace blink

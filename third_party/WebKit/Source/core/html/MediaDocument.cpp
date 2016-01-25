@@ -151,4 +151,4 @@ void MediaDocument::defaultEventHandler(Event* event)
     }
 }
 
-}
+} // namespace blink

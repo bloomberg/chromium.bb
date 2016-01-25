@@ -189,4 +189,4 @@ void CSSStyleSheetResource::saveParsedStyleSheet(PassRefPtrWillBeRawPtr<StyleShe
     setDecodedSize(m_parsedStyleSheetCache->estimatedSizeInBytes());
 }
 
-}
+} // namespace blink

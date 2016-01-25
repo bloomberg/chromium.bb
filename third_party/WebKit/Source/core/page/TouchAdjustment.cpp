@@ -62,9 +62,9 @@ private:
     FloatQuad m_quad;
 };
 
-}
+} // namespace TouchAdjustment
 
-}
+} // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::TouchAdjustment::SubtargetGeometry)
 

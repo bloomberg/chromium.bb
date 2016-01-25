@@ -533,4 +533,4 @@ ResourceRequest& ResourceLoader::applyOptions(ResourceRequest& request) const
     return request;
 }
 
-}
+} // namespace blink

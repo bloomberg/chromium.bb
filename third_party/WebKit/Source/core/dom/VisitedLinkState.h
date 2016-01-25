@@ -68,7 +68,7 @@ private:
     HashSet<LinkHash, LinkHashHash> m_linksCheckedForVisitedState;
 };
 
-}
+} // namespace blink
 
 #endif
 

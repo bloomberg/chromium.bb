@@ -151,4 +151,4 @@ ExecutionContext* MediaQueryList::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-}
+} // namespace blink

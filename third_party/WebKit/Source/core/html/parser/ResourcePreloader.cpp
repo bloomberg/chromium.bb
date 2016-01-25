@@ -17,4 +17,4 @@ void ResourcePreloader::takeAndPreload(PreloadRequestStream& r)
         preload(it->release(), networkHintsInterface);
 }
 
-}
+} // namespace blink

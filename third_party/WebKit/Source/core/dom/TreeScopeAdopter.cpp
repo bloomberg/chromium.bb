@@ -149,4 +149,4 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDoc
     ASSERT(didMoveToNewDocumentWasCalled);
 }
 
-}
+} // namespace blink

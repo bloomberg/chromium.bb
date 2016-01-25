@@ -59,7 +59,7 @@ bool isValidBlobType(const String& type)
     return true;
 }
 
-}
+} // namespace
 
 const long long BlobDataItem::toEndOfFile = -1;
 

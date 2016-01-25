@@ -164,7 +164,6 @@ private:
     String m_evalDisabledErrorMessage;
 };
 
-
-} // namespace
+} // namespace blink
 
 #endif

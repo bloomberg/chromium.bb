@@ -141,4 +141,4 @@ StyleSheet* StyleSheetCandidate::sheet() const
     return 0;
 }
 
-}
+} // namespace blink

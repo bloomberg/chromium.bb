@@ -56,4 +56,4 @@ PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructo
     return audio.release();
 }
 
-}
+} // namespace blink

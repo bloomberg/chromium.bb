@@ -130,6 +130,6 @@ private:
     unsigned m_flags;
 };
 
-}
+} // namespace blink
 
 #endif

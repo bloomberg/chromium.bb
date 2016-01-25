@@ -104,4 +104,4 @@ Element* SVGURIReference::targetElementFromIRIString(const String& iri, const Tr
     return treeScope.getElementById(id);
 }
 
-}
+} // namespace blink

@@ -91,4 +91,4 @@ void LayoutSearchField::centerContainerIfNeeded(LayoutBox* containerLayoutObject
     containerLayoutObject->setLogicalTop(containerLayoutObject->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
 }
 
-}
+} // namespace blink

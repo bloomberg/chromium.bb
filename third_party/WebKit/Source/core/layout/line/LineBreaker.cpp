@@ -108,4 +108,4 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo
     return context.handleEndOfLine();
 }
 
-}
+} // namespace blink

@@ -213,6 +213,6 @@ private:
     bool m_isParsingAtLineNumber;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -53,6 +53,6 @@ private:
     String m_text;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

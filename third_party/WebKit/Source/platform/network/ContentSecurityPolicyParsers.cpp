@@ -66,4 +66,4 @@ bool isMediaTypeCharacter(UChar c)
     return !isASCIISpace(c) && c != '/';
 }
 
-} // namespace
+} // namespace blink

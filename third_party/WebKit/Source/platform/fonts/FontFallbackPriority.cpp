@@ -14,4 +14,4 @@ bool isNonTextFallbackPriority(FontFallbackPriority fallbackPriority)
         || fallbackPriority == FontFallbackPriority::EmojiEmoji;
 };
 
-}
+} // namespace blink

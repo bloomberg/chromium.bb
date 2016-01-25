@@ -288,6 +288,6 @@ inline bool isSVGSMILElement(const SVGElement& element)
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 
-}
+} // namespace blink
 
 #endif // SVGSMILElement_h

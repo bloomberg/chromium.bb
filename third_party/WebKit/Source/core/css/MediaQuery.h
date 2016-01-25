@@ -78,6 +78,6 @@ private:
     String serialize() const;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

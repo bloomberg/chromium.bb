@@ -212,6 +212,6 @@ private:
     }
 };
 
-}
+} // namespace blink
 
 #endif // LinkPreloadResourceClients_h

@@ -45,6 +45,6 @@ private:
     WildcardDisposition m_portWildcard;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

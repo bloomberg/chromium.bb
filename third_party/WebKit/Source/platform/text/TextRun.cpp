@@ -57,4 +57,4 @@ void TextRun::setText(const String& string)
         m_data.characters16 = string.characters16();
 }
 
-}
+} // namespace blink

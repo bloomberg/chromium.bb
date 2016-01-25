@@ -143,6 +143,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGShape, isSVGShape());
 
-}
+} // namespace blink
 
 #endif

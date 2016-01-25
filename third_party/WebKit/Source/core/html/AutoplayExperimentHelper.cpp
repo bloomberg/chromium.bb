@@ -363,4 +363,4 @@ AutoplayExperimentHelper::Mode AutoplayExperimentHelper::fromString(const String
     return value;
 }
 
-}
+} // namespace blink

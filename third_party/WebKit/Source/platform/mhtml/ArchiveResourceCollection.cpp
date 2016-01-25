@@ -111,4 +111,4 @@ DEFINE_TRACE(ArchiveResourceCollection)
 #endif
 }
 
-}
+} // namespace blink

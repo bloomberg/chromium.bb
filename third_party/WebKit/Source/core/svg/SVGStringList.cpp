@@ -171,4 +171,4 @@ float SVGStringList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, 
     return -1.0f;
 }
 
-}
+} // namespace blink

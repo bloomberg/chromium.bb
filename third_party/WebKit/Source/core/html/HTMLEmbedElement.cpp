@@ -195,4 +195,4 @@ bool HTMLEmbedElement::isExposed() const
     return true;
 }
 
-}
+} // namespace blink

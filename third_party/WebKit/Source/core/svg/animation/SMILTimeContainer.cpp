@@ -562,4 +562,4 @@ DEFINE_TRACE(SMILTimeContainer)
     visitor->trace(m_ownerSVGElement);
 }
 
-}
+} // namespace blink

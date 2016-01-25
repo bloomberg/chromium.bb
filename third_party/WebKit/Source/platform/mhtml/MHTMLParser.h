@@ -80,6 +80,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive>> m_frames;
 };
 
-}
+} // namespace blink
 
 #endif

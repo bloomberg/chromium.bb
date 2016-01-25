@@ -90,4 +90,4 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
     }
 }
 
-}
+} // namespace blink

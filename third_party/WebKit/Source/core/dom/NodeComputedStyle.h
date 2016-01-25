@@ -66,5 +66,5 @@ inline const ComputedStyle& Node::computedStyleRef() const
     return *style;
 }
 
-}
+} // namespace blink
 #endif // NodeComputedStyle_h

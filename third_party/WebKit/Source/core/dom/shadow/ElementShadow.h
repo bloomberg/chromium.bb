@@ -167,6 +167,6 @@ inline void ElementShadow::distributeIfNeeded()
     m_needsDistributionRecalc = false;
 }
 
-} // namespace
+} // namespace blink
 
 #endif

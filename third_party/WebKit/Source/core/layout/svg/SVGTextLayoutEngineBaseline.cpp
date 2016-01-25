@@ -147,4 +147,4 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVertic
     }
 }
 
-}
+} // namespace blink

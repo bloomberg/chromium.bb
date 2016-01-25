@@ -37,4 +37,4 @@ PassRefPtr<LightSource> SVGFEPointLightElement::lightSource(Filter* filter) cons
     return PointLightSource::create(filter->resolve3dPoint(position()));
 }
 
-}
+} // namespace blink

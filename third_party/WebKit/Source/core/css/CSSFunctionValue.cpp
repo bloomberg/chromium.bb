@@ -18,4 +18,4 @@ String CSSFunctionValue::customCSSText() const
     return result.toString();
 }
 
-}
+} // namespace blink

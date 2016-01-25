@@ -65,4 +65,4 @@ TEST_F(CrossThreadTaskTest, CreateForFunctionWithExecutionContext)
     EXPECT_EQ(2, GCObject::s_counter);
 }
 
-}
+} // namespace blink

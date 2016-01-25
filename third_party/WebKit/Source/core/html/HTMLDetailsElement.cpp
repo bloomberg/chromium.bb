@@ -180,4 +180,4 @@ bool HTMLDetailsElement::isInteractiveContent() const
     return true;
 }
 
-}
+} // namespace blink

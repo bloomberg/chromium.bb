@@ -49,6 +49,6 @@ private:
     DocumentAnimations() { }
 };
 
-} // namespace
+} // namespace blink
 
 #endif

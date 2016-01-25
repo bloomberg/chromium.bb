@@ -118,6 +118,6 @@ private:
     PassOwnPtrWillBeRawPtr<SVGPendingElements> removePendingResourceForRemoval(const AtomicString&);
 };
 
-}
+} // namespace blink
 
 #endif

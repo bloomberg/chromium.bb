@@ -280,4 +280,4 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     frameRequest.resourceRequest().setURL(requestURL());
 }
 
-}
+} // namespace blink

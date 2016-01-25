@@ -62,7 +62,7 @@ public:
     int intraPriorityValue;
 };
 
-}
+} // namespace blink
 
 #endif
 

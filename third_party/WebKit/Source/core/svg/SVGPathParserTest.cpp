@@ -141,6 +141,6 @@ TEST(SVGPathParserTest, Simple)
 #undef MALFORMED
 #undef VALID
 
-}
+} // namespace
 
 } // namespace blink

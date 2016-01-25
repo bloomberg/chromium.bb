@@ -235,4 +235,4 @@ DEFINE_TRACE(SVGTextLayoutAttributesBuilder::TextPosition)
     visitor->trace(element);
 }
 
-}
+} // namespace blink

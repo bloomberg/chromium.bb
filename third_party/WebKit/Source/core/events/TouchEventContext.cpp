@@ -62,4 +62,4 @@ DEFINE_TRACE(TouchEventContext)
     visitor->trace(m_changedTouches);
 }
 
-}
+} // namespace blink

@@ -46,6 +46,6 @@ public:
     virtual void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) = 0;
 };
 
-}
+} // namespace blink
 
 #endif // TextCheckerClient_h

@@ -191,4 +191,4 @@ DEFINE_TRACE(CSSFontSelector)
     FontSelector::trace(visitor);
 }
 
-}
+} // namespace blink

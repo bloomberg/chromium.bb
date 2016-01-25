@@ -681,4 +681,4 @@ DEFINE_TRACE(StyleSheetContents)
 #endif
 }
 
-}
+} // namespace blink

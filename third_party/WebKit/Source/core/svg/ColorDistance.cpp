@@ -38,4 +38,4 @@ float ColorDistance::distance(const Color& fromColor, const Color& toColor)
     return sqrtf(redDiff * redDiff + blueDiff * blueDiff + greenDiff * greenDiff);
 }
 
-}
+} // namespace blink

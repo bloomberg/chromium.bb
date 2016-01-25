@@ -284,4 +284,4 @@ void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const 
     }
 }
 
-} // namespace
+} // namespace blink

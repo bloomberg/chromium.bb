@@ -91,6 +91,6 @@ private:
     AtomicString m_classes;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -64,4 +64,4 @@ void LayoutSVGResourceLinearGradient::buildGradient(GradientData* gradientData) 
     addStops(gradientData, attributes.stops());
 }
 
-}
+} // namespace blink

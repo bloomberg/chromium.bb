@@ -52,4 +52,4 @@ double SQLValue::number() const
     return m_number;
 }
 
-}
+} // namespace blink

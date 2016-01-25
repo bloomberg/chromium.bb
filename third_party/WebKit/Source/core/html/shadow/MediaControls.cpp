@@ -755,4 +755,4 @@ DEFINE_TRACE(MediaControls)
     HTMLDivElement::trace(visitor);
 }
 
-}
+} // namespace blink

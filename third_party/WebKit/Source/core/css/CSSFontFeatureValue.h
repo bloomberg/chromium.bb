@@ -55,6 +55,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFeatureValue, isFontFeatureValue());
 
-} // namespace
+} // namespace blink
 
 #endif

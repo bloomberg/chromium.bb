@@ -20,4 +20,4 @@ void DraggedIsolatedFileSystem::prepareForDataObject(DataObject* dataObject, con
     (*s_prepareCallback)(dataObject, filesystemId);
 }
 
-}
+} // namespace blink

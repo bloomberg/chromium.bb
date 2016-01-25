@@ -157,6 +157,6 @@ private:
     OrdinalNumber m_column;
 };
 
-}
+} // namespace blink
 
 #endif

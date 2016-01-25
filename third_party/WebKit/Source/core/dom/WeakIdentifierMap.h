@@ -154,6 +154,6 @@ private:
         DEFINE_STATIC_LOCAL(RefType, mapInstance, (new WeakIdentifierMap<T, ##__VA_ARGS__>())); \
         return *mapInstance; \
     }
-}
+} // namespace blink
 
 #endif // WeakIdentifierMap_h

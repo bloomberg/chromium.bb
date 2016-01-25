@@ -73,7 +73,7 @@ int restrictError(int error)
     }
 }
 
-}
+} // namespace
 
 namespace blink {
 

@@ -40,4 +40,4 @@ bool CSSContentDistributionValue::equals(const CSSContentDistributionValue& othe
     return m_distribution == other.m_distribution && m_position == other.m_position && m_overflow == other.m_overflow;
 }
 
-}
+} // namespace blink

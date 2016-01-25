@@ -70,4 +70,4 @@ void SubtreeLayoutScope::recordObjectMarkedForLayout(LayoutObject* layoutObject)
 #endif
 }
 
-}
+} // namespace blink

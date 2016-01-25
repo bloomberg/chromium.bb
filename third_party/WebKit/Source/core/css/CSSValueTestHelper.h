@@ -52,7 +52,7 @@ namespace internal {
 char(&IsNullLiteralHelper(const blink::CSSValue&))[2];
 
 }
-}
+} // namespace testing
 
 namespace blink {
 
@@ -71,6 +71,6 @@ inline void PrintTo(const CSSPrimitiveValue& cssValue, ::std::ostream* os, const
     PrintTo(static_cast<const CSSValue&>(cssValue), os, typeName);
 }
 
-}
+} // namespace blink
 
 #endif

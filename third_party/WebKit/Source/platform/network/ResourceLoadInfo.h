@@ -47,6 +47,6 @@ struct ResourceLoadInfo : RefCounted<ResourceLoadInfo> {
     String npnNegotiatedProtocol;
 };
 
-}
+} // namespace blink
 
 #endif

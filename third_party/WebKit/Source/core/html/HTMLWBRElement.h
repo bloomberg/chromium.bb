@@ -47,6 +47,6 @@ private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

@@ -148,4 +148,4 @@ void invalidateFilterPrimitiveParent(SVGElement* element)
     LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(layoutObject, false);
 }
 
-}
+} // namespace blink

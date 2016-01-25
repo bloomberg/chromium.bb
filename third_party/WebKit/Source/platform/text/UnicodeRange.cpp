@@ -422,4 +422,4 @@ unsigned findCharUnicodeRange(UChar32 ch)
     return gUnicodeTertiaryRangeTable[(ch - 0x0700) >> 7];
 }
 
-}
+} // namespace blink

@@ -308,4 +308,4 @@ bool SVGPathBlender::blendAnimatedPath(BlendState& blendState)
     return true;
 }
 
-}
+} // namespace blink

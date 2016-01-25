@@ -20,6 +20,6 @@ public:
 
     virtual void handleEvent(IdleDeadline*) = 0;
 };
-}
+} // namespace blink
 
 #endif // IdleRequestCallback_h

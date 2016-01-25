@@ -59,4 +59,4 @@ void CanvasGradient::addColorStop(float value, const String& colorString, Except
     m_gradient->addColorStop(value, color);
 }
 
-} // namespace
+} // namespace blink

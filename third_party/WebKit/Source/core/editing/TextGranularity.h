@@ -42,6 +42,6 @@ enum TextGranularity {
     DocumentBoundary
 };
 
-}
+} // namespace blink
 
 #endif

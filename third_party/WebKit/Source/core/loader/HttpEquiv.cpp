@@ -116,4 +116,4 @@ void HttpEquiv::processHttpEquivXFrameOptions(Document& document, const AtomicSt
         frame->navigate(document, SecurityOrigin::urlWithUniqueSecurityOrigin(), true, UserGestureStatus::None);
 }
 
-}
+} // namespace blink

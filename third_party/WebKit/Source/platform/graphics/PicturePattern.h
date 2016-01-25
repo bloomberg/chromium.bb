@@ -24,6 +24,6 @@ private:
     RefPtr<const SkPicture> m_tilePicture;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

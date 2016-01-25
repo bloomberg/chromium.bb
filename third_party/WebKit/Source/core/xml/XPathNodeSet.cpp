@@ -278,5 +278,5 @@ Node* NodeSet::anyNode() const
     return m_nodes.at(0).get();
 }
 
-}
-}
+} // namespace XPath
+} // namespace blink

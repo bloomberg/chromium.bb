@@ -116,7 +116,7 @@ inline bool isSelectScopeMarker(HTMLStackItem* item)
         && !item->hasTagName(optionTag);
 }
 
-}
+} // namespace
 
 HTMLElementStack::ElementRecord::ElementRecord(PassRefPtrWillBeRawPtr<HTMLStackItem> item, PassOwnPtrWillBeRawPtr<ElementRecord> next)
     : m_item(item)
@@ -633,4 +633,4 @@ void HTMLElementStack::show()
 
 #endif
 
-}
+} // namespace blink

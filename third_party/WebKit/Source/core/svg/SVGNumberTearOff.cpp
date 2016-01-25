@@ -52,4 +52,4 @@ void SVGNumberTearOff::setValue(float f, ExceptionState& exceptionState)
     commitChange();
 }
 
-}
+} // namespace blink

@@ -51,6 +51,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlMultiLine, isTextArea());
 
-}
+} // namespace blink
 
 #endif

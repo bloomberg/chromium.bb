@@ -43,6 +43,6 @@ public:
     virtual bool handleEvent(SQLTransaction*, SQLError*) = 0;
 };
 
-}
+} // namespace blink
 
 #endif // SQLStatementErrorCallback_h

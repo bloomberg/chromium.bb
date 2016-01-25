@@ -21,6 +21,6 @@ private:
     const FontTraits& m_fontTraits;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -72,6 +72,6 @@ private:
     size_t m_separatorIndex;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -73,6 +73,6 @@ private:
     InterpolationQuality m_interpolationQuality;
 };
 
-}
+} // namespace blink
 
 #endif // DragImage_h

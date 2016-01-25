@@ -144,5 +144,5 @@ String Value::toString() const
     return String();
 }
 
-}
-}
+} // namespace XPath
+} // namespace blink

@@ -51,6 +51,6 @@ private:
     Vector<MarkerPosition> m_markerPositions;
 };
 
-}
+} // namespace blink
 
 #endif

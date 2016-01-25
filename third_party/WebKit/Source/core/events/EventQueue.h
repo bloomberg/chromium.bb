@@ -47,6 +47,6 @@ public:
     virtual void close() = 0;
 };
 
-}
+} // namespace blink
 
 #endif // EventQueue_h

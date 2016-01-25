@@ -60,5 +60,5 @@ private:
     RefPtrWillBeMember<PagePopupController> m_controller;
 };
 
-}
+} // namespace blink
 #endif

@@ -37,6 +37,6 @@ private:
 
 DEFINE_TYPE_CASTS(LegacyStyleInterpolation, Interpolation, value, value->isLegacyStyleInterpolation(), value.isLegacyStyleInterpolation());
 
-}
+} // namespace blink
 
 #endif

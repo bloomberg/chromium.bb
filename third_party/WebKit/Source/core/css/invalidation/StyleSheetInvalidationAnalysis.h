@@ -57,6 +57,6 @@ private:
     bool m_dirtiesAllStyle = false;
 };
 
-}
+} // namespace blink
 
 #endif

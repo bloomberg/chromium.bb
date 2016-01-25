@@ -197,6 +197,6 @@ private:
     String m_sourceMapURL;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

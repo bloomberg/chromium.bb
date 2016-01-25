@@ -57,7 +57,7 @@ private:
     RawPtrWillBeMember<HTMLImport> m_import;
 };
 
-}
+} // namespace blink
 
 #endif // HTMLImportStateResolver_h
 

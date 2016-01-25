@@ -40,4 +40,4 @@ PassRefPtrWillBeRawPtr<DocumentParser> TextDocument::createParser()
     return TextDocumentParser::create(*this, parserSynchronizationPolicy());
 }
 
-}
+} // namespace blink

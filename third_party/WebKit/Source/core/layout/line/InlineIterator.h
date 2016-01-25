@@ -781,6 +781,6 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
     m_status.eor = WTF::Unicode::OtherNeutral;
 }
 
-}
+} // namespace blink
 
 #endif // InlineIterator_h

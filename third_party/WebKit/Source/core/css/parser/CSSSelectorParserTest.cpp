@@ -271,4 +271,4 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix)
     }
 }
 
-} // namespace
+} // namespace blink

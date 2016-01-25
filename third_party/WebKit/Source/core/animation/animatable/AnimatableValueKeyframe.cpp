@@ -63,4 +63,4 @@ PassOwnPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::Property
     return adoptPtr(new AnimatableValueKeyframe::PropertySpecificKeyframe(offset, easing, AnimatableValue::neutralValue(), EffectModel::CompositeAdd));
 }
 
-}
+} // namespace blink

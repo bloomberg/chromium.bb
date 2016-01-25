@@ -98,5 +98,5 @@ private:
     RefPtrWillBeMember<MediaValues> m_mediaValues;
 };
 
-} // namespace
+} // namespace blink
 #endif

@@ -245,4 +245,4 @@ PassRefPtr<StringImpl> LayoutSVGInlineText::originalText() const
     return applySVGWhitespaceRules(result, style() && style()->whiteSpace() == PRE);
 }
 
-}
+} // namespace blink

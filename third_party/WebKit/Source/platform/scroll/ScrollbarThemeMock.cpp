@@ -70,5 +70,4 @@ void ScrollbarThemeMock::paintThumb(GraphicsContext& context, const ScrollbarThe
     context.fillRect(thumbRect, Color::darkGray);
 }
 
-}
-
+} // namespace blink

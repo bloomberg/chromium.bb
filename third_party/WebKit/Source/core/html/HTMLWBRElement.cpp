@@ -49,4 +49,4 @@ LayoutObject* HTMLWBRElement::createLayoutObject(const ComputedStyle& style)
     return new LayoutWordBreak(this);
 }
 
-}
+} // namespace blink

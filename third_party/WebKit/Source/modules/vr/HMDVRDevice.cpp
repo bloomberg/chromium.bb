@@ -20,7 +20,7 @@ VREye stringToVREye(const String& whichEye)
     return VREyeNone;
 }
 
-} // namepspace
+} // namespace
 
 HMDVRDevice::HMDVRDevice(VRHardwareUnit* hardwareUnit, unsigned deviceId)
     : VRDevice(hardwareUnit, deviceId)

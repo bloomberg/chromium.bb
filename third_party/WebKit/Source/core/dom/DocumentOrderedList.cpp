@@ -69,5 +69,4 @@ DEFINE_TRACE(DocumentOrderedList)
 #endif
 }
 
-}
-
+} // namespace blink

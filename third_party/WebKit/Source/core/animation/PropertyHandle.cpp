@@ -37,4 +37,4 @@ unsigned PropertyHandle::hash() const
     }
 }
 
-}
+} // namespace blink

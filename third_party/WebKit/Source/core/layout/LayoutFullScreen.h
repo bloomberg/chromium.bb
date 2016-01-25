@@ -58,6 +58,6 @@ protected:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFullScreen, isLayoutFullScreen());
 
-}
+} // namespace blink
 
 #endif

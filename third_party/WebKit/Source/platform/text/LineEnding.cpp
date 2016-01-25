@@ -151,7 +151,7 @@ void internalNormalizeLineEndingsToCRLF(const CString& from, OutputBuffer& buffe
     }
 }
 
-};
+} // namespace;
 
 namespace blink {
 

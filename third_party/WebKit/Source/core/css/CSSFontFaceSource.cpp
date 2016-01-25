@@ -68,4 +68,4 @@ DEFINE_TRACE(CSSFontFaceSource)
     visitor->trace(m_face);
 }
 
-}
+} // namespace blink

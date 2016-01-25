@@ -766,5 +766,5 @@ Function* createFunction(const String& name, HeapVector<Member<Expression>>& arg
     return function;
 }
 
-}
-}
+} // namespace XPath
+} // namespace blink

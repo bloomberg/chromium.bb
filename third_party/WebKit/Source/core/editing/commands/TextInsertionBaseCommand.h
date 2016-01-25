@@ -66,6 +66,6 @@ void forEachLineInString(const String& string, const LineOperation& operation)
     }
 }
 
-}
+} // namespace blink
 
 #endif

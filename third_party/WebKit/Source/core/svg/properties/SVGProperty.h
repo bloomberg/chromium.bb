@@ -116,6 +116,6 @@ private:
         return static_pointer_cast<thisType>(base.release());\
     }
 
-}
+} // namespace blink
 
 #endif // SVGProperty_h

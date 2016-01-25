@@ -52,4 +52,4 @@ bool SVGGElement::layoutObjectIsNeeded(const ComputedStyle&)
     return parentOrShadowHostElement() && parentOrShadowHostElement()->isSVGElement();
 }
 
-}
+} // namespace blink

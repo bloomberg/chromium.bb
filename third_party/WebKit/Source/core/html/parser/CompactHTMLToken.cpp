@@ -100,4 +100,4 @@ bool CompactHTMLToken::isSafeToSendToAnotherThread() const
     return m_data.isSafeToSendToAnotherThread();
 }
 
-}
+} // namespace blink

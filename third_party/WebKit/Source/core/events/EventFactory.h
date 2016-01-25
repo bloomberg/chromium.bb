@@ -55,6 +55,6 @@ public:
     PassRefPtrWillBeRawPtr<Event> create(const String& eventType) override;
 };
 
-}
+} // namespace blink
 
 #endif

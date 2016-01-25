@@ -44,4 +44,4 @@ const char PlatformInstrumentation::LazyPixelRef[] = "LazyPixelRef";
 const char PlatformInstrumentation::ImageTypeArgument[] = "imageType";
 const char PlatformInstrumentation::CachedArgument[] = "cached";
 
-}
+} // namespace blink

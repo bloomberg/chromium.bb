@@ -302,4 +302,4 @@ LayoutSVGShapeRareData& LayoutSVGShape::ensureRareData() const
     return *m_rareData.get();
 }
 
-}
+} // namespace blink

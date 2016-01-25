@@ -102,4 +102,4 @@ const AtomicString& HTMLTableColElement::width() const
     return getAttribute(widthAttr);
 }
 
-}
+} // namespace blink

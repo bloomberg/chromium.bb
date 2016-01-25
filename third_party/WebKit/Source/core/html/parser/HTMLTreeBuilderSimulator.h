@@ -71,6 +71,6 @@ private:
     State m_namespaceStack;
 };
 
-}
+} // namespace blink
 
 #endif

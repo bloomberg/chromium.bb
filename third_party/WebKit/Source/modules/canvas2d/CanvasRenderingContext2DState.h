@@ -227,6 +227,6 @@ private:
     ClipList m_clipList;
 };
 
-} // blink
+} // namespace blink
 
 #endif

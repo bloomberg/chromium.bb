@@ -164,6 +164,6 @@ private:
     ScopedPersistent<v8::Context> m_context;
 };
 
-}
+} // namespace blink
 
 #endif // ScriptState_h

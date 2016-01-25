@@ -367,4 +367,4 @@ void LayoutScrollbar::invalidateDisplayItemClientsOfScrollbarParts(const LayoutB
         part.value->invalidateDisplayItemClientsIncludingNonCompositingDescendants(&paintInvalidationContainer, PaintInvalidationScroll);
 }
 
-}
+} // namespace blink

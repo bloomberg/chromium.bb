@@ -53,4 +53,4 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     return request;
 }
 
-}
+} // namespace blink

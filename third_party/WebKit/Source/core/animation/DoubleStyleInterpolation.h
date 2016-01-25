@@ -49,5 +49,5 @@ private:
 
     friend class AnimationDoubleStyleInterpolationTest;
 };
-}
+} // namespace blink
 #endif

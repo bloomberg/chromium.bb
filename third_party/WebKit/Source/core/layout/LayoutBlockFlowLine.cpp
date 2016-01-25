@@ -2096,4 +2096,4 @@ PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(PaintInvalidati
     return reason;
 }
 
-}
+} // namespace blink

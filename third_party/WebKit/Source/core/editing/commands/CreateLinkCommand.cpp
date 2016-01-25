@@ -54,4 +54,4 @@ void CreateLinkCommand::doApply()
     }
 }
 
-}
+} // namespace blink

@@ -984,6 +984,6 @@ inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBrea
     return indentText;
 }
 
-}
+} // namespace blink
 
 #endif // BreakingContextInlineHeaders_h

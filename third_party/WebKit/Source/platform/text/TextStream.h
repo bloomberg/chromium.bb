@@ -100,6 +100,6 @@ TextStream& operator<<(TextStream& ts, const Vector<Item>& vector)
     return ts;
 }
 
-}
+} // namespace blink
 
 #endif

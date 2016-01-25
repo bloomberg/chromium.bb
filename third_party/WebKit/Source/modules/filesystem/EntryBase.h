@@ -70,6 +70,6 @@ protected:
     mutable String m_cachedURL;
 };
 
-}
+} // namespace blink
 
 #endif // EntryBase_h

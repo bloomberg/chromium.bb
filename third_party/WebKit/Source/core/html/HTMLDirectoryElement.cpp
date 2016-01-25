@@ -35,4 +35,4 @@ inline HTMLDirectoryElement::HTMLDirectoryElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLDirectoryElement)
 
-}
+} // namespace blink

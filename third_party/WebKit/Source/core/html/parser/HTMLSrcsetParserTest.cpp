@@ -125,4 +125,4 @@ TEST(HTMLSrcsetParserTest, Basic)
     }
 }
 
-} // namespace
+} // namespace blink

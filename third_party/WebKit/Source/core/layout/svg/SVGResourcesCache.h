@@ -64,6 +64,6 @@ private:
     CacheMap m_cache;
 };
 
-}
+} // namespace blink
 
 #endif

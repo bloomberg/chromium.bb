@@ -224,4 +224,4 @@ void FormDataEncoder::encodeStringAsFormData(Vector<char>& buffer, const CString
     }
 }
 
-}
+} // namespace blink

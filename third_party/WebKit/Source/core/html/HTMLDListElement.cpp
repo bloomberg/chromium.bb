@@ -35,4 +35,4 @@ inline HTMLDListElement::HTMLDListElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLDListElement)
 
-}
+} // namespace blink

@@ -83,4 +83,4 @@ HTMLFormElement* HTMLLegendElement::form() const
     return toHTMLFieldSetElement(fieldset)->formOwner();
 }
 
-} // namespace
+} // namespace blink

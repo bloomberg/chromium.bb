@@ -77,6 +77,6 @@ private:
 // plugin's mime type for this extension. Otherwise returns an empty string.
 PLATFORM_EXPORT String getPluginMimeTypeFromExtension(const String& extension);
 
-}
+} // namespace blink
 
 #endif

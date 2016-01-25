@@ -39,6 +39,6 @@ void setCookies(Document*, const KURL&, const String& cookieString);
 bool cookiesEnabled(const Document*);
 String cookieRequestHeaderFieldValue(const Document*, const KURL&);
 
-}
+} // namespace blink
 
 #endif

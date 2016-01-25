@@ -75,6 +75,6 @@ inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style)
 
 DEFINE_ELEMENT_TYPE_CASTS(PseudoElement, isPseudoElement());
 
-} // namespace
+} // namespace blink
 
 #endif

@@ -80,6 +80,6 @@ private:
     String m_frameName;
 };
 
-}
+} // namespace blink
 
 #endif // ArchiveResource_h

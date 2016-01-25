@@ -236,4 +236,4 @@ void HTMLAreaElement::updateFocusAppearance(SelectionBehaviorOnFocus selectionBe
         imageElement->updateFocusAppearance(selectionBehavior);
 }
 
-}
+} // namespace blink

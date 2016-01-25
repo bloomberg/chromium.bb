@@ -212,4 +212,4 @@ float SVGTransformDistance::distance() const
     return 0;
 }
 
-}
+} // namespace blink

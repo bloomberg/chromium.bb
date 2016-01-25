@@ -68,4 +68,4 @@ ImportedDocumentStyleSheetCollector::ImportedDocumentStyleSheetCollector(Documen
 {
 }
 
-}
+} // namespace blink

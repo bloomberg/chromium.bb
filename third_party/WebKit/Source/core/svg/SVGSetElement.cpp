@@ -38,4 +38,4 @@ void SVGSetElement::updateAnimationMode()
     // See: http://www.w3.org/TR/SVG/single-page.html#animate-SetElement
 }
 
-}
+} // namespace blink

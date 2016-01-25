@@ -60,6 +60,6 @@ private:
     mutable int m_index;
 };
 
-}
+} // namespace blink
 
 #endif

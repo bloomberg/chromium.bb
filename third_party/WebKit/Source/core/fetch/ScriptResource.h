@@ -95,6 +95,6 @@ private:
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);
 
-}
+} // namespace blink
 
 #endif

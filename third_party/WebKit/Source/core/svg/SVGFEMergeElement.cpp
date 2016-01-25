@@ -47,4 +47,4 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* 
     return effect.release();
 }
 
-}
+} // namespace blink

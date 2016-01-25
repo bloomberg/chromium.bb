@@ -50,5 +50,5 @@ protected:
     virtual ~PagePopup() { }
 };
 
-}
+} // namespace blink
 #endif

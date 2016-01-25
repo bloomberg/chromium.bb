@@ -45,6 +45,6 @@ public:
     static VideoPlaybackQuality* getVideoPlaybackQuality(HTMLVideoElement&);
 };
 
-}
+} // namespace blink
 
 #endif

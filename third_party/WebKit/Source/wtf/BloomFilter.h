@@ -134,7 +134,7 @@ bool BloomFilter<keyBits>::isClear() const
 }
 #endif
 
-}
+} // namespace WTF
 
 using WTF::BloomFilter;
 

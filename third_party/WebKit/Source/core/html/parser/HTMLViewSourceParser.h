@@ -63,6 +63,6 @@ private:
     XSSAuditor m_xssAuditor;
 };
 
-}
+} // namespace blink
 
 #endif

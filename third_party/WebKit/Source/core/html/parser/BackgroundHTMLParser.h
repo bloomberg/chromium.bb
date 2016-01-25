@@ -126,6 +126,6 @@ private:
     bool m_startingScript;
 };
 
-}
+} // namespace blink
 
 #endif

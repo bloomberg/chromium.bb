@@ -194,4 +194,4 @@ const BorderValue& LayoutTableCol::borderAdjoiningCellAfter(const LayoutTableCel
     return style()->borderEnd();
 }
 
-}
+} // namespace blink

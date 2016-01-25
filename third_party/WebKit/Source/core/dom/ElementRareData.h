@@ -270,6 +270,6 @@ inline CompositorProxiedPropertySet& ElementRareData::ensureCompositorProxiedPro
     return *m_proxiedProperties;
 }
 
-} // namespace
+} // namespace blink
 
 #endif // ElementRareData_h

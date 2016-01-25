@@ -50,4 +50,4 @@ void SVGFEMergeNodeElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::svgAttributeChanged(attrName);
 }
 
-}
+} // namespace blink

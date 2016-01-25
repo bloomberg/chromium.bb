@@ -149,4 +149,4 @@ void WorkerEventQueue::close()
     m_eventTaskMap.clear();
 }
 
-}
+} // namespace blink

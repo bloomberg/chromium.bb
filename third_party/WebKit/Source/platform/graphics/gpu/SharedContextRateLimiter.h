@@ -51,6 +51,6 @@ private:
     bool m_canUseSyncQueries;
 };
 
-} // blink
+} // namespace blink
 
 #endif

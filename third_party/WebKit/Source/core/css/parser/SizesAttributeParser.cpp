@@ -101,4 +101,4 @@ unsigned SizesAttributeParser::effectiveSizeDefaultValue()
     return m_mediaValues->viewportWidth();
 }
 
-} // namespace
+} // namespace blink

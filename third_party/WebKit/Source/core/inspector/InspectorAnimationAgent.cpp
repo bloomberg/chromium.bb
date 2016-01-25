@@ -518,4 +518,4 @@ DEFINE_TRACE(InspectorAnimationAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-}
+} // namespace blink

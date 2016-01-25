@@ -62,6 +62,6 @@ private:
     Vector<LineLayoutBox> m_positionedObjects;
 };
 
-}
+} // namespace blink
 
 #endif // LineBreaker_h

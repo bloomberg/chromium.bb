@@ -23,6 +23,6 @@ private:
     bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
 };
 
-}
+} // namespace blink
 
 #endif

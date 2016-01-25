@@ -74,6 +74,6 @@ private:
     mutable AffineTransform m_localToParentTransform;
 };
 
-}
+} // namespace blink
 
 #endif

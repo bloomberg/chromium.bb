@@ -159,4 +159,4 @@ TEST_F(AnimationInterpolableValueTest, ScaleAndAddLists)
     EXPECT_FLOAT_EQ(33, toInterpolableNumber(baseList->get(2))->value());
 }
 
-}
+} // namespace blink

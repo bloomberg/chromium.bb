@@ -73,6 +73,6 @@ public:
     ~EventQueueScope() { ScopedEventQueue::instance()->decrementScopingLevel(); }
 };
 
-}
+} // namespace blink
 
 #endif // ScopedEventQueue_h

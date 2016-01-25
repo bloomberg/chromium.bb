@@ -248,6 +248,6 @@ inline void AtomicHTMLToken::initializeAttributes(const HTMLToken::AttributeList
     }
 }
 
-}
+} // namespace blink
 
 #endif

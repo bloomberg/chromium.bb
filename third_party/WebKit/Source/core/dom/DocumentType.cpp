@@ -68,4 +68,4 @@ void DocumentType::removedFrom(ContainerNode* insertionPoint)
     Node::removedFrom(insertionPoint);
 }
 
-}
+} // namespace blink

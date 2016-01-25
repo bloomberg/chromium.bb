@@ -266,5 +266,5 @@ public:
     RefPtr<const SkTextBlob>* cachedTextBlob;
 };
 
-}
+} // namespace blink
 #endif

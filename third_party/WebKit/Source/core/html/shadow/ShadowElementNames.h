@@ -54,8 +54,8 @@ const AtomicString& sliderTrack();
 const AtomicString& textFieldContainer();
 const AtomicString& optGroupLabel();
 
-}
+} // namespace ShadowElementNames
 
-}
+} // namespace blink
 
 #endif

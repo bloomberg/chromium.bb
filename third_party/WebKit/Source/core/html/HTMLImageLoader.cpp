@@ -103,4 +103,4 @@ void HTMLImageLoader::ensureFallbackContent()
     loadFallbackContentForElement(element());
 }
 
-}
+} // namespace blink

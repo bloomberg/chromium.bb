@@ -200,4 +200,4 @@ void FontResource::checkNotify()
         c->fontLoaded(this);
 }
 
-}
+} // namespace blink

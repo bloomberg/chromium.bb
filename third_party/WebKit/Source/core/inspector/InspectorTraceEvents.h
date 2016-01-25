@@ -63,7 +63,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> attributeChange(Element&, const
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> classChange(Element&, const InvalidationSet&, const AtomicString&);
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> idChange(Element&, const InvalidationSet&, const AtomicString&);
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
-}
+} // namespace InspectorScheduleStyleInvalidationTrackingEvent
 
 #define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet, changeType, ...) \
     TRACE_EVENT_INSTANT1( \
@@ -91,7 +91,7 @@ extern const char PreventStyleSharingForParent[];
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Element&, const char* reason);
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const Vector<RefPtr<InvalidationSet>>&);
-}
+} // namespace InspectorStyleInvalidatorInvalidateEvent
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \
     TRACE_EVENT_INSTANT1( \
@@ -146,7 +146,7 @@ extern const char TextControlChanged[];
 // size related invalidations.
 extern const char SvgChanged[];
 extern const char ScrollbarChanged[];
-}
+} // namespace LayoutInvalidationReason
 
 // LayoutInvalidationReasonForTracing is strictly for tracing. Blink logic must
 // not depend on this value.

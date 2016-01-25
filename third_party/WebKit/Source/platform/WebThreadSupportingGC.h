@@ -79,6 +79,6 @@ private:
     OwnPtr<WebThread> m_owningThread;
 };
 
-}
+} // namespace blink
 
 #endif

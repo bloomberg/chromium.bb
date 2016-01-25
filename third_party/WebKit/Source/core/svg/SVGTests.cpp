@@ -77,4 +77,4 @@ bool SVGTests::isKnownAttribute(const QualifiedName& attrName)
         || attrName == SVGNames::systemLanguageAttr;
 }
 
-}
+} // namespace blink

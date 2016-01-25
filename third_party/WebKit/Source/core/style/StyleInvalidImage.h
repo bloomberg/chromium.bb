@@ -53,5 +53,5 @@ private:
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleInvalidImage, isInvalidImage());
 
-}
+} // namespace blink
 #endif

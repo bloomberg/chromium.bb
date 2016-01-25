@@ -82,6 +82,6 @@ private:
     unsigned m_currentGlyphLength;
 };
 
-}
+} // namespace blink
 
 #endif

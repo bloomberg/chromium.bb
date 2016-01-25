@@ -99,4 +99,4 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     }
 }
 
-}
+} // namespace blink

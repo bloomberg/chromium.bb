@@ -37,6 +37,6 @@ enum WebGLExtensionName {
     WebGLLoseContextName,
     WebGLExtensionNameCount, // Must be the last entry
 };
-}
+} // namespace blink
 
 #endif // WebGLExtensionName_h

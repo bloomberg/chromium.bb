@@ -61,6 +61,6 @@ protected:
     float m_rotationAngle;
 };
 
-}
+} // namespace blink
 
 #endif // PlatformTouchPoint_h

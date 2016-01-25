@@ -130,6 +130,5 @@ inline static String attemptStaticStringCreation(const String str)
     return attemptStaticStringCreation(str.characters8(), str.length());
 }
 
-
-}
+} // namespace blink
 #endif

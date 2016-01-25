@@ -66,7 +66,7 @@ enum SriResourceIntegrityMismatchEvent {
     SriResourceIntegrityMismatchEventCount
 };
 
-}
+} // namespace
 
 static void RecordSriResourceIntegrityMismatchEvent(SriResourceIntegrityMismatchEvent event)
 {
@@ -1169,4 +1169,4 @@ DEFINE_TRACE(ResourceFetcher)
 #endif
 }
 
-}
+} // namespace blink

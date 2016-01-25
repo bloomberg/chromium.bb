@@ -91,6 +91,6 @@ private:
     Vector<ContextMenuItem> m_subMenuItems;
 };
 
-}
+} // namespace blink
 
 #endif // ContextMenuItem_h

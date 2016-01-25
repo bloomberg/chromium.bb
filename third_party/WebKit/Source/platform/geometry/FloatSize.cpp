@@ -60,4 +60,4 @@ FloatSize FloatSize::narrowPrecision(double width, double height)
     return FloatSize(narrowPrecisionToFloat(width), narrowPrecisionToFloat(height));
 }
 
-}
+} // namespace blink

@@ -52,4 +52,4 @@ float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter)
     return spacing;
 }
 
-}
+} // namespace blink

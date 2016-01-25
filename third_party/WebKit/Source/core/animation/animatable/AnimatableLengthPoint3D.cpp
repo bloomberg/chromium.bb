@@ -47,4 +47,4 @@ bool AnimatableLengthPoint3D::equalTo(const AnimatableValue* value) const
     return x()->equals(lengthPoint->x()) && y()->equals(lengthPoint->y()) && z()->equals(lengthPoint->z());
 }
 
-}
+} // namespace blink

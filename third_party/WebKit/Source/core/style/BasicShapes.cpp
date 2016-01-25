@@ -283,4 +283,4 @@ bool BasicShapeInset::operator==(const BasicShape& o) const
         && m_bottomLeftRadius == other.m_bottomLeftRadius;
 }
 
-}
+} // namespace blink

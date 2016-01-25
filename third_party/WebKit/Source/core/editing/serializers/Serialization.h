@@ -75,6 +75,6 @@ void mergeWithNextTextNode(Text*, ExceptionState&);
 
 bool propertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);
 
-}
+} // namespace blink
 
 #endif // Serialization_h

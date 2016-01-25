@@ -364,4 +364,4 @@ DEFINE_TRACE(AnimationTimeline)
     visitor->trace(m_animations);
 }
 
-} // namespace
+} // namespace blink

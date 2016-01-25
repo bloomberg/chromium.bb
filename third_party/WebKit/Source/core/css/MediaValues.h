@@ -82,6 +82,6 @@ protected:
 
 };
 
-} // namespace
+} // namespace blink
 
 #endif // MediaValues_h

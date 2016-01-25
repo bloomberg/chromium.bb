@@ -812,4 +812,4 @@ IntSize HTMLImageElement::bitmapSourceSize() const
     return IntSize(lSize.width(), lSize.height());
 }
 
-}
+} // namespace blink

@@ -444,7 +444,7 @@ void StripComments::process(UChar c)
 }
 
 static bool shouldFailContextCreationForTesting = false;
-} // namespace anonymous
+} // namespace
 
 class ScopedTexture2DRestorer {
     STACK_ALLOCATED();
@@ -939,7 +939,7 @@ bool isSRGBFormat(GLenum internalformat)
     }
 }
 
-} // namespace anonymous
+} // namespace
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
@@ -6754,7 +6754,7 @@ String GetErrorString(GLenum error)
     }
 }
 
-} // namespace anonymous
+} // namespace
 
 void WebGLRenderingContextBase::synthesizeGLError(GLenum error, const char* functionName, const char* description, ConsoleDisplayPreference display)
 {

@@ -137,4 +137,4 @@ Vector<float> SVGNumberList::toFloatVector() const
     return vec;
 }
 
-}
+} // namespace blink

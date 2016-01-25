@@ -309,4 +309,4 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer,
         squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree = true;
 }
 
-}
+} // namespace blink

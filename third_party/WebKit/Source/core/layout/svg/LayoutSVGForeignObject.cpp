@@ -143,4 +143,4 @@ bool LayoutSVGForeignObject::nodeAtFloatPoint(HitTestResult& result, const Float
         || LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestChildBlockBackgrounds);
 }
 
-}
+} // namespace blink

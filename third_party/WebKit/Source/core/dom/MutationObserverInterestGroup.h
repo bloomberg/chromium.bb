@@ -84,6 +84,6 @@ private:
     MutationRecordDeliveryOptions m_oldValueFlag;
 };
 
-}
+} // namespace blink
 
 #endif // MutationObserverInterestGroup_h

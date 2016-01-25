@@ -688,4 +688,4 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPt
     referrerPolicy = ReferrerPolicyDefault;
 }
 
-}
+} // namespace blink

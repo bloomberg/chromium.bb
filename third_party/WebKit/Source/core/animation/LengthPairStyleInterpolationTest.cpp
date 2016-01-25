@@ -85,4 +85,4 @@ TEST_F(LengthPairStyleInterpolationTest, MultipleValueTest)
     testPrimitiveValue(value6, 30, 0, CSSPrimitiveValue::UnitType::Percentage);
 }
 
-}
+} // namespace blink

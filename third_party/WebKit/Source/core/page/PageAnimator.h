@@ -36,6 +36,6 @@ private:
     AnimationClock m_animationClock;
 };
 
-}
+} // namespace blink
 
 #endif // PageAnimator_h

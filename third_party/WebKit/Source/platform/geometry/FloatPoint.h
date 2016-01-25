@@ -277,6 +277,6 @@ PLATFORM_EXPORT bool findIntersection(const FloatPoint& p1, const FloatPoint& p2
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const FloatPoint&, std::ostream*);
 
-}
+} // namespace blink
 
 #endif

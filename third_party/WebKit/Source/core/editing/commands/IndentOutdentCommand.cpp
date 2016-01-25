@@ -267,4 +267,4 @@ void IndentOutdentCommand::formatRange(const Position& start, const Position& en
         indentIntoBlockquote(start, end, blockquoteForNextIndent);
 }
 
-}
+} // namespace blink

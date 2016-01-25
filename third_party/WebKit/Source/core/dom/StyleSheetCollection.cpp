@@ -65,4 +65,4 @@ DEFINE_TRACE(StyleSheetCollection)
     visitor->trace(m_styleSheetsForStyleSheetList);
 }
 
-}
+} // namespace blink

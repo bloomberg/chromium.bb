@@ -173,4 +173,4 @@ Node* enclosingBlockToSplitTreeTo(Node* startNode)
     return lastBlock;
 }
 
-}
+} // namespace blink

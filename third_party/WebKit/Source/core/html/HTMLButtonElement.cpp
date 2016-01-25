@@ -219,4 +219,4 @@ Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode
     return request;
 }
 
-} // namespace
+} // namespace blink

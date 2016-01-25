@@ -100,6 +100,6 @@ private:
 
 DEFINE_TYPE_CASTS(SpinButtonElement, Node, node, toElement(node)->isSpinButtonElement(), toElement(node).isSpinButtonElement());
 
-} // namespace
+} // namespace blink
 
 #endif

@@ -132,4 +132,4 @@ TEST_F(AnimationAnimationStackTest, ClearedEffectsRemoved)
     EXPECT_EQ(0u, result.size());
 }
 
-}
+} // namespace blink

@@ -110,4 +110,4 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
     testQuadValue(value, 30, -30, 30, -30, CSSPrimitiveValue::UnitType::Percentage);
 }
 
-}
+} // namespace blink

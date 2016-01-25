@@ -125,7 +125,7 @@ public:
     DECLARE_TRACE();
 };
 
-}
+} // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::MemoryCacheLRUList);
 
@@ -333,6 +333,6 @@ CORE_EXPORT MemoryCache* memoryCache();
 // MemoryCache object.
 CORE_EXPORT MemoryCache* replaceMemoryCacheForTesting(MemoryCache*);
 
-}
+} // namespace blink
 
 #endif

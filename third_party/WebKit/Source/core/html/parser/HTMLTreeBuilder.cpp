@@ -484,7 +484,7 @@ bool isDdOrDt(const HTMLStackItem* item)
         || item->hasTagName(dtTag);
 }
 
-}
+} // namespace
 
 template <bool shouldClose(const HTMLStackItem*)>
 void HTMLTreeBuilder::processCloseWhenNestedTag(AtomicHTMLToken* token)

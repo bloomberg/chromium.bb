@@ -23,6 +23,6 @@ private:
     unsigned m_blockLevel;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // MediaQueryBlockWatcher_h

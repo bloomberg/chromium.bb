@@ -125,4 +125,4 @@ bool HTMLMetaCharsetParser::checkForMetaCharset(const char* data, size_t length)
     return false;
 }
 
-}
+} // namespace blink

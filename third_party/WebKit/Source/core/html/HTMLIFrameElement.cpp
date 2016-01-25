@@ -158,4 +158,4 @@ ReferrerPolicy HTMLIFrameElement::referrerPolicyAttribute()
 {
     return m_referrerPolicy;
 }
-}
+} // namespace blink

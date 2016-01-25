@@ -84,6 +84,6 @@ private:
     int m_lineNumber;
 };
 
-}
+} // namespace blink
 
 #endif // HTMLViewSourceDocument_h

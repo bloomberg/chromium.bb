@@ -1101,4 +1101,4 @@ DEFINE_TRACE(Animation)
     ActiveDOMObject::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

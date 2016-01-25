@@ -64,6 +64,6 @@ private:
     WillBeHeapHashMap<String, RefPtrWillBeMember<MHTMLArchive>> m_subframes;
 };
 
-}
+} // namespace blink
 
 #endif

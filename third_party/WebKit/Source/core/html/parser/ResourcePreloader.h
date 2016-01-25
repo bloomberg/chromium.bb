@@ -19,6 +19,6 @@ private:
     virtual void preload(PassOwnPtr<PreloadRequest>, const NetworkHintsInterface&) = 0;
 };
 
-}
+} // namespace blink
 
 #endif

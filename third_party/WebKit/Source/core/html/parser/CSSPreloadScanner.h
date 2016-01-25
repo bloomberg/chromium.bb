@@ -80,6 +80,6 @@ private:
     const KURL* m_predictedBaseElementURL = nullptr;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -407,4 +407,4 @@ bool LayoutSVGRoot::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     return false;
 }
 
-}
+} // namespace blink

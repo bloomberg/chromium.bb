@@ -57,6 +57,6 @@ private:
     ShareableElementDataCache m_shareableElementDataCache;
 };
 
-}
+} // namespace blink
 
 #endif

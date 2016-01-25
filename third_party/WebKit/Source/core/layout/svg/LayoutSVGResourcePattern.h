@@ -81,6 +81,6 @@ private:
     HashMap<const LayoutObject*, OwnPtr<PatternData>> m_patternMap;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -82,6 +82,6 @@ protected:
     FloatRect m_paintInvalidationBoundingBox;
 };
 
-}
+} // namespace blink
 
 #endif

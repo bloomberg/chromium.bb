@@ -140,4 +140,4 @@ bool HTMLKeygenElement::supportsAutofocus() const
     return true;
 }
 
-} // namespace
+} // namespace blink

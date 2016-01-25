@@ -56,6 +56,6 @@ private:
     SetType m_set;
 };
 
-}
+} // namespace blink
 
 #endif

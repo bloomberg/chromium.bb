@@ -214,4 +214,4 @@ SVGLengthTearOff::SVGLengthTearOff(PassRefPtrWillBeRawPtr<SVGLength> target, SVG
 {
 }
 
-}
+} // namespace blink

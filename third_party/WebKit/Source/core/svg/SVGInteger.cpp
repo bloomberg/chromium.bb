@@ -90,4 +90,4 @@ float SVGInteger::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> othe
     return abs(m_value - toSVGInteger(other)->value());
 }
 
-}
+} // namespace blink

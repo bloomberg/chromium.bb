@@ -100,4 +100,4 @@ void DecodedDataDocumentParser::updateDocument(String& decodedData)
         append(decodedData);
 }
 
-};
+} // namespace blink;

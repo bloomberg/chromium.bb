@@ -46,6 +46,6 @@ public:
     bool m_useLegacyTimeBase;
 };
 
-}
+} // namespace blink
 
 #endif // FrameRequestCallback_h

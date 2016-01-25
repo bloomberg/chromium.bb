@@ -71,6 +71,6 @@ PLATFORM_EXPORT IntRect enclosedIntRect(const DoubleRect&);
 
 PLATFORM_EXPORT IntRect roundedIntRect(const DoubleRect&);
 
-}
+} // namespace blink
 
 #endif

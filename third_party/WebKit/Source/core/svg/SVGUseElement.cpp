@@ -821,4 +821,4 @@ void SVGUseElement::setDocumentResource(ResourcePtr<DocumentResource> resource)
         m_resource->addClient(this);
 }
 
-}
+} // namespace blink

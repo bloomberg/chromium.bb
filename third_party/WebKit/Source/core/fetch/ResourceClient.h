@@ -59,6 +59,6 @@ public:
 protected:
     ResourceClient() { }
 };
-}
+} // namespace blink
 
 #endif

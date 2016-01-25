@@ -141,4 +141,4 @@ DEFINE_TRACE(Attr)
     Node::trace(visitor);
 }
 
-}
+} // namespace blink

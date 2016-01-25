@@ -44,7 +44,7 @@ PassRefPtrWillBeRawPtr<CSSPathValue> createPathValue()
     return CSSPathValue::create(pathByteStream.release());
 }
 
-}
+} // namespace
 
 CSSPathValue* CSSPathValue::emptyPathValue()
 {

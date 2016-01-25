@@ -168,4 +168,4 @@ void LayoutTreeBuilderForText::createLayoutObject()
     m_layoutObjectParent->addChild(newLayoutObject, nextLayoutObject);
 }
 
-}
+} // namespace blink

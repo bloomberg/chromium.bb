@@ -42,6 +42,6 @@ private:
     ResourcePtr<DocumentResource> m_document;
 };
 
-};
+} // namespace blink;
 
 #endif

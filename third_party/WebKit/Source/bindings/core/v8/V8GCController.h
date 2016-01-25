@@ -60,6 +60,6 @@ public:
     static void traceDOMWrappers(v8::Isolate*, Visitor*);
 };
 
-}
+} // namespace blink
 
 #endif // V8GCController_h

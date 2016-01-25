@@ -432,6 +432,6 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
     ASSERT_NOT_REACHED();
 }
 
-}
+} // namespace XPath
 
-}
+} // namespace blink

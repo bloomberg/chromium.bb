@@ -44,7 +44,7 @@ private:
     String m_name;
 };
 
-}
+} // namespace XPath
 
-}
+} // namespace blink
 #endif // XPathVariableReference_h

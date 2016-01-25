@@ -565,4 +565,4 @@ DEFINE_TRACE(VTTParser)
     visitor->trace(m_regionList);
 }
 
-}
+} // namespace blink

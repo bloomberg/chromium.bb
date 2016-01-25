@@ -55,6 +55,6 @@ private:
     WebPrerendererClient* m_client;
 };
 
-}
+} // namespace blink
 
 #endif // PrerendererClientImpl_h

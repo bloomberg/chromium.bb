@@ -193,4 +193,4 @@ Node* PseudoElement::findAssociatedNode() const
     return ancestor->node();
 }
 
-} // namespace
+} // namespace blink

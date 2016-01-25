@@ -52,5 +52,4 @@ DEFINE_TRACE(HTMLMediaElementMediaSession)
     WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
-}
-
+} // namespace blink

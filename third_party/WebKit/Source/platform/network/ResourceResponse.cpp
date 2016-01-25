@@ -566,4 +566,4 @@ bool ResourceResponse::compare(const ResourceResponse& a, const ResourceResponse
     return true;
 }
 
-}
+} // namespace blink

@@ -68,6 +68,6 @@ private:
     String m_mimeType;
 };
 
-}
+} // namespace blink
 
 #endif

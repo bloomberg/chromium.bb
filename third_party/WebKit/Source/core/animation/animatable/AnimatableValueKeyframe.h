@@ -67,6 +67,6 @@ using AnimatableValuePropertySpecificKeyframe = AnimatableValueKeyframe::Propert
 DEFINE_TYPE_CASTS(AnimatableValueKeyframe, Keyframe, value, value->isAnimatableValueKeyframe(), value.isAnimatableValueKeyframe());
 DEFINE_TYPE_CASTS(AnimatableValuePropertySpecificKeyframe, Keyframe::PropertySpecificKeyframe, value, value->isAnimatableValuePropertySpecificKeyframe(), value.isAnimatableValuePropertySpecificKeyframe());
 
-}
+} // namespace blink
 
 #endif

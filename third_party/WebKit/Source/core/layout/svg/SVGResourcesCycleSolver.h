@@ -52,6 +52,6 @@ private:
     ResourceSet m_dagCache;
 };
 
-}
+} // namespace blink
 
 #endif

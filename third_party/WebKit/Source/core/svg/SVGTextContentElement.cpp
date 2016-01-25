@@ -263,4 +263,4 @@ SVGTextContentElement* SVGTextContentElement::elementFromLayoutObject(LayoutObje
     return isSVGTextContentElement(*element) ? toSVGTextContentElement(element) : 0;
 }
 
-}
+} // namespace blink

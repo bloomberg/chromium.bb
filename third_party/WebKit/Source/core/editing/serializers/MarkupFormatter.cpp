@@ -471,4 +471,4 @@ bool MarkupFormatter::serializeAsHTMLDocument(const Node& node) const
     return node.document().isHTMLDocument();
 }
 
-}
+} // namespace blink

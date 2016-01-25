@@ -131,4 +131,4 @@ LayoutObject* SVGCircleElement::createLayoutObject(const ComputedStyle&)
     return new LayoutSVGEllipse(this);
 }
 
-}
+} // namespace blink

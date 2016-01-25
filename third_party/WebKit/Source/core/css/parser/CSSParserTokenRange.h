@@ -80,6 +80,6 @@ private:
     const CSSParserToken* m_last;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // CSSParserTokenRange_h

@@ -572,4 +572,4 @@ void SelectorQueryCache::invalidate()
     m_entries.clear();
 }
 
-}
+} // namespace blink

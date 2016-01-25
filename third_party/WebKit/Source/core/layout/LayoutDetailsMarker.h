@@ -44,6 +44,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDetailsMarker, isDetailsMarker());
 
-}
+} // namespace blink
 
 #endif // LayoutDetailsMarker_h

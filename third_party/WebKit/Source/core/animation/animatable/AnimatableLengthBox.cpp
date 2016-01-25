@@ -51,4 +51,4 @@ bool AnimatableLengthBox::equalTo(const AnimatableValue* value) const
         && bottom()->equals(lengthBox->bottom());
 }
 
-}
+} // namespace blink

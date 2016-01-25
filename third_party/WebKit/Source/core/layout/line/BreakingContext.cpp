@@ -65,4 +65,4 @@ InlineIterator BreakingContext::handleEndOfLine()
     return m_lineBreak;
 }
 
-}
+} // namespace blink

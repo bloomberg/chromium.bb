@@ -113,7 +113,7 @@ void ChunkLengthAccumulator::processRange(BoxListConstIterator boxStart, BoxList
     }
 }
 
-}
+} // namespace
 
 SVGTextChunkBuilder::SVGTextChunkBuilder()
 {
@@ -290,4 +290,4 @@ void SVGTextChunkBuilder::processTextAnchorCorrection(bool isVerticalText, float
     }
 }
 
-}
+} // namespace blink

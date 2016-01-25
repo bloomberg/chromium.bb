@@ -40,4 +40,4 @@ bool OrientationIterator::consume(unsigned *orientationLimit, RenderOrientation*
     return true;
 }
 
-}
+} // namespace blink

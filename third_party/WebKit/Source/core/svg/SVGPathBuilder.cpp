@@ -48,4 +48,4 @@ void SVGPathBuilder::emitSegment(const PathSegmentData& segment)
     }
 }
 
-}
+} // namespace blink

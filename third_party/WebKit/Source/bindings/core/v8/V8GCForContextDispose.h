@@ -54,6 +54,6 @@ private:
     double m_lastContextDisposalTime;
 };
 
-}
+} // namespace blink
 
 #endif // V8GCForContextDispose_h

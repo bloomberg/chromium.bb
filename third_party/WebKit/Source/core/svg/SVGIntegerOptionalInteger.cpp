@@ -120,4 +120,4 @@ float SVGIntegerOptionalInteger::calculateDistance(PassRefPtrWillBeRawPtr<SVGPro
     return -1;
 }
 
-}
+} // namespace blink

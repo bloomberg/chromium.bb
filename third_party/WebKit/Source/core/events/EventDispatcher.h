@@ -74,6 +74,6 @@ private:
 #endif
 };
 
-}
+} // namespace blink
 
 #endif

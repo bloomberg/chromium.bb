@@ -118,6 +118,6 @@ public:
     virtual void didCancel() = 0;
 };
 
-}
+} // namespace blink
 
 #endif // TextChecking_h

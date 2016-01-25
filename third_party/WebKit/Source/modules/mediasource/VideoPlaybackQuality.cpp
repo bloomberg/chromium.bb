@@ -54,4 +54,4 @@ VideoPlaybackQuality::VideoPlaybackQuality(
         m_creationTime = DOMWindowPerformance::performance(*(document.domWindow()))->now();
 }
 
-}
+} // namespace blink

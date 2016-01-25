@@ -47,6 +47,6 @@ inline bool isOverride(EUnicodeBidi unicodeBidi)
     return unicodeBidi == Override || unicodeBidi == IsolateOverride;
 }
 
-}
+} // namespace blink
 
 #endif

@@ -286,5 +286,5 @@ private:
 
 DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeInset);
 
-}
+} // namespace blink
 #endif

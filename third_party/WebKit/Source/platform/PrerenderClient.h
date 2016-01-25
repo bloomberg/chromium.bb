@@ -46,7 +46,6 @@ public:
     virtual void didSendDOMContentLoadedForPrerender() = 0;
 };
 
-}
-
+} // namespace blink
 
 #endif

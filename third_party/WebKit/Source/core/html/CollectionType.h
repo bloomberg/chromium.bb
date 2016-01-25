@@ -82,6 +82,6 @@ inline bool isLiveNodeListType(CollectionType type)
     return type >= FirstLiveNodeListType;
 }
 
-} // namespace
+} // namespace blink
 
 #endif

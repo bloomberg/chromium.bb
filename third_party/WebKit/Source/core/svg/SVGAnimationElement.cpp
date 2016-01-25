@@ -730,4 +730,4 @@ void SVGAnimationElement::checkInvalidCSSAttributeType()
         clearAnimatedType();
 }
 
-}
+} // namespace blink

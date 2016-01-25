@@ -311,6 +311,6 @@ private:
     String m_selfProtocol;
 };
 
-}
+} // namespace blink
 
 #endif

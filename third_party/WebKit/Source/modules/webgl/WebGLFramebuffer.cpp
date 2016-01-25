@@ -716,4 +716,4 @@ DEFINE_TRACE(WebGLFramebuffer)
     WebGLContextObject::trace(visitor);
 }
 
-}
+} // namespace blink

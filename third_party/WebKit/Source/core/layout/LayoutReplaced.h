@@ -117,6 +117,6 @@ private:
     mutable LayoutSize m_intrinsicSize;
 };
 
-}
+} // namespace blink
 
 #endif

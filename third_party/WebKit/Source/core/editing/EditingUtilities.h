@@ -323,6 +323,6 @@ inline bool isAmbiguousBoundaryCharacter(UChar character)
 String stringWithRebalancedWhitespace(const String&, bool startIsStartOfParagraph, bool endIsEndOfParagraph);
 const String& nonBreakingSpaceString();
 
-}
+} // namespace blink
 
 #endif

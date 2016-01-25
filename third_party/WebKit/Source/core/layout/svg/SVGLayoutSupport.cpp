@@ -476,4 +476,4 @@ float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject*
     return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }
 
-}
+} // namespace blink

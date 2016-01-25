@@ -105,4 +105,4 @@ void InterpolableAnimatableValue::interpolate(const InterpolableValue& to, const
     resultValue.m_value = AnimatableValue::interpolate(m_value.get(), toValue.m_value.get(), progress);
 }
 
-}
+} // namespace blink

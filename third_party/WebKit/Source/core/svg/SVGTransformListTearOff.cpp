@@ -60,4 +60,4 @@ PassRefPtrWillBeRawPtr<SVGTransformTearOff> SVGTransformListTearOff::consolidate
     return createItemTearOff(target()->consolidate());
 }
 
-}
+} // namespace blink

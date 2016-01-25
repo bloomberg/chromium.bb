@@ -35,4 +35,4 @@ inline HTMLMenuElement::HTMLMenuElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLMenuElement)
 
-}
+} // namespace blink

@@ -320,4 +320,4 @@ void LinkHeaderSet::init(CharType* headerValue, unsigned len)
         m_headerSet.append(LinkHeader(position, end));
 }
 
-}
+} // namespace blink

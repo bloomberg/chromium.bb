@@ -323,4 +323,4 @@ void LineBoxList::checkConsistency() const
 
 #endif
 
-}
+} // namespace blink

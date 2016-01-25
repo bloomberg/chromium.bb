@@ -178,4 +178,4 @@ void FrameHost::setUserAgentPageScaleConstraints(PageScaleConstraints newConstra
     rootView->setNeedsLayout();
 }
 
-}
+} // namespace blink

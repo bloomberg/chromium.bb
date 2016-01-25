@@ -86,7 +86,7 @@ private:
     Member<LocationPath> m_path;
 };
 
-}
+} // namespace XPath
 
-}
+} // namespace blink
 #endif // XPathPath_h

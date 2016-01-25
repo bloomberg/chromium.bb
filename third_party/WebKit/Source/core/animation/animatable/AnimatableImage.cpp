@@ -62,4 +62,4 @@ bool AnimatableImage::equalTo(const AnimatableValue* value) const
     return m_value->equals(*toAnimatableImage(value)->m_value.get());
 }
 
-}
+} // namespace blink

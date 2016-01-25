@@ -131,6 +131,6 @@ private:
     bool m_imageFetched : 1;
 };
 
-}
+} // namespace blink
 
 #endif

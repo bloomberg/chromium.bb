@@ -45,6 +45,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSearchField, isTextField());
 
-}
+} // namespace blink
 
 #endif // LayoutSearchField_h

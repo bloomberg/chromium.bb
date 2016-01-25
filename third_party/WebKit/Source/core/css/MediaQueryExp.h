@@ -111,6 +111,6 @@ private:
     MediaQueryExpValue m_expValue;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

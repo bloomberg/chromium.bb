@@ -102,6 +102,6 @@ struct CSSParserString {
     bool m_is8Bit;
 };
 
-}
+} // namespace blink
 
 #endif

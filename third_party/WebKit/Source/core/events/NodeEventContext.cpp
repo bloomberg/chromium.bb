@@ -66,4 +66,4 @@ void NodeEventContext::handleLocalEvents(Event& event) const
     m_node->handleLocalEvents(event);
 }
 
-}
+} // namespace blink

@@ -418,6 +418,6 @@ private:
     void (SegmentedString::*m_advanceAndUpdateLineNumberFunc)();
 };
 
-}
+} // namespace blink
 
 #endif

@@ -931,4 +931,4 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalBottomInFl
     appendNewFragmentainerGroupIfNeeded(logicalBottomInFlowThreadAfterPagination);
 }
 
-}
+} // namespace blink

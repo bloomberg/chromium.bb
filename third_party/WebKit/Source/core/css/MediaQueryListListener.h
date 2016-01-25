@@ -38,6 +38,6 @@ protected:
     MediaQueryListListener();
 };
 
-}
+} // namespace blink
 
 #endif // MediaQueryListListener_h

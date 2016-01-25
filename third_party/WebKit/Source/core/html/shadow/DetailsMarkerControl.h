@@ -57,6 +57,6 @@ inline PassRefPtrWillBeRawPtr<DetailsMarkerControl> DetailsMarkerControl::create
     return element.release();
 }
 
-}
+} // namespace blink
 
 #endif

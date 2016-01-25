@@ -42,5 +42,4 @@ CSSGridLineNamesValue::CSSGridLineNamesValue()
 {
 }
 
-}
-
+} // namespace blink

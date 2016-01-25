@@ -186,4 +186,4 @@ PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& r
     return create(scope, EphemeralRange(&range));
 }
 
-}
+} // namespace blink

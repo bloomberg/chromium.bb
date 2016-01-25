@@ -744,4 +744,4 @@ DEFINE_TRACE(StyleEngine)
     CSSFontSelectorClient::trace(visitor);
 }
 
-}
+} // namespace blink

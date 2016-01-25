@@ -49,6 +49,6 @@ private:
     static void applyProperty(CSSPropertyID, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
 };
 
-}
+} // namespace blink
 
 #endif

@@ -32,4 +32,4 @@ void SVGTextLayoutAttributes::clear()
     m_textMetricsValues.clear();
 }
 
-}
+} // namespace blink

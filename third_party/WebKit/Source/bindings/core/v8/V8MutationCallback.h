@@ -62,6 +62,6 @@ private:
     RefPtr<ScriptState> m_scriptState;
 };
 
-}
+} // namespace blink
 
 #endif // V8MutationCallback_h

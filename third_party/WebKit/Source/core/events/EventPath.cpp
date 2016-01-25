@@ -393,4 +393,4 @@ DEFINE_TRACE(EventPath)
 #endif
 }
 
-} // namespace
+} // namespace blink

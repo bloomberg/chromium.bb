@@ -124,4 +124,4 @@ void HTMLEntitySearch::advance(UChar nextCharacter)
     m_mostRecentMatch = m_first;
 }
 
-}
+} // namespace blink

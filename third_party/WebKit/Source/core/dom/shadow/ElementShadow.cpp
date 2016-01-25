@@ -407,4 +407,4 @@ DEFINE_TRACE(ElementShadow)
 #endif
 }
 
-} // namespace
+} // namespace blink

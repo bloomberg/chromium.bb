@@ -174,4 +174,4 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames)
     EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
 }
 
-}
+} // namespace blink

@@ -91,4 +91,4 @@ void InspectorTracingAgent::resetSessionId()
     m_workerAgent->setTracingSessionId(sessionId());
 }
 
-}
+} // namespace blink

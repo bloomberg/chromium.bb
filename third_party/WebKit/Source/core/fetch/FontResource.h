@@ -110,6 +110,6 @@ public:
     virtual void fontLoadLongLimitExceeded(FontResource*) {}
 };
 
-}
+} // namespace blink
 
 #endif

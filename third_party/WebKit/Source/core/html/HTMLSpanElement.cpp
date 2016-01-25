@@ -38,4 +38,4 @@ HTMLSpanElement::HTMLSpanElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLSpanElement)
 
-}
+} // namespace blink

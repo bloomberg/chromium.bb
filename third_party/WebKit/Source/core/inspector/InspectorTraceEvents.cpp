@@ -159,7 +159,7 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
     return "";
 }
 
-}
+} // namespace
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
 PassRefPtr<TracedValue> fillCommonPart(Element& element, const InvalidationSet& invalidationSet, const char* invalidatedSelector)
@@ -839,4 +839,4 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorHitTestEvent::endData(
     return value;
 }
 
-}
+} // namespace blink

@@ -54,4 +54,4 @@ TEST_F(PropertyHandleTest, Accessors)
     EXPECT_EQ(PropertyHandle(amplitudeAttr).svgAttribute(), amplitudeAttr);
 }
 
-}
+} // namespace blink

@@ -45,6 +45,6 @@ public:
     unsigned canHitBoundingBox : 1;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -88,6 +88,6 @@ private:
     RefPtr<ExtraData> m_extraData;
 };
 
-}
+} // namespace blink
 
 #endif // Prerender_h

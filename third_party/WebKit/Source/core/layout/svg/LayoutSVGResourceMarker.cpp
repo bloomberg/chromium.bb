@@ -152,4 +152,4 @@ void LayoutSVGResourceMarker::calcViewport()
     m_viewport = FloatRect(0, 0, w, h);
 }
 
-}
+} // namespace blink

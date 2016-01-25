@@ -180,4 +180,4 @@ DEFINE_TRACE(HTMLProgressElement)
     LabelableElement::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

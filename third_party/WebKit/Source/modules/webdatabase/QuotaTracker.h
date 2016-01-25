@@ -64,6 +64,6 @@ private:
     Mutex m_dataGuard;
 };
 
-}
+} // namespace blink
 
 #endif // QuotaTracker_h

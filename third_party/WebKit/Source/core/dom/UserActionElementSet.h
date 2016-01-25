@@ -81,6 +81,6 @@ private:
     ElementFlagMap m_elements;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // UserActionElementSet_h

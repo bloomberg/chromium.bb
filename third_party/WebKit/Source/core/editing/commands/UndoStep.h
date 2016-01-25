@@ -50,6 +50,6 @@ public:
     virtual EditAction editingAction() const = 0;
 };
 
-}
+} // namespace blink
 
 #endif

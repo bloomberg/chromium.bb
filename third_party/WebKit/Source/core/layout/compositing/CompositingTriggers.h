@@ -33,6 +33,6 @@ enum CompositingTrigger {
 
 typedef unsigned CompositingTriggerFlags;
 
-}
+} // namespace blink
 
 #endif

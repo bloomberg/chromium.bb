@@ -38,4 +38,4 @@ void ResourcePtrBase::setResource(Resource* resource)
         m_resource->registerHandle(this);
 }
 
-}
+} // namespace blink

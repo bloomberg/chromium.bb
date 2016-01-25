@@ -80,7 +80,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> indexedValueToLength(InterpolableList&
     return LengthStyleInterpolation::fromInterpolableValue(*lengthBox.get(i), RangeAll);
 }
 
-}
+} // namespace
 
 PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueToLengthBox(InterpolableValue* value, const CSSValue& originalStart, const CSSValue& originalEnd)
 {
@@ -106,4 +106,4 @@ void LengthBoxStyleInterpolation::apply(StyleResolverState& state) const
         StyleBuilder::applyProperty(m_id, state, interpolableValueToLengthBox(m_cachedValue.get(), *m_startCSSValue, *m_endCSSValue).get());
 }
 
-}
+} // namespace blink

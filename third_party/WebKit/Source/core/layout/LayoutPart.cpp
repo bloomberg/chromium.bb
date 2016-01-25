@@ -363,4 +363,4 @@ bool LayoutPart::isThrottledFrameView() const
     return frameView->shouldThrottleRendering();
 }
 
-}
+} // namespace blink

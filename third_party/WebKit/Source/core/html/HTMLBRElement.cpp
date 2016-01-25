@@ -68,4 +68,4 @@ LayoutObject* HTMLBRElement::createLayoutObject(const ComputedStyle& style)
     return new LayoutBR(this);
 }
 
-}
+} // namespace blink

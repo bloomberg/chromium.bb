@@ -37,6 +37,6 @@ public:
     virtual void clearContextMenu() = 0;
 };
 
-}
+} // namespace blink
 
 #endif

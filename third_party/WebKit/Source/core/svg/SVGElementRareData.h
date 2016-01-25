@@ -111,6 +111,6 @@ private:
     AffineTransform m_animateMotionTransform;
 };
 
-}
+} // namespace blink
 
 #endif

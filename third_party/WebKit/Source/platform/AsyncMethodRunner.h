@@ -155,6 +155,6 @@ private:
     bool m_runWhenResumed;
 };
 
-}
+} // namespace blink
 
 #endif

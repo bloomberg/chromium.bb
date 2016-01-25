@@ -95,5 +95,5 @@ inline void PagePopupClient::addString(const String& str, SharedBuffer* data)
     data->append(str8.data(), str8.length());
 }
 
-}
+} // namespace blink
 #endif

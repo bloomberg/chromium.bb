@@ -379,4 +379,4 @@ DEFINE_TRACE(SVGDocumentExtensions)
 #endif
 }
 
-}
+} // namespace blink

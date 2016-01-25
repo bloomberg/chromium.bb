@@ -43,4 +43,4 @@ SVGAnimatedPath::~SVGAnimatedPath()
 {
 }
 
-}
+} // namespace blink

@@ -180,4 +180,4 @@ TEST(SourceMapTest, FindEntryWithIndexed)
     ASSERT_TRUE(!sourceMap->findEntry(0, 0));
 }
 
-} // blink
+} // namespace blink

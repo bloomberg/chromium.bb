@@ -1675,4 +1675,4 @@ SkMatrix44 TransformationMatrix::toSkMatrix44(const TransformationMatrix& matrix
     return ret;
 }
 
-}
+} // namespace blink

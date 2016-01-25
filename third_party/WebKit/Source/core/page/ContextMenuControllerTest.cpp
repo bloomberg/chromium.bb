@@ -107,4 +107,4 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu)
     EXPECT_STREQ("Title 10 not checked and Title 8 checked", document().title().utf8().data());
 }
 
-}
+} // namespace blink

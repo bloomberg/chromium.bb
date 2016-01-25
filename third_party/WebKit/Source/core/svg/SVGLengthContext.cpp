@@ -415,4 +415,4 @@ bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
     return true;
 }
 
-}
+} // namespace blink

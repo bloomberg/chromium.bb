@@ -1230,4 +1230,4 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
     return element.focused() && isFrameFocused(element);
 }
 
-}
+} // namespace blink

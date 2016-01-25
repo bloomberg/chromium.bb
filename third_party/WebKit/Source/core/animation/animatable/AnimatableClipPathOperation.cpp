@@ -63,4 +63,4 @@ bool AnimatableClipPathOperation::equalTo(const AnimatableValue* value) const
     return m_operation == operation || (m_operation && operation && *m_operation == *operation);
 }
 
-}
+} // namespace blink

@@ -85,4 +85,4 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidT
     return flags;
 }
 
-}
+} // namespace blink

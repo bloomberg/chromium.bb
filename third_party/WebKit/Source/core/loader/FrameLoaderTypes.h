@@ -101,6 +101,6 @@ enum HistoryScrollRestorationType {
     ScrollRestorationManual
 };
 
-}
+} // namespace blink
 
 #endif

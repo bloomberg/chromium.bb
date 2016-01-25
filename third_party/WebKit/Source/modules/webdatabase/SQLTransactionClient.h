@@ -48,6 +48,6 @@ public:
     bool didExceedQuota(Database*);
 };
 
-}
+} // namespace blink
 
 #endif // SQLTransactionClient_h

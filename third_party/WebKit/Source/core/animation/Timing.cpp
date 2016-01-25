@@ -40,5 +40,4 @@ String Timing::playbackDirectionString(PlaybackDirection playbackDirection)
     return "normal";
 }
 
-
-} // namespace
+} // namespace blink

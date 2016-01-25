@@ -181,4 +181,4 @@ SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(const 
     return requestPaint(layoutObject, style, resourceMode);
 }
 
-}
+} // namespace blink

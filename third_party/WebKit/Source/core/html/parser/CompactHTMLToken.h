@@ -82,6 +82,6 @@ private:
 
 typedef Vector<CompactHTMLToken> CompactHTMLTokenStream;
 
-}
+} // namespace blink
 
 #endif

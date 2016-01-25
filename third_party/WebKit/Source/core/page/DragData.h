@@ -82,6 +82,6 @@ private:
     DragApplicationFlags m_applicationFlags;
 };
 
-}
+} // namespace blink
 
 #endif // !DragData_h

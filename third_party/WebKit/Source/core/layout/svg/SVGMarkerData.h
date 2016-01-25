@@ -173,6 +173,6 @@ private:
     bool m_autoStartReverse;
 };
 
-}
+} // namespace blink
 
 #endif // SVGMarkerData_h

@@ -47,6 +47,6 @@ public:
     virtual bool handleKeyboardEvent() = 0;
 };
 
-}
+} // namespace blink
 
 #endif // EditorClient_h

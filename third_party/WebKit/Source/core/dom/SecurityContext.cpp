@@ -82,4 +82,4 @@ void SecurityContext::enforceSandboxFlags(SandboxFlags mask)
     }
 }
 
-}
+} // namespace blink

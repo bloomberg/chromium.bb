@@ -179,4 +179,4 @@ void StyleSheetInvalidationAnalysis::invalidateStyle()
     }
 }
 
-}
+} // namespace blink

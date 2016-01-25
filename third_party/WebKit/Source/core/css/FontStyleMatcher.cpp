@@ -137,4 +137,4 @@ bool FontStyleMatcher::isCandidateBetter(CSSSegmentedFontFace *candidate, CSSSeg
     return false;
 }
 
-}
+} // namespace blink

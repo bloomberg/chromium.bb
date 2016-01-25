@@ -268,4 +268,4 @@ float SVGLength::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toVal
     return fabsf(toLength->value(lengthContext) - value(lengthContext));
 }
 
-}
+} // namespace blink

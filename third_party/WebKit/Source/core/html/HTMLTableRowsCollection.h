@@ -54,6 +54,6 @@ private:
 
 DEFINE_TYPE_CASTS(HTMLTableRowsCollection, LiveNodeListBase, collection, collection->type() == TableRows, collection.type() == TableRows);
 
-} // namespace
+} // namespace blink
 
 #endif

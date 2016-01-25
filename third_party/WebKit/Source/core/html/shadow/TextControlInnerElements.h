@@ -94,6 +94,6 @@ private:
     bool m_capturing;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

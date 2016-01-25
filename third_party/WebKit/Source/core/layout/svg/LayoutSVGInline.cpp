@@ -167,4 +167,4 @@ void LayoutSVGInline::invalidateTreeIfNeeded(PaintInvalidationState& paintInvali
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
-}
+} // namespace blink

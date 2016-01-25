@@ -94,4 +94,4 @@ DEFINE_TRACE(EntrySync)
     EntryBase::trace(visitor);
 }
 
-}
+} // namespace blink

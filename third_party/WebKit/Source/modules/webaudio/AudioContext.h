@@ -45,6 +45,6 @@ private:
     Member<ScriptPromiseResolver> m_closeResolver;
 };
 
-}
+} // namespace blink
 
 #endif // AudioContext_h

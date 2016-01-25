@@ -247,6 +247,6 @@ LayoutObject* nextInTopLayer(const Element& element)
     return 0;
 }
 
-}
+} // namespace LayoutTreeBuilderTraversal
 
-} // namespace
+} // namespace blink

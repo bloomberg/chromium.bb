@@ -126,4 +126,4 @@ void SVGTransformTearOff::setSkewY(float y, ExceptionState& exceptionState)
     commitChange();
 }
 
-}
+} // namespace blink

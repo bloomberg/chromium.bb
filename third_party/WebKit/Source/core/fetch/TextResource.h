@@ -29,6 +29,6 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 
-}
+} // namespace blink
 
 #endif // TextResource_h

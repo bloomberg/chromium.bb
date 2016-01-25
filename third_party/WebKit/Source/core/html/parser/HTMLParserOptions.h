@@ -42,6 +42,6 @@ public:
     explicit HTMLParserOptions(Document* = 0);
 };
 
-}
+} // namespace blink
 
 #endif

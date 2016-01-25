@@ -304,4 +304,4 @@ ICOImageDecoder::ImageType ICOImageDecoder::imageTypeAtIndex(size_t index)
     return strncmp(data, "\x89PNG", 4) ? BMP : PNG;
 }
 
-}
+} // namespace blink

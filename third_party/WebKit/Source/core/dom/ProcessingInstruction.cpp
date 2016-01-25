@@ -313,4 +313,4 @@ DEFINE_TRACE(ProcessingInstruction)
     ResourceOwner<StyleSheetResource>::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

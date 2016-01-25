@@ -53,4 +53,4 @@ void HTMLPreElement::collectStyleForPresentationAttribute(const QualifiedName& n
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-}
+} // namespace blink

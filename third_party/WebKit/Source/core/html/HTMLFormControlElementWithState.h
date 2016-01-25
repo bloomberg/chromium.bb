@@ -55,6 +55,6 @@ protected:
 
 DEFINE_TYPE_CASTS(HTMLFormControlElementWithState, FormAssociatedElement, control, control->isFormControlElementWithState(), control.isFormControlElementWithState());
 
-} // namespace
+} // namespace blink
 
 #endif

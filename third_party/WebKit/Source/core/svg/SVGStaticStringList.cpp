@@ -102,4 +102,4 @@ SVGParsingError SVGStaticStringList::setBaseValueAsString(const String& value)
     return m_value->setValueAsString(value);
 }
 
-}
+} // namespace blink

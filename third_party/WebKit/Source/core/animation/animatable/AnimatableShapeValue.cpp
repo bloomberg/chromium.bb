@@ -64,4 +64,4 @@ bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const
     return m_shape == shape || (m_shape && shape && *m_shape == *shape);
 }
 
-}
+} // namespace blink

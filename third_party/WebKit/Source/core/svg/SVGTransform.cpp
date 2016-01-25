@@ -172,7 +172,7 @@ const char* transformTypePrefixForParsing(SVGTransformType type)
     return "";
 }
 
-}
+} // namespace
 
 String SVGTransform::valueAsString() const
 {

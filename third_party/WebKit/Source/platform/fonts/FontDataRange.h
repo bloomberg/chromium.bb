@@ -70,6 +70,6 @@ private:
     RefPtr<SimpleFontData> m_fontData;
 };
 
-}
+} // namespace blink
 
 #endif

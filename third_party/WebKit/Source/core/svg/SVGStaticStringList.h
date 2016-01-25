@@ -73,6 +73,6 @@ private:
     RefPtrWillBeMember<SVGStringListTearOff> m_tearOff;
 };
 
-}
+} // namespace blink
 
 #endif

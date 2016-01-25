@@ -38,4 +38,4 @@ TEST_F(AnimationFilterStyleInterpolationTest, SimpleTest)
     roundTrip(*filter);
 }
 
-}
+} // namespace blink

@@ -80,6 +80,6 @@ private:
     void updateTotalCheckpointTokenCount();
 };
 
-}
+} // namespace blink
 
 #endif

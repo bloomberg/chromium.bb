@@ -112,7 +112,7 @@ private:
     bool m_pauseInDebugger;
 };
 
-}
+} // namespace
 
 static bool isDefinite(ProcessingUserGestureState state)
 {
@@ -224,4 +224,4 @@ bool UserGestureIndicator::processedUserGestureSinceLoad()
     return s_processedUserGestureSinceLoad;
 }
 
-}
+} // namespace blink

@@ -73,4 +73,4 @@ DEFINE_TRACE(DOMWindowPagePopup)
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
 }
 
-}
+} // namespace blink

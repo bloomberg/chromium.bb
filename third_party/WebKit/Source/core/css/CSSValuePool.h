@@ -94,6 +94,6 @@ private:
 
 CORE_EXPORT CSSValuePool& cssValuePool();
 
-}
+} // namespace blink
 
 #endif

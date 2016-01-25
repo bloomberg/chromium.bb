@@ -102,6 +102,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, isMenuList());
 
-}
+} // namespace blink
 
 #endif

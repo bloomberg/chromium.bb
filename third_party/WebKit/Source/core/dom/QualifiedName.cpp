@@ -138,4 +138,4 @@ void QualifiedName::createStatic(void* targetAddress, StringImpl* name)
     new (targetAddress) QualifiedName(nullAtom, AtomicString(name), nullAtom, true);
 }
 
-}
+} // namespace blink

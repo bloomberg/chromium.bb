@@ -116,6 +116,6 @@ private:
     int m_subframeCount;
 };
 
-}
+} // namespace blink
 
 #endif // FrameHost_h

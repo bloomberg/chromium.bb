@@ -44,6 +44,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGTextPath, isSVGTextPath());
 
-}
+} // namespace blink
 
 #endif // LayoutSVGTextPath_h

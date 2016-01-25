@@ -223,4 +223,4 @@ LocalFrame* MediaValues::frameFrom(Document& document)
     return executingDocument->frame();
 }
 
-} // namespace
+} // namespace blink

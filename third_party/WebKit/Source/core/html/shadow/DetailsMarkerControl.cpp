@@ -58,4 +58,4 @@ HTMLSummaryElement* DetailsMarkerControl::summaryElement()
     return toHTMLSummaryElement(shadowHost());
 }
 
-}
+} // namespace blink

@@ -83,5 +83,5 @@ TEST_F(LayerClipRecorderTest, Empty)
     EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
 }
 
-}
-}
+} // namespace
+} // namespace blink

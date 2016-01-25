@@ -92,6 +92,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGText, isSVGText());
 
-}
+} // namespace blink
 
 #endif

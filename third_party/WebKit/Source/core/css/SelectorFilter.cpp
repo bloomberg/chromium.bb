@@ -190,4 +190,4 @@ DEFINE_TRACE(SelectorFilter)
 #endif
 }
 
-}
+} // namespace blink

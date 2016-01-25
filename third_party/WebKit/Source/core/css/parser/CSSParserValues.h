@@ -153,6 +153,6 @@ inline void CSSParserValue::setFromValueList(PassOwnPtr<CSSParserValueList> valu
     isInt = false;
 }
 
-}
+} // namespace blink
 
 #endif

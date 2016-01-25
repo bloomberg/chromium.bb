@@ -157,6 +157,6 @@ private:
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControls, isMediaControls());
 
-}
+} // namespace blink
 
 #endif

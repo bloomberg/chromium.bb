@@ -77,4 +77,4 @@ bool ImagePattern::isTextureBacked() const
     return m_tileImage && m_tileImage->isTextureBacked();
 }
 
-} // namespace
+} // namespace blink

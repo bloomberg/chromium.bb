@@ -43,6 +43,6 @@ public:
     }
 };
 
-}
+} // namespace blink
 
 #endif // NavigatorOnLine_h

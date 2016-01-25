@@ -88,4 +88,4 @@ PathSegmentData SVGPathByteStreamSource::parseSegment()
     return segment;
 }
 
-}
+} // namespace blink

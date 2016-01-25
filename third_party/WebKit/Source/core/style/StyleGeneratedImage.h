@@ -67,5 +67,5 @@ private:
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleGeneratedImage, isGeneratedImage());
 
-}
+} // namespace blink
 #endif

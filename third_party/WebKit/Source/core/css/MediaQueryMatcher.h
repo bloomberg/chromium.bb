@@ -75,6 +75,6 @@ private:
     ViewportListenerSet m_viewportListeners;
 };
 
-}
+} // namespace blink
 
 #endif // MediaQueryMatcher_h

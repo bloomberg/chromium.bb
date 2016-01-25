@@ -46,6 +46,6 @@ protected:
     HTMLTableElement* findParentTable() const;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

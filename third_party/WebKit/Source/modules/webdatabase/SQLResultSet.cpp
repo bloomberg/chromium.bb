@@ -83,4 +83,4 @@ void SQLResultSet::setRowsAffected(int count)
     m_isValid = true;
 }
 
-}
+} // namespace blink

@@ -117,6 +117,6 @@ PassOwnPtr<ExecutionContextTask> createSameThreadTask(
     return internal::CallClosureTask::create(bind(function, parameters...), true);
 }
 
-} // namespace
+} // namespace blink
 
 #endif

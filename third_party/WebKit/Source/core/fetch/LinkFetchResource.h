@@ -36,6 +36,6 @@ private:
     LinkFetchResource(const ResourceRequest&, Type);
 };
 
-}
+} // namespace blink
 
 #endif // LinkFetchResource_h

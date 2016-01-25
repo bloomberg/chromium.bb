@@ -90,4 +90,4 @@ SVGTextPositioningElement* SVGTextPositioningElement::elementFromLayoutObject(La
     return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node) : 0;
 }
 
-}
+} // namespace blink

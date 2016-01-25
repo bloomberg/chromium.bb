@@ -114,4 +114,4 @@ void BackgroundHTMLInputStream::updateTotalCheckpointTokenCount()
         m_totalCheckpointTokenCount += m_checkpoints[i].tokensExtractedSincePreviousCheckpoint;
 }
 
-}
+} // namespace blink

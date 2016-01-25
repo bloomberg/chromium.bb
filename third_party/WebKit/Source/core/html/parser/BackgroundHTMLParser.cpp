@@ -302,4 +302,4 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
 }
 
-}
+} // namespace blink

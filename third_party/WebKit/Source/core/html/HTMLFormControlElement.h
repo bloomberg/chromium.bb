@@ -203,6 +203,6 @@ inline bool isHTMLFormControlElement(const Element& element)
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
 DEFINE_TYPE_CASTS(HTMLFormControlElement, FormAssociatedElement, control, control->isFormControlElement(), control.isFormControlElement());
 
-} // namespace
+} // namespace blink
 
 #endif

@@ -44,6 +44,6 @@ public:
     virtual void handleEvent(FileError*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // ErrorCallback_h

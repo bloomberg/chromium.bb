@@ -60,6 +60,6 @@ private:
     mutable double m_lastTime;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -116,6 +116,6 @@ private:
     const bool m_hasStep;
 };
 
-}
+} // namespace blink
 
 #endif // StepRange_h

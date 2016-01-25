@@ -40,4 +40,4 @@ bool LayoutSVGTSpan::isChildAllowed(LayoutObject* child, const ComputedStyle&) c
     return child->isSVGInline() && !child->isSVGTextPath();
 }
 
-}
+} // namespace blink

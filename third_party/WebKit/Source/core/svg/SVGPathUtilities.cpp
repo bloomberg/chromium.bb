@@ -79,4 +79,4 @@ bool buildByteStreamFromString(const String& d, SVGPathByteStream& result)
     return ok;
 }
 
-}
+} // namespace blink

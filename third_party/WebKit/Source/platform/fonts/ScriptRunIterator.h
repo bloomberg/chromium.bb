@@ -111,6 +111,6 @@ public:
 
     PairedBracketType getPairedBracketType(UChar32) const override;
 };
-}
+} // namespace blink
 
 #endif

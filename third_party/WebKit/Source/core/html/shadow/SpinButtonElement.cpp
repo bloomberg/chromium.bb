@@ -262,4 +262,4 @@ DEFINE_TRACE(SpinButtonElement)
     HTMLDivElement::trace(visitor);
 }
 
-}
+} // namespace blink

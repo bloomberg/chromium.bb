@@ -96,6 +96,6 @@ private:
     OwnPtrWillBeMember<LinkPreloadResourceClient> m_linkPreloadResourceClient;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -517,4 +517,4 @@ void InternalSettings::setCompositorWorkerEnabled(bool enabled, ExceptionState& 
     RuntimeEnabledFeatures::setCompositorWorkerEnabled(enabled);
 }
 
-}
+} // namespace blink

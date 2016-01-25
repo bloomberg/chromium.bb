@@ -87,4 +87,4 @@ AtomicString AudioTrack::defaultKind() const
     return emptyAtom;
 }
 
-}
+} // namespace blink

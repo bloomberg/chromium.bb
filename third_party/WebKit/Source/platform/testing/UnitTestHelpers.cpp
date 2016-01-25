@@ -83,5 +83,5 @@ void exitRunLoop()
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-}
-}
+} // namespace testing
+} // namespace blink

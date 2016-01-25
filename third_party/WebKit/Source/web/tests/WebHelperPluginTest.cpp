@@ -92,4 +92,4 @@ TEST_F(WebHelperPluginTest, CreateFailsWithPlaceholder)
 
 } // namespace
 
-} // namespace
+} // namespace blink

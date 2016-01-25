@@ -50,6 +50,6 @@ private:
     unsigned* m_nestingLevel;
 };
 
-}
+} // namespace blink
 
 #endif

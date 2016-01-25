@@ -42,4 +42,4 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGUnitType
     return entries;
 }
 
-}
+} // namespace blink

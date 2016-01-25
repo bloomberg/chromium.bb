@@ -179,4 +179,4 @@ bool VTTScanner::scanPercentage(float& percentage)
     return false;
 }
 
-}
+} // namespace blink

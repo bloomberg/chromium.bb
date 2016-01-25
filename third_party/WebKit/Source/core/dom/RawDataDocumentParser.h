@@ -53,6 +53,6 @@ private:
     }
 };
 
-};
+} // namespace blink;
 
 #endif // RawDataDocumentParser_h

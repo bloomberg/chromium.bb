@@ -91,6 +91,6 @@ private:
 
 DEFINE_TYPE_CASTS(PickerIndicatorElement, Element, element, element->isPickerIndicatorElement(), element.isPickerIndicatorElement());
 
-}
+} // namespace blink
 #endif
 #endif

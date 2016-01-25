@@ -120,6 +120,6 @@ TEST_F(LayoutTableCellTest, BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBord
     EXPECT_FALSE(cell->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
 
-}
+} // namespace
 
 } // namespace blink

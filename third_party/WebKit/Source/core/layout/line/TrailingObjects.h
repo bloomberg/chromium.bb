@@ -92,6 +92,6 @@ private:
     Vector<LineLayoutItem, 4> m_objects;
 };
 
-}
+} // namespace blink
 
 #endif // TrailingObjects_h

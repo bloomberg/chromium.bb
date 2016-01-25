@@ -69,6 +69,6 @@ public:
     static void mapNinePieceImageRepeat(StyleResolverState&, const CSSValue&, NinePieceImage&);
 };
 
-}
+} // namespace blink
 
 #endif

@@ -57,5 +57,4 @@ bool operator==(const IconURL& lhs, const IconURL& rhs)
         && lhs.m_mimeType == rhs.m_mimeType;
 }
 
-}
-
+} // namespace blink

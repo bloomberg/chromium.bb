@@ -237,4 +237,4 @@ DEFINE_TRACE(StyleElement)
     visitor->trace(m_sheet);
 }
 
-}
+} // namespace blink

@@ -94,4 +94,4 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine
     collection.swap(*this);
 }
 
-}
+} // namespace blink

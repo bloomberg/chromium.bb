@@ -46,6 +46,6 @@ struct Referrer {
     ReferrerPolicy referrerPolicy;
 };
 
-}
+} // namespace blink
 
 #endif // Referrer_h

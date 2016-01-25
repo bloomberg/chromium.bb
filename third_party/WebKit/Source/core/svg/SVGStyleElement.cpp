@@ -166,4 +166,4 @@ DEFINE_TRACE(SVGStyleElement)
     SVGElement::trace(visitor);
 }
 
-}
+} // namespace blink

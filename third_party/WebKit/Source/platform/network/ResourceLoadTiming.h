@@ -99,6 +99,6 @@ private:
     double m_sslEnd;
 };
 
-}
+} // namespace blink
 
 #endif

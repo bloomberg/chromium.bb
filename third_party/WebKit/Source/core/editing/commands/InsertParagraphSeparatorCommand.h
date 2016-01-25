@@ -61,6 +61,6 @@ private:
     bool m_pasteBlockquoteIntoUnquotedArea;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -844,4 +844,4 @@ TextBreakIterator* cursorMovementIterator(const UChar* string, int length)
     return setUpIteratorWithRules(kRules, string, length);
 }
 
-}
+} // namespace blink

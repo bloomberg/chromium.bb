@@ -83,4 +83,4 @@ Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColo
     }
 }
 
-}
+} // namespace blink

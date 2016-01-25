@@ -34,4 +34,4 @@ Node::InsertionNotificationRequest HTMLPictureElement::insertedInto(ContainerNod
     return HTMLElement::insertedInto(insertionPoint);
 }
 
-} // namespace
+} // namespace blink

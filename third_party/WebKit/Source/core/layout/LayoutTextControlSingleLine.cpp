@@ -426,4 +426,4 @@ HTMLInputElement* LayoutTextControlSingleLine::inputElement() const
     return toHTMLInputElement(node());
 }
 
-}
+} // namespace blink

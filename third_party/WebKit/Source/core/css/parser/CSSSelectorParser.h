@@ -81,6 +81,6 @@ private:
     };
 };
 
-} // namespace
+} // namespace blink
 
 #endif // CSSSelectorParser_h

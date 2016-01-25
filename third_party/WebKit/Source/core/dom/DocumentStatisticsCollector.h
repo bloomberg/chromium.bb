@@ -17,6 +17,6 @@ public:
     static WebDistillabilityFeatures collectStatistics(Document&);
 };
 
-}
+} // namespace blink
 
 #endif

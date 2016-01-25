@@ -73,6 +73,6 @@ private:
     int m_size;
 };
 
-}
+} // namespace blink
 
 #endif

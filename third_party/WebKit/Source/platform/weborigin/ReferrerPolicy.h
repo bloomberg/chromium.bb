@@ -49,6 +49,6 @@ enum ReferrerPolicy {
     ReferrerPolicyOriginWhenCrossOrigin,
 };
 
-}
+} // namespace blink
 
 #endif // ReferrerPolicy_h

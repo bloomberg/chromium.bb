@@ -52,4 +52,4 @@ DEFINE_TRACE(BluetoothSupplement)
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }
 
-}; // blink
+} // namespace blink

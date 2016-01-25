@@ -159,6 +159,6 @@ private:
     RefPtrWillBeMember<Property> m_target;
 };
 
-}
+} // namespace blink
 
 #endif // SVGPropertyTearOff_h

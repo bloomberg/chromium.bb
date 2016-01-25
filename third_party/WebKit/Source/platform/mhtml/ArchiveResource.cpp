@@ -74,4 +74,4 @@ PassRefPtrWillBeRawPtr<ArchiveResource> ArchiveResource::create(
         data, url, contentID, mimeType, textEncoding, frameName, response));
 }
 
-}
+} // namespace blink

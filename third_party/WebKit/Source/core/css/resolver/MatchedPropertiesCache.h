@@ -125,6 +125,6 @@ private:
     Cache m_cache;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -142,4 +142,4 @@ DEFINE_TRACE(PresentationAvailability)
     ActiveDOMObject::trace(visitor);
 }
 
-} // blink namespace
+} // namespace blink

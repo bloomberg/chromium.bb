@@ -64,7 +64,7 @@ public:
     virtual void estimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead*) { }
 };
 
-}
+} // namespace TraceEvent
 
 // FIXME: Make these global variables thread-safe. Make a value update atomic.
 PLATFORM_EXPORT extern TraceEvent::TraceEventAPIAtomicWord* traceSamplingState[3];

@@ -41,6 +41,6 @@ private:
     InterpolationRange m_range;
 };
 
-}
+} // namespace blink
 
 #endif

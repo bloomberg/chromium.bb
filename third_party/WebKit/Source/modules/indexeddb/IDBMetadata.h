@@ -114,6 +114,6 @@ struct IDBDatabaseMetadata {
     ObjectStoreMap objectStores;
 };
 
-}
+} // namespace blink
 
 #endif // IDBMetadata_h

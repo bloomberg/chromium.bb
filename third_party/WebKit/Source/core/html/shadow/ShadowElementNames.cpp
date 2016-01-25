@@ -124,6 +124,6 @@ const AtomicString& optGroupLabel()
     return name;
 }
 
-}
+} // namespace ShadowElementNames
 
-}
+} // namespace blink

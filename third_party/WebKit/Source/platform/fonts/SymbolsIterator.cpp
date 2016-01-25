@@ -153,4 +153,4 @@ bool SymbolsIterator::consume(unsigned *symbolsLimit, FontFallbackPriority* font
     return true;
 }
 
-}
+} // namespace blink

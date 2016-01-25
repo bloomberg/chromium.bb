@@ -61,6 +61,6 @@ private:
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMasker, MaskerResourceType);
 
-}
+} // namespace blink
 
 #endif

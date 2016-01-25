@@ -36,6 +36,6 @@ public:
 protected:
     CachedMetadataHandler() { }
 };
-}
+} // namespace blink
 
 #endif // CachedMetadataHandler_h

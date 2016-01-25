@@ -71,4 +71,4 @@ DEFINE_TRACE(ElementDataCache)
 #endif
 }
 
-}
+} // namespace blink

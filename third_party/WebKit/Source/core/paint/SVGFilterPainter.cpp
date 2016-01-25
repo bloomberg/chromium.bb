@@ -181,4 +181,4 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
         paintFilteredContent(object, context, filterData);
 }
 
-}
+} // namespace blink

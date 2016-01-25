@@ -162,6 +162,6 @@ private:
     OwnPtr<HTMLTokenizer> m_tokenizer;
 };
 
-}
+} // namespace blink
 
 #endif

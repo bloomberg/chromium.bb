@@ -238,6 +238,6 @@ private:
     HTMLParserOptions m_options;
 };
 
-}
+} // namespace blink
 
 #endif

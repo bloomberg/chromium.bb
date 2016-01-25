@@ -39,4 +39,4 @@ FloatRect::operator CGRect() const
     return CGRectMake(x(), y(), width(), height());
 }
 
-}
+} // namespace blink

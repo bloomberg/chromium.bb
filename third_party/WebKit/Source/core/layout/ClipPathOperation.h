@@ -136,6 +136,6 @@ inline bool ShapeClipPathOperation::operator==(const ClipPathOperation& o) const
     return *m_shape == *otherShape;
 }
 
-}
+} // namespace blink
 
 #endif // ClipPathOperation_h

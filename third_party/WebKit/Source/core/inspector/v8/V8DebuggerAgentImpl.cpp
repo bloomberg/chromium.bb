@@ -68,7 +68,7 @@ static const char skipStackPattern[] = "skipStackPattern";
 static const char skipContentScripts[] = "skipContentScripts";
 static const char skipAllPauses[] = "skipAllPauses";
 
-};
+} // namespace DebuggerAgentState;
 
 static const int maxSkipStepFrameCount = 128;
 

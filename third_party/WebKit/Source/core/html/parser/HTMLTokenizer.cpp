@@ -1593,4 +1593,4 @@ inline void HTMLTokenizer::parseError()
     notImplemented();
 }
 
-}
+} // namespace blink

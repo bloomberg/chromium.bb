@@ -249,6 +249,6 @@ bool nodeHasRole(Node*, const String& role);
 // This will let you know if aria-hidden was explicitly set to false.
 bool isNodeAriaVisible(Node*);
 
-}
+} // namespace blink
 
 #endif

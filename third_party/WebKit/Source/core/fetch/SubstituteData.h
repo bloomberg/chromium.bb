@@ -72,7 +72,7 @@ private:
     SubstituteDataLoadPolicy m_substituteDataLoadPolicy;
 };
 
-}
+} // namespace blink
 
 #endif // SubstituteData_h
 

@@ -114,6 +114,6 @@ struct DictionaryHelper {
     static bool get(const Dictionary&, const String& key, PointerType<T>& value);
 };
 
-}
+} // namespace blink
 
 #endif // Dictionary_h

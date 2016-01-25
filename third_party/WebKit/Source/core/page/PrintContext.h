@@ -94,6 +94,6 @@ private:
     bool m_linkedDestinationsValid;
 };
 
-}
+} // namespace blink
 
 #endif

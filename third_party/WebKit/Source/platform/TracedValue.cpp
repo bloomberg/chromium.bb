@@ -107,4 +107,4 @@ void TracedValue::estimateTraceMemoryOverhead(base::trace_event::TraceEventMemor
     m_tracedValue->EstimateTraceMemoryOverhead(overhead);
 }
 
-}
+} // namespace blink

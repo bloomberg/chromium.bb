@@ -122,5 +122,4 @@ TEST_F(LayoutObjectTest, MapToVisibleRectInContainerSpace)
     EXPECT_TRUE(rect == LayoutRect(0, 10, 20, 20));
 }
 
-}
-
+} // namespace blink

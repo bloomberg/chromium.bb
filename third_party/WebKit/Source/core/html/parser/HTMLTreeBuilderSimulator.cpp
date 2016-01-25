@@ -183,4 +183,4 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(cons
     return simulatedToken;
 }
 
-}
+} // namespace blink

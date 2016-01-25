@@ -87,6 +87,6 @@ private:
     HashMap<unsigned long, OwnPtr<ProgressItem>> m_progressItems;
 };
 
-}
+} // namespace blink
 
 #endif

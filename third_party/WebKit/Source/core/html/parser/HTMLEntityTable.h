@@ -54,6 +54,6 @@ public:
     static const LChar* entityString(const HTMLEntityTableEntry&);
 };
 
-}
+} // namespace blink
 
 #endif

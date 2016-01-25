@@ -76,4 +76,4 @@ DEFINE_TRACE(DirectoryEntrySync)
     EntrySync::trace(visitor);
 }
 
-}
+} // namespace blink

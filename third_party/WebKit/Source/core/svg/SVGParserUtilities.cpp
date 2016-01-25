@@ -250,4 +250,4 @@ bool parseNumberOrPercentage(const String& string, float& number)
     return genericParseNumberOrPercentage(ptr, end, number);
 }
 
-}
+} // namespace blink

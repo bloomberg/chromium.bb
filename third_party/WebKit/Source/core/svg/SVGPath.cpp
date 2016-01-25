@@ -64,7 +64,7 @@ PassRefPtr<SVGPathByteStream> conditionallyAddPathByteStreams(PassRefPtr<SVGPath
     return addPathByteStreams(*fromStream, byStream, repeatCount);
 }
 
-}
+} // namespace
 
 SVGPath::SVGPath()
     : SVGPropertyBase(classType())
@@ -178,4 +178,4 @@ DEFINE_TRACE(SVGPath)
     SVGPropertyBase::trace(visitor);
 }
 
-}
+} // namespace blink

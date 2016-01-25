@@ -77,7 +77,7 @@ void appendValue(StringBuilder& builder, SVGParsingError error, const AtomicStri
     builder.append('"');
 }
 
-}
+} // namespace
 
 String SVGParsingError::format(const String& tagName, const QualifiedName& name, const AtomicString& value) const
 {

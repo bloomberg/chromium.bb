@@ -32,6 +32,6 @@ private:
     explicit LinkManifest(HTMLLinkElement* owner);
 };
 
-}
+} // namespace blink
 
 #endif // LinkManifest_h

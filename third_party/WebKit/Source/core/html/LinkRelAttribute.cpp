@@ -95,4 +95,4 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     }
 }
 
-}
+} // namespace blink

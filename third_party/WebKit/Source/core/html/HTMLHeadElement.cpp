@@ -36,4 +36,4 @@ inline HTMLHeadElement::HTMLHeadElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLHeadElement)
 
-}
+} // namespace blink

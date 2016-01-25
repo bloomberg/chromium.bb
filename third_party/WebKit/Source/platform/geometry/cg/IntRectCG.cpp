@@ -43,4 +43,4 @@ IntRect enclosingIntRect(const CGRect& rect)
     return IntRect(l, t, r - l, b - t);
 }
 
-}
+} // namespace blink

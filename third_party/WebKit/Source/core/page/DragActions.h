@@ -58,6 +58,6 @@ typedef enum {
     DragOperationEvery   = UINT_MAX
 } DragOperation;
 
-}
+} // namespace blink
 
 #endif // !DragActions_h

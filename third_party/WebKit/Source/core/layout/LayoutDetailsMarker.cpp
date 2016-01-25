@@ -73,4 +73,4 @@ bool LayoutDetailsMarker::isOpen() const
     return false;
 }
 
-}
+} // namespace blink

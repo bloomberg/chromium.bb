@@ -145,6 +145,6 @@ private:
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);
 
-}
+} // namespace blink
 
 #endif

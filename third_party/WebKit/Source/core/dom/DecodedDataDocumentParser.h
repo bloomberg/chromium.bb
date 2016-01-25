@@ -58,6 +58,6 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 
-}
+} // namespace blink
 
 #endif // DecodedDataDocumentParser_h

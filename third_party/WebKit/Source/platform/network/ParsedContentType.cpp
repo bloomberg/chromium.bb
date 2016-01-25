@@ -224,4 +224,4 @@ void ParsedContentType::setContentTypeParameter(const SubstringRange& key, const
     m_parameters.set(substringForRange(m_contentType, key), substringForRange(m_contentType, value));
 }
 
-}
+} // namespace blink

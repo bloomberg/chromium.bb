@@ -80,4 +80,4 @@ void InspectorTaskRunner::v8InterruptCallback(v8::Isolate*, void* data)
     runner->runPendingTasks();
 }
 
-}
+} // namespace blink

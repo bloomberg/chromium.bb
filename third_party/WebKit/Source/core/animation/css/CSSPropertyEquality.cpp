@@ -52,7 +52,7 @@ bool fillLayersEqual(const FillLayer& aLayers, const FillLayer& bLayers)
     return true;
 }
 
-}
+} // namespace
 
 bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyle& a, const ComputedStyle& b)
 {
@@ -338,4 +338,4 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
     }
 }
 
-}
+} // namespace blink

@@ -65,4 +65,4 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*,
     return FEFlood::create(filter, color, opacity);
 }
 
-}
+} // namespace blink

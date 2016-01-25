@@ -255,4 +255,4 @@ FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate& cente
     return FloatPoint(x, y);
 }
 
-}
+} // namespace blink

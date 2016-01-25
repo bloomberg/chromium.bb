@@ -124,4 +124,4 @@ DEFINE_TRACE(UserActionElementSet)
 #endif
 }
 
-}
+} // namespace blink

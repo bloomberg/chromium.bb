@@ -39,4 +39,4 @@ FloatSize::operator CGSize() const
     return CGSizeMake(m_width, m_height);
 }
 
-}
+} // namespace blink

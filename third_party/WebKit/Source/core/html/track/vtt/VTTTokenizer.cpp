@@ -259,5 +259,4 @@ bool VTTTokenizer::nextToken(VTTToken& token)
     return false;
 }
 
-}
-
+} // namespace blink

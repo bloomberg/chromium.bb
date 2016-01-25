@@ -200,4 +200,4 @@ DEFINE_TRACE(CSSSegmentedFontFace)
 #endif
 }
 
-}
+} // namespace blink

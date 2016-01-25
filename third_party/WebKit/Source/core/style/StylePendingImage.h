@@ -95,5 +95,5 @@ private:
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, isPendingImage());
 
-}
+} // namespace blink
 #endif

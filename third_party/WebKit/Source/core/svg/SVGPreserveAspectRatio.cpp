@@ -403,4 +403,4 @@ float SVGPreserveAspectRatio::calculateDistance(PassRefPtrWillBeRawPtr<SVGProper
     return -1;
 }
 
-}
+} // namespace blink

@@ -92,4 +92,4 @@ void HTMLBaseElement::setHref(const AtomicString& value)
     setAttribute(hrefAttr, value);
 }
 
-}
+} // namespace blink

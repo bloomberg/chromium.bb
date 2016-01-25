@@ -195,4 +195,4 @@ void HTMLFontElement::collectStyleForPresentationAttribute(const QualifiedName& 
     }
 }
 
-}
+} // namespace blink

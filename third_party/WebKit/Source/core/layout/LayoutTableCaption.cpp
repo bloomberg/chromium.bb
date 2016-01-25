@@ -57,4 +57,4 @@ LayoutTable* LayoutTableCaption::table() const
     return toLayoutTable(parent());
 }
 
-}
+} // namespace blink

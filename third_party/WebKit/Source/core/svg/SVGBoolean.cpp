@@ -72,4 +72,4 @@ float SVGBoolean::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVG
     return -1;
 }
 
-}
+} // namespace blink

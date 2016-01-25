@@ -90,6 +90,6 @@ public:
 
 DEFINE_TYPE_CASTS(LayoutSVGResourcePaintServer, LayoutSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());
 
-}
+} // namespace blink
 
 #endif

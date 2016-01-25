@@ -25,4 +25,4 @@ void setFirstPaintInvalidationTrackingEnabledForShowPaintRects(bool b)
     showPaintRectsEnabled = b;
 }
 
-}
+} // namespace blink

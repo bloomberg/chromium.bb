@@ -146,5 +146,5 @@ private:
     mutable bool m_isComputingShape;
 };
 
-}
+} // namespace blink
 #endif

@@ -80,6 +80,6 @@ private:
     unsigned m_version;
 };
 
-}
+} // namespace blink
 
 #endif

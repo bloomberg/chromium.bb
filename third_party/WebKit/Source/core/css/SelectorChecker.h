@@ -123,6 +123,6 @@ private:
     Mode m_mode;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -141,4 +141,4 @@ Element* HTMLTableRowsCollection::virtualItemAfter(Element* previous) const
     return rowAfter(toHTMLTableElement(ownerNode()), toHTMLTableRowElement(previous));
 }
 
-}
+} // namespace blink

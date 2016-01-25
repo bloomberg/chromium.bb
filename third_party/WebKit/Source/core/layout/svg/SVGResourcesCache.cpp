@@ -168,4 +168,4 @@ void SVGResourcesCache::clientDestroyed(LayoutObject* layoutObject)
     cache.removeResourcesFromLayoutObject(layoutObject);
 }
 
-}
+} // namespace blink

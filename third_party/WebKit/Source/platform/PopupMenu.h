@@ -37,6 +37,6 @@ public:
     virtual void disconnectClient() = 0;
 };
 
-}
+} // namespace blink
 
 #endif // PopupMenu_h

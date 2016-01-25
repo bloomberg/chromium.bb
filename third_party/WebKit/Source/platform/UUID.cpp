@@ -82,4 +82,4 @@ bool isValidUUID(const String& uuid)
     return true;
 }
 
-}
+} // namespace blink

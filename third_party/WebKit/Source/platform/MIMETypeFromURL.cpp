@@ -55,4 +55,4 @@ String mimeTypeFromURL(const KURL& url)
     return MIMETypeRegistry::getMIMETypeForExtension(extension);
 }
 
-}
+} // namespace blink

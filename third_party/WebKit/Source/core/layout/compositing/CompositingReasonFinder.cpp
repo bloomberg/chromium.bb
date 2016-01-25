@@ -185,4 +185,4 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(const PaintLay
     return layer->scrollsWithViewport() && m_layoutView.frameView()->isScrollable();
 }
 
-}
+} // namespace blink

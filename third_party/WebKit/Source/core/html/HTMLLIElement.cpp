@@ -131,4 +131,4 @@ inline void HTMLLIElement::parseValue(const AtomicString& value)
         toLayoutListItem(layoutObject())->clearExplicitValue();
 }
 
-}
+} // namespace blink

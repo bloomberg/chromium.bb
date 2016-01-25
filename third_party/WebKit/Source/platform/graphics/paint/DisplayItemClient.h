@@ -39,6 +39,6 @@ public:
 inline bool operator==(const DisplayItemClient& client1, const DisplayItemClient& client2) { return &client1 == &client2; }
 inline bool operator!=(const DisplayItemClient& client1, const DisplayItemClient& client2) { return &client1 != &client2; }
 
-}
+} // namespace blink
 
 #endif // DisplayItemClient_h

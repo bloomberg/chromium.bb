@@ -68,4 +68,4 @@ DEFINE_TRACE(SplitTextNodeContainingElementCommand)
     CompositeEditCommand::trace(visitor);
 }
 
-}
+} // namespace blink

@@ -44,6 +44,6 @@ public:
     virtual void handleEvent(DOMFileSystem*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // FileSystemCallback_h

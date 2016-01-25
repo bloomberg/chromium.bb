@@ -76,4 +76,4 @@ void SVGAnimatedAngle::animationEnded()
     m_orientType->animationEnded();
 }
 
-}
+} // namespace blink

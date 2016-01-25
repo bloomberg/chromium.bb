@@ -441,4 +441,4 @@ String bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize
     return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates).toString();
 }
 
-}
+} // namespace blink

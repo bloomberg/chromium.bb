@@ -76,5 +76,5 @@ enum ThemeColor {
     FocusRingColor, ActiveListBoxSelection, ActiveListBoxSelectionText, InactiveListBoxSelection, InactiveListBoxSelectionText
 };
 
-}
+} // namespace blink
 #endif

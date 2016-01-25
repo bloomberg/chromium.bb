@@ -39,4 +39,4 @@ PassRefPtr<SkShader> PicturePattern::createShader()
         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds));
 }
 
-} // namespace
+} // namespace blink

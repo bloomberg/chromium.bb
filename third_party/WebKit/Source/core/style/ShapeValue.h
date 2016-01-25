@@ -139,6 +139,6 @@ inline bool ShapeValue::operator==(const ShapeValue& other) const
     return false;
 }
 
-}
+} // namespace blink
 
 #endif

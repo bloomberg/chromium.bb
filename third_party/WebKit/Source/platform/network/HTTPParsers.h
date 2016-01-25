@@ -107,6 +107,6 @@ PLATFORM_EXPORT void parseCommaDelimitedHeader(const String& headerValue, CommaD
 
 PLATFORM_EXPORT ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header);
 
-}
+} // namespace blink
 
 #endif

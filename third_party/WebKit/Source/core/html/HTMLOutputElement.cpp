@@ -146,4 +146,4 @@ DEFINE_TRACE(HTMLOutputElement)
     DOMSettableTokenListObserver::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

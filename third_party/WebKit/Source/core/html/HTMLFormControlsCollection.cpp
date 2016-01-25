@@ -245,4 +245,4 @@ DEFINE_TRACE(HTMLFormControlsCollection)
     HTMLCollection::trace(visitor);
 }
 
-}
+} // namespace blink

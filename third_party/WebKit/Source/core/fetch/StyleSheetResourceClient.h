@@ -42,6 +42,6 @@ public:
     virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) {}
 };
 
-}
+} // namespace blink
 
 #endif // StyleSheetResourceClient_h

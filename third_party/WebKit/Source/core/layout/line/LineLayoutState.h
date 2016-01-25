@@ -122,6 +122,6 @@ private:
     LayoutFlowThread* m_flowThread;
 };
 
-}
+} // namespace blink
 
 #endif // LineLayoutState_h

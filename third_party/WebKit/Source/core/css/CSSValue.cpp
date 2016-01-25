@@ -629,4 +629,4 @@ DEFINE_TRACE(CSSValue)
     ASSERT_NOT_REACHED();
 }
 
-}
+} // namespace blink

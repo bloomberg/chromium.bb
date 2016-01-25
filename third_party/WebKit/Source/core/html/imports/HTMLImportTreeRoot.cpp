@@ -109,4 +109,4 @@ DEFINE_TRACE(HTMLImportTreeRoot)
     HTMLImport::trace(visitor);
 }
 
-}
+} // namespace blink

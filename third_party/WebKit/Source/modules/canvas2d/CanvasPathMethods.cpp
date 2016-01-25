@@ -322,4 +322,4 @@ void CanvasPathMethods::rect(float x, float y, float width, float height)
 
     m_path.addRect(FloatRect(x, y, width, height));
 }
-}
+} // namespace blink

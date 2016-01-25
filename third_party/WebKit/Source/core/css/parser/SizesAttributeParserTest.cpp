@@ -96,4 +96,4 @@ TEST(SizesAttributeParserTest, Basic)
     }
 }
 
-} // namespace
+} // namespace blink

@@ -48,6 +48,6 @@ protected:
     RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // MediaValuesDynamic_h

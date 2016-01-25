@@ -159,4 +159,4 @@ DEFINE_TRACE(CanvasFontCache)
 #endif
 }
 
-} // blink
+} // namespace blink

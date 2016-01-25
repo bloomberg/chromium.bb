@@ -193,7 +193,7 @@ template<typename T> struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<
     }
 };
 
-}
+} // namespace blink
 
 namespace WTF {
 
@@ -231,7 +231,7 @@ template<> struct HashTraits<blink::PairWithWeakHandling> : blink::WeakHandlingH
     static bool isDeletedValue(const blink::PairWithWeakHandling& value) { return value.isHashTableDeletedValue(); }
 };
 
-}
+} // namespace WTF
 
 namespace blink {
 

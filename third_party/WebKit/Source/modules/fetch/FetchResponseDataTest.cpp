@@ -177,4 +177,4 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerOpaqueRedirectType)
     CheckHeaders(webResponse);
 }
 
-} // namespace WebCore
+} // namespace blink

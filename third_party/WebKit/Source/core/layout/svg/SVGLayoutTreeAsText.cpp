@@ -172,7 +172,7 @@ String SVGEnumerationToString(Enum value)
     return String();
 }
 
-}
+} // namespace
 
 static TextStream& operator<<(TextStream& ts, const SVGUnitTypes::SVGUnitType& unitType)
 {

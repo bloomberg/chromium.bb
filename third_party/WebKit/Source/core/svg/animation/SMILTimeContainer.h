@@ -142,6 +142,6 @@ private:
     bool m_preventScheduledAnimationsChanges;
 #endif
 };
-}
+} // namespace blink
 
 #endif // SMILTimeContainer_h

@@ -75,6 +75,6 @@ private:
     RefPtr<UserGestureToken> m_token;
 };
 
-}
+} // namespace blink
 
 #endif

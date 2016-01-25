@@ -123,4 +123,4 @@ void HTMLMapElement::removedFrom(ContainerNode* insertionPoint)
     HTMLElement::removedFrom(insertionPoint);
 }
 
-}
+} // namespace blink

@@ -671,4 +671,4 @@ bool MediaQueryEvaluator::eval(const MediaQueryExp* expr) const
     return false;
 }
 
-} // namespace
+} // namespace blink

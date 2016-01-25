@@ -55,6 +55,6 @@ typedef int SandboxFlags;
 
 SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidTokensErrorMessage);
 
-}
+} // namespace blink
 
 #endif

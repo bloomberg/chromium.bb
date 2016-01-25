@@ -86,4 +86,4 @@ bool NinePieceImageData::operator==(const NinePieceImageData& other) const
         && verticalRule == other.verticalRule;
 }
 
-}
+} // namespace blink

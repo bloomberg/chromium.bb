@@ -70,4 +70,4 @@ LayoutObject* SVGClipPathElement::createLayoutObject(const ComputedStyle&)
     return new LayoutSVGResourceClipper(this);
 }
 
-}
+} // namespace blink

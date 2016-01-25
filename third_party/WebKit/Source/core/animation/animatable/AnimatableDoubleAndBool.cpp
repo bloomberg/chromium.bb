@@ -29,4 +29,4 @@ bool AnimatableDoubleAndBool::equalTo(const AnimatableValue* value) const
     return toDouble() == other->toDouble() && flag() == other->flag();
 }
 
-}
+} // namespace blink

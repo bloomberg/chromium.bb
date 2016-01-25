@@ -49,6 +49,6 @@ public:
     static void encodeStringAsFormData(Vector<char>&, const CString&);
 };
 
-}
+} // namespace blink
 
 #endif

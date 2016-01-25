@@ -260,6 +260,6 @@ private:
     WillBeHeapHashMap<RawPtrWillBeMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
 };
 
-}
+} // namespace blink
 
 #endif

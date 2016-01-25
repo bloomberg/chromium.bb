@@ -91,4 +91,4 @@ void HTMLTitleElement::setText(const String &value)
         appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
 }
 
-}
+} // namespace blink

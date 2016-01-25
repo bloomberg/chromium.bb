@@ -999,4 +999,4 @@ bool StylePropertySerializer::shorthandHasOnlyInitialOrInheritedValue(const Styl
     return isInitialValue || isInheritedValue;
 }
 
-}
+} // namespace blink

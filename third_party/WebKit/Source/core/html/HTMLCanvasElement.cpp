@@ -1018,4 +1018,4 @@ bool HTMLCanvasElement::isOpaque() const
     return m_context && !m_context->hasAlpha();
 }
 
-} // blink
+} // namespace blink

@@ -121,6 +121,6 @@ private:
     Vector<char> m_serializedData;
 };
 
-}
+} // namespace blink
 
 #endif

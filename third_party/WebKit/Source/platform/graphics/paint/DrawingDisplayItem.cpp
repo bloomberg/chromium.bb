@@ -113,4 +113,4 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const
 }
 #endif // ENABLE(ASSERT)
 
-}
+} // namespace blink

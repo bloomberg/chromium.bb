@@ -44,7 +44,7 @@ String stringValue(Node*);
 // @return whether the given node is a valid context node
 bool isValidContextNode(Node*);
 
-}
+} // namespace XPath
 
-}
+} // namespace blink
 #endif // XPathUtil_h

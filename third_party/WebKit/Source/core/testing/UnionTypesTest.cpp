@@ -159,4 +159,4 @@ String UnionTypesTest::doubleOrStringOrStringSequenceArg(const DoubleOrStringOrS
     return builder.substring(0, builder.length() - 2) + "]";
 }
 
-}
+} // namespace blink

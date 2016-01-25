@@ -299,4 +299,4 @@ DEFINE_TRACE(ApplyBlockElementCommand)
     CompositeEditCommand::trace(visitor);
 }
 
-}
+} // namespace blink

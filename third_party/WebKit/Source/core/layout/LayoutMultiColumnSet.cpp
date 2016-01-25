@@ -409,4 +409,4 @@ LayoutRect LayoutMultiColumnSet::flowThreadPortionRect() const
     return portionRect;
 }
 
-}
+} // namespace blink

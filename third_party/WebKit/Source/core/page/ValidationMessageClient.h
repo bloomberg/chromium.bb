@@ -59,6 +59,6 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-}
+} // namespace blink
 
 #endif

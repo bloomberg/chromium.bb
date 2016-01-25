@@ -249,4 +249,4 @@ bool SearchFieldCancelButtonElement::willRespondToMouseClickEvents()
     return HTMLDivElement::willRespondToMouseClickEvents();
 }
 
-}
+} // namespace blink

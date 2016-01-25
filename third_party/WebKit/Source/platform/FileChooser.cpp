@@ -86,4 +86,4 @@ Vector<String> FileChooserSettings::acceptTypes() const
     return acceptTypes;
 }
 
-}
+} // namespace blink

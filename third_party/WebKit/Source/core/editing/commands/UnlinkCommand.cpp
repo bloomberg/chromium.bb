@@ -43,4 +43,4 @@ void UnlinkCommand::doApply()
     removeStyledElement(HTMLAnchorElement::create(document()));
 }
 
-}
+} // namespace blink

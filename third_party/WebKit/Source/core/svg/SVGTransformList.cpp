@@ -182,7 +182,7 @@ PassRefPtrWillBeRawPtr<SVGTransform> parseTransformOfType(unsigned type, const C
     return transform.release();
 }
 
-}
+} // namespace
 
 template<typename CharType>
 bool SVGTransformList::parseInternal(const CharType*& ptr, const CharType* end)
@@ -394,4 +394,4 @@ float SVGTransformList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase
     return SVGTransformDistance(at(0), toList->at(0)).distance();
 }
 
-}
+} // namespace blink

@@ -140,4 +140,4 @@ void SVGRect::setInvalid()
     m_isValid = false;
 }
 
-}
+} // namespace blink

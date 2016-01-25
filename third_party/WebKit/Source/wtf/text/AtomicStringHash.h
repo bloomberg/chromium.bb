@@ -61,7 +61,7 @@ template<> struct HashTraits<AtomicString> : SimpleClassHashTraits<AtomicString>
     static bool isEmptyValue(const AtomicString& value) { return value.isNull(); }
 };
 
-}
+} // namespace WTF
 
 using WTF::AtomicStringHash;
 

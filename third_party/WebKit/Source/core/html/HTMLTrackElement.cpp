@@ -335,4 +335,4 @@ DEFINE_TRACE(HTMLTrackElement)
     HTMLElement::trace(visitor);
 }
 
-}
+} // namespace blink

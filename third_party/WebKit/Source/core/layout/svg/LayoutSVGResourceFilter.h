@@ -105,6 +105,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, isSVGResourceFilter());
 
-}
+} // namespace blink
 
 #endif

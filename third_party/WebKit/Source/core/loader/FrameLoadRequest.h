@@ -130,6 +130,6 @@ private:
     ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;
 };
 
-}
+} // namespace blink
 
 #endif // FrameLoadRequest_h

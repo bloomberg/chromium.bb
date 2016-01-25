@@ -98,5 +98,4 @@ bool SelectRuleFeatureSet::checkSelectorsForClassChange(const SpaceSplitString& 
     return false;
 }
 
-}
-
+} // namespace blink

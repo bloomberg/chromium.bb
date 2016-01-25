@@ -56,4 +56,4 @@ DEFINE_TRACE(FileEntrySync)
     EntrySync::trace(visitor);
 }
 
-}
+} // namespace blink

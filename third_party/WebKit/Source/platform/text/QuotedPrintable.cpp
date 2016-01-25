@@ -151,4 +151,4 @@ void quotedPrintableDecode(const char* data, size_t dataLength, Vector<char>& ou
     }
 }
 
-}
+} // namespace blink

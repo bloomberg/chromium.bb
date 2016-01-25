@@ -171,4 +171,4 @@ DEFINE_TRACE(MatchedPropertiesCache)
 #endif
 }
 
-}
+} // namespace blink

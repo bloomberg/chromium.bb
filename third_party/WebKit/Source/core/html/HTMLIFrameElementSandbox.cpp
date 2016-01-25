@@ -39,4 +39,4 @@ bool HTMLIFrameElementSandbox::validateTokenValue(const AtomicString& tokenValue
     return supportedTokens().contains(tokenValue);
 }
 
-}
+} // namespace blink

@@ -271,4 +271,4 @@ Position InsertTextCommand::insertTab(const Position& pos)
     return lastPositionInNode(spanElement.get());
 }
 
-}
+} // namespace blink

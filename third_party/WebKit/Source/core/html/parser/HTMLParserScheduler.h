@@ -114,6 +114,6 @@ private:
     bool m_isSuspendedWithActiveTimer;
 };
 
-}
+} // namespace blink
 
 #endif

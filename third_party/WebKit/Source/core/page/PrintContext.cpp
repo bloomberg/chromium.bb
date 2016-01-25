@@ -320,4 +320,4 @@ DEFINE_TRACE(PrintContext)
 #endif
 }
 
-}
+} // namespace blink

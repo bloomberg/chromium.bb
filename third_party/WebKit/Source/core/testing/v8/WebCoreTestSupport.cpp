@@ -77,4 +77,4 @@ void resetInternalsObject(v8::Local<v8::Context> context)
     InternalSettings::from(*page)->resetToConsistentState();
 }
 
-}
+} // namespace WebCoreTestSupport

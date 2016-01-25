@@ -64,4 +64,4 @@ void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value, ExceptionState
     contextElement()->svgAttributeBaseValChanged(this->attributeName());
 }
 
-}
+} // namespace blink

@@ -98,4 +98,4 @@ void UTF16TextIterator::consumeMultipleUChar()
     m_currentGlyphLength = markLength;
 }
 
-}
+} // namespace blink

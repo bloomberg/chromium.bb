@@ -113,6 +113,6 @@ const unsigned char   cRangeTertiaryTable  = 145; // leave room for 16 subtable 
 
 PLATFORM_EXPORT unsigned findCharUnicodeRange(UChar32);
 
-}
+} // namespace blink
 
 #endif // UnicodeRange_h

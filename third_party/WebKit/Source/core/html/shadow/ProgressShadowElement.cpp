@@ -94,4 +94,4 @@ void ProgressValueElement::setWidthPercentage(double width)
 
 DEFINE_NODE_FACTORY(ProgressValueElement)
 
-}
+} // namespace blink

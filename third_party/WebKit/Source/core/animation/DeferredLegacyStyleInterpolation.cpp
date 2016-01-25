@@ -174,4 +174,4 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         || interpolationRequiresStyleResolve(*quad.left());
 }
 
-}
+} // namespace blink

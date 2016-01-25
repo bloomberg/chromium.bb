@@ -133,4 +133,4 @@ GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(
     return SpreadMethodPad;
 }
 
-}
+} // namespace blink

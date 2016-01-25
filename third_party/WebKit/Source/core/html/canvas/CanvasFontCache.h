@@ -61,6 +61,6 @@ private:
     bool m_pruningScheduled;
 };
 
-} // blink
+} // namespace blink
 
 #endif

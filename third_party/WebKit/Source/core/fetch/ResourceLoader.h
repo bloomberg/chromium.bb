@@ -139,6 +139,6 @@ private:
     ConnectionState m_connectionState;
 };
 
-}
+} // namespace blink
 
 #endif

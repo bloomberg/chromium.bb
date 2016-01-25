@@ -144,4 +144,4 @@ ScriptState* ScriptState::forWorld(LocalFrame* frame, DOMWrapperWorld& world)
     return scriptState;
 }
 
-}
+} // namespace blink

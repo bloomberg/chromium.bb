@@ -56,4 +56,4 @@ TEST_F(AXObjectTest, IsARIAWidget)
     EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(*root->getElementById("focusable-parent")));
 }
 
-}
+} // namespace blink

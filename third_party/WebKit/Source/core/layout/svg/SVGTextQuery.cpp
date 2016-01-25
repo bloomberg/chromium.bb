@@ -608,4 +608,4 @@ int SVGTextQuery::characterNumberAtPosition(const FloatPoint& position) const
     return data.characterNumberWithin(m_queryRootLayoutObject);
 }
 
-}
+} // namespace blink

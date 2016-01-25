@@ -25,4 +25,4 @@ TEST_F(LayoutBoxTest, BackgroundObscuredInRect)
     ASSERT_TRUE(element->layoutObject()->boxDecorationBackgroundIsKnownToBeObscured());
 }
 
-}
+} // namespace blink

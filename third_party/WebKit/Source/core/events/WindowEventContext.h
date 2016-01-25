@@ -65,6 +65,6 @@ inline EventTarget* WindowEventContext::target() const
     return m_target.get();
 }
 
-}
+} // namespace blink
 
 #endif // WindowEventContext_h

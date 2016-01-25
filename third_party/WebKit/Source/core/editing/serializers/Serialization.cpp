@@ -704,4 +704,4 @@ void mergeWithNextTextNode(Text* textNode, ExceptionState& exceptionState)
 template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingInComposedTreeStrategy>;
 
-}
+} // namespace blink

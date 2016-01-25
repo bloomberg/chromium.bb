@@ -58,4 +58,4 @@ DEFINE_TRACE(FileEntry)
     Entry::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

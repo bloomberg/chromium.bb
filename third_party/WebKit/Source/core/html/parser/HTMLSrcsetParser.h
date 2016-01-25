@@ -141,6 +141,6 @@ CORE_EXPORT ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFact
 
 String bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
 
-}
+} // namespace blink
 
 #endif

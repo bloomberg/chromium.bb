@@ -178,6 +178,6 @@ protected:
     }
 };
 
-}
+} // namespace blink
 
 #endif

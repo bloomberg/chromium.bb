@@ -174,7 +174,7 @@ void setAnimatedValueOnAllTargetProperties(const SVGElementInstances& list, cons
     }
 }
 
-}
+} // namespace
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const SVGElementInstances& list)
 {
@@ -265,4 +265,4 @@ DEFINE_TRACE(SVGAnimatedTypeAnimator)
     visitor->trace(m_animatedProperty);
 }
 
-}
+} // namespace blink

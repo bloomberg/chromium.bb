@@ -88,5 +88,5 @@ bool isValidContextNode(Node* node)
     return false;
 }
 
-}
-}
+} // namespace XPath
+} // namespace blink

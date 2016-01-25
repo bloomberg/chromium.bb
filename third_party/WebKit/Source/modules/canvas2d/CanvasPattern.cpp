@@ -61,4 +61,4 @@ void CanvasPattern::setTransform(SVGMatrixTearOff* transform)
     pattern()->setPatternSpaceTransform(transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
 }
 
-}
+} // namespace blink

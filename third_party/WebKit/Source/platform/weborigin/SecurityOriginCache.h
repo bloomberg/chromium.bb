@@ -48,6 +48,6 @@ public:
     virtual SecurityOrigin* cachedOrigin(const KURL&) = 0;
 };
 
-}
+} // namespace blink
 
 #endif // SecurityOriginCache_h

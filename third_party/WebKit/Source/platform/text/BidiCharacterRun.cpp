@@ -55,4 +55,4 @@ void BidiCharacterRun::operator delete(void* ptr)
     partitionFree(ptr);
 }
 
-}
+} // namespace blink

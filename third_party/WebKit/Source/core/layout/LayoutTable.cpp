@@ -1461,4 +1461,4 @@ LayoutUnit LayoutTable::paddingRight() const
     return LayoutBlock::paddingRight();
 }
 
-}
+} // namespace blink

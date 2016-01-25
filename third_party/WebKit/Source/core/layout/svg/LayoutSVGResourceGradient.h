@@ -64,6 +64,6 @@ private:
     HashMap<const LayoutObject*, OwnPtr<GradientData>> m_gradientMap;
 };
 
-}
+} // namespace blink
 
 #endif

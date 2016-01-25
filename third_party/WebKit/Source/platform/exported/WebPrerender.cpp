@@ -54,7 +54,7 @@ private:
     OwnPtr<WebPrerender::ExtraData> m_extraData;
 };
 
-} // anon namespace
+} // namespace
 
 WebPrerender::WebPrerender(PassRefPtr<Prerender> prerender)
     : m_private(prerender)

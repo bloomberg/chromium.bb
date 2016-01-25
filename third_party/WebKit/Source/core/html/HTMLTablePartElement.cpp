@@ -95,4 +95,4 @@ HTMLTableElement* HTMLTablePartElement::findParentTable() const
     return toHTMLTableElement(parent);
 }
 
-}
+} // namespace blink

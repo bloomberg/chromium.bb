@@ -109,6 +109,6 @@ private:
     OwnPtrWillBeMember<WindowEventContext> m_windowEventContext;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

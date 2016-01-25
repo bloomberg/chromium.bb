@@ -169,4 +169,4 @@ DEFINE_TRACE(TextTrackLoader)
     ResourceOwner<RawResource>::trace(visitor);
 }
 
-}
+} // namespace blink

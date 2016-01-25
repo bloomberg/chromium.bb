@@ -97,6 +97,6 @@ private:
     GeolocationSet m_pendingPermissions;
 };
 
-}
+} // namespace blink
 
 #endif

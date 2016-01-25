@@ -38,4 +38,4 @@ WTFLogChannel* notImplementedLoggingChannel()
 
 #endif
 
-}
+} // namespace blink

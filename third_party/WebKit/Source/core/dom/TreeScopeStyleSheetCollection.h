@@ -94,6 +94,6 @@ protected:
     DocumentOrderedList m_styleSheetCandidateNodes;
 };
 
-}
+} // namespace blink
 
 #endif

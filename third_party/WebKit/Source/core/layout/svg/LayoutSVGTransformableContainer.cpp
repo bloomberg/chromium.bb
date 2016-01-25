@@ -104,4 +104,4 @@ bool LayoutSVGTransformableContainer::calculateLocalTransform()
     return true;
 }
 
-}
+} // namespace blink

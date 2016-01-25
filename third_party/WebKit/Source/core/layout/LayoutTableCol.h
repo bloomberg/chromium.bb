@@ -120,6 +120,6 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCol, isLayoutTableCol());
 
-}
+} // namespace blink
 
 #endif

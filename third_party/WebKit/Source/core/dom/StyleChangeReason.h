@@ -47,7 +47,7 @@ extern const char VisitedLink[];
 extern const char VisuallyOrdered[];
 extern const char WritingModeChange[];
 extern const char Zoom[];
-}
+} // namespace StyleChangeReason
 typedef const char StyleChangeReasonString[];
 
 namespace StyleChangeExtraData {

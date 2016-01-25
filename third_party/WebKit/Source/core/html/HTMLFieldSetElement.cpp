@@ -155,4 +155,4 @@ const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements() con
     return m_associatedElements;
 }
 
-} // namespace
+} // namespace blink

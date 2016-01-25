@@ -94,4 +94,4 @@ Path DetailsMarkerPainter::getPath(const LayoutPoint& origin) const
     return result;
 }
 
-} // namespace paint
+} // namespace blink

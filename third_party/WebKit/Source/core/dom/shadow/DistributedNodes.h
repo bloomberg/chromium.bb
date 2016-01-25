@@ -67,6 +67,6 @@ private:
     WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t> m_indices;
 };
 
-}
+} // namespace blink
 
 #endif

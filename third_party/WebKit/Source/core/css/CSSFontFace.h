@@ -127,6 +127,6 @@ private:
     RawPtrWillBeMember<FontFace> m_fontFace;
 };
 
-}
+} // namespace blink
 
 #endif

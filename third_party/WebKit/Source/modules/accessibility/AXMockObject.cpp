@@ -43,4 +43,4 @@ bool AXMockObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons)
     return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
-}
+} // namespace blink

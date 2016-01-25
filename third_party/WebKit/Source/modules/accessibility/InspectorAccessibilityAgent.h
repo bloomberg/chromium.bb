@@ -34,6 +34,6 @@ private:
     RawPtrWillBeMember<Page> m_page;
 };
 
-}
+} // namespace blink
 
 #endif // InspectorAccessibilityAgent_h

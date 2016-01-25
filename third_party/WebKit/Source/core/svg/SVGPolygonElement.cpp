@@ -38,4 +38,4 @@ Path SVGPolygonElement::asPath() const
     return path;
 }
 
-}
+} // namespace blink

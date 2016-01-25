@@ -22,4 +22,4 @@ TEST(MediaQueryMatcherTest, LostFrame)
     ASSERT_FALSE(matcher->evaluate(querySet.get()));
 }
 
-} // namespace
+} // namespace blink

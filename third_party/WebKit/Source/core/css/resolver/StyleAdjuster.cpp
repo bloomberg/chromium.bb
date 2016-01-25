@@ -478,4 +478,4 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
     }
 }
 
-}
+} // namespace blink

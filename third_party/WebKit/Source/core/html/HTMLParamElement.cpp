@@ -61,4 +61,4 @@ bool HTMLParamElement::isURLAttribute(const Attribute& attribute) const
     return HTMLElement::isURLAttribute(attribute);
 }
 
-}
+} // namespace blink

@@ -77,6 +77,6 @@ private:
     unsigned m_runsFromLeadingWhitespace;
 };
 
-}
+} // namespace blink
 
 #endif // LineInfo_h

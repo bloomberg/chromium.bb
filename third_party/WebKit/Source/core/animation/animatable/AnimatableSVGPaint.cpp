@@ -61,4 +61,4 @@ bool AnimatableSVGPaint::equalTo(const AnimatableValue* value) const
         && visitedLinkURI() == svgPaint->visitedLinkURI();
 }
 
-}
+} // namespace blink

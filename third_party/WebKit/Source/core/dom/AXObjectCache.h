@@ -162,6 +162,6 @@ private:
     Persistent<AXObjectCache> m_cache;
 };
 
-}
+} // namespace blink
 
 #endif

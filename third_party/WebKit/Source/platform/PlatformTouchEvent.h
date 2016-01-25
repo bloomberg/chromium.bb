@@ -46,6 +46,6 @@ protected:
     bool m_causesScrollingIfUncanceled;
 };
 
-}
+} // namespace blink
 
 #endif // PlatformTouchEvent_h

@@ -53,4 +53,4 @@ void HTMLParagraphElement::collectStyleForPresentationAttribute(const QualifiedN
     }
 }
 
-}
+} // namespace blink

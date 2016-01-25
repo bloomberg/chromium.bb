@@ -166,4 +166,4 @@ void SVGResourcesCycleSolver::breakCycle(LayoutSVGResourceContainer* resourceLea
     }
 }
 
-}
+} // namespace blink

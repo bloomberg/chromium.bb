@@ -66,4 +66,4 @@ SVGGradientElement* LayoutSVGGradientStop::gradientElement() const
     return isSVGGradientElement(*parentNode) ? toSVGGradientElement(parentNode) : 0;
 }
 
-}
+} // namespace blink

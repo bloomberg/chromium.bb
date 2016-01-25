@@ -65,6 +65,6 @@ private:
     Timer<ValidationMessageClientImpl> m_timer;
 };
 
-}
+} // namespace blink
 
 #endif

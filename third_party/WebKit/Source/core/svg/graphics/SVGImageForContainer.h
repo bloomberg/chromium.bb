@@ -79,6 +79,6 @@ private:
     const float m_zoom;
     const KURL m_url;
 };
-}
+} // namespace blink
 
 #endif // SVGImageForContainer_h

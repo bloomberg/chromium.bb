@@ -146,4 +146,4 @@ size_t SharedBufferChunkReader::peek(Vector<char>& data, size_t requestedSize)
     return readBytesCount;
 }
 
-}
+} // namespace blink

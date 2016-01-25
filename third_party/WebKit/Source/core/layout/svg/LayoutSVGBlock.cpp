@@ -121,4 +121,4 @@ void LayoutSVGBlock::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalid
     LayoutBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
-}
+} // namespace blink

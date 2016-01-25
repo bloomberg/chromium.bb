@@ -59,6 +59,6 @@ public:
     static PassRefPtrWillBeRawPtr<Filter> build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&, const FloatSize* referenceBoxSize = nullptr, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
 };
 
-}
+} // namespace blink
 
 #endif // ReferenceFilterBuilder_h

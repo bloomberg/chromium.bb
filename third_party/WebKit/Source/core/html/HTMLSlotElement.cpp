@@ -207,4 +207,4 @@ DEFINE_TRACE(HTMLSlotElement)
     HTMLElement::trace(visitor);
 }
 
-}
+} // namespace blink

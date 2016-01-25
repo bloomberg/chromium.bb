@@ -89,6 +89,6 @@ private:
     const AtomicString& shadowPseudoId() const override;
 };
 
-}
+} // namespace blink
 
 #endif

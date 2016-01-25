@@ -61,4 +61,4 @@ void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext& context, const Lay
     context.restore();
 }
 
-}
+} // namespace blink

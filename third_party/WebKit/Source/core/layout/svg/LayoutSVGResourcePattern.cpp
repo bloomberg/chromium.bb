@@ -205,4 +205,4 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     return pictureBuilder.endRecording();
 }
 
-}
+} // namespace blink

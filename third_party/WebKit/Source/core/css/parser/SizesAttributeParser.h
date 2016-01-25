@@ -35,7 +35,7 @@ private:
     bool m_isValid;
 };
 
-} // namespace
+} // namespace blink
 
 #endif
 

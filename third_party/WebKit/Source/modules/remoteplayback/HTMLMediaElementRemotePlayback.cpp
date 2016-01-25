@@ -23,4 +23,4 @@ void HTMLMediaElementRemotePlayback::setBooleanAttribute(const QualifiedName& na
     element.setBooleanAttribute(name, value);
 }
 
-}
+} // namespace blink

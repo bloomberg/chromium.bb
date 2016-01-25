@@ -190,6 +190,6 @@ private:
     unsigned m_highPriorityClientCount;
 };
 
-}
+} // namespace blink
 
 #endif

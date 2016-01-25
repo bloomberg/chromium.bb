@@ -63,4 +63,4 @@ DEFINE_TRACE(WindowEventContext)
     visitor->trace(m_target);
 }
 
-}
+} // namespace blink

@@ -133,4 +133,4 @@ void SVGFELightElement::childrenChanged(const ChildrenChange& change)
     }
 }
 
-}
+} // namespace blink

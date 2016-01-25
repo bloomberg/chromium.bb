@@ -21,4 +21,4 @@ bool DoubleSize::isZero() const
     return fabs(m_width) < std::numeric_limits<double>::epsilon() && fabs(m_height) < std::numeric_limits<double>::epsilon();
 }
 
-}
+} // namespace blink

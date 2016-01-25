@@ -58,4 +58,4 @@ XMLDocumentParserScope::~XMLDocumentParserScope()
     xmlSetStructuredErrorFunc(m_oldErrorContext, m_oldStructuredErrorFunc);
 }
 
-}
+} // namespace blink

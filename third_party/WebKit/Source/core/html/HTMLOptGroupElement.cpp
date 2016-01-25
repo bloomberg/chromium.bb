@@ -182,4 +182,4 @@ HTMLDivElement& HTMLOptGroupElement::optGroupLabelElement() const
     return *toHTMLDivElement(userAgentShadowRoot()->getElementById(ShadowElementNames::optGroupLabel()));
 }
 
-} // namespace
+} // namespace blink

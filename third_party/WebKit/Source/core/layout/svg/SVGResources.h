@@ -181,6 +181,6 @@ private:
     LayoutSVGResourceContainer* m_linkedResource;
 };
 
-}
+} // namespace blink
 
 #endif

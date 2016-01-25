@@ -232,4 +232,4 @@ FloatRect mapRect(const FloatRect& r, const FloatRect& srcRect, const FloatRect&
         r.width() * widthScale, r.height() * heightScale);
 }
 
-}
+} // namespace blink

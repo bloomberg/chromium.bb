@@ -73,7 +73,7 @@ float maxAudioBufferSampleRate()
     // Windows can support audio sampling rates this high, so allow AudioBuffer rates this high as well.
     return 192000;
 }
-} // AudioUtilites
+} // namespace AudioUtilities
 
 } // namespace blink
 

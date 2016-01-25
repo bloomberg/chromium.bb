@@ -51,5 +51,5 @@ private:
     bool isMockTheme() const final { return true; }
 };
 
-}
+} // namespace blink
 #endif // ScrollbarThemeMock_h

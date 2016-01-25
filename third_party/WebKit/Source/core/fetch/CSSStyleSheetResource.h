@@ -87,6 +87,6 @@ private:
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);
 
-}
+} // namespace blink
 
 #endif

@@ -390,4 +390,4 @@ void AffineTransform::recompose(const DecomposedType& decomp)
     this->scale(decomp.scaleX, decomp.scaleY);
 }
 
-}
+} // namespace blink

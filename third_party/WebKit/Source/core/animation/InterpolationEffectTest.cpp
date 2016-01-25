@@ -113,4 +113,4 @@ TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
     EXPECT_FLOAT_EQ(15, getInterpolableNumber(activeInterpolations.at(0)));
 }
 
-}
+} // namespace blink

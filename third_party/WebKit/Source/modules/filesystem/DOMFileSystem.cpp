@@ -145,7 +145,7 @@ private:
     Member<FileWriterCallback> m_callback;
 };
 
-}
+} // namespace
 
 void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback* successCallback, ErrorCallback* errorCallback)
 {

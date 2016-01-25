@@ -76,4 +76,4 @@ void HTMLViewSourceParser::finish()
     document()->finishedParsing();
 }
 
-}
+} // namespace blink

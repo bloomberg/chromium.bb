@@ -44,6 +44,6 @@ public:
     virtual void handleEvent(Metadata*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // MetadataCallback_h

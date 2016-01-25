@@ -105,4 +105,4 @@ float SVGColorProperty::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase
     return ColorDistance::distance(fromColor, toColor);
 }
 
-}
+} // namespace blink

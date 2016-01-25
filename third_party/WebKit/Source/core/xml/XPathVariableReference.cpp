@@ -47,5 +47,5 @@ Value VariableReference::evaluate(EvaluationContext& context) const
     return bindings.get(m_name);
 }
 
-}
-}
+} // namespace XPath
+} // namespace blink

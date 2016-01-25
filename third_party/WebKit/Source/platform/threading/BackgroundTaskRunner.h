@@ -24,6 +24,6 @@ PLATFORM_EXPORT void postOnBackgroundThread(const WebTraceLocation&, PassOwnPtr<
 
 } // BackgroundTaskRunner
 
-} // blink
+} // namespace blink
 
 #endif

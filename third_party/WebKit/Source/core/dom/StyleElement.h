@@ -71,6 +71,6 @@ private:
     TextPosition m_startPosition;
 };
 
-}
+} // namespace blink
 
 #endif

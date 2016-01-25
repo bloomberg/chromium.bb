@@ -63,4 +63,4 @@ DEFINE_TRACE(WebGLUniformLocation)
     visitor->trace(m_program);
 }
 
-}
+} // namespace blink

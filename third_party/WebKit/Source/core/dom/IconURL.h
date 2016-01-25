@@ -72,6 +72,6 @@ struct IconURL {
 
 bool operator==(const IconURL&, const IconURL&);
 
-}
+} // namespace blink
 
 #endif // IconURL_h

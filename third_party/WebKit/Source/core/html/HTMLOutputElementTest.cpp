@@ -30,4 +30,4 @@ TEST(HTMLOutputElementTest, setForAttribute_updatesHTMLForPropertyValue)
     EXPECT_EQ("orange grape", forTokens->value());
 }
 
-}
+} // namespace blink

@@ -42,6 +42,6 @@ public:
     virtual bool handleEvent(SQLTransaction*) = 0;
 };
 
-}
+} // namespace blink
 
 #endif // SQLTransactionCallback_h

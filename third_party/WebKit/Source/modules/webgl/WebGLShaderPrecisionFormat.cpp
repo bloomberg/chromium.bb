@@ -56,4 +56,4 @@ WebGLShaderPrecisionFormat::WebGLShaderPrecisionFormat(GLint rangeMin, GLint ran
 {
 }
 
-}
+} // namespace blink

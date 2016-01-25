@@ -23,5 +23,4 @@ void MediaQueryBlockWatcher::handleToken(const CSSParserToken& token)
     }
 }
 
-} // namespace
-
+} // namespace blink

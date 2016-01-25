@@ -46,6 +46,6 @@ private:
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) final;
 };
-}
+} // namespace blink
 
 #endif // LayoutSVGHiddenContainer_h

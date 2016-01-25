@@ -200,4 +200,4 @@ String serializeNodes(MarkupAccumulator& accumulator, Node& targetNode, EChildre
 
 template String serializeNodes<EditingStrategy>(MarkupAccumulator&, Node&, EChildrenOnly);
 
-}
+} // namespace blink

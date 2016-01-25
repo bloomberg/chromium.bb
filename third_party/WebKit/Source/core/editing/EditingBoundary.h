@@ -39,6 +39,6 @@ enum EditableType {
     HasEditableAXRole
 };
 
-}
+} // namespace blink
 
 #endif // EditingBoundary_h

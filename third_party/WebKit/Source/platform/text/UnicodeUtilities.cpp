@@ -411,4 +411,4 @@ bool checkKanaStringsEqual(const UChar* firstData, unsigned firstLength, const U
     }
 }
 
-}
+} // namespace blink

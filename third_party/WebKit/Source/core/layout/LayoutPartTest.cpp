@@ -32,4 +32,4 @@ TEST_F(LayoutPartTest, DestroyUpdatesImageQualityController)
     EXPECT_FALSE(ImageQualityController::has(*part));
 }
 
-}
+} // namespace blink

@@ -74,7 +74,7 @@ inline Element* parentElement(const Node& node)
     return found && found->isElementNode() ? toElement(found) : 0;
 }
 
-}
+} // namespace LayoutTreeBuilderTraversal
 
 } // namespace blink
 

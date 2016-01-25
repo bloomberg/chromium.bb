@@ -112,4 +112,4 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info)
         info.childLayersOfEnclosingCompositedLayer->append(layer.scrollParent()->compositedLayerMapping()->detachLayerForOverflowControls(*info.enclosingCompositedLayer));
 }
 
-}
+} // namespace blink

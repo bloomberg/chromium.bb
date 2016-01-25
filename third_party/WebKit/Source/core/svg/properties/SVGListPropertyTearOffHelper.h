@@ -218,6 +218,6 @@ private:
     Derived* toDerived() { return static_cast<Derived*>(this); }
 };
 
-}
+} // namespace blink
 
 #endif // SVGListPropertyTearOffHelper_h

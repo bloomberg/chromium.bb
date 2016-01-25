@@ -54,4 +54,4 @@ bool HTMLNoScriptElement::layoutObjectIsNeeded(const ComputedStyle& style)
 
 }
 
-}
+} // namespace blink

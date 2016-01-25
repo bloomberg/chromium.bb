@@ -46,6 +46,6 @@ private:
     RawPtrWillBeMember<Document> m_document;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -65,6 +65,6 @@ inline TreeScopeAdopter::TreeScopeAdopter(Node& toAdopt, TreeScope& newScope)
 {
 }
 
-}
+} // namespace blink
 
 #endif

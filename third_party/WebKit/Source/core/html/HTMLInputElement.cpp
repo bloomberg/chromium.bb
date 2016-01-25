@@ -1927,4 +1927,4 @@ bool HTMLInputElement::hasFallbackContent() const
 {
     return m_inputTypeView->hasFallbackContent();
 }
-} // namespace
+} // namespace blink

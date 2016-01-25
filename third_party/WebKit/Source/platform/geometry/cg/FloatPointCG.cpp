@@ -39,4 +39,4 @@ FloatPoint::operator CGPoint() const
     return CGPointMake(m_x, m_y);
 }
 
-}
+} // namespace blink

@@ -751,4 +751,4 @@ void LayoutReplaced::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-}
+} // namespace blink

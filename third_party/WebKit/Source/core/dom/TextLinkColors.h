@@ -63,6 +63,6 @@ private:
     Color m_activeLinkColor;
 };
 
-}
+} // namespace blink
 
 #endif

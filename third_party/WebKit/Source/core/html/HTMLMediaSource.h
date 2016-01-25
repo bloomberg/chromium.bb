@@ -78,6 +78,6 @@ private:
     static URLRegistry* s_registry;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -152,4 +152,4 @@ DEFINE_TRACE(MediaValuesDynamic)
     MediaValues::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

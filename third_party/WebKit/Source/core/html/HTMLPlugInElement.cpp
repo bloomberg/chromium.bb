@@ -620,4 +620,4 @@ void HTMLPlugInElement::lazyReattachIfNeeded()
         lazyReattachIfAttached();
 }
 
-}
+} // namespace blink

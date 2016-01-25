@@ -74,4 +74,4 @@ TEST_F(ScrollStateTest, FullyConsumed)
     EXPECT_FALSE(scrollStateEnd->fullyConsumed());
 }
 
-}
+} // namespace blink

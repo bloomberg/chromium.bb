@@ -137,6 +137,6 @@ private:
     WTF::TextEncoding m_encoding;
 };
 
-}
+} // namespace blink
 
 #endif

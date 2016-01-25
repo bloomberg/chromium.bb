@@ -60,6 +60,6 @@ private:
     static const char kBlobProtocol[];
 };
 
-}
+} // namespace blink
 
 #endif // BlobURL_h

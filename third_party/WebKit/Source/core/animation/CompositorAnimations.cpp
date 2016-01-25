@@ -138,7 +138,7 @@ bool hasIncompatibleAnimations(const Element& targetElement, const Animation& an
     return false;
 }
 
-}
+} // namespace
 
 CompositorAnimations::CompositorAnimations()
 {
@@ -617,7 +617,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
     }
 }
 
-} // namespace anoymous
+} // namespace
 
 void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, const Timing& timing)
 {

@@ -46,6 +46,6 @@ public:
     bool checkSelectorsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses) const;
 };
 
-}
+} // namespace blink
 
 #endif

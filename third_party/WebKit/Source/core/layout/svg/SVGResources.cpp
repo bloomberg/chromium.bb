@@ -672,4 +672,4 @@ void SVGResources::dump(const LayoutObject* object)
 }
 #endif
 
-}
+} // namespace blink

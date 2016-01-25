@@ -318,4 +318,4 @@ void SVGAnimateMotionElement::updateAnimationMode()
         SVGAnimationElement::updateAnimationMode();
 }
 
-}
+} // namespace blink

@@ -1076,4 +1076,4 @@ void JPEGImageDecoder::decode(bool onlySize)
         m_reader.clear();
 }
 
-}
+} // namespace blink

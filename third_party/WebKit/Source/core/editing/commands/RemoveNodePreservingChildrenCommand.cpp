@@ -59,4 +59,4 @@ DEFINE_TRACE(RemoveNodePreservingChildrenCommand)
     CompositeEditCommand::trace(visitor);
 }
 
-}
+} // namespace blink

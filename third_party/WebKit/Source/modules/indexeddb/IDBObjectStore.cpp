@@ -487,7 +487,7 @@ private:
     const int64_t m_objectStoreId;
     const IDBIndexMetadata m_indexMetadata;
 };
-}
+} // namespace
 
 IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
 {

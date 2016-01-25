@@ -89,6 +89,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValuePair, isValuePair());
 
-} // namespace
+} // namespace blink
 
 #endif // CSSValuePair_h

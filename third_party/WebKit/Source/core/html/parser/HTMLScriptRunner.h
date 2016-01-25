@@ -106,6 +106,6 @@ private:
     bool m_parserBlockingScriptAlreadyLoaded;
 };
 
-}
+} // namespace blink
 
 #endif

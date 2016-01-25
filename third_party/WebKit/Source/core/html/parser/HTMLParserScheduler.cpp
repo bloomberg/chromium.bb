@@ -174,4 +174,4 @@ void HTMLParserScheduler::continueParsing()
     m_parser->resumeParsingAfterYield();
 }
 
-}
+} // namespace blink

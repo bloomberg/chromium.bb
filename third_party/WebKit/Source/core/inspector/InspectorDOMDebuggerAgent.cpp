@@ -64,7 +64,7 @@ static const char instrumentationEventCategoryType[] = "instrumentation:";
 const uint32_t inheritableDOMBreakpointTypesMask = (1 << SubtreeModified);
 const int domBreakpointDerivedTypeShift = 16;
 
-}
+} // namespace
 
 namespace blink {
 

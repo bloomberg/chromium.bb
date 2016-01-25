@@ -85,4 +85,4 @@ void SVGRectTearOff::setHeight(float f, ExceptionState& exceptionState)
     commitChange();
 }
 
-}
+} // namespace blink

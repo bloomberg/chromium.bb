@@ -877,5 +877,4 @@ DEFINE_TRACE(HTMLConstructionSite::PendingText)
     visitor->trace(nextChild);
 }
 
-
-}
+} // namespace blink

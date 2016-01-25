@@ -42,6 +42,6 @@ PLATFORM_EXPORT Vector<AtomicString> userPreferredLanguages();
 PLATFORM_EXPORT void overrideUserPreferredLanguages(const Vector<AtomicString>&);
 PLATFORM_EXPORT size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vector<AtomicString>& languageList);
 
-}
+} // namespace blink
 
 #endif

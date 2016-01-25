@@ -117,4 +117,4 @@ float SVGNumberOptionalNumber::calculateDistance(PassRefPtrWillBeRawPtr<SVGPrope
     return -1;
 }
 
-}
+} // namespace blink

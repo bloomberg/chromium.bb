@@ -71,4 +71,4 @@ bool SVGAnimatedIntegerOptionalInteger::needsSynchronizeAttribute()
         || m_secondInteger->needsSynchronizeAttribute();
 }
 
-}
+} // namespace blink

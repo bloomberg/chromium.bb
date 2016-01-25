@@ -106,6 +106,6 @@ private:
 
 typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;
 
-}
+} // namespace blink
 
 #endif

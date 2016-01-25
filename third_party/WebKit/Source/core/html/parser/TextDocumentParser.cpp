@@ -72,4 +72,4 @@ void TextDocumentParser::insertFakePreElement()
     m_haveInsertedFakePreElement = true;
 }
 
-}
+} // namespace blink

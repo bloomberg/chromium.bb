@@ -52,6 +52,6 @@ public:
     InlineBox* m_box;
 };
 
-}
+} // namespace blink
 
 #endif // BidiRun_h

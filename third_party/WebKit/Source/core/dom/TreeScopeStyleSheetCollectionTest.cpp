@@ -148,4 +148,4 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsertRemove)
     compareStyleSheets(previous, current, added, Reconstruct);
 }
 
-}
+} // namespace blink

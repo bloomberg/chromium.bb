@@ -91,4 +91,4 @@ TEST_F(CSPSourceTest, InsecureHostMatchesSecure)
     EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:8000/")));
 }
 
-} // namespace
+} // namespace blink

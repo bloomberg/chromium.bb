@@ -72,6 +72,6 @@ private:
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceClipper, ClipperResourceType);
 
-}
+} // namespace blink
 
 #endif

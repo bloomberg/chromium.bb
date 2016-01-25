@@ -77,6 +77,6 @@ private:
     ScopedPersistent<v8::Function> m_attributeChanged;
 };
 
-}
+} // namespace blink
 
 #endif // V8CustomElementLifecycleCallbacks_h

@@ -218,4 +218,4 @@ Node* XPathResult::snapshotItem(unsigned index, ExceptionState& exceptionState)
     return nodes[index];
 }
 
-}
+} // namespace blink

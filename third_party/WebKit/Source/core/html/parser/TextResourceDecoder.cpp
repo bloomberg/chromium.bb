@@ -447,4 +447,4 @@ String TextResourceDecoder::flush()
     return result;
 }
 
-}
+} // namespace blink

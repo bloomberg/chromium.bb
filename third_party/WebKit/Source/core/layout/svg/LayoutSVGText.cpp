@@ -66,7 +66,7 @@ const LayoutSVGText* findTextRoot(const LayoutObject* start)
     return nullptr;
 }
 
-}
+} // namespace
 
 LayoutSVGText::LayoutSVGText(SVGTextElement* node)
     : LayoutSVGBlock(node)
@@ -536,4 +536,4 @@ void LayoutSVGText::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalida
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
-}
+} // namespace blink

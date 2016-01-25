@@ -291,4 +291,4 @@ FloatRect LayoutSVGResourceClipper::resourceBoundingBox(const LayoutObject* obje
     return m_clipBoundaries;
 }
 
-}
+} // namespace blink

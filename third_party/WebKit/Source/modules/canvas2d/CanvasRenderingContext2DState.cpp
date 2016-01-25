@@ -603,4 +603,4 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, Shad
     return paint;
 }
 
-} // blink
+} // namespace blink

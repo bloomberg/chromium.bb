@@ -136,4 +136,4 @@ TEST_F(ContentSecurityPolicyTest, EmptyReferrerDirective)
     EXPECT_EQ(ReferrerPolicyNever, document->referrerPolicy());
 }
 
-} // namespace
+} // namespace blink

@@ -47,4 +47,4 @@ DEFINE_TRACE(BeforeTextInsertedEvent)
     Event::trace(visitor);
 }
 
-}
+} // namespace blink

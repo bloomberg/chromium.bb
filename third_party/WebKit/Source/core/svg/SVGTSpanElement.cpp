@@ -49,4 +49,4 @@ bool SVGTSpanElement::layoutObjectIsNeeded(const ComputedStyle& style)
     return false;
 }
 
-}
+} // namespace blink

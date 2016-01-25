@@ -117,4 +117,4 @@ float SVGTextMetrics::advance(FontOrientation orientation) const
     }
 }
 
-}
+} // namespace blink

@@ -54,4 +54,4 @@ LengthBox Theme::controlPadding(ControlPart part, const FontDescription&, const 
     }
 }
 
-}
+} // namespace blink

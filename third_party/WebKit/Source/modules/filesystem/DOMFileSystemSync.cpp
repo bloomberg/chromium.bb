@@ -202,7 +202,7 @@ private:
     FileError::ErrorCode& m_errorCode;
 };
 
-}
+} // namespace
 
 FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
 {
@@ -230,4 +230,4 @@ DEFINE_TRACE(DOMFileSystemSync)
     visitor->trace(m_rootEntry);
 }
 
-}
+} // namespace blink

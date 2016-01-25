@@ -153,4 +153,4 @@ DEFINE_TRACE(MediaQueryMatcher)
 #endif
 }
 
-}
+} // namespace blink

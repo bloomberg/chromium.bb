@@ -114,5 +114,4 @@ void DocumentParser::removeClient(DocumentParserClient* client)
     m_clients.remove(client);
 }
 
-};
-
+} // namespace blink

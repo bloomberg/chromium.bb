@@ -78,4 +78,4 @@ void AnimationClock::resetTimeForTesting(double time)
     s_currentTask = 0;
 }
 
-}
+} // namespace blink

@@ -697,4 +697,4 @@ void TableLayoutAlgorithmAuto::shrinkColumnWidth(const LengthType& lengthType, i
         }
     }
 }
-}
+} // namespace blink

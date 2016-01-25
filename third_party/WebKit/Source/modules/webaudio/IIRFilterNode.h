@@ -33,6 +33,6 @@ private:
     IIRProcessor* iirProcessor() const;
 };
 
-}
+} // namespace blink
 
 #endif // IIRFilterNode_h

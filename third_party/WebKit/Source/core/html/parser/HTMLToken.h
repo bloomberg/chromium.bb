@@ -456,6 +456,6 @@ private:
     OwnPtr<DoctypeData> m_doctypeData;
 };
 
-}
+} // namespace blink
 
 #endif

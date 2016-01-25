@@ -46,4 +46,4 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSQuadValue)
     CSSValue::traceAfterDispatch(visitor);
 }
 
-}
+} // namespace blink

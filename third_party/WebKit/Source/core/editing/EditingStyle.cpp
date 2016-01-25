@@ -1730,4 +1730,4 @@ PassRefPtrWillBeRawPtr<CSSValue> backgroundColorValueInEffect(Node* node)
     return nullptr;
 }
 
-}
+} // namespace blink

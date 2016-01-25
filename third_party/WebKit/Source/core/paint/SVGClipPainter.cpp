@@ -28,7 +28,7 @@ private:
     LayoutSVGResourceClipper& m_clip;
 };
 
-}
+} // namespace
 
 bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& targetBoundingBox,
     const FloatRect& paintInvalidationRect, GraphicsContext& context, ClipperState& clipperState)
@@ -124,4 +124,4 @@ void SVGClipPainter::drawClipMaskContent(GraphicsContext& context, const LayoutO
     context.restore();
 }
 
-}
+} // namespace blink

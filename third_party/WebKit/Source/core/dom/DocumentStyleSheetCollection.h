@@ -59,7 +59,7 @@ private:
     void collectStyleSheetsFromCandidates(StyleEngine&, DocumentStyleSheetCollector&);
 };
 
-}
+} // namespace blink
 
 #endif
 

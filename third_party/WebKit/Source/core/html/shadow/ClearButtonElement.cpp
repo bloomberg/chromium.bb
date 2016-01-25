@@ -91,4 +91,4 @@ DEFINE_TRACE(ClearButtonElement)
     HTMLDivElement::trace(visitor);
 }
 
-}
+} // namespace blink

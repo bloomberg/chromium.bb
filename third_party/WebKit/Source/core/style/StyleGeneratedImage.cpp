@@ -104,4 +104,4 @@ DEFINE_TRACE(StyleGeneratedImage)
     StyleImage::trace(visitor);
 }
 
-}
+} // namespace blink

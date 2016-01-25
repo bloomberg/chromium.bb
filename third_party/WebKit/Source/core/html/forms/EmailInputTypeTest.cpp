@@ -24,7 +24,7 @@ void expectToFail(const String& source)
     EXPECT_FALSE(EmailInputType::isValidEmailAddress(EmailInputType::convertEmailAddressToASCII(source)));
 }
 
-}
+} // namespace
 
 TEST(EmailInputTypeTest, ConvertEmailAddressToASCII)
 {

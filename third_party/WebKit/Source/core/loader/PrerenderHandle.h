@@ -69,6 +69,6 @@ private:
     RefPtr<Prerender> m_prerender;
 };
 
-}
+} // namespace blink
 
 #endif // PrerenderHandle_h

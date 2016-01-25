@@ -332,4 +332,4 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     }
 }
 
-}
+} // namespace blink

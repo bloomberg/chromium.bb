@@ -56,5 +56,5 @@ DEFINE_TRACE(Expression)
     ParseNode::trace(visitor);
 }
 
-}
-}
+} // namespace XPath
+} // namespace blink

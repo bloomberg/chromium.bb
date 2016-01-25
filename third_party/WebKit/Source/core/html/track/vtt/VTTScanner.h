@@ -235,6 +235,6 @@ inline void VTTScanner::advance(unsigned amount)
         m_data.characters16 += amount;
 }
 
-}
+} // namespace blink
 
 #endif

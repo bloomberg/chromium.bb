@@ -77,6 +77,6 @@ String serializeNodes(MarkupAccumulator&, Node&, EChildrenOnly);
 
 extern template String serializeNodes<EditingStrategy>(MarkupAccumulator&, Node&, EChildrenOnly);
 
-}
+} // namespace blink
 
 #endif

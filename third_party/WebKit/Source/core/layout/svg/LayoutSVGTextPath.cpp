@@ -62,4 +62,4 @@ float LayoutSVGTextPath::startOffset() const
     return toSVGTextPathElement(node())->startOffset()->currentValue()->valueAsPercentage();
 }
 
-}
+} // namespace blink

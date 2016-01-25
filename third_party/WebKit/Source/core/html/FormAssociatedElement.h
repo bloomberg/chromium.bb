@@ -141,6 +141,6 @@ HTMLElement& toHTMLElement(FormAssociatedElement&);
 const HTMLElement* toHTMLElement(const FormAssociatedElement*);
 const HTMLElement& toHTMLElement(const FormAssociatedElement&);
 
-} // namespace
+} // namespace blink
 
 #endif // FormAssociatedElement_h

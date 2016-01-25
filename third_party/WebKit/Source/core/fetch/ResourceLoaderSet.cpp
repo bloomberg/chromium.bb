@@ -60,4 +60,4 @@ void ResourceLoaderSet::setAllDefersLoading(bool defers)
         loader->setDefersLoading(defers);
 }
 
-}
+} // namespace blink

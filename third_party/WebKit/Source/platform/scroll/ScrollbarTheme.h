@@ -142,5 +142,5 @@ private:
     static bool gMockScrollbarsEnabled;
 };
 
-}
+} // namespace blink
 #endif

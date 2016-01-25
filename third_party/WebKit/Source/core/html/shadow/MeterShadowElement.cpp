@@ -135,4 +135,4 @@ void MeterValueElement::setWidthPercentage(double width)
     setInlineStyleProperty(CSSPropertyWidth, width, CSSPrimitiveValue::UnitType::Percentage);
 }
 
-}
+} // namespace blink

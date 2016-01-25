@@ -231,4 +231,4 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
     }
 }
 
-}
+} // namespace blink

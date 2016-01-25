@@ -65,6 +65,6 @@ private:
     Vector<LinkHeader> m_headerSet;
 };
 
-}
+} // namespace blink
 
 #endif

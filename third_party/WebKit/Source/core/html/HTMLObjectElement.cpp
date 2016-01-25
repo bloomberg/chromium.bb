@@ -449,4 +449,4 @@ bool HTMLObjectElement::useFallbackContent() const
     return HTMLPlugInElement::useFallbackContent() || m_useFallbackContent;
 }
 
-}
+} // namespace blink

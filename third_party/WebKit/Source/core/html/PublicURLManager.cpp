@@ -108,4 +108,4 @@ DEFINE_TRACE(PublicURLManager)
     ActiveDOMObject::trace(visitor);
 }
 
-}
+} // namespace blink

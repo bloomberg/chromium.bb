@@ -41,6 +41,6 @@ public:
     bool isCredentialRequest;
 };
 
-}
+} // namespace blink
 
 #endif // RequestInit_h

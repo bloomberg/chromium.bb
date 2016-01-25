@@ -52,6 +52,6 @@ public:
     virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) { return false; }
 };
 
-}
+} // namespace blink
 
 #endif

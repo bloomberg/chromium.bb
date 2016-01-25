@@ -46,4 +46,4 @@ TEST(MediaConditionParserTest, Basic)
     }
 }
 
-} // namespace
+} // namespace blink

@@ -47,6 +47,6 @@ public:
     virtual bool spellingUIIsShowing() = 0;
 };
 
-}
+} // namespace blink
 
 #endif // SpellCheckerClient_h

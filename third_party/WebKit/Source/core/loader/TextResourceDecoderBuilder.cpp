@@ -104,4 +104,4 @@ void TextResourceDecoderBuilder::clear()
     m_encoding = nullAtom;
 }
 
-}
+} // namespace blink

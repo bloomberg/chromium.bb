@@ -101,4 +101,4 @@ TEST_F(MultiColumnFragmentainerGroupTest, AddTwoThenDeleteExtraThenAddThreeThenD
 
 } // anonymous namespace
 
-} // blink
+} // namespace blink

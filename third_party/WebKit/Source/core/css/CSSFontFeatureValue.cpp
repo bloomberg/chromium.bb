@@ -51,4 +51,4 @@ bool CSSFontFeatureValue::equals(const CSSFontFeatureValue& other) const
     return m_tag == other.m_tag && m_value == other.m_value;
 }
 
-}
+} // namespace blink

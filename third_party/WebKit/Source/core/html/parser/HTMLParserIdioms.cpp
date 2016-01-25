@@ -416,4 +416,4 @@ String attemptStaticStringCreation(const UChar* characters, size_t size, Charact
     return string;
 }
 
-}
+} // namespace blink

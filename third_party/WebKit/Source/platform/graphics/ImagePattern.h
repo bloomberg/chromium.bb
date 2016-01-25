@@ -28,6 +28,6 @@ private:
     RefPtr<SkImage> m_tileImage;
 };
 
-} // namespace
+} // namespace blink
 
 #endif  /* ImagePattern_h */

@@ -85,7 +85,7 @@ private:
     WorkerThread* m_thread;
 };
 
-}
+} // namespace
 
 class WorkerInspectorController::PageInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorController::PageInspectorProxy>, public InspectorFrontendChannel {
     USING_FAST_MALLOC_WILL_BE_REMOVED(PageInspectorProxy);

@@ -42,6 +42,6 @@ public:
     virtual void handleEvent(FileWriterBase*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // FileWriterBaseCallback_h

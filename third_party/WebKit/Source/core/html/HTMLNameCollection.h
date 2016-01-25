@@ -38,6 +38,6 @@ protected:
     AtomicString m_name;
 };
 
-}
+} // namespace blink
 
 #endif

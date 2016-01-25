@@ -41,6 +41,6 @@ public:
     bool isWordBreak() const override;
 };
 
-}
+} // namespace blink
 
 #endif

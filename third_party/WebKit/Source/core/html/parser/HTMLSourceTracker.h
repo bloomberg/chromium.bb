@@ -57,6 +57,6 @@ private:
     bool m_isStarted;
 };
 
-}
+} // namespace blink
 
 #endif

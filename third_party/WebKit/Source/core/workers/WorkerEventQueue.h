@@ -63,6 +63,6 @@ private:
     EventTaskMap m_eventTaskMap;
 };
 
-}
+} // namespace blink
 
 #endif // WorkerEventQueue_h

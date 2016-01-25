@@ -51,7 +51,7 @@ public:
     bool isUndoableStateMark() override { return true; }
 };
 
-}
+} // namespace
 
 InspectorHistory::Action::Action(const String& name) : m_name(name)
 {

@@ -558,4 +558,4 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
     recordTextFragment(textBox);
 }
 
-}
+} // namespace blink

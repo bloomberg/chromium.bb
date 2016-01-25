@@ -32,6 +32,6 @@ private:
     static void processHttpEquivAcceptCH(Document&, const AtomicString& content);
 };
 
-}
+} // namespace blink
 
 #endif

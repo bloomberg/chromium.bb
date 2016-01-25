@@ -311,4 +311,4 @@ bool SVGPathParser::parseAndNormalizePath()
     return true;
 }
 
-}
+} // namespace blink

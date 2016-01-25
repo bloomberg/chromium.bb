@@ -104,6 +104,6 @@ private:
     SerializationType m_serializationType;
 };
 
-}
+} // namespace blink
 
 #endif

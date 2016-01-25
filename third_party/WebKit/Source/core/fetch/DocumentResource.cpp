@@ -90,4 +90,4 @@ PassRefPtrWillBeRawPtr<Document> DocumentResource::createDocument(const KURL& ur
     }
 }
 
-}
+} // namespace blink

@@ -27,4 +27,4 @@ LinkFetchResource::~LinkFetchResource()
 {
 }
 
-}
+} // namespace blink

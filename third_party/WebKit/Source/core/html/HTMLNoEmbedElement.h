@@ -47,6 +47,6 @@ private:
     bool layoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

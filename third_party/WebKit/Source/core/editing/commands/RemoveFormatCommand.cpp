@@ -96,4 +96,4 @@ void RemoveFormatCommand::doApply()
     applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle.get(), isElementForRemoveFormatCommand, editingAction()));
 }
 
-}
+} // namespace blink

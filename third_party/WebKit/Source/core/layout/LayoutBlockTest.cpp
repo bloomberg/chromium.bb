@@ -21,4 +21,4 @@ TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle)
     obj->destroy();
 }
 
-}
+} // namespace blink

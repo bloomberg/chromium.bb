@@ -61,6 +61,6 @@ private:
 #endif
 };
 
-}
+} // namespace blink
 
 #endif // FilterDisplayItem_h

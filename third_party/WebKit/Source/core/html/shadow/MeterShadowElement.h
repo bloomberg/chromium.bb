@@ -76,6 +76,6 @@ private:
     const AtomicString& valuePseudoId() const;
 };
 
-}
+} // namespace blink
 
 #endif // MeterShadowElement_h

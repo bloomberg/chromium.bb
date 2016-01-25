@@ -101,7 +101,7 @@ bool isValidReasonPhrase(const String& statusText)
     return true;
 }
 
-}
+} // namespace
 
 Response* Response::create(ScriptState* scriptState, ExceptionState& exceptionState)
 {

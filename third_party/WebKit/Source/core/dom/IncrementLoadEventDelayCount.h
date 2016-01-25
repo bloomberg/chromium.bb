@@ -31,6 +31,6 @@ private:
     IncrementLoadEventDelayCount(Document&);
     RefPtrWillBePersistent<Document> m_document;
 };
-}
+} // namespace blink
 
 #endif

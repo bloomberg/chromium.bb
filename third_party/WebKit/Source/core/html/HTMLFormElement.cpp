@@ -837,4 +837,4 @@ void HTMLFormElement::setDemoted(bool demoted)
     m_wasDemoted = demoted;
 }
 
-} // namespace
+} // namespace blink

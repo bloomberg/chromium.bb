@@ -36,5 +36,5 @@ private:
     RefPtr<ScriptState> m_scriptState;
 };
 
-}
+} // namespace blink
 #endif // V8PerformanceObserverCallback_h

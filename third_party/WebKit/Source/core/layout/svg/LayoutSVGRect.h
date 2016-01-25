@@ -52,6 +52,6 @@ private:
     bool m_usePathFallback;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -100,7 +100,7 @@ void executeQuery(const SVGPathByteStream& pathByteStream, SVGPathTraversalState
     }
 }
 
-}
+} // namespace
 
 SVGPathQuery::SVGPathQuery(const SVGPathByteStream& pathByteStream)
     : m_pathByteStream(pathByteStream)
@@ -128,4 +128,4 @@ FloatPoint SVGPathQuery::getPointAtLength(float length) const
     return traversalState.computedPoint();
 }
 
-}
+} // namespace blink

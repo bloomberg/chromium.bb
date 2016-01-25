@@ -399,4 +399,4 @@ void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fon
     documentStyle.font().update(fontSelector);
 }
 
-}
+} // namespace blink

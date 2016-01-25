@@ -322,4 +322,4 @@ const char* DocumentLifecycle::stateAsDebugString(const State state)
 }
 #endif
 
-}
+} // namespace blink

@@ -36,4 +36,4 @@ Path SVGPolylineElement::asPath() const
     return asPathFromPoints();
 }
 
-}
+} // namespace blink

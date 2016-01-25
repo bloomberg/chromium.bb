@@ -71,6 +71,6 @@ protected:
     FontDataTable m_fontDataTable;
 };
 
-}
+} // namespace blink
 
 #endif

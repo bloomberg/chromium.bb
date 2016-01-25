@@ -31,6 +31,6 @@ private:
     RefPtrWillBePersistent<CSSValue> m_value;
 };
 
-}
+} // namespace blink
 
 #endif

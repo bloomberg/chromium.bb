@@ -34,4 +34,4 @@ Node* DOMNodeIds::nodeForId(int id)
     return WeakIdentifierMap<Node>::lookup(id);
 }
 
-}
+} // namespace blink

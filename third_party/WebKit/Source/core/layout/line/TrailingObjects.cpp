@@ -70,4 +70,4 @@ void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineM
     }
 }
 
-}
+} // namespace blink

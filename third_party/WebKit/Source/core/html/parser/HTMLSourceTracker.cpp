@@ -91,4 +91,4 @@ String HTMLSourceTracker::sourceForToken(const HTMLToken& token)
     return m_cachedSourceForToken;
 }
 
-}
+} // namespace blink

@@ -258,6 +258,6 @@ private:
 // counted as 1 grapheme cluster.
 PLATFORM_EXPORT unsigned numGraphemeClusters(const String&);
 
-}
+} // namespace blink
 
 #endif

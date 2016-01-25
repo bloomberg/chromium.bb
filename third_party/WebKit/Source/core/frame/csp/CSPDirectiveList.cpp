@@ -34,7 +34,7 @@ String getSha256String(const String& content)
     return "sha256-" + base64Encode(reinterpret_cast<char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
-}
+} // namespace
 
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
     : m_policy(policy)

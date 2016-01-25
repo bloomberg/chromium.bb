@@ -47,6 +47,6 @@ private:
     String debugName() const override { return "MediaDocument"; }
 };
 
-}
+} // namespace blink
 
 #endif

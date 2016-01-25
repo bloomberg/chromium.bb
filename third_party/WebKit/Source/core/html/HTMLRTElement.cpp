@@ -25,4 +25,4 @@ LayoutObject* HTMLRTElement::createLayoutObject(const ComputedStyle& style)
     return LayoutObject::createObject(this, style);
 }
 
-}
+} // namespace blink

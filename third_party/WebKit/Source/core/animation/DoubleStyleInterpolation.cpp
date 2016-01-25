@@ -152,4 +152,4 @@ PassRefPtr<DoubleStyleInterpolation> DoubleStyleInterpolation::maybeCreateFromMo
         id, true, InterpolationRange::RangeAll, startRotationType == MotionRotationAuto));
 }
 
-}
+} // namespace blink

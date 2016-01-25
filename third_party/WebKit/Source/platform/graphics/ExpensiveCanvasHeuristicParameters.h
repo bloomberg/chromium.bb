@@ -64,8 +64,8 @@ enum {
 
 }; // enum
 
-} // ExpensiveCanvasHeuristicParameters
+} // namespace ExpensiveCanvasHeuristicParameters
 
-} // blink
+} // namespace blink
 
 #endif

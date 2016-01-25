@@ -279,7 +279,7 @@ void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfo
     }
 }
 
-}
+} // namespace
 
 void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCallbackFlags flags)
 {

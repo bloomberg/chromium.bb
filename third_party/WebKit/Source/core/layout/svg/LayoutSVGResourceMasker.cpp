@@ -131,4 +131,4 @@ FloatRect LayoutSVGResourceMasker::resourceBoundingBox(const LayoutObject* objec
     return maskRect;
 }
 
-}
+} // namespace blink

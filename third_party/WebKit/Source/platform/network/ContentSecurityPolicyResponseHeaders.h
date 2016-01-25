@@ -48,6 +48,6 @@ private:
     String m_contentSecurityPolicyReportOnly;
 };
 
-}
+} // namespace blink
 
 #endif

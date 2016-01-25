@@ -249,4 +249,4 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(Documen
     return features;
 }
 
-}
+} // namespace blink

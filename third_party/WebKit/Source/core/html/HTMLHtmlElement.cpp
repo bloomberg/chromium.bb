@@ -67,4 +67,4 @@ void HTMLHtmlElement::insertedByParser()
         documentLoader->applicationCacheHost()->selectCacheWithManifest(document().completeURL(manifest));
 }
 
-}
+} // namespace blink

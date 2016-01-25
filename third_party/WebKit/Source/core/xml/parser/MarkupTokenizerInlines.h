@@ -90,6 +90,6 @@ inline void advanceStringAndASSERT(SegmentedString& source, const char* expected
         goto stateName;                                                    \
     } while (false)
 
-}
+} // namespace blink
 
 #endif // MarkupTokenizerInlines_h

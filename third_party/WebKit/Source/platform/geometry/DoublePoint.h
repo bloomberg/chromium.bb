@@ -171,6 +171,6 @@ inline DoubleSize toDoubleSize(const DoublePoint& a)
     return DoubleSize(a.x(), a.y());
 }
 
-}
+} // namespace blink
 
 #endif

@@ -60,4 +60,4 @@ bool SVGAnimatedNumberOptionalNumber::needsSynchronizeAttribute()
         || m_secondNumber->needsSynchronizeAttribute();
 }
 
-}
+} // namespace blink

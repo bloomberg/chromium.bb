@@ -44,6 +44,6 @@ public:
     virtual void handleEvent(Blob*) = 0;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // BlobCallback_h

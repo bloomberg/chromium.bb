@@ -101,4 +101,4 @@ void LayoutSVGViewportContainer::paint(const PaintInfo& paintInfo, const LayoutP
     SVGContainerPainter(*this).paint(paintInfo);
 }
 
-}
+} // namespace blink

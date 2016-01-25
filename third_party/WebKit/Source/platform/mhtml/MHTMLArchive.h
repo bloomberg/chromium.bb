@@ -117,6 +117,6 @@ private:
     SubFrameArchives m_subframeArchives;
 };
 
-}
+} // namespace blink
 
 #endif

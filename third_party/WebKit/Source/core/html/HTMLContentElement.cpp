@@ -131,4 +131,4 @@ bool HTMLContentElement::matchSelector(Element& element) const
     return false;
 }
 
-}
+} // namespace blink

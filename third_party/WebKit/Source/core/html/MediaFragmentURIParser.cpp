@@ -309,4 +309,4 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString, unsigned leng
     return true;
 }
 
-}
+} // namespace blink

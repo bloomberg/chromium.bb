@@ -44,6 +44,6 @@ public:
     Dictionary headersDictionary;
 };
 
-}
+} // namespace blink
 
 #endif // ResponseInit_h

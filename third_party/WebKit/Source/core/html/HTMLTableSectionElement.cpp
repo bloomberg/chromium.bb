@@ -89,4 +89,4 @@ PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableSectionElement::rows()
     return ensureCachedCollection<HTMLCollection>(TSectionRows);
 }
 
-}
+} // namespace blink

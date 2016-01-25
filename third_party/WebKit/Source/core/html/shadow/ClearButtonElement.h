@@ -58,6 +58,6 @@ private:
 
 DEFINE_TYPE_CASTS(ClearButtonElement, Element, element, element->isClearButtonElement(), element.isClearButtonElement());
 
-} // namespace
+} // namespace blink
 
 #endif // ClearButtonElement_h

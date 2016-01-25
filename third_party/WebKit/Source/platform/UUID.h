@@ -50,6 +50,6 @@ PLATFORM_EXPORT String createCanonicalUUIDString();
 // of lower case hexadecimal characters separated by hyphens, in the form 8-4-4-4-12.
 PLATFORM_EXPORT bool isValidUUID(const String& uuid);
 
-}
+} // namespace blink
 
 #endif

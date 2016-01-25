@@ -338,4 +338,4 @@ DEFINE_TRACE(LinkLoader)
     ResourceOwner<Resource, ResourceClient>::trace(visitor);
 }
 
-}
+} // namespace blink

@@ -62,4 +62,4 @@ String DOMWindowCSS::escape(const String& ident)
     return builder.toString();
 }
 
-}
+} // namespace blink

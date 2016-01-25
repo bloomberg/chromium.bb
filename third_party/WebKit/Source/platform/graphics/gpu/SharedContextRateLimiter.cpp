@@ -80,5 +80,4 @@ void SharedContextRateLimiter::reset()
     }
 }
 
-} // blink
-
+} // namespace blink

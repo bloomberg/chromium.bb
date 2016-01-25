@@ -50,7 +50,7 @@ PLATFORM_EXPORT bool isValidAudioBufferSampleRate(float sampleRate);
 // Return max/min sample rate supported by AudioBuffers.
 PLATFORM_EXPORT float minAudioBufferSampleRate();
 PLATFORM_EXPORT float maxAudioBufferSampleRate();
-} // AudioUtilites
+} // namespace AudioUtilities
 } // namespace blink
 
 #endif // AudioUtilities_h

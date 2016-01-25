@@ -56,6 +56,6 @@ private:
     RefPtrWillBeMember<TouchList> m_changedTouches;
 };
 
-}
+} // namespace blink
 
 #endif // TouchEventContext_h

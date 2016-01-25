@@ -170,4 +170,4 @@ DEFINE_TRACE(CSSValuePool)
 #endif
 }
 
-}
+} // namespace blink

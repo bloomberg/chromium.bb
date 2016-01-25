@@ -58,6 +58,6 @@ private:
     WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32> m_nodes;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -254,4 +254,4 @@ void ElementStyleResources::loadPendingResources(ComputedStyle* computedStyle)
     loadPendingSVGDocuments(computedStyle);
 }
 
-}
+} // namespace blink

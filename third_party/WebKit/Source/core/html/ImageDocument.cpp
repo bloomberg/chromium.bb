@@ -460,4 +460,4 @@ bool ImageEventListener::operator==(const EventListener& listener) const
     return false;
 }
 
-}
+} // namespace blink

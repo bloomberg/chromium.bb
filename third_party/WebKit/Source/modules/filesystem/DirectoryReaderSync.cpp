@@ -125,4 +125,4 @@ DEFINE_TRACE(DirectoryReaderSync)
     DirectoryReaderBase::trace(visitor);
 }
 
-} // namespace
+} // namespace blink

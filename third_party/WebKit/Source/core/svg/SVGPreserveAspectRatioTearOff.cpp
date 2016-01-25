@@ -69,4 +69,4 @@ SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(PassRefPtrWillBeRaw
 {
 }
 
-}
+} // namespace blink

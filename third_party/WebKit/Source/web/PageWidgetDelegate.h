@@ -85,5 +85,5 @@ private:
     PageWidgetDelegate() { }
 };
 
-}
+} // namespace blink
 #endif

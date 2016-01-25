@@ -114,6 +114,6 @@ protected:
     FetchContext() { }
 };
 
-}
+} // namespace blink
 
 #endif

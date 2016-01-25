@@ -32,4 +32,4 @@ void provideNotificationPermissionClientTo(LocalFrame& frame, PassOwnPtrWillBeRa
     frame.provideSupplement(NotificationPermissionClient::supplementName(), client);
 }
 
-}
+} // namespace blink

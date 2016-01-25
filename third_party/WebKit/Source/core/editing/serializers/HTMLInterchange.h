@@ -42,6 +42,6 @@ enum EAnnotateForInterchange { DoNotAnnotateForInterchange, AnnotateForInterchan
 
 String convertHTMLTextToInterchangeFormat(const String&, const Text&);
 
-}
+} // namespace blink
 
 #endif

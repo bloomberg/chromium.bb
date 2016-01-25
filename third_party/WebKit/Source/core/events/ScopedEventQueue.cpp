@@ -103,4 +103,4 @@ void ScopedEventQueue::decrementScopingLevel()
         dispatchAllEvents();
 }
 
-}
+} // namespace blink

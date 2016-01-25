@@ -79,7 +79,7 @@ void PNGAPI pngFailed(png_structp png, png_const_charp)
     longjmp(JMPBUF(png), 1);
 }
 
-} // anonymous
+} // namespace
 
 namespace blink {
 

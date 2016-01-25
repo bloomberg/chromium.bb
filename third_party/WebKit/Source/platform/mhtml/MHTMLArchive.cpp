@@ -270,4 +270,4 @@ DEFINE_TRACE(MHTMLArchive)
     visitor->trace(m_subframeArchives);
 }
 
-}
+} // namespace blink

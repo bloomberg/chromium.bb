@@ -51,4 +51,4 @@ SVGParsingError SVGAnimatedLength::setBaseValueAsString(const String& value)
     return parseStatus;
 }
 
-}
+} // namespace blink

@@ -76,4 +76,4 @@ void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
-}
+} // namespace blink

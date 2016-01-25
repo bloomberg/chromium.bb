@@ -261,4 +261,4 @@ DEFINE_TRACE(DOMImplementation)
     visitor->trace(m_document);
 }
 
-}
+} // namespace blink

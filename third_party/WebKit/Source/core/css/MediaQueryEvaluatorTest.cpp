@@ -193,4 +193,4 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewport)
     testMQEvaluator(floatViewportTestCases, mediaQueryEvaluator);
 }
 
-} // namespace
+} // namespace blink

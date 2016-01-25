@@ -281,4 +281,4 @@ EPaintOrderType SVGComputedStyle::paintOrderType(unsigned index) const
     return (EPaintOrderType)pt;
 }
 
-}
+} // namespace blink

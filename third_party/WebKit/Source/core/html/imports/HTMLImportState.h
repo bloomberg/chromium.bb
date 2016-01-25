@@ -74,6 +74,6 @@ inline HTMLImportState::Value HTMLImportState::checkedValue() const
     return m_value;
 }
 
-}
+} // namespace blink
 
 #endif

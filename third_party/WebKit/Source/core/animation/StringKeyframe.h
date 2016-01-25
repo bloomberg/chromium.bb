@@ -123,6 +123,6 @@ DEFINE_TYPE_CASTS(StringKeyframe, Keyframe, value, value->isStringKeyframe(), va
 DEFINE_TYPE_CASTS(CSSPropertySpecificKeyframe, Keyframe::PropertySpecificKeyframe, value, value->isCSSPropertySpecificKeyframe(), value.isCSSPropertySpecificKeyframe());
 DEFINE_TYPE_CASTS(SVGPropertySpecificKeyframe, Keyframe::PropertySpecificKeyframe, value, value->isSVGPropertySpecificKeyframe(), value.isSVGPropertySpecificKeyframe());
 
-}
+} // namespace blink
 
 #endif

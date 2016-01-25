@@ -47,4 +47,4 @@ bool SmallCapsIterator::consume(unsigned *capsLimit, SmallCapsBehavior* smallCap
     return true;
 }
 
-}
+} // namespace blink

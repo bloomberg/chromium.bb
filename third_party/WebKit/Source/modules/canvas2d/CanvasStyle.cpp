@@ -140,4 +140,4 @@ DEFINE_TRACE(CanvasStyle)
     visitor->trace(m_pattern);
 }
 
-}
+} // namespace blink

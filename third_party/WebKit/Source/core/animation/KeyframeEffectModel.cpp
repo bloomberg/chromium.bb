@@ -280,4 +280,4 @@ bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyfram
     return addedSyntheticKeyframe;
 }
 
-} // namespace
+} // namespace blink

@@ -113,4 +113,4 @@ bool findIntersection(const FloatPoint& p1, const FloatPoint& p2, const FloatPoi
     return true;
 }
 
-}
+} // namespace blink

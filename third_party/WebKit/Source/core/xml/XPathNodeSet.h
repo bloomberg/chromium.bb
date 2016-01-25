@@ -81,7 +81,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_nodes;
 };
 
-}
+} // namespace XPath
 
-}
+} // namespace blink
 #endif // XPathNodeSet_h

@@ -233,4 +233,4 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
     m_ruleValue.clear();
 }
 
-}
+} // namespace blink

@@ -174,4 +174,4 @@ DEFINE_TRACE(TreeScopeStyleSheetCollection)
     StyleSheetCollection::trace(visitor);
 }
 
-}
+} // namespace blink

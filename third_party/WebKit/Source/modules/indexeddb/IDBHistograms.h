@@ -40,6 +40,6 @@ enum IndexedDatabaseMethods {
     IDBMethodsMax,
 };
 
-}
+} // namespace blink
 
 #endif

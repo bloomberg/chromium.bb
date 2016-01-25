@@ -43,6 +43,6 @@ public:
     virtual bool hasSourceAttribute() const = 0;
 };
 
-}
+} // namespace blink
 
 #endif

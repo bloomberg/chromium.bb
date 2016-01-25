@@ -33,6 +33,6 @@ public:
     static float distance(const Color& fromColor, const Color& toColor);
 };
 
-}
+} // namespace blink
 
 #endif // ColorDistance_h

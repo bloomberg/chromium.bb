@@ -564,4 +564,4 @@ DEFINE_TRACE(HTMLTableElement)
     HTMLElement::trace(visitor);
 }
 
-}
+} // namespace blink

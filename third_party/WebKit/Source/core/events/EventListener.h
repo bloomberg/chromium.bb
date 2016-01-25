@@ -63,6 +63,6 @@ private:
     Type m_type;
 };
 
-}
+} // namespace blink
 
 #endif

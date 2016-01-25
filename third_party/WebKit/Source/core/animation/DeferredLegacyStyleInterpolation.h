@@ -61,6 +61,6 @@ private:
     mutable bool m_outdated;
 };
 
-}
+} // namespace blink
 
 #endif

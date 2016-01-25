@@ -112,6 +112,6 @@ private:
     HashMap<AtomicString, OwnPtr<SelectorQuery>> m_entries;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -85,4 +85,4 @@ void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame)
     view->updateAllLifecyclePhases();
 }
 
-}
+} // namespace blink

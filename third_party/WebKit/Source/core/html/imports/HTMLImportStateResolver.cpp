@@ -78,5 +78,4 @@ HTMLImportState HTMLImportStateResolver::resolve() const
     return HTMLImportState(HTMLImportState::Ready);
 }
 
-}
-
+} // namespace blink

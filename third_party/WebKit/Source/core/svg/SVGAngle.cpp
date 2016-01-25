@@ -438,4 +438,4 @@ void SVGAngle::orientTypeChanged()
     }
 }
 
-}
+} // namespace blink

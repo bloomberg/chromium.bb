@@ -54,6 +54,6 @@ private:
     unsigned* m_count;
 };
 
-}
+} // namespace blink
 
 #endif

@@ -214,4 +214,4 @@ void LayoutScrollbarPart::setNeedsPaintInvalidation()
     toLayoutBox(parent())->scrollableArea()->setScrollCornerNeedsPaintInvalidation();
 }
 
-}
+} // namespace blink

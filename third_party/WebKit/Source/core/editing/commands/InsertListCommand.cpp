@@ -437,4 +437,4 @@ DEFINE_TRACE(InsertListCommand)
     CompositeEditCommand::trace(visitor);
 }
 
-}
+} // namespace blink

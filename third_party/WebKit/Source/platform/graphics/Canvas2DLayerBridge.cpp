@@ -57,7 +57,7 @@ WTF::RefCountedLeakCounter& canvas2DLayerBridgeInstanceCounter()
 }
 #endif
 
-} // unnamed
+} // namespace
 
 namespace blink {
 

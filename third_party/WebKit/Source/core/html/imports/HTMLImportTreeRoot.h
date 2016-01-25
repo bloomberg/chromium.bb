@@ -49,6 +49,6 @@ private:
 
 DEFINE_TYPE_CASTS(HTMLImportTreeRoot, HTMLImport, import, import->isRoot(), import.isRoot());
 
-}
+} // namespace blink
 
 #endif

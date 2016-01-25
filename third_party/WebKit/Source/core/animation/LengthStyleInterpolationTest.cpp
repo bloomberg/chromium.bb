@@ -167,4 +167,4 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnitsWithZeroValues)
     EXPECT_CSS_LENGTH_ARRAY_ELEMENTS_EQUAL(expectation, actual);
 }
 
-}
+} // namespace blink

@@ -58,5 +58,5 @@ private:
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 };
 
-}
+} // namespace blink
 #endif // LayoutSVGBlock_h

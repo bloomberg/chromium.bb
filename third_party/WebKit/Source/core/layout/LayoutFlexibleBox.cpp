@@ -1548,4 +1548,4 @@ void LayoutFlexibleBox::flipForWrapReverse(const Vector<LineContext>& lineContex
     }
 }
 
-}
+} // namespace blink

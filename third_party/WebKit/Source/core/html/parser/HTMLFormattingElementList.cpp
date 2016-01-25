@@ -214,4 +214,4 @@ void HTMLFormattingElementList::show()
 
 #endif
 
-}
+} // namespace blink

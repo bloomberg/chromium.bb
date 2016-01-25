@@ -128,4 +128,4 @@ void SVGAngleTearOff::setValueAsString(const String& value, ExceptionState& exce
     commitChange();
 }
 
-}
+} // namespace blink
