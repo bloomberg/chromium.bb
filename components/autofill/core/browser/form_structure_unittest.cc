@@ -445,6 +445,90 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttribute) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
 }
 
+// All fields share a common prefix which could confuse the heuristics. Test
+// that the common prefix is stripped out before running heuristics.
+TEST_F(FormStructureTest, StripCommonNamePrefix) {
+  FormData form;
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$phone");
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable());
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5U, form_structure->field_count());
+  ASSERT_EQ(4U, form_structure->autofill_count());
+
+  // First name.
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  // Last name.
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  // Email.
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+  // Phone.
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure->field(3)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+}
+
+// All fields share a common prefix which is small enough that it is not
+// stripped from the name before running the heuristics.
+TEST_F(FormStructureTest, StripCommonNamePrefix_SmallPrefix) {
+  FormData form;
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Address 1");
+  field.name = ASCIIToUTF16("address1");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address 2");
+  field.name = ASCIIToUTF16("address2");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address 3");
+  field.name = ASCIIToUTF16("address3");
+  form.fields.push_back(field);
+
+  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable());
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  // Address 1.
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
+  // Address 2.
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
+  // Address 3
+  EXPECT_EQ(ADDRESS_HOME_LINE3, form_structure->field(2)->heuristic_type());
+}
+
 // Verify that we can correctly process the 'autocomplete' attribute for phone
 // number types (especially phone prefixes and suffixes).
 TEST_F(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
@@ -2238,7 +2322,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   // Setting the form name which we expect to see in the upload.
-  form.name = base::ASCIIToUTF16("myform");
+  form.name = ASCIIToUTF16("myform");
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
 
@@ -3317,6 +3401,44 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   ASSERT_GE(forms[0]->field_count(), 2U);
   EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(0)->server_type());
   EXPECT_EQ(76, forms[0]->field(1)->server_type());
+}
+
+TEST_F(FormStructureTest, FindLongestCommonPrefix) {
+  // Normal case.
+  std::vector<base::string16> strings;
+  strings.push_back(ASCIIToUTF16("123456789"));
+  strings.push_back(ASCIIToUTF16("12345678"));
+  strings.push_back(ASCIIToUTF16("123456"));
+  strings.push_back(ASCIIToUTF16("1234567"));
+  base::StringPiece16 prefix = FormStructure::FindLongestCommonPrefix(strings);
+  EXPECT_EQ(ASCIIToUTF16("123456"), prefix.as_string());
+
+  // Handles no common prefix.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("123"));
+  strings.push_back(ASCIIToUTF16("456"));
+  strings.push_back(ASCIIToUTF16("789"));
+  prefix = FormStructure::FindLongestCommonPrefix(strings);
+  EXPECT_EQ(ASCIIToUTF16(""), prefix.as_string());
+
+  // Empty strings in the mix.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("123456789"));
+  strings.push_back(ASCIIToUTF16(""));
+  strings.push_back(ASCIIToUTF16("12345678"));
+  prefix = FormStructure::FindLongestCommonPrefix(strings);
+  EXPECT_EQ(ASCIIToUTF16(""), prefix.as_string());
+
+  // Only one string.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("123456789"));
+  prefix = FormStructure::FindLongestCommonPrefix(strings);
+  EXPECT_EQ(ASCIIToUTF16("123456789"), prefix.as_string());
+
+  // Empty vector.
+  strings.clear();
+  prefix = FormStructure::FindLongestCommonPrefix(strings);
+  EXPECT_EQ(ASCIIToUTF16(""), prefix.as_string());
 }
 
 }  // namespace autofill

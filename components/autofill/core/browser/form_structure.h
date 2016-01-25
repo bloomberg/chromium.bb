@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -215,6 +216,7 @@ class FormStructure {
  private:
   friend class FormStructureTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
+  FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
 
   // Encodes information about this form and its fields into |query_form|.
   void EncodeFormForQuery(
@@ -242,6 +244,15 @@ class FormStructure {
 
   // Returns true if field should be skipped when talking to Autofill server.
   bool ShouldSkipField(const FormFieldData& field) const;
+
+  // Further processes the extracted |fields_|.
+  void ProcessExtractedFields();
+
+  // Returns the longest common prefix found within |strings|. IMPORTANT: the
+  // returned StringPiece16 is a view into |strings| and the latter must remain
+  // valid while the StringPiece16 is used.
+  static base::StringPiece16 FindLongestCommonPrefix(
+      const std::vector<base::string16>& strings);
 
   // The name of the form.
   base::string16 form_name_;

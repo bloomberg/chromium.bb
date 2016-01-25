@@ -439,7 +439,8 @@ AutofillField::AutofillField(const FormFieldData& field,
       html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED),
       credit_card_number_offset_(0),
-      previously_autofilled_(false) {}
+      previously_autofilled_(false),
+      parseable_name_(field.name) {}
 
 AutofillField::~AutofillField() {}
 

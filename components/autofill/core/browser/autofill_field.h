@@ -40,6 +40,7 @@ class AutofillField : public FormFieldData {
   const ServerFieldTypeSet& possible_types() const { return possible_types_; }
   PhonePart phone_part() const { return phone_part_; }
   bool previously_autofilled() const { return previously_autofilled_; }
+  const base::string16& parseable_name() const { return parseable_name_; }
 
   // Setters for the detected type and section for this field.
   void set_section(const std::string& section) { section_ = section; }
@@ -51,6 +52,9 @@ class AutofillField : public FormFieldData {
   void SetHtmlType(HtmlFieldType type, HtmlFieldMode mode);
   void set_previously_autofilled(bool previously_autofilled) {
     previously_autofilled_ = previously_autofilled;
+  }
+  void set_parseable_name(base::string16 parseable_name) {
+    parseable_name_ = std::move(parseable_name);
   }
 
   // This function automatically chooses between server and heuristic autofill
@@ -138,6 +142,11 @@ class AutofillField : public FormFieldData {
 
   // Whether the field was autofilled then later edited.
   bool previously_autofilled_;
+
+  // The parseable name attribute, with unnecessary information removed (such as
+  // a common prefix shared with other fields). Will be used for heuristics
+  // parsing.
+  base::string16 parseable_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };

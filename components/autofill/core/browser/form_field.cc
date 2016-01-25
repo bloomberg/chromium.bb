@@ -185,7 +185,7 @@ bool FormField::Match(const AutofillField* field,
   }
 
   if ((match_type & FormField::MATCH_NAME) &&
-      MatchesPattern(field->name, pattern)) {
+      MatchesPattern(field->parseable_name(), pattern)) {
     return true;
   }
 
