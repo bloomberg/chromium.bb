@@ -29,6 +29,7 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-radeon \
 	--enable-amdgpu \
 	--enable-nouveau \
+	--enable-vc4 \
 	--enable-vmwgfx \
 	--enable-omap-experimental-api \
 	--enable-exynos-experimental-api \
@@ -79,6 +80,10 @@ if HAVE_TEGRA
 TEGRA_SUBDIR = tegra
 endif
 
+if HAVE_VC4
+VC4_SUBDIR = vc4
+endif
+
 if BUILD_MANPAGES
 if HAVE_MANPAGES_STYLESHEET
 MAN_SUBDIR = man
@@ -96,6 +101,7 @@ SUBDIRS = \
 	$(EXYNOS_SUBDIR) \
 	$(FREEDRENO_SUBDIR) \
 	$(TEGRA_SUBDIR) \
+	$(VC4_SUBDIR) \
 	tests \
 	$(MAN_SUBDIR)
 
