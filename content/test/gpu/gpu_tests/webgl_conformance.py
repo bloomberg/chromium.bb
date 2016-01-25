@@ -85,7 +85,8 @@ class WebglConformanceValidator(gpu_test_base.ValidatorBase):
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit',
         '--js-flags=--expose-gc',
-        '--test-type=gpu'
+        '--test-type=gpu',
+        '--enable-experimental-canvas-features'
     ])
     browser = browser_finder.FindBrowser(options.finder_options)
     if (browser.target_os.startswith('android') and
@@ -115,7 +116,8 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
         '--disable-gpu-process-crash-limit',
         '--js-flags=--expose-gc',
         '--enable-unsafe-es3-apis',
-        '--test-type=gpu'
+        '--test-type=gpu',
+        '--enable-experimental-canvas-features'
     ])
     browser = browser_finder.FindBrowser(options.finder_options)
     if browser.target_os == 'darwin':
