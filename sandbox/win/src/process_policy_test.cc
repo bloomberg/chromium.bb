@@ -243,6 +243,32 @@ SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
   return SBOX_TEST_FAILED;
 }
 
+// Creates a suspended process using CreateProcessA then kill it.
+SBOX_TESTS_COMMAND int Process_CreateProcessA(int argc, wchar_t** argv) {
+  if (argc != 1)
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  if ((NULL == argv) || (NULL == argv[0]))
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  STARTUPINFOA si = {sizeof(si)};
+
+  base::string16 path = MakePathToSys(argv[0], false);
+
+  PROCESS_INFORMATION temp_process_info = {};
+  // Create suspended to avoid popping calc.
+  if (!::CreateProcessA(base::SysWideToMultiByte(path, CP_UTF8).c_str(), NULL,
+                        NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si,
+                        &temp_process_info)) {
+    return SBOX_TEST_FAILED;
+  }
+  base::win::ScopedProcessInformation pi(temp_process_info);
+
+  if (!::TerminateProcess(pi.process_handle(), 0))
+    return SBOX_TEST_FAILED;
+
+  return SBOX_TEST_SUCCEEDED;
+}
 
 SBOX_TESTS_COMMAND int Process_OpenToken(int argc, wchar_t **argv) {
   HANDLE token;
@@ -382,6 +408,20 @@ TEST(ProcessPolicyTest, TestGetProcessTokenMaxAccessNoJob) {
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
+}
+
+TEST(ProcessPolicyTest, TestCreateProcessA) {
+  TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+  policy->SetJobLevel(JOB_NONE, 0);
+  policy->SetTokenLevel(USER_UNPROTECTED, USER_UNPROTECTED);
+
+  base::string16 exe_path = MakePathToSys(L"calc.exe", false);
+  ASSERT_TRUE(!exe_path.empty());
+  EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
+                             TargetPolicy::PROCESS_ALL_EXEC, exe_path.c_str()));
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"Process_CreateProcessA calc.exe"));
 }
 
 }  // namespace sandbox

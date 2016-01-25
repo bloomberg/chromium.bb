@@ -331,7 +331,8 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
                                  LPVOID environment, LPCSTR current_directory,
                                  LPSTARTUPINFOA startup_info,
                                  LPPROCESS_INFORMATION process_information) {
-  if (orig_CreateProcessA(application_name, command_line, process_attributes,
+  if (SandboxFactory::GetTargetServices()->GetState()->IsCsrssConnected() &&
+      orig_CreateProcessA(application_name, command_line, process_attributes,
                           thread_attributes, inherit_handles, flags,
                           environment, current_directory, startup_info,
                           process_information)) {
