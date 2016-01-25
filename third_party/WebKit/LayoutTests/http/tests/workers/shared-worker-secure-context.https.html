@@ -16,7 +16,7 @@
         var test = async_test("Shared workers secure context");
 
         window.onmessage = test.step_func(function (event) {
-            assert_equals("SecurityError: Failed to construct 'SharedWorker': The SharedWorker named 'worker' was created from a secure context and this context is not secure.", event.data.error);
+            assert_equals(true, event.data.success);
             test.done();
         });
 

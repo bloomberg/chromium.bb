@@ -1632,7 +1632,5 @@ crbug.com/516751 svg/hixie/perf/004.xml [ NeedsRebaseline ]
 
 crbug.com/579365 [ Mac ] fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
 
-crbug.com/573206 http/tests/workers/shared-worker-secure-context.https.html [ Skip ]
-
 crbug.com/579151 editing/deleting/delete-to-select-table.html [ NeedsRebaseline ]
 crbug.com/579151 editing/inserting/insert-div-018.html [ NeedsRebaseline ]

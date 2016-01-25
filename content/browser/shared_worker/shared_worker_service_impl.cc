@@ -309,7 +309,6 @@ void SharedWorkerServiceImpl::CreateWorker(
     if (params.creation_context_type !=
         pending->instance()->creation_context_type()) {
       *creation_error = blink::WebWorkerCreationErrorSecureContextMismatch;
-      return;
     }
     pending->AddRequest(std::move(request));
     return;
@@ -493,7 +492,6 @@ void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
         host->instance()->creation_context_type()) {
       if (creation_error)
         *creation_error = blink::WebWorkerCreationErrorSecureContextMismatch;
-      return;
     }
     worker_process_id = host->process_id();
     worker_route_id = host->worker_route_id();

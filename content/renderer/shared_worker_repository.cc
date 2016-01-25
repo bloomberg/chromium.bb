@@ -39,8 +39,8 @@ SharedWorkerRepository::createSharedWorkerConnector(
   params.creation_context_type = creation_context_type;
   ViewHostMsg_CreateWorker_Reply reply;
   Send(new ViewHostMsg_CreateWorker(params, &reply));
+  *error = reply.error;
   if (reply.route_id == MSG_ROUTING_NONE) {
-    *error = reply.error;
     return NULL;
   }
   documents_with_workers_.insert(document_id);

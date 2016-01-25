@@ -5,6 +5,7 @@
     <script>
         try {
             var worker = new SharedWorker(get_host_info().HTTPS_ORIGIN + "/workers/resources/worker-util.js", "worker");
+            window.parent.postMessage({ success: true }, "*");
         } catch (e) {
             window.parent.postMessage({ error: e.toString() }, "*");
         }
