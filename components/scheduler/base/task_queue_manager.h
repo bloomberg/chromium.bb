@@ -190,6 +190,10 @@ class SCHEDULER_EXPORT TaskQueueManager
   // was able to advance.
   bool TryAdvanceTimeDomains();
 
+  void MaybeRecordTaskDelayHistograms(
+      const internal::TaskQueueImpl::Task& pending_task,
+      const internal::TaskQueueImpl* queue);
+
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
@@ -224,6 +228,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   std::set<base::TimeTicks> other_thread_pending_wakeups_;
 
   int work_batch_size_;
+  size_t task_count_;
 
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 

@@ -39614,6 +39614,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskQueueManager.DelayedTaskLateness"
+    units="ms">
+  <owner>alexclarke@chromium.org</owner>
+  <summary>
+    The delta between when a delayed task was scheduled to run and when the
+    RendererScheduler actually ran it. Note: to reduce overhead only 10% of
+    tasks are sampled.
+  </summary>
+</histogram>
+
+<histogram
+    name="RendererScheduler.TaskQueueManager.ImmediateTaskQueueingDuration"
+    units="ms">
+  <owner>alexclarke@chromium.org</owner>
+  <summary>
+    The queueing duration for non-delayed tasks posted to the RendererScheduler.
+    This metric is only recorded if TrackingInfo::time_posted is set (i.e. not
+    on android). Note: to reduce overhead only 10% of tasks are sampled.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.UserModel.GestureDuration" units="ms">
   <owner>alexclarke@chromium.org</owner>
   <summary>Duration of gestures (scrolls and pinches).</summary>

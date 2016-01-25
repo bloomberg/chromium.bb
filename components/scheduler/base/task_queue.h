@@ -159,6 +159,10 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // called on the thread this TaskQueue was created by.
   virtual void SetPumpPolicy(PumpPolicy pump_policy) = 0;
 
+  // Returns the current PumpPolicy. NOTE this must be called on the thread this
+  // TaskQueue was created by.
+  virtual PumpPolicy GetPumpPolicy() const = 0;
+
   // Reloads new tasks from the incoming queue into the work queue, regardless
   // of whether the work queue is empty or not. After this, the function ensures
   // that the tasks in the work queue, if any, are scheduled for execution.

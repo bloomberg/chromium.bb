@@ -99,6 +99,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   QueuePriority GetQueuePriority() const override;
   void PumpQueue(bool may_post_dowork) override;
   void SetPumpPolicy(PumpPolicy pump_policy) override;
+  PumpPolicy GetPumpPolicy() const override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;

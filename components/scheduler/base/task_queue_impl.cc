@@ -61,12 +61,11 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
                           bool nestable)
-    : PendingTask(posted_from, task, base::TimeTicks(), nestable),
+    : PendingTask(posted_from, task, desired_run_time, nestable),
 #ifndef NDEBUG
       enqueue_order_set_(false),
 #endif
       enqueue_order_(0) {
-  delayed_run_time = desired_run_time;
   sequence_num = sequence_number;
 }
 
@@ -76,12 +75,11 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
                           EnqueueOrder sequence_number,
                           bool nestable,
                           EnqueueOrder enqueue_order)
-    : PendingTask(posted_from, task, base::TimeTicks(), nestable),
+    : PendingTask(posted_from, task, desired_run_time, nestable),
 #ifndef NDEBUG
       enqueue_order_set_(true),
 #endif
       enqueue_order_(enqueue_order) {
-  delayed_run_time = desired_run_time;
   sequence_num = sequence_number;
 }
 
@@ -439,6 +437,10 @@ void TaskQueueImpl::SetPumpPolicy(PumpPolicy pump_policy) {
   }
   any_thread().pump_policy = pump_policy;
   main_thread_only().pump_policy = pump_policy;
+}
+
+TaskQueue::PumpPolicy TaskQueueImpl::GetPumpPolicy() const {
+  return main_thread_only().pump_policy;
 }
 
 void TaskQueueImpl::PumpQueueLocked(bool may_post_dowork) {
