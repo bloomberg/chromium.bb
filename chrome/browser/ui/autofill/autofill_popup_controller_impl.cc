@@ -336,7 +336,7 @@ int AutofillPopupControllerImpl::GetElidedValueWidthForRow(size_t row) {
 }
 
 int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(size_t row) {
-  return gfx::GetStringWidth(GetElidedValueAt(row), label_font_list_);
+  return gfx::GetStringWidth(GetElidedLabelAt(row), label_font_list_);
 }
 #endif
 
