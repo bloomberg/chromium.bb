@@ -774,10 +774,20 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * @return If the the panel supports an EXPANDED state rather than just PEEKING or MAXIMIZED.
+     */
+    public boolean supportsExpandedState() {
+        return true;
+    }
+
+    /**
      * @return The {@code PanelState} that is before the |state| in the order of states.
      */
     public PanelState getPreviousPanelState(PanelState state) {
         PanelState prevState = PREVIOUS_STATES.get(state);
+        if (prevState == PanelState.EXPANDED && !supportsExpandedState()) {
+            prevState = PREVIOUS_STATES.get(prevState);
+        }
         return prevState != null ? prevState : PanelState.UNDEFINED;
     }
 
@@ -807,6 +817,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return whether the state is valid.
      */
     public boolean isValidState(PanelState state) {
+        // EXPANDED is not a valid state if a panel implementation doesn't support it.
+        if (!supportsExpandedState() && state == PanelState.EXPANDED) return false;
         // MAXIMIZED is not the previous state of anything, but it's a valid state.
         return PREVIOUS_STATES.values().contains(state) || state == PanelState.MAXIMIZED;
     }
@@ -1143,21 +1155,27 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         updatePromoVisibility(1.f - percentage);
 
         // Base page offset.
-        mBasePageY = getBasePageTargetY();
+        float startTargetY = supportsExpandedState() ? getBasePageTargetY() : 0.0f;
+        mBasePageY = MathUtils.interpolate(
+                startTargetY,
+                getBasePageTargetY(),
+                percentage);
 
         // Base page brightness.
-        float brightness = MathUtils.interpolate(
-                BASE_PAGE_BRIGHTNESS_STATE_EXPANDED,
+        float startBrightness = supportsExpandedState()
+                ? BASE_PAGE_BRIGHTNESS_STATE_EXPANDED : BASE_PAGE_BRIGHTNESS_STATE_PEEKED;
+        mBasePageBrightness = MathUtils.interpolate(
+                startBrightness,
                 BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED,
                 percentage);
-        mBasePageBrightness = brightness;
 
         // Bar height.
-        float barHeight = Math.round(MathUtils.interpolate(
-                getBarHeightExpanded(),
+        float startBarHeight = supportsExpandedState()
+                ? getBarHeightExpanded() : getBarHeightPeeking();
+        mBarHeight = Math.round(MathUtils.interpolate(
+                startBarHeight,
                 getBarHeightMaximized(),
                 percentage));
-        mBarHeight = barHeight;
 
         // Bar border.
         mIsBarBorderVisible = true;

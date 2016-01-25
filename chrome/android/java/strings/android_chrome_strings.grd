@@ -2155,7 +2155,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_READER_VIEW_TEXT" desc="Message shown on the reader mode button bar, to invite the user to tap to open a reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read.">
         Make page mobile-friendly
       </message>
-      <message name="IDS_READER_MODE_EXPANDED_TITLE" desc="Message shown on the reader mode button bar when it is opened to show reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read.">
+      <message name="IDS_READER_MODE_MAXIMIZED_TITLE" desc="Message shown on the reader mode button bar when it is opened to show reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read.">
         Mobile-friendly view
       </message>
       <message name="IDS_FRE_LABEL" desc="First Run Experience Strings">

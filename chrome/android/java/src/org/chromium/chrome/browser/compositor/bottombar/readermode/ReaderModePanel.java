@@ -206,6 +206,11 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
+    public boolean supportsExpandedState() {
+        return false;
+    }
+
+    @Override
     protected void updatePanelForCloseOrPeek(float percent) {
         super.updatePanelForCloseOrPeek(percent);
 
@@ -217,41 +222,27 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
-    protected void updatePanelForExpansion(float percent) {
-        super.updatePanelForExpansion(percent);
+    protected void updatePanelForMaximization(float percent) {
+        super.updatePanelForMaximization(percent);
         if (percent < 0.5f) {
             mReaderBarTextOpacity = 1.0f - 2.0f * percent;
             getReaderModeBarControl().setBarText(R.string.reader_view_text);
         } else {
             mReaderBarTextOpacity = 2.0f * (percent - 0.5f);
-            getReaderModeBarControl().setBarText(R.string.reader_mode_expanded_title);
+            getReaderModeBarControl().setBarText(R.string.reader_mode_maximized_title);
         }
-    }
-
-    @Override
-    protected void updatePanelForMaximization(float percent) {
-        super.updatePanelForMaximization(percent);
-        getReaderModeBarControl().setBarText(R.string.reader_mode_expanded_title);
-        mReaderBarTextOpacity = 1.0f;
     }
 
     @Override
     protected void maximizePanel(StateChangeReason reason) {
-        long duration = BASE_ANIMATION_DURATION_MS;
-        // Extend animation time when animating from PEEKED state to MAXIMIZED.
-        // TODO(mdjones): This check will be unnecessary after the expanded state is removed.
-        if (getPanelState() == PanelState.PEEKED) {
-            duration += 150;
-        }
-
-        super.animatePanelToState(PanelState.MAXIMIZED, reason, duration);
+        // Extend animation time by 150ms.
+        super.animatePanelToState(PanelState.MAXIMIZED, reason, BASE_ANIMATION_DURATION_MS  + 150);
     }
 
     @Override
     protected void onAnimationFinished() {
         super.onAnimationFinished();
-        boolean animatingToOpenState = getPanelState() == PanelState.EXPANDED
-                || getPanelState() == PanelState.MAXIMIZED;
+        boolean animatingToOpenState = getPanelState() == PanelState.MAXIMIZED;
         // Start or stop the timer for how long the user has been reading.
         if (!mTimerRunning && animatingToOpenState) {
             mStartTime = System.currentTimeMillis();
