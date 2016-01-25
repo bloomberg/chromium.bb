@@ -661,6 +661,36 @@
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_PRESSED_TOP" file="win/avatar_button/win7/sign_in_button_pressed_top.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_PRESSED_TOP_LEFT" file="win/avatar_button/win7/sign_in_button_pressed_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_GLASS_BUTTON_PRESSED_TOP_RIGHT" file="win/avatar_button/win7/sign_in_button_pressed_top_right.png" />
+
+        <!-- Windows, metro -->
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_AVATAR" file="win/avatar_button/win8/sign_in_button_avatar.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_BOTTOM" file="win/avatar_button/win8/sign_in_button_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_BOTTOM_LEFT" file="win/avatar_button/win8/sign_in_button_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_BOTTOM_RIGHT" file="win/avatar_button/win8/sign_in_button_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_CENTER" file="win/avatar_button/win8/sign_in_button_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_LEFT" file="win/avatar_button/win8/sign_in_button_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_RIGHT" file="win/avatar_button/win8/sign_in_button_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_TOP" file="win/avatar_button/win8/sign_in_button_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_TOP_LEFT" file="win/avatar_button/win8/sign_in_button_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_NORMAL_TOP_RIGHT" file="win/avatar_button/win8/sign_in_button_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_BOTTOM" file="win/avatar_button/win8/sign_in_button_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_BOTTOM_LEFT" file="win/avatar_button/win8/sign_in_button_hover_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_BOTTOM_RIGHT" file="win/avatar_button/win8/sign_in_button_hover_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_CENTER" file="win/avatar_button/win8/sign_in_button_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_LEFT" file="win/avatar_button/win8/sign_in_button_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_RIGHT" file="win/avatar_button/win8/sign_in_button_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_TOP" file="win/avatar_button/win8/sign_in_button_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_TOP_LEFT" file="win/avatar_button/win8/sign_in_button_hover_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_HOVER_TOP_RIGHT" file="win/avatar_button/win8/sign_in_button_hover_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_BOTTOM" file="win/avatar_button/win8/sign_in_button_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_BOTTOM_LEFT" file="win/avatar_button/win8/sign_in_button_pressed_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_BOTTOM_RIGHT" file="win/avatar_button/win8/sign_in_button_pressed_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_CENTER" file="win/avatar_button/win8/sign_in_button_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_LEFT" file="win/avatar_button/win8/sign_in_button_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_RIGHT" file="win/avatar_button/win8/sign_in_button_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_TOP" file="win/avatar_button/win8/sign_in_button_pressed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_TOP_LEFT" file="win/avatar_button/win8/sign_in_button_pressed_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_METRO_BUTTON_PRESSED_TOP_RIGHT" file="win/avatar_button/win8/sign_in_button_pressed_top_right.png" />
       </if>  <!-- toolkit_views and not is_macosx -->
       <if expr="is_macosx">
         <!-- Mac -->

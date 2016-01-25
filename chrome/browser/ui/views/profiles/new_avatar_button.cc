@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -79,6 +80,17 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
     SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     generic_avatar_ =
         *rb->GetImageNamed(IDR_AVATAR_THEMED_BUTTON_AVATAR).ToImageSkia();
+#if defined(OS_WIN)
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
+             browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_NORMAL);
+    const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_HOVER);
+    const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_PRESSED);
+
+    SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
+    generic_avatar_ =
+        *rb->GetImageNamed(IDR_AVATAR_METRO_BUTTON_AVATAR).ToImageSkia();
+#endif
   } else {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
