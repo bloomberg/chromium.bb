@@ -258,7 +258,7 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
       imageRect.width * scaleX,
       imageRect.height * scaleY);
 
-  var canvas = ImageUtil.ensureCanvas(this.contentImage_);
+  var canvas = ImageUtil.ensureCanvas(assert(this.contentImage_));
   if (canvas !== this.contentImage_) {
     this.replaceContent_(canvas);
   }
