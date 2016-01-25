@@ -41,7 +41,6 @@ typedef (HTMLImageElement or
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker),
-    RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface ImageBitmapFactories {
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap);
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] Promise createImageBitmap(

@@ -5982,6 +5982,7 @@ interface webkitURL
     method clearTimeout
     method close
     method confirm
+    method createImageBitmap
     method fetch
     method find
     method focus
