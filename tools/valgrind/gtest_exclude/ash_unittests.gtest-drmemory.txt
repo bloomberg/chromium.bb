@@ -1,2 +1,0 @@
-# ash will be removed on Window soon. http://crbug.com/558054
-*
