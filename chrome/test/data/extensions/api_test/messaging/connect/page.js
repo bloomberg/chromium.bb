@@ -40,7 +40,10 @@ chrome.runtime.onConnect.addListener(function onConnect(port) {
       chrome.test.assertFalse(chrome.runtime.onConnect.hasListeners());
       testConnectChildFrameAndNavigateSetup();
     } else if (msg.testDisconnectOnClose) {
-      window.location = "about:blank";
+      chrome.runtime.connect().onMessage.addListener(function(msg) {
+        chrome.test.assertEq('unloadTabContent', msg);
+        window.location = 'about:blank';
+      });
     } else if (msg.testPortName) {
       port.postMessage({portName:port.name});
     } else if (msg.testSendMessageFromTabError) {

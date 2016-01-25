@@ -275,8 +275,26 @@ chrome.test.getConfig(function(config) {
         .postMessage({testConnectChildFrameAndNavigateSetup: true});
     },
 
+    // The previous test removed the onConnect listener. Add it back.
+    function reloadTabForTest() {
+      var doneListening = listenForever(chrome.tabs.onUpdated,
+        function(tabId, info) {
+          if (tabId === testTab.id && info.status == 'complete') {
+            doneListening();
+          }
+        });
+      chrome.tabs.reload(testTab.id);
+    },
+
     // Tests that we get the disconnect event when the tab context closes.
     function disconnectOnClose() {
+      listenOnce(chrome.runtime.onConnect, function(portFromTab) {
+        listenOnce(portFromTab.onDisconnect, function() {
+          chrome.test.assertNoLastError();
+        });
+        portFromTab.postMessage('unloadTabContent');
+      });
+
       var port = chrome.tabs.connect(testTab.id);
       port.postMessage({testDisconnectOnClose: true});
       listenOnce(port.onDisconnect, function() {

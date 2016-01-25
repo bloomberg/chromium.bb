@@ -449,6 +449,7 @@ void MessageService::OpenChannelToNativeApp(
                                source_extension_id, source, false));
   if (!channel->opener->IsValidPort())
     return;
+  channel->opener->OpenPort(source_process_id, source_routing_id);
 
   // Get handle of the native view and pass it to the native messaging host.
   gfx::NativeView native_view = source ? source->GetNativeView() : nullptr;
@@ -575,6 +576,7 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
                                params->source_extension_id, source, false));
   if (!opener->IsValidPort())
     return;
+  opener->OpenPort(params->source_process_id, params->source_routing_id);
 
   params->receiver->RemoveCommonFrames(*opener);
   if (!params->receiver->IsValidPort()) {
