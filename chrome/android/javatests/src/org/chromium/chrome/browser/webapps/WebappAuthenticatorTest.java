@@ -8,9 +8,12 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.metrics.RecordHistogram;
+
 public class WebappAuthenticatorTest extends InstrumentationTestCase {
     @SmallTest
     public void testAuthentication() {
+        RecordHistogram.disableForTests();
         Context context = getInstrumentation().getTargetContext();
         String url = "http://www.example.org/hello.html";
         byte[] mac = WebappAuthenticator.getMacForUrl(context, url);

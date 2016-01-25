@@ -430,8 +430,8 @@ public class TabPersistentStore extends TabPersister {
         try {
             long time = SystemClock.elapsedRealtime();
             TabState state = TabState.restoreTabState(getStateDirectory(), tabToRestore.id);
-            restoreTab(tabToRestore, state, setAsActive);
             logExecutionTime("RestoreTabTime", time);
+            restoreTab(tabToRestore, state, setAsActive);
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing the app
             // at startup.

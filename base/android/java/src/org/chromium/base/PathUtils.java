@@ -9,12 +9,15 @@ import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class provides the path related methods for the native library.
@@ -106,7 +109,10 @@ public abstract class PathUtils {
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             StrictMode.allowThreadDiskWrites();
             try {
+                long time = SystemClock.elapsedRealtime();
                 sThumbnailDirectory = appContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
+                RecordHistogram.recordTimesHistogram("Android.StrictMode.ThumbnailCacheDir",
+                        SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
@@ -127,12 +133,17 @@ public abstract class PathUtils {
     private static String getDownloadsDirectory(Context appContext) {
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/508615
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        String downloadsPath;
         try {
-            return Environment.getExternalStoragePublicDirectory(
+            long time = SystemClock.elapsedRealtime();
+            downloadsPath = Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOWNLOADS).getPath();
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.DownloadsDir",
+                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+        return downloadsPath;
     }
 
     /**

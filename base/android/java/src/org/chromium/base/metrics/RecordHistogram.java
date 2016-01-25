@@ -18,6 +18,16 @@ import java.util.concurrent.TimeUnit;
  */
 @JNINamespace("base::android")
 public class RecordHistogram {
+    private static boolean sIsDisabledForTests = false;
+
+    /**
+     * Tests may not have native initialized, so they may need to disable metrics.
+     */
+    @VisibleForTesting
+    public static void disableForTests() {
+        sIsDisabledForTests = true;
+    }
+
     /**
      * Records a sample in a boolean UMA histogram of the given name. Boolean histogram has two
      * buckets, corresponding to success (true) and failure (false). This is the Java equivalent of
@@ -26,6 +36,7 @@ public class RecordHistogram {
      * @param sample sample to be recorded, either true or false
      */
     public static void recordBooleanHistogram(String name, boolean sample) {
+        if (sIsDisabledForTests) return;
         nativeRecordBooleanHistogram(name, System.identityHashCode(name), sample);
     }
 
@@ -39,6 +50,7 @@ public class RecordHistogram {
      *        lower than |boundary|
      */
     public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
+        if (sIsDisabledForTests) return;
         nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, boundary);
     }
 
@@ -83,6 +95,7 @@ public class RecordHistogram {
      */
     public static void recordCustomCountHistogram(
             String name, int sample, int min, int max, int numBuckets) {
+        if (sIsDisabledForTests) return;
         nativeRecordCustomCountHistogram(
                 name, System.identityHashCode(name), sample, min, max, numBuckets);
     }
@@ -98,6 +111,7 @@ public class RecordHistogram {
      */
     public static void recordLinearCountHistogram(
             String name, int sample, int min, int max, int numBuckets) {
+        if (sIsDisabledForTests) return;
         nativeRecordLinearCountHistogram(
                 name, System.identityHashCode(name), sample, min, max, numBuckets);
     }
@@ -109,6 +123,7 @@ public class RecordHistogram {
      * @param sample sample to be recorded, at least 0 and at most 100.
      */
     public static void recordPercentageHistogram(String name, int sample) {
+        if (sIsDisabledForTests) return;
         nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, 101);
     }
 
@@ -119,6 +134,7 @@ public class RecordHistogram {
     *        values.
     */
     public static void recordSparseSlowlyHistogram(String name, int sample) {
+        if (sIsDisabledForTests) return;
         nativeRecordSparseHistogram(name, System.identityHashCode(name), sample);
     }
 
@@ -176,6 +192,7 @@ public class RecordHistogram {
 
     private static void recordCustomTimesHistogramMilliseconds(
             String name, long duration, long min, long max, int numBuckets) {
+        if (sIsDisabledForTests) return;
         nativeRecordCustomTimesHistogramMilliseconds(
                 name, System.identityHashCode(name), duration, min, max, numBuckets);
     }
@@ -194,6 +211,7 @@ public class RecordHistogram {
      * Initializes the metrics system.
      */
     public static void initialize() {
+        if (sIsDisabledForTests) return;
         nativeInitialize();
     }
 

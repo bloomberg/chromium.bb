@@ -312,6 +312,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.StrictMode.DocumentTabStateLoad" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from document mode
+    loading its prioritized tab's state.
+  </summary>
+</histogram>
+
+<histogram name="Android.StrictMode.DownloadsDir" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from fetching and
+    possibly creating the downloads directory.
+  </summary>
+</histogram>
+
+<histogram name="Android.StrictMode.NotificationUIBuildTime" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from custom
+    notification builder through date formatting.
+  </summary>
+</histogram>
+
 <histogram name="Android.StrictMode.OverrideUrlLoadingTime" units="ms">
   <owner>yfriedman@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -327,6 +354,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures time spent during StrictMode-whitelisted code in
     TabPersistentStore.
+  </summary>
+</histogram>
+
+<histogram name="Android.StrictMode.ThumbnailCacheDir" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from fetching for
+    the thumbnail cache directory.
+  </summary>
+</histogram>
+
+<histogram name="Android.StrictMode.WebappDir" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from fetching for
+    creating the webapp directory.
+  </summary>
+</histogram>
+
+<histogram name="Android.StrictMode.WebappSaveState" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from reading and
+    saving webapp state.
   </summary>
 </histogram>
 

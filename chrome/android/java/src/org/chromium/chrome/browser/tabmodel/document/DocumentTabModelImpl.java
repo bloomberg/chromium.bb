@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
@@ -21,6 +22,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
@@ -43,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Maintains a list of Tabs displayed when Chrome is running in document-mode.
@@ -510,8 +513,11 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
                 // Temporarily allowing disk access while fixing. TODO: http://crbug.com/543201
                 StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
                 try {
+                    long time = SystemClock.elapsedRealtime();
                     entry.setTabState(
                             mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito()));
+                    RecordHistogram.recordTimesHistogram("Android.StrictMode.DocumentTabStateLoad",
+                            SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
                 } finally {
                     StrictMode.setThreadPolicy(oldPolicy);
                 }
