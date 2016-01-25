@@ -21,7 +21,7 @@ static unsigned computeNumberOfTracks(CSSValueList* valueList)
     return numberOfTracks;
 }
 
-TEST(CSSPropertyParserTest, GridTrackLimits)
+TEST(CSSPropertyParserTest, DISABLED_GridTrackLimits)
 {
     struct {
         const CSSPropertyID propertyID;
