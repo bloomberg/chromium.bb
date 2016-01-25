@@ -75,7 +75,6 @@ enum IPCMessageStart {
   AppShimMsgStart,
   WebRtcLoggingMsgStart,
   TtsMsgStart,
-  MemoryBenchmarkMsgStart,
   WebSocketMsgStart,
   NaClHostMsgStart,
   WebRTCIdentityMsgStart,

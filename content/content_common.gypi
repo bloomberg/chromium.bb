@@ -445,7 +445,6 @@
       'common/media/video_capture.h',
       'common/media/video_capture_messages.h',
       'common/media/webrtc_identity_messages.h',
-      'common/memory_benchmark_messages.h',
       'common/memory_messages.h',
       'common/message_port_messages.h',
       'common/message_router.cc',

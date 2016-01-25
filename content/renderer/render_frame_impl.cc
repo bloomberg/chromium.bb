@@ -105,7 +105,6 @@
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
-#include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
@@ -3272,9 +3271,6 @@ void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
 
   if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
     GpuBenchmarking::Install(frame);
-
-  if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
-    MemoryBenchmarkingExtension::Install(frame);
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame);

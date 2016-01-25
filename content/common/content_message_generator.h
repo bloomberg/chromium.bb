@@ -42,7 +42,6 @@
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/media/webrtc_identity_messages.h"
-#include "content/common/memory_benchmark_messages.h"
 #include "content/common/memory_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/mime_registry_messages.h"

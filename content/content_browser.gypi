@@ -1266,8 +1266,6 @@
       'browser/renderer_host/media/video_capture_host.h',
       'browser/renderer_host/media/video_capture_manager.cc',
       'browser/renderer_host/media/video_capture_manager.h',
-      'browser/renderer_host/memory_benchmark_message_filter.cc',
-      'browser/renderer_host/memory_benchmark_message_filter.h',
       'browser/renderer_host/native_web_keyboard_event_aura.cc',
       'browser/renderer_host/native_web_keyboard_event_mac.mm',
       'browser/renderer_host/overscroll_configuration.cc',
