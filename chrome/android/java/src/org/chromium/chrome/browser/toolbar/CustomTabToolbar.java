@@ -214,7 +214,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
         // It takes some time to parse the title of the webcontent, and before that Tab#getTitle
         // always return the url. We postpone the title animation until the title is authentic.
-        if (mShouldShowTitle && !TextUtils.equals(currentTab.getTitle(), currentTab.getUrl())) {
+        // TODO(yusufo): Clear the explicit references to about:blank here and for domain.
+        if (mShouldShowTitle
+                && !TextUtils.equals(currentTab.getTitle(), currentTab.getUrl())
+                && !TextUtils.equals(currentTab.getTitle(), "about:blank")) {
             long duration = System.currentTimeMillis() - mInitializeTimeStamp;
             if (duration >= TITLE_ANIM_DELAY_MS) {
                 mTitleAnimationStarter.run();
