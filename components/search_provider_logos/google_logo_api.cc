@@ -71,16 +71,11 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
   if (response_sp.starts_with(kResponsePreamble))
     response_sp.remove_prefix(strlen(kResponsePreamble));
 
-  scoped_ptr<base::Value> value = base::JSONReader::Read(response_sp);
-
-  // Check if no logo today.
-  if (!value.get()) {
-    *parsing_failed = false;
-    return scoped_ptr<EncodedLogo>();
-  }
-
   // Default parsing failure to be true.
   *parsing_failed = true;
+  scoped_ptr<base::Value> value = base::JSONReader::Read(response_sp);
+  if (!value.get())
+    return scoped_ptr<EncodedLogo>();
   // The important data lives inside several nested dictionaries:
   // {"update": {"logo": { "mime_type": ..., etc } } }
   const base::DictionaryValue* outer_dict;
@@ -89,6 +84,13 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
   const base::DictionaryValue* update_dict;
   if (!outer_dict->GetDictionary("update", &update_dict))
     return scoped_ptr<EncodedLogo>();
+
+  // If there is no logo today, the "update" dictionary will be empty.
+  if (update_dict->empty()) {
+    *parsing_failed = false;
+    return scoped_ptr<EncodedLogo>();
+  }
+
   const base::DictionaryValue* logo_dict;
   if (!update_dict->GetDictionary("logo", &logo_dict))
     return scoped_ptr<EncodedLogo>();
