@@ -349,7 +349,7 @@ CA
                             <menuItem title="^IDS_ENTER_FULLSCREEN_MAC" tag="34030" keyEquivalent="f" id="692">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
-                                    <action selector="commandDispatch:" target="-1" id="693"/>
+                                    <action selector="toggleFullScreen:" target="-1" id="693"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="^IDS_TEXT_DEFAULT_MAC" tag="38002" keyEquivalent="0" id="460">
