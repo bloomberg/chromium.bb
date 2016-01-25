@@ -252,8 +252,7 @@ bool TracingControllerImpl::StartTracing(
 }
 
 void TracingControllerImpl::OnStartAgentTracingDone(
-    const TraceConfig& trace_config,
-    const StartTracingDoneCallback& callback) {
+    const TraceConfig& trace_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   TRACE_EVENT_API_ADD_METADATA_EVENT("IsTimeTicksHighResolution", "value",
@@ -267,10 +266,10 @@ void TracingControllerImpl::OnStartAgentTracingDone(
     it->get()->SendBeginTracing(trace_config);
   }
 
-  if (!callback.is_null())
-    callback.Run();
-
-  start_tracing_done_callback_.Reset();
+  if (!start_tracing_done_callback_.is_null()) {
+    start_tracing_done_callback_.Run();
+    start_tracing_done_callback_.Reset();
+  }
 }
 
 bool TracingControllerImpl::StopTracing(
@@ -883,8 +882,7 @@ bool TracingControllerImpl::StartAgentTracing(
 
   base::Closure on_start_tracing_done_callback =
       base::Bind(&TracingControllerImpl::OnStartAgentTracingDone,
-                 base::Unretained(this),
-                 trace_config, start_tracing_done_callback_);
+                 base::Unretained(this), trace_config);
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,

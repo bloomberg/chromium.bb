@@ -167,8 +167,7 @@ class TracingControllerImpl
       const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
   void OnStartAgentTracingDone(
-      const base::trace_event::TraceConfig& trace_config,
-      const StartTracingDoneCallback& callback);
+      const base::trace_event::TraceConfig& trace_config);
   void StopTracingAfterClockSync();
   void OnStopTracingDone();
   void OnStartMonitoringDone(
