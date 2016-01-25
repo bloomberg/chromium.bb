@@ -155,13 +155,12 @@ lou_logPrint (const char *format, ...)
 void EXPORT_CALL
 lou_logEnd ()
 {
-  if (logFile != NULL)
-    fclose (logFile);
-  logFile = NULL;
+  closeLogFile();
 }
 
 void closeLogFile()
 {
-  if (logFile != NULL)
+  if (logFile != NULL && logFile != stderr)
     fclose (logFile);
+  logFile = NULL;
 }
