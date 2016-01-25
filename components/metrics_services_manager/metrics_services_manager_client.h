@@ -5,12 +5,10 @@
 #ifndef COMPONENTS_METRICS_SERVICES_MANAGER_METRICS_SERVICES_MANAGER_CLIENT_H_
 #define COMPONENTS_METRICS_SERVICES_MANAGER_METRICS_SERVICES_MANAGER_CLIENT_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
 
 namespace metrics {
-class MetricsService;
 class MetricsServiceClient;
 }
 
