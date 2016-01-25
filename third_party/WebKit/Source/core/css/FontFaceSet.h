@@ -30,10 +30,12 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/css/FontFace.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/Document.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/RefCountedSupplement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -50,7 +52,6 @@ class CSSFontFace;
 class CSSFontFaceSource;
 class CSSFontSelector;
 class Dictionary;
-class Document;
 class ExceptionState;
 class Font;
 class FontFaceCache;
