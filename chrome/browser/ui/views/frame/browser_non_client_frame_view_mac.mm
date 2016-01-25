@@ -172,5 +172,6 @@ void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->FillRect(
       gfx::Rect(x, y + h - kClientEdgeThickness, w, kClientEdgeThickness),
       ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
+          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR,
+          browser_view()->IsOffTheRecord()));
 }

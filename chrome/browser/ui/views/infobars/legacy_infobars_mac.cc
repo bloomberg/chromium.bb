@@ -15,7 +15,7 @@
 
 scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
     scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new ConfirmInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new ConfirmInfoBar(std::move(delegate)));
 }
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
