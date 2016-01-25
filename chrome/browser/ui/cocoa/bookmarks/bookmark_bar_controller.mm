@@ -865,6 +865,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   int bookmarkChildren = bookmarkModel_->bookmark_bar_node()->child_count();
   if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
+    // Set the off the side button as needing re-display. This is needed to
+    // avoid the button being shown with a black background the first time
+    // it's displayed. See https://codereview.chromium.org/1630453002/ for
+    // more context.
+    [offTheSideButton_ setNeedsDisplay:YES];
   } else {
     // If we just deleted the last item in an off-the-side menu so the
     // button will be going away, make sure the menu goes away.
