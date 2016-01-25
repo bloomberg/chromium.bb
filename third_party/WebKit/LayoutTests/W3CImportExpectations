@@ -300,7 +300,8 @@ imported/web-platform-tests/html/semantics/embedded-content/media-elements/seeki
 imported/web-platform-tests/html/semantics/embedded-content/media-elements/track/track-element/track-api-texttracks.html [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/media-elements/user-interface/muted.html [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/media-elements/video_loop_base.html [ Skip ]
-imported/web-platform-tests/html/semantics/embedded-content/the-area-element/area-stringifier.html [ Skip ]
+// There are local copies in fast/html of area-{coords,shape,processing}.html from the following directory.
+imported/web-platform-tests/html/semantics/embedded-content/the-area-element [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-canvas-element [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-dimension.html [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Skip ]
