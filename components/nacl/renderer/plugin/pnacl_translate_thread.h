@@ -13,9 +13,10 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
-#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/serialized_handle.h"
 
@@ -121,7 +122,7 @@ class PnaclTranslateThread {
   // Used to guard compiler_subprocess, ld_subprocess,
   // compiler_subprocess_active_, and ld_subprocess_active_
   // (touched by the main thread and the translate thread).
-  struct NaClMutex subprocess_mu_;
+  base::Lock subprocess_mu_;
   // The compiler_subprocess and ld_subprocess memory is owned by the
   // coordinator so we do not delete them. However, the main thread delegates
   // shutdown to this thread, since this thread may still be accessing the
@@ -136,13 +137,13 @@ class PnaclTranslateThread {
   bool compiler_subprocess_active_;
   bool ld_subprocess_active_;
 
+  // Mutex for buffer_cond_.
+  base::Lock cond_mu_;
   // Condition variable to synchronize communication with the SRPC thread.
   // SRPC thread waits on this condvar if data_buffers_ is empty (meaning
   // there is no bitcode to send to the translator), and the main thread
   // appends to data_buffers_ and signals it when it receives bitcode.
-  struct NaClCondVar buffer_cond_;
-  // Mutex for buffer_cond_.
-  struct NaClMutex cond_mu_;
+  base::ConditionVariable buffer_cond_;
   // Data buffers from FileDownloader are enqueued here to pass from the
   // main thread to the SRPC thread. Protected by cond_mu_
   std::deque<std::string> data_buffers_;
