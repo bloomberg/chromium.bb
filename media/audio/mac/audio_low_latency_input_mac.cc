@@ -784,6 +784,7 @@ int AUAudioInputStream::GetNumberOfChannelsFromStream() {
 }
 
 void AUAudioInputStream::HandleError(OSStatus err) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputErrorMac", err);
   NOTREACHED() << "error " << GetMacOSStatusErrorString(err)
                << " (" << err << ")";
   if (sink_)

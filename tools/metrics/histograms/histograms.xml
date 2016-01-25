@@ -19192,6 +19192,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.InputErrorMac" units="OSStatus">
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    Error codes that we encounter while setting up an AUAudioInputStream on Mac.
+  </summary>
+</histogram>
+
 <histogram name="Media.InputStreamDuration" units="ms">
   <owner>henrika@chromium.org</owner>
   <summary>
