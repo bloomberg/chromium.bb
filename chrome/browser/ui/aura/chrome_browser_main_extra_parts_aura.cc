@@ -23,6 +23,7 @@
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -51,6 +52,8 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
     return nullptr;
 
   Profile* profile = nullptr;
+  // Window types not listed here (such as tooltips) will never use Chrome
+  // theming.
   if (window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
       window->type() == ui::wm::WINDOW_TYPE_POPUP ||
       window->type() == ui::wm::WINDOW_TYPE_CONTROL) {
@@ -59,8 +62,16 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
   }
 
   if (profile && !profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
-    return profile->IsOffTheRecord() ? ui::NativeThemeDarkAura::instance()
-                                     : ui::NativeThemeAura::instance();
+    // Only toplevel browser windows and CONTROL type windows (such as the find
+    // in page bar) should use special theming for off the record mode.
+    // WINDOW_TYPE_NORMAL is not enough to distinguish browser windows because
+    // it also encompasses dialogs.
+    bool eligible_for_otr = window->type() == ui::wm::WINDOW_TYPE_CONTROL ||
+                            BrowserView::GetBrowserViewForNativeWindow(window);
+    if (eligible_for_otr && profile->IsOffTheRecord())
+      return ui::NativeThemeDarkAura::instance();
+
+    return ui::NativeThemeAura::instance();
   }
 
   return nullptr;
