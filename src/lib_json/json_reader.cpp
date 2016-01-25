@@ -9,6 +9,8 @@
 #include <json/value.h>
 #include "json_tool.h"
 #endif // if !defined(JSON_IS_AMALGAMATION)
+#include <iostream>
+#include <fstream>
 #include <utility>
 #include <cstdio>
 #include <cassert>
