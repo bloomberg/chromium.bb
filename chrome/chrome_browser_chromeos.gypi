@@ -1129,6 +1129,7 @@
         '../components/components.gyp:certificate_reporting',
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:drive',
+        '../components/components.gyp:drive_chromeos',
         '../components/components.gyp:flags_ui',
         '../components/components.gyp:login',
         '../components/components.gyp:onc_component',

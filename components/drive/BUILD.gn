@@ -6,13 +6,6 @@ import("//third_party/protobuf/proto_library.gni")
 
 source_set("drive") {
   sources = [
-    "change_list_loader.cc",
-    "change_list_loader.h",
-    "change_list_loader_observer.h",
-    "change_list_processor.cc",
-    "change_list_processor.h",
-    "directory_loader.cc",
-    "directory_loader.h",
     "drive_api_util.cc",
     "drive_api_util.h",
     "drive_app_registry.cc",
@@ -27,12 +20,65 @@ source_set("drive") {
     "drive_uploader.h",
     "event_logger.cc",
     "event_logger.h",
-    "file_cache.cc",
-    "file_cache.h",
     "file_change.cc",
     "file_change.h",
     "file_errors.cc",
     "file_errors.h",
+    "file_system_core_util.cc",
+    "file_system_core_util.h",
+    "file_system_metadata.cc",
+    "file_system_metadata.h",
+    "file_write_watcher.cc",
+    "file_write_watcher.h",
+    "job_list.cc",
+    "job_list.h",
+    "job_queue.cc",
+    "job_queue.h",
+    "job_scheduler.cc",
+    "job_scheduler.h",
+    "local_file_reader.cc",
+    "local_file_reader.h",
+    "resource_entry_conversion.cc",
+    "resource_entry_conversion.h",
+    "resource_metadata_storage.cc",
+    "resource_metadata_storage.h",
+    "service/drive_api_service.cc",
+    "service/drive_api_service.h",
+    "service/drive_service_interface.cc",
+    "service/drive_service_interface.h",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base:prefs",
+    "//components/invalidation/public",
+    "//components/keyed_service/core",
+
+    # TODO(lukasza): Remove this dependency (see DEPS file for more info).
+    "//content/public/browser",
+    "//google_apis:google_apis",
+    "//net:net",
+    "//third_party/cacheinvalidation",
+    "//third_party/leveldatabase",
+    "//third_party/re2",
+  ]
+  public_deps = [
+    ":proto",
+  ]
+}
+
+source_set("drive_chromeos") {
+  # TODO(yawano): move these files under components/drive/chromeos.
+  sources = [
+    "change_list_loader.cc",
+    "change_list_loader.h",
+    "change_list_loader_observer.h",
+    "change_list_processor.cc",
+    "change_list_processor.h",
+    "directory_loader.cc",
+    "directory_loader.h",
+    "file_cache.cc",
+    "file_cache.h",
     "file_system.cc",
     "file_system.h",
     "file_system/copy_operation.cc",
@@ -61,37 +107,15 @@ source_set("drive") {
     "file_system/touch_operation.h",
     "file_system/truncate_operation.cc",
     "file_system/truncate_operation.h",
-    "file_system_core_util.cc",
-    "file_system_core_util.h",
     "file_system_interface.cc",
     "file_system_interface.h",
-    "file_system_metadata.cc",
-    "file_system_metadata.h",
     "file_system_observer.h",
-    "file_write_watcher.cc",
-    "file_write_watcher.h",
-    "job_list.cc",
-    "job_list.h",
-    "job_queue.cc",
-    "job_queue.h",
-    "job_scheduler.cc",
-    "job_scheduler.h",
-    "local_file_reader.cc",
-    "local_file_reader.h",
     "remove_stale_cache_files.cc",
     "remove_stale_cache_files.h",
-    "resource_entry_conversion.cc",
-    "resource_entry_conversion.h",
     "resource_metadata.cc",
     "resource_metadata.h",
-    "resource_metadata_storage.cc",
-    "resource_metadata_storage.h",
     "search_metadata.cc",
     "search_metadata.h",
-    "service/drive_api_service.cc",
-    "service/drive_api_service.h",
-    "service/drive_service_interface.cc",
-    "service/drive_service_interface.h",
     "sync/entry_revert_performer.cc",
     "sync/entry_revert_performer.h",
     "sync/entry_update_performer.cc",
@@ -102,19 +126,12 @@ source_set("drive") {
     "sync_client.h",
   ]
   deps = [
+    ":drive",
     "//base",
     "//base:i18n",
     "//base:prefs",
-    "//components/invalidation/public",
-    "//components/keyed_service/core",
-
-    # TODO(lukasza): Remove this dependency (see DEPS file for more info).
-    "//content/public/browser",
     "//google_apis:google_apis",
     "//net:net",
-    "//third_party/cacheinvalidation",
-    "//third_party/leveldatabase",
-    "//third_party/re2",
   ]
   public_deps = [
     ":proto",
@@ -130,14 +147,6 @@ proto_library("proto") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "drive_test_util.cc",
-    "drive_test_util.h",
-    "dummy_file_system.cc",
-    "dummy_file_system.h",
-    "fake_file_system.cc",
-    "fake_file_system.h",
-    "fake_free_disk_space_getter.cc",
-    "fake_free_disk_space_getter.h",
     "service/dummy_drive_service.cc",
     "service/dummy_drive_service.h",
     "service/fake_drive_service.cc",
@@ -153,5 +162,28 @@ source_set("test_support") {
     "//content/test:test_support",
     "//google_apis:test_support",
     "//net:net",
+  ]
+}
+
+source_set("test_support_chromeos") {
+  testonly = true
+  sources = [
+    "drive_test_util.cc",
+    "drive_test_util.h",
+    "dummy_file_system.cc",
+    "dummy_file_system.h",
+    "fake_file_system.cc",
+    "fake_file_system.h",
+    "fake_free_disk_space_getter.cc",
+    "fake_free_disk_space_getter.h",
+  ]
+  deps = [
+    ":drive",
+    ":drive_chromeos",
+    ":proto",
+    "//base",
+    "//base:prefs_test_support",
+    "//content/test:test_support",
+    "//google_apis:test_support",
   ]
 }

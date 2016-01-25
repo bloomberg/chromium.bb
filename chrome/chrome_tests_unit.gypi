@@ -2552,6 +2552,7 @@
             '../ash/ash_resources.gyp:ash_resources',
             '../chromeos/ime/input_method.gyp:gencode',
             '../components/components.gyp:drive_test_support',
+            '../components/components.gyp:drive_test_support_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
           'sources!': [
