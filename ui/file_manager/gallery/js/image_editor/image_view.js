@@ -38,18 +38,11 @@ function ImageView(container, viewport, metadataModel) {
   this.contentCallbacks_ = [];
 
   /**
-   * The element displaying the current content.
-   * @type {HTMLCanvasElement}
-   * @private
-   */
-  this.screenImage_ = null;
-
-  /**
-   * The content canvas element.
+   * The content image or canvas element.
    * @type {(HTMLCanvasElement|HTMLImageElement)}
    * @private
    */
-  this.contentCanvas_ = null;
+  this.contentImage_ = null;
 
   /**
    * True if the image is a preview (not full res).
@@ -179,21 +172,13 @@ ImageView.prototype.getZIndex = function() { return -1; };
  * @override
  */
 ImageView.prototype.draw = function() {
-  if (!this.contentCanvas_)  // Do nothing if the image content is not set.
+  if (!this.contentImage_)  // Do nothing if the image content is not set.
     return;
   this.setTransform_(
-      this.contentCanvas_,
+      this.contentImage_,
       this.viewport_,
       new ImageView.Effect.None(),
-      ImageView.Effect.DEFAULT_DURATION);
-  if ((this.screenImage_ && this.setupDeviceBuffer(this.screenImage_)) ||
-      this.displayedContentGeneration_ !== this.contentGeneration_) {
-    this.displayedContentGeneration_ = this.contentGeneration_;
-    ImageUtil.trace.resetTimer('paint');
-    this.paintDeviceRect(
-        this.contentCanvas_, ImageRect.createFromImage(this.contentCanvas_));
-    ImageUtil.trace.reportTimer('paint');
-  }
+      0);
 };
 
 /**
@@ -201,22 +186,12 @@ ImageView.prototype.draw = function() {
  * change or offset change) with animation.
  */
 ImageView.prototype.applyViewportChange = function() {
-  var zooming = this.viewport_.getZoom() > 1;
-  if (this.contentCanvas_) {
-    // Show full resolution image only for zooming.
-    this.contentCanvas_.style.opacity = zooming ? '1' : '0';
+  if (this.contentImage_) {
     this.setTransform_(
-        this.contentCanvas_,
+        this.contentImage_,
         this.viewport_,
         new ImageView.Effect.None(),
         ImageView.Effect.DEFAULT_DURATION);
-  }
-  if (this.screenImage_) {
-      this.setTransform_(
-          this.screenImage_,
-          this.viewport_,
-          new ImageView.Effect.None(),
-          ImageView.Effect.DEFAULT_DURATION);
   }
 };
 
@@ -235,15 +210,17 @@ ImageView.prototype.invalidateCaches = function() {
 };
 
 /**
- * @return {HTMLCanvasElement} The content canvas element.
+ * @return {!HTMLCanvasElement|!HTMLImageElement} The content image(or canvas).
  */
-ImageView.prototype.getCanvas = function() { return this.contentCanvas_; };
+ImageView.prototype.getImage = function() {
+  return assert(this.contentImage_);
+};
 
 /**
  * @return {boolean} True if the a valid image is currently loaded.
  */
 ImageView.prototype.hasValidImage = function() {
-  return !!(!this.preview_ && this.contentCanvas_ && this.contentCanvas_.width);
+  return !!(!this.preview_ && this.contentImage_ && this.contentImage_.width);
 };
 
 /**
@@ -262,8 +239,7 @@ ImageView.prototype.getContentRevision = function() {
 };
 
 /**
- * Copies an image fragment from a full resolution canvas to a device resolution
- * canvas.
+ * Copies an image fragment to a content image.
  *
  * @param {!HTMLCanvasElement} canvas Canvas containing whole image. The canvas
  *     may not be full resolution (scaled).
@@ -272,6 +248,7 @@ ImageView.prototype.getContentRevision = function() {
 ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
   // Map the rectangle in full resolution image to the rectangle in the device
   // canvas.
+  // TODO(ryoh): Shold we prepare a device-res canvas to show?
   var deviceBounds = this.viewport_.getDeviceBounds();
   var scaleX = deviceBounds.width / canvas.width;
   var scaleY = deviceBounds.height / canvas.height;
@@ -281,8 +258,12 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
       imageRect.width * scaleX,
       imageRect.height * scaleY);
 
+  var canvas = ImageUtil.ensureCanvas(this.contentImage_);
+  if (canvas !== this.contentImage_) {
+    this.replaceContent_(canvas);
+  }
   ImageRect.drawImage(
-      this.screenImage_.getContext('2d'), canvas, deviceRect, imageRect);
+      this.contentImage_.getContext('2d'), canvas, deviceRect, imageRect);
 };
 
 /**
@@ -322,29 +303,23 @@ ImageView.prototype.setupDeviceBuffer = function(canvas) {
 };
 
 /**
- * Gets screen image data with specified size.
+ * Gets screen image canvas with specified size.
  * @param {number} width
  * @param {number} height
- * @return {!ImageData} A new ImageData object.
+ * @return {!HTMLCanvasElement} A scaled canvas.
  */
-ImageView.prototype.getScreenImageDataWith = function(width, height) {
-  // If specified size is same with current screen image size, just return it.
-  if (width === this.screenImage_.width &&
-      height === this.screenImage_.height) {
-    return this.screenImage_.getContext('2d').getImageData(
-        0, 0, this.screenImage_.width, this.screenImage_.height);
-  }
-
+ImageView.prototype.getImageCanvasWith = function(width, height) {
   // Resize if these sizes are different.
-  var resizeCanvas = document.createElement('canvas');
+  var resizeCanvas = assertInstanceof(document.createElement('canvas'),
+      HTMLCanvasElement);
   resizeCanvas.width = width;
   resizeCanvas.height = height;
 
   var context = resizeCanvas.getContext('2d');
-  context.drawImage(this.screenImage_,
-      0, 0, this.screenImage_.width, this.screenImage_.height,
+  context.drawImage(this.contentImage_,
+      0, 0, this.contentImage_.width, this.contentImage_.height,
       0, 0, resizeCanvas.width, resizeCanvas.height);
-  return context.getImageData(0, 0, resizeCanvas.width, resizeCanvas.height);
+  return resizeCanvas;
 };
 
 /**
@@ -541,10 +516,10 @@ ImageView.prototype.unload = function(opt_zoomToRect) {
     clearTimeout(this.unloadTimer_);
     this.unloadTimer_ = null;
   }
-  if (opt_zoomToRect && this.screenImage_) {
+  if (opt_zoomToRect && this.contentImage_) {
     var effect = this.createZoomEffect(opt_zoomToRect);
-    this.setTransform_(this.screenImage_, this.viewport_, effect);
-    this.screenImage_.setAttribute('fade', true);
+    this.setTransform_(this.contentImage_, this.viewport_, effect);
+    this.contentImage_.setAttribute('fade', true);
     this.unloadTimer_ = setTimeout(function() {
       this.unloadTimer_ = null;
       this.unload(null /* force unload */);
@@ -552,8 +527,7 @@ ImageView.prototype.unload = function(opt_zoomToRect) {
     return;
   }
   this.container_.textContent = '';
-  this.contentCanvas_ = null;
-  this.screenImage_ = null;
+  this.contentImage_ = null;
 };
 
 /**
@@ -566,38 +540,28 @@ ImageView.prototype.unload = function(opt_zoomToRect) {
 ImageView.prototype.replaceContent_ = function(
     content, opt_width, opt_height, opt_preview) {
 
-  if (this.contentCanvas_ && this.contentCanvas_.parentNode === this.container_)
-    this.container_.removeChild(this.contentCanvas_);
+  if (this.contentImage_ && this.contentImage_.parentNode === this.container_)
+    this.container_.removeChild(this.contentImage_);
 
-  this.screenImage_ = assertInstanceof(this.document_.createElement('canvas'),
-      HTMLCanvasElement);
-  this.screenImage_.className = 'image';
-
-  this.contentCanvas_ = content;
+  this.contentImage_ = content;
+  this.container_.appendChild(content);
+  ImageUtil.setAttribute(this.contentImage_, 'fade', false);
   this.invalidateCaches();
   this.viewport_.setImageSize(
-      opt_width || this.contentCanvas_.width,
-      opt_height || this.contentCanvas_.height);
+      opt_width || this.contentImage_.width,
+      opt_height || this.contentImage_.height);
   this.draw();
-
-  this.container_.appendChild(this.screenImage_);
 
   this.preview_ = opt_preview || false;
   // If this is not a thumbnail, cache the content and the screen-scale image.
   if (this.hasValidImage()) {
     // Insert the full resolution canvas into DOM so that it can be printed.
-    this.container_.appendChild(this.contentCanvas_);
-    this.contentCanvas_.classList.add('fullres');
-    this.setTransform_(
-        this.contentCanvas_, this.viewport_, null, 0);
+    this.contentImage_.classList.add('image');
+    this.setTransform_(this.contentImage_, this.viewport_, null, 0);
 
-    this.contentItem_.contentImage = this.contentCanvas_;
-    this.contentItem_.screenImage = this.screenImage_;
+    this.contentItem_.contentImage = this.contentImage_;
 
-    // TODO(kaznacheev): It is better to pass screenImage_ as it is usually
-    // much smaller than contentCanvas_ and still contains the entire image.
-    // Once we implement zoom/pan we should pass contentCanvas_ instead.
-    this.updateThumbnail_(this.screenImage_);
+    this.updateThumbnail_(this.contentImage_);
 
     this.contentRevision_++;
     for (var i = 0; i !== this.contentCallbacks_.length; i++) {
@@ -621,52 +585,52 @@ ImageView.prototype.addContentCallback = function(callback) {
 /**
  * Updates the cached thumbnail image.
  *
- * @param {!HTMLCanvasElement} canvas The source canvas.
+ * @param {!HTMLCanvasElement|!HTMLImageElement} image The source image or
+ *     canvas.
  * @private
  */
-ImageView.prototype.updateThumbnail_ = function(canvas) {
+ImageView.prototype.updateThumbnail_ = function(image) {
   ImageUtil.trace.resetTimer('thumb');
   var pixelCount = 10000;
   var downScale =
-      Math.max(1, Math.sqrt(canvas.width * canvas.height / pixelCount));
+      Math.max(1, Math.sqrt(image.width * image.height / pixelCount));
 
-  this.thumbnailCanvas_ = canvas.ownerDocument.createElement('canvas');
-  this.thumbnailCanvas_.width = Math.round(canvas.width / downScale);
-  this.thumbnailCanvas_.height = Math.round(canvas.height / downScale);
-  ImageRect.drawImage(this.thumbnailCanvas_.getContext('2d'), canvas);
+  this.thumbnailCanvas_ = image.ownerDocument.createElement('canvas');
+  this.thumbnailCanvas_.width = Math.round(image.width / downScale);
+  this.thumbnailCanvas_.height = Math.round(image.height / downScale);
+  ImageRect.drawImage(this.thumbnailCanvas_.getContext('2d'), image);
   ImageUtil.trace.reportTimer('thumb');
 };
 
 /**
  * Replaces the displayed image, possibly with slide-in animation.
  *
- * @param {!(HTMLCanvasElement|HTMLImageElement)} content The image element.
+ * @param {!(HTMLCanvasElement|HTMLImageElement)} newContentImage
+ *    The image element.
  * @param {ImageView.Effect=} opt_effect Transition effect object.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
  * @param {boolean=} opt_preview True if the image is a preview (not full res).
  */
 ImageView.prototype.replace = function(
-    content, opt_effect, opt_width, opt_height, opt_preview) {
-  var oldScreenImage = this.screenImage_;
+    newContentImage, opt_effect, opt_width, opt_height, opt_preview) {
+  var oldContentImage = this.contentImage_;
   var oldViewport = this.viewport_.clone();
-  this.replaceContent_(content, opt_width, opt_height, opt_preview);
+  this.replaceContent_(newContentImage, opt_width, opt_height, opt_preview);
   if (!opt_effect) {
-    if (oldScreenImage)
-      oldScreenImage.parentNode.removeChild(oldScreenImage);
     return;
   }
 
-  assert(this.screenImage_);
-  var newScreenImage = this.screenImage_;
+  assert(this.contentImage_);
   this.viewport_.resetView();
 
-  if (oldScreenImage)
-    ImageUtil.setAttribute(newScreenImage, 'fade', true);
+  if (oldContentImage) {
+    this.container_.insertBefore(oldContentImage, this.container_.firstChild);
+    ImageUtil.setAttribute(newContentImage, 'fade', true);
+  }
+
   this.setTransform_(
-      newScreenImage, this.viewport_, opt_effect, 0 /* instant */);
-  this.setTransform_(
-      content, this.viewport_, opt_effect, 0 /* instant */);
+      newContentImage, this.viewport_, opt_effect, 0 /* instant */);
 
   // We need to call requestAnimationFrame twice here. The first call is for
   // commiting the styles of beggining of transition that are assigned above.
@@ -675,28 +639,23 @@ ImageView.prototype.replace = function(
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
       this.setTransform_(
-          newScreenImage,
+          newContentImage,
           this.viewport_,
           null,
           opt_effect ? opt_effect.getDuration() : undefined);
-      this.setTransform_(
-          content,
-          this.viewport_,
-          null,
-          opt_effect ? opt_effect.getDuration() : undefined);
-      if (oldScreenImage) {
-        ImageUtil.setAttribute(newScreenImage, 'fade', false);
-        ImageUtil.setAttribute(oldScreenImage, 'fade', true);
+      if (oldContentImage) {
+        ImageUtil.setAttribute(newContentImage, 'fade', false);
+        ImageUtil.setAttribute(oldContentImage, 'fade', true);
         var reverse = opt_effect.getReverse();
         if (reverse) {
-          this.setTransform_(oldScreenImage, oldViewport, reverse);
+          this.setTransform_(oldContentImage, oldViewport, reverse);
           setTimeout(function() {
-            if (oldScreenImage.parentNode)
-              oldScreenImage.parentNode.removeChild(oldScreenImage);
+            if (oldContentImage.parentNode)
+              oldContentImage.parentNode.removeChild(oldContentImage);
           }, reverse.getSafeInterval());
         } else {
-            if (oldScreenImage.parentNode)
-              oldScreenImage.parentNode.removeChild(oldScreenImage);
+            if (oldContentImage.parentNode)
+              oldContentImage.parentNode.removeChild(oldContentImage);
         }
       }
     }.bind(this));
@@ -746,24 +705,21 @@ ImageView.prototype.createZoomEffect = function(screenRect) {
  */
 ImageView.prototype.replaceAndAnimate = function(
     canvas, imageCropRect, rotate90) {
-  assert(this.screenImage_);
+  assert(this.contentImage_);
 
   var oldImageBounds = {
     width: this.viewport_.getImageBounds().width,
     height: this.viewport_.getImageBounds().height
   };
-  var oldScreenImage = this.screenImage_;
+  var oldScreenImage = this.contentImage_;
   this.replaceContent_(canvas);
-  var newScreenImage = this.screenImage_;
+  var newScreenImage = this.contentImage_;
   var effect = rotate90 ?
       new ImageView.Effect.Rotate(rotate90 > 0) :
       new ImageView.Effect.Zoom(
           oldImageBounds.width, oldImageBounds.height, assert(imageCropRect));
 
   this.setTransform_(newScreenImage, this.viewport_, effect, 0 /* instant */);
-
-  oldScreenImage.parentNode.appendChild(newScreenImage);
-  oldScreenImage.parentNode.removeChild(oldScreenImage);
 
   // Let the layout fire, then animate back to non-transformed state.
   setTimeout(
@@ -783,24 +739,28 @@ ImageView.prototype.replaceAndAnimate = function(
  * @return {number} Animation duration.
  */
 ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
-  var oldScreenImage = this.screenImage_;
+  var oldScreenImage = assert(this.contentImage_);
+  oldScreenImage.style.zIndex = 1000;
   this.replaceContent_(canvas);
-  var newScreenImage = this.screenImage_;
-  var setFade = ImageUtil.setAttribute.bind(null, assert(newScreenImage),
-      'fade');
-  setFade(true);
-  oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
+  this.container_.appendChild(oldScreenImage);
+  var newScreenImage = this.contentImage_;
+  ImageUtil.setAttribute(newScreenImage, 'fade', true);
   var effect = new ImageView.Effect.Zoom(
       this.viewport_.getImageBounds().width,
       this.viewport_.getImageBounds().height,
       imageCropRect);
-
   // Animate to the transformed state.
-  this.setTransform_(oldScreenImage, this.viewport_, effect);
-  setTimeout(setFade.bind(null, false), 0);
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      this.setTransform_(oldScreenImage, this.viewport_, effect);
+      ImageUtil.setAttribute(newScreenImage, 'fade', false);
+    }.bind(this));
+  }.bind(this));
+
   setTimeout(function() {
-    if (oldScreenImage.parentNode)
+  if (oldScreenImage.parentNode)
       oldScreenImage.parentNode.removeChild(oldScreenImage);
+      oldScreenImage.style.zIndex = '';
   }, effect.getSafeInterval());
 
   return effect.getSafeInterval();

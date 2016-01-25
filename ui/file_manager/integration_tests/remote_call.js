@@ -431,18 +431,18 @@ RemoteCallGallery.prototype.waitForSlideImage =
     expected.name = name;
 
   return repeatUntil(function() {
-    var query = '.gallery[mode="slide"] .content canvas.fullres';
+    var query = '.gallery[mode="slide"] .image-container > .image';
     return Promise.all([
         this.waitForElement(windowId, '.filename-spacer input'),
         this.waitForElement(windowId, query)
     ]).then(function(args) {
       var nameBox = args[0];
-      var fullResCanvas = args[1];
+      var image = args[1];
       var actual = {};
-      if (width && fullResCanvas)
-        actual.width = Number(fullResCanvas.attributes.width);
-      if (height && fullResCanvas)
-        actual.height = Number(fullResCanvas.attributes.height);
+      if (width && image)
+        actual.width = image.imageWidth;
+      if (height && image)
+        actual.height = image.imageHeight;
       if (name && nameBox)
         actual.name = nameBox.value;
 

@@ -31,6 +31,7 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
     styles[styleNames[i]] = computedStyles[styleNames[i]];
   }
   var text = element.textContent;
+  var size = element.getBoundingClientRect();
   return {
     attributes: attributes,
     text: text,
@@ -38,7 +39,13 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
     styles: styles,
     // The hidden attribute is not in the element.attributes even if
     // element.hasAttribute('hidden') is true.
-    hidden: !!element.hidden
+    hidden: !!element.hidden,
+    // These attributes are set when element is img or canvas.
+    imageWidth: Number(element.width),
+    imageHeight: Number(element.height),
+    // These attributes are set in any element.
+    renderedWidth: size.width,
+    renderedHeight: size.height
   };
 }
 

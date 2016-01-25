@@ -132,9 +132,12 @@ ImageEditor.Mode.Adjust.prototype.updatePreviewImage_ = function(options) {
       this.canvas_ = this.getImageView().createOverlayCanvas();
 
     this.getImageView().setupDeviceBuffer(this.canvas_);
-    this.originalImageData_ = this.getImageView().getScreenImageDataWith(
+    var canvas = this.getImageView().getImageCanvasWith(
         this.canvas_.width, this.canvas_.height);
-    this.previewImageData_ = this.getImageView().getScreenImageDataWith(
+    var context = canvas.getContext('2d');
+    this.originalImageData_ = context.getImageData(0, 0,
+        this.canvas_.width, this.canvas_.height);
+    this.previewImageData_ = context.getImageData(0, 0,
         this.canvas_.width, this.canvas_.height);
 
     isPreviewImageInvalidated = true;

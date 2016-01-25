@@ -124,12 +124,6 @@ files-toggle-ripple::shadow .ripple.activated {
   opacity: 0;
 }
 
-/* Full resolution image is invisible unless printing. */
-.gallery .image-container > canvas.fullres {
-  opacity: 0;
-  position: absolute;
-}
-
 @media print {
   /* Do not print anything but the image content. */
   .gallery > :not(.content) {
@@ -144,13 +138,8 @@ files-toggle-ripple::shadow .ripple.activated {
     display: -webkit-box;
   }
 
-  /* Do not print the screen resolution image. */
-  .gallery .image-container > canvas.image {
-    display: none !important;
-  }
-
   /* Print the full resolution image instead. */
-  .gallery .image-container > canvas.fullres {
+  .gallery .image-container > .image {
     height: auto !important;
     max-height: 100%;
     max-width: 100%;

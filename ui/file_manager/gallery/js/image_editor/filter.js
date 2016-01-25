@@ -31,25 +31,25 @@ filter.create = function(name, options) {
  * To be used with large images to avoid freezing up the UI.
  *
  * @param {!HTMLCanvasElement} dstCanvas Destination canvas.
- * @param {!HTMLCanvasElement} srcCanvas Source canvas.
+ * @param {!HTMLCanvasElement|!HTMLImageElement} srcImage Source image.
  * @param {function(!ImageData,!ImageData,number,number)} filterFunc Filter.
  * @param {function(number, number)} progressCallback Progress callback.
  * @param {number=} opt_maxPixelsPerStrip Pixel number to process at once.
  */
 filter.applyByStrips = function(
-    dstCanvas, srcCanvas, filterFunc, progressCallback, opt_maxPixelsPerStrip) {
+    dstCanvas, srcImage, filterFunc, progressCallback, opt_maxPixelsPerStrip) {
   // 1 Mpix is a reasonable default.
   var maxPixelsPerStrip = opt_maxPixelsPerStrip || 1000000;
 
   var dstContext = dstCanvas.getContext('2d');
-  var srcContext = srcCanvas.getContext('2d');
-  var source = srcContext.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+  var srcContext = ImageUtil.ensureCanvas(srcImage).getContext('2d');
+  var source = srcContext.getImageData(0, 0, srcImage.width, srcImage.height);
 
-  var stripCount = Math.ceil(srcCanvas.width * srcCanvas.height /
+  var stripCount = Math.ceil(srcImage.width * srcImage.height /
       maxPixelsPerStrip);
 
   var strip = srcContext.getImageData(0, 0,
-      srcCanvas.width, Math.ceil(srcCanvas.height / stripCount));
+      srcImage.width, Math.ceil(srcImage.height / stripCount));
 
   var offset = 0;
 

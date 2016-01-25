@@ -8,34 +8,35 @@
  * Command execution is asynchronous (callback-based).
  *
  * @param {!Document} document Document to create canvases in.
- * @param {!HTMLCanvasElement} canvas The canvas with the original image.
+ * @param {!HTMLCanvasElement|!HTMLImageElement} image The canvas with the
+ *    original image.
  * @param {function(function())} saveFunction Function to save the image.
  * @constructor
  * @struct
  */
-function CommandQueue(document, canvas, saveFunction) {
+function CommandQueue(document, image, saveFunction) {
   this.document_ = document;
   this.undo_ = [];
   this.redo_ = [];
   this.subscribers_ = [];
-  this.currentImage_ = canvas;
 
-  // Current image may be null or not-null but with width = height = 0.
-  // Copying an image with zero dimensions causes js errors.
-  if (this.currentImage_) {
-    this.baselineImage_ = document.createElement('canvas');
-    this.baselineImage_.width = this.currentImage_.width;
-    this.baselineImage_.height = this.currentImage_.height;
-    if (this.currentImage_.width > 0 && this.currentImage_.height > 0) {
-      var context = this.baselineImage_.getContext('2d');
-      context.drawImage(this.currentImage_, 0, 0);
-    }
-  } else {
-    this.baselineImage_ = null;
-  }
+  /**
+   * @type {HTMLCanvasElement|HTMLImageElement}
+   * @private
+   */
+  this.currentImage_ = image;
 
-  this.previousImage_ = document.createElement('canvas');
-  this.previousImageAvailable_ = false;
+  /**
+   * @type {HTMLCanvasElement|HTMLImageElement}
+   * @private
+   */
+  this.baselineImage_ = image;
+
+  /**
+   * @type {HTMLCanvasElement|HTMLImageElement}
+   * @private
+   */
+   this.previousImage_ = null;
 
   this.saveFunction_ = saveFunction;
   this.busy_ = false;
@@ -139,13 +140,6 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
   if (!this.currentImage_)
     throw new Error('Cannot operate on null image');
 
-  // Remember one previous image so that the first undo is as fast as possible.
-  this.previousImage_.width = this.currentImage_.width;
-  this.previousImage_.height = this.currentImage_.height;
-  this.previousImageAvailable_ = true;
-  var context = this.previousImage_.getContext('2d');
-  context.drawImage(this.currentImage_, 0, 0);
-
   command.execute(
       this.document_,
       this.currentImage_,
@@ -153,6 +147,7 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
        * @type {function(HTMLCanvasElement, number=)}
        */
       (function(result, opt_delay) {
+        this.previousImage_ = this.currentImage_;
         this.currentImage_ = result;
         callback(opt_delay);
       }.bind(this)),
@@ -204,26 +199,16 @@ CommandQueue.prototype.undo = function() {
     self.commit_(false /* Do not show undo action */, delay);
   }
 
-  if (this.previousImageAvailable_) {
+  if (this.previousImage_) {
     // First undo after an execute call.
-    this.currentImage_.width = this.previousImage_.width;
-    this.currentImage_.height = this.previousImage_.height;
-    var context = this.currentImage_.getContext('2d');
-    context.drawImage(this.previousImage_, 0, 0);
-
-    // Free memory.
-    this.previousImage_.width = 0;
-    this.previousImage_.height = 0;
-    this.previousImageAvailable_ = false;
+    this.currentImage_ = this.previousImage_;
+    this.previousImage_ = null;
 
     complete();
     // TODO(kaznacheev) Consider recalculating previousImage_ right here
     // by replaying the commands in the background.
   } else {
-    this.currentImage_.width = this.baselineImage_.width;
-    this.currentImage_.height = this.baselineImage_.height;
-    var context = this.currentImage_.getContext('2d');
-    context.drawImage(this.baselineImage_, 0, 0);
+    this.currentImage_ = this.baselineImage_;
 
     var replay = function(index) {
       if (index < self.undo_.length)
@@ -260,14 +245,9 @@ CommandQueue.prototype.redo = function() {
  */
 CommandQueue.prototype.close = function() {
   // Free memory used by the undo buffer.
-  this.previousImage_.width = 0;
-  this.previousImage_.height = 0;
-  this.previousImageAvailable_ = false;
-
-  if (this.baselineImage_) {
-    this.baselineImage_.width = 0;
-    this.baselineImage_.height = 0;
-  }
+  this.currentImage_ = null;
+  this.previousImage_ = null;
+  this.baselineImage_ = null;
 };
 
 /**
@@ -296,24 +276,25 @@ Command.prototype.toString = function() {
  * to be able to show partial results for slower operations.
  *
  * @param {!Document} document Document on which to execute command.
- * @param {!HTMLCanvasElement} srcCanvas Canvas to execute on.
+ * @param {!HTMLCanvasElement|!HTMLImageElement} srcImage Image to execute on.
+ *    Do NOT modify this object.
  * @param {function(HTMLCanvasElement, number=)} callback Callback to call on
  *   completion.
  * @param {!Object} uiContext Context to work in.
  */
-Command.prototype.execute = function(document, srcCanvas, callback, uiContext) {
+Command.prototype.execute = function(document, srcImage, callback, uiContext) {
   console.error('Command.prototype.execute not implemented');
 };
 
 /**
  * Visualize reversion of the operation.
  *
- * @param {!HTMLCanvasElement} canvas Image data to use.
+ * @param {!HTMLCanvasElement|!HTMLCanvasElement} image previous image.
  * @param {!ImageView} imageView ImageView to revert.
  * @return {number} Animation duration in ms.
  */
-Command.prototype.revertView = function(canvas, imageView) {
-  imageView.replace(canvas);
+Command.prototype.revertView = function(image, imageView) {
+  imageView.replace(image);
   return 0;
 };
 
@@ -321,18 +302,19 @@ Command.prototype.revertView = function(canvas, imageView) {
  * Creates canvas to render on.
  *
  * @param {!Document} document Document to create canvas in.
- * @param {!HTMLCanvasElement} srcCanvas to copy optional dimensions from.
+ * @param {!HTMLCanvasElement|!HTMLImageElement} srcImage to copy optional
+ *    dimensions from.
  * @param {number=} opt_width new canvas width.
  * @param {number=} opt_height new canvas height.
  * @return {!HTMLCanvasElement} Newly created canvas.
  * @private
  */
 Command.prototype.createCanvas_ = function(
-    document, srcCanvas, opt_width, opt_height) {
+    document, srcImage, opt_width, opt_height) {
   var result = assertInstanceof(document.createElement('canvas'),
       HTMLCanvasElement);
-  result.width = opt_width || srcCanvas.width;
-  result.height = opt_height || srcCanvas.height;
+  result.width = opt_width || srcImage.width;
+  result.height = opt_height || srcImage.height;
   return result;
 };
 
@@ -353,14 +335,14 @@ Command.Rotate.prototype = { __proto__: Command.prototype };
 
 /** @override */
 Command.Rotate.prototype.execute = function(
-    document, srcCanvas, callback, uiContext) {
+    document, srcImage, callback, uiContext) {
   var result = this.createCanvas_(
       document,
-      srcCanvas,
-      (this.rotate90_ & 1) ? srcCanvas.height : srcCanvas.width,
-      (this.rotate90_ & 1) ? srcCanvas.width : srcCanvas.height);
+      srcImage,
+      (this.rotate90_ & 1) ? srcImage.height : srcImage.width,
+      (this.rotate90_ & 1) ? srcImage.width : srcImage.height);
   ImageUtil.drawImageTransformed(
-      result, srcCanvas, 1, 1, this.rotate90_ * Math.PI / 2);
+      result, srcImage, 1, 1, this.rotate90_ * Math.PI / 2);
   var delay;
   if (uiContext.imageView) {
     delay = uiContext.imageView.replaceAndAnimate(result, null, this.rotate90_);
@@ -369,8 +351,8 @@ Command.Rotate.prototype.execute = function(
 };
 
 /** @override */
-Command.Rotate.prototype.revertView = function(canvas, imageView) {
-  return imageView.replaceAndAnimate(canvas, null, -this.rotate90_);
+Command.Rotate.prototype.revertView = function(image, imageView) {
+  return imageView.replaceAndAnimate(image, null, -this.rotate90_);
 };
 
 
@@ -404,8 +386,8 @@ Command.Crop.prototype.execute = function(
 };
 
 /** @override */
-Command.Crop.prototype.revertView = function(canvas, imageView) {
-  return imageView.animateAndReplace(canvas, this.imageRect_);
+Command.Crop.prototype.revertView = function(image, imageView) {
+  return imageView.animateAndReplace(image, this.imageRect_);
 };
 
 
@@ -430,8 +412,8 @@ Command.Filter.prototype = { __proto__: Command.prototype };
 
 /** @override */
 Command.Filter.prototype.execute = function(
-    document, srcCanvas, callback, uiContext) {
-  var result = this.createCanvas_(document, srcCanvas);
+    document, srcImage, callback, uiContext) {
+  var result = this.createCanvas_(document, srcImage);
   var self = this;
   var previousRow = 0;
 
@@ -465,6 +447,6 @@ Command.Filter.prototype.execute = function(
     }
   }
 
-  filter.applyByStrips(result, srcCanvas, this.filter_,
+  filter.applyByStrips(result, srcImage, this.filter_,
       uiContext.imageView ? onProgressVisible : onProgressInvisible);
 };

@@ -1041,9 +1041,9 @@ SlideMode.prototype.itemLoaded_ = function(
         toMillions(metadata.size));
   }
 
-  var canvas = this.imageView_.getCanvas();
+  var image = this.imageView_.getImage();
   ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
-      toMillions(canvas.width * canvas.height));
+      toMillions(image.width * image.height));
 
   var extIndex = entry.name.lastIndexOf('.');
   var ext = extIndex < 0 ? '' :
@@ -1299,7 +1299,7 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
   var savedPromise = this.dataModel_.saveItem(
       this.volumeManager_,
       item,
-      this.imageView_.getCanvas(),
+      ImageUtil.ensureCanvas(this.imageView_.getImage()),
       this.overwriteOriginalCheckbox_.checked);
 
   savedPromise.then(function() {

@@ -225,7 +225,7 @@ ImageEditor.prototype.openSession = function(
         item.setAsOriginal();
 
         self.commandQueue_ = new CommandQueue(
-            self.container_.ownerDocument, assert(self.imageView_.getCanvas()),
+            self.container_.ownerDocument, assert(self.imageView_.getImage()),
             saveFunction);
         self.commandQueue_.attachUI(
             self.getImageView(), self.getPrompt(), self.filesToast_,
@@ -327,10 +327,10 @@ ImageEditor.prototype.updateUndoRedo = function() {
 };
 
 /**
- * @return {HTMLCanvasElement} The current image canvas.
+ * @return {HTMLCanvasElement|HTMLImageElement} The current image.
  */
-ImageEditor.prototype.getCanvas = function() {
-  return this.getImageView().getCanvas();
+ImageEditor.prototype.getImage = function() {
+  return this.getImageView().getImage();
 };
 
 /**

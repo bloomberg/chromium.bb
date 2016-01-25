@@ -440,7 +440,6 @@ ImageUtil.ImageLoader = function(document, metadataModel) {
    */
   this.metadataModel_ = metadataModel;
 
-  this.image_ = new Image();
   this.generation_ = 0;
 
   /**
@@ -480,7 +479,8 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   this.entry_ = entry;
   this.callback_ = callback;
 
-  var targetImage = this.image_;
+  var targetImage = assertInstanceof(this.document_.createElement('img'),
+      HTMLImageElement);
   // The transform fetcher is not cancellable so we need a generation counter.
   var generation = ++this.generation_;
 
@@ -490,8 +490,7 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
    */
   var onTransform = function(image, opt_transform) {
     if (generation === this.generation_) {
-      this.convertImage_(
-          image, opt_transform || { scaleX: 1, scaleY: 1, rotate90: 0});
+      this.convertImage_(image, opt_transform);
     }
   };
   onTransform = onTransform.bind(this);
@@ -522,6 +521,8 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
     targetImage.onload = function() {
       targetImage.onerror = null;
       targetImage.onload = null;
+      if (generation !== this.generation_)
+        return;
       this.metadataModel_.get([entry], ['contentImageTransform']).then(
           function(metadataItems) {
             onTransform(targetImage, metadataItems[0].contentImageTransform);
@@ -539,9 +540,6 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   var startLoad = function() {
     if (generation !== this.generation_)
       return;
-
-    // Target current image.
-    targetImage = this.image_;
 
     // Obtain target URL.
     if (FileType.isRaw(entry)) {
@@ -610,14 +608,6 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
     clearTimeout(this.timeout_);
     this.timeout_ = 0;
   }
-  if (this.image_) {
-    this.image_.onload = function() {};
-    this.image_.onerror = function() {};
-    // Force to free internal image by assigning empty image.
-    this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
-        'AAABAAEAAAICTAEAOw==';
-    this.image_ = document.createElement('img');
-  }
   this.generation_++;  // Silence the transform fetcher if it is in progress.
 };
 
@@ -627,6 +617,14 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
  * @private
  */
 ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
+  if (!transform ||
+        (transform.rotate90 === 0 &&
+         transform.scaleX === 1 &&
+         transform.scaleY === 1)) {
+    setTimeout(this.callback_, 0, image);
+    this.callback_ = null;
+    return;
+  }
   var canvas = this.document_.createElement('canvas');
 
   if (transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
@@ -670,11 +668,7 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     if (this.entry_.toURL().substr(0, 5) !== 'data:') {  // Ignore data urls.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('LoadTime'));
     }
-    try {
-      setTimeout(this.callback_, 0, context.canvas);
-    } catch (e) {
-      console.error(e);
-    }
+    setTimeout(this.callback_, 0, context.canvas);
     this.callback_ = null;
   } else {
     var self = this;
@@ -729,6 +723,26 @@ ImageUtil.metrics = null;
  */
 ImageUtil.getMetricName = function(name) {
   return 'PhotoEditor.' + name;
+};
+
+/**
+ * Ensures argument is canvas. If it's not, creates new canvas and copy.
+ *
+ * @param {!HTMLCanvasElement|!HTMLImageElement} imgOrCanvas image or canvas
+ *    element
+ * @return {!HTMLCanvasElement} canvas.
+ */
+ImageUtil.ensureCanvas = function(imgOrCanvas) {
+  if(imgOrCanvas.tagName === 'canvas') {
+    return assertInstanceof(imgOrCanvas, HTMLCanvasElement);
+  }
+  var canvas = assertInstanceof(document.createElement('canvas'),
+      HTMLCanvasElement);
+  canvas.width = imgOrCanvas.width;
+  canvas.height = imgOrCanvas.height;
+  var context = canvas.getContext('2d');
+  context.drawImage(imgOrCanvas, 0, 0);
+  return canvas;
 };
 
 /**

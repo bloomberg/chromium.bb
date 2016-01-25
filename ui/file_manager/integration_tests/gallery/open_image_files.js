@@ -43,16 +43,14 @@ function openSingleImage(testVolumeName, volumeType) {
     return resizedWindowPromise.then(function() {
       var rootElementPromise =
           gallery.waitForElement(appId, '.gallery[mode="slide"]');
-      var imagePromise = gallery.waitForElement(
-          appId, '.gallery .content canvas.image[width="760"]');
       var fullImagePromsie = gallery.waitForElement(
-          appId, '.gallery .content canvas.fullres[width="800"]');
-      return Promise.all([rootElementPromise, imagePromise, fullImagePromsie]).
+          appId, '.gallery .image-container > .image');
+      return Promise.all([rootElementPromise, fullImagePromsie]).
           then(function(args) {
-            chrome.test.assertEq('760', args[1].attributes.width);
-            chrome.test.assertEq('570', args[1].attributes.height);
-            chrome.test.assertEq('800', args[2].attributes.width);
-            chrome.test.assertEq('600', args[2].attributes.height);
+            chrome.test.assertEq(760, args[1].renderedWidth);
+            chrome.test.assertEq(570, args[1].renderedHeight);
+            chrome.test.assertEq(800, args[1].imageWidth);
+            chrome.test.assertEq(600, args[1].imageHeight);
           });
     });
   });
