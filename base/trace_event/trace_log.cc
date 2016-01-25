@@ -1329,13 +1329,17 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
   }
 
-  if (base::trace_event::AllocationContextTracker::capture_enabled()) {
-    if (phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_COMPLETE)
-      base::trace_event::AllocationContextTracker::PushPseudoStackFrame(name);
-    else if (phase == TRACE_EVENT_PHASE_END)
-      // The pop for |TRACE_EVENT_PHASE_COMPLETE| events
-      // is in |TraceLog::UpdateTraceEventDuration|.
-      base::trace_event::AllocationContextTracker::PopPseudoStackFrame(name);
+  // TODO(primiano): Add support for events with copied name crbug.com/581078
+  if (!(flags & TRACE_EVENT_FLAG_COPY)) {
+    if (AllocationContextTracker::capture_enabled()) {
+      if (phase == TRACE_EVENT_PHASE_BEGIN ||
+          phase == TRACE_EVENT_PHASE_COMPLETE)
+        AllocationContextTracker::PushPseudoStackFrame(name);
+      else if (phase == TRACE_EVENT_PHASE_END)
+        // The pop for |TRACE_EVENT_PHASE_COMPLETE| events
+        // is in |TraceLog::UpdateTraceEventDuration|.
+        AllocationContextTracker::PopPseudoStackFrame(name);
+    }
   }
 
   return handle;
