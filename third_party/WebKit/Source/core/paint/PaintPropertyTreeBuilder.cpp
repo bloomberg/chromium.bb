@@ -70,6 +70,10 @@ void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTre
 {
     PaintPropertyTreeBuilderContext localContext(context);
 
+    // TODO(pdr): Creating paint properties for FrameView here will not be
+    // needed once settings()->rootLayerScrolls() is enabled.
+    // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
+
     TransformationMatrix frameTranslate;
     frameTranslate.translate(frameView.x(), frameView.y());
     // The frame owner applies paint offset already.
@@ -83,7 +87,6 @@ void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTre
     RefPtr<ClipPaintPropertyNode> newClipNodeForContentClip = ClipPaintPropertyNode::create(newTransformNodeForPreTranslation.get(), contentClip, localContext.currentClip);
     localContext.currentClip = localContext.clipForOutOfFlowPositioned = localContext.clipForFixedPositioned = newClipNodeForContentClip.get();
 
-    // This is going away in favor of Settings::rootLayerScrolls.
     DoubleSize scrollOffset = frameView.scrollOffsetDouble();
     TransformationMatrix frameScroll;
     frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());

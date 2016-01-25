@@ -433,6 +433,7 @@ crbug.com/537409 virtual/spv2/ [ Skip ]
 crbug.com/563667 virtual/spv2/fast/block/basic/001.html [ Pass ]
 crbug.com/563667 virtual/spv2/fast/block/positioning/static-distance-with-positioned-ancestor.html [ Pass ]
 crbug.com/563667 virtual/spv2/fast/block/float/clamped-right-float.html [ Pass ]
+crbug.com/577995 virtual/spv2/fast/block/basic/013.html [ Pass ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure

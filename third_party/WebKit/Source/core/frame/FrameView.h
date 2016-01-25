@@ -571,13 +571,13 @@ public:
 
     // Paint properties for SPv2 Only.
     void setPreTranslation(PassRefPtr<TransformPaintPropertyNode> preTranslation) { m_preTranslation = preTranslation; }
-    const TransformPaintPropertyNode* preTranslation() const { return m_preTranslation.get(); }
+    TransformPaintPropertyNode* preTranslation() const { return m_preTranslation.get(); }
 
     void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> scrollTranslation) { m_scrollTranslation = scrollTranslation; }
-    const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
+    TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
     void setContentClip(PassRefPtr<ClipPaintPropertyNode> contentClip) { m_contentClip = contentClip; }
-    const ClipPaintPropertyNode* contentClip() const { return m_contentClip.get(); }
+    ClipPaintPropertyNode* contentClip() const { return m_contentClip.get(); }
 
     // TODO(ojan): Merge this with IntersectionObserver once it lands.
     IntRect computeVisibleArea();
@@ -888,11 +888,11 @@ private:
     // The hierarchy of transform subtree created by a FrameView.
     // [ preTranslation ]               The offset from Widget::frameRect. Establishes viewport.
     //     +---[ scrollTranslation ]    Frame scrolling.
-    //                                  TODO(trchen): This is going away in favor of Settings::rootLayerScrolls.
+    // TODO(trchen): These will not be needed once settings->rootLayerScrolls() is enabled.
     RefPtr<TransformPaintPropertyNode> m_preTranslation;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
     // The content clip clips the document (= LayoutView) but not the scrollbars.
-    // TODO(trchen): Going away in favor of Settings::rootLayerScrolls too.
+    // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is enabled.
     RefPtr<ClipPaintPropertyNode> m_contentClip;
 
     bool m_isUpdatingAllLifecyclePhases;
