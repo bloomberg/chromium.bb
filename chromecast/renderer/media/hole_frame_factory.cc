@@ -54,24 +54,25 @@ HoleFrameFactory::~HoleFrameFactory() {
 
 scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
     const gfx::Size& size) {
-  if (texture_) {
-    scoped_refptr<::media::VideoFrame> frame =
-        ::media::VideoFrame::WrapNativeTexture(
-            ::media::PIXEL_FORMAT_XRGB,
-            gpu::MailboxHolder(mailbox_, sync_token_, GL_TEXTURE_2D),
-            ::media::VideoFrame::ReleaseMailboxCB(),
-            size,                // coded_size
-            gfx::Rect(size),     // visible rect
-            size,                // natural size
-            base::TimeDelta());  // timestamp
-    CHECK(frame);
-    frame->metadata()->SetBoolean(::media::VideoFrameMetadata::ALLOW_OVERLAY,
-                                  true);
-    return frame;
-  } else {
-    // This case is needed for audio-only devices.
+  // No texture => audio device.  size empty => video has one dimension = 0.
+  // Dimension 0 case triggers a DCHECK later on in TextureMailbox if we push
+  // through the overlay path.
+  if (!texture_ || size.IsEmpty())
     return ::media::VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
-  }
+
+  scoped_refptr<::media::VideoFrame> frame =
+      ::media::VideoFrame::WrapNativeTexture(
+          ::media::PIXEL_FORMAT_XRGB,
+          gpu::MailboxHolder(mailbox_, sync_token_, GL_TEXTURE_2D),
+          ::media::VideoFrame::ReleaseMailboxCB(),
+          size,                // coded_size
+          gfx::Rect(size),     // visible rect
+          size,                // natural size
+          base::TimeDelta());  // timestamp
+  CHECK(frame);
+  frame->metadata()->SetBoolean(::media::VideoFrameMetadata::ALLOW_OVERLAY,
+                                true);
+  return frame;
 }
 
 }  // namespace media
