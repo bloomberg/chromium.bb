@@ -13,7 +13,8 @@ def GetChromiumSrcDir():
 
 
 def GetTelemetryDir():
-  return os.path.join(GetChromiumSrcDir(), 'tools', 'telemetry')
+  return os.path.join(GetChromiumSrcDir(), 'third_party', 'catapult',
+                      'telemetry')
 
 
 CLIENT_CONFIG_PATH = os.path.join(
