@@ -2691,9 +2691,10 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
 
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    // We have to enable vertex array 0 on OpenGL or it won't render. Note that
-    // OpenGL ES 2.0 does not have this issue.
+  if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
+    // We have to enable vertex array 0 on GL with compatibility profile or it
+    // won't render. Note that ES or GL with core profile does not have this
+    // issue.
     glEnableVertexAttribArray(0);
   }
   glGenBuffersARB(1, &attrib_0_buffer_id_);
@@ -4924,8 +4925,7 @@ void GLES2DecoderImpl::DoBindSampler(GLuint unit, GLuint client_id) {
 
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
   if (state_.vertex_attrib_manager->Enable(index, false)) {
-    if (index != 0 ||
-        gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+    if (index != 0 || feature_info_->gl_version_info().BehavesLikeGLES()) {
       glDisableVertexAttribArray(index);
     }
   } else {
@@ -7853,11 +7853,10 @@ void GLES2DecoderImpl::RestoreStateForAttrib(
       GL_ARRAY_BUFFER, state_.bound_array_buffer.get() ?
           state_.bound_array_buffer->service_id() : 0);
 
-  // Never touch vertex attribute 0's state (in particular, never
-  // disable it) when running on desktop GL because it will never be
-  // re-enabled.
-  if (attrib_index != 0 ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+  // Never touch vertex attribute 0's state (in particular, never disable it)
+  // when running on desktop GL with compatibility profile because it will
+  // never be re-enabled.
+  if (attrib_index != 0 || feature_info_->gl_version_info().BehavesLikeGLES()) {
     if (attrib->enabled()) {
       glEnableVertexAttribArray(attrib_index);
     } else {
@@ -7871,7 +7870,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     GLuint max_vertex_accessed, bool* simulated, GLsizei primcount) {
   DCHECK(simulated);
   *simulated = false;
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+  if (feature_info_->gl_version_info().BehavesLikeGLES())
     return true;
 
   if (!state_.vertex_attrib_manager->HaveFixedAttribs()) {

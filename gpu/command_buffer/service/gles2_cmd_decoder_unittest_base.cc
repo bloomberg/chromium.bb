@@ -253,9 +253,11 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   AddExpectationsForBindVertexArrayOES();
 
-  EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
-      .Times(1)
-      .RetiresOnSaturation();
+  if (!group_->feature_info()->gl_version_info().BehavesLikeGLES()) {
+    EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   static GLuint attrib_0_id[] = {
     kServiceAttrib0BufferId,
   };
