@@ -63,6 +63,10 @@ def main():
                       help='Enable verbose logging.')
   parser.add_argument('--downgrade', action='store_true',
                       help='If set, allows downgrading of apk.')
+  parser.add_argument('--timeout', type=int,
+                      default=device_utils.DeviceUtils.INSTALL_DEFAULT_TIMEOUT,
+                      help='Seconds to wait for APK installation. '
+                           '(default: %(default)s)')
 
   args = parser.parse_args()
 
@@ -121,7 +125,8 @@ def main():
                                allow_downgrade=args.downgrade)
       else:
         device.Install(apk, reinstall=args.keep_data,
-                       allow_downgrade=args.downgrade)
+                       allow_downgrade=args.downgrade,
+                       timeout=args.timeout)
     except device_errors.CommandFailedError:
       logging.exception('Failed to install %s', args.apk_name)
       if blacklist:
