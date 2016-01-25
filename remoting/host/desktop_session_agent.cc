@@ -316,9 +316,6 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
   current_size_ = frame->size();
 
-  // Verify that the captured frame was stored in the shared memory buffer.
-  CHECK(frame->data() == frame->shared_memory()->data());
-
   // Serialize webrtc::DesktopFrame.
   SerializedDesktopFrame serialized_frame;
   serialized_frame.shared_buffer_id = frame->shared_memory()->id();
