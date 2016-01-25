@@ -4,8 +4,6 @@
 
 #include "components/arc/arc_service_manager.h"
 
-#include <utility>
-
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_bootstrap.h"

@@ -881,8 +881,6 @@
     ['chromeos==1', {
       'sources': [
         'common/gpu/media/accelerated_video_decoder.h',
-        'common/gpu/media/gpu_arc_video_service.cc',
-        'common/gpu/media/gpu_arc_video_service.h',
         'common/gpu/media/h264_decoder.cc',
         'common/gpu/media/h264_decoder.h',
         'common/gpu/media/h264_dpb.cc',

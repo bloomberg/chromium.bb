@@ -116,8 +116,6 @@
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/video/arc_video_bridge.h"
-#include "components/arc/video/video_host_delegate.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/metrics/metrics_service.h"
@@ -127,7 +125,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_manager_base.h"
-#include "content/public/browser/arc_video_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -403,9 +400,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   arc_service_manager_->AddService(
       make_scoped_ptr(new arc::ArcIntentHelperBridge(
           arc_service_manager_->arc_bridge_service())));
-  arc_service_manager_->AddService(make_scoped_ptr(
-      new arc::ArcVideoBridge(arc_service_manager_->arc_bridge_service(),
-                              content::CreateArcVideoHostDelegate())));
   arc_service_manager_->arc_bridge_service()->DetectAvailability();
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring();

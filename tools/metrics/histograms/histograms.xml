@@ -67373,9 +67373,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE
   </int>
   <int value="13" label="Mojo Setup">CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP</int>
-  <int value="14" label="Create arc video accelerator">
-    CAUSE_FOR_GPU_LAUNCH_ARCVIDEOACCELERATOR
-  </int>
 </enum>
 
 <enum name="GzipEncodingFixupResult" type="int">

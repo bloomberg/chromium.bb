@@ -1,7 +1,6 @@
 include_rules = [
   # Allow inclusion of specific components that we depend on. We may only
   # depend on components which we share with the mojo html_viewer.
-  "+components/arc",
   "+components/mime_util",
   "+components/mus/public/interfaces",
   "+components/mus/public",

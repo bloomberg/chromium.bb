@@ -58,9 +58,6 @@ struct GPUCreateCommandBufferConfig;
 struct GpuMsg_EstablishChannel_Params;
 
 namespace content {
-#if defined(OS_CHROMEOS)
-class GpuArcVideoService;
-#endif
 class GpuChannel;
 class GpuMemoryBufferFactory;
 class GpuWatchdog;
@@ -166,11 +163,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 int client_id,
                                 const gpu::SyncToken& sync_token);
-#if defined(OS_CHROMEOS)
-  void OnCreateArcVideoAcceleratorChannel();
-  void ArcVideoAcceleratorChannelCreated(const IPC::ChannelHandle& handle);
-  void OnShutdownArcVideoService();
-#endif
 
   void OnUpdateValueState(int client_id,
                           unsigned int target,
@@ -202,9 +194,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
       framebuffer_completeness_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
-#if defined(OS_CHROMEOS)
-  scoped_ptr<GpuArcVideoService> gpu_arc_video_service_;
-#endif
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 #if defined(OS_ANDROID)
   // Last time we know the GPU was powered on. Global for tracking across all

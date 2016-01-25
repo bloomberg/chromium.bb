@@ -114,7 +114,6 @@
       'public/browser/browser_thread.h',
       'public/browser/browser_thread_delegate.h',
       'public/browser/browser_url_handler.h',
-      'public/browser/arc_video_host_delegate.h',
       'public/browser/cache_storage_context.h',
       'public/browser/cache_storage_usage_info.h',
       'public/browser/cert_store.h',
@@ -2115,11 +2114,6 @@
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:power_manager_proto',
-        '../components/components.gyp:arc',
-      ],
-      'sources': [
-        'browser/gpu/gpu_arc_video_service_host.cc',
-        'browser/gpu/gpu_arc_video_service_host.h',
       ],
       'sources!': [
         'browser/device_sensors/data_fetcher_shared_memory_default.cc',

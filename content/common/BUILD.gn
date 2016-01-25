@@ -381,8 +381,6 @@ source_set("common") {
   if (is_chromeos) {
     sources += [
       "gpu/media/accelerated_video_decoder.h",
-      "gpu/media/gpu_arc_video_service.cc",
-      "gpu/media/gpu_arc_video_service.h",
       "gpu/media/h264_decoder.cc",
       "gpu/media/h264_decoder.h",
       "gpu/media/h264_dpb.cc",
@@ -396,7 +394,6 @@ source_set("common") {
       "gpu/media/vp9_picture.cc",
       "gpu/media/vp9_picture.h",
     ]
-    deps += [ "//components/arc" ]
     if (use_v4lplugin) {
       defines += [ "USE_LIBV4L2" ]
       sources += get_target_outputs(":libv4l2_generate_stubs")

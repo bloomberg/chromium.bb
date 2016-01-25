@@ -27,9 +27,6 @@ static_library("arc") {
     "input/arc_input_bridge.h",
     "power/arc_power_bridge.cc",
     "power/arc_power_bridge.h",
-    "video/arc_video_bridge.cc",
-    "video/arc_video_bridge.h",
-    "video/video_host_delegate.h",
   ]
 
   deps = [
@@ -67,7 +64,6 @@ mojom("arc_bindings") {
     "common/power.mojom",
     "common/process.mojom",
     "common/settings.mojom",
-    "common/video.mojom",
   ]
 }
 

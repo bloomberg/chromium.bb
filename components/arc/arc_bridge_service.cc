@@ -69,8 +69,6 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnPowerInstanceReady();
   if (process_instance())
     observer->OnProcessInstanceReady();
-  if (video_instance())
-    observer->OnVideoInstanceReady();
 }
 
 void ArcBridgeService::RemoveObserver(Observer* observer) {
@@ -305,30 +303,6 @@ void ArcBridgeService::OnSettingsInstanceReady(
   // Obsolete interface.
 }
 
-void ArcBridgeService::OnVideoInstanceReady(VideoInstancePtr video_ptr) {
-  DCHECK(CalledOnValidThread());
-  temporary_video_ptr_ = std::move(video_ptr);
-  temporary_video_ptr_.QueryVersion(base::Bind(
-      &ArcBridgeService::OnVideoVersionReady, weak_factory_.GetWeakPtr()));
-}
-
-void ArcBridgeService::OnVideoVersionReady(int32_t version) {
-  DCHECK(CalledOnValidThread());
-  video_ptr_ = std::move(temporary_video_ptr_);
-  video_ptr_.set_connection_error_handler(base::Bind(
-      &ArcBridgeService::CloseVideoChannel, weak_factory_.GetWeakPtr()));
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnVideoInstanceReady());
-}
-
-void ArcBridgeService::CloseVideoChannel() {
-  DCHECK(CalledOnValidThread());
-  if (!video_ptr_)
-    return;
-
-  video_ptr_.reset();
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnVideoInstanceClosed());
-}
-
 void ArcBridgeService::SetState(State state) {
   DCHECK(CalledOnValidThread());
   // DCHECK on enum classes not supported.
@@ -360,7 +334,6 @@ void ArcBridgeService::CloseAllChannels() {
   CloseNotificationsChannel();
   ClosePowerChannel();
   CloseProcessChannel();
-  CloseVideoChannel();
 }
 
 }  // namespace arc

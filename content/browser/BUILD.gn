@@ -417,10 +417,6 @@ source_set("browser") {
 
   if (is_chromeos) {
     sources -= [ "device_sensors/data_fetcher_shared_memory_default.cc" ]
-    sources += [
-      "gpu/gpu_arc_video_service_host.cc",
-      "gpu/gpu_arc_video_service_host.h",
-    ]
     deps += [
       "//chromeos",
       "//chromeos:power_manager_proto",

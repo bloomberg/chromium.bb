@@ -109,10 +109,6 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnProcessInstanceReady() {}
     virtual void OnProcessInstanceClosed() {}
 
-    // Called whenever the ARC video interface state changes.
-    virtual void OnVideoInstanceReady() {}
-    virtual void OnVideoInstanceClosed() {}
-
    protected:
     virtual ~Observer() {}
   };
@@ -163,7 +159,6 @@ class ArcBridgeService : public ArcBridgeHost {
   }
   PowerInstance* power_instance() { return power_ptr_.get(); }
   ProcessInstance* process_instance() { return process_ptr_.get(); }
-  VideoInstance* video_instance() { return video_ptr_.get(); }
 
   int32_t app_version() const { return app_ptr_.version(); }
   int32_t auth_version() const { return auth_ptr_.version(); }
@@ -174,7 +169,6 @@ class ArcBridgeService : public ArcBridgeHost {
   int32_t notifications_version() const { return notifications_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
-  int32_t video_version() const { return video_ptr_.version(); }
 
   // ArcHost:
   void OnAppInstanceReady(AppInstancePtr app_ptr) override;
@@ -189,7 +183,6 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnPowerInstanceReady(PowerInstancePtr power_ptr) override;
   void OnProcessInstanceReady(ProcessInstancePtr process_ptr) override;
   void OnSettingsInstanceReady(SettingsInstancePtr settings_ptr) override;
-  void OnVideoInstanceReady(VideoInstancePtr video_ptr) override;
 
   // Gets the current state of the bridge service.
   State state() const { return state_; }
@@ -230,7 +223,6 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseNotificationsChannel();
   void ClosePowerChannel();
   void CloseProcessChannel();
-  void CloseVideoChannel();
 
   // Callbacks for QueryVersion.
   void OnAppVersionReady(int32_t version);
@@ -242,7 +234,6 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnNotificationsVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
-  void OnVideoVersionReady(int32_t version);
 
   // Mojo interfaces.
   AppInstancePtr app_ptr_;
@@ -254,7 +245,6 @@ class ArcBridgeService : public ArcBridgeHost {
   NotificationsInstancePtr notifications_ptr_;
   PowerInstancePtr power_ptr_;
   ProcessInstancePtr process_ptr_;
-  VideoInstancePtr video_ptr_;
 
   // Temporary Mojo interfaces.  After a Mojo interface pointer has been
   // received from the other endpoint, we still need to asynchronously query
@@ -271,7 +261,6 @@ class ArcBridgeService : public ArcBridgeHost {
   NotificationsInstancePtr temporary_notifications_ptr_;
   PowerInstancePtr temporary_power_ptr_;
   ProcessInstancePtr temporary_process_ptr_;
-  VideoInstancePtr temporary_video_ptr_;
 
   base::ObserverList<Observer> observer_list_;
 

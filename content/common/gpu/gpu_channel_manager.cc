@@ -30,10 +30,6 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 
-#if defined(OS_CHROMEOS)
-#include "content/common/gpu/media/gpu_arc_video_service.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -142,10 +138,6 @@ bool GpuChannelManager::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER(GpuMsg_CreateArcVideoAcceleratorChannel,
-                        OnCreateArcVideoAcceleratorChannel)
-#endif
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
 #if defined(OS_ANDROID)
@@ -253,28 +245,6 @@ void GpuChannelManager::OnDestroyGpuMemoryBuffer(
   // No sync token or invalid sync token, destroy immediately.
   DestroyGpuMemoryBuffer(id, client_id);
 }
-
-#if defined(OS_CHROMEOS)
-void GpuChannelManager::OnCreateArcVideoAcceleratorChannel() {
-  if (!gpu_arc_video_service_) {
-    gpu_arc_video_service_.reset(
-        new GpuArcVideoService(shutdown_event_, io_task_runner_));
-  }
-
-  gpu_arc_video_service_->CreateChannel(
-      base::Bind(&GpuChannelManager::ArcVideoAcceleratorChannelCreated,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void GpuChannelManager::ArcVideoAcceleratorChannelCreated(
-    const IPC::ChannelHandle& handle) {
-  Send(new GpuHostMsg_ArcVideoAcceleratorChannelCreated(handle));
-}
-
-void GpuChannelManager::OnShutdownArcVideoService() {
-  gpu_arc_video_service_.reset();
-}
-#endif
 
 void GpuChannelManager::OnUpdateValueState(
     int client_id, unsigned int target, const gpu::ValueState& state) {

@@ -14,7 +14,6 @@ import "notifications.mojom";
 import "power.mojom";
 import "process.mojom";
 import "settings.mojom";
-import "video.mojom";
 
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
@@ -51,9 +50,6 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the SettingsInstance interface is ready.
   OnSettingsInstanceReady@105(SettingsInstance instance_ptr);
-
-  // Notifies Chrome that the VideoInstance interface is ready.
-  [MinVersion=2] OnVideoInstanceReady@107(VideoInstance instance_ptr);
 };
 
 interface ArcBridgeInstance {
