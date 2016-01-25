@@ -66,6 +66,7 @@ include_rules = [
   "+components/undo",
   "+components/update_client",
   "+components/upload_list",
+  "+components/url_formatter",
   "+components/variations",
   "+components/version_info",
   "+components/version_ui",
