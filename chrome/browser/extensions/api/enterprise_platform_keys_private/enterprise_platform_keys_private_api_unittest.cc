@@ -12,6 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -26,6 +28,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,6 +51,8 @@ const int kDBusError = 1;
 const int kUserRejected = 2;
 const int kGetCertificateFailed = 3;
 const int kResetRequired = 4;
+
+const char kUserEmail[] = "test@google.com";
 
 // A simple functor to invoke a callback with predefined arguments.
 class FakeBoolDBusMethod {
@@ -142,7 +147,9 @@ void GetCertificateCallbackFalse(
 class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
  protected:
   EPKPChallengeKeyTestBase()
-      : settings_helper_(false), extension_(test_util::CreateEmptyExtension()) {
+      : settings_helper_(false), extension_(test_util::CreateEmptyExtension()),
+        fake_user_manager_(new chromeos::FakeChromeUserManager),
+        user_manager_enabler_(fake_user_manager_){
     // Set up the default behavior of mocks.
     ON_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
         .WillByDefault(WithArgs<3>(Invoke(FakeBoolDBusMethod(
@@ -160,7 +167,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
 
     // Set the Enterprise install attributes.
     stub_install_attributes_.SetDomain("google.com");
-    stub_install_attributes_.SetRegistrationUser("test@google.com");
+    stub_install_attributes_.SetRegistrationUser(kUserEmail);
     stub_install_attributes_.SetDeviceId("device_id");
     stub_install_attributes_.SetMode(policy::DEVICE_MODE_ENTERPRISE);
 
@@ -178,13 +185,15 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
     prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
 
     SetAuthenticatedUser();
+    fake_user_manager_->AddUserWithAffiliation(
+        AccountId::FromUserEmail(kUserEmail), true);
   }
 
   // Derived classes can override this method to set the required authenticated
   // user in the SigninManager class.
   virtual void SetAuthenticatedUser() {
     SigninManagerFactory::GetForProfile(browser()->profile())->
-        SetAuthenticatedAccountInfo("12345", "test@google.com");
+        SetAuthenticatedAccountInfo("12345", kUserEmail);
   }
 
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
@@ -194,6 +203,8 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   scoped_refptr<extensions::Extension> extension_;
   policy::StubEnterpriseInstallAttributes stub_install_attributes_;
   PrefService* prefs_;
+  chromeos::FakeChromeUserManager* fake_user_manager_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 };
 
 class EPKPChallengeMachineKeyTest : public EPKPChallengeKeyTestBase {
@@ -456,14 +467,14 @@ TEST_F(EPKPChallengeUserKeyTest, Success) {
   // SignEnterpriseChallenge must be called exactly once.
   EXPECT_CALL(mock_async_method_caller_,
               TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_USER, "test@google.com",
-                  "attest-ent-user", "test@google.com", "device_id", _,
+                  chromeos::attestation::KEY_USER, kUserEmail,
+                  "attest-ent-user", kUserEmail, "device_id", _,
                   "challenge", _))
       .Times(1);
   // RegisterKey must be called exactly once.
   EXPECT_CALL(mock_async_method_caller_,
               TpmAttestationRegisterKey(chromeos::attestation::KEY_USER,
-                                        "test@google.com",
+                                        kUserEmail,
                                         "attest-ent-user", _))
       .Times(1);
 

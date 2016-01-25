@@ -30,7 +30,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -140,10 +143,19 @@ bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
 bool EPKPChallengeKeyBase::IsUserManaged() const {
   std::string email = GetUserEmail();
 
-  // TODO(davidyu): Use BrowserPolicyConnector::GetUserAffiliation() and fix
-  // the test.
-  return email.empty() ? false :
-      gaia::ExtractDomainName(email) == GetEnterpriseDomain();
+  if (email.empty()) {
+    return false;
+  }
+
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(
+          AccountId::FromUserEmail(email));
+
+  if (user) {
+    return user->is_affiliated();
+  }
+
+  return false;
 }
 
 std::string EPKPChallengeKeyBase::GetEnterpriseDomain() const {
