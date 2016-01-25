@@ -361,6 +361,8 @@ struct SSLSocketDataProvider {
   bool channel_id_sent;
   ChannelIDService* channel_id_service;
   int connection_status;
+  bool token_binding_negotiated;
+  TokenBindingParam token_binding_key_param;
 };
 
 // Uses the sequence_number field in the mock reads and writes to
@@ -577,6 +579,8 @@ class MockClientSocket : public SSLClientSocket {
   int GetTLSUniqueChannelBinding(std::string* out) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override;
   SSLFailureState GetSSLFailureState() const override;
 
  protected:
@@ -691,6 +695,8 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;
 
   // This MockSocket does not implement the manual async IO feature.

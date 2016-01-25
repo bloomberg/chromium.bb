@@ -188,6 +188,7 @@ struct SpdySessionDependencies {
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
   scoped_ptr<MockHostResolverBase> host_resolver;
   scoped_ptr<CertVerifier> cert_verifier;
+  scoped_ptr<ChannelIDService> channel_id_service;
   scoped_ptr<TransportSecurityState> transport_security_state;
   scoped_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;

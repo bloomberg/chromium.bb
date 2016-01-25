@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -79,9 +80,12 @@
 #include "net/log/test_net_log_util.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_server_config.h"
+#include "net/ssl/token_binding.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -3370,7 +3374,113 @@ scoped_ptr<test_server::HttpResponse> HandleRedirectConnect(
 
 }  // namespace
 
-// In this unit test, we're using the EmbeddedTestServer as a proxy server and
+class TestSSLConfigService : public SSLConfigService {
+ public:
+  TestSSLConfigService(bool ev_enabled,
+                       bool online_rev_checking,
+                       bool rev_checking_required_local_anchors,
+                       bool token_binding_enabled)
+      : ev_enabled_(ev_enabled),
+        online_rev_checking_(online_rev_checking),
+        rev_checking_required_local_anchors_(
+            rev_checking_required_local_anchors),
+        token_binding_enabled_(token_binding_enabled),
+        min_version_(kDefaultSSLVersionMin),
+        fallback_min_version_(kDefaultSSLVersionFallbackMin) {}
+
+  void set_min_version(uint16_t version) { min_version_ = version; }
+
+  void set_fallback_min_version(uint16_t version) {
+    fallback_min_version_ = version;
+  }
+
+  // SSLConfigService:
+  void GetSSLConfig(SSLConfig* config) override {
+    *config = SSLConfig();
+    config->rev_checking_enabled = online_rev_checking_;
+    config->verify_ev_cert = ev_enabled_;
+    config->rev_checking_required_local_anchors =
+        rev_checking_required_local_anchors_;
+    if (fallback_min_version_) {
+      config->version_fallback_min = fallback_min_version_;
+    }
+    if (min_version_) {
+      config->version_min = min_version_;
+    }
+    if (token_binding_enabled_) {
+      config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
+    }
+  }
+
+ protected:
+  ~TestSSLConfigService() override {}
+
+ private:
+  const bool ev_enabled_;
+  const bool online_rev_checking_;
+  const bool rev_checking_required_local_anchors_;
+  const bool token_binding_enabled_;
+  uint16_t min_version_;
+  uint16_t fallback_min_version_;
+};
+
+// TODO(svaldez): Update tests to use EmbeddedTestServer.
+#if !defined(OS_IOS)
+class TokenBindingURLRequestTest : public URLRequestTestHTTP {
+ public:
+  void SetUp() override {
+    default_context_.set_ssl_config_service(
+        new TestSSLConfigService(false, false, false, true));
+    channel_id_service_.reset(new ChannelIDService(
+        new DefaultChannelIDStore(NULL), base::ThreadTaskRunnerHandle::Get()));
+    default_context_.set_channel_id_service(channel_id_service_.get());
+    URLRequestTestHTTP::SetUp();
+  }
+
+ protected:
+  scoped_ptr<ChannelIDService> channel_id_service_;
+};
+
+TEST_F(TokenBindingURLRequestTest, TokenBindingTest) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
+  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
+                                      ssl_options,
+                                      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestDelegate d;
+  {
+    scoped_ptr<URLRequest> r(default_context_.CreateRequest(
+        https_test_server.GetURL("tokbind-ekm"), DEFAULT_PRIORITY, &d));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
+
+    HttpRequestHeaders headers;
+    std::string token_binding_header, token_binding_message;
+    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
+    EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
+                                  &token_binding_header));
+    EXPECT_TRUE(base::Base64UrlDecode(
+        token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+        &token_binding_message));
+    base::StringPiece ec_point, signature;
+    EXPECT_TRUE(
+        ParseTokenBindingMessage(token_binding_message, &ec_point, &signature));
+
+    EXPECT_GT(d.bytes_received(), 0);
+    std::string ekm = d.data_received();
+
+    EXPECT_TRUE(VerifyEKMSignature(ec_point, signature, ekm));
+  }
+}
+#endif  // !defined(OS_IOS)
+
+// In this unit test, we're using the HTTPTestServer as a proxy server and
 // issuing a CONNECT request with the magic host name "www.redirect.com".
 // The EmbeddedTestServer will return a 302 response, which we should not
 // follow.
@@ -8528,61 +8638,17 @@ TEST_F(HTTPSRequestTest, DisableECDSAOnXP) {
 
 #endif  // OS_WIN
 
-class TestSSLConfigService : public SSLConfigService {
- public:
-  TestSSLConfigService(bool ev_enabled,
-                       bool online_rev_checking,
-                       bool rev_checking_required_local_anchors)
-      : ev_enabled_(ev_enabled),
-        online_rev_checking_(online_rev_checking),
-        rev_checking_required_local_anchors_(
-            rev_checking_required_local_anchors),
-        min_version_(kDefaultSSLVersionMin),
-        fallback_min_version_(kDefaultSSLVersionFallbackMin) {}
-
-  void set_min_version(uint16_t version) { min_version_ = version; }
-
-  void set_fallback_min_version(uint16_t version) {
-    fallback_min_version_ = version;
-  }
-
-  // SSLConfigService:
-  void GetSSLConfig(SSLConfig* config) override {
-    *config = SSLConfig();
-    config->rev_checking_enabled = online_rev_checking_;
-    config->verify_ev_cert = ev_enabled_;
-    config->rev_checking_required_local_anchors =
-        rev_checking_required_local_anchors_;
-    if (fallback_min_version_) {
-      config->version_fallback_min = fallback_min_version_;
-    }
-    if (min_version_) {
-      config->version_min = min_version_;
-    }
-  }
-
- protected:
-  ~TestSSLConfigService() override {}
-
- private:
-  const bool ev_enabled_;
-  const bool online_rev_checking_;
-  const bool rev_checking_required_local_anchors_;
-  uint16_t min_version_;
-  uint16_t fallback_min_version_;
-};
-
 class FallbackTestURLRequestContext : public TestURLRequestContext {
  public:
   explicit FallbackTestURLRequestContext(bool delay_initialization)
       : TestURLRequestContext(delay_initialization) {}
 
   void set_fallback_min_version(uint16_t version) {
-    TestSSLConfigService *ssl_config_service =
-        new TestSSLConfigService(true /* check for EV */,
-                                 false /* online revocation checking */,
-                                 false /* require rev. checking for local
-                                          anchors */);
+    TestSSLConfigService* ssl_config_service = new TestSSLConfigService(
+        true /* check for EV */, false /* online revocation checking */,
+        false /* require rev. checking for local
+                                          anchors */,
+        false /* token binding enabled */);
     ssl_config_service->set_fallback_min_version(version);
     set_ssl_config_service(ssl_config_service);
   }
@@ -8957,11 +9023,11 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   // connetions to testserver. This can be overridden in test subclasses for
   // different behaviour.
   virtual void SetupContext(URLRequestContext* context) {
-    context->set_ssl_config_service(
-        new TestSSLConfigService(true /* check for EV */,
-                                 true /* online revocation checking */,
-                                 false /* require rev. checking for local
-                                          anchors */));
+    context->set_ssl_config_service(new TestSSLConfigService(
+        true /* check for EV */, true /* online revocation checking */,
+        false /* require rev. checking for local
+                                          anchors */,
+        false /* token binding enabled */));
   }
 
   scoped_ptr<ScopedTestRoot> test_root_;
@@ -9152,11 +9218,11 @@ TEST_F(HTTPSOCSPTest, MAYBE_RevokedStapled) {
 class HTTPSHardFailTest : public HTTPSOCSPTest {
  protected:
   void SetupContext(URLRequestContext* context) override {
-    context->set_ssl_config_service(
-        new TestSSLConfigService(false /* check for EV */,
-                                 false /* online revocation checking */,
-                                 true /* require rev. checking for local
-                                         anchors */));
+    context->set_ssl_config_service(new TestSSLConfigService(
+        false /* check for EV */, false /* online revocation checking */,
+        true /* require rev. checking for local
+                                         anchors */,
+        false /* token binding enabled */));
   }
 };
 
@@ -9189,11 +9255,11 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
 class HTTPSEVCRLSetTest : public HTTPSOCSPTest {
  protected:
   void SetupContext(URLRequestContext* context) override {
-    context->set_ssl_config_service(
-        new TestSSLConfigService(true /* check for EV */,
-                                 false /* online revocation checking */,
-                                 false /* require rev. checking for local
-                                          anchors */));
+    context->set_ssl_config_service(new TestSSLConfigService(
+        true /* check for EV */, false /* online revocation checking */,
+        false /* require rev. checking for local
+                                          anchors */,
+        false /* token binding enabled */));
   }
 };
 
@@ -9374,11 +9440,11 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSetAndRevokedNonEVCert) {
 class HTTPSCRLSetTest : public HTTPSOCSPTest {
  protected:
   void SetupContext(URLRequestContext* context) override {
-    context->set_ssl_config_service(
-        new TestSSLConfigService(false /* check for EV */,
-                                 false /* online revocation checking */,
-                                 false /* require rev. checking for local
-                                          anchors */));
+    context->set_ssl_config_service(new TestSSLConfigService(
+        false /* check for EV */, false /* online revocation checking */,
+        false /* require rev. checking for local
+                                          anchors */,
+        false /* token binding enabled */));
   }
 };
 

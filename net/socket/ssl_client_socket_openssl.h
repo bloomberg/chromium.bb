@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
+#include "base/containers/mru_cache.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -41,6 +43,8 @@ class CertVerifier;
 class CTVerifier;
 class SSLCertRequestInfo;
 class SSLInfo;
+
+using SignedEkmMap = base::MRUCache<std::string, std::vector<uint8_t>>;
 
 // An SSL client socket implemented with OpenSSL.
 class SSLClientSocketOpenSSL : public SSLClientSocket {
@@ -72,6 +76,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override;
   SSLFailureState GetSSLFailureState() const override;
 
   // SSLSocket implementation.
@@ -301,6 +307,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   ChannelIDService* channel_id_service_;
   bool tb_was_negotiated_;
   TokenBindingParam tb_negotiated_param_;
+  SignedEkmMap tb_signed_ekm_map_;
 
   // OpenSSL stuff
   SSL* ssl_;

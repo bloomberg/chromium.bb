@@ -337,6 +337,7 @@ crypto::ECSignatureCreator* MockECSignatureCreatorFactory::Create(
 SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
     : host_resolver(new MockCachingHostResolver),
       cert_verifier(new MockCertVerifier),
+      channel_id_service(nullptr),
       transport_security_state(new TransportSecurityState),
       proxy_service(ProxyService::CreateDirect()),
       ssl_config_service(new SSLConfigServiceDefaults),
@@ -372,6 +373,7 @@ SpdySessionDependencies::SpdySessionDependencies(
     scoped_ptr<ProxyService> proxy_service)
     : host_resolver(new MockHostResolver),
       cert_verifier(new MockCertVerifier),
+      channel_id_service(nullptr),
       transport_security_state(new TransportSecurityState),
       proxy_service(std::move(proxy_service)),
       ssl_config_service(new SSLConfigServiceDefaults),
@@ -416,6 +418,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   HttpNetworkSession::Params params;
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
+  params.channel_id_service = session_deps->channel_id_service.get();
   params.transport_security_state =
       session_deps->transport_security_state.get();
   params.proxy_service = session_deps->proxy_service.get();

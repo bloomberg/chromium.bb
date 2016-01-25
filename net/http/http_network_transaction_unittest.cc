@@ -75,6 +75,7 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -14413,6 +14414,12 @@ class FakeStream : public HttpStream,
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
 
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override {
+    ADD_FAILURE();
+    return ERR_NOT_IMPLEMENTED;
+  }
+
   void Drain(HttpNetworkSession* session) override { ADD_FAILURE(); }
 
   void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
@@ -14643,6 +14650,12 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   }
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
+
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override {
+    ADD_FAILURE();
+    return ERR_NOT_IMPLEMENTED;
+  }
 
   void Drain(HttpNetworkSession* session) override { NOTREACHED(); }
 
@@ -15801,5 +15814,42 @@ TEST_P(HttpNetworkTransactionTest, DisableNPN) {
               testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
   EXPECT_TRUE(trans.server_ssl_config_.npn_protos.empty());
 }
+
+#if !defined(OS_IOS)
+TEST_P(HttpNetworkTransactionTest, TokenBindingSpdy) {
+  const std::string https_url = "https://www.example.com";
+  HttpRequestInfo request;
+  request.url = GURL(https_url);
+  request.method = "GET";
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.token_binding_negotiated = true;
+  ssl.token_binding_key_param = TB_PARAM_ECDSAP256;
+  ssl.SetNextProto(GetProtocol());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  scoped_ptr<SpdyFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockRead reads[] = {CreateMockRead(*resp), CreateMockRead(*body),
+                      MockRead(ASYNC, ERR_IO_PENDING)};
+  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.channel_id_service.reset(new ChannelIDService(
+      new DefaultChannelIDStore(nullptr), base::ThreadTaskRunnerHandle::Get()));
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans.Start(&request, callback.callback(), BoundNetLog()));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_TRUE(trans.GetResponseInfo()->was_fetched_via_spdy);
+  HttpRequestHeaders headers;
+  ASSERT_TRUE(trans.GetFullRequestHeaders(&headers));
+  EXPECT_TRUE(headers.HasHeader(HttpRequestHeaders::kTokenBinding));
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace net

@@ -1115,6 +1115,9 @@ EVENT_TYPE(HTTP_TRANSACTION_READ_BODY)
 // restarting for authentication, on keep alive connections.
 EVENT_TYPE(HTTP_TRANSACTION_DRAIN_BODY_FOR_AUTH_RESTART)
 
+// Measures the time taken to look up the key used for Token Binding.
+EVENT_TYPE(HTTP_TRANSACTION_GET_TOKEN_BINDING_KEY)
+
 // This event is sent when we try to restart a transaction after an error.
 // The following parameters are attached:
 //   {

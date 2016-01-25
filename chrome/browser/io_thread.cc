@@ -455,8 +455,8 @@ IOThread::Globals::Globals()
       ignore_certificate_errors(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
-      enable_user_alternate_protocol_ports(false) {
-}
+      enable_user_alternate_protocol_ports(false),
+      enable_token_binding(false) {}
 
 IOThread::Globals::~Globals() {}
 
@@ -847,6 +847,9 @@ void IOThread::Init() {
   }
   globals_->enable_brotli.set(
       base::FeatureList::IsEnabled(features::kBrotliEncoding));
+  if (command_line.HasSwitch(switches::kEnableTokenBinding)) {
+    globals_->enable_token_binding = true;
+  }
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile13(
@@ -1188,6 +1191,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
       globals.enable_user_alternate_protocol_ports;
+  params->enable_token_binding = globals.enable_token_binding;
 }
 
 base::TimeTicks IOThread::creation_time() const {

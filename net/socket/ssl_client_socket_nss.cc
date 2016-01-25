@@ -3179,6 +3179,13 @@ ChannelIDService* SSLClientSocketNSS::GetChannelIDService() const {
   return channel_id_service_;
 }
 
+Error SSLClientSocketNSS::GetSignedEKMForTokenBinding(
+    crypto::ECPrivateKey* key,
+    std::vector<uint8_t>* out) {
+  NOTREACHED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
 SSLFailureState SSLClientSocketNSS::GetSSLFailureState() const {
   if (completed_handshake_)
     return SSL_FAILURE_NONE;

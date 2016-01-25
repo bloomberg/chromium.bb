@@ -545,6 +545,9 @@ const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 // instant-extended-api, where thumbnails are generally smaller.
 const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
 
+// Enables token binding (draft-ietf-tokbind-protocol-02).
+const char kEnableTokenBinding[] = "enable-token-binding";
+
 // Enables Alternate-Protocol when the port is user controlled (> 1024).
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";

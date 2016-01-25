@@ -111,6 +111,7 @@ void TestURLRequestContext::Init() {
     params.network_delegate = network_delegate();
     params.http_server_properties = http_server_properties();
     params.net_log = net_log();
+    params.channel_id_service = channel_id_service();
     context_storage_.set_http_network_session(
         make_scoped_ptr(new HttpNetworkSession(params)));
     context_storage_.set_http_transaction_factory(make_scoped_ptr(

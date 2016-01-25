@@ -27626,6 +27626,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.TokenBinding.Support" enum="TokenBinding.Support">
+  <owner>nharper@chromium.org</owner>
+  <summary>
+    The number of secure HTTP requests broken down by support for Token Binding,
+    indicating if Token Binding was negotiated and supported by both client and
+    server, or why it wasn't if not.
+  </summary>
+</histogram>
+
 <histogram name="Net.Transaction_Bandwidth" units="KB/s">
   <obsolete>
     Discontinued as of 4/12/09
@@ -79804,6 +79813,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="TLSRenegotiationPatched" type="int">
   <int value="0" label="Not renegotiation patched"/>
   <int value="1" label="Renegotiation patched"/>
+</enum>
+
+<enum name="TokenBinding.Support" type="int">
+  <int value="0" label="DISABLED"/>
+  <int value="1" label="CLIENT_ONLY"/>
+  <int value="2" label="CLIENT_AND_SERVER"/>
+  <int value="3" label="CLIENT_NO_CHANNEL_ID_SERVICE"/>
 </enum>
 
 <enum name="TouchEventsState" type="int">

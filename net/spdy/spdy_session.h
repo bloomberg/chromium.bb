@@ -357,6 +357,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                   bool* was_npn_negotiated,
                   NextProto* protocol_negotiated);
 
+  // Signs the EKM value for Token Binding from the TLS layer using |*key| and
+  // puts the result in |*out|. Returns OK or ERR_FAILED.
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out);
+
   // Send a WINDOW_UPDATE frame for a stream. Called by a stream
   // whenever receive window size is increased.
   void SendStreamWindowUpdate(SpdyStreamId stream_id,

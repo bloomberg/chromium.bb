@@ -129,7 +129,8 @@ HttpNetworkSession::Params::Params()
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_disable_preconnect_if_0rtt(false),
       quic_migrate_sessions_on_network_change(false),
-      proxy_delegate(NULL) {
+      proxy_delegate(NULL),
+      enable_token_binding(false) {
   quic_supported_versions.push_back(QUIC_VERSION_25);
 }
 

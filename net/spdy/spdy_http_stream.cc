@@ -570,6 +570,11 @@ bool SpdyHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   return spdy_session_->GetPeerAddress(endpoint) == OK;
 }
 
+Error SpdyHttpStream::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                                  std::vector<uint8_t>* out) {
+  return spdy_session_->GetSignedEKMForTokenBinding(key, out);
+}
+
 void SpdyHttpStream::Drain(HttpNetworkSession* session) {
   NOTREACHED();
   Close(false);

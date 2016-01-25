@@ -287,7 +287,8 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
       client_cert_sent(false),
       cert_request_info(NULL),
       channel_id_sent(false),
-      connection_status(0) {
+      connection_status(0),
+      token_binding_negotiated(false) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
                                 &connection_status);
   // Set to TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
@@ -826,6 +827,12 @@ ChannelIDService* MockClientSocket::GetChannelIDService() const {
   return NULL;
 }
 
+Error MockClientSocket::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                                    std::vector<uint8_t>* out) {
+  NOTREACHED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
 SSLFailureState MockClientSocket::GetSSLFailureState() const {
   return IsConnected() ? SSL_FAILURE_NONE : SSL_FAILURE_UNKNOWN;
 }
@@ -1199,6 +1206,8 @@ bool MockSSLClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->client_cert_sent = data_->client_cert_sent;
   ssl_info->channel_id_sent = data_->channel_id_sent;
   ssl_info->connection_status = data_->connection_status;
+  ssl_info->token_binding_negotiated = data_->token_binding_negotiated;
+  ssl_info->token_binding_key_param = data_->token_binding_key_param;
   return true;
 }
 
@@ -1222,6 +1231,13 @@ SSLClientSocket::NextProtoStatus MockSSLClientSocket::GetNextProto(
 
 ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
   return data_->channel_id_service;
+}
+
+Error MockSSLClientSocket::GetSignedEKMForTokenBinding(
+    crypto::ECPrivateKey* key,
+    std::vector<uint8_t>* out) {
+  out->push_back('A');
+  return OK;
 }
 
 void MockSSLClientSocket::OnReadComplete(const MockRead& data) {

@@ -522,6 +522,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       channel_id_service_(context.channel_id_service),
       tb_was_negotiated_(false),
       tb_negotiated_param_(TB_PARAM_ECDSAP256),
+      tb_signed_ekm_map_(10),
       ssl_(NULL),
       transport_bio_(NULL),
       transport_(std::move(transport_socket)),
@@ -571,6 +572,47 @@ SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
 ChannelIDService*
 SSLClientSocketOpenSSL::GetChannelIDService() const {
   return channel_id_service_;
+}
+
+Error SSLClientSocketOpenSSL::GetSignedEKMForTokenBinding(
+    crypto::ECPrivateKey* key,
+    std::vector<uint8_t>* out) {
+  // The same key will be used across multiple requests to sign the same value,
+  // so the signature is cached.
+  std::string raw_public_key;
+  if (!key->ExportRawPublicKey(&raw_public_key))
+    return ERR_FAILED;
+  SignedEkmMap::iterator it = tb_signed_ekm_map_.Get(raw_public_key);
+  if (it != tb_signed_ekm_map_.end()) {
+    *out = it->second;
+    return OK;
+  }
+
+  uint8_t tb_ekm_buf[32];
+  static const char kTokenBindingExporterLabel[] = "EXPORTER-Token-Binding";
+  if (!SSL_export_keying_material(ssl_, tb_ekm_buf, sizeof(tb_ekm_buf),
+                                  kTokenBindingExporterLabel,
+                                  strlen(kTokenBindingExporterLabel), nullptr,
+                                  0, false /* no context */)) {
+    return ERR_FAILED;
+  }
+
+  size_t sig_len;
+  crypto::ScopedEVP_PKEY_CTX pctx(EVP_PKEY_CTX_new(key->key(), nullptr));
+  if (!EVP_PKEY_sign_init(pctx.get()) ||
+      !EVP_PKEY_sign(pctx.get(), nullptr, &sig_len, tb_ekm_buf,
+                     sizeof(tb_ekm_buf))) {
+    return ERR_FAILED;
+  }
+  out->resize(sig_len);
+  if (!EVP_PKEY_sign(pctx.get(), out->data(), &sig_len, tb_ekm_buf,
+                     sizeof(tb_ekm_buf))) {
+    return ERR_FAILED;
+  }
+  out->resize(sig_len);
+
+  tb_signed_ekm_map_.Put(raw_public_key, *out);
+  return OK;
 }
 
 SSLFailureState SSLClientSocketOpenSSL::GetSSLFailureState() const {

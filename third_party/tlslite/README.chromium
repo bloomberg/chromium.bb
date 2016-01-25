@@ -45,3 +45,7 @@ Local Modifications:
   binding negotiation TLS extension (draft-ietf-tokbind-negotiation-00)
 - patches/disable_channel_id.patch: Add flag to HandshakeSettings to allow
   for disabling channel id.
+- patches/exported_keying_material.patch: Add method to Session to get
+  exported keying material (RFC 5705) for use in e.g. Token Binding.
+- patches/token_binding_resumption.patch: Fix token binding negotiation
+  extension to work on session resumption.

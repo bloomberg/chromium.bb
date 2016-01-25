@@ -181,6 +181,8 @@ class TLSConnection(TLSRecordLayer):
         @type sock: L{socket.socket}
         """
         TLSRecordLayer.__init__(self, sock)
+        self.clientRandom = b""
+        self.serverRandom = b""
 
     #*********************************************************
     # Client Handshake Functions
@@ -606,6 +608,9 @@ class TLSConnection(TLSRecordLayer):
                 else: break
         masterSecret = result
         
+        self.clientRandom = clientHello.random
+        self.serverRandom = serverHello.random
+
         # Create the session object which is used for resumptions
         self.session = Session()
         self.session.create(masterSecret, serverHello.session_id, cipherSuite,
@@ -1398,6 +1403,9 @@ class TLSConnection(TLSRecordLayer):
                 else: break
         masterSecret = result
 
+        self.clientRandom = clientHello.random
+        self.serverRandom = serverHello.random
+
         #Create the session object
         self.session = Session()
         if cipherSuite in CipherSuite.certAllSuites:        
@@ -1536,6 +1544,10 @@ class TLSConnection(TLSRecordLayer):
                 serverHello.extended_master_secret = \
                     clientHello.extended_master_secret and \
                     settings.enableExtendedMasterSecret
+                for param in clientHello.tb_client_params:
+                    if param in settings.supportedTokenBindingParams:
+                          serverHello.tb_params = param
+                          break
                 for result in self._sendMsg(serverHello):
                     yield result
 
@@ -2013,3 +2025,22 @@ class TLSConnection(TLSRecordLayer):
             except:
                 self._shutdown(False)
                 raise
+
+
+    def exportKeyingMaterial(self, label, context, use_context, length):
+        """Returns the exported keying material as defined in RFC 5705."""
+
+        seed = self.clientRandom + self.serverRandom
+        if use_context:
+            if len(context) > 65535:
+                raise ValueError("Context is too long")
+            seed += bytearray(2)
+            seed[len(seed) - 2] = len(context) >> 8
+            seed[len(seed) - 1] = len(context) & 0xFF
+            seed += context
+        if self.version in ((3,1), (3,2)):
+            return PRF(self.session.masterSecret, label, seed, length)
+        elif self.version == (3,3):
+            return PRF_1_2(self.session.masterSecret, label, seed, length)
+        else:
+            raise AssertionError()

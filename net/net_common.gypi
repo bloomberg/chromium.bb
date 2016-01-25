@@ -136,6 +136,7 @@
           'socket/ssl_client_socket_nss.h',
           'socket/ssl_server_socket_nss.cc',
           'socket/ssl_server_socket_nss.h',
+          'ssl/token_binding_nss.cc',
         ],
         'dependencies': [
           '../third_party/boringssl/boringssl.gyp:boringssl',
@@ -189,6 +190,7 @@
           'ssl/ssl_platform_key_task_runner.h',
           'ssl/threaded_ssl_private_key.cc',
           'ssl/threaded_ssl_private_key.h',
+          'ssl/token_binding_openssl.cc',
         ],
       },
     ],

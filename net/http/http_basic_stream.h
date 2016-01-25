@@ -76,6 +76,9 @@ class HttpBasicStream : public HttpStream {
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
 
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override;
+
   void Drain(HttpNetworkSession* session) override;
 
   void PopulateNetErrorDetails(NetErrorDetails* details) override;

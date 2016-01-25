@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "crypto/ec_private_key.h"
 #include "net/base/net_error_details.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
@@ -24,9 +25,14 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/connection_attempts.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_failure_state.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
+
+namespace crypto {
+class ECPrivateKey;
+}
 
 namespace net {
 
@@ -149,6 +155,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
     STATE_GENERATE_PROXY_AUTH_TOKEN_COMPLETE,
     STATE_GENERATE_SERVER_AUTH_TOKEN,
     STATE_GENERATE_SERVER_AUTH_TOKEN_COMPLETE,
+    STATE_GET_TOKEN_BINDING_KEY,
+    STATE_GET_TOKEN_BINDING_KEY_COMPLETE,
     STATE_INIT_REQUEST_BODY,
     STATE_INIT_REQUEST_BODY_COMPLETE,
     STATE_BUILD_REQUEST,
@@ -165,6 +173,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   };
 
   bool IsSecureRequest() const;
+  bool IsTokenBindingEnabled() const;
+  void RecordTokenBindingSupport() const;
 
   // Returns true if the request is using an HTTP(S) proxy without being
   // tunneled via the CONNECT method.
@@ -189,6 +199,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int DoGenerateProxyAuthTokenComplete(int result);
   int DoGenerateServerAuthToken();
   int DoGenerateServerAuthTokenComplete(int result);
+  int DoGetTokenBindingKey();
+  int DoGetTokenBindingKeyComplete(int result);
   int DoInitRequestBody();
   int DoInitRequestBodyComplete(int result);
   int DoBuildRequest();
@@ -202,7 +214,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int DoDrainBodyForAuthRestart();
   int DoDrainBodyForAuthRestartComplete(int result);
 
-  void BuildRequestHeaders(bool using_http_proxy_without_tunnel);
+  int BuildRequestHeaders(bool using_http_proxy_without_tunnel);
+  int BuildTokenBindingHeader(std::string* out);
 
   // Writes a log message to help debugging in the field when we block a proxy
   // response to a CONNECT request.
@@ -327,6 +340,11 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int fallback_error_code_;
   // The SSLFailureState which caused the last TLS version fallback.
   SSLFailureState fallback_failure_state_;
+
+  // Key to use for signing message in Token Binding header.
+  scoped_ptr<crypto::ECPrivateKey> token_binding_key_;
+  // Object to manage lookup of |token_binding_key_|.
+  ChannelIDService::Request token_binding_request_;
 
   HttpRequestHeaders request_headers_;
 

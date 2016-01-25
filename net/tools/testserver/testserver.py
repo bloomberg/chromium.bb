@@ -340,6 +340,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
       self.GetChannelID,
+      self.GetTokenBindingEKM,
       self.GetClientCert,
       self.ClientCipherListHandler,
       self.CloseSocketHandler,
@@ -1514,6 +1515,21 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.end_headers()
     channel_id = bytes(self.server.tlsConnection.channel_id)
     self.wfile.write(hashlib.sha256(channel_id).digest().encode('base64'))
+    return True
+
+  def GetTokenBindingEKM(self):
+    """Send a reply containing the EKM value for token binding from the TLS
+    layer."""
+
+    if not self._ShouldHandleRequest('/tokbind-ekm'):
+      return False
+
+    ekm = self.server.tlsConnection.exportKeyingMaterial(
+        "EXPORTER-Token-Binding", "", False, 32)
+    self.send_response(200)
+    self.send_header('Content-Type', 'application/octet-stream')
+    self.end_headers()
+    self.wfile.write(ekm)
     return True
 
   def GetClientCert(self):

@@ -191,6 +191,8 @@ class NET_EXPORT HttpNetworkSession
     // changes.
     bool quic_migrate_sessions_on_network_change;
     ProxyDelegate* proxy_delegate;
+    // Enable support for Token Binding.
+    bool enable_token_binding;
   };
 
   enum SocketPoolType {

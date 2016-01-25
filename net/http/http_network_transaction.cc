@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -62,6 +63,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
+#include "net/ssl/token_binding.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
@@ -200,6 +202,11 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   // Channel ID is disabled if privacy mode is enabled for this request.
   if (request_->privacy_mode == PRIVACY_MODE_ENABLED)
     server_ssl_config_.channel_id_enabled = false;
+
+  if (session_->params().enable_token_binding &&
+      session_->params().channel_id_service) {
+    server_ssl_config_.token_binding_params.push_back(TB_PARAM_ECDSAP256);
+  }
 
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
   int rv = DoLoop(OK);
@@ -639,6 +646,42 @@ bool HttpNetworkTransaction::IsSecureRequest() const {
   return request_->url.SchemeIsCryptographic();
 }
 
+bool HttpNetworkTransaction::IsTokenBindingEnabled() const {
+  if (!IsSecureRequest())
+    return false;
+  SSLInfo ssl_info;
+  stream_->GetSSLInfo(&ssl_info);
+  return ssl_info.token_binding_negotiated &&
+         ssl_info.token_binding_key_param == TB_PARAM_ECDSAP256 &&
+         session_->params().channel_id_service;
+}
+
+void HttpNetworkTransaction::RecordTokenBindingSupport() const {
+  // This enum is used for an UMA histogram - do not change or re-use values.
+  enum {
+    DISABLED = 0,
+    CLIENT_ONLY = 1,
+    CLIENT_AND_SERVER = 2,
+    CLIENT_NO_CHANNEL_ID_SERVICE = 3,
+    TOKEN_BINDING_SUPPORT_MAX
+  } supported;
+  if (!IsSecureRequest())
+    return;
+  SSLInfo ssl_info;
+  stream_->GetSSLInfo(&ssl_info);
+  if (!session_->params().enable_token_binding) {
+    supported = DISABLED;
+  } else if (!session_->params().channel_id_service) {
+    supported = CLIENT_NO_CHANNEL_ID_SERVICE;
+  } else if (ssl_info.token_binding_negotiated) {
+    supported = CLIENT_AND_SERVER;
+  } else {
+    supported = CLIENT_ONLY;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.TokenBinding.Support", supported,
+                            TOKEN_BINDING_SUPPORT_MAX);
+}
+
 bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
   return (proxy_info_.is_http() || proxy_info_.is_https() ||
           proxy_info_.is_quic()) &&
@@ -700,6 +743,13 @@ int HttpNetworkTransaction::DoLoop(int result) {
         break;
       case STATE_GENERATE_SERVER_AUTH_TOKEN_COMPLETE:
         rv = DoGenerateServerAuthTokenComplete(rv);
+        break;
+      case STATE_GET_TOKEN_BINDING_KEY:
+        DCHECK_EQ(OK, rv);
+        rv = DoGetTokenBindingKey();
+        break;
+      case STATE_GET_TOKEN_BINDING_KEY_COMPLETE:
+        rv = DoGetTokenBindingKeyComplete(rv);
         break;
       case STATE_INIT_REQUEST_BODY:
         DCHECK_EQ(OK, rv);
@@ -916,11 +966,34 @@ int HttpNetworkTransaction::DoGenerateServerAuthToken() {
 int HttpNetworkTransaction::DoGenerateServerAuthTokenComplete(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv == OK)
-    next_state_ = STATE_INIT_REQUEST_BODY;
+    next_state_ = STATE_GET_TOKEN_BINDING_KEY;
   return rv;
 }
 
-void HttpNetworkTransaction::BuildRequestHeaders(
+int HttpNetworkTransaction::DoGetTokenBindingKey() {
+  next_state_ = STATE_GET_TOKEN_BINDING_KEY_COMPLETE;
+  if (!IsTokenBindingEnabled())
+    return OK;
+
+  net_log_.BeginEvent(NetLog::TYPE_HTTP_TRANSACTION_GET_TOKEN_BINDING_KEY);
+  ChannelIDService* channel_id_service = session_->params().channel_id_service;
+  return channel_id_service->GetOrCreateChannelID(
+      request_->url.host(), &token_binding_key_, io_callback_,
+      &token_binding_request_);
+}
+
+int HttpNetworkTransaction::DoGetTokenBindingKeyComplete(int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  next_state_ = STATE_INIT_REQUEST_BODY;
+  if (!IsTokenBindingEnabled())
+    return OK;
+
+  net_log_.EndEventWithNetErrorCode(
+      NetLog::TYPE_HTTP_TRANSACTION_GET_TOKEN_BINDING_KEY, rv);
+  return rv;
+}
+
+int HttpNetworkTransaction::BuildRequestHeaders(
     bool using_http_proxy_without_tunnel) {
   request_headers_.SetHeader(HttpRequestHeaders::kHost,
                              GetHostAndOptionalPort(request_->url));
@@ -953,6 +1026,16 @@ void HttpNetworkTransaction::BuildRequestHeaders(
     request_headers_.SetHeader(HttpRequestHeaders::kContentLength, "0");
   }
 
+  RecordTokenBindingSupport();
+  if (token_binding_key_) {
+    std::string token_binding_header;
+    int rv = BuildTokenBindingHeader(&token_binding_header);
+    if (rv != OK)
+      return rv;
+    request_headers_.SetHeader(HttpRequestHeaders::kTokenBinding,
+                               token_binding_header);
+  }
+
   // Honor load flags that impact proxy caches.
   if (request_->load_flags & LOAD_BYPASS_CACHE) {
     request_headers_.SetHeader(HttpRequestHeaders::kPragma, "no-cache");
@@ -977,6 +1060,29 @@ void HttpNetworkTransaction::BuildRequestHeaders(
   response_.did_use_http_auth =
       request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||
       request_headers_.HasHeader(HttpRequestHeaders::kProxyAuthorization);
+  return OK;
+}
+
+int HttpNetworkTransaction::BuildTokenBindingHeader(std::string* out) {
+  std::vector<uint8_t> signed_ekm;
+  int rv = stream_->GetSignedEKMForTokenBinding(token_binding_key_.get(),
+                                                &signed_ekm);
+  if (rv != OK)
+    return rv;
+  std::string provided_token_binding;
+  rv = BuildProvidedTokenBinding(token_binding_key_.get(), signed_ekm,
+                                 &provided_token_binding);
+  if (rv != OK)
+    return rv;
+  std::vector<base::StringPiece> token_bindings;
+  token_bindings.push_back(provided_token_binding);
+  std::string header;
+  rv = BuildTokenBindingMessageFromTokenBindings(token_bindings, &header);
+  if (rv != OK)
+    return rv;
+  base::Base64UrlEncode(header, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        out);
+  return OK;
 }
 
 int HttpNetworkTransaction::DoInitRequestBody() {
@@ -1001,7 +1107,7 @@ int HttpNetworkTransaction::DoBuildRequest() {
   // we have proxy info available.
   if (request_headers_.IsEmpty()) {
     bool using_http_proxy_without_tunnel = UsingHttpProxyWithoutTunnel();
-    BuildRequestHeaders(using_http_proxy_without_tunnel);
+    return BuildRequestHeaders(using_http_proxy_without_tunnel);
   }
 
   return OK;
@@ -1486,6 +1592,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   remote_endpoint_ = IPEndPoint();
   net_error_details_.quic_broken = false;
   net_error_details_.quic_connection_error = QUIC_NO_ERROR;
+  token_binding_key_.reset();
 }
 
 void HttpNetworkTransaction::CacheNetErrorDetailsAndResetStream() {

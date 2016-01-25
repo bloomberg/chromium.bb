@@ -99,6 +99,8 @@ class SSLClientSocketNSS : public SSLClientSocket {
 
   // SSLClientSocket implementation.
   ChannelIDService* GetChannelIDService() const override;
+  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
+                                    std::vector<uint8_t>* out) override;
   SSLFailureState GetSSLFailureState() const override;
 
  private:
