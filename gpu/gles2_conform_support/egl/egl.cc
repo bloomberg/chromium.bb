@@ -154,6 +154,11 @@ EGLAPI EGLBoolean EGLAPIENTRY eglTerminate(EGLDisplay dpy) {
   egl::Display* display = static_cast<egl::Display*>(dpy);
   delete display;
 
+  // TODO: EGL specifies that the objects are marked for deletion and they will
+  // remain alive as long as "contexts or surfaces associated with display is
+  // current to any thread".
+  // Currently we delete the display here, and may also call exit handlers.
+
   return EglSuccess(EGL_TRUE);
 }
 

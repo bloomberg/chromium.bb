@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
@@ -29,21 +30,49 @@ const int32_t kTransferBufferSize = 512 * 1024;
 }
 
 namespace egl {
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+// egl::Display is used for comformance tests and command_buffer_gles.  We only
+// need the exit manager for the command_buffer_gles library.
+// TODO(hendrikw): Find a cleaner solution for this.
+namespace {
+base::LazyInstance<base::Lock>::Leaky g_exit_manager_lock;
+int g_exit_manager_use_count;
+base::AtExitManager* g_exit_manager;
+void RefAtExitManager() {
+  base::AutoLock lock(g_exit_manager_lock.Get());
+  if (g_exit_manager_use_count == 0) {
+    g_exit_manager = new base::AtExitManager;
+  }
+  ++g_exit_manager_use_count;
+}
+void ReleaseAtExitManager() {
+  base::AutoLock lock(g_exit_manager_lock.Get());
+  --g_exit_manager_use_count;
+  if (g_exit_manager_use_count == 0) {
+    delete g_exit_manager;
+    g_exit_manager = nullptr;
+  }
+}
+}
+#endif
 
 Display::Display(EGLNativeDisplayType display_id)
     : display_id_(display_id),
       is_initialized_(false),
-#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
-      exit_manager_(new base::AtExitManager),
-#endif
       create_offscreen_(false),
       create_offscreen_width_(0),
       create_offscreen_height_(0),
       next_fence_sync_release_(1) {
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+  RefAtExitManager();
+#endif
 }
 
 Display::~Display() {
   gles2::Terminate();
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+  ReleaseAtExitManager();
+#endif
 }
 
 bool Display::Initialize() {
