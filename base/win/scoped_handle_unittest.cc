@@ -2,16 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
-#include <winternl.h>
-
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace base {
-namespace win {
 
 TEST(ScopedHandleTest, ScopedHandle) {
   // Any illegal error code will do. We just need to test that it is preserved
@@ -37,72 +30,3 @@ TEST(ScopedHandleTest, ScopedHandle) {
   handle_holder = handle_source.Pass();
   EXPECT_EQ(magic_error, ::GetLastError());
 }
-
-TEST(ScopedHandleTest, ActiveVerifierCloseTracked) {
-#if defined(_DEBUG)
-  // Handle hooks cause shutdown asserts in Debug on Windows 7. crbug.com/571304
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
-#endif
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder(handle);
-    // Calling CloseHandle on a tracked handle should crash.
-    ::CloseHandle(handle);
-  }, "CloseHandle called on tracked handle.");
-}
-
-TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-  typedef NTSTATUS(WINAPI * NtCloseFunc)(HANDLE);
-  NtCloseFunc ntclose = reinterpret_cast<NtCloseFunc>(
-      GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtClose"));
-  ASSERT_NE(nullptr, ntclose);
-
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder(handle);
-    ntclose(handle);
-    // Destructing a ScopedHandle with an illegally closed handle should fail.
-  }, "CloseHandle failed.");
-}
-
-TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-
-  base::win::ScopedHandle handle_holder(handle);
-
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder2(handle);
-  }, "Attempt to start tracking already tracked handle.");
-}
-
-TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-
-  base::win::ScopedHandle handle_holder(handle);
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder2;
-    handle_holder2.handle_ = handle;
-  }, "Attempting to close a handle not owned by opener.");
-  ASSERT_TRUE(handle_holder.IsValid());
-  handle_holder.Close();
-}
-
-TEST(ScopedHandleTest, ActiveVerifierUntrackedHandle) {
-  HANDLE handle = ::CreateMutex(nullptr, FALSE, nullptr);
-  ASSERT_NE(HANDLE(NULL), handle);
-
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder;
-    handle_holder.handle_ = handle;
-  }, "Attempting to close an untracked handle.");
-
-  ASSERT_TRUE(::CloseHandle(handle));
-}
-
-}  // namespace win
-}  // namespace base

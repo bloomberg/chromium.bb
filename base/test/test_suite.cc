@@ -40,10 +40,7 @@
 #endif  // OS_IOS
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN)
-#include "base/debug/close_handle_hook_win.h"
-#include "base/win/windows_version.h"
-#else
+#if !defined(OS_WIN)
 #include "base/i18n/rtl.h"
 #if !defined(OS_IOS)
 #include "base/strings/string_util.h"
@@ -320,14 +317,6 @@ void TestSuite::Initialize() {
 
   CHECK(debug::EnableInProcessStackDumping());
 #if defined(OS_WIN)
-#if defined(_DEBUG)
-  // Handle hooks cause shutdown asserts in Debug on Windows 7. crbug.com/571304
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    base::debug::InstallHandleHooks();
-#else
-  base::debug::InstallHandleHooks();
-#endif
-
   RouteStdioToConsole(true);
   // Make sure we run with high resolution timer to minimize differences
   // between production code and test code.
