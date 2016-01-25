@@ -35,23 +35,13 @@
 
 namespace blink {
 
-#if ENABLE(OILPAN)
 // TODO(Oilpan): once GeolocationController is always on the heap,
 // shorten out this GeolocationControllerPrivate intermediary.
-class GeolocationControllerPrivate : public GeolocationController {
+class GeolocationControllerPrivate final : public RefCountedWillBeGarbageCollected<GeolocationControllerPrivate> {
 public:
-    static GeolocationController& controller(const WebPrivatePtr<GeolocationControllerPrivate>& controller)
+    static PassRefPtrWillBeRawPtr<GeolocationControllerPrivate> create(GeolocationController* controller)
     {
-        ASSERT(!controller.isNull());
-        return *controller;
-    }
-};
-#else
-class GeolocationControllerPrivate final : public RefCounted<GeolocationControllerPrivate> {
-public:
-    static PassRefPtr<GeolocationControllerPrivate> create(GeolocationController* controller)
-    {
-        return adoptRef(new GeolocationControllerPrivate(controller));
+        return adoptRefWillBeNoop(new GeolocationControllerPrivate(controller));
     }
 
     static GeolocationController& controller(const WebPrivatePtr<GeolocationControllerPrivate>& controller)
@@ -59,6 +49,11 @@ public:
         ASSERT(!controller.isNull());
         ASSERT(controller->m_controller);
         return *controller->m_controller;
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_controller);
     }
 
 private:
@@ -70,16 +65,11 @@ private:
     // Non-Oilpan, this bare pointer is owned as a supplement and kept alive
     // by the frame of the WebLocalFrame which creates the WebGeolocationController
     // object that wraps it all up.
-    GeolocationController* m_controller;
+    RawPtrWillBeMember<GeolocationController> m_controller;
 };
-#endif
 
 WebGeolocationController::WebGeolocationController(GeolocationController* controller)
-#if ENABLE(OILPAN)
-    : m_private(static_cast<GeolocationControllerPrivate*>(controller))
-#else
     : m_private(GeolocationControllerPrivate::create(controller))
-#endif
 {
 }
 
