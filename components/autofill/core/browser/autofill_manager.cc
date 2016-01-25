@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -129,6 +130,7 @@ AutofillManager::AutofillManager(
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_.reset(new AutofillDownloadManager(driver, this));
   }
+  CountryNames::SetLocaleString(app_locale_);
 }
 
 AutofillManager::~AutofillManager() {}
@@ -1135,6 +1137,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       weak_ptr_factory_(this) {
   DCHECK(driver_);
   DCHECK(client_);
+  CountryNames::SetLocaleString(app_locale_);
 }
 
 bool AutofillManager::RefreshDataModels() {

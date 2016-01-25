@@ -26,50 +26,67 @@ namespace autofill {
 // corresponding country codes.
 class CountryNames {
  public:
+  // The first call to this function, causing the creation of CountryNames,
+  // is expensive.
   static CountryNames* GetInstance();
 
+  // Tells CountryNames, what is the application locale. Only the first supplied
+  // value is used, further calls result in no changes.  Call this on the UI
+  // thread, before first using CountryNames. |locale| must not be empty.
+  static void SetLocaleString(std::string locale);
+
   // Returns the country code corresponding to |country|, which should be a
-  // country code or country name localized to |locale_name|. This function
-  // can be expensive so use judiciously.
-  const std::string GetCountryCode(const base::string16& country,
-                                   const std::string& locale_name);
+  // country code or country name localized to |locale_name|.
+  const std::string GetCountryCode(const base::string16& country);
+
+ protected:
+  // Create CountryNames for |locale_name|. Protected for testing.
+  explicit CountryNames(const std::string& locale_name);
+
+  // Protected for testing.
+  ~CountryNames();
 
  private:
+  // Create CountryNames for the default locale.
   CountryNames();
-  ~CountryNames();
+
   friend struct base::DefaultSingletonTraits<CountryNames>;
 
-  // Populates |locales_to_localized_names_| with the mapping of country names
-  // localized to |locale| to their corresponding country codes. Uses a
-  // |collator| which is suitable for the locale.
-  void AddLocalizedNamesForLocale(const std::string& locale,
-                                  const icu::Collator& collator);
-
-  // Interprets |country_name| as a full country name localized to the given
-  // |locale| and returns the corresponding country code stored in
-  // |locales_to_localized_names_|, or an empty string if there is none.
+  // Looks up |country_name| in |localized_names|, using |collator| and
+  // returns the corresponding country code or an empty string if there is
+  // none.
   const std::string GetCountryCodeForLocalizedName(
       const base::string16& country_name,
-      const icu::Locale& locale);
+      const std::map<std::string, std::string>& localized_names,
+      const icu::Collator& collator);
 
   // Returns an ICU collator -- i.e. string comparator -- appropriate for the
   // given |locale|, or null if no collator is available.
   const icu::Collator* GetCollatorForLocale(const icu::Locale& locale);
+
+  // The locale object for the application locale string.
+  const icu::Locale locale_;
+
+  // Collator for the application locale.
+  const scoped_ptr<icu::Collator> collator_;
+
+  // Collator for the "en_US" locale, if different from the application
+  // locale, null otherwise.
+  const scoped_ptr<icu::Collator> default_collator_;
 
   // Maps from common country names, including 2- and 3-letter country codes,
   // to the corresponding 2-letter country codes. The keys are uppercase ASCII
   // strings.
   const std::map<std::string, std::string> common_names_;
 
-  // The outer map keys are ICU locale identifiers.
-  // The inner maps map from localized country names to their corresponding
-  // country codes. The inner map keys are ICU collation sort keys corresponding
-  // to the target localized country name.
-  std::map<std::string, std::map<std::string, std::string>>
-      locales_to_localized_names_;
+  // Maps from localized country names (in the application locale) to their
+  // corresponding country codes. The keys are ICU collation sort keys
+  // corresponding to the target localized country name.
+  const std::map<std::string, std::string> localized_names_;
 
-  // Maps ICU locale names to their corresponding collators.
-  std::map<std::string, scoped_ptr<icu::Collator>> collators_;
+  // The same as |localized_names_| but for the "en_US" locale. Empty if
+  // "en_US" is the application locale already.
+  const std::map<std::string, std::string> default_localized_names_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };

@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -209,7 +210,9 @@ syncer::SyncData ConstructCompleteSyncData() {
 
 class AutofillProfileSyncableServiceTest : public testing::Test {
  public:
-  AutofillProfileSyncableServiceTest() {}
+  AutofillProfileSyncableServiceTest() {
+    CountryNames::SetLocaleString("en-US");
+  }
 
   void SetUp() override { sync_processor_.reset(new MockSyncChangeProcessor); }
 

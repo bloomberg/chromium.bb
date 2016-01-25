@@ -129,8 +129,7 @@ class AutofillProfileSyncableService
   // |specifics|.
   static bool OverwriteProfileWithServerData(
       const sync_pb::AutofillProfileSpecifics& specifics,
-      AutofillProfile* profile,
-      const std::string& app_locale);
+      AutofillProfile* profile);
 
   // Writes |profile| data into supplied |profile_specifics|.
   static void WriteAutofillProfile(const AutofillProfile& profile,

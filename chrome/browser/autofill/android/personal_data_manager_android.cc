@@ -352,8 +352,7 @@ static ScopedJavaLocalRef<jstring> ToCountryCode(
     const JavaParamRef<jstring>& jcountry_name) {
   return ConvertUTF8ToJavaString(
       env, CountryNames::GetInstance()->GetCountryCode(
-               base::android::ConvertJavaStringToUTF16(env, jcountry_name),
-               g_browser_process->GetApplicationLocale()));
+               base::android::ConvertJavaStringToUTF16(env, jcountry_name)));
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -20,6 +21,11 @@
 
 namespace autofill {
 namespace {
+
+// A copy of the application locale string, which should be ready for
+// CountryName's construction.
+static base::LazyInstance<std::string> g_application_locale =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Returns the ICU sort key corresponding to |str| for the given |collator|.
 // Uses |buffer| as temporary storage, and might resize |buffer| as a side-
@@ -74,45 +80,43 @@ std::map<std::string, std::string> GetCommonNames() {
   return common_names;
 }
 
-}  // namespace
+// Creates collator for |locale| and sets its attributes as needed.
+scoped_ptr<icu::Collator> CreateCollator(const icu::Locale& locale) {
+  scoped_ptr<icu::Collator> collator(
+      autofill::l10n::GetCollatorForLocale(locale));
+  if (!collator)
+    return nullptr;
 
-// static
-CountryNames* CountryNames::GetInstance() {
-  return base::Singleton<CountryNames>::get();
+  // Compare case-insensitively and ignoring punctuation.
+  UErrorCode ignored = U_ZERO_ERROR;
+  collator->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
+  ignored = U_ZERO_ERROR;
+  collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
+
+  return collator;
 }
 
-CountryNames::CountryNames() : common_names_(GetCommonNames()) {}
-
-CountryNames::~CountryNames() = default;
-
-const std::string CountryNames::GetCountryCode(const base::string16& country,
-                                               const std::string& locale_name) {
-  // First, check common country names, including 2- and 3-letter country codes.
-  std::string country_utf8 = base::UTF16ToUTF8(base::ToUpperASCII(country));
-  const auto result = common_names_.find(country_utf8);
-  if (result != common_names_.end())
-    return result->second;
-
-  // Next, check country names localized to the current locale.
-  icu::Locale locale(locale_name.c_str());
-  std::string country_code = GetCountryCodeForLocalizedName(country, locale);
-  if (!country_code.empty())
-    return country_code;
-
+// If |locale| is different from "en_US", returns a collator for "en_US" and
+// sets its attributes as appropriate. Otherwise returns null.
+scoped_ptr<icu::Collator> CreateDefaultCollator(const icu::Locale& locale) {
   icu::Locale default_locale("en_US");
-  // Finally, check country names localized to US English, unless done already.
-  if (default_locale != locale)
-    return GetCountryCodeForLocalizedName(country, default_locale);
 
-  return std::string();
+  if (default_locale != locale)
+    return CreateCollator(default_locale);
+
+  return nullptr;
 }
 
-void CountryNames::AddLocalizedNamesForLocale(const std::string& locale,
-                                              const icu::Collator& collator) {
-  // Nothing to do if we've previously added the localized names for the given
-  // |locale|.
-  if (locales_to_localized_names_.count(locale))
-    return;
+// Returns the mapping of country names localized to |locale| to their
+// corresponding country codes. The provided |collator| should be suitable for
+// the locale. The collator being null is handled gracefully by returning an
+// empty map, to account for the very rare cases when the collator fails to
+// initialize.
+std::map<std::string, std::string> GetLocalizedNames(
+    const std::string& locale,
+    const icu::Collator* collator) {
+  if (!collator)
+    return std::map<std::string, std::string>();
 
   std::map<std::string, std::string> localized_names;
   int32_t buffer_size = 1000;
@@ -123,63 +127,88 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale,
     base::string16 country_name =
         l10n_util::GetDisplayNameForCountry(country_code, locale);
     std::string sort_key =
-        GetSortKey(collator, country_name, &buffer, &buffer_size);
+        GetSortKey(*collator, country_name, &buffer, &buffer_size);
 
     localized_names.insert(std::make_pair(sort_key, country_code));
   }
+  return localized_names;
+}
 
-  locales_to_localized_names_.insert(std::make_pair(locale, localized_names));
+}  // namespace
+
+// static
+CountryNames* CountryNames::GetInstance() {
+  return base::Singleton<CountryNames>::get();
+}
+
+// static
+void CountryNames::SetLocaleString(std::string locale) {
+  DCHECK(!locale.empty());
+  // Application locale should never be empty. The empty value of
+  // |g_application_locale| means that it has not been initialized yet.
+  std::string* storage = g_application_locale.Pointer();
+  if (storage->empty()) {
+    *storage = std::move(locale);
+  }
+  // TODO(crbug.com/579971) CountryNames currently cannot adapt to changed
+  // locale without Chrome's restart.
+}
+
+CountryNames::CountryNames(const std::string& locale_name)
+    : locale_(locale_name.c_str()),
+      collator_(CreateCollator(locale_)),
+      default_collator_(CreateDefaultCollator(locale_)),
+      common_names_(GetCommonNames()),
+      localized_names_(GetLocalizedNames(locale_name, collator_.get())),
+      default_localized_names_(
+          GetLocalizedNames("en_US", default_collator_.get())) {}
+
+CountryNames::CountryNames() : CountryNames(g_application_locale.Get()) {
+  DCHECK(!g_application_locale.Get().empty());
+}
+
+CountryNames::~CountryNames() = default;
+
+const std::string CountryNames::GetCountryCode(const base::string16& country) {
+  // First, check common country names, including 2- and 3-letter country codes.
+  std::string country_utf8 = base::UTF16ToUTF8(base::ToUpperASCII(country));
+  const auto result = common_names_.find(country_utf8);
+  if (result != common_names_.end())
+    return result->second;
+
+  // Next, check country names localized to the current locale.
+  std::string country_code =
+      GetCountryCodeForLocalizedName(country, localized_names_, *collator_);
+  if (!country_code.empty())
+    return country_code;
+
+  // Finally, check country names localized to US English, unless done already.
+  if (default_collator_) {
+    return GetCountryCodeForLocalizedName(country, default_localized_names_,
+                                          *default_collator_);
+  }
+
+  return std::string();
 }
 
 const std::string CountryNames::GetCountryCodeForLocalizedName(
     const base::string16& country_name,
-    const icu::Locale& locale) {
-  const icu::Collator* collator = GetCollatorForLocale(locale);
-  // In very rare cases, the collator fails to initialize.
-  if (!collator)
-    return std::string();
-
-  std::string locale_name = locale.getName();
-  AddLocalizedNamesForLocale(locale_name, *collator);
-
+    const std::map<std::string, std::string>& localized_names,
+    const icu::Collator& collator) {
   // As recommended[1] by ICU, initialize the buffer size to four times the
   // source string length.
   // [1] http://userguide.icu-project.org/collation/api#TOC-Examples
   int32_t buffer_size = country_name.size() * 4;
   scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   std::string sort_key =
-      GetSortKey(*collator, country_name, &buffer, &buffer_size);
+      GetSortKey(collator, country_name, &buffer, &buffer_size);
 
-  const std::map<std::string, std::string>& localized_names =
-      locales_to_localized_names_[locale_name];
-  std::map<std::string, std::string>::const_iterator result =
-      localized_names.find(sort_key);
+  auto result = localized_names.find(sort_key);
 
   if (result != localized_names.end())
     return result->second;
 
   return std::string();
-}
-
-const icu::Collator* CountryNames::GetCollatorForLocale(
-    const icu::Locale& locale) {
-  std::string locale_name = locale.getName();
-  if (!ContainsKey(collators_, locale_name)) {
-    scoped_ptr<icu::Collator> collator(
-        autofill::l10n::GetCollatorForLocale(locale));
-    if (!collator)
-      return nullptr;
-
-    // Compare case-insensitively and ignoring punctuation.
-    UErrorCode ignored = U_ZERO_ERROR;
-    collator->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
-    ignored = U_ZERO_ERROR;
-    collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
-
-    collators_[locale_name] = std::move(collator);
-  }
-
-  return collators_[locale_name].get();
 }
 
 }  // namespace autofill

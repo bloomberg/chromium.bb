@@ -39,6 +39,7 @@
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -313,7 +314,9 @@ class TestAutofillDialogController
 
 class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
  protected:
-  AutofillDialogControllerTest(): form_structure_(NULL) {}
+  AutofillDialogControllerTest() : form_structure_(NULL) {
+    CountryNames::SetLocaleString("en-US");
+  }
 
   // testing::Test implementation:
   void SetUp() override {

@@ -11,15 +11,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 
 namespace autofill {
 
+class AddressTest : public testing::Test {
+ public:
+  AddressTest() { CountryNames::SetLocaleString("en-US"); }
+};
+
 // Test that country data can be properly returned as either a country code or a
 // localized country name.
-TEST(AddressTest, GetCountry) {
+TEST_F(AddressTest, GetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -51,7 +57,7 @@ TEST(AddressTest, GetCountry) {
 }
 
 // Test that we properly detect country codes appropriate for each country.
-TEST(AddressTest, SetCountry) {
+TEST_F(AddressTest, SetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -115,7 +121,7 @@ TEST(AddressTest, SetCountry) {
 }
 
 // Test that we properly match typed values to stored country data.
-TEST(AddressTest, IsCountry) {
+TEST_F(AddressTest, IsCountry) {
   Address address;
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
@@ -155,7 +161,7 @@ TEST(AddressTest, IsCountry) {
 }
 
 // Verifies that Address::GetInfo() correctly combines address lines.
-TEST(AddressTest, GetStreetAddress) {
+TEST_F(AddressTest, GetStreetAddress) {
   const AutofillType type = AutofillType(ADDRESS_HOME_STREET_ADDRESS);
 
   // Address has no address lines.
@@ -215,7 +221,7 @@ TEST(AddressTest, GetStreetAddress) {
 
 // Verifies that overwriting an address with N lines with one that has fewer
 // than N lines does not result in an address with blank lines at the end.
-TEST(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
+TEST_F(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
   // Start with an address that has two lines.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -232,7 +238,7 @@ TEST(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
 }
 
 // Verifies that Address::SetRawInfo() is able to split address lines correctly.
-TEST(AddressTest, SetRawStreetAddress) {
+TEST_F(AddressTest, SetRawStreetAddress) {
   const base::string16 empty_street_address;
   const base::string16 short_street_address = ASCIIToUTF16("456 Nowhere Ln.");
   const base::string16 long_street_address =
@@ -265,7 +271,7 @@ TEST(AddressTest, SetRawStreetAddress) {
 }
 
 // Street addresses should be set properly.
-TEST(AddressTest, SetStreetAddress) {
+TEST_F(AddressTest, SetStreetAddress) {
   const base::string16 empty_street_address;
   const base::string16 multi_line_street_address =
       ASCIIToUTF16("789 Fancy Pkwy.\n"
@@ -311,7 +317,7 @@ TEST(AddressTest, SetStreetAddress) {
 
 // Verifies that Address::SetInfio() rejects setting data for
 // ADDRESS_HOME_STREET_ADDRESS if the data has any interior blank lines.
-TEST(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
+TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -334,7 +340,7 @@ TEST(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
 
 // Verifies that Address::SetInfio() rejects setting data for
 // ADDRESS_HOME_STREET_ADDRESS if the data has any leading blank lines.
-TEST(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
+TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -357,7 +363,7 @@ TEST(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
 
 // Verifies that Address::SetInfio() rejects setting data for
 // ADDRESS_HOME_STREET_ADDRESS if the data has any trailing blank lines.
-TEST(AddressTest, SetStreetAddressRejectsAddressesWithTrailingBlankLines) {
+TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithTrailingBlankLines) {
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));

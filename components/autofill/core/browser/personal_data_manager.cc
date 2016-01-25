@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/country_data.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -218,6 +219,8 @@ void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                AccountTrackerService* account_tracker,
                                SigninManagerBase* signin_manager,
                                bool is_off_the_record) {
+  CountryNames::SetLocaleString(app_locale_);
+
   database_ = database;
   SetPrefService(pref_service);
   account_tracker_ = account_tracker;

@@ -39,6 +39,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -429,7 +430,9 @@ class ProfileSyncServiceAutofillTest
   ProfileSyncServiceAutofillTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
         debug_ptr_factory_(this) {
+    autofill::CountryNames::SetLocaleString("en-US");
   }
+
   ~ProfileSyncServiceAutofillTest() override {}
 
   void SetUp() override {
@@ -607,7 +610,7 @@ class ProfileSyncServiceAutofillTest
         AutofillProfile p;
         p.set_guid(autofill.profile().guid());
         AutofillProfileSyncableService::OverwriteProfileWithServerData(
-            autofill.profile(), &p, "en-US");
+            autofill.profile(), &p);
         profiles->push_back(p);
       }
       child_id = child_node.GetSuccessorId();
@@ -633,8 +636,8 @@ class ProfileSyncServiceAutofillTest
           child_node.GetEntitySpecifics().autofill_profile());
         AutofillProfile p;
         p.set_guid(autofill.guid());
-        AutofillProfileSyncableService::OverwriteProfileWithServerData(
-            autofill, &p, "en-US");
+        AutofillProfileSyncableService::OverwriteProfileWithServerData(autofill,
+                                                                       &p);
         profiles->push_back(p);
       child_id = child_node.GetSuccessorId();
     }

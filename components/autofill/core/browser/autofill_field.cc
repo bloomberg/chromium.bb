@@ -174,10 +174,8 @@ bool FillStateSelectControl(const base::string16& value,
 }
 
 bool FillCountrySelectControl(const base::string16& value,
-                              const std::string& app_locale,
                               FormFieldData* field_data) {
-  std::string country_code =
-      CountryNames::GetInstance()->GetCountryCode(value, app_locale);
+  std::string country_code = CountryNames::GetInstance()->GetCountryCode(value);
   if (country_code.empty())
     return false;
 
@@ -188,10 +186,8 @@ bool FillCountrySelectControl(const base::string16& value,
     // target country code.
     base::string16 value = field_data->option_values[i];
     base::string16 contents = field_data->option_contents[i];
-    if (country_code ==
-            CountryNames::GetInstance()->GetCountryCode(value, app_locale) ||
-        country_code ==
-            CountryNames::GetInstance()->GetCountryCode(contents, app_locale)) {
+    if (country_code == CountryNames::GetInstance()->GetCountryCode(value) ||
+        country_code == CountryNames::GetInstance()->GetCountryCode(contents)) {
       field_data->value = value;
       return true;
     }
@@ -349,7 +345,7 @@ bool FillSelectControl(const AutofillType& type,
   if (storable_type == ADDRESS_HOME_STATE) {
     return FillStateSelectControl(value, field);
   } else if (storable_type == ADDRESS_HOME_COUNTRY) {
-    return FillCountrySelectControl(value, app_locale, field);
+    return FillCountrySelectControl(value, field);
   } else if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
              storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
     return FillYearSelectControl(value, field);

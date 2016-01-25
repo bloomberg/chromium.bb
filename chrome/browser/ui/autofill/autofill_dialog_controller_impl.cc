@@ -161,8 +161,8 @@ base::string16 GetInfoFromInputs(const FieldValueMap& inputs,
     info = it->second;
 
   if (!info.empty() && type.html_type() == HTML_TYPE_COUNTRY_CODE) {
-    info = base::ASCIIToUTF16(CountryNames::GetInstance()->GetCountryCode(
-        info, g_browser_process->GetApplicationLocale()));
+    info =
+        base::ASCIIToUTF16(CountryNames::GetInstance()->GetCountryCode(info));
   }
 
   return info;
@@ -241,8 +241,8 @@ ServerFieldType CountryTypeForSection(DialogSection section) {
 
 ValidityMessage GetPhoneValidityMessage(const base::string16& country_name,
                                         const base::string16& number) {
-  std::string region = CountryNames::GetInstance()->GetCountryCode(
-      country_name, g_browser_process->GetApplicationLocale());
+  std::string region =
+      CountryNames::GetInstance()->GetCountryCode(country_name);
   i18n::PhoneObject phone_object(number, region);
   ValidityMessage phone_message(base::string16(), true);
 
@@ -627,8 +627,8 @@ void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
     } else if (!it->initial_value.empty() &&
                (it->type == ADDRESS_BILLING_COUNTRY ||
                 it->type == ADDRESS_HOME_COUNTRY)) {
-      GetValidator()->LoadRules(CountryNames::GetInstance()->GetCountryCode(
-          it->initial_value, g_browser_process->GetApplicationLocale()));
+      GetValidator()->LoadRules(
+          CountryNames::GetInstance()->GetCountryCode(it->initial_value));
     }
   }
 }
@@ -1918,8 +1918,7 @@ std::string AutofillDialogControllerImpl::CountryCodeForSection(
     country = outputs[CountryTypeForSection(section)];
   }
 
-  return CountryNames::GetInstance()->GetCountryCode(
-      country, g_browser_process->GetApplicationLocale());
+  return CountryNames::GetInstance()->GetCountryCode(country);
 }
 
 bool AutofillDialogControllerImpl::RebuildInputsForCountry(
@@ -1930,8 +1929,8 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
   if (!model)
     return false;
 
-  std::string country_code = CountryNames::GetInstance()->GetCountryCode(
-      country_name, g_browser_process->GetApplicationLocale());
+  std::string country_code =
+      CountryNames::GetInstance()->GetCountryCode(country_name);
   DCHECK(CanAcceptCountry(section, country_code));
 
   if (view_ && !should_clobber) {
@@ -1949,8 +1948,8 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
                         MutableAddressLanguageCodeForSection(section));
 
   if (!country_code.empty()) {
-    GetValidator()->LoadRules(CountryNames::GetInstance()->GetCountryCode(
-        country_name, g_browser_process->GetApplicationLocale()));
+    GetValidator()->LoadRules(
+        CountryNames::GetInstance()->GetCountryCode(country_name));
   }
 
   return true;
