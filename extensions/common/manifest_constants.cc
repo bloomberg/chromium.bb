@@ -406,6 +406,7 @@ const char kInvalidHomepageOverrideURL[] =
     "Invalid value for overriding homepage url: '[*]'.";
 const char kInvalidHomepageURL[] =
     "Invalid value for homepage url: '[*]'.";
+const char kInvalidIconKey[] = "Invalid key in icons: \"*\".";
 const char kInvalidIconPath[] =
     "Invalid value for 'icons[\"*\"]'.";
 const char kInvalidIcons[] =

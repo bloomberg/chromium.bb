@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -41,8 +42,13 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
        !iterator.IsAtEnd(); iterator.Advance()) {
     int size = 0;
     std::string icon_path;
-    if (!base::StringToInt(iterator.key(), &size) ||
-        !iterator.value().GetAsString(&icon_path) ||
+    if (!base::StringToInt(iterator.key(), &size) || size <= 0 ||
+        size > extension_misc::EXTENSION_ICON_GIGANTOR * 4) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidIconKey,
+                                                   iterator.key());
+      return false;
+    }
+    if (!iterator.value().GetAsString(&icon_path) ||
         !NormalizeAndValidatePath(&icon_path)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidIconPath,
                                                    iterator.key());

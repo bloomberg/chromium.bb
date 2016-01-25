@@ -126,6 +126,7 @@
       'common/manifest_handlers/default_locale_manifest_unittest.cc',
       'common/manifest_handlers/externally_connectable_unittest.cc',
       'common/manifest_handlers/file_handler_manifest_unittest.cc',
+      'common/manifest_handlers/icons_handler_unittest.cc',
       'common/manifest_handlers/incognito_manifest_unittest.cc',
       'common/manifest_handlers/kiosk_mode_info_unittest.cc',
       'common/manifest_handlers/oauth2_manifest_unittest.cc',

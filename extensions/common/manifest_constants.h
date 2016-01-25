@@ -325,6 +325,7 @@ extern const char kInvalidGlob[];
 extern const char kInvalidGlobList[];
 extern const char kInvalidHomepageOverrideURL[];
 extern const char kInvalidHomepageURL[];
+extern const char kInvalidIconKey[];
 extern const char kInvalidIconPath[];
 extern const char kInvalidIcons[];
 extern const char kInvalidImport[];
