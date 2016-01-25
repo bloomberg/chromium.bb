@@ -17,7 +17,7 @@ namespace {
 // touchpad.
 const float kSwipeThresholdPixels = 300;
 
-}  // namespace;
+}  // namespace
 
 OverviewGestureHandler::OverviewGestureHandler() : scroll_x_(0), scroll_y_(0) {}
 

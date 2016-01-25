@@ -277,4 +277,4 @@ bool layoutObjectContainsPosition(LayoutObject* target, const Position& position
     return false;
 }
 
-} // namespace blink;
+} // namespace blink

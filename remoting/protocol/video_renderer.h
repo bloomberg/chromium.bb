@@ -33,7 +33,7 @@ class VideoRenderer {
   virtual FrameConsumer* GetFrameConsumer() = 0;
 };
 
-}  // namespace protocol;
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_CLIENT_VIDEO_RENDERER_H_

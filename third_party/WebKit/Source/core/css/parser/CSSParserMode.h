@@ -137,6 +137,6 @@ private:
 
 CORE_EXPORT const CSSParserContext& strictCSSParserContext();
 
-} // namespace blink;
+} // namespace blink
 
 #endif // CSSParserMode_h

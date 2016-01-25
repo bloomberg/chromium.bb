@@ -171,7 +171,7 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
                       ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
-}  // namespace;
+}  // namespace
 
 DefaultState::DefaultState(WindowStateType initial_state_type)
     : state_type_(initial_state_type), stored_window_state_(nullptr) {}

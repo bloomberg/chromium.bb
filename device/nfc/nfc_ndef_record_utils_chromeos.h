@@ -10,7 +10,7 @@
 
 namespace device {
 class NfcNdefRecord;
-}  // namespace device;
+}  // namespace device
 
 namespace chromeos {
 namespace nfc_ndef_record_utils {

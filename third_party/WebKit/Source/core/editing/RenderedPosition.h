@@ -117,6 +117,6 @@ inline RenderedPosition::RenderedPosition(LayoutObject* layoutObject, InlineBox*
 
 CORE_EXPORT bool layoutObjectContainsPosition(LayoutObject*, const Position&);
 
-} // namespace blink;
+} // namespace blink
 
 #endif // RenderedPosition_h

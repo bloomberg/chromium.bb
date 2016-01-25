@@ -9,7 +9,7 @@
 
 namespace base {
 class Time;
-}  // namespace base;
+}  // namespace base
 
 namespace autofill {
 

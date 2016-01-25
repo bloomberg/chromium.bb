@@ -581,4 +581,4 @@ void CSSToStyleMap::mapNinePieceImageRepeat(StyleResolverState&, const CSSValue&
     image.setVerticalRule(verticalRule);
 }
 
-} // namespace blink;
+} // namespace blink

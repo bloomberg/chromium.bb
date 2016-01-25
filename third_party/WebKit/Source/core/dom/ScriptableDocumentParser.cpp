@@ -42,4 +42,4 @@ bool ScriptableDocumentParser::isParsingAtLineNumber() const
     return isParsing() && !isWaitingForScripts() && !isExecutingScript();
 }
 
-} // namespace blink;
+} // namespace blink
