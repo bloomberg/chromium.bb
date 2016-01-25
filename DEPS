@@ -36,15 +36,15 @@ deps = {
   # Logging code.
   "src/src/third_party/glog":
     "https://github.com/google/glog.git" +
-      "@ac3e91896917b5d9e8b4467bd912b20e8668488a",
+      "@v0.3.4",
 
   # Testing libraries and utilities.
   "src/src/testing":
     "https://github.com/google/googlemock.git" +
-      "@ada23475e27babd85fb9c13250243f6acfd3ffd8",
+      "@release-1.7.0",
   "src/src/testing/gtest":
     "https://github.com/google/googletest.git" +
-      "@a3b859162dd7a4a1798cf8753a03098f2cbdb62e",
+      "@release-1.7.0",
 
   # Protobuf.
   "src/src/third_party/protobuf/protobuf":
