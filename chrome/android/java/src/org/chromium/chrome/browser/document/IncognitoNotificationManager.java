@@ -37,6 +37,7 @@ public class IncognitoNotificationManager {
                 .setOngoing(true)
                 .setVisibility(Notification.VISIBILITY_SECRET)
                 .setSmallIcon(R.drawable.incognito_statusbar)
+                .setShowWhen(false)
                 .setLocalOnly(true);
         NotificationManager nm =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
