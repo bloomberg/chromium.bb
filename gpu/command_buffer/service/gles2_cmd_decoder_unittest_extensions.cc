@@ -848,9 +848,9 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   commands[4] = GL_CUBIC_CURVE_TO_CHROMIUM;
   commands[5] = GL_CONIC_CURVE_TO_CHROMIUM;
 
-  EXPECT_CALL(*gl_, PathCommandsNV(kServicePathId, kCorrectCommandCount,
-                                   commands, kCorrectCoordCount, GL_FLOAT,
-                                   coords)).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PathCommandsNV(kServicePathId, kCorrectCommandCount, _,
+                                   kCorrectCoordCount, GL_FLOAT, coords))
+      .RetiresOnSaturation();
 
   cmds::PathCommandsCHROMIUM cmd;
 
@@ -1347,8 +1347,8 @@ void GLES2DecoderTestWithCHROMIUMPathRendering::
   commands[4] = GL_CUBIC_CURVE_TO_CHROMIUM;
   commands[5] = GL_CONIC_CURVE_TO_CHROMIUM;
 
-  EXPECT_CALL(*gl_, PathCommandsNV(kServicePathId, kCorrectCommandCount,
-                                   commands, kCorrectCoordCount,
+  EXPECT_CALL(*gl_, PathCommandsNV(kServicePathId, kCorrectCommandCount, _,
+                                   kCorrectCoordCount,
                                    gl_type_enum<TypeParam>::kGLType, coords))
       .RetiresOnSaturation();
 
@@ -1434,9 +1434,9 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
   for (size_t i = 0; i < arraysize(kFillModes); ++i) {
     memcpy(paths, kPaths, sizeof(kPaths));
-    EXPECT_CALL(
-        *gl_, StencilFillPathInstancedNV(kPathCount, GL_UNSIGNED_INT, paths, 0,
-                                         kFillModes[i], kMask, GL_NONE, NULL))
+    EXPECT_CALL(*gl_,
+                StencilFillPathInstancedNV(kPathCount, GL_UNSIGNED_INT, _, 0,
+                                           kFillModes[i], kMask, GL_NONE, NULL))
         .RetiresOnSaturation();
     sfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
                  shared_memory_offset_, 0, kFillModes[i], kMask, GL_NONE, 0, 0);
@@ -1446,7 +1446,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
     memcpy(paths, kPaths, sizeof(kPaths));
     EXPECT_CALL(*gl_,
                 StencilThenCoverFillPathInstancedNV(
-                    kPathCount, GL_UNSIGNED_INT, paths, 0, kFillModes[i], kMask,
+                    kPathCount, GL_UNSIGNED_INT, _, 0, kFillModes[i], kMask,
                     GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV, GL_NONE, NULL))
         .RetiresOnSaturation();
     stcfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,

@@ -14536,42 +14536,6 @@ void GLES2DecoderImpl::OnOutOfMemoryError() {
   }
 }
 
-class PathNameBuffer {
- public:
-  PathNameBuffer() : path_names_(nullptr) {}
-
-  // Default implementation for GLbyte, GLubyte, GLshort, GLushort.
-  // Allocates a new buffer.
-  template <typename T>
-  GLuint* AllocateOrAdopt(GLuint num_paths, T*) {
-    DCHECK(!path_names_alloc_.get());
-    DCHECK(!path_names_);
-    path_names_alloc_.reset(new GLuint[num_paths]);
-    path_names_ = path_names_alloc_.get();
-    return path_names_;
-  }
-  const GLuint* path_names() const { return path_names_; }
-
- private:
-  scoped_ptr<GLuint[]> path_names_alloc_;
-  GLuint* path_names_;
-};
-// Specializations of AllocateOrAdopt for types which do not need to allocate.
-template <>
-GLuint* PathNameBuffer::AllocateOrAdopt(GLuint num_paths, GLuint* path_names) {
-  DCHECK(!path_names_alloc_.get());
-  DCHECK(!path_names_);
-  path_names_ = path_names;
-  return path_names_;
-}
-template <>
-GLuint* PathNameBuffer::AllocateOrAdopt(GLuint num_paths, GLint* path_names) {
-  DCHECK(!path_names_alloc_.get());
-  DCHECK(!path_names_);
-  path_names_ = reinterpret_cast<GLuint*>(path_names);
-  return path_names_;
-}
-
 // Class to validate path rendering command parameters. Contains validation
 // for the common parameters that are used in multiple different commands.
 // The individual functions are needed in order to control the order of the
@@ -14672,7 +14636,7 @@ class PathCommandValidatorContext {
   bool GetPathNameData(const Cmd& cmd,
                        GLuint num_paths,
                        GLenum path_name_type,
-                       PathNameBuffer* out_buffer) {
+                       scoped_ptr<GLuint[]>* out_buffer) {
     DCHECK(validators_->path_name_type.IsValid(path_name_type));
     GLuint path_base = static_cast<GLuint>(cmd.pathBase);
     uint32_t shm_id = static_cast<uint32_t>(cmd.paths_shm_id);
@@ -14759,7 +14723,7 @@ class PathCommandValidatorContext {
                            GLuint path_base,
                            uint32_t shm_id,
                            uint32_t shm_offset,
-                           PathNameBuffer* out_buffer) {
+                           scoped_ptr<GLuint[]>* out_buffer) {
     uint32_t paths_size = 0;
     if (!SafeMultiplyUint32(num_paths, sizeof(T), &paths_size)) {
       error_ = error::kOutOfBounds;
@@ -14770,7 +14734,7 @@ class PathCommandValidatorContext {
       error_ = error::kOutOfBounds;
       return false;
     }
-    GLuint* result_paths = out_buffer->AllocateOrAdopt(num_paths, paths);
+    scoped_ptr<GLuint[]> result_paths(new GLuint[num_paths]);
     bool has_paths = false;
     for (GLuint i = 0; i < num_paths; ++i) {
       GLuint service_id = 0;
@@ -14790,6 +14754,8 @@ class PathCommandValidatorContext {
       // the instanced draw continue.
       result_paths[i] = service_id;
     }
+    out_buffer->reset(result_paths.release());
+
     return has_paths;
   }
   GLES2DecoderImpl* decoder_;
@@ -14883,16 +14849,20 @@ error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
     return error::kNoError;
   }
 
-  const GLubyte* commands = NULL;
+  scoped_ptr<GLubyte[]> commands;
   base::CheckedNumeric<GLsizei> num_coords_expected = 0;
 
   if (num_commands > 0) {
     uint32_t commands_shm_id = static_cast<uint32_t>(c.commands_shm_id);
     uint32_t commands_shm_offset = static_cast<uint32_t>(c.commands_shm_offset);
-    if (commands_shm_id != 0 || commands_shm_offset != 0)
-      commands = GetSharedMemoryAs<const GLubyte*>(
+    if (commands_shm_id != 0 || commands_shm_offset != 0) {
+      const GLubyte* shared_commands = GetSharedMemoryAs<const GLubyte*>(
           commands_shm_id, commands_shm_offset, num_commands);
-
+      if (shared_commands) {
+        commands.reset(new GLubyte[num_commands]);
+        memcpy(commands.get(), shared_commands, num_commands);
+      }
+    }
     if (!commands)
       return error::kOutOfBounds;
 
@@ -14948,8 +14918,8 @@ error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
       return error::kOutOfBounds;
   }
 
-  glPathCommandsNV(service_id, num_commands, commands, num_coords, coord_type,
-                   coords);
+  glPathCommandsNV(service_id, num_commands, commands.get(), num_coords,
+                   coord_type, coords);
 
   return error::kNoError;
 }
@@ -15217,7 +15187,7 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  PathNameBuffer paths;
+  scoped_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -15226,8 +15196,8 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
     return v.error();
 
   ApplyDirtyState();
-  glStencilFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.path_names(),
-                               0, fill_mode, mask, transform_type, transforms);
+  glStencilFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
+                               fill_mode, mask, transform_type, transforms);
   return error::kNoError;
 }
 
@@ -15251,7 +15221,7 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  PathNameBuffer paths;
+  scoped_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -15262,9 +15232,8 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
   ApplyDirtyState();
-  glStencilStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.path_names(),
-                                 0, reference, mask, transform_type,
-                                 transforms);
+  glStencilStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
+                                 reference, mask, transform_type, transforms);
   return error::kNoError;
 }
 
@@ -15290,7 +15259,7 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  PathNameBuffer paths;
+  scoped_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -15299,7 +15268,7 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
     return v.error();
 
   ApplyDirtyState();
-  glCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.path_names(), 0,
+  glCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
                              cover_mode, transform_type, transforms);
   return error::kNoError;
 }
@@ -15326,7 +15295,7 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  PathNameBuffer paths;
+  scoped_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -15335,8 +15304,8 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
     return v.error();
 
   ApplyDirtyState();
-  glCoverStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.path_names(),
-                               0, cover_mode, transform_type, transforms);
+  glCoverStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
+                               cover_mode, transform_type, transforms);
   return error::kNoError;
 }
 
@@ -15366,7 +15335,7 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  PathNameBuffer paths;
+  scoped_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -15375,9 +15344,9 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
     return v.error();
 
   ApplyDirtyState();
-  glStencilThenCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT,
-                                        paths.path_names(), 0, fill_mode, mask,
-                                        cover_mode, transform_type, transforms);
+  glStencilThenCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(),
+                                        0, fill_mode, mask, cover_mode,
+                                        transform_type, transforms);
   return error::kNoError;
 }
 
@@ -15405,7 +15374,7 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   if (num_paths == 0)
     return error::kNoError;
 
-  PathNameBuffer paths;
+  scoped_ptr<GLuint[]> paths;
   if (!v.GetPathNameData(c, num_paths, path_name_type, &paths))
     return v.error();
 
@@ -15417,8 +15386,8 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   GLuint mask = static_cast<GLuint>(c.mask);
   ApplyDirtyState();
   glStencilThenCoverStrokePathInstancedNV(
-      num_paths, GL_UNSIGNED_INT, paths.path_names(), 0, reference, mask,
-      cover_mode, transform_type, transforms);
+      num_paths, GL_UNSIGNED_INT, paths.get(), 0, reference, mask, cover_mode,
+      transform_type, transforms);
   return error::kNoError;
 }
 
