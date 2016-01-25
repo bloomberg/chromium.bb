@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
@@ -881,27 +882,15 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Resets the tap counters on the UI thread.
+     * Resets all the counters used, by resetting all shared preferences.
      */
-    private void resetCounters() throws InterruptedException {
-        ThreadUtils.runOnUiThread(new Runnable() {
+    private void resetCounters() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // The "Promo" tap counter is never reset outside of testing because it
-                // is used to persistently count the number of peeks *ever* seen by the user
-                // before the first open, and is then frozen in a disabled state to record that
-                // value rather than being reset.
-                // We reset it here to simulate a new user for our feature.
-                mPolicy.getPromoTapCounter().reset();
-                mPolicy.resetCounters();
+                PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().clear().apply();
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mPolicy.didResetCounters();
-            }
-        }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -1373,6 +1362,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                 (ChromeTabbedActivity) getActivity());
         final Tab tab2 = TabModelUtils.getCurrentTab(getActivity().getCurrentTabModel());
 
+        // TODO(donnd): consider using runOnUiThreadBlocking, won't need to waitForIdleSync?
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1752,9 +1742,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Tests the TapN-promo-limit feature, which disables the promo on tap after N taps if
      * the user has never ever opened the panel.  Once the panel is opened, this limiting-feature
      * is permanently disabled.
-     *
-     * This test is very similar to an existing test for this same feature, so I'm proactively
-     * marking this as a FlakyTest too (since we're landing right before upstreaming).
      */
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -2105,13 +2092,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that long-press triggers the Peek Promo, and expanding the Panel dismisses it.
-     *
-     * Re-enable the test after fixing http://crbug.com/540820.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @FlakyTest
     @CommandLineFlags.Add(ContextualSearchFieldTrial.PEEK_PROMO_ENABLED + "=true")
     public void testLongPressShowsPeekPromo() throws InterruptedException, TimeoutException {
         // Must be in undecided state in order to trigger the Peek Promo.

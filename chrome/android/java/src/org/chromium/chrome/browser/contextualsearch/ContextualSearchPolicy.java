@@ -41,7 +41,6 @@ class ContextualSearchPolicy {
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
     private boolean mDecidedStateForTesting;
-    private boolean mDidResetCounters;
     private Integer mTapTriggeredPromoLimitForTesting;
     private Integer mTapResolveLimitForDecided;
     private Integer mTapPrefetchLimitForDecided;
@@ -388,17 +387,6 @@ class ContextualSearchPolicy {
     // --------------------------------------------------------------------------------------------
 
     /**
-     * Resets all policy counters.
-     */
-    @VisibleForTesting
-    void resetCounters() {
-        updateCountersForOpen();
-
-        mPreferenceManager.setContextualSearchPromoOpenCount(0);
-        mDidResetCounters = true;
-    }
-
-    /**
      * Overrides the decided/undecided state for the user preference.
      * @param decidedState Whether the user has decided or not.
      */
@@ -406,14 +394,6 @@ class ContextualSearchPolicy {
     void overrideDecidedStateForTesting(boolean decidedState) {
         mDidOverrideDecidedStateForTesting = true;
         mDecidedStateForTesting = decidedState;
-    }
-
-    /**
-     * @return Whether counters have been reset yet (by resetCounters) or not.
-     */
-    @VisibleForTesting
-    boolean didResetCounters() {
-        return mDidResetCounters;
     }
 
     /**
@@ -431,6 +411,10 @@ class ContextualSearchPolicy {
     int getTapCount() {
         return mPreferenceManager.getContextualSearchTapCount();
     }
+
+    // --------------------------------------------------------------------------------------------
+    // Translation support.
+    // --------------------------------------------------------------------------------------------
 
     /**
      * Determines whether translation is needed between the given languages.
