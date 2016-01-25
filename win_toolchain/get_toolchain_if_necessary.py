@@ -74,7 +74,9 @@ def GetFileList(root):
   file_list = []
   for base, _, files in os.walk(root):
     paths = [os.path.join(base, f) for f in files]
-    file_list.extend(x.lower() for x in paths)
+    # Ignore WER ReportQueue entries that vctip/cl leave in the bin dir if/when
+    # they crash.
+    file_list.extend(x.lower() for x in paths if 'WER\\ReportQueue' not in x)
   return sorted(file_list, key=lambda s: s.replace('/', '\\'))
 
 
