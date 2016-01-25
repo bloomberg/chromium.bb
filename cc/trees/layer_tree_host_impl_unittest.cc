@@ -9346,7 +9346,10 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 // Test that a smooth scroll offset animation is aborted when followed by a
 // non-smooth scroll offset animation.
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
   DrawFrame();
 
   base::TimeTicks start_time =
@@ -9413,7 +9416,10 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
 
 // Evolved from LayerTreeHostImplTest.ScrollAnimated.
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
   DrawFrame();
 
   base::TimeTicks start_time =
@@ -9427,7 +9433,6 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
 
   LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
-
   begin_frame_args.frame_time = start_time;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
@@ -9449,6 +9454,77 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(200);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 50 && y < 100);
+  EXPECT_EQ(scrolling_layer, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 100),
+                   scrolling_layer->CurrentScrollOffset());
+  EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
+}
+
+// Test that smooth scroll offset animation doesn't happen for non user
+// scrollable layers.
+TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  host_impl_->OuterViewportScrollLayer()->set_user_scrollable_vertical(true);
+  host_impl_->OuterViewportScrollLayer()->set_user_scrollable_horizontal(false);
+
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(50, 50)).thread);
+
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(50);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  // Should not have scrolled horizontally.
+  EXPECT_EQ(0, scrolling_layer->CurrentScrollOffset().x());
+  float y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 1 && y < 49);
+
+  // Update target.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(50, 50)).thread);
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =
