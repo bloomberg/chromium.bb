@@ -491,8 +491,8 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         RefPtr<Interpolation> interpolation = DoubleStyleInterpolation::maybeCreateFromMotionRotation(*fromCSSValue, *toCSSValue, property);
         if (interpolation)
             return interpolation.release();
-            break;
-        }
+        break;
+    }
     case CSSPropertyVisibility:
         if (VisibilityStyleInterpolation::canCreateFrom(*fromCSSValue) && VisibilityStyleInterpolation::canCreateFrom(*toCSSValue) && (VisibilityStyleInterpolation::isVisible(*fromCSSValue) || VisibilityStyleInterpolation::isVisible(*toCSSValue)))
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
