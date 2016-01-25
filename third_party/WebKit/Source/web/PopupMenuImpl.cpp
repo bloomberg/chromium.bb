@@ -472,7 +472,7 @@ void PopupMenuImpl::dispose()
         m_chromeClient->closePagePopup(m_popup);
 }
 
-void PopupMenuImpl::show(const FloatQuad& /*controlPosition*/, const IntSize& /*controlSize*/, int /*index*/)
+void PopupMenuImpl::show()
 {
     ASSERT(!m_popup);
     m_popup = m_chromeClient->openPagePopup(this);

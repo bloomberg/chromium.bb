@@ -107,7 +107,7 @@ bool ExternalPopupMenu::showInternal()
     }
 }
 
-void ExternalPopupMenu::show(const FloatQuad&, const IntSize&, int)
+void ExternalPopupMenu::show()
 {
     if (!showInternal())
         return;
