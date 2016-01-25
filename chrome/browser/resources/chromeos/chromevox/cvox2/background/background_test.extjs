@@ -336,7 +336,7 @@ TEST_F('BackgroundTest', 'UseEditableState', function() {
     function(rootNode) {
       var assertExists = this.newCallback(function (evt) {
         assertNotNullNorUndefined(
-            global.desktopAutomationHandler.editableTextHandler_);
+            global.desktopAutomationHandler.textEditHandler_);
         evt.stopPropagation();
       });
       var assertDoesntExist = this.newCallback(function (evt) {

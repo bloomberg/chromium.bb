@@ -36,8 +36,8 @@ BaseAutomationHandler = function(node) {
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
     scrollPositionChanged: this.onScrollPositionChanged,
-    textChanged: this.onTextOrTextSelectionChanged,
-    textSelectionChanged: this.onTextOrTextSelectionChanged,
+    textChanged: this.onTextChanged,
+    textSelectionChanged: this.onTextSelectionChanged,
     valueChanged: this.onValueChanged
   };
 
@@ -129,7 +129,12 @@ BaseAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onTextOrTextSelectionChanged: function(evt) {},
+  onTextChanged: function(evt) {},
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onTextSelectionChanged: function(evt) {},
 
   /**
    * @param {!AutomationEvent} evt

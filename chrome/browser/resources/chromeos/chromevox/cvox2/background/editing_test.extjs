@@ -1,0 +1,138 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js',
+             '../../testing/assert_additions.js']);
+
+GEN_INCLUDE(['../../testing/mock_feedback.js']);
+
+/**
+ * Test fixture for editing tests.
+ * @constructor
+ * @extends {ChromeVoxNextE2ETest}
+ */
+function EditingTest() {
+  ChromeVoxNextE2ETest.call(this);
+  window.RoleType = chrome.automation.RoleType;
+}
+
+EditingTest.prototype = {
+  __proto__: ChromeVoxNextE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    global.backgroundObj.forceChromeVoxNextActive();
+  },
+
+  /**
+   * @return {!MockFeedback}
+   */
+  createMockFeedback: function() {
+    var mockFeedback = new MockFeedback(this.newCallback(),
+                                        this.newCallback.bind(this));
+    mockFeedback.install();
+    return mockFeedback;
+  },
+
+};
+
+var doc = function() {/*!
+  <label for='singleLine'>singleLine</label>
+  <input type='text' id='singleLine' value='Single line field'><br>
+  <label for='textarea'>textArea</label>
+  <textarea id='textarea'>
+Line 1&#xa;
+line 2&#xa;
+line 3
+</textarea>
+*/};
+
+TEST_F('EditingTest', 'Focus', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(doc, function(root) {
+    var singleLine = root.find({role: RoleType.textField,
+                                attributes: {name: 'singleLine'}});
+    var textarea = root.find({role: RoleType.textField,
+                              attributes: {name: 'textArea'}});
+    singleLine.focus();
+    mockFeedback
+        .expectSpeech('singleLine', 'Single line field', 'Edit text')
+        .expectBraille('singleLine Single line field ed',
+                       {startIndex: 11, endIndex: 11})
+        .call(textarea.focus.bind(textarea))
+        .expectSpeech('textArea',
+                      'Line 1\nline 2\nline 3',
+                      'Text area')
+        .expectBraille('textArea Line 1 mled',
+                      {startIndex: 9, endIndex: 9});
+
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('EditingTest', 'Multiline', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(doc, function(root) {
+    var textarea = root.find({role: RoleType.textField,
+                              attributes: {name: 'textArea'}});
+    textarea.focus();
+    mockFeedback
+        .expectSpeech('textArea',
+                      'Line 1\nline 2\nline 3',
+                      'Text area')
+        .expectBraille('textArea Line 1 mled',
+                      {startIndex: 9, endIndex: 9})
+        .call(textarea.setSelection.bind(textarea, 1, 1))
+        .expectSpeech('i')
+        .expectBraille('textArea Line 1 mled',
+                       {startIndex: 10, endIndex: 10})
+        .call(textarea.setSelection.bind(textarea, 7, 7))
+        .expectSpeech('line 2')
+        .expectBraille('line 2',
+                       {startIndex: 0, endIndex: 0})
+        .call(textarea.setSelection.bind(textarea, 7, 13))
+        .expectSpeech('line 2', 'selected')
+        .expectBraille('line 2',
+                       {startIndex: 0, endIndex: 6});
+
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('EditingTest', 'TextButNoSelectionChange', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+    function() {/*!
+      <h1>Test doc</h1>
+      <input type='text' id='input' value='text1'>
+      <!-- We don't seem to get an event in js when the automation
+           setSelection function is called, so poll for the actual change. -->
+
+      <script>
+        var timer;
+        var input = document.getElementById('input');
+        function poll(e) {
+          if (input.selectionStart == 0)
+            return;
+          console.log('TIM' + 'ER');
+          input.value = 'text2';
+          window.clearInterval(timer);
+        }
+        timer = window.setInterval(poll, 200);
+      </script>
+    */},
+    function(root) {
+      var input = root.find({role: RoleType.textField});
+      input.focus();
+      mockFeedback
+          .expectSpeech('text1', 'Edit text')
+          .expectBraille('text1 ed', {startIndex: 0, endIndex: 0})
+          .call(input.setSelection.bind(input, 5, 5))
+          .expectBraille('text2 ed', {startIndex: 5, endIndex: 5})
+          .expectSpeech('text2');
+
+      mockFeedback.replay();
+    });
+});

@@ -119,6 +119,8 @@ cursors.Cursor.prototype = {
    */
   getText: function(opt_node) {
     var node = opt_node || this.node_;
+    if (node.role === RoleType.textField)
+      return node.value;
     return node.name || '';
   },
 

@@ -252,7 +252,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
               {value: {earconId: 'EDITABLE_TEXT'}, start: 0, end: 0},
 
               // Selection span.
-              {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
+              {value: {startIndex: 0, endIndex: 0, offset: 0},
+               start: 1, end: 1},
 
               {value: 'value', start: 1, end: 1},
               {value: 'inputType', start: 2}
@@ -265,7 +266,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
         '||Edit text numeric only',
         {string_: '||Spin button', spans_: [{value: 'name', start: 0, end: 0},
             {value: {earconId:'LISTBOX'}, start: 0, end: 0},
-            {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
+            {value: {startIndex: 0, endIndex: 0, offset: 0}, start: 1, end: 1},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 13}]},
         {string_: '||Time control', spans_: [{value: 'name', start: 0, end: 0},
@@ -319,7 +320,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
         if (typeof expectedValue === 'string') {
           checkBrailleOutput(
               expectedValue,
-              [{value: {startIndex: 0, endIndex: 0}, start: 0, end: 0},
+              [{value: {startIndex: 0, endIndex: 0, offset: 0},
+                start: 0, end: 0},
                {value: new Output.NodeSpan(el), start: 0,
                 end: expectedValue.length}],
               o);

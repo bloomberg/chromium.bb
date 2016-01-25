@@ -83,6 +83,7 @@
       'cvox2/background/automation_util_test.extjs',
       'cvox2/background/background_test.extjs',
       'cvox2/background/cursors_test.extjs',
+      'cvox2/background/editing_test.extjs',
       'cvox2/background/live_regions_test.extjs',
       'cvox2/background/output_test.extjs',
       'cvox2/background/tree_walker_test.extjs',
