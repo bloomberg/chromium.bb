@@ -34,9 +34,8 @@
   align-items: center;
   background-color: white;
   display: flex;
-  height: 120px;
   justify-content: center;
-  margin-top: var(--container-header-height);
+  margin: 60px 0;
 }
 
 #device-missing a {
