@@ -41,6 +41,10 @@ void AndroidDeferredRenderingBackingStrategy::Initialize(
 void AndroidDeferredRenderingBackingStrategy::Cleanup(
     bool have_context,
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
+  // If we failed before Initialize, then do nothing.
+  if (!shared_state_)
+    return;
+
   // Make sure that no PictureBuffer textures refer to the SurfaceTexture or to
   // the service_id that we created for it.
   for (const std::pair<int, media::PictureBuffer>& entry : buffers)
