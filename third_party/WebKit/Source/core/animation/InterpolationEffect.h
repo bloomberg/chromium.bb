@@ -14,18 +14,27 @@
 
 namespace blink {
 
-class CORE_EXPORT InterpolationEffect : public RefCounted<InterpolationEffect> {
+class CORE_EXPORT InterpolationEffect {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    static PassRefPtr<InterpolationEffect> create()
+    InterpolationEffect()
+        : m_isPopulated(false)
+    { }
+
+    bool isPopulated() const { return m_isPopulated; }
+    void setPopulated() { m_isPopulated = true; }
+
+    void clear()
     {
-        return adoptRef(new InterpolationEffect());
+        m_isPopulated = false;
+        m_interpolations.clear();
     }
 
     void getActiveInterpolations(double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>&) const;
 
     void addInterpolation(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {
-        m_interpolations.append(InterpolationRecord::create(interpolation, easing, start, end, applyFrom, applyTo));
+        m_interpolations.append(InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
     }
 
     void addInterpolationsFromKeyframes(PropertyHandle, Element*, const ComputedStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo);
@@ -34,29 +43,11 @@ public:
     inline void forEachInterpolation(const T& callback)
     {
         for (auto& record : m_interpolations)
-            callback(*record->m_interpolation);
+            callback(*record.m_interpolation);
     }
 
 private:
-    InterpolationEffect()
-    {
-    }
-
-    class InterpolationRecord : public RefCounted<InterpolationRecord> {
-    public:
-        RefPtr<Interpolation> m_interpolation;
-        RefPtr<TimingFunction> m_easing;
-        double m_start;
-        double m_end;
-        double m_applyFrom;
-        double m_applyTo;
-
-        static PassRefPtr<InterpolationRecord> create(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
-        {
-            return adoptRef(new InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
-        }
-
-    private:
+    struct InterpolationRecord {
         InterpolationRecord(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
             : m_interpolation(interpolation)
             , m_easing(easing)
@@ -64,11 +55,18 @@ private:
             , m_end(end)
             , m_applyFrom(applyFrom)
             , m_applyTo(applyTo)
-        {
-        }
+        { }
+
+        RefPtr<Interpolation> m_interpolation;
+        RefPtr<TimingFunction> m_easing;
+        double m_start;
+        double m_end;
+        double m_applyFrom;
+        double m_applyTo;
     };
 
-    Vector<RefPtr<InterpolationRecord>> m_interpolations;
+    bool m_isPopulated;
+    Vector<InterpolationRecord> m_interpolations;
 };
 
 } // namespace blink

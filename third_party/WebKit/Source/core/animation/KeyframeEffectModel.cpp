@@ -58,7 +58,7 @@ void KeyframeEffectModelBase::setFrames(KeyframeVector& keyframes)
     // TODO(samli): Should also notify/invalidate the animation
     m_keyframes = keyframes;
     m_keyframeGroups = nullptr;
-    m_interpolationEffect = nullptr;
+    m_interpolationEffect.clear();
     m_lastFraction = std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -67,13 +67,13 @@ bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
     ensureKeyframeGroups();
-    ensureInterpolationEffect();
+    ensureInterpolationEffectPopulated();
 
     bool changed = iteration != m_lastIteration || fraction != m_lastFraction || iterationDuration != m_lastIterationDuration;
     m_lastIteration = iteration;
     m_lastFraction = fraction;
     m_lastIterationDuration = iterationDuration;
-    m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
+    m_interpolationEffect.getActiveInterpolations(fraction, iterationDuration, result);
     return changed;
 }
 
@@ -81,7 +81,7 @@ void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& elemen
 {
     ensureKeyframeGroups();
     snapshotAllCompositorKeyframes(element, baseStyle);
-    ensureInterpolationEffect(&element, baseStyle);
+    ensureInterpolationEffectPopulated(&element, baseStyle);
 }
 
 bool KeyframeEffectModelBase::snapshotNeutralCompositorKeyframes(Element& element, const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
@@ -198,11 +198,10 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 }
 
-void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element, const ComputedStyle* baseStyle) const
+void KeyframeEffectModelBase::ensureInterpolationEffectPopulated(Element* element, const ComputedStyle* baseStyle) const
 {
-    if (m_interpolationEffect)
+    if (m_interpolationEffect.isPopulated())
         return;
-    m_interpolationEffect = InterpolationEffect::create();
 
     for (const auto& entry : *m_keyframeGroups) {
         const PropertySpecificKeyframeVector& keyframes = entry.value->keyframes();
@@ -212,9 +211,11 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element, const 
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
 
-            m_interpolationEffect->addInterpolationsFromKeyframes(entry.key, element, baseStyle, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
+            m_interpolationEffect.addInterpolationsFromKeyframes(entry.key, element, baseStyle, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
         }
     }
+
+    m_interpolationEffect.setPopulated();
 }
 
 bool KeyframeEffectModelBase::isReplaceOnly()

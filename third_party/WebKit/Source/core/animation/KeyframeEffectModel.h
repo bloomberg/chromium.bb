@@ -112,7 +112,7 @@ public:
     bool snapshotAllCompositorKeyframes(Element&, const ComputedStyle* baseStyle);
 
     template<typename T>
-    inline void forEachInterpolation(const T& callback) { m_interpolationEffect->forEachInterpolation(callback); }
+    inline void forEachInterpolation(const T& callback) { m_interpolationEffect.forEachInterpolation(callback); }
 
     static KeyframeVector normalizedKeyframesForInspector(const KeyframeVector& keyframes) { return normalizedKeyframes(keyframes); }
 
@@ -138,14 +138,14 @@ protected:
 
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
-    void ensureInterpolationEffect(Element* = nullptr, const ComputedStyle* baseStyle = nullptr) const;
+    void ensureInterpolationEffectPopulated(Element* = nullptr, const ComputedStyle* baseStyle = nullptr) const;
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
     mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
-    mutable RefPtr<InterpolationEffect> m_interpolationEffect;
+    mutable InterpolationEffect m_interpolationEffect;
     mutable int m_lastIteration;
     mutable double m_lastFraction;
     mutable double m_lastIterationDuration;
