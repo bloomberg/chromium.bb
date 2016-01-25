@@ -532,15 +532,20 @@ void BrowserNonClientFrameViewMus::PaintToolbarBackground(gfx::Canvas* canvas) {
   const ui::ThemeProvider* tp = GetThemeProvider();
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    // Paint the main toolbar image.  Since this image is also used to draw the
-    // tab background, we must use the tab strip offset to compute the image
-    // source y position.  If you have to debug this code use an image editor
-    // to paint a diagonal line through the toolbar image and ensure it lines up
-    // across the tab and toolbar.
-    gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-    canvas->TileImageInt(*theme_toolbar, x + GetThemeBackgroundXInset(),
-                         y - GetTopInset(false), x, y, w,
-                         theme_toolbar->height());
+    if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
+      // Paint the main toolbar image.  Since this image is also used to draw
+      // the tab background, we must use the tab strip offset to compute the
+      // image source y position.  If you have to debug this code use an image
+      // editor to paint a diagonal line through the toolbar image and ensure it
+      // lines up across the tab and toolbar.
+      gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+      canvas->TileImageInt(*theme_toolbar, x + GetThemeBackgroundXInset(),
+                           y - GetTopInset(false), x, y, w,
+                           theme_toolbar->height());
+    } else {
+      canvas->FillRect(toolbar_bounds,
+                       tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
+    }
 
     // Draw the separator line atop the toolbar, on the left and right of the
     // tabstrip.
