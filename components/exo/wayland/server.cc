@@ -785,7 +785,7 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
   // TODO(reveman): Send correct device scale factor when surface API respects
   // scale.
   if (version >= WL_OUTPUT_SCALE_SINCE_VERSION)
-    wl_output_send_scale(resource, 1);
+    wl_output_send_scale(resource, primary.device_scale_factor());
 
   // TODO(reveman): Send real list of modes after adding multi-display support.
   wl_output_send_mode(resource,

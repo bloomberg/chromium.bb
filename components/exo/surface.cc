@@ -278,19 +278,15 @@ void Surface::CommitSurfaceHierarchy() {
 
     if (texture_mailbox_release_callback) {
       // Update layer with the new contents.
-      layer()->SetTextureMailbox(texture_mailbox,
-                                 std::move(texture_mailbox_release_callback),
-                                 texture_mailbox.size_in_pixels());
-      layer()->SetTextureFlipped(false);
       gfx::Size contents_size(gfx::ScaleToFlooredSize(
           texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_));
+      layer()->SetTextureMailbox(texture_mailbox,
+                                 std::move(texture_mailbox_release_callback),
+                                 contents_size);
+      layer()->SetTextureFlipped(false);
       layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
       layer()->SetFillsBoundsOpaquely(pending_opaque_region_.contains(
           gfx::RectToSkIRect(gfx::Rect(contents_size))));
-      layer()->SetTransform(gfx::GetScaleTransform(
-          gfx::Rect(texture_mailbox.size_in_pixels()).CenterPoint(),
-          static_cast<float>(contents_size.width()) /
-              texture_mailbox.size_in_pixels().width()));
     } else {
       // Show solid color content if no buffer is attached or we failed
       // to produce a texture mailbox for the currently attached buffer.
