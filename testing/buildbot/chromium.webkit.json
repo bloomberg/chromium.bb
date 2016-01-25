@@ -1881,43 +1881,5 @@
         "script": "webkit_python_tests.py"
       }
     ]
-  },
-  "WebKit XP": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_heap_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_platform_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "webkit_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "wtf_unittests"
-      }
-    ],
-    "scripts": [
-      {
-        "name": "webkit_lint",
-        "script": "webkit_lint.py"
-      },
-      {
-        "name": "webkit_python_tests",
-        "script": "webkit_python_tests.py"
-      }
-    ]
   }
 }
