@@ -1526,7 +1526,7 @@ VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositio
             node = n;
             offset = 0;
             n = Strategy::previousPostOrder(*n, startBlock);
-        } else if (editingIgnoresContent(n) || isRenderedTableElement(n)) {
+        } else if (editingIgnoresContent(n) || isDisplayInsideTable(n)) {
             node = n;
             type = PositionAnchorType::BeforeAnchor;
             n = n->previousSibling() ? n->previousSibling() : Strategy::previousPostOrder(*n, startBlock);
@@ -1613,7 +1613,7 @@ static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePo
             node = n;
             offset = r->caretMaxOffset();
             n = Strategy::next(*n, stayInsideBlock);
-        } else if (Strategy::editingIgnoresContent(n) || isRenderedTableElement(n)) {
+        } else if (Strategy::editingIgnoresContent(n) || isDisplayInsideTable(n)) {
             node = n;
             type = PositionAnchorType::AfterAnchor;
             n = Strategy::nextSkippingChildren(*n, stayInsideBlock);
@@ -2483,7 +2483,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
             return lastVisible.deprecatedComputePosition();
 
         // Return position after tables and nodes which have content that can be ignored.
-        if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
+        if (Strategy::editingIgnoresContent(currentNode) || isDisplayInsideTable(currentNode)) {
             if (currentPos.atEndOfNode())
                 return PositionTemplate<Strategy>::afterNode(currentNode);
             continue;
@@ -2629,7 +2629,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
             lastVisible = currentPos;
 
         // Return position before tables and nodes which have content that can be ignored.
-        if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
+        if (Strategy::editingIgnoresContent(currentNode) || isDisplayInsideTable(currentNode)) {
             if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
                 return PositionTemplate<Strategy>::editingPositionOf(currentNode, layoutObject->caretMinOffset());
             continue;
@@ -2759,7 +2759,7 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
         return false;
     }
 
-    if (isRenderedHTMLTableElement(anchorNode) || Strategy::editingIgnoresContent(anchorNode)) {
+    if (isDisplayInsideTable(anchorNode) || Strategy::editingIgnoresContent(anchorNode)) {
         if (!position.atFirstEditingPositionForNode() && !position.atLastEditingPositionForNode())
             return false;
         const Node* parent = Strategy::parent(*anchorNode);

@@ -255,7 +255,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     else
         ASSERT(updateStyle == DoNotUpdateStyle);
 
-    if (isRenderedHTMLTableElement(node))
+    if (isDisplayInsideTable(node))
         node = node->parentNode();
 
     if (node->isDocumentNode())
@@ -281,7 +281,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     if (!node)
         return false;
 
-    if (isRenderedHTMLTableElement(node))
+    if (isDisplayInsideTable(node))
         node = node->parentNode();
 
     return node->layoutObjectIsRichlyEditable(editableType);
@@ -293,7 +293,7 @@ Element* rootEditableElementOf(const Position& p, EditableType editableType)
     if (!node)
         return 0;
 
-    if (isRenderedHTMLTableElement(node))
+    if (isDisplayInsideTable(node))
         node = node->parentNode();
 
     return node->rootEditableElement(editableType);
@@ -815,7 +815,7 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = createVisiblePosition(pos);
             VisiblePosition firstInElement = createVisiblePosition(firstPositionInOrBeforeNode(specialElement));
-            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == nextPositionOf(firstInElement).deepEquivalent())
+            if (isDisplayInsideTable(specialElement) && vPos.deepEquivalent() == nextPositionOf(firstInElement).deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == firstInElement.deepEquivalent())
                 return specialElement;
@@ -832,7 +832,7 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = createVisiblePosition(pos);
             VisiblePosition lastInElement = createVisiblePosition(lastPositionInOrAfterNode(specialElement));
-            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == previousPositionOf(lastInElement).deepEquivalent())
+            if (isDisplayInsideTable(specialElement) && vPos.deepEquivalent() == previousPositionOf(lastInElement).deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == lastInElement.deepEquivalent())
                 return specialElement;
@@ -871,7 +871,7 @@ template <typename Strategy>
 static Element* isFirstPositionAfterTableAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
     const PositionTemplate<Strategy> upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
-    if (isRenderedTableElement(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
+    if (isDisplayInsideTable(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
         return toElement(upstream.anchorNode());
 
     return nullptr;
@@ -890,7 +890,7 @@ Element* isFirstPositionAfterTable(const VisiblePositionInComposedTree& visibleP
 Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 {
     Position downstream(mostForwardCaretPosition(visiblePosition.deepEquivalent()));
-    if (isRenderedTableElement(downstream.anchorNode()) && downstream.atFirstEditingPositionForNode())
+    if (isDisplayInsideTable(downstream.anchorNode()) && downstream.atFirstEditingPositionForNode())
         return toElement(downstream.anchorNode());
 
     return 0;
@@ -1182,12 +1182,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
     // Make sure there is no visible content between this li and the previous list
 }
 
-bool isRenderedHTMLTableElement(const Node* node)
-{
-    return isHTMLTableElement(*node) && node->layoutObject();
-}
-
-bool isRenderedTableElement(const Node* node)
+bool isDisplayInsideTable(const Node* node)
 {
     if (!node || !node->isElementNode())
         return false;

@@ -847,7 +847,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
 template<typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero()
 {
-    if (emitsCharactersBetweenAllVisiblePositions() && isRenderedTableElement(m_node))
+    if (emitsCharactersBetweenAllVisiblePositions() && isDisplayInsideTable(m_node))
         return true;
 
     // Leave element positioned flush with start of a paragraph
@@ -904,7 +904,7 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero()
 template<typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::shouldEmitSpaceBeforeAndAfterNode(Node* node)
 {
-    return isRenderedTableElement(node) && (node->layoutObject()->isInline() || emitsCharactersBetweenAllVisiblePositions());
+    return isDisplayInsideTable(node) && (node->layoutObject()->isInline() || emitsCharactersBetweenAllVisiblePositions());
 }
 
 template<typename Strategy>

@@ -161,13 +161,13 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::parentAnchoredEquivalent(
 
     // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
     if (m_offset == 0 && !isAfterAnchorOrAfterChildren()) {
-        if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
+        if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isDisplayInsideTable(m_anchorNode.get())))
             return inParentBeforeNode(*m_anchorNode);
         return PositionTemplate<Strategy>(m_anchorNode.get(), 0);
     }
     if (!m_anchorNode->offsetInCharacters()
         && (isAfterAnchorOrAfterChildren() || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
-        && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get()))
+        && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isDisplayInsideTable(m_anchorNode.get()))
         && computeContainerNode()) {
         return inParentAfterNode(*m_anchorNode);
     }

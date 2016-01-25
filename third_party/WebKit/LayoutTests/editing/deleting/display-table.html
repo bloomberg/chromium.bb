@@ -6,7 +6,8 @@
     display: table;
 }
 </style>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <div id="tableDiv" contenteditable="true"></div>
@@ -21,18 +22,13 @@ function runTest(caretPosition, deleteCommand, expectedString)
     selection.collapse(testDiv, caretPosition);
 
     document.execCommand(deleteCommand);
-    shouldBeEqualToString("document.getElementById('tableDiv').textContent", expectedString);
+    assert_equals(document.getElementById('tableDiv').textContent, expectedString);
 }
 
-description("This test verifies that we are able to successfully delete the first and the last characters of a contenteditable div with display: table.");
-
-runTest(0, "forwardDelete", "BCD");
-runTest(1, "Delete", "ABC");
-
-if (window.testRunner)
-    document.getElementById('tableDiv').outerHTML = '';
-
-finishJSTest();
+test(function () {
+    runTest(0, "forwardDelete", "ABCD");
+    runTest(1, "Delete", "ABCD");
+}, "This test verifies that we are able to successfully delete the first and the last characters of a contenteditable div with display: table.");
 </script>
 </body>
 </html>

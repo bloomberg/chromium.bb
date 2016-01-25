@@ -1,9 +1,8 @@
 <!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 
 <script>
-if (window.testRunner)
-  testRunner.dumpAsText();
-
 var aoScriptElements = document.getElementsByTagName("script");
 for(var i = 0; i < aoScriptElements.length; i++) {
   aoScriptElements[i].parentNode.removeChild(aoScriptElements[i]);
@@ -63,7 +62,8 @@ window.onload = function() {
 
   var oRange = oSelection.getRangeAt(0);
   var oParentElement =  aoElements[24];
-  oRange.surroundContents(oParentElement);
+  try { oRange.surroundContents(oParentElement); } catch (e) {}
+  done();
 };
 </script>
 
@@ -82,6 +82,7 @@ window.onload = function() {
 </head>
 
 <body class="CLASS3">
+<div id="log"></div>
 <div>
 <br id='br'/>
 <button>
