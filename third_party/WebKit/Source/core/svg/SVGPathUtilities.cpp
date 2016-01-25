@@ -36,7 +36,7 @@ bool buildPathFromString(const String& d, Path& result)
     SVGPathBuilder builder(result);
     SVGPathStringSource source(d);
     SVGPathParser parser(&source, &builder);
-    return parser.parsePathDataFromSource(NormalizedParsing);
+    return parser.parsePathDataFromSource(UnalteredParsing);
 }
 
 bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result)
@@ -47,7 +47,7 @@ bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result)
     SVGPathBuilder builder(result);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
-    return parser.parsePathDataFromSource(NormalizedParsing);
+    return parser.parsePathDataFromSource(UnalteredParsing);
 }
 
 String buildStringFromByteStream(const SVGPathByteStream& stream)

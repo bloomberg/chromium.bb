@@ -122,6 +122,7 @@ public:
     void addQuadCurveTo(const FloatPoint& controlPoint, const FloatPoint& endPoint);
     void addBezierCurveTo(const FloatPoint& controlPoint1, const FloatPoint& controlPoint2, const FloatPoint& endPoint);
     void addArcTo(const FloatPoint&, const FloatPoint&, float radius);
+    void addArcTo(const FloatPoint&, const FloatSize& r, float xRotate, bool largeArc, bool sweep);
     void closeSubpath();
 
     void addArc(const FloatPoint&, float radius, float startAngle, float endAngle, bool anticlockwise);

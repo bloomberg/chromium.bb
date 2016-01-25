@@ -331,6 +331,16 @@ void Path::addArcTo(const FloatPoint& p1, const FloatPoint& p2, float radius)
     m_path.arcTo(p1.data(), p2.data(), WebCoreFloatToSkScalar(radius));
 }
 
+void Path::addArcTo(const FloatPoint& p, const FloatSize& r, float xRotate, bool largeArc, bool sweep)
+{
+    m_path.arcTo(
+        WebCoreFloatToSkScalar(r.width()), WebCoreFloatToSkScalar(r.height()),
+        WebCoreFloatToSkScalar(xRotate),
+        largeArc ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
+        sweep ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
+        WebCoreFloatToSkScalar(p.x()), WebCoreFloatToSkScalar(p.y()));
+}
+
 void Path::closeSubpath()
 {
     m_path.close();

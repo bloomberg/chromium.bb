@@ -137,7 +137,8 @@ private:
 
         switch (element->type) {
         case PathElementAddQuadCurveToPoint:
-            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=33115 (PathElementAddQuadCurveToPoint not handled for <marker>)
+            m_inslopePoints[0] = points[0];
+            m_inslopePoints[1] = points[1];
             m_origin = points[1];
             break;
         case PathElementAddCurveToPoint:
