@@ -211,6 +211,11 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
+    protected float getThresholdToNextState() {
+        return 0.30f;
+    }
+
+    @Override
     protected void updatePanelForCloseOrPeek(float percent) {
         super.updatePanelForCloseOrPeek(percent);
 

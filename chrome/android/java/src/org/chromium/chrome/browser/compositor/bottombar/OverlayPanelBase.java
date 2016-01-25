@@ -888,32 +888,53 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * @return The fraction of the distance the panel has to be to its next state before animating
+     *         itself there. Default is the panel must be half of the way to the next state.
+     */
+    protected float getThresholdToNextState() {
+        return 0.5f;
+    }
+
+    /**
      * Finds the state which has the nearest height compared to a given
      * |desiredPanelHeight|.
      *
      * @param desiredPanelHeight The height to compare to.
+     * @param velocity The velocity of the swipe if applicable. The swipe is upward if less than 0.
      * @return The nearest panel state.
      */
-    protected PanelState findNearestPanelStateFromHeight(float desiredPanelHeight) {
-        PanelState closestPanelState = PanelState.CLOSED;
-        float smallestHeightDiff = Float.POSITIVE_INFINITY;
+    protected PanelState findNearestPanelStateFromHeight(float desiredPanelHeight, float velocity) {
+        // If the panel was flung hard enough to make the desired height negative, it's closed.
+        if (desiredPanelHeight < 0) return PanelState.CLOSED;
 
-        // Iterate over all states and find the one which has the nearest
-        // height.
+        // First, find the two states that the desired panel height is between.
+        PanelState nextState = PanelState.values()[0];
+        PanelState prevState = nextState;
         for (PanelState state : PanelState.values()) {
             if (!isValidState(state)) {
                 continue;
             }
-
-            float height = getPanelHeightFromState(state);
-            float heightDiff = Math.abs(desiredPanelHeight - height);
-            if (heightDiff < smallestHeightDiff) {
-                closestPanelState = state;
-                smallestHeightDiff = heightDiff;
+            prevState = nextState;
+            nextState = state;
+            // The values in PanelState are ascending, they should be kept that way in order for
+            // this to work.
+            if (desiredPanelHeight >= getPanelHeightFromState(prevState)
+                    && desiredPanelHeight < getPanelHeightFromState(nextState)) {
+                break;
             }
         }
 
-        return closestPanelState;
+        // If the desired height is close enough to a certain state, depending on the direction of
+        // the velocity, move to that state.
+        float lowerBound = getPanelHeightFromState(prevState);
+        float distance = getPanelHeightFromState(nextState) - lowerBound;
+        float thresholdToNextState = velocity < 0.0f
+                ? getThresholdToNextState() : 1.0f - getThresholdToNextState();
+        if ((desiredPanelHeight - lowerBound) / distance > thresholdToNextState) {
+            return nextState;
+        } else {
+            return prevState;
+        }
     }
 
     /**

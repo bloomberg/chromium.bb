@@ -235,7 +235,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
         // Calculate the nearest state from the current position, and then calculate the duration
         // of the animation that will start with a desired initial velocity and move the desired
         // amount of dps (displacement).
-        final PanelState nearestState = findNearestPanelStateFromHeight(getHeight());
+        final PanelState nearestState = findNearestPanelStateFromHeight(getHeight(), 0.0f);
         final float displacement = getPanelHeightFromState(nearestState) - getHeight();
         final long duration = calculateAnimationDuration(
                 INITIAL_ANIMATION_VELOCITY_DP_PER_SECOND, displacement);
@@ -254,7 +254,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
 
         // Calculate the projected state the Panel will be at the end of the fling movement and the
         // duration of the animation given the current velocity and the projected displacement.
-        PanelState projectedState = findNearestPanelStateFromHeight(projectedHeight);
+        PanelState projectedState = findNearestPanelStateFromHeight(projectedHeight, velocity);
 
         // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED if the Panel
         // Promo is available and we are running in full screen panel mode. This is to make sure
