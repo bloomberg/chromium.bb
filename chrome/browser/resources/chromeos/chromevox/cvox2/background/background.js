@@ -500,7 +500,11 @@ Background.prototype = {
       var actionNode = current.start.node;
       if (actionNode.role == RoleType.inlineTextBox)
         actionNode = actionNode.parent;
-      actionNode.focus();
+
+      // Iframes, when focused, causes the child webArea to fire focus event.
+      // This can result in getting stuck when navigating backward.
+      if (actionNode.role != RoleType.iframe && !actionNode.state.focused)
+        actionNode.focus();
 
       var prevRange = this.currentRange_;
       this.setCurrentRange(current);

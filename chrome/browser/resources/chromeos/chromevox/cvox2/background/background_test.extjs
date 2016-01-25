@@ -505,3 +505,25 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     assertEquals('classic', global.backgroundObj.mode);
   }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'FocusIframe', function() {
+  this.runWithLoadedTree(  function() {/*!
+    <iframe tabindex=0 src="data:text/html,<p>Inside</p>"></iframe>
+    <button>outside</button>
+  */}, function(root) {
+    var iframe = root.find({role: 'iframe'});
+    var button = root.find({role: 'button'});
+
+    assertEquals('iframe', iframe.role);
+    assertEquals('button', button.role);
+
+    var didFocus = false;
+    iframe.focus = function() {
+      didFocus = true;
+    };
+    var b = global.backgroundObj;
+    b.currentRange_ = cursors.Range.fromNode(button);
+    b.onGotCommand('previousElement');
+    assertFalse(didFocus);
+  }.bind(this));
+});
