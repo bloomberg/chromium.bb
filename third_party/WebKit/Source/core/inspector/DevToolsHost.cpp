@@ -29,8 +29,8 @@
 
 #include "core/inspector/DevToolsHost.h"
 
-#include "bindings/core/v8/ScriptFunctionCall.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
@@ -49,7 +49,6 @@
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/HostWindow.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/ResourceError.h"
@@ -60,9 +59,9 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
 public:
-    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, ScriptValue devtoolsApiObject, const Vector<ContextMenuItem>& items)
+    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, const Vector<ContextMenuItem>& items)
     {
-        return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, devtoolsApiObject, items));
+        return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, items));
     }
 
     ~FrontendMenuProvider() override
@@ -79,17 +78,13 @@ public:
 
     void disconnect()
     {
-        m_devtoolsApiObject = ScriptValue();
         m_devtoolsHost = nullptr;
     }
 
     void contextMenuCleared() override
     {
         if (m_devtoolsHost) {
-            if (!ScriptForbiddenScope::isScriptForbidden()) {
-                ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuCleared");
-                function.call();
-            }
+            m_devtoolsHost->evaluateScript("DevToolsAPI.contextMenuCleared()");
             m_devtoolsHost->clearMenuProvider();
             m_devtoolsHost = nullptr;
         }
@@ -106,28 +101,18 @@ public:
     {
         if (!m_devtoolsHost)
             return;
-
-        UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
         int itemNumber = item->action() - ContextMenuItemBaseCustomTag;
-
-        if (!ScriptForbiddenScope::isScriptForbidden()) {
-            ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuItemSelected");
-            function.appendArgument(itemNumber);
-            function.call();
-        }
+        m_devtoolsHost->evaluateScript("DevToolsAPI.contextMenuItemSelected(" + String::number(itemNumber) + ")");
     }
 
 private:
-    FrontendMenuProvider(DevToolsHost* devtoolsHost, ScriptValue devtoolsApiObject, const Vector<ContextMenuItem>& items)
+    FrontendMenuProvider(DevToolsHost* devtoolsHost, const Vector<ContextMenuItem>& items)
         : m_devtoolsHost(devtoolsHost)
-        , m_devtoolsApiObject(devtoolsApiObject)
         , m_items(items)
     {
     }
 
     RawPtrWillBeMember<DevToolsHost> m_devtoolsHost;
-    ScriptValue m_devtoolsApiObject;
-
     Vector<ContextMenuItem> m_items;
 };
 
@@ -147,6 +132,19 @@ DEFINE_TRACE(DevToolsHost)
 {
     visitor->trace(m_frontendFrame);
     visitor->trace(m_menuProvider);
+}
+
+void DevToolsHost::evaluateScript(const String& expression)
+{
+    if (!m_frontendFrame)
+        return;
+    ScriptState* scriptState = ScriptState::forMainWorld(m_frontendFrame);
+    if (!scriptState)
+        return;
+    ScriptState::Scope scope(scriptState);
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    v8::Local<v8::String> source = v8AtomicString(scriptState->isolate(), expression.utf8().data());
+    V8ScriptRunner::compileAndRunInternalScript(source, scriptState->isolate(), String(), TextPosition());
 }
 
 void DevToolsHost::disconnectClient()
@@ -218,13 +216,7 @@ void DevToolsHost::sendMessageToEmbedder(const String& message)
 void DevToolsHost::showContextMenu(LocalFrame* targetFrame, float x, float y, const Vector<ContextMenuItem>& items)
 {
     ASSERT(m_frontendFrame);
-    ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendFrame);
-    if (!frontendScriptState)
-        return;
-    ScriptValue devtoolsApiObject = frontendScriptState->getFromGlobalObject("DevToolsAPI");
-    ASSERT(devtoolsApiObject.isObject());
-
-    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, devtoolsApiObject, items);
+    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, items);
     m_menuProvider = menuProvider.get();
     float zoom = targetFrame->pageZoomFactor();
     if (m_client)
