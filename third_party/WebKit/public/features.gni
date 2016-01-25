@@ -4,5 +4,5 @@
 
 declare_args() {
   # Enables the Oilpan garbage-collection infrastructure.
-  enable_oilpan = false
+  enable_oilpan = true
 }

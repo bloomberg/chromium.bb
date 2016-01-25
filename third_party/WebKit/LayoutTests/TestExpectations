@@ -1,3 +1,38 @@
+# ====== Oilpan-only failures from here ======
+# Most of these actually cause the tests to report success, rather than
+# failure. Expected outputs will be adjusted for the better once Oilpan
+# has been well and truly enabled always.
+
+# With Oilpan, the parent pointer in the CSSRule hierarchy is
+# strong. This is the intended behavior.
+crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure ]
+crbug.com/345630 fast/dom/StyleSheet/gc-parent-stylesheet.html [ Failure ]
+crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure ]
+crbug.com/345655 fast/dom/StyleSheet/detached-stylesheet-without-wrapper.html [ Failure ]
+crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
+
+# With Oilpan, parent pointers in the DOM tree do not
+# mysteriously disappear. This is the intended behavior.
+crbug.com/356658 fast/dom/gc-3.html [ Failure ]
+crbug.com/356658 fast/dom/gc-5.html [ Failure ]
+crbug.com/356658 fast/dom/gc-12.html [ Failure ]
+crbug.com/356658 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Failure Timeout ]
+
+crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
+
+crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
+
+crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
+
+crbug.com/24182 [ Win Debug ] jquery/manipulation.html [ Timeout Pass ]
+
+crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
+crbug.com/572723 inspector/sources/debugger/debugger-autocontinue-on-syntax-error.html [ Pass Failure ]
+
+# ====== Oilpan-only failures until here ======
+
 # Run these tests with under virtual/spv2 only.
 crbug.com/524134 paint/invalidation/spv2 [ Skip ]
 
@@ -176,14 +211,13 @@ crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 crbug.com/567965 [ Debug ] imported/web-platform-tests/user-timing/test_user_timing_measure.html [ Skip ]
 crbug.com/518992 [ Win Release ] imported/web-platform-tests/user-timing/test_user_timing_measure.html [ Skip ]
 crbug.com/567965 [ Debug ] imported/web-platform-tests/user-timing/test_user_timing_mark.html [ Skip ]
-crbug.com/518993 [ Win ] imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
+crbug.com/518993 imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 
 crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
 
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]
-crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 crbug.com/518902 accessibility/AccessibilityScrollbar-leak.html [ Failure Pass ]
 crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash Pass ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
@@ -246,7 +280,7 @@ crbug.com/495750 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestio
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
-crbug.com/389648 crbug.com/517123 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
+crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ Failure ]
@@ -319,7 +353,7 @@ crbug.com/498539 [ Precise Mac10.7 Win7 ] inspector-protocol/cpu-profiler/record
 crbug.com/498539 [ Precise Mac10.7 Win7 Mac10.6 ] inspector/agents-enable-disable.html [ Crash Pass ]
 crbug.com/498539 [ Precise Win7 Mac10.6 ] inspector/elements/styles-1/edit-inspector-stylesheet.html [ Failure Pass Timeout ]
 crbug.com/498539 [ Mac10.6 ] http/tests/inspector/extensions-network-redirect.html [ Crash Pass ]
-crbug.com/498539 [ Mac10.6 ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
+crbug.com/498539 crbug.com/410145 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
 crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
 crbug.com/498539 [ Win7 Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
@@ -892,7 +926,7 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-z
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
 
-crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
+crbug.com/385014 crbug.com/410145 accessibility/canvas-fallback-content-2.html [ Pass Failure Timeout ]
 
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Timeout ]
 
@@ -994,11 +1028,11 @@ crbug.com/369979 fast/table/table-display-types-vertical.html [ NeedsRebaseline 
 crbug.com/369979 fast/table/table-display-types.html [ NeedsRebaseline ]
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
-crbug.com/521124 [ Win7 XP ] fast/text/international/vertical-text-glyph-test.html [ Pass Failure ]
-crbug.com/521124 [ Win7 ] fast/text/international/text-combine-image-test.html [ Pass Failure ]
-crbug.com/521124 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
-crbug.com/521124 [ Win7 Release ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
-crbug.com/521124 crbug.com/571481 [ Win7 XP ] fast/text/orientation-sideways.html [ Pass Failure ]
+crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Pass Failure ]
+crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/text-combine-image-test.html [ Pass Failure ]
+crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
+crbug.com/521124 crbug.com/410145 [ Win ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
+crbug.com/521124 crbug.com/571481 crbug.com/410145 [ Win ] fast/text/orientation-sideways.html [ Pass Failure ]
 
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
@@ -1201,7 +1235,7 @@ crbug.com/521730 [ Win10 ] fast/text/basic/011.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/013.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/generic-family-reset.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/cg-vs-atsui.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/text/decorations-with-text-combine.html [ Failure ]
+crbug.com/521730 crbug.com/410145 [ Win ] fast/text/decorations-with-text-combine.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emoticons.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emphasis-ellipsis-complextext.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/font-ascent-mac.html [ Failure ]
@@ -1544,13 +1578,13 @@ crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html 
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
-crbug.com/572710 [ Mac10.7 Debug ] inspector/extensions/extensions-sidebar.html [ Timeout Pass ]
+crbug.com/572710 [ Debug ] inspector/extensions/extensions-sidebar.html [ Timeout Pass ]
 
 crbug.com/572714 [ Linux XP ] inspector/sources/debugger/debug-inlined-scripts.html [ Timeout Crash Pass ]
 
 crbug.com/572723 [ Mac10.7 Release ] inspector/sources/debugger/debugger-completions-on-call-frame.html [ Timeout Pass ]
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
-crbug.com/572723 [ Mac Release ] inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
+crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
 # SK_SUPPORT_LEGACY_CONIC_MEASURE
 crbug.com/530095 fast/borders/borderRadiusAllStylesAllCorners.html [ NeedsRebaseline ]

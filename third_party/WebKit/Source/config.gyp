@@ -35,7 +35,7 @@
     # Enables the Oilpan garbage-collection infrastructure.
     # If you update the default value below, be sure to update the one in
     # build/features.gypi, too!
-    'enable_oilpan%': 0,
+    'enable_oilpan%': 1,
     # If set to 1 (default) and using clang, the Blink GC plugin will check the
     # usage of the garbage-collection infrastructure during compilation.
     'blink_gc_plugin%': 1,
