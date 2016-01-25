@@ -11,11 +11,14 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
 
 set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Enable C++11 support.
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
+
 # Turn up the warning levels.
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "/W4 ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "/W4 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
 else ()
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
 endif()
 
 # Test configuration flags. Defined here for visibility.

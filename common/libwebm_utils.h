@@ -9,6 +9,7 @@
 #define LIBWEBM_COMMON_LIBWEBM_UTILS_H_
 
 #include <cstdio>
+#include <memory>
 #include <vector>
 
 namespace libwebm {
