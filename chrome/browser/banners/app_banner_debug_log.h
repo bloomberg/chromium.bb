@@ -25,6 +25,7 @@ extern const char kUserNavigatedBeforeBannerShown[];
 extern const char kStartURLNotValid[];
 extern const char kManifestMissingNameOrShortName[];
 extern const char kManifestMissingSuitableIcon[];
+extern const char kNotLoadedInMainFrame[];
 extern const char kNotServedFromSecureOrigin[];
 extern const char kIgnoredNotSupportedOnAndroid[];
 extern const char kIgnoredNoId[];
@@ -33,12 +34,14 @@ extern const char kIgnoredIdsDoNotMatch[];
 // Logs a message to the main console if a banner could not be shown
 // and the engagement checks have been bypassed.
 void OutputDeveloperNotShownMessage(content::WebContents* web_contents,
-                                    const std::string& message);
+                                    const std::string& message,
+                                    bool is_debug_mode);
 
 // Logs a debugging message to the main console if the engagement checks have
 // been bypassed.
 void OutputDeveloperDebugMessage(content::WebContents* web_contents,
-                                 const std::string& message);
+                                 const std::string& message,
+                                 bool is_debug_mode);
 
 }  // namespace banners
 

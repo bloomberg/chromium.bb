@@ -77,6 +77,7 @@ class PageHandler : public NotificationObserver {
                               const std::string& security_origin);
 
   Response SetColorPickerEnabled(bool enabled);
+  Response RequestAppBanner(bool* result);
 
  private:
   WebContentsImpl* GetWebContents();

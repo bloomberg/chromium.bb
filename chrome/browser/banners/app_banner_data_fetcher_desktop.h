@@ -22,7 +22,8 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
   AppBannerDataFetcherDesktop(content::WebContents* web_contents,
                               base::WeakPtr<Delegate> weak_delegate,
                               int ideal_icon_size_in_dp,
-                              int minimum_icon_size_in_dp);
+                              int minimum_icon_size_in_dp,
+                              bool is_debug_mode);
 
   // Callback for finishing bookmark app creation
   void FinishCreateBookmarkApp(const extensions::Extension* extension,

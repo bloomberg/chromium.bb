@@ -87,6 +87,7 @@ class TabWebContentsDelegateAndroid
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
+  bool RequestAppBanner(content::WebContents* web_contents) override;
 
  private:
   // NotificationObserver implementation.

@@ -36,6 +36,7 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
@@ -1444,6 +1445,17 @@ scoped_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
   bubble_delegate_ptr->set_bubble_controller(bubble_controller);
 
   return std::move(bluetooth_chooser_desktop);
+}
+
+bool Browser::RequestAppBanner(content::WebContents* web_contents) {
+  banners::AppBannerManagerDesktop* manager =
+      banners::AppBannerManagerDesktop::FromWebContents(web_contents);
+  if (manager) {
+    manager->RequestAppBanner(web_contents->GetMainFrame(),
+                              web_contents->GetLastCommittedURL(), true);
+    return true;
+  }
+  return false;
 }
 
 bool Browser::IsMouseLocked() const {

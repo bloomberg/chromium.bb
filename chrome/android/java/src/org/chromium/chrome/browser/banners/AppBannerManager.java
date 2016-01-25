@@ -137,6 +137,11 @@ public class AppBannerManager extends EmptyTabObserver {
         };
     }
 
+    /** Requests the app banner. This method is called from the DevTools. */
+    public void requestAppBanner() {
+        nativeRequestAppBanner(mNativePointer);
+    }
+
     /** Enables or disables the app banners for testing. */
     @VisibleForTesting
     static void setIsEnabledForTesting(boolean state) {
@@ -173,6 +178,7 @@ public class AppBannerManager extends EmptyTabObserver {
             WebContents webContents);
     private native boolean nativeOnAppDetailsRetrieved(long nativeAppBannerManagerAndroid,
             AppData data, String title, String packageName, String imageUrl);
+    private native void nativeRequestAppBanner(long nativeAppBannerManagerAndroid);
 
     // Testing methods.
     private static native void nativeSetTimeDeltaForTesting(int days);

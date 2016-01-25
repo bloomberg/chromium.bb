@@ -31,10 +31,11 @@ bool AppBannerManagerDesktop::IsEnabled() {
 }
 
 AppBannerDataFetcher* AppBannerManagerDesktop::CreateAppBannerDataFetcher(
-    base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate) {
+    base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
+    bool is_debug_mode) {
   return new AppBannerDataFetcherDesktop(web_contents(), weak_delegate,
-                                         kMinimumIconSize,
-                                         kMinimumIconSize);
+                                         kMinimumIconSize, kMinimumIconSize,
+                                         is_debug_mode);
 }
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(

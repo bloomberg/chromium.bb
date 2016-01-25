@@ -423,6 +423,15 @@ void TabWebContentsDelegateAndroid::AddNewContents(
     delete new_contents;
 }
 
+bool TabWebContentsDelegateAndroid::RequestAppBanner(
+    content::WebContents* web_contents) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroid_requestAppBanner(env, obj.obj());
+}
+
 }  // namespace android
 }  // namespace chrome
 

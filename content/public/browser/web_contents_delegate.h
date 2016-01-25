@@ -523,6 +523,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   // compositor proto.  This is used in Blimp mode.
   virtual void ForwardCompositorProto(const std::vector<uint8_t>& proto) {}
 
+  // Requests the app banner. This method is called from the DevTools.
+  virtual bool RequestAppBanner(content::WebContents* web_contents);
+
  protected:
   virtual ~WebContentsDelegate();
 

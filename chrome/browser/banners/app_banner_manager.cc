@@ -70,14 +70,19 @@ void AppBannerManager::DidNavigateMainFrame(
   last_transition_type_ = params.transition;
 }
 
-void AppBannerManager::DidFinishLoad(
+void AppBannerManager::RequestAppBanner(
     content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  if (render_frame_host->GetParent())
+    const GURL& validated_url,
+    bool is_debug_mode) {
+  if (render_frame_host->GetParent()) {
+    OutputDeveloperNotShownMessage(web_contents(), kNotLoadedInMainFrame,
+                                   is_debug_mode);
     return;
+  }
 
   if (data_fetcher_.get() && data_fetcher_->is_active() &&
-      URLsAreForTheSamePage(data_fetcher_->validated_url(), validated_url)) {
+      URLsAreForTheSamePage(data_fetcher_->validated_url(), validated_url) &&
+      !is_debug_mode) {
     return;
   }
 
@@ -85,18 +90,29 @@ void AppBannerManager::DidFinishLoad(
   // URL is invalid.
   if (!content::IsOriginSecure(validated_url) &&
       !gDisableSecureCheckForTesting) {
-    OutputDeveloperNotShownMessage(web_contents(), kNotServedFromSecureOrigin);
+    OutputDeveloperNotShownMessage(web_contents(), kNotServedFromSecureOrigin,
+                                   is_debug_mode);
     return;
   }
 
   // Kick off the data retrieval pipeline.
-  data_fetcher_ = CreateAppBannerDataFetcher(weak_factory_.GetWeakPtr());
+  data_fetcher_ =
+      CreateAppBannerDataFetcher(weak_factory_.GetWeakPtr(), is_debug_mode);
   data_fetcher_->Start(validated_url, last_transition_type_);
+}
+
+void AppBannerManager::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  // The third argument is the is_debug_mode boolean value, which is true only
+  // when it is triggered by the developer's action in DevTools.
+  RequestAppBanner(render_frame_host, validated_url, false /* is_debug_mode */);
 }
 
 bool AppBannerManager::HandleNonWebApp(const std::string& platform,
                                        const GURL& url,
-                                       const std::string& id) {
+                                       const std::string& id,
+                                       bool is_debug_mode) {
   return false;
 }
 

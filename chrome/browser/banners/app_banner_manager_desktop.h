@@ -21,7 +21,8 @@ class AppBannerManagerDesktop
 
  protected:
   AppBannerDataFetcher* CreateAppBannerDataFetcher(
-      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate) override;
+      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
+      bool is_debug_mode) override;
 
  private:
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);

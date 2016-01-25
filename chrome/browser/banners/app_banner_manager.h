@@ -39,6 +39,12 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns whether or not the URLs match for everything except for the ref.
   static bool URLsAreForTheSamePage(const GURL& first, const GURL& second);
 
+  // Requests an app banner. Set |is_debug_mode| when it is triggered by the
+  // developer's action in DevTools.
+  void RequestAppBanner(content::RenderFrameHost* render_frame_host,
+                        const GURL& validated_url,
+                        bool is_debug_mode);
+
   AppBannerManager();
   ~AppBannerManager() override;
 
@@ -49,7 +55,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Creates an AppBannerDataFetcher, which constructs an app banner.
   virtual AppBannerDataFetcher* CreateAppBannerDataFetcher(
-      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate) = 0;
+      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
+      bool is_debug_mode) = 0;
 
   // Return whether the AppBannerDataFetcher is active.
   bool IsFetcherActive();
@@ -68,7 +75,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // AppBannerDataFetcher::Delegate overrides.
   bool HandleNonWebApp(const std::string& platform,
                        const GURL& url,
-                       const std::string& id) override;
+                       const std::string& id,
+                       bool is_debug_mode) override;
 
   // Cancels an active DataFetcher, stopping its banners from appearing.
   void CancelActiveFetcher();

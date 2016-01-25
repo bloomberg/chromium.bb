@@ -15,13 +15,13 @@ namespace banners {
 // WebContents.  Extends the regular fetch to add support for Android apps.
 class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
  public:
-  AppBannerDataFetcherAndroid(
-      content::WebContents* web_contents,
-      base::WeakPtr<Delegate> weak_delegate,
-      int ideal_icon_size_in_dp,
-      int minimum_icon_size_in_dp,
-      int ideal_splash_image_size_in_dp,
-      int minimum_splash_image_size_in_dp);
+  AppBannerDataFetcherAndroid(content::WebContents* web_contents,
+                              base::WeakPtr<Delegate> weak_delegate,
+                              int ideal_icon_size_in_dp,
+                              int minimum_icon_size_in_dp,
+                              int ideal_splash_image_size_in_dp,
+                              int minimum_splash_image_size_in_dp,
+                              bool is_debug_mode);
 
   // Saves information about the Android app being promoted by the current page,
   // then continues the creation pipeline.

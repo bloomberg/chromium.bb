@@ -259,4 +259,8 @@ void WebContentsDelegate::ShowCertificateViewerInDevTools(
     int cert_id) {
 }
 
+bool WebContentsDelegate::RequestAppBanner(content::WebContents* web_contents) {
+  return false;
+}
+
 }  // namespace content

@@ -112,6 +112,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void HideValidationMessage(content::WebContents* web_contents) override;
   void MoveValidationMessage(content::WebContents* web_contents,
                              const gfx::Rect& anchor_in_root_view) override;
+  bool RequestAppBanner(content::WebContents* web_contents) override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

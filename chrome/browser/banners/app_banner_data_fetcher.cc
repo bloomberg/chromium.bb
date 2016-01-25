@@ -71,11 +71,11 @@ void AppBannerDataFetcher::SetTimeDeltaForTesting(int days) {
   gTimeDeltaForTesting = base::TimeDelta::FromDays(days);
 }
 
-AppBannerDataFetcher::AppBannerDataFetcher(
-    content::WebContents* web_contents,
-    base::WeakPtr<Delegate> delegate,
-    int ideal_icon_size_in_dp,
-    int minimum_icon_size_in_dp)
+AppBannerDataFetcher::AppBannerDataFetcher(content::WebContents* web_contents,
+                                           base::WeakPtr<Delegate> delegate,
+                                           int ideal_icon_size_in_dp,
+                                           int minimum_icon_size_in_dp,
+                                           bool is_debug_mode)
     : WebContentsObserver(web_contents),
       weak_delegate_(delegate),
       ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
@@ -83,6 +83,9 @@ AppBannerDataFetcher::AppBannerDataFetcher(
       is_active_(false),
       was_canceled_by_page_(false),
       page_requested_prompt_(false),
+      is_debug_mode_(is_debug_mode ||
+                     base::CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kBypassAppBannerEngagementChecks)),
       event_request_id_(-1) {
   DCHECK(minimum_icon_size_in_dp <= ideal_icon_size_in_dp);
 }
@@ -184,7 +187,8 @@ void AppBannerDataFetcher::OnBannerPromptReply(
       !page_requested_prompt_) {
     was_canceled_by_page_ = true;
     referrer_ = referrer;
-    OutputDeveloperNotShownMessage(web_contents, kRendererRequestCancel);
+    OutputDeveloperNotShownMessage(web_contents, kRendererRequestCancel,
+                                   is_debug_mode_);
     return;
   }
 
@@ -250,7 +254,7 @@ void AppBannerDataFetcher::OnDidHasManifest(bool has_manifest) {
 
   if (!CheckFetcherIsStillAlive(web_contents) || !has_manifest) {
     if (!has_manifest)
-      OutputDeveloperNotShownMessage(web_contents, kNoManifest);
+      OutputDeveloperNotShownMessage(web_contents, kNoManifest, is_debug_mode_);
 
     Cancel();
     return;
@@ -268,7 +272,8 @@ void AppBannerDataFetcher::OnDidGetManifest(
     return;
   }
   if (manifest.IsEmpty()) {
-    OutputDeveloperNotShownMessage(web_contents, kManifestEmpty);
+    OutputDeveloperNotShownMessage(web_contents, kManifestEmpty,
+                                   is_debug_mode_);
     Cancel();
     return;
   }
@@ -278,12 +283,13 @@ void AppBannerDataFetcher::OnDidGetManifest(
     for (const auto& application : manifest.related_applications) {
       std::string platform = base::UTF16ToUTF8(application.platform.string());
       std::string id = base::UTF16ToUTF8(application.id.string());
-      if (weak_delegate_->HandleNonWebApp(platform, application.url, id))
+      if (weak_delegate_->HandleNonWebApp(platform, application.url, id,
+                                          is_debug_mode_))
         return;
     }
   }
 
-  if (!IsManifestValidForWebApp(manifest, web_contents)) {
+  if (!IsManifestValidForWebApp(manifest, web_contents, is_debug_mode_)) {
     Cancel();
     return;
   }
@@ -293,9 +299,9 @@ void AppBannerDataFetcher::OnDidGetManifest(
 
   if (IsWebAppInstalled(web_contents->GetBrowserContext(),
                         manifest.start_url) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBypassAppBannerEngagementChecks)) {
-    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded);
+      !is_debug_mode_) {
+    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded,
+                                   is_debug_mode_);
     Cancel();
     return;
   }
@@ -327,7 +333,8 @@ void AppBannerDataFetcher::OnDidCheckHasServiceWorker(
 
   if (!has_service_worker) {
     TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
-    OutputDeveloperNotShownMessage(web_contents, kNoMatchingServiceWorker);
+    OutputDeveloperNotShownMessage(web_contents, kNoMatchingServiceWorker,
+                                   is_debug_mode_);
     Cancel();
     return;
   }
@@ -345,7 +352,8 @@ void AppBannerDataFetcher::OnHasServiceWorker(
         gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
 
   if (!FetchAppIcon(web_contents, icon_url)) {
-    OutputDeveloperNotShownMessage(web_contents, kCannotDetermineBestIcon);
+    OutputDeveloperNotShownMessage(web_contents, kCannotDetermineBestIcon,
+                                   is_debug_mode_);
     Cancel();
   }
 }
@@ -370,16 +378,18 @@ void AppBannerDataFetcher::OnAppIconFetched(const SkBitmap& bitmap) {
     return;
   }
   if (bitmap.drawsNothing()) {
-    OutputDeveloperNotShownMessage(web_contents, kNoIconAvailable);
+    OutputDeveloperNotShownMessage(web_contents, kNoIconAvailable,
+                                   is_debug_mode_);
     Cancel();
     return;
   }
 
   RecordCouldShowBanner();
-  if (!CheckIfShouldShowBanner()) {
+  if (!is_debug_mode_ && !CheckIfShouldShowBanner()) {
     // At this point, the only possible case is that the banner has been added
     // to the homescreen, given all of the other checks that have been made.
-    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded);
+    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded,
+                                   is_debug_mode_);
     Cancel();
     return;
   }
@@ -419,8 +429,8 @@ bool AppBannerDataFetcher::CheckIfShouldShowBanner() {
 bool AppBannerDataFetcher::CheckFetcherIsStillAlive(
     content::WebContents* web_contents) {
   if (!is_active_) {
-    OutputDeveloperNotShownMessage(web_contents,
-                                   kUserNavigatedBeforeBannerShown);
+    OutputDeveloperNotShownMessage(
+        web_contents, kUserNavigatedBeforeBannerShown, is_debug_mode_);
     return false;
   }
   if (!web_contents) {
@@ -432,22 +442,25 @@ bool AppBannerDataFetcher::CheckFetcherIsStillAlive(
 // static
 bool AppBannerDataFetcher::IsManifestValidForWebApp(
     const content::Manifest& manifest,
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    bool is_debug_mode) {
   if (manifest.IsEmpty()) {
-    OutputDeveloperNotShownMessage(web_contents, kManifestEmpty);
+    OutputDeveloperNotShownMessage(web_contents, kManifestEmpty, is_debug_mode);
     return false;
   }
   if (!manifest.start_url.is_valid()) {
-    OutputDeveloperNotShownMessage(web_contents, kStartURLNotValid);
+    OutputDeveloperNotShownMessage(web_contents, kStartURLNotValid,
+                                   is_debug_mode);
     return false;
   }
   if (manifest.name.is_null() && manifest.short_name.is_null()) {
-    OutputDeveloperNotShownMessage(web_contents,
-                                   kManifestMissingNameOrShortName);
+    OutputDeveloperNotShownMessage(
+        web_contents, kManifestMissingNameOrShortName, is_debug_mode);
     return false;
   }
   if (!DoesManifestContainRequiredIcon(manifest)) {
-    OutputDeveloperNotShownMessage(web_contents, kManifestMissingSuitableIcon);
+    OutputDeveloperNotShownMessage(web_contents, kManifestMissingSuitableIcon,
+                                   is_debug_mode);
     return false;
   }
   return true;

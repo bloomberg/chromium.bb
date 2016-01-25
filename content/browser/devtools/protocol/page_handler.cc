@@ -357,6 +357,14 @@ Response PageHandler::SetColorPickerEnabled(bool enabled) {
   return Response::OK();
 }
 
+Response PageHandler::RequestAppBanner(bool* result) {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::InternalError("Could not connect to view");
+  *result = web_contents->GetDelegate()->RequestAppBanner(web_contents);
+  return Response::OK();
+}
+
 WebContentsImpl* PageHandler::GetWebContents() {
   return host_ ?
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :

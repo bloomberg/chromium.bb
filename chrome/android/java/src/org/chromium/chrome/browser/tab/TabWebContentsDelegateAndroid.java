@@ -353,6 +353,11 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         return success;
     }
 
+    @CalledByNative
+    private boolean requestAppBanner() {
+        return mTab.requestAppBanner();
+    }
+
     @Override
     public void activateContents() {
         boolean activityIsDestroyed = false;

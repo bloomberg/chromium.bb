@@ -52,19 +52,27 @@ class AppBannerManagerAndroid : public AppBannerManager {
       const base::android::JavaParamRef<jstring>& japp_package,
       const base::android::JavaParamRef<jstring>& jicon_url);
 
+  // Requests the app banner. This method is called from the DevTools.
+  void RequestAppBanner(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& jobj);
+
  protected:
   AppBannerDataFetcher* CreateAppBannerDataFetcher(
-      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate) override;
+      base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
+      bool is_debug_mode) override;
 
  private:
   // AppBannerDataFetcher::Delegate overrides.
   bool HandleNonWebApp(const std::string& platform,
                        const GURL& url,
-                       const std::string& id) override;
+                       const std::string& id,
+                       bool is_debug_mode) override;
 
-  bool CheckPlatformAndId(const std::string& platform, const std::string& id);
+  bool CheckPlatformAndId(const std::string& platform,
+                          const std::string& id,
+                          bool is_debug_mode);
 
-  bool CheckFetcherMatchesContents();
+  bool CheckFetcherMatchesContents(bool is_debug_mode);
 
   std::string ExtractQueryValueForName(const GURL& url,
                                        const std::string& name);

@@ -2233,6 +2233,13 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
     }
 
+    /** Requests the app banner. This method is called from the DevTools. */
+    protected boolean requestAppBanner() {
+        if (mAppBannerManager == null) return false;
+        mAppBannerManager.requestAppBanner();
+        return true;
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         assert mNativeTabAndroid != 0;

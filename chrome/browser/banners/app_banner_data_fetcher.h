@@ -49,7 +49,8 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
     // handled, and the fetcher needs to remain active and wait for a callback.
     virtual bool HandleNonWebApp(const std::string& platform,
                                  const GURL& url,
-                                 const std::string& id) = 0;
+                                 const std::string& id,
+                                 bool is_debug_mode) = 0;
   };
 
   // Returns the current time.
@@ -61,7 +62,8 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   AppBannerDataFetcher(content::WebContents* web_contents,
                        base::WeakPtr<Delegate> weak_delegate,
                        int ideal_icon_size_in_dp,
-                       int minimum_icon_size_in_dp);
+                       int minimum_icon_size_in_dp,
+                       bool is_debug_mode);
 
   // Begins creating a banner for the URL being displayed by the Delegate's
   // WebContents.
@@ -88,6 +90,10 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   // Returns whether the page has validly requested that the banner be shown
   // by calling prompt() on the beforeinstallprompt Javascript event.
   bool page_requested_prompt() { return page_requested_prompt_; }
+
+  // Returns true when it was created by the user action in DevTools or
+  // "bypass-app-banner-engagement-checks" flag is set.
+  bool is_debug_mode() const { return is_debug_mode_; }
 
   // Returns the type of transition which triggered this fetch.
   ui::PageTransition transition_type() { return transition_type_; }
@@ -172,7 +178,8 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   // Returns whether the given Manifest is following the requirements to show
   // a web app banner.
   static bool IsManifestValidForWebApp(const content::Manifest& manifest,
-                                       content::WebContents* web_contents);
+                                       content::WebContents* web_contents,
+                                       bool is_debug_mode);
 
   const base::WeakPtr<Delegate> weak_delegate_;
   const int ideal_icon_size_in_dp_;
@@ -181,6 +188,7 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   bool is_active_;
   bool was_canceled_by_page_;
   bool page_requested_prompt_;
+  const bool is_debug_mode_;
   ui::PageTransition transition_type_;
   int event_request_id_;
   scoped_ptr<SkBitmap> app_icon_;

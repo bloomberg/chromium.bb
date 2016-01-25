@@ -473,6 +473,7 @@ class Browser : public TabStripModelObserver,
       content::WebContents* web_contents,
       const content::BluetoothChooser::EventHandler& event_handler,
       const GURL& origin) override;
+  bool RequestAppBanner(content::WebContents* web_contents) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

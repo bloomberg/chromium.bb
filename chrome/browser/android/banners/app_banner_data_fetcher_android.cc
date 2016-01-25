@@ -23,14 +23,15 @@ AppBannerDataFetcherAndroid::AppBannerDataFetcherAndroid(
     int ideal_icon_size_in_dp,
     int minimum_icon_size_in_dp,
     int ideal_splash_image_size_in_dp,
-    int minimum_splash_image_size_in_dp)
+    int minimum_splash_image_size_in_dp,
+    bool is_debug_mode)
     : AppBannerDataFetcher(web_contents,
                            weak_delegate,
                            ideal_icon_size_in_dp,
-                           minimum_icon_size_in_dp),
+                           minimum_icon_size_in_dp,
+                           is_debug_mode),
       ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
-      minimum_splash_image_size_in_dp_(minimum_splash_image_size_in_dp) {
-}
+      minimum_splash_image_size_in_dp_(minimum_splash_image_size_in_dp) {}
 
 AppBannerDataFetcherAndroid::~AppBannerDataFetcherAndroid() {
 }

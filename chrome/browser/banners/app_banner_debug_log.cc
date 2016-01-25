@@ -4,8 +4,6 @@
 
 #include "chrome/browser/banners/app_banner_debug_log.h"
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -33,6 +31,7 @@ const char kManifestMissingNameOrShortName[] =
 const char kManifestMissingSuitableIcon[] =
     "manifest does not contain a suitable icon - PNG format of at least "
     "144x144px is required, and the sizes attribute must be set";
+const char kNotLoadedInMainFrame[] = "page not loaded in the main frame";
 const char kNotServedFromSecureOrigin[] =
     "page not served from a secure origin";
 // The leading space is intentional as another string is prepended.
@@ -44,19 +43,19 @@ const char kIgnoredIdsDoNotMatch[] =
     "manifest, but they do not match";
 
 void OutputDeveloperNotShownMessage(content::WebContents* web_contents,
-                                    const std::string& message) {
-  OutputDeveloperDebugMessage(web_contents, "not shown: " + message);
+                                    const std::string& message,
+                                    bool is_debug_mode) {
+  OutputDeveloperDebugMessage(web_contents, "not shown: " + message,
+                              is_debug_mode);
 }
 
 void OutputDeveloperDebugMessage(content::WebContents* web_contents,
-                                 const std::string& message) {
-  std::string log_message = "App banner " + message;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBypassAppBannerEngagementChecks) &&
-      web_contents) {
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_DEBUG, log_message);
-  }
+                                 const std::string& message,
+                                 bool is_debug_mode) {
+  if (!is_debug_mode || !web_contents)
+    return;
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_DEBUG, "App banner " + message);
 }
 
 }  // namespace banners

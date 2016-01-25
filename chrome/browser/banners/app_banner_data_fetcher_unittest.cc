@@ -36,7 +36,10 @@ class AppBannerDataFetcherUnitTest : public testing::Test {
     // The second argument is the web_contents pointer, which is used for
     // developer debug logging to the console. The logging is skipped inside the
     // method if a null web_contents pointer is provided, so this is safe.
-    return AppBannerDataFetcher::IsManifestValidForWebApp(manifest, nullptr);
+    // The third argument is the is_debug_mode boolean value, which is true only
+    // when it is triggered by the developer's action in DevTools.
+    return AppBannerDataFetcher::IsManifestValidForWebApp(manifest, nullptr,
+                                                          false);
   }
 };
 
