@@ -87,8 +87,7 @@ public:
 
     enum DelayedActionType {
         LoadMediaResource = 1 << 0,
-        LoadTextTrackResource = 1 << 1,
-        TextTrackChangesNotification = 1 << 2
+        LoadTextTrackResource = 1 << 1
     };
     void scheduleDelayedAction(DelayedActionType);
 
