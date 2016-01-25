@@ -28,11 +28,21 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutView.h"
-#include "platform/LengthFunctions.h"
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
+
+namespace {
+
+// Adapt a Length to the allowed range of a LayoutUnit.
+float clampCoordinate(const Length& length)
+{
+    ASSERT(length.isFixed());
+    return LayoutUnit(length.value()).toFloat();
+}
+
+}
 
 using namespace HTMLNames;
 
@@ -126,9 +136,6 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
     if (m_coords.isEmpty() && m_shape != Default)
         return Path();
 
-    LayoutUnit width = size.width();
-    LayoutUnit height = size.height();
-
     // If element omits the shape attribute, select shape based on number of coordinates.
     Shape shape = m_shape;
     if (shape == Unknown) {
@@ -145,30 +152,29 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
     case Poly:
         if (m_coords.size() >= 6) {
             int numPoints = m_coords.size() / 2;
-            path.moveTo(FloatPoint(minimumValueForLength(m_coords[0], width).toFloat(), minimumValueForLength(m_coords[1], height).toFloat()));
+            path.moveTo(FloatPoint(clampCoordinate(m_coords[0]), clampCoordinate(m_coords[1])));
             for (int i = 1; i < numPoints; ++i)
-                path.addLineTo(FloatPoint(minimumValueForLength(m_coords[i * 2], width).toFloat(), minimumValueForLength(m_coords[i * 2 + 1], height).toFloat()));
+                path.addLineTo(FloatPoint(clampCoordinate(m_coords[i * 2]), clampCoordinate(m_coords[i * 2 + 1])));
             path.closeSubpath();
         }
         break;
     case Circle:
         if (m_coords.size() >= 3) {
-            Length radius = m_coords[2];
-            float r = std::min(minimumValueForLength(radius, width).toFloat(), minimumValueForLength(radius, height).toFloat());
-            path.addEllipse(FloatRect(minimumValueForLength(m_coords[0], width).toFloat() - r, minimumValueForLength(m_coords[1], height).toFloat() - r, 2 * r, 2 * r));
+            float r = clampCoordinate(m_coords[2]);
+            path.addEllipse(FloatRect(clampCoordinate(m_coords[0]) - r, clampCoordinate(m_coords[1]) - r, 2 * r, 2 * r));
         }
         break;
     case Rect:
         if (m_coords.size() >= 4) {
-            float x0 = minimumValueForLength(m_coords[0], width).toFloat();
-            float y0 = minimumValueForLength(m_coords[1], height).toFloat();
-            float x1 = minimumValueForLength(m_coords[2], width).toFloat();
-            float y1 = minimumValueForLength(m_coords[3], height).toFloat();
+            float x0 = clampCoordinate(m_coords[0]);
+            float y0 = clampCoordinate(m_coords[1]);
+            float x1 = clampCoordinate(m_coords[2]);
+            float y1 = clampCoordinate(m_coords[3]);
             path.addRect(FloatRect(x0, y0, x1 - x0, y1 - y0));
         }
         break;
     case Default:
-        path.addRect(FloatRect(0, 0, width.toFloat(), height.toFloat()));
+        path.addRect(FloatRect(FloatPoint(0, 0), FloatSize(size)));
         break;
     case Unknown:
         break;
