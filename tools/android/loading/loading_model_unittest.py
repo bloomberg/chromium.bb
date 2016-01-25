@@ -8,9 +8,9 @@ import unittest
 
 import dag
 import loading_model
-import loading_trace
 import request_track
 import request_dependencies_lens
+import test_utils
 
 
 class SimpleLens(object):
@@ -29,14 +29,6 @@ class SimpleLens(object):
     return deps
 
 
-class MockRequestTrack(object):
-  def __init__(self, requests):
-    self._requests = requests
-
-  def GetEvents(self):
-    return self._requests
-
-
 class LoadingModelTestCase(unittest.TestCase):
 
   def setUp(self):
@@ -51,6 +43,7 @@ class LoadingModelTestCase(unittest.TestCase):
         'receiveHeadersEnd': end_time - start_time,
         'requestTime': start_time / 1000.0}))
     rq = request_track.Request.FromJsonDict({
+        'timestamp': start_time / 1000.0,
         'request_id': self._next_request_id,
         'url': 'http://' + str(url),
         'initiator': 'http://' + str(source_url),
@@ -63,8 +56,8 @@ class LoadingModelTestCase(unittest.TestCase):
     return rq
 
   def MakeGraph(self, requests):
-    return loading_model.ResourceGraph(loading_trace.LoadingTrace(
-        None, None, None, MockRequestTrack(requests), None))
+    return loading_model.ResourceGraph(
+        test_utils.LoadingTraceFromEvents(requests))
 
   def SortedIndicies(self, graph):
     return [n.Index() for n in dag.TopologicalSort(graph._nodes)]

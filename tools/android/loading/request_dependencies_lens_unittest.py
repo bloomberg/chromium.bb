@@ -8,31 +8,7 @@ import devtools_monitor
 from loading_trace import LoadingTrace
 from request_dependencies_lens import RequestDependencyLens
 from request_track import (Request, TimingFromDict)
-from page_track import PageTrack
-
-
-class FakeTrack(devtools_monitor.Track):
-  def __init__(self, events):
-    super(FakeTrack, self).__init__(None)
-    self._events = events
-
-  def GetEvents(self):
-    return self._events
-
-
-class FakeRequestTrack(devtools_monitor.Track):
-  def __init__(self, events):
-    super(FakeRequestTrack, self).__init__(None)
-    self._events = [self._RewriteEvent(e) for e in events]
-
-  def GetEvents(self):
-    return self._events
-
-  def _RewriteEvent(self, event):
-    # This modifies the instance used across tests, so this method
-    # must be idempotent.
-    event.timing = event.timing._replace(request_time=event.timestamp)
-    return event
+import test_utils
 
 
 class RequestDependencyLensTestCase(unittest.TestCase):
@@ -74,14 +50,12 @@ class RequestDependencyLensTestCase(unittest.TestCase):
                      'stackTrace': [{'url': 'unknown'},
                                     {'url': 'http://bla.com/nyancat.js'}]},
        'timestamp': 10, 'timing': TimingFromDict({})})
-  _PAGE_TRACK = FakeTrack(
-      [{'method': 'Page.frameAttached',
-        'frame_id': '123.13', 'parent_frame_id': '123.1'}])
+  _PAGE_EVENTS = [{'method': 'Page.frameAttached',
+                   'frame_id': '123.13', 'parent_frame_id': '123.1'}]
 
   def testRedirectDependency(self):
-    request_track = FakeRequestTrack([self._REDIRECT_REQUEST, self._REQUEST])
-    loading_trace = LoadingTrace(None, None, PageTrack(None),
-                                 request_track, None)
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        [self._REDIRECT_REQUEST, self._REQUEST])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
@@ -91,9 +65,8 @@ class RequestDependencyLensTestCase(unittest.TestCase):
     self.assertEquals(self._REQUEST.request_id, second.request_id)
 
   def testScriptDependency(self):
-    request_track = FakeRequestTrack([self._JS_REQUEST, self._JS_REQUEST_2])
-    loading_trace = LoadingTrace(None, None, PageTrack(None),
-                                 request_track, None)
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        [self._JS_REQUEST, self._JS_REQUEST_2])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
@@ -102,9 +75,8 @@ class RequestDependencyLensTestCase(unittest.TestCase):
         self._JS_REQUEST.request_id, self._JS_REQUEST_2.request_id, 'script')
 
   def testParserDependency(self):
-    request_track = FakeRequestTrack([self._REQUEST, self._JS_REQUEST])
-    loading_trace = LoadingTrace(None, None, PageTrack(None),
-                                 request_track, None)
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        [self._REQUEST, self._JS_REQUEST])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
@@ -113,11 +85,9 @@ class RequestDependencyLensTestCase(unittest.TestCase):
         self._REQUEST.request_id, self._JS_REQUEST.request_id, 'parser')
 
   def testSeveralDependencies(self):
-    request_track = FakeRequestTrack(
+    loading_trace = test_utils.LoadingTraceFromEvents(
         [self._REDIRECT_REQUEST, self._REQUEST, self._JS_REQUEST,
          self._JS_REQUEST_2])
-    loading_trace = LoadingTrace(None, None, PageTrack(None),
-                                 request_track, None)
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(3, len(deps))
@@ -133,10 +103,8 @@ class RequestDependencyLensTestCase(unittest.TestCase):
 
   def testDependencyDifferentFrame(self):
     """Checks that a more recent request from another frame is ignored."""
-    request_track = FakeRequestTrack(
+    loading_trace = test_utils.LoadingTraceFromEvents(
         [self._JS_REQUEST, self._JS_REQUEST_OTHER_FRAME, self._JS_REQUEST_2])
-    loading_trace = LoadingTrace(None, None, PageTrack(None),
-                                 request_track, None)
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
@@ -147,11 +115,9 @@ class RequestDependencyLensTestCase(unittest.TestCase):
   def testDependencySameParentFrame(self):
     """Checks that a more recent request from an unrelated frame is ignored
     if there is one from a related frame."""
-    request_track = FakeRequestTrack(
+    loading_trace = test_utils.LoadingTraceFromEvents(
         [self._JS_REQUEST_OTHER_FRAME, self._JS_REQUEST_UNRELATED_FRAME,
-         self._JS_REQUEST_2])
-    loading_trace = LoadingTrace(None, None, self._PAGE_TRACK,
-                                 request_track, None)
+         self._JS_REQUEST_2], self._PAGE_EVENTS)
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
