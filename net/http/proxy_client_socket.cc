@@ -22,7 +22,7 @@ namespace {
 void CopyHeaderValues(scoped_refptr<HttpResponseHeaders> source,
                       scoped_refptr<HttpResponseHeaders> dest,
                       const std::string& header_name) {
-  void* iter = NULL;
+  size_t iter = 0;
   std::string header_value;
 
   while (source->EnumerateHeader(&iter, header_name, &header_value))

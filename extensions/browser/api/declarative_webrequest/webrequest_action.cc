@@ -968,7 +968,7 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
 
   LinkedPtrEventResponseDelta result(
       new helpers::EventResponseDelta(extension_id, extension_install_time));
-  void* iter = NULL;
+  size_t iter = 0;
   std::string current_value;
   while (headers->EnumerateHeader(&iter, name_, &current_value)) {
     if (has_value_ && !base::EqualsCaseInsensitiveASCII(current_value, value_))

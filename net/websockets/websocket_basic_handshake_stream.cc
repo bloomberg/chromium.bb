@@ -101,10 +101,10 @@ void AddVectorHeaderIfNonEmpty(const char* name,
 GetHeaderResult GetSingleHeaderValue(const HttpResponseHeaders* headers,
                                      const base::StringPiece& name,
                                      std::string* value) {
-  void* state = nullptr;
+  size_t iter = 0;
   size_t num_values = 0;
   std::string temp_value;
-  while (headers->EnumerateHeader(&state, name, &temp_value)) {
+  while (headers->EnumerateHeader(&iter, name, &temp_value)) {
     if (++num_values > 1)
       return GET_HEADER_MULTIPLE;
     *value = temp_value;
@@ -185,7 +185,7 @@ bool ValidateSubProtocol(
     const std::vector<std::string>& requested_sub_protocols,
     std::string* sub_protocol,
     std::string* failure_message) {
-  void* state = nullptr;
+  size_t iter = 0;
   std::string value;
   base::hash_set<std::string> requested_set(requested_sub_protocols.begin(),
                                             requested_sub_protocols.end());
@@ -195,8 +195,8 @@ bool ValidateSubProtocol(
 
   while (!has_invalid_protocol || !has_multiple_protocols) {
     std::string temp_value;
-    if (!headers->EnumerateHeader(
-            &state, websockets::kSecWebSocketProtocol, &temp_value))
+    if (!headers->EnumerateHeader(&iter, websockets::kSecWebSocketProtocol,
+                                  &temp_value))
       break;
     value = temp_value;
     if (requested_set.count(value) == 0)
@@ -235,13 +235,13 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
                         std::string* accepted_extensions_descriptor,
                         std::string* failure_message,
                         WebSocketExtensionParams* params) {
-  void* state = nullptr;
+  size_t iter = 0;
   std::string header_value;
   std::vector<std::string> header_values;
   // TODO(ricea): If adding support for additional extensions, generalise this
   // code.
   bool seen_permessage_deflate = false;
-  while (headers->EnumerateHeader(&state, websockets::kSecWebSocketExtensions,
+  while (headers->EnumerateHeader(&iter, websockets::kSecWebSocketExtensions,
                                   &header_value)) {
     WebSocketExtensionParser parser;
     if (!parser.Parse(header_value)) {

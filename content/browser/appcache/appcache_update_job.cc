@@ -279,7 +279,7 @@ void AppCacheUpdateJob::URLFetcher::AddConditionalHeaders(
   // Add If-Modified-Since header if response info has Last-Modified header.
   const std::string last_modified = "Last-Modified";
   std::string last_modified_value;
-  headers->EnumerateHeader(NULL, last_modified, &last_modified_value);
+  headers->EnumerateHeader(nullptr, last_modified, &last_modified_value);
   if (!last_modified_value.empty()) {
     extra_headers.SetHeader(net::HttpRequestHeaders::kIfModifiedSince,
                             last_modified_value);
@@ -288,7 +288,7 @@ void AppCacheUpdateJob::URLFetcher::AddConditionalHeaders(
   // Add If-None-Match header if response info has ETag header.
   const std::string etag = "ETag";
   std::string etag_value;
-  headers->EnumerateHeader(NULL, etag, &etag_value);
+  headers->EnumerateHeader(nullptr, etag, &etag_value);
   if (!etag_value.empty()) {
     extra_headers.SetHeader(net::HttpRequestHeaders::kIfNoneMatch,
                             etag_value);
@@ -1474,7 +1474,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
     // Responses with a "vary" header get treated as expired.
     const std::string name = "vary";
     std::string value;
-    void* iter = NULL;
+    size_t iter = 0;
     if (!http_info->headers.get() ||
         http_info->headers->RequiresValidation(http_info->request_time,
                                                http_info->response_time,

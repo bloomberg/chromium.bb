@@ -544,7 +544,7 @@ std::vector<std::string> DataReductionProxyTamperDetection::GetHeaderValues(
     const std::string& header_name) {
   std::vector<std::string> values;
   std::string value;
-  void* iter = NULL;
+  size_t iter = 0;
   while (headers->EnumerateHeader(&iter, header_name, &value)) {
     values.push_back(value);
   }

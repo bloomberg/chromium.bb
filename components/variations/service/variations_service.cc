@@ -216,7 +216,7 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
 std::string GetHeaderValue(const net::HttpResponseHeaders* headers,
                            const base::StringPiece& name) {
   std::string value;
-  headers->EnumerateHeader(NULL, name, &value);
+  headers->EnumerateHeader(nullptr, name, &value);
   return value;
 }
 
@@ -226,7 +226,7 @@ std::vector<std::string> GetHeaderValuesList(
     const net::HttpResponseHeaders* headers,
     const base::StringPiece& name) {
   std::vector<std::string> values;
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
   while (headers->EnumerateHeader(&iter, name, &value)) {
     values.push_back(value);

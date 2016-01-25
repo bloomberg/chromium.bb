@@ -256,7 +256,7 @@ bool AttachmentDownloaderImpl::ExtractCrc32c(
 
   std::string crc32c_encoded;
   std::string header_value;
-  void* iter = NULL;
+  size_t iter = 0;
   // Iterate over all matching headers.
   while (headers->EnumerateHeader(&iter, "x-goog-hash", &header_value)) {
     // Because EnumerateHeader is smart about list values, header_value will

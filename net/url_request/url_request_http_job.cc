@@ -364,7 +364,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
     } else {
       const std::string name = "Get-Dictionary";
       std::string url_text;
-      void* iter = NULL;
+      size_t iter = 0;
       // TODO(jar): We need to not fetch dictionaries the first time they are
       // seen, but rather wait until we can justify their usefulness.
       // For now, we will only fetch the first dictionary, which will at least
@@ -399,7 +399,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
     // as though the content is corrupted (when we discover it is not SDCH
     // encoded).
     std::string sdch_response_status;
-    void* iter = NULL;
+    size_t iter = 0;
     while (GetResponseHeaders()->EnumerateHeader(&iter, "X-Sdch-Encode",
                                                  &sdch_response_status)) {
       if (sdch_response_status == "0") {
@@ -840,7 +840,7 @@ void URLRequestHttpJob::FetchResponseCookies(
   const std::string name = "Set-Cookie";
   std::string value;
 
-  void* iter = NULL;
+  size_t iter = 0;
   HttpResponseHeaders* headers = GetResponseHeaders();
   while (headers->EnumerateHeader(&iter, name, &value)) {
     if (!value.empty())
@@ -893,7 +893,7 @@ void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {
   //   first such header field.
   HttpResponseHeaders* headers = GetResponseHeaders();
   std::string value;
-  if (headers->EnumerateHeader(NULL, "Strict-Transport-Security", &value))
+  if (headers->EnumerateHeader(nullptr, "Strict-Transport-Security", &value))
     security_state->AddHSTSHeader(request_info_.url.host(), value);
 }
 
@@ -1176,7 +1176,7 @@ Filter* URLRequestHttpJob::SetupFilter() const {
   std::vector<Filter::FilterType> encoding_types;
   std::string encoding_type;
   HttpResponseHeaders* headers = GetResponseHeaders();
-  void* iter = NULL;
+  size_t iter = 0;
   while (headers->EnumerateHeader(&iter, "Content-Encoding", &encoding_type)) {
     encoding_types.push_back(Filter::ConvertEncodingToType(encoding_type));
   }

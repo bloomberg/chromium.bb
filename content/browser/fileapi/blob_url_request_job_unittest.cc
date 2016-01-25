@@ -534,7 +534,7 @@ TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {
   std::string content_type;
   EXPECT_TRUE(request_->response_headers()->GetMimeType(&content_type));
   EXPECT_EQ(kTestContentType, content_type);
-  void* iter = NULL;
+  size_t iter = 0;
   std::string content_disposition;
   EXPECT_TRUE(request_->response_headers()->EnumerateHeader(
       &iter, "Content-Disposition", &content_disposition));

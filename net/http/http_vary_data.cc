@@ -32,7 +32,7 @@ bool HttpVaryData::Init(const HttpRequestInfo& request_info,
   // If the Vary header contains '*' then we should not construct any vary data
   // since it is all usurped by a '*'.  See section 13.6 of RFC 2616.
   //
-  void* iter = NULL;
+  size_t iter = 0;
   std::string name = "vary", request_header;
   while (response_headers.EnumerateHeader(&iter, name, &request_header)) {
     if (request_header == "*")

@@ -82,7 +82,7 @@ bool GetDataReductionProxyActionValue(
   DCHECK(!action_prefix.empty());
   // A valid action does not include a trailing '='.
   DCHECK(action_prefix[action_prefix.size() - 1] != kActionValueDelimiter);
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
   std::string prefix = action_prefix + kActionValueDelimiter;
 
@@ -106,7 +106,7 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
   DCHECK(!action_prefix.empty());
   // A valid action does not include a trailing '='.
   DCHECK(action_prefix[action_prefix.size() - 1] != kActionValueDelimiter);
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
   std::string prefix = action_prefix + kActionValueDelimiter;
 
@@ -188,7 +188,7 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
   const size_t kVersionSize = 4;
   const char kDataReductionProxyViaValue[] = "Chrome-Compression-Proxy";
   size_t value_len = strlen(kDataReductionProxyViaValue);
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
 
   // Case-sensitive comparison of |value|. Assumes the received protocol and the
@@ -318,7 +318,7 @@ void GetDataReductionProxyHeaderWithFingerprintRemoved(
       kChromeProxyActionFingerprintChromeProxy) + kActionValueDelimiter;
 
   std::string value;
-  void* iter = NULL;
+  size_t iter = 0;
   while (headers->EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
     if (value.size() > chrome_proxy_fingerprint_prefix.size()) {
       if (base::StartsWith(value, chrome_proxy_fingerprint_prefix,

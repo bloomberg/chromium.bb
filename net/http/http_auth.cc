@@ -37,7 +37,7 @@ void HttpAuth::ChooseBestChallenge(
   scoped_ptr<HttpAuthHandler> best;
   const std::string header_name = GetChallengeHeaderName(target);
   std::string cur_challenge;
-  void* iter = NULL;
+  size_t iter = 0;
   while (headers->EnumerateHeader(&iter, header_name, &cur_challenge)) {
     scoped_ptr<HttpAuthHandler> cur;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
@@ -70,7 +70,7 @@ HttpAuth::AuthorizationResult HttpAuth::HandleChallengeResponse(
     return HttpAuth::AUTHORIZATION_RESULT_REJECT;
   std::string current_scheme_name = SchemeToString(current_scheme);
   const std::string header_name = GetChallengeHeaderName(target);
-  void* iter = NULL;
+  size_t iter = 0;
   std::string challenge;
   HttpAuth::AuthorizationResult authorization_result =
       HttpAuth::AUTHORIZATION_RESULT_INVALID;

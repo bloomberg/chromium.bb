@@ -838,7 +838,7 @@ static ParsedResponseCookies GetResponseCookies(
     scoped_refptr<net::HttpResponseHeaders> override_response_headers) {
   ParsedResponseCookies result;
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
   while (override_response_headers->EnumerateHeader(&iter, "Set-Cookie",
                                                     &value)) {

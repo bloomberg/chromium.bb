@@ -88,7 +88,7 @@ void ProcessAlternativeServices(HttpNetworkSession* session,
     return;
 
   std::vector<std::string> alternate_protocol_values;
-  void* iter = NULL;
+  size_t iter = 0;
   std::string alternate_protocol_str;
   while (headers.EnumerateHeader(&iter, kAlternateProtocolHeader,
                                  &alternate_protocol_str)) {

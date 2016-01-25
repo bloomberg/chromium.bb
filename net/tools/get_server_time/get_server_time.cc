@@ -283,7 +283,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string date_header;
   while (headers->EnumerateHeader(&iter, "Date", &date_header)) {
     std::printf("Got date header: %s\n", date_header.c_str());

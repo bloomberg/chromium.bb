@@ -1116,7 +1116,7 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   EXPECT_FALSE(proxy_headers_handler.observed_before_proxy_headers_sent());
 
   std::string server_header;
-  void* iter = NULL;
+  size_t iter = 0;
   bool has_server_header = response->headers->EnumerateHeader(
       &iter, "Server", &server_header);
   EXPECT_TRUE(has_server_header);

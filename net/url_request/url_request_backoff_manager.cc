@@ -111,7 +111,7 @@ bool URLRequestBackoffManager::GetBackoffTime(HttpResponseHeaders* headers,
                                               base::TimeDelta* result) const {
   base::StringPiece name("Backoff");
   std::string value;
-  void* iter = NULL;
+  size_t iter = 0;
   while (headers->EnumerateHeader(&iter, name, &value)) {
     int64_t seconds;
     base::StringToInt64(value, &seconds);

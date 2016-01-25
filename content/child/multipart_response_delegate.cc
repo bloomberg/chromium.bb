@@ -249,7 +249,7 @@ bool MultipartResponseDelegate::ParseHeaders() {
   for (size_t i = 0; i < arraysize(kReplaceHeaders); ++i) {
     std::string name(kReplaceHeaders[i]);
     std::string value;
-    void* iterator = nullptr;
+    size_t iterator = 0;
     while (response_headers->EnumerateHeader(&iterator, name, &value)) {
       response.addHTTPHeaderField(WebString::fromLatin1(name),
                                   WebString::fromLatin1(value));

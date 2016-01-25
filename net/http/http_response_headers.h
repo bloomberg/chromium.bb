@@ -171,13 +171,12 @@ class NET_EXPORT HttpResponseHeaders
                             std::string* value) const;
 
   // Enumerate the values of the specified header.   If you are only interested
-  // in the first header, then you can pass NULL for the 'iter' parameter.
+  // in the first header, then you can pass nullptr for the 'iter' parameter.
   // Otherwise, to iterate across all values for the specified header,
-  // initialize a 'void*' variable to NULL and pass it by address to
+  // initialize a 'size_t' variable to 0 and pass it by address to
   // EnumerateHeader. Note that a header might have an empty value. Call
   // EnumerateHeader repeatedly until it returns false.
-  // TODO(Olli Raula) Remove void**
-  bool EnumerateHeader(void** iter,
+  bool EnumerateHeader(size_t* iter,
                        const base::StringPiece& name,
                        std::string* value) const;
 

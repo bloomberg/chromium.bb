@@ -2010,7 +2010,7 @@ TEST(ExtensionWebRequestHelpersTest,
       deltas, headers1.get(), &new_headers1, &warning_set, &net_log);
 
   EXPECT_TRUE(new_headers1->HasHeader("Foo"));
-  void* iter = NULL;
+  size_t iter = 0;
   std::string cookie_string;
   std::set<std::string> expected_cookies;
   expected_cookies.insert("name=value; domain=google.com; secure");

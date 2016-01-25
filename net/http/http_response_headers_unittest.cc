@@ -457,7 +457,7 @@ TEST(HttpResponseHeadersTest, EnumerateHeader_Coalesced) {
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
   EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("private", value);
@@ -478,7 +478,7 @@ TEST(HttpResponseHeadersTest, EnumerateHeader_Challenge) {
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string value;
   EXPECT_TRUE(parsed->EnumerateHeader(&iter, "WWW-Authenticate", &value));
   EXPECT_EQ("Digest realm=foobar, nonce=x, domain=y", value);
