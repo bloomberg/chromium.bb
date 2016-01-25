@@ -9,6 +9,8 @@ import sys
 import tempfile
 import unittest
 
+from telemetry import decorators
+
 
 class ScriptsSmokeTest(unittest.TestCase):
 
@@ -48,6 +50,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('optional arguments:', stdout)
 
+  @decorators.Disabled('all')  # crbug.com/581103
   def testRunRecordWprList(self):
     return_code, stdout = self.RunPerfScript('record_wpr --list-benchmarks')
     # TODO(nednguyen): Remove this once we figure out why importing
