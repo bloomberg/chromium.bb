@@ -26,6 +26,7 @@
 #ifndef History_h
 #define History_h
 
+#include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -39,8 +40,9 @@ class LocalFrame;
 class KURL;
 class ExecutionContext;
 class ExceptionState;
+class SecurityOrigin;
 
-class History final : public GarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
+class CORE_EXPORT History final : public GarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(History);
 public:
@@ -76,10 +78,15 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURL);
+    FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURLInFileOrigin);
+    FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURLInUniqueOrigin);
+
     explicit History(LocalFrame*);
 
+    static bool canChangeToUrl(const KURL&, SecurityOrigin*, const KURL& documentURL);
+
     KURL urlForState(const String& url);
-    bool canChangeToUrl(const KURL& url);
 
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, HistoryScrollRestorationType, FrameLoadType, ExceptionState&);
     SerializedScriptValue* stateInternal() const;

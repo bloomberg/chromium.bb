@@ -3949,6 +3949,7 @@
             'fileapi/FileListTest.cpp',
             'fileapi/FileTest.cpp',
             'frame/FrameViewTest.cpp',
+            'frame/HistoryTest.cpp',
             'frame/ImageBitmapTest.cpp',
             'frame/OriginsUsingFeaturesTest.cpp',
             'frame/RootFrameViewportTest.cpp',

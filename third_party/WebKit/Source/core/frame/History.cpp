@@ -182,24 +182,25 @@ KURL History::urlForState(const String& urlString)
     return KURL(document->baseURL(), urlString);
 }
 
-bool History::canChangeToUrl(const KURL& url)
+bool History::canChangeToUrl(const KURL& url, SecurityOrigin* documentOrigin, const KURL& documentURL)
 {
     if (!url.isValid())
         return false;
 
-    Document* document = m_frame->document();
-    SecurityOrigin* origin = document->securityOrigin();
-    if (origin->isGrantedUniversalAccess())
+    if (documentOrigin->isGrantedUniversalAccess())
         return true;
 
-    if (origin->isUnique())
-        return false;
+    // We allow sandboxed documents, `data:`/`file:` URLs, etc. to use
+    // 'pushState'/'replaceState' to modify the URL fragment: see
+    // https://crbug.com/528681 for the compatibility concerns.
+    if (documentOrigin->isUnique() || documentOrigin->isLocal())
+        return equalIgnoringFragmentIdentifier(url, documentURL);
 
-    if (!equalIgnoringPathQueryAndFragment(url, document->url()))
+    if (!equalIgnoringPathQueryAndFragment(url, documentURL))
         return false;
 
     RefPtr<SecurityOrigin> requestedOrigin = SecurityOrigin::create(url);
-    if (requestedOrigin->isUnique() || !requestedOrigin->isSameSchemeHostPort(origin))
+    if (requestedOrigin->isUnique() || !requestedOrigin->isSameSchemeHostPort(documentOrigin))
         return false;
 
     return true;
@@ -211,7 +212,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         return;
 
     KURL fullURL = urlForState(urlString);
-    if (!canChangeToUrl(fullURL)) {
+    if (!canChangeToUrl(fullURL, m_frame->document()->securityOrigin(), m_frame->document()->url())) {
         // We can safely expose the URL to JavaScript, as a) no redirection takes place: JavaScript already had this URL, b) JavaScript can only access a same-origin History object.
         exceptionState.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "' and URL '" + m_frame->document()->url().elidedString() + "'.");
         return;
