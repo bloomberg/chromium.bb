@@ -694,7 +694,8 @@ def _FetchAllFiles(input_api, white_list, black_list):
 
 
 def GetPylint(input_api, output_api, white_list=None, black_list=None,
-              disabled_warnings=None, extra_paths_list=None, pylintrc=None):
+              disabled_warnings=None, extra_paths_list=None, extensions=None,
+              pylintrc=None):
   """Run pylint on python files.
 
   The default white_list enforces looking only at *.py files.
@@ -729,11 +730,16 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
     input_api.logging.info('Skipping pylint: no matching changes.')
     return []
 
+  extra_args = []
+
+  if extensions:
+    extra_args.append('--extension-pkg-whitelist=' + ','.join(extensions))
+
   if pylintrc is not None:
     pylintrc = input_api.os_path.join(input_api.PresubmitLocalPath(), pylintrc)
   else:
     pylintrc = input_api.os_path.join(_HERE, 'pylintrc')
-  extra_args = ['--rcfile=%s' % pylintrc]
+  extra_args.append('--rcfile=%s' % pylintrc)
   if disabled_warnings:
     extra_args.extend(['-d', ','.join(disabled_warnings)])
 
