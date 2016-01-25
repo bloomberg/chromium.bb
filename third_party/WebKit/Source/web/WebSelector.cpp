@@ -38,7 +38,7 @@ namespace blink {
 
 WebString canonicalizeSelector(WebString webSelector, WebSelectorType restriction)
 {
-    CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), webSelector);
+    CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), nullptr, webSelector);
 
     if (restriction == WebSelectorTypeCompound) {
         for (const CSSSelector* selector = selectorList.first(); selector; selector = selectorList.next(*selector)) {

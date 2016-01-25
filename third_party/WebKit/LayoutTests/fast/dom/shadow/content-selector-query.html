@@ -25,9 +25,7 @@ function test(select, valid) {
 }
 
 var dataOfValidCases = [
-    null, '',
-    'ns|div', '*|div', '|div', 'div',
-    'ns|*', '*|*', '|*', '*',
+    null, '', '*|div', '|div', 'div', '*|*', '|*', '*',
     '.elem', 'p.elem', 'foo.elem', '*.right',
     '#elem', 'p#elem', 'foo#elem', '*#something',
     'div[title]', 'div[class="example"]', 'div[hello="Cleveland"][goodbye="Columbus"]',
@@ -39,7 +37,7 @@ var dataOfValidCases = [
 
 var dataOfInvalidCases = [
     'div div', 'div > div', 'div + div', 'div ~ div',
-    'div:root', 'div:lang(en)',
+    'ns|div', 'ns|*', 'div:root', 'div:lang(en)',
     'div::before', 'div::after', 'div::first-line', 'div::first-letter',
     'div:active', 'div:hover', 'div:focus',
     'div div:not(div)', 'div:not(div) div', 'div span div',

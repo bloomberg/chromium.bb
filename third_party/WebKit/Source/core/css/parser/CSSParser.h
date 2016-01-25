@@ -30,7 +30,7 @@ public:
     // As well as regular rules, allows @import and @namespace but not @charset
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
     static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&);
-    static CSSSelectorList parseSelector(const CSSParserContext&, const String&);
+    static CSSSelectorList parseSelector(const CSSParserContext&, StyleSheetContents*, const String&);
     static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&);
     // Returns whether anything was changed.
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, StyleSheetContents*);

@@ -313,14 +313,8 @@ void StyleSheetContents::parserAddNamespace(const AtomicString& prefix, const At
     result.storedValue->value = uri;
 }
 
-const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& prefix)
+const AtomicString& StyleSheetContents::namespaceURIFromPrefix(const AtomicString& prefix)
 {
-    if (prefix.isNull())
-        return defaultNamespace();
-    if (prefix.isEmpty())
-        return emptyAtom; // No namespace. If an element/attribute has a namespace, we won't match it.
-    if (prefix == starAtom)
-        return starAtom; // We'll match any namespace.
     return m_namespaces.get(prefix);
 }
 

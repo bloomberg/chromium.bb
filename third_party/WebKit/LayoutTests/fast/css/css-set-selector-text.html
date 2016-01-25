@@ -22,10 +22,10 @@ function setThenReadSelectorText(selector)
     head.appendChild(styleElement);
 
     // First, create a rule with a bogus selector.
-    styleElement.appendChild(document.createTextNode(bogusSelector + " { }"));
+    styleElement.appendChild(document.createTextNode("@namespace n url(test); " + bogusSelector + " { }"));
     // Now, set the desired selector text.
-    styleElement.sheet.cssRules[0].selectorText = selector;
-    return styleElement.sheet.cssRules[0].selectorText;
+    styleElement.sheet.cssRules[1].selectorText = selector;
+    return styleElement.sheet.cssRules[1].selectorText;
 }
 
 function testSelectorRoundTrip(selector, expectFailure)
@@ -66,6 +66,9 @@ testSelectorRoundTrip('*|*');
 testSelectorRoundTrip('n|*');
 testSelectorRoundTrip('[*|a]');
 testSelectorRoundTrip('[n|a]');
+testSelectorRoundTrip('unresolved|a', true);
+testSelectorRoundTrip('unresolved|*', true);
+testSelectorRoundTrip('[unresolved|a]', true);
 
 debug('');
 

@@ -151,16 +151,6 @@ static bool forEachSelector(const Functor& functor, const CSSSelectorList* selec
     return false;
 }
 
-bool CSSSelectorList::selectorsNeedNamespaceResolution()
-{
-    return forEachSelector([](const CSSSelector& selector) -> bool {
-        if (selector.match() != CSSSelector::Tag && !selector.isAttributeSelector())
-            return false;
-        const AtomicString& prefix = selector.isAttributeSelector() ? selector.attribute().prefix() : selector.tagQName().prefix();
-        return prefix != nullAtom && prefix != emptyAtom && prefix != starAtom;
-    }, this);
-}
-
 bool CSSSelectorList::selectorHasContentPseudo(size_t index) const
 {
     return forEachTagSelector([](const CSSSelector& selector) -> bool {

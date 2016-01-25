@@ -4,15 +4,11 @@ null
 PASS internals.isValidContentSelect(content) is true
 
 PASS internals.isValidContentSelect(content) is true
-ns|div
-PASS internals.isValidContentSelect(content) is true
 *|div
 PASS internals.isValidContentSelect(content) is true
 |div
 PASS internals.isValidContentSelect(content) is true
 div
-PASS internals.isValidContentSelect(content) is true
-ns|*
 PASS internals.isValidContentSelect(content) is true
 *|*
 PASS internals.isValidContentSelect(content) is true
@@ -63,6 +59,10 @@ PASS internals.isValidContentSelect(content) is false
 div + div
 PASS internals.isValidContentSelect(content) is false
 div ~ div
+PASS internals.isValidContentSelect(content) is false
+ns|div
+PASS internals.isValidContentSelect(content) is false
+ns|*
 PASS internals.isValidContentSelect(content) is false
 div:root
 PASS internals.isValidContentSelect(content) is false

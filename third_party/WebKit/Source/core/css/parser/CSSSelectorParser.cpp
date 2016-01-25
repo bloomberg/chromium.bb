@@ -703,9 +703,15 @@ const AtomicString& CSSSelectorParser::defaultNamespace() const
 
 const AtomicString& CSSSelectorParser::determineNamespace(const AtomicString& prefix)
 {
-    if (!m_styleSheet)
+    if (prefix.isNull())
         return defaultNamespace();
-    return m_styleSheet->determineNamespace(prefix);
+    if (prefix.isEmpty())
+        return emptyAtom; // No namespace. If an element/attribute has a namespace, we won't match it.
+    if (prefix == starAtom)
+        return starAtom; // We'll match any namespace.
+    if (!m_styleSheet)
+        return nullAtom; // Cannot resolve prefix to namespace without a stylesheet, syntax error.
+    return m_styleSheet->namespaceURIFromPrefix(prefix);
 }
 
 void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector* compoundSelector)

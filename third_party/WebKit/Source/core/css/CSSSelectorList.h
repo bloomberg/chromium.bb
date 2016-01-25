@@ -75,8 +75,6 @@ public:
         return next - m_selectorArray;
     }
 
-    bool selectorsNeedNamespaceResolution();
-
     bool selectorNeedsUpdatedDistribution(size_t index) const;
 
     bool selectorHasContentPseudo(size_t index) const;

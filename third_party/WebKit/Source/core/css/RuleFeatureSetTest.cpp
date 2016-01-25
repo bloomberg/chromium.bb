@@ -37,7 +37,7 @@ public:
 
     void updateInvalidationSets(const String& selectorText)
     {
-        CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), selectorText);
+        CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), nullptr, selectorText);
 
         RefPtrWillBeRawPtr<StyleRule> styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
         RuleData ruleData(styleRule.get(), 0, 0, RuleHasNoSpecialState);

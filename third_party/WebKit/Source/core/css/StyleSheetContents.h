@@ -66,7 +66,7 @@ public:
     const CSSParserContext& parserContext() const { return m_parserContext; }
 
     const AtomicString& defaultNamespace() { return m_defaultNamespace; }
-    const AtomicString& determineNamespace(const AtomicString& prefix);
+    const AtomicString& namespaceURIFromPrefix(const AtomicString& prefix);
 
     void parseAuthorStyleSheet(const CSSStyleSheetResource*, const SecurityOrigin*);
     void parseString(const String&);

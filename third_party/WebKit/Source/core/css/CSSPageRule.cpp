@@ -70,7 +70,7 @@ String CSSPageRule::selectorText() const
 void CSSPageRule::setSelectorText(const String& selectorText)
 {
     CSSParserContext context(parserContext(), 0);
-    CSSSelectorList selectorList = CSSParser::parseSelector(context, selectorText);
+    CSSSelectorList selectorList = CSSParser::parseSelector(context, parentStyleSheet() ? parentStyleSheet()->contents() : nullptr, selectorText);
     if (!selectorList.isValid())
         return;
 

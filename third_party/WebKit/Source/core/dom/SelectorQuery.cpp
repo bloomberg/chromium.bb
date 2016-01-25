@@ -547,16 +547,10 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
     if (it != m_entries.end())
         return it->value.get();
 
-    CSSSelectorList selectorList = CSSParser::parseSelector(CSSParserContext(document, nullptr), selectors);
+    CSSSelectorList selectorList = CSSParser::parseSelector(CSSParserContext(document, nullptr), nullptr, selectors);
 
     if (!selectorList.first()) {
         exceptionState.throwDOMException(SyntaxError, "'" + selectors + "' is not a valid selector.");
-        return nullptr;
-    }
-
-    // throw a NamespaceError if the selector includes any namespace prefixes.
-    if (selectorList.selectorsNeedNamespaceResolution()) {
-        exceptionState.throwDOMException(NamespaceError, "'" + selectors + "' contains namespaces, which are not supported.");
         return nullptr;
     }
 
