@@ -124,6 +124,8 @@ noinst_LIBRARIES =
 lib_LIBRARIES =
 bin_PROGRAMS =
 check_PROGRAMS =
+EXTRA_PROGRAMS =
+CLEANFILES =
 
 if !DISABLE_PROCESSOR
 lib_LIBRARIES += src/libbreakpad.a
@@ -366,7 +368,9 @@ check_PROGRAMS += \
 endif
 
 if LINUX_HOST
-EXTRA_PROGRAMS = \
+EXTRA_PROGRAMS += \
+	src/client/linux/linux_client_unittest_shlib
+CLEANFILES += \
 	src/client/linux/linux_client_unittest_shlib
 
 check_PROGRAMS += \

@@ -143,9 +143,10 @@ host_triplet = @host@
 # Build as PIC on Linux, for linux_client_unittest_shlib
 @LINUX_HOST_TRUE@am__append_3 = -fPIC
 @LINUX_HOST_TRUE@am__append_4 = -fPIC
-bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
-check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
-	$(am__EXEEXT_7)
+bin_PROGRAMS = $(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4)
+check_PROGRAMS = $(am__EXEEXT_5) $(am__EXEEXT_6) $(am__EXEEXT_7) \
+	$(am__EXEEXT_8)
+EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @DISABLE_PROCESSOR_FALSE@am__append_5 = src/libbreakpad.a
 @DISABLE_PROCESSOR_FALSE@am__append_6 = breakpad.pc
 @DISABLE_PROCESSOR_FALSE@am__append_7 = src/third_party/libdisasm/libdisasm.a
@@ -199,28 +200,33 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest
 
-@LINUX_HOST_TRUE@EXTRA_PROGRAMS = src/client/linux/linux_client_unittest_shlib$(EXEEXT)
 @LINUX_HOST_TRUE@am__append_15 = \
+@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
+
+@LINUX_HOST_TRUE@am__append_16 = \
+@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
+
+@LINUX_HOST_TRUE@am__append_17 = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_16 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_18 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/macho_reader_unittest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest
 
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_17 = \
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_19 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_18 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_20 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_19 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_21 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_20 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_22 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog -lm
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_21 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_23 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@        -llog
 
 noinst_PROGRAMS =
@@ -524,17 +530,18 @@ am__src_third_party_libdisasm_libdisasm_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_operand_list.$(OBJEXT)
 src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 	$(am_src_third_party_libdisasm_libdisasm_a_OBJECTS)
-@DISABLE_PROCESSOR_FALSE@am__EXEEXT_1 = src/processor/microdump_stackwalk$(EXEEXT) \
+@LINUX_HOST_TRUE@am__EXEEXT_1 = src/client/linux/linux_client_unittest_shlib$(EXEEXT)
+@DISABLE_PROCESSOR_FALSE@am__EXEEXT_2 = src/processor/microdump_stackwalk$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk$(EXEEXT)
-@LINUX_HOST_TRUE@am__EXEEXT_2 = src/client/linux/linux_dumper_unittest_helper$(EXEEXT)
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_3 = src/tools/linux/core2md/core2md$(EXEEXT) \
+@LINUX_HOST_TRUE@am__EXEEXT_3 = src/client/linux/linux_dumper_unittest_helper$(EXEEXT)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_4 = src/tools/linux/core2md/core2md$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/dump_syms$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/minidump_upload$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/sym_upload$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/mac/dump_syms/dump_syms_mac$(EXEEXT)
-@DISABLE_PROCESSOR_FALSE@am__EXEEXT_4 = src/common/test_assembler_unittest$(EXEEXT) \
+@DISABLE_PROCESSOR_FALSE@am__EXEEXT_5 = src/common/test_assembler_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/address_map_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info_unittest$(EXEEXT) \
@@ -561,11 +568,11 @@ src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest$(EXEEXT)
-@LINUX_HOST_TRUE@am__EXEEXT_5 = src/client/linux/linux_client_unittest$(EXEEXT)
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_6 = src/common/dumper_unittest$(EXEEXT) \
+@LINUX_HOST_TRUE@am__EXEEXT_6 = src/client/linux/linux_client_unittest$(EXEEXT)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_7 = src/common/dumper_unittest$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/macho_reader_unittest$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__EXEEXT_7 = src/processor/stackwalker_selftest$(EXEEXT)
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__EXEEXT_8 = src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_src_client_linux_linux_client_unittest_OBJECTS =
 src_client_linux_linux_client_unittest_OBJECTS =  \
@@ -2065,6 +2072,7 @@ TEST_CFLAGS = \
 
 noinst_LIBRARIES = $(am__append_7)
 lib_LIBRARIES = $(am__append_5) $(am__append_8)
+CLEANFILES = $(am__append_16)
 @LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_server.cc \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.cc \
@@ -2282,15 +2290,15 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
 @LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
 @LINUX_HOST_TRUE@	src/processor/proc_maps_linux.cc \
-@LINUX_HOST_TRUE@	$(am__append_18) \
+@LINUX_HOST_TRUE@	$(am__append_20) \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
-@LINUX_HOST_TRUE@	$(am__append_19)
+@LINUX_HOST_TRUE@	$(am__append_21)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
 @LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-shared -Wl,-h,linux_client_unittest_shlib \
-@LINUX_HOST_TRUE@	$(am__append_20)
+@LINUX_HOST_TRUE@	$(am__append_22)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.o \
@@ -2321,7 +2329,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
-@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_21)
+@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_23)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
 
@@ -8858,6 +8866,7 @@ mostlyclean-generic:
 	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
