@@ -2604,6 +2604,24 @@
       },
       {
         "args": [
+          "--enable-gpu",
+          "--test-launcher-jobs=1",
+          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
+        ],
+        "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:041a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -2696,21 +2714,6 @@
           ]
         },
         "test": "gles2_conform_test"
-      },
-      {
-        "override_compile_targets": [
-          "tab_capture_end2end_tests_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:041a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        },
-        "test": "tab_capture_end2end_tests"
       }
     ],
     "isolated_scripts": [
