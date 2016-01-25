@@ -46,10 +46,11 @@ PluginPowerSaverBrowserTest.BackgroundTabPlugins
 PluginPowerSaverBrowserTest.LargeCrossOriginObscured
 
 # https://crbug.com/504885
-# The test takes too long.
+# The test takes too long. Excluding with and without PRE_ to crbug.com/581105.
 SmartSessionRestoreMRUTest.PRE_CorrectLoadingOrder
 SmartSessionRestoreMRUTest.CorrectLoadingOrder
 SmartSessionRestoreTest.PRE_CorrectLoadingOrder
+SmartSessionRestoreTest.CorrectLoadingOrder
 
 # https://crbug.com/516368
 PushMessagingBrowserTest.PushEventSuccess
@@ -103,9 +104,6 @@ LoginPromptBrowserTest.ShouldReplaceExistingInterstitialWhenNavigated
 
 # https://crbug.com/577853
 OnStartupSettingsBrowserTest.uiTests
-
-# https://crbug.com/493167
-SmartSessionRestoreTest.PRE_CorrectLoadingOrder
 
 # https://579666
 SearchEngineManagerWebUITest.testOpenSearchEngineManager
