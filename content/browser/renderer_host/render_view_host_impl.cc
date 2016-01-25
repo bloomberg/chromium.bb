@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
@@ -46,6 +47,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -299,6 +301,15 @@ bool RenderViewHostImpl::CreateRenderView(
   DCHECK(GetProcess()->GetBrowserContext());
   CHECK(main_frame_routing_id_ != MSG_ROUTING_NONE ||
         proxy_route_id != MSG_ROUTING_NONE);
+
+  // If swappedout:// is disabled, we should not set both main_frame_routing_id_
+  // and proxy_route_id.  Log cases that this happens (without crashing) to
+  // track down https://crbug.com/574245.
+  // TODO(creis): Remove this once we've found the cause.
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden() &&
+      main_frame_routing_id_ != MSG_ROUTING_NONE &&
+      proxy_route_id != MSG_ROUTING_NONE)
+    base::debug::DumpWithoutCrashing();
 
   GetWidget()->set_renderer_initialized(true);
 
