@@ -98,6 +98,18 @@ bool SectionIsAutofilled(const FormStructure& form_structure,
   return false;
 }
 
+// Returns the credit card field |value| trimmed from whitespace and with stop
+// characters removed.
+base::string16 SanitizeCreditCardFieldValue(const base::string16& value) {
+  base::string16 sanitized;
+  base::TrimWhitespace(value, base::TRIM_ALL, &sanitized);
+  // Some sites have ____-____-____-____ in their credit card number fields, for
+  // example.
+  base::ReplaceChars(sanitized, base::ASCIIToUTF16("-_"),
+                     base::ASCIIToUTF16(""), &sanitized);
+  return sanitized;
+}
+
 }  // namespace
 
 AutofillManager::AutofillManager(
@@ -1526,8 +1538,11 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
 std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
     const FormFieldData& field,
     const AutofillType& type) const {
+  // The field value is sanitized before attempting to match it to the user's
+  // data.
   std::vector<Suggestion> suggestions =
-      personal_data_->GetCreditCardSuggestions(type, field.value);
+      personal_data_->GetCreditCardSuggestions(
+          type, SanitizeCreditCardFieldValue(field.value));
   for (size_t i = 0; i < suggestions.size(); i++) {
     suggestions[i].frontend_id =
         MakeFrontendID(suggestions[i].backend_id, std::string());

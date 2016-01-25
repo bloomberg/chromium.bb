@@ -1312,7 +1312,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsAutofillDisabledByUser) {
 
 // Test that we return all credit card profile suggestions when all form fields
 // are empty.
-TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
@@ -1333,6 +1333,86 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
           "MasterCard\xC2\xA0\xE2\x8B\xAF"
           "8765",
           "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)));
+}
+
+// Test that we return all credit card profile suggestions when the triggering
+// field has whitespace in it.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+  field.value = ASCIIToUTF16("       ");
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Visa\xC2\xA0\xE2\x8B\xAF"
+                                 "3456",
+                                 "04/12", kVisaCard,
+                                 autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion("MasterCard\xC2\xA0\xE2\x8B\xAF"
+                 "8765",
+                 "10/14", kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
+}
+
+// Test that we return all credit card profile suggestions when the triggering
+// field has stop characters in it, which should be removed.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+  field.value = ASCIIToUTF16("____-____-____-____");
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Visa\xC2\xA0\xE2\x8B\xAF"
+                                 "3456",
+                                 "04/12", kVisaCard,
+                                 autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion("MasterCard\xC2\xA0\xE2\x8B\xAF"
+                 "8765",
+                 "10/14", kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
+}
+
+// Test that we return all credit card profile suggestions when the triggering
+// field has stop characters in it and some input.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
+  // Add a credit card with particular numbers that we will attempt to recall.
+  CreditCard* credit_card = new CreditCard;
+  test::SetCreditCardInfo(credit_card, "John Smith",
+                          "5255667890123123",  // Mastercard
+                          "08", "2017");
+  credit_card->set_guid("00000000-0000-0000-0000-000000000007");
+  autofill_manager_->AddCreditCard(credit_card);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+
+  field.value = ASCIIToUTF16("5255-66__-____-____");
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right value to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("MasterCard\xC2\xA0\xE2\x8B\xAF"
+                                 "3123",
+                                 "08/17", kMasterCard,
+                                 autofill_manager_->GetPackedCreditCardID(7)));
 }
 
 // Test that we return only matching credit card profile suggestions when the
