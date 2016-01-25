@@ -102,6 +102,7 @@ per-file network_hints*=ttuttle@chromium.org
 per-file dom_distiller*=bengr@chromium.org
 per-file dom_distiller*=mdjones@chromium.org
 per-file dom_distiller*=nyquist@chromium.org
+per-file dom_distiller*=wychen@chromium.org
 
 per-file domain_reliability.gypi=davidben@chromium.org
 per-file domain_reliability.gypi=mmenke@chromium.org

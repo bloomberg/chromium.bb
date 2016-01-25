@@ -12,6 +12,7 @@ per-file data_reduction_proxy*=sclittle@chromium.org
 per-file data_reduction_proxy*=tbansal@chromium.org
 per-file dom_distiller*=mdjones@chromium.org
 per-file dom_distiller*=nyquist@chromium.org
+per-file dom_distiller*=wychen@chromium.org
 per-file gcm_driver_resources.grdp=dimich@chromium.org
 per-file gcm_driver_resources.grdp=fgorski@chromium.org
 per-file gcm_driver_resources.grdp=jianli@chromium.org
