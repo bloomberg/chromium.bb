@@ -446,7 +446,9 @@ scoped_ptr<ServiceWorkerFetchRequest>
 ServiceWorkerURLRequestJob::CreateFetchRequest() {
   std::string blob_uuid;
   uint64_t blob_size = 0;
-  CreateRequestBodyBlob(&blob_uuid, &blob_size);
+  // The upload data in URLRequest may have been cleared while handing redirect.
+  if (request_->has_upload())
+    CreateRequestBodyBlob(&blob_uuid, &blob_size);
   scoped_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest());
   request->mode = request_mode_;
