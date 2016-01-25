@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -40,9 +41,11 @@ using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using testing::_;
 using testing::Invoke;
-using testing::TestWithParam;
-using testing::Values;
+using testing::Pointee;
 using testing::Return;
+using testing::TestWithParam;
+using testing::UnorderedElementsAre;
+using testing::Values;
 
 namespace {
 
@@ -1055,6 +1058,33 @@ TEST_P(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
   EXPECT_EQ(0u, form_list.size());
 }
 
+TEST_P(NativeBackendKWalletTest, GetAllLogins) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend), form_google_));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend), form_isc_));
+
+  ScopedVector<autofill::PasswordForm> form_list;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&NativeBackendKWalletStub::GetAllLogins,
+                 base::Unretained(&backend), &form_list),
+      base::Bind(&CheckTrue));
+
+  RunDBThread();
+
+  EXPECT_EQ(2u, form_list.size());
+  EXPECT_THAT(form_list,
+              UnorderedElementsAre(Pointee(form_google_), Pointee(form_isc_)));
+}
+
 INSTANTIATE_TEST_CASE_P(,
                         NativeBackendKWalletTest,
                         ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
@@ -1172,7 +1202,6 @@ void NativeBackendKWalletPickleTest::CheckVersion6Pickle(
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0], true);
-
 }
 
 void NativeBackendKWalletPickleTest::CheckVersion5Pickle() {

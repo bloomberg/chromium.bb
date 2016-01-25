@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -370,11 +372,11 @@ bool NativeBackendKWallet::StartKWalletd() {
                                "start_service_by_desktop_name");
   dbus::MessageWriter builder(&method_call);
   std::vector<std::string> empty;
-  builder.AppendString(kwalletd_name_); // serviceName
-  builder.AppendArrayOfStrings(empty);  // urls
-  builder.AppendArrayOfStrings(empty);  // envs
-  builder.AppendString(std::string());  // startup_id
-  builder.AppendBool(false);            // blind
+  builder.AppendString(kwalletd_name_);  // serviceName
+  builder.AppendArrayOfStrings(empty);   // urls
+  builder.AppendArrayOfStrings(empty);   // envs
+  builder.AppendString(std::string());   // startup_id
+  builder.AppendBool(false);             // blind
   scoped_ptr<dbus::Response> response(
       klauncher->CallMethodAndBlock(
           &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
@@ -583,6 +585,14 @@ bool NativeBackendKWallet::GetBlacklistLogins(
   return GetLoginsList(BlacklistOptions::BLACKLISTED, wallet_handle, forms);
 }
 
+bool NativeBackendKWallet::GetAllLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
+  int wallet_handle = WalletHandle();
+  if (wallet_handle == kInvalidKWalletHandle)
+    return false;
+  return GetAllLoginsInternal(wallet_handle, forms);
+}
+
 bool NativeBackendKWallet::GetLoginsList(
     const std::string& signon_realm,
     int wallet_handle,
@@ -662,7 +672,7 @@ bool NativeBackendKWallet::GetLoginsList(
     ScopedVector<autofill::PasswordForm>* forms) {
   forms->clear();
   ScopedVector<autofill::PasswordForm> all_forms;
-  if (!GetAllLogins(wallet_handle, &all_forms))
+  if (!GetAllLoginsInternal(wallet_handle, &all_forms))
     return false;
 
   // Remove the duplicate sync tags.
@@ -702,7 +712,7 @@ bool NativeBackendKWallet::GetLoginsList(
   return true;
 }
 
-bool NativeBackendKWallet::GetAllLogins(
+bool NativeBackendKWallet::GetAllLoginsInternal(
     int wallet_handle,
     ScopedVector<autofill::PasswordForm>* forms) {
   // We could probably also use readEntryList here.

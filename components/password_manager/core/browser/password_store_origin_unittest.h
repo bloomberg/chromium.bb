@@ -22,12 +22,18 @@ using testing::ElementsAre;
 namespace password_manager {
 
 PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
-  PasswordFormData data = {PasswordForm::SCHEME_HTML, origin_url, origin_url,
-                           origin_url, L"submit_element", L"username_element",
-                           L"password_element", L"username_value",
-                           // Ignore cleared password values on Mac.
-                           // crbug.com/466638
-                           nullptr, true, false, 1};
+  PasswordFormData data = {PasswordForm::SCHEME_HTML,
+                           origin_url,
+                           origin_url,
+                           "login_element",
+                           L"submit_element",
+                           L"username_element",
+                           L"password_element",
+                           L"username_value",
+                           L"password_value",
+                           true,
+                           false,
+                           1};
   return data;
 }
 
@@ -49,8 +55,8 @@ class PasswordStoreOriginTest : public testing::Test {
 TYPED_TEST_CASE_P(PasswordStoreOriginTest);
 
 TYPED_TEST_P(PasswordStoreOriginTest,
-             RemoveLoginsByOriginAndTimeImpl_FittingOriginAndTime) {
-  const char origin_url[] = "http://foo.example.com";
+             RemoveLoginsByOriginAndTimeImpl_AllFittingOriginAndTime) {
+  const char origin_url[] = "http://foo.example.com/";
   scoped_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
       CreateTestPasswordFormDataByOrigin(origin_url));
   this->delegate_.store()->AddLogin(*form);
@@ -71,8 +77,35 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 }
 
 TYPED_TEST_P(PasswordStoreOriginTest,
+             RemoveLoginsByOriginAndTimeImpl_SomeFittingOriginAndTime) {
+  const char fitting_url[] = "http://foo.example.com/";
+  scoped_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
+      CreateTestPasswordFormDataByOrigin(fitting_url));
+  this->delegate_.store()->AddLogin(*form);
+
+  const char nonfitting_url[] = "http://bar.example.com/";
+  this->delegate_.store()->AddLogin(*CreatePasswordFormFromDataForTesting(
+      CreateTestPasswordFormDataByOrigin(nonfitting_url)));
+
+  this->delegate_.FinishAsyncProcessing();
+
+  MockPasswordStoreObserver observer;
+  this->delegate_.store()->AddObserver(&observer);
+
+  const url::Origin fitting_origin((GURL(fitting_url)));
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnLoginsChanged(ElementsAre(PasswordStoreChange(
+                            PasswordStoreChange::REMOVE, *form))));
+  this->delegate_.store()->RemoveLoginsByOriginAndTime(
+      fitting_origin, base::Time(), base::Time::Max(), run_loop.QuitClosure());
+  run_loop.Run();
+
+  this->delegate_.store()->RemoveObserver(&observer);
+}
+
+TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByOriginAndTimeImpl_NonMatchingOrigin) {
-  const char origin_url[] = "http://foo.example.com";
+  const char origin_url[] = "http://foo.example.com/";
   scoped_ptr<autofill::PasswordForm> form =
       CreatePasswordFormFromDataForTesting(
           CreateTestPasswordFormDataByOrigin(origin_url));
@@ -82,7 +115,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   MockPasswordStoreObserver observer;
   this->delegate_.store()->AddObserver(&observer);
 
-  const url::Origin other_origin(GURL("http://bar.example.com"));
+  const url::Origin other_origin(GURL("http://bar.example.com/"));
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged(_)).Times(0);
   this->delegate_.store()->RemoveLoginsByOriginAndTime(
@@ -94,7 +127,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 
 TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByOriginAndTimeImpl_NotWithinTimeInterval) {
-  const char origin_url[] = "http://foo.example.com";
+  const char origin_url[] = "http://foo.example.com/";
   scoped_ptr<autofill::PasswordForm> form =
       CreatePasswordFormFromDataForTesting(
           CreateTestPasswordFormDataByOrigin(origin_url));
@@ -119,7 +152,8 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 
 REGISTER_TYPED_TEST_CASE_P(
     PasswordStoreOriginTest,
-    RemoveLoginsByOriginAndTimeImpl_FittingOriginAndTime,
+    RemoveLoginsByOriginAndTimeImpl_AllFittingOriginAndTime,
+    RemoveLoginsByOriginAndTimeImpl_SomeFittingOriginAndTime,
     RemoveLoginsByOriginAndTimeImpl_NonMatchingOrigin,
     RemoveLoginsByOriginAndTimeImpl_NotWithinTimeInterval);
 

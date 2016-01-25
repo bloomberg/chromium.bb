@@ -591,16 +591,4 @@ void PasswordStore::DestroySyncableService() {
   syncable_service_.reset();
 }
 
-// No-op implementation of RemoveLoginsByOriginAndTimeImpl to please the
-// compiler on derived classes that have not yet provided an implementation on
-// their own.
-// TODO(ttr314@googlemail.com): Once crbug.com/113973 is done, remove default
-// implementation and mark method as pure virtual.
-PasswordStoreChangeList PasswordStore::RemoveLoginsByOriginAndTimeImpl(
-    const url::Origin& origin,
-    base::Time delete_begin,
-    base::Time delete_end) {
-  return PasswordStoreChangeList();
-}
-
 }  // namespace password_manager

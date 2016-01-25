@@ -76,6 +76,7 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
   bool GetAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) override;
+  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms) override;
 
  private:
   enum TimestampToCompare {

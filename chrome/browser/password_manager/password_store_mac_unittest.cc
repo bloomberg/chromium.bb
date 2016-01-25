@@ -221,6 +221,7 @@ void PasswordStoreMacTestDelegate::Initialize() {
                                 base::ThreadTaskRunnerHandle::Get(),
                                 make_scoped_ptr(new MockAppleKeychain));
   store_->set_login_metadata_db(login_db_.get());
+  store_->login_metadata_db()->set_clear_password_values(false);
 }
 
 void PasswordStoreMacTestDelegate::ClosePasswordStore() {

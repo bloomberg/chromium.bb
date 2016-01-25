@@ -9,6 +9,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "url/origin.h"
 
 namespace password_manager {
 
@@ -96,18 +97,23 @@ void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
                                           bool custom_passphrase_sync_enabled) {
 }
 
+PasswordStoreChangeList TestPasswordStore::RemoveLoginsByOriginAndTimeImpl(
+    const url::Origin& origin,
+    base::Time begin,
+    base::Time end) {
+  return PasswordStoreChangeList();
+}
+
 PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
     base::Time begin,
     base::Time end) {
-  PasswordStoreChangeList changes;
-  return changes;
+  return PasswordStoreChangeList();
 }
 
 PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
     base::Time begin,
     base::Time end) {
-  PasswordStoreChangeList changes;
-  return changes;
+  return PasswordStoreChangeList();
 }
 
 bool TestPasswordStore::RemoveStatisticsCreatedBetweenImpl(

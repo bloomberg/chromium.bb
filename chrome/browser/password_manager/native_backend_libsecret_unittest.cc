@@ -21,6 +21,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
@@ -28,6 +29,8 @@ using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
+using testing::Pointee;
+using testing::UnorderedElementsAre;
 
 namespace {
 
@@ -347,7 +350,8 @@ class NativeBackendLibsecretTest : public testing::Test {
     EXPECT_TRUE(item_value) << " in attribute " << attribute;
     if (item_value) {
       uint32_t int_value;
-      bool conversion_ok = base::StringToUint((char*)item_value, &int_value);
+      bool conversion_ok =
+          base::StringToUint(static_cast<char*>(item_value), &int_value);
       EXPECT_TRUE(conversion_ok);
       EXPECT_EQ(value, int_value);
     }
@@ -625,6 +629,20 @@ TEST_F(NativeBackendLibsecretTest, BasicListLogins) {
   if (!global_mock_libsecret_items->empty())
     CheckMockSecretItem((*global_mock_libsecret_items)[0], form_google_,
                         "chrome-42");
+}
+
+TEST_F(NativeBackendLibsecretTest, GetAllLogins) {
+  NativeBackendLibsecret backend(42);
+
+  VerifiedAdd(&backend, form_google_);
+  VerifiedAdd(&backend, form_facebook_);
+
+  ScopedVector<autofill::PasswordForm> form_list;
+  EXPECT_TRUE(backend.GetAllLogins(&form_list));
+
+  ASSERT_EQ(2u, form_list.size());
+  EXPECT_THAT(form_list, UnorderedElementsAre(Pointee(form_google_),
+                                              Pointee(form_facebook_)));
 }
 
 // Save a password for www.facebook.com and see it suggested for m.facebook.com.

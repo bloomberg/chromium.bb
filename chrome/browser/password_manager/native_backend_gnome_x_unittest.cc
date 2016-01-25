@@ -6,6 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "base/location.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
@@ -21,6 +25,7 @@
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/test/test_browser_thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
@@ -29,6 +34,8 @@ using base::UTF16ToUTF8;
 using content::BrowserThread;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
+using testing::Pointee;
+using testing::UnorderedElementsAre;
 
 namespace {
 
@@ -857,7 +864,6 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledForNonHTMLForms) {
   CheckMatchingWithScheme(PasswordForm::SCHEME_BASIC);
   CheckMatchingWithScheme(PasswordForm::SCHEME_DIGEST);
   CheckMatchingWithScheme(PasswordForm::SCHEME_OTHER);
-
 }
 
 TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictUpdateLogin) {
@@ -1203,6 +1209,34 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+}
+
+TEST_F(NativeBackendGnomeTest, GetAllLogins) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_facebook_));
+
+  ScopedVector<autofill::PasswordForm> form_list;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&NativeBackendGnome::GetAllLogins, base::Unretained(&backend),
+                 &form_list),
+      base::Bind(&CheckTrue));
+
+  RunBothThreads();
+
+  EXPECT_EQ(2u, form_list.size());
+  EXPECT_THAT(form_list, UnorderedElementsAre(Pointee(form_google_),
+                                              Pointee(form_facebook_)));
 }
 
 // TODO(mdm): add more basic tests here at some point.

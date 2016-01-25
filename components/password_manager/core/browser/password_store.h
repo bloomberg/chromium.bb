@@ -249,7 +249,7 @@ class PasswordStore : protected PasswordStoreSync,
   virtual PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
       const url::Origin& origin,
       base::Time delete_begin,
-      base::Time delete_end);
+      base::Time delete_end) = 0;
 
   // Synchronous implementation to remove the given logins.
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(

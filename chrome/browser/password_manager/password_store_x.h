@@ -79,6 +79,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
         ScopedVector<autofill::PasswordForm>* forms) WARN_UNUSED_RESULT = 0;
     virtual bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms)
         WARN_UNUSED_RESULT = 0;
+    virtual bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms)
+        WARN_UNUSED_RESULT = 0;
   };
 
   // Takes ownership of |login_db| and |backend|. |backend| may be NULL in which
@@ -100,6 +102,10 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
       const autofill::PasswordForm& form) override;
   password_manager::PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
+  password_manager::PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
+      const url::Origin& origin,
+      base::Time delete_begin,
+      base::Time delete_end) override;
   password_manager::PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;

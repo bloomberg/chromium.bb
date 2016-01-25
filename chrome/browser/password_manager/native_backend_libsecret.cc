@@ -7,8 +7,11 @@
 #include <dlfcn.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <limits>
 #include <list>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -491,6 +494,11 @@ bool NativeBackendLibsecret::GetAutofillableLogins(
 bool NativeBackendLibsecret::GetBlacklistLogins(
     ScopedVector<autofill::PasswordForm>* forms) {
   return GetLoginsList(nullptr, BLACKLISTED_LOGINS, forms);
+}
+
+bool NativeBackendLibsecret::GetAllLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
+  return GetLoginsList(nullptr, ALL_LOGINS, forms);
 }
 
 bool NativeBackendLibsecret::GetLoginsList(

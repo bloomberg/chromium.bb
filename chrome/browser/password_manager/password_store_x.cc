@@ -19,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -34,6 +35,27 @@ bool AddLoginToBackend(const scoped_ptr<PasswordStoreX::NativeBackend>& backend,
   *changes = backend->AddLogin(form);
   return (!changes->empty() &&
           changes->back().type() == PasswordStoreChange::ADD);
+}
+
+bool RemoveLoginsByOriginAndTimeFromBackend(
+    PasswordStoreX::NativeBackend* backend,
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end,
+    PasswordStoreChangeList* changes) {
+  ScopedVector<autofill::PasswordForm> forms;
+  if (!backend->GetAllLogins(&forms))
+    return false;
+
+  for (const autofill::PasswordForm* form : forms) {
+    if (origin.IsSameOriginWith(url::Origin(form->origin)) &&
+        form->date_created >= delete_begin &&
+        (delete_end.is_null() || form->date_created < delete_end) &&
+        !backend->RemoveLogin(*form, changes))
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -84,6 +106,26 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginImpl(
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::RemoveLoginImpl(form);
   }
+  return changes;
+}
+
+PasswordStoreChangeList PasswordStoreX::RemoveLoginsByOriginAndTimeImpl(
+    const url::Origin& origin,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  CheckMigration();
+  PasswordStoreChangeList changes;
+
+  if (use_native_backend() &&
+      RemoveLoginsByOriginAndTimeFromBackend(
+          backend_.get(), origin, delete_begin, delete_end, &changes)) {
+    LogStatsForBulkDeletion(changes.size());
+    allow_fallback_ = false;
+  } else if (allow_default_store()) {
+    changes = PasswordStoreDefault::RemoveLoginsByOriginAndTimeImpl(
+        origin, delete_begin, delete_end);
+  }
+
   return changes;
 }
 

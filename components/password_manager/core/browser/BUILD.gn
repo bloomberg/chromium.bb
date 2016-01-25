@@ -179,6 +179,7 @@ source_set("test_support") {
   public_deps = [
     ":browser",
     "//testing/gmock",
+    "//url:url",
   ]
   deps = [
     "//base",

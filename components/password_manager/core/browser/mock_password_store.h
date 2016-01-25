@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/origin.h"
 
 namespace password_manager {
 
@@ -37,6 +38,10 @@ class MockPasswordStore : public PasswordStore {
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD1(RemoveLoginImpl,
                PasswordStoreChangeList(const autofill::PasswordForm&));
+  MOCK_METHOD3(RemoveLoginsByOriginAndTimeImpl,
+               PasswordStoreChangeList(const url::Origin&,
+                                       base::Time,
+                                       base::Time));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl,
                PasswordStoreChangeList(base::Time, base::Time));
   MOCK_METHOD2(RemoveLoginsSyncedBetweenImpl,

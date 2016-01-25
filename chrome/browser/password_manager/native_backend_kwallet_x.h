@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_KWALLET_X_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -62,6 +63,7 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   bool GetAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) override;
+  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms) override;
 
  protected:
   // Invalid handle returned by WalletHandle().
@@ -111,8 +113,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
       WARN_UNUSED_RESULT;
 
   // Overwrites |forms| with all stored credentials. Returns true on success.
-  bool GetAllLogins(int wallet_handle,
-                    ScopedVector<autofill::PasswordForm>* forms)
+  bool GetAllLoginsInternal(int wallet_handle,
+                            ScopedVector<autofill::PasswordForm>* forms)
       WARN_UNUSED_RESULT;
 
   // Writes a list of PasswordForms to the wallet with the given signon_realm.

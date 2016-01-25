@@ -51,6 +51,10 @@ class TestPasswordStore : public PasswordStore {
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
                          bool custom_passphrase_sync_enabled) override;
+  PasswordStoreChangeList RemoveLoginsByOriginAndTimeImpl(
+      const url::Origin& origin,
+      base::Time begin,
+      base::Time end) override;
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;
