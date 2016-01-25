@@ -10,6 +10,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSRuleList.h"
 #include "core/dom/Element.h"
+#include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -20,8 +21,6 @@ namespace blink {
 class CSSPrimitiveValue;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
-class JSONArray;
-class JSONObject;
 class ScriptController;
 
 class CORE_EXPORT LayoutEditor final : public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {

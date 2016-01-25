@@ -59,7 +59,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
 #include "platform/EventTracer.h"
-#include "platform/JSONValues.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -906,75 +905,6 @@ v8::Isolate* toIsolate(LocalFrame* frame)
 {
     ASSERT(frame);
     return frame->script().isolate();
-}
-
-JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, int maxDepth)
-{
-    return toJSONValue(isolate, value, maxDepth);
-}
-
-JSONValuePtr toJSONValue(v8::Isolate* isolate, v8::Local<v8::Value> value, int maxDepth)
-{
-    if (value.IsEmpty()) {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    if (!maxDepth)
-        return nullptr;
-    maxDepth--;
-
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    if (value->IsNull() || value->IsUndefined())
-        return JSONValue::null();
-    if (value->IsBoolean())
-        return JSONBasicValue::create(value.As<v8::Boolean>()->Value());
-    if (value->IsNumber())
-        return JSONBasicValue::create(value.As<v8::Number>()->Value());
-    if (value->IsString())
-        return JSONString::create(toCoreString(value.As<v8::String>()));
-    if (value->IsArray()) {
-        v8::Local<v8::Array> array = value.As<v8::Array>();
-        RefPtr<JSONArray> inspectorArray = JSONArray::create();
-        uint32_t length = array->Length();
-        for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> value;
-            if (!array->Get(context, i).ToLocal(&value))
-                return nullptr;
-            RefPtr<JSONValue> element = toJSONValue(isolate, value, maxDepth);
-            if (!element)
-                return nullptr;
-            inspectorArray->pushValue(element);
-        }
-        return inspectorArray;
-    }
-    if (value->IsObject()) {
-        RefPtr<JSONObject> jsonObject = JSONObject::create();
-        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-        v8::Local<v8::Array> propertyNames;
-        if (!object->GetPropertyNames(context).ToLocal(&propertyNames))
-            return nullptr;
-        uint32_t length = propertyNames->Length();
-        for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> name;
-            if (!propertyNames->Get(context, i).ToLocal(&name))
-                return nullptr;
-            // FIXME(yurys): v8::Object should support GetOwnPropertyNames
-            if (name->IsString() && !v8CallBoolean(object->HasRealNamedProperty(context, v8::Local<v8::String>::Cast(name))))
-                continue;
-            v8::Local<v8::Value> property;
-            if (!object->Get(context, name).ToLocal(&property))
-                return nullptr;
-            RefPtr<JSONValue> propertyValue = toJSONValue(isolate, property, maxDepth);
-            if (!propertyValue)
-                return nullptr;
-            TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, nameString, name, nullptr);
-            jsonObject->setValue(nameString, propertyValue);
-        }
-        return jsonObject;
-    }
-    ASSERT_NOT_REACHED();
-    return nullptr;
 }
 
 void DevToolsFunctionInfo::ensureInitialized() const

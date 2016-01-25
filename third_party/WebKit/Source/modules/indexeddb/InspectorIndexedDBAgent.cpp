@@ -57,6 +57,7 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "platform/JSONValues.h"
+#include "platform/JSONValuesForV8.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -496,9 +497,9 @@ public:
         ScriptState* scriptState = m_scriptState.get();
         v8::Isolate* isolate = scriptState->isolate();
         ScriptState::Scope scope(scriptState);
-        RefPtr<JSONValue> keyJsonValue = ScriptValue::to<JSONValuePtr>(isolate, idbCursor->key(scriptState), exceptionState);
-        RefPtr<JSONValue> primaryKeyJsonValue = ScriptValue::to<JSONValuePtr>(isolate, idbCursor->primaryKey(scriptState), exceptionState);
-        RefPtr<JSONValue> valueJsonValue = ScriptValue::to<JSONValuePtr>(isolate, idbCursor->value(scriptState), exceptionState);
+        RefPtr<JSONValue> keyJsonValue = toJSONValue(isolate, idbCursor->key(scriptState).v8Value());
+        RefPtr<JSONValue> primaryKeyJsonValue = toJSONValue(isolate, idbCursor->primaryKey(scriptState).v8Value());
+        RefPtr<JSONValue> valueJsonValue = toJSONValue(isolate, idbCursor->value(scriptState).v8Value());
         String key = keyJsonValue ? keyJsonValue->toJSONString() : errorMessage;
         String value = valueJsonValue ? valueJsonValue->toJSONString() : errorMessage;
         String primaryKey = primaryKeyJsonValue ? primaryKeyJsonValue->toJSONString() : errorMessage;
@@ -507,7 +508,6 @@ public:
             .setPrimaryKey(primaryKey)
             .setValue(value);
         m_result->addItem(dataEntry);
-
     }
 
     void end(bool hasMore)

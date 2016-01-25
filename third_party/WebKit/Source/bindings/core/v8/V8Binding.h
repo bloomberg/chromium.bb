@@ -47,7 +47,6 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/core/v8/V8ValueCache.h"
 #include "core/CoreExport.h"
-#include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/CompressibleString.h"
 #include "wtf/text/AtomicString.h"
@@ -950,14 +949,6 @@ struct NativeValueTraits<Vector<T>> {
         return toImplArray<Vector<T>>(value, 0, isolate, exceptionState);
     }
 };
-
-using JSONValuePtr = PassRefPtr<JSONValue>;
-template <>
-struct NativeValueTraits<JSONValuePtr> {
-    CORE_EXPORT static JSONValuePtr nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, int maxDepth = JSONValue::maxDepth);
-};
-
-JSONValuePtr toJSONValue(v8::Isolate*, v8::Local<v8::Value>, int maxDepth = JSONValue::maxDepth);
 
 CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* toIsolate(LocalFrame*);

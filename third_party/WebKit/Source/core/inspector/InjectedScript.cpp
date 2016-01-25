@@ -37,6 +37,7 @@
 #include "core/inspector/JSONParser.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "platform/JSONValues.h"
+#include "platform/JSONValuesForV8.h"
 #include "wtf/text/WTFString.h"
 
 using blink::TypeBuilder::Array;
@@ -55,8 +56,7 @@ PassRefPtr<JSONValue> toJSONValue(const ScriptValue& value)
     ScriptState* scriptState = value.scriptState();
     ASSERT(scriptState->contextIsValid());
     ScriptState::Scope scope(scriptState);
-    NonThrowableExceptionState exceptionState;
-    return ScriptValue::to<JSONValuePtr>(scriptState->isolate(), value, exceptionState);
+    return toJSONValue(scriptState->isolate(), value.v8Value());
 }
 
 static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(PassRefPtr<JSONObject> object)

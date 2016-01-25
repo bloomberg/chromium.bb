@@ -23,6 +23,7 @@
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "platform/JSONValues.h"
+#include "platform/JSONValuesForV8.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -262,9 +263,7 @@ void V8InjectedScriptHost::inspectCallback(const v8::FunctionCallbackInfo<v8::Va
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    ScriptValue object(scriptState, info[0]);
-    ScriptValue hints(scriptState, info[1]);
-    host->inspectImpl(toJSONValue(object), toJSONValue(hints));
+    host->inspectImpl(toJSONValue(scriptState->isolate(), info[0]), toJSONValue(scriptState->isolate(), info[1]));
 }
 
 void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
