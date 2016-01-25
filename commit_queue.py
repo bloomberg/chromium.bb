@@ -26,7 +26,6 @@ THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 sys.path.insert(0, THIRD_PARTY_DIR)
 
 from cq_client import cq_pb2
-from cq_client import validate_config
 from protobuf26 import text_format
 
 def usage(more):
@@ -188,20 +187,30 @@ CMDbuilders.func_usage_more = '<path-to-cq-config>'
 
 
 def CMDvalidate(parser, args):
-  """Validates a CQ config.
+  """Validates a CQ config, returns 0 on valid config.
 
-  Takes a single argument - path to the CQ config to be validated. Returns 0 on
-  valid config, non-zero on invalid config. Errors and warnings are printed to
-  screen.
+  BUGS: this doesn't do semantic validation, only verifies validity of protobuf.
+    But don't worry - bad cq.cfg won't cause outages, luci-config service will
+    not accept them, will send warning email, and continue using previous
+    version.
   """
   _, args = parser.parse_args(args)
   if len(args) != 1:
     parser.error('Expected a single path to CQ config. Got: %s' %
                  ' '.join(args))
 
-  with open(args[0]) as config_file:
-    cq_config = config_file.read()
-  return 0 if validate_config.IsValid(cq_config) else 1
+  config = cq_pb2.Config()
+  try:
+    with open(args[0]) as config_file:
+      text_config = config_file.read()
+    text_format.Merge(text_config, config)
+    # TODO(tandrii): provide an option to actually validate semantics of CQ
+    # config.
+    return 0
+  except text_format.ParseError as e:
+    print 'failed to parse cq.cfg: %s' % e
+    return 1
+
 
 CMDvalidate.func_usage_more = '<path-to-cq-config>'
 
