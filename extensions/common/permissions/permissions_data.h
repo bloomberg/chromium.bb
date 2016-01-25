@@ -59,7 +59,6 @@ class PermissionsData {
     virtual bool CanExecuteScriptOnPage(const Extension* extension,
                                         const GURL& document_url,
                                         int tab_id,
-                                        int process_id,
                                         std::string* error) = 0;
   };
 
@@ -153,7 +152,6 @@ class PermissionsData {
   bool CanAccessPage(const Extension* extension,
                      const GURL& document_url,
                      int tab_id,
-                     int process_id,
                      std::string* error) const;
   // Like CanAccessPage, but also takes withheld permissions into account.
   // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
@@ -161,7 +159,6 @@ class PermissionsData {
   AccessType GetPageAccess(const Extension* extension,
                            const GURL& document_url,
                            int tab_id,
-                           int process_id,
                            std::string* error) const;
 
   // Returns true if the |extension| has permission to inject a content script
@@ -173,7 +170,6 @@ class PermissionsData {
   bool CanRunContentScriptOnPage(const Extension* extension,
                                  const GURL& document_url,
                                  int tab_id,
-                                 int process_id,
                                  std::string* error) const;
   // Like CanRunContentScriptOnPage, but also takes withheld permissions into
   // account.
@@ -182,7 +178,6 @@ class PermissionsData {
   AccessType GetContentScriptAccess(const Extension* extension,
                                     const GURL& document_url,
                                     int tab_id,
-                                    int process_id,
                                     std::string* error) const;
 
   // Returns true if extension is allowed to obtain the contents of a page as
@@ -234,7 +229,6 @@ class PermissionsData {
   AccessType CanRunOnPage(const Extension* extension,
                           const GURL& document_url,
                           int tab_id,
-                          int process_id,
                           const URLPatternSet& permitted_url_patterns,
                           const URLPatternSet& withheld_url_patterns,
                           std::string* error) const;

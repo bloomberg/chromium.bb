@@ -25,7 +25,6 @@ bool BrowserPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
-    int process_id,
     std::string* error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return true;

@@ -67,14 +67,12 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
         extension_,
         document_url,
         tab_id,
-        -1,  // no process id
         nullptr /* ignore error */);
   } else {
     access = extension_->permissions_data()->GetContentScriptAccess(
         extension_,
         document_url,
         tab_id,
-        -1,  // no process id
         nullptr /* ignore error */);
   }
   if (access == PermissionsData::ACCESS_WITHHELD &&

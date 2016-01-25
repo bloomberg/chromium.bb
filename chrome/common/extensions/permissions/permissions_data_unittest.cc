@@ -415,13 +415,13 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool AllowedScript(const Extension* extension, const GURL& url, int tab_id) {
-    return extension->permissions_data()->CanAccessPage(
-        extension, url, tab_id, -1, NULL);
+    return extension->permissions_data()->CanAccessPage(extension, url, tab_id,
+                                                        nullptr);
   }
 
   bool BlockedScript(const Extension* extension, const GURL& url) {
-    return !extension->permissions_data()->CanAccessPage(
-        extension, url, -1, -1, NULL);
+    return !extension->permissions_data()->CanAccessPage(extension, url, -1,
+                                                         nullptr);
   }
 
   bool Allowed(const Extension* extension, const GURL& url) {
@@ -429,8 +429,8 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool Allowed(const Extension* extension, const GURL& url, int tab_id) {
-    return (extension->permissions_data()->CanAccessPage(
-                extension, url, tab_id, -1, NULL) &&
+    return (extension->permissions_data()->CanAccessPage(extension, url, tab_id,
+                                                         nullptr) &&
             extension->permissions_data()->CanCaptureVisiblePage(tab_id, NULL));
   }
 
@@ -439,9 +439,10 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool CaptureOnly(const Extension* extension, const GURL& url, int tab_id) {
-    return !extension->permissions_data()->CanAccessPage(
-               extension, url, tab_id, -1, NULL) &&
-           extension->permissions_data()->CanCaptureVisiblePage(tab_id, NULL);
+    return !extension->permissions_data()->CanAccessPage(extension, url, tab_id,
+                                                         nullptr) &&
+           extension->permissions_data()->CanCaptureVisiblePage(tab_id,
+                                                                nullptr);
   }
 
   bool ScriptOnly(const Extension* extension, const GURL& url) {
@@ -450,7 +451,8 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
 
   bool ScriptOnly(const Extension* extension, const GURL& url, int tab_id) {
     return AllowedScript(extension, url, tab_id) &&
-           !extension->permissions_data()->CanCaptureVisiblePage(tab_id, NULL);
+           !extension->permissions_data()->CanCaptureVisiblePage(tab_id,
+                                                                 nullptr);
   }
 
   bool Blocked(const Extension* extension, const GURL& url) {
@@ -458,10 +460,10 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool Blocked(const Extension* extension, const GURL& url, int tab_id) {
-    return !(extension->permissions_data()->CanAccessPage(
-                 extension, url, tab_id, -1, NULL) ||
-             extension->permissions_data()->CanCaptureVisiblePage(tab_id,
-                                                                  NULL));
+    return !extension->permissions_data()->CanAccessPage(extension, url, tab_id,
+                                                         nullptr) &&
+           !extension->permissions_data()->CanCaptureVisiblePage(tab_id,
+                                                                 nullptr);
   }
 
   bool ScriptAllowedExclusivelyOnTab(

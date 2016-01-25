@@ -232,11 +232,10 @@ bool PermissionsData::HasWithheldImpliedAllHosts() const {
 bool PermissionsData::CanAccessPage(const Extension* extension,
                                     const GURL& document_url,
                                     int tab_id,
-                                    int process_id,
                                     std::string* error) const {
   base::AutoLock auto_lock(runtime_lock_);
   AccessType result =
-      CanRunOnPage(extension, document_url, tab_id, process_id,
+      CanRunOnPage(extension, document_url, tab_id,
                    active_permissions_unsafe_->explicit_hosts(),
                    withheld_permissions_unsafe_->explicit_hosts(), error);
   // TODO(rdevlin.cronin) Update callers so that they only need ACCESS_ALLOWED.
@@ -247,10 +246,9 @@ PermissionsData::AccessType PermissionsData::GetPageAccess(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
-    int process_id,
     std::string* error) const {
   base::AutoLock auto_lock(runtime_lock_);
-  return CanRunOnPage(extension, document_url, tab_id, process_id,
+  return CanRunOnPage(extension, document_url, tab_id,
                       active_permissions_unsafe_->explicit_hosts(),
                       withheld_permissions_unsafe_->explicit_hosts(), error);
 }
@@ -258,11 +256,10 @@ PermissionsData::AccessType PermissionsData::GetPageAccess(
 bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
                                                 const GURL& document_url,
                                                 int tab_id,
-                                                int process_id,
                                                 std::string* error) const {
   base::AutoLock auto_lock(runtime_lock_);
   AccessType result =
-      CanRunOnPage(extension, document_url, tab_id, process_id,
+      CanRunOnPage(extension, document_url, tab_id,
                    active_permissions_unsafe_->scriptable_hosts(),
                    withheld_permissions_unsafe_->scriptable_hosts(), error);
   // TODO(rdevlin.cronin) Update callers so that they only need ACCESS_ALLOWED.
@@ -273,10 +270,9 @@ PermissionsData::AccessType PermissionsData::GetContentScriptAccess(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
-    int process_id,
     std::string* error) const {
   base::AutoLock auto_lock(runtime_lock_);
-  return CanRunOnPage(extension, document_url, tab_id, process_id,
+  return CanRunOnPage(extension, document_url, tab_id,
                       active_permissions_unsafe_->scriptable_hosts(),
                       withheld_permissions_unsafe_->scriptable_hosts(), error);
 }
@@ -333,14 +329,13 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
-    int process_id,
     const URLPatternSet& permitted_url_patterns,
     const URLPatternSet& withheld_url_patterns,
     std::string* error) const {
   runtime_lock_.AssertAcquired();
   if (g_policy_delegate &&
-      !g_policy_delegate->CanExecuteScriptOnPage(
-          extension, document_url, tab_id, process_id, error)) {
+      !g_policy_delegate->CanExecuteScriptOnPage(extension, document_url,
+                                                 tab_id, error)) {
     return ACCESS_DENIED;
   }
 

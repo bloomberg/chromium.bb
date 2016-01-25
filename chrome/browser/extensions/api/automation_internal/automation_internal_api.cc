@@ -27,7 +27,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -148,11 +147,9 @@ bool CanRequestAutomation(const Extension* extension,
     return true;
 
   int tab_id = ExtensionTabUtil::GetTabId(contents);
-  content::RenderProcessHost* process = contents->GetRenderProcessHost();
-  int process_id = process ? process->GetID() : -1;
   std::string unused_error;
-  return extension->permissions_data()->CanAccessPage(
-      extension, url, tab_id, process_id, &unused_error);
+  return extension->permissions_data()->CanAccessPage(extension, url, tab_id,
+                                                      &unused_error);
 }
 
 // Helper class that implements an action adapter for a |RenderFrameHost|.

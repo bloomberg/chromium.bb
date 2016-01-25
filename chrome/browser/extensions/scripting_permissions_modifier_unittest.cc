@@ -310,8 +310,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
 
   const PermissionsData* permissions = extension->permissions_data();
   auto get_page_access = [&permissions, &extension](const GURL& url) {
-    return permissions->GetPageAccess(extension.get(), url, 0 /* tab id */,
-                                      0 /* process id */, nullptr /* error */);
+    return permissions->GetPageAccess(extension.get(), url, 0, nullptr);
   };
 
   EXPECT_EQ(PermissionsData::ACCESS_WITHHELD, get_page_access(kUrl));

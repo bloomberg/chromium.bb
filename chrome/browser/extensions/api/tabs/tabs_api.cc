@@ -67,7 +67,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -1345,12 +1344,10 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(url::kJavaScriptScheme)) {
-    content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
     if (!extension()->permissions_data()->CanAccessPage(
             extension(),
             web_contents_->GetURL(),
             tab_id,
-            process ? process->GetID() : -1,
             &error_)) {
       return false;
     }
@@ -1866,12 +1863,10 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  content::RenderProcessHost* process = contents->GetRenderProcessHost();
   if (!extension()->permissions_data()->CanAccessPage(
           extension(),
           contents->GetURL(),
           execute_tab_id_,
-          process ? process->GetID() : -1,
           &error_)) {
     return false;
   }

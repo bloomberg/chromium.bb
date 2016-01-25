@@ -27,7 +27,6 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
-    int process_id,
     std::string* error) {
   if (PermissionsData::CanExecuteScriptEverywhere(extension))
     return true;
