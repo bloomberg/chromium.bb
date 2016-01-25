@@ -645,6 +645,14 @@ group("gn_only") {
     ]
   }
 
+  if (is_win && use_drfuzz) {
+    # build libfuzzer fuzzers on Windows to run with Dr. Fuzz
+    deps += [
+      "//testing/libfuzzer/fuzzers",
+      "//testing/libfuzzer/tests:libfuzzer_tests",
+    ]
+  }
+
   if (is_linux && !is_chromeos && !is_chromecast) {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
