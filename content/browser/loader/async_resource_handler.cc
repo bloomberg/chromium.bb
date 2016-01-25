@@ -289,6 +289,9 @@ bool AsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                       int min_size) {
   DCHECK_EQ(-1, min_size);
 
+  if (!CheckForSufficientResource())
+    return false;
+
   if (!EnsureResourceBufferIsInitialized())
     return false;
 
@@ -417,16 +420,10 @@ void AsyncResourceHandler::OnResponseCompleted(
 }
 
 bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {
+  DCHECK(has_checked_for_sufficient_resources_);
+
   if (buffer_.get() && buffer_->IsInitialized())
     return true;
-
-  if (!has_checked_for_sufficient_resources_) {
-    has_checked_for_sufficient_resources_ = true;
-    if (!rdh_->HasSufficientResourcesForRequest(request())) {
-      controller()->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
-      return false;
-    }
-  }
 
   buffer_ = new ResourceBuffer();
   return buffer_->Initialize(kBufferSize,
@@ -444,6 +441,18 @@ void AsyncResourceHandler::ResumeIfDeferred() {
 
 void AsyncResourceHandler::OnDefer() {
   request()->LogBlockedBy("AsyncResourceHandler");
+}
+
+bool AsyncResourceHandler::CheckForSufficientResource() {
+  if (has_checked_for_sufficient_resources_)
+    return true;
+  has_checked_for_sufficient_resources_ = true;
+
+  if (rdh_->HasSufficientResourcesForRequest(request()))
+    return true;
+
+  controller()->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+  return false;
 }
 
 }  // namespace content
