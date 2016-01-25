@@ -158,6 +158,30 @@ class DomSerializerTests : public ContentBrowserTest,
     runner->Run();
   }
 
+  class SingleLinkRewritingDelegate
+      : public WebFrameSerializer::LinkRewritingDelegate {
+   public:
+    SingleLinkRewritingDelegate(const WebURL& url, const WebString& localPath)
+        : url_(url), local_path_(localPath) {}
+
+    bool rewriteFrameSource(WebFrame* frame,
+                            WebString* rewritten_link) override {
+      return false;
+    }
+
+    bool rewriteLink(const WebURL& url, WebString* rewritten_link) override {
+      if (url != url_)
+        return false;
+
+      *rewritten_link = local_path_;
+      return true;
+    }
+
+   private:
+    const WebURL url_;
+    const WebString local_path_;
+  };
+
   // Serialize DOM belonging to a frame with the specified |frame_url|.
   void SerializeDomForURL(const GURL& frame_url) {
     // Find corresponding WebFrame according to frame_url.
@@ -165,12 +189,10 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(web_frame != NULL);
     WebString file_path =
         base::FilePath(FILE_PATH_LITERAL("c:\\dummy.htm")).AsUTF16Unsafe();
-    std::vector<std::pair<WebURL, WebString>> url_to_local_path;
-    url_to_local_path.push_back(std::make_pair(WebURL(frame_url), file_path));
+    SingleLinkRewritingDelegate delegate(frame_url, file_path);
     // Start serializing DOM.
-    bool result = WebFrameSerializer::serialize(
-        web_frame->toWebLocalFrame(),
-        static_cast<WebFrameSerializerClient*>(this), url_to_local_path);
+    bool result = WebFrameSerializer::serialize(web_frame->toWebLocalFrame(),
+                                                this, &delegate);
     ASSERT_TRUE(result);
   }
 

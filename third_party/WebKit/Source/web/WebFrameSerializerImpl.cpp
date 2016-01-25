@@ -86,6 +86,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/loader/DocumentLoader.h"
@@ -274,6 +275,21 @@ void WebFrameSerializerImpl::encodeAndFlushBuffer(
 // TODO(yosin): We should utilize |MarkupFormatter| here to share code,
 // especially escaping attribute values, done by |WebEntities| |m_htmlEntities|
 // and |m_xmlEntities|.
+void WebFrameSerializerImpl::appendAttribute(
+    StringBuilder& result,
+    bool isHTMLDocument,
+    const String& attrName,
+    const String& attrValue) {
+    result.append(' ');
+    result.append(attrName);
+    result.appendLiteral("=\"");
+    if (isHTMLDocument)
+        result.append(m_htmlEntities.convertEntitiesInString(attrValue));
+    else
+        result.append(m_xmlEntities.convertEntitiesInString(attrValue));
+    result.append('\"');
+}
+
 void WebFrameSerializerImpl::openTagToString(
     Element* element,
     SerializeDomParam* param)
@@ -287,42 +303,39 @@ void WebFrameSerializerImpl::openTagToString(
     // Add open tag
     result.append('<');
     result.append(element->nodeName().lower());
-    // Go through all attributes and serialize them.
-    AttributeCollection attributes = element->attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-        result.append(' ');
-        // Add attribute pair
-        result.append(it->name().toString());
-        result.appendLiteral("=\"");
-        if (!it->value().isEmpty()) {
-            const String& attrValue = it->value();
 
-            // Check whether we need to replace some resource links
-            // with local resource paths.
-            const QualifiedName& attrName = it->name();
-            if (element->hasLegalLinkAttribute(attrName)) {
-                // For links start with "javascript:", we do not change it.
-                if (attrValue.startsWith("javascript:", TextCaseInsensitive)) {
-                    result.append(m_htmlEntities.convertEntitiesInString(attrValue));
+    // Find out if this element owns a frame.
+    WebFrame* frame = nullptr;
+    if (element->isFrameOwnerElement()) {
+        frame = WebFrame::fromFrame(
+            toHTMLFrameOwnerElement(element)->contentFrame());
+    }
+
+    // Go through all attributes and serialize them.
+    for (const auto& it : element->attributes()) {
+        const QualifiedName& attrName = it.name();
+        String attrValue = it.value();
+
+        // Rewrite the attribute value if requested.
+        if (element->hasLegalLinkAttribute(attrName)) {
+            // For links start with "javascript:", we do not change it.
+            if (!attrValue.startsWith("javascript:", TextCaseInsensitive)) {
+                // Get the absolute link.
+                KURL completeURL = param->document->completeURL(attrValue);
+
+                // Check whether we have a local file to link to.
+                WebString rewrittenLink;
+                if (frame && m_delegate->rewriteFrameSource(frame, &rewrittenLink)) {
+                    attrValue = rewrittenLink;
+                } else if (m_delegate->rewriteLink(completeURL, &rewrittenLink)) {
+                    attrValue = rewrittenLink;
                 } else {
-                    // Get the absolute link
-                    String completeURL = param->document->completeURL(attrValue);
-                    // Check whether we have local files for those link.
-                    if (m_localLinks.contains(completeURL)) {
-                        result.append(m_htmlEntities.convertEntitiesInString(m_localLinks.get(completeURL)));
-                    } else {
-                        result.append(m_htmlEntities.convertEntitiesInString(completeURL));
-                    }
+                    attrValue = completeURL;
                 }
-            } else {
-                if (param->isHTMLDocument)
-                    result.append(m_htmlEntities.convertEntitiesInString(attrValue));
-                else
-                    result.append(m_xmlEntities.convertEntitiesInString(attrValue));
             }
         }
-        result.append('\"');
+
+        appendAttribute(result, param->isHTMLDocument, attrName.toString(), attrValue);
     }
 
     // Do post action for open tag.
@@ -410,22 +423,18 @@ void WebFrameSerializerImpl::buildContentForNode(
 WebFrameSerializerImpl::WebFrameSerializerImpl(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
-    const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths)
+    WebFrameSerializer::LinkRewritingDelegate* delegate)
     : m_client(client)
+    , m_delegate(delegate)
     , m_htmlEntities(false)
     , m_xmlEntities(true)
 {
     // Must specify available webframe.
     ASSERT(frame);
     m_specifiedWebLocalFrameImpl = toWebLocalFrameImpl(frame);
-    // Make sure we have non 0 client.
+    // Make sure we have non null client and delegate.
     ASSERT(client);
-    // Build local resources map.
-    for (const auto& it : urlsToLocalPaths) {
-        KURL url = it.first;
-        ASSERT(!m_localLinks.contains(url.string()));
-        m_localLinks.set(url.string(), it.second);
-    }
+    ASSERT(delegate);
 
     ASSERT(m_dataBuffer.isEmpty());
 }

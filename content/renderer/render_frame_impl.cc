@@ -599,6 +599,42 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
       path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
 }
 
+// Implementation of WebFrameSerializer::LinkRewritingDelegate that responds
+// based on the payload of FrameMsg_GetSerializedHtmlWithLocalLinks.
+class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
+ public:
+  LinkRewritingDelegate(
+      const std::map<GURL, base::FilePath>& url_to_local_path,
+      const std::map<int, base::FilePath>& frame_routing_id_to_local_path)
+      : url_to_local_path_(url_to_local_path),
+        frame_routing_id_to_local_path_(frame_routing_id_to_local_path) {}
+
+  bool rewriteFrameSource(WebFrame* frame, WebString* rewritten_link) override {
+    int routing_id = GetRoutingIdForFrameOrProxy(frame);
+    auto it = frame_routing_id_to_local_path_.find(routing_id);
+    if (it == frame_routing_id_to_local_path_.end())
+      return false;  // This can happen because of https://crbug.com/541354.
+
+    const base::FilePath& local_path = it->second;
+    *rewritten_link = ConvertRelativePathToHtmlAttribute(local_path);
+    return true;
+  }
+
+  bool rewriteLink(const WebURL& url, WebString* rewritten_link) override {
+    auto it = url_to_local_path_.find(url);
+    if (it == url_to_local_path_.end())
+      return false;
+
+    const base::FilePath& local_path = it->second;
+    *rewritten_link = ConvertRelativePathToHtmlAttribute(local_path);
+    return true;
+  }
+
+ private:
+  const std::map<GURL, base::FilePath>& url_to_local_path_;
+  const std::map<int, base::FilePath>& frame_routing_id_to_local_path_;
+};
+
 // Implementation of WebFrameSerializer::MHTMLPartsGenerationDelegate that
 // 1. Bases shouldSkipResource and getContentID responses on contents of
 //    FrameMsg_SerializeAsMHTML_Params.
@@ -633,8 +669,8 @@ class MHTMLPartsGenerationDelegate
     return false;
   }
 
-  WebString getContentID(const WebFrame& frame) override {
-    int routing_id = GetRoutingIdForFrameOrProxy(const_cast<WebFrame*>(&frame));
+  WebString getContentID(WebFrame* frame) override {
+    int routing_id = GetRoutingIdForFrameOrProxy(frame);
 
     auto it = params_.frame_routing_id_to_content_id.find(routing_id);
     if (it == params_.frame_routing_id_to_content_id.end())
@@ -4911,20 +4947,16 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 }
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
-    const std::map<GURL, base::FilePath>& url_to_local_path) {
+    const std::map<GURL, base::FilePath>& url_to_local_path,
+    const std::map<int, base::FilePath>& frame_routing_id_to_local_path) {
   // Convert input to the canonical way of passing a map into a Blink API.
-  std::vector<std::pair<WebURL, WebString>> weburl_to_local_path;
-  for (const auto& it : url_to_local_path) {
-    const GURL& url = it.first;
-    const base::FilePath& local_path = it.second;
-    weburl_to_local_path.push_back(std::make_pair(
-        WebURL(url), ConvertRelativePathToHtmlAttribute(local_path)));
-  }
+  LinkRewritingDelegate delegate(url_to_local_path,
+                                 frame_routing_id_to_local_path);
 
   // Serialize the frame (without recursing into subframes).
   WebFrameSerializer::serialize(GetWebFrame(),
                                 this,  // WebFrameSerializerClient.
-                                weburl_to_local_path);
+                                &delegate);
 }
 
 void RenderFrameImpl::OnSerializeAsMHTML(

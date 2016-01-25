@@ -79,15 +79,42 @@ protected:
         URLTestHelpers::registerMockedURLLoad(KURL(ParsedURLString, url), "frameserialization/awesome.png");
     }
 
+    class SingleLinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
+    public:
+        SingleLinkRewritingDelegate(const WebURL& url, const WebString& localPath)
+            : m_url(url)
+            , m_localPath(localPath)
+        {
+        }
+
+        bool rewriteFrameSource(WebFrame* frame, WebString* rewrittenLink) override
+        {
+            return false;
+        }
+
+        bool rewriteLink(const WebURL& url, WebString* rewrittenLink) override
+        {
+            if (url != m_url)
+                return false;
+
+            *rewrittenLink = m_localPath;
+            return true;
+        }
+
+    private:
+        const WebURL m_url;
+        const WebString m_localPath;
+    };
+
     String serializeFile(const String& url, const String& fileName)
     {
         KURL parsedURL(ParsedURLString, url);
         URLTestHelpers::registerMockedURLLoad(parsedURL, fileName, "frameserialization/", "text/html");
         FrameTestHelpers::loadFrame(mainFrameImpl(), url.utf8().data());
-        std::vector<std::pair<WebURL, WebString>> urlsToLocalPaths;
-        urlsToLocalPaths.push_back(std::make_pair(parsedURL, WebString("local")));
+        SingleLinkRewritingDelegate delegate(parsedURL, WebString("local"));
         SimpleWebFrameSerializerClient serializerClient;
-        WebFrameSerializer::serialize(mainFrameImpl(), &serializerClient, urlsToLocalPaths);
+        WebFrameSerializer::serialize(
+            mainFrameImpl(), &serializerClient, &delegate);
         return serializerClient.toString();
     }
 

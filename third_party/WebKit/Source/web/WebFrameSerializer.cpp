@@ -107,7 +107,7 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(
     if (!frame)
         return false;
 
-    WebString contentID = m_webDelegate.getContentID(*WebFrame::fromFrame(frame));
+    WebString contentID = m_webDelegate.getContentID(WebFrame::fromFrame(frame));
     if (contentID.isNull())
         return false;
 
@@ -171,7 +171,7 @@ WebData WebFrameSerializer::generateMHTMLParts(
     serializer.serializeFrame(*frame);
 
     // Get Content-ID for the frame being serialized.
-    String frameContentID = webDelegate->getContentID(*webFrame);
+    String frameContentID = webDelegate->getContentID(webFrame);
 
     // Encode serializer's output as MHTML.
     RefPtr<SharedBuffer> output = SharedBuffer::create();
@@ -199,9 +199,9 @@ WebData WebFrameSerializer::generateMHTMLFooter(const WebString& boundary)
 bool WebFrameSerializer::serialize(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
-    const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths)
+    WebFrameSerializer::LinkRewritingDelegate* delegate)
 {
-    WebFrameSerializerImpl serializerImpl(frame, client, urlsToLocalPaths);
+    WebFrameSerializerImpl serializerImpl(frame, client, delegate);
     return serializerImpl.serialize();
 }
 

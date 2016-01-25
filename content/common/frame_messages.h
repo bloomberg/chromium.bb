@@ -56,8 +56,10 @@
 #ifndef CONTENT_COMMON_FRAME_MESSAGES_H_
 #define CONTENT_COMMON_FRAME_MESSAGES_H_
 
-using FrameMsg_GetSerializedHtmlWithLocalLinks_Map =
+using FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap =
     std::map<GURL, base::FilePath>;
+using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap =
+    std::map<int, base::FilePath>;
 
 using FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap =
     std::map<int, std::string>;
@@ -806,8 +808,9 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
 // Get html data by serializing the target frame and replacing all resource
 // links with a path to the local copy passed in the message payload.
-IPC_MESSAGE_ROUTED1(FrameMsg_GetSerializedHtmlWithLocalLinks,
-                    FrameMsg_GetSerializedHtmlWithLocalLinks_Map)
+IPC_MESSAGE_ROUTED2(FrameMsg_GetSerializedHtmlWithLocalLinks,
+                    FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap,
+                    FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap)
 
 // Serialize target frame and its resources into MHTML and write it into the
 // provided destination file handle.  Note that when serializing multiple

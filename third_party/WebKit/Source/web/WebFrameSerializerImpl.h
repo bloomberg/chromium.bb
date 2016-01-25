@@ -74,24 +74,18 @@ public:
     // The parameter delegate specifies the pointer of interface
     // DomSerializerDelegate provide sink interface which can receive the
     // individual chunks of data to be saved.
-    // The parameter urlsToLocalPaths contains a mapping between original URLs
-    // of saved resources and corresponding local file paths.
     WebFrameSerializerImpl(
         WebLocalFrame*,
         WebFrameSerializerClient*,
-        const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths);
+        WebFrameSerializer::LinkRewritingDelegate*);
 
 private:
     // Specified frame which need to be serialized;
     RawPtrWillBeMember<WebLocalFrameImpl> m_specifiedWebLocalFrameImpl;
     // Pointer of WebFrameSerializerClient
     WebFrameSerializerClient* m_client;
-    // This hash map is used to map resource URL of original link to its local
-    // file path.
-    typedef HashMap<WTF::String, WTF::String> LinkLocalPathMap;
-    // local_links_ include all pair of local resource path and corresponding
-    // original link.
-    LinkLocalPathMap m_localLinks;
+    // Pointer of WebFrameSerializer::LinkRewritingDelegate
+    WebFrameSerializer::LinkRewritingDelegate* m_delegate;
     // Data buffer for saving result of serialized DOM data.
     StringBuilder m_dataBuffer;
 
@@ -179,6 +173,13 @@ private:
     void buildContentForNode(
         Node*,
         SerializeDomParam*);
+
+    // Appends attrName="escapedAttrValue" to result.
+    void appendAttribute(
+        StringBuilder& result,
+        bool isHTMLDocument,
+        const String& attrName,
+        const String& attrValue);
 };
 
 } // namespace blink

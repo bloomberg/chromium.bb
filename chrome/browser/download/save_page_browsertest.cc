@@ -1120,15 +1120,17 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, RuntimeChanges) {
   std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   if (save_page_type == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
-    // TODO(lukasza): crbug.com/106364: Expand complete-html test beyond just
-    // being a crash test.  In particular, the |complete_html_arr| below should
-    // be the same as the |arr| above (and at this point the special-casing of
+    // TODO(lukasza): crbug.com/106364: Expand complete-html test to cover all
+    // test frames.  In particular, the |complete_html_arr| below should be the
+    // same as the |arr| above (and at this point the special-casing of
     // complete-html can be removed).
     // Draft CLs with fix proposals that should accomplish this:
     // - crrev.com/1502563004
     // - crrev.com/1500103002
     std::string complete_html_arr[] = {
         "frames-runtime-changes.htm: 4388232f-8d45-4d2e-9807-721b381be153",
+        "subframe1: 21595339-61fc-4854-b6df-0668328ea263",
+        "subframe2: adf55719-15e7-45be-9eda-d12fe782a1bd",
     };
     expected_substrings = std::vector<std::string>(
         std::begin(complete_html_arr), std::end(complete_html_arr));

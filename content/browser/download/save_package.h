@@ -206,6 +206,7 @@ class CONTENT_EXPORT SavePackage
   // Helper for finding or creating a SaveItem with the given parameters.
   SaveItem* CreatePendingSaveItem(
       int container_frame_tree_node_id,
+      int save_item_frame_tree_node_id,
       const GURL& url,
       const Referrer& referrer,
       SaveFileCreateInfo::SaveFileSource save_source);
@@ -214,6 +215,7 @@ class CONTENT_EXPORT SavePackage
   // creating a SaveItem with the given parameters.
   SaveItem* CreatePendingSaveItemDeduplicatingByUrl(
       int container_frame_tree_node_id,
+      int save_item_frame_tree_node_id,
       const GURL& url,
       const Referrer& referrer,
       SaveFileCreateInfo::SaveFileSource save_source);

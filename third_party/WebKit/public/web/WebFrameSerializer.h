@@ -38,8 +38,6 @@
 #include "../platform/WebURL.h"
 #include "../platform/WebVector.h"
 
-#include <utility>
-
 namespace blink {
 
 class WebFrameSerializerClient;
@@ -74,7 +72,7 @@ public:
         // Format note - the returned string should be of the form "<foo@bar.com>"
         // (i.e. the strings should include the angle brackets).  The method
         // should return null WebString if the frame doesn't have a content-id.
-        virtual WebString getContentID(const WebFrame&) = 0;
+        virtual WebString getContentID(WebFrame*) = 0;
     };
 
     // Generates and returns MHTML parts for the given frame and the
@@ -98,23 +96,41 @@ public:
     // The API below is an older implementation of frame serialization that
     // will be removed soon.
 
+    class LinkRewritingDelegate {
+    public:
+        // Method allowing the delegate control which URLs are written into the
+        // generated html document.
+        //
+        // When URL of the given frame needs to be rewritten, this method should
+        // return true and populate |rewrittenLink| with a desired value of the
+        // html attribute value to be used in place of the original link (i.e.
+        // in place of the original iframe.src or object.data attribute value).
+        //
+        // If no link rewriting is desired, this method should return false.
+        virtual bool rewriteFrameSource(WebFrame*, WebString* rewrittenLink) = 0;
+
+        // Method allowing the delegate control which URLs are written into the
+        // generated html document.
+        //
+        // When the given URL needs to be rewritten, this method should
+        // return true and populate |rewrittenLink| with a desired value of the
+        // html attribute value to be used in place of the original link (i.e.
+        // in place of the original img.src or blockquote.cite attribute value).
+        //
+        // If no link rewriting is desired, this method should return false.
+        virtual bool rewriteLink(const WebURL&, WebString* rewrittenLink) = 0;
+    };
+
     // This function will serialize the specified frame to HTML data.
     // We have a data buffer to temporary saving generated html data. We will
     // sequentially call WebFrameSerializerClient once the data buffer is full.
     //
-    // Return false means if no data has been serialized (i.e. because
+    // False is returned if no data has been serialized (i.e. because
     // the target frame didn't have a valid url).
-    //
-    // The parameter frame specifies which frame need to be serialized.
-    // The parameter client specifies the pointer of interface
-    // WebFrameSerializerClient providing a sink interface to receive the
-    // individual chunks of data to be saved.
-    // The parameter urlsToLocalPaths contains a mapping between original URLs
-    // of saved resources and corresponding local file paths.
     BLINK_EXPORT static bool serialize(
         WebLocalFrame*,
         WebFrameSerializerClient*,
-        const WebVector<std::pair<WebURL, WebString>>& urlsToLocalPaths);
+        LinkRewritingDelegate*);
 
     // FIXME: The following are here for unit testing purposes. Consider
     // changing the unit tests instead.

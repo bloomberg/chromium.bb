@@ -794,7 +794,8 @@ class CONTENT_EXPORT RenderFrameImpl
                           int error_code);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
-      const std::map<GURL, base::FilePath>& url_to_local_path);
+      const std::map<GURL, base::FilePath>& url_to_local_path,
+      const std::map<int, base::FilePath>& frame_routing_id_to_local_path);
   void OnSerializeAsMHTML(const FrameMsg_SerializeAsMHTML_Params& params);
   void OnFind(int request_id,
               const base::string16& search_text,

@@ -8,7 +8,7 @@ function addNewMarker(elementId, marker) {
 }
 
 function onLoad() {
-  if (location.href.indexOf("do_runtime_changes") == (-1))
+  if (location.href.indexOf("do_runtime_changes=1") == (-1))
     return
 
   addNewMarker("subframe1", "21595339-61fc-4854-b6df-0668328ea263")

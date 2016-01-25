@@ -27,10 +27,12 @@ SaveItemId GetNextSaveItemId() {
 SaveItem::SaveItem(const GURL& url,
                    const Referrer& referrer,
                    SavePackage* package,
-                   SaveFileCreateInfo::SaveFileSource save_source)
+                   SaveFileCreateInfo::SaveFileSource save_source,
+                   int frame_tree_node_id)
     : save_item_id_(GetNextSaveItemId()),
       url_(url),
       referrer_(referrer),
+      frame_tree_node_id_(frame_tree_node_id),
       total_bytes_(0),
       received_bytes_(0),
       state_(WAIT_START),
