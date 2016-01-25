@@ -152,12 +152,6 @@ try /bin/sh -c "cat out/ok_cert.key out/bad_validity.pem \
     > ../certificates/bad_validity.pem"
 
 # Now generate the one-off certs
-## SHA-256 general test cert
-try openssl req -x509 -days 3650 \
-    -config ../scripts/ee.cnf -newkey rsa:2048 -text \
-    -sha256 \
-    -out ../certificates/sha256.pem
-
 ## Self-signed cert for SPDY/QUIC/HTTP2 pooling testing
 try openssl req -x509 -days 3650 -extensions req_spdy_pooling \
     -config ../scripts/ee.cnf -newkey rsa:2048 -text \

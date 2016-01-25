@@ -16,7 +16,6 @@ ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     content::BrowserContext* context)
     : impl_(base::CommandLine::ForCurrentProcess(),
             context->GetRequestContext()) {
-  impl_.set_enable_alt_source_url(false);
 }
 
 int ChromeUpdateClientConfig::InitialDelay() const {

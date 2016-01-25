@@ -556,25 +556,6 @@ void SetDomainStateForTesting(bool state) {
   g_domain_state = state ? ENROLLED : NOT_ENROLLED;
 }
 
-bool MaybeHasSHA256Support() {
-  const OSInfo* os_info = OSInfo::GetInstance();
-
-  if (os_info->version() == VERSION_PRE_XP)
-    return false;  // Too old to have it and this OS is not supported anyway.
-
-  if (os_info->version() == VERSION_XP)
-    return os_info->service_pack().major >= 3;  // Windows XP SP3 has it.
-
-  // Assume it is missing in this case, although it may not be. This category
-  // includes Windows XP x64, and Windows Server, where a hotfix could be
-  // deployed.
-  if (os_info->version() == VERSION_SERVER_2003)
-    return false;
-
-  DCHECK(os_info->version() >= VERSION_VISTA);
-  return true;  // New enough to have SHA-256 support.
-}
-
 bool IsUser32AndGdi32Available() {
   static base::LazyInstance<LazyIsUser32AndGdi32Available>::Leaky available =
       LAZY_INSTANCE_INITIALIZER;

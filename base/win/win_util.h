@@ -159,13 +159,6 @@ BASE_EXPORT bool IsEnrolledToDomain();
 // simulate being in a domain and false otherwise.
 BASE_EXPORT void SetDomainStateForTesting(bool state);
 
-// Returns true if the current operating system has support for SHA-256
-// certificates. As its name indicates, this function provides a best-effort
-// answer, which is solely based on comparing version numbers. The function
-// may be re-implemented in the future to return a reliable value, based on
-// run-time detection of this capability.
-BASE_EXPORT bool MaybeHasSHA256Support();
-
 // Returns true if the current process can make USER32 or GDI32 calls such as
 // CreateWindow and CreateDC. Windows 8 and above allow the kernel component
 // of these calls to be disabled which can cause undefined behaviour such as

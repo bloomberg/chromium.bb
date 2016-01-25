@@ -7,7 +7,6 @@
 
 namespace component_updater {
 
-extern const char kUpdaterAltUrl[];
 extern const char kUpdaterDefaultUrl[];
 
 }  // namespace component_updater

@@ -6,9 +6,6 @@
 
 namespace component_updater {
 
-// The alternative URL for the v3 protocol service endpoint.
-const char kUpdaterAltUrl[] = "http://clients2.google.com/service/update2";
-
 // The default URL for the v3 protocol service endpoint. In some cases, the
 // component updater is allowed to fall back to and alternate URL source, if
 // the request to the default URL source fails.

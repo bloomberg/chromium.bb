@@ -149,8 +149,6 @@ unit tests.
     A certificate and private key only valid on 0001-01-01. Windows refuses to
     parse this certificate.
 
-- sha256.pem: Used to test the handling of SHA-256 certs on Windows.
-
 - spdy_pooling.pem : Used to test the handling of spdy IP connection pooling
 
 - subjectAltName_sanity_check.pem : Used to test the handling of various types
