@@ -29,6 +29,11 @@ namespace content {
 
 namespace {
 
+// When a service worker version's failure count exceeds
+// |kMaxSameProcessFailureCount|, the embedded worker is forced to start in a
+// new process.
+const int kMaxSameProcessFailureCount = 2;
+
 void NotifyWorkerReadyForInspectionOnUI(int worker_process_id,
                                         int worker_route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -219,8 +224,13 @@ class EmbeddedWorkerInstance::StartTask {
 
     GURL scope(params->scope);
     GURL script_url(params->script_url);
+
+    bool can_use_existing_process =
+        instance_->context_->GetVersionFailureCount(
+            params->service_worker_version_id) < kMaxSameProcessFailureCount;
     instance_->context_->process_manager()->AllocateWorkerProcess(
-        instance_->embedded_worker_id(), scope, script_url,
+        instance_->embedded_worker_id_, scope, script_url,
+        can_use_existing_process,
         base::Bind(&StartTask::OnProcessAllocated, weak_factory_.GetWeakPtr(),
                    base::Passed(&params)));
   }

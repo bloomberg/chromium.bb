@@ -247,6 +247,25 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
 
+  // Ignore a SW that failed too much as a safety measure.
+  // ServiceWorkerVersion::StartWorker would call back with failure
+  // automatically but we want the clear trace event here and avoid setting
+  // .controller just to reset it.
+  if (active_version.get() && active_version->IsDisabled()) {
+    job_->FallbackToNetwork();
+    TRACE_EVENT_ASYNC_END2(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+        job_.get(), "Status", status, "Info",
+        "The SW was skipped because its start failure count is too high");
+
+    // Show a message in DevTools for developers.
+    active_version->ReportError(SERVICE_WORKER_ERROR_DISABLED_WORKER,
+                                "The service worker is disabled because its "
+                                "start failure count is too high.");
+    return;
+  }
+
   // A registration exists, so associate it. Note that the controller is only
   // set if there's an active version. If there's no active version, we should
   // still associate so the provider host can use .ready.

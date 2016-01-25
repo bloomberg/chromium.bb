@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -276,11 +277,20 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const GURL& other_url,
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback);
 
+  void UpdateVersionFailureCount(int64_t version_id,
+                                 ServiceWorkerStatusCode status);
+  // Returns the count of consecutive start worker failures for the given
+  // version. The count resets to zero when the worker successfully starts.
+  int GetVersionFailureCount(int64_t version_id);
+
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest,
+                           FailingWorkerIsDisabled);
+
   typedef std::map<int64_t, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64_t, ServiceWorkerVersion*> VersionMap;
 
@@ -330,6 +340,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
+  std::map<int64_t /* version_id */, int /* count */> failure_counts_;
+  base::Time failure_counts_expiration_time_;
 
   // PlzNavigate
   // Map of ServiceWorkerNavigationHandleCores used for navigation requests.

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <map>
 #include <queue>
 #include <set>
@@ -360,6 +361,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Simulate ping timeout. Should be used for tests-only.
   void SimulatePingTimeoutForTesting();
+
+  bool IsDisabled() const;
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;

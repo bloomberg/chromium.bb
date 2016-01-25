@@ -78,10 +78,13 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void ShutdownContext();
 
   int mock_render_process_id() const { return mock_render_process_id_;}
-  // Mock render process. Only set if the one-parameter constructor was used.
   MockRenderProcessHost* mock_render_process_host() {
     return render_process_host_.get();
   }
+
+  // Only used for tests that force creating a new render process. There is no
+  // corresponding MockRenderProcessHost.
+  int new_render_process_id() const { return mock_render_process_id_ + 1; }
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
 

@@ -64,6 +64,7 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
     case SERVICE_WORKER_ERROR_STATE:
     case SERVICE_WORKER_ERROR_DISK_CACHE:
+    case SERVICE_WORKER_ERROR_DISABLED_WORKER:
     case SERVICE_WORKER_ERROR_MAX_VALUE:
       // Unexpected, or should have bailed out before calling this, or we don't
       // have a corresponding blink error code yet.

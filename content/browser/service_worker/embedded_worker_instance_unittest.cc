@@ -192,6 +192,70 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
       EmbeddedWorkerMsg_StopWorker::ID));
 }
 
+// Test that a worker that failed twice will use a new render process
+// on the next attempt.
+TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+
+  const int64_t service_worker_version_id = 55L;
+  const GURL pattern("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  // Simulate adding one process to the pattern.
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->mock_render_process_id());
+
+  // Also simulate adding a "newly created" process to the pattern because
+  // unittests can't actually create a new process itself.
+  // ServiceWorkerProcessManager only chooses this process id in unittests if
+  // can_use_existing_process is false.
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->new_render_process_id());
+
+  {
+    // Start once normally.
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    base::RunLoop run_loop;
+    worker->Start(
+        service_worker_version_id, pattern, url,
+        base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
+    // The worker should be using the default render process.
+    EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
+
+    EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Fail twice.
+  context()->UpdateVersionFailureCount(service_worker_version_id,
+                                       SERVICE_WORKER_ERROR_FAILED);
+  context()->UpdateVersionFailureCount(service_worker_version_id,
+                                       SERVICE_WORKER_ERROR_FAILED);
+
+  {
+    // Start again.
+    ServiceWorkerStatusCode status;
+    base::RunLoop run_loop;
+    worker->Start(
+        service_worker_version_id, pattern, url,
+        base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+    EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
+    run_loop.Run();
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+    EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
+    // The worker should be using the new render process.
+    EXPECT_EQ(helper_->new_render_process_id(), worker->process_id());
+    EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
 TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();

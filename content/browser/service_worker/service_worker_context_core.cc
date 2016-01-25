@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 
+#include <limits>
+#include <set>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -716,6 +718,52 @@ void ServiceWorkerContextCore::CheckHasServiceWorker(
       url, base::Bind(&ServiceWorkerContextCore::
                           DidFindRegistrationForCheckHasServiceWorker,
                       AsWeakPtr(), other_url, callback));
+}
+
+void ServiceWorkerContextCore::UpdateVersionFailureCount(
+    int64_t version_id,
+    ServiceWorkerStatusCode status) {
+  if (failure_counts_expiration_time_.is_null()) {
+    failure_counts_expiration_time_ =
+        base::Time::Now() + base::TimeDelta::FromHours(24);
+  }
+
+  // Don't count these, they aren't start worker failures.
+  if (status == SERVICE_WORKER_ERROR_DISALLOWED ||
+      status == SERVICE_WORKER_ERROR_DISABLED_WORKER) {
+    return;
+  }
+
+  auto it = failure_counts_.find(version_id);
+  if (status == SERVICE_WORKER_OK) {
+    if (it != failure_counts_.end())
+      failure_counts_.erase(it);
+    return;
+  }
+
+  if (it != failure_counts_.end()) {
+    DCHECK_GT(it->second, 0);
+    if (it->second < std::numeric_limits<int>::max())
+      ++it->second;
+  } else {
+    failure_counts_[version_id] = 1;
+  }
+}
+
+int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
+  // Periodically clear failure counts to give disabled versions a chance to
+  // start.
+  if (base::Time::Now() > failure_counts_expiration_time_) {
+    failure_counts_.clear();
+    failure_counts_expiration_time_ =
+        base::Time::Now() + base::TimeDelta::FromHours(24);
+    return 0;
+  }
+
+  auto it = failure_counts_.find(version_id);
+  if (it == failure_counts_.end())
+    return 0;
+  return it->second;
 }
 
 void ServiceWorkerContextCore::OnRunningStateChanged(

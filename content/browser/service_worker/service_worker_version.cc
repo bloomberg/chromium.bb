@@ -53,6 +53,9 @@ using StatusCallback = ServiceWorkerVersion::StatusCallback;
 
 namespace {
 
+// The number of start failures to allow before disabling the worker.
+const int kDisableWorkerFailureCountThreshold = 3;
+
 // Time to wait until stopping an idle worker.
 const int kIdleWorkerTimeoutSeconds = 30;
 
@@ -400,6 +403,17 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
+  if (IsDisabled()) {
+    RecordStartWorkerResult(SERVICE_WORKER_ERROR_DISABLED_WORKER);
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_DISABLED_WORKER));
+
+    // Show a message in DevTools for developers.
+    ReportError(SERVICE_WORKER_ERROR_DISABLED_WORKER,
+                "The service worker is disabled because its start failure "
+                "count is too high.");
+    return;
+  }
+
   // Check that the worker is allowed to start on the given scope. Since this
   // worker might not be used for a specific frame/process, use -1.
   // resource_context() can return null in unit tests.
@@ -833,6 +847,11 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
 
 void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
   ping_controller_->SimulateTimeoutForTesting();
+}
+
+bool ServiceWorkerVersion::IsDisabled() const {
+  return context_->GetVersionFailureCount(version_id_) >=
+         kDisableWorkerFailureCountThreshold;
 }
 
 const net::HttpResponseInfo*
@@ -1752,6 +1771,9 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
     ServiceWorkerStatusCode status) {
   base::TimeTicks start_time = start_time_;
   ClearTick(&start_time_);
+
+  if (context_)
+    context_->UpdateVersionFailureCount(version_id_, status);
 
   ServiceWorkerMetrics::RecordStartWorkerStatus(status,
                                                 IsInstalled(prestart_status_));

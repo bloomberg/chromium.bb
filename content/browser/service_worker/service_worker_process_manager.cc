@@ -47,6 +47,7 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
       process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
+      new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
       weak_this_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -132,29 +133,27 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     int embedded_worker_id,
     const GURL& pattern,
     const GURL& script_url,
+    bool can_use_existing_process,
     const base::Callback<void(ServiceWorkerStatusCode,
                               int process_id,
                               bool is_new_process)>& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&ServiceWorkerProcessManager::AllocateWorkerProcess,
-                   weak_this_,
-                   embedded_worker_id,
-                   pattern,
-                   script_url,
-                   callback));
+                   weak_this_, embedded_worker_id, pattern, script_url,
+                   can_use_existing_process, callback));
     return;
   }
 
   if (process_id_for_test_ != ChildProcessHost::kInvalidUniqueID) {
     // Let tests specify the returned process ID. Note: We may need to be able
     // to specify the error code too.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, SERVICE_WORKER_OK, process_id_for_test_,
-                   false /* is_new_process */));
+    int result = can_use_existing_process ? process_id_for_test_
+                                          : new_process_id_for_test_;
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, SERVICE_WORKER_OK, result,
+                                       false /* is_new_process */));
     return;
   }
 
@@ -171,15 +170,18 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   CHECK(!ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
-  int process_id = FindAvailableProcess(pattern);
-  if (process_id != ChildProcessHost::kInvalidUniqueID) {
-    RenderProcessHost::FromID(process_id)->IncrementWorkerRefCount();
-    instance_info_.insert(
-        std::make_pair(embedded_worker_id, ProcessInfo(process_id)));
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, SERVICE_WORKER_OK, process_id,
-                                       false /* is_new_process */));
-    return;
+  if (can_use_existing_process) {
+    int process_id = FindAvailableProcess(pattern);
+    if (process_id != ChildProcessHost::kInvalidUniqueID) {
+      RenderProcessHost::FromID(process_id)->IncrementWorkerRefCount();
+      instance_info_.insert(
+          std::make_pair(embedded_worker_id, ProcessInfo(process_id)));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(callback, SERVICE_WORKER_OK, process_id,
+                     false /* is_new_process */));
+      return;
+    }
   }
 
   // No existing processes available; start a new one.

@@ -38,13 +38,31 @@ int kMockProviderId = 1;
 
 }
 
+class FailureHelper : public EmbeddedWorkerTestHelper {
+ public:
+  FailureHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  ~FailureHelper() override {}
+
+ protected:
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url) override {
+    SimulateWorkerStopped(embedded_worker_id);
+  }
+};
+
 class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
  public:
   ServiceWorkerControlleeRequestHandlerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()));
+  }
+
+  void SetUpWithHelper(EmbeddedWorkerTestHelper* helper) {
+    helper_.reset(helper);
 
     // A new unstored registration/version.
     scope_ = GURL("http://host/scope/");

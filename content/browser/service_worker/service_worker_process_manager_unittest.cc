@@ -143,6 +143,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   bool is_new_process = true;
   process_manager_->AllocateWorkerProcess(
       kEmbeddedWorkerId1, scope1, script_url_,
+      true /* can_use_existing_process */,
       base::Bind(&DidAllocateWorkerProcess, run_loop1.QuitClosure(), &status,
                  &process_id, &is_new_process));
   run_loop1.Run();
@@ -167,6 +168,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   is_new_process = true;
   process_manager_->AllocateWorkerProcess(
       kEmbeddedWorkerId2, scope1, script_url_,
+      true /* can_use_existing_process */,
       base::Bind(&DidAllocateWorkerProcess, run_loop2.QuitClosure(), &status,
                  &process_id, &is_new_process));
   run_loop2.Run();
@@ -182,7 +184,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   ASSERT_TRUE(found != instance_info.end());
   EXPECT_EQ(host1->GetID(), found->second.process_id);
 
-  // (3) Allocate a process to the other worker whose scope is different from
+  // (3) Allocate a process to a third worker whose scope is different from
   // other workers.
   base::RunLoop run_loop3;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -190,6 +192,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   is_new_process = true;
   process_manager_->AllocateWorkerProcess(
       kEmbeddedWorkerId3, scope2, script_url_,
+      true /* can_use_existing_process */,
       base::Bind(&DidAllocateWorkerProcess, run_loop3.QuitClosure(), &status,
                  &process_id, &is_new_process));
   run_loop3.Run();
@@ -234,7 +237,7 @@ TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
   int process_id = -10;
   bool is_new_process = true;
   process_manager_->AllocateWorkerProcess(
-      1, pattern_, script_url_,
+      1, pattern_, script_url_, true /* can_use_existing_process */,
       base::Bind(&DidAllocateWorkerProcess, run_loop.QuitClosure(), &status,
                  &process_id, &is_new_process));
   run_loop.Run();

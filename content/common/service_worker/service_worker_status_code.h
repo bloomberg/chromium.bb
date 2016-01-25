@@ -10,8 +10,7 @@
 namespace content {
 
 // Generic service worker operation statuses.
-// This enum is used in UMA histograms, so don't change the order or remove
-// entries.
+// This enum is used in UMA histograms. Append-only.
 enum ServiceWorkerStatusCode {
   // Operation succeeded.
   SERVICE_WORKER_OK,
@@ -69,8 +68,14 @@ enum ServiceWorkerStatusCode {
   // The worker is in REDUNDANT state.
   SERVICE_WORKER_ERROR_REDUNDANT,
 
-  // The worker was disallowed.
+  // The worker was disallowed (by ContentClient: e.g., due to
+  // browser settings).
   SERVICE_WORKER_ERROR_DISALLOWED,
+
+  // The worker is disabled because it failed to start too many times.
+  SERVICE_WORKER_ERROR_DISABLED_WORKER,
+
+  // Add new status codes here.
 
   SERVICE_WORKER_ERROR_MAX_VALUE
 };

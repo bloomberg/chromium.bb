@@ -256,14 +256,29 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       : MessageReceiver() {}
   ~MessageReceiverDisallowStart() override {}
 
+  enum class StartMode { STALL, FAIL, SUCCEED };
+
   void OnStartWorker(int embedded_worker_id,
                      int64_t service_worker_version_id,
                      const GURL& scope,
                      const GURL& script_url) override {
-    // Do nothing.
+    switch (mode_) {
+      case StartMode::STALL:
+        break;  // Do nothing.
+      case StartMode::FAIL:
+        OnStopWorker(embedded_worker_id);
+        break;
+      case StartMode::SUCCEED:
+        MessageReceiver::OnStartWorker(
+            embedded_worker_id, service_worker_version_id, scope, script_url);
+        break;
+    }
   }
 
+  void set_start_mode(StartMode mode) { mode_ = mode; }
+
  private:
+  StartMode mode_ = StartMode::STALL;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };
 
@@ -271,6 +286,12 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
  protected:
   ServiceWorkerFailToStartTest()
       : ServiceWorkerVersionTest() {}
+
+  void set_start_mode(MessageReceiverDisallowStart::StartMode mode) {
+    MessageReceiverDisallowStart* helper =
+        static_cast<MessageReceiverDisallowStart*>(helper_.get());
+    helper->set_start_mode(mode);
+  }
 
   scoped_ptr<MessageReceiver> GetMessageReceiver() override {
     return make_scoped_ptr(new MessageReceiverDisallowStart());
@@ -1266,6 +1287,66 @@ TEST_F(ServiceWorkerVersionTest, DispatchEvent) {
   // called and FinishRequest should return true.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->FinishRequest(request_id));
+}
+
+TEST_F(ServiceWorkerFailToStartTest, FailingWorkerIsDisabled) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+
+  helper_->SimulateAddProcessToPattern(pattern_,
+                                       helper_->new_render_process_id());
+
+  // (1) Fail twice and then succeed. The failure count should be reset.
+  ServiceWorkerContextCore* context = helper_->context();
+  int64_t id = version_->version_id();
+  set_start_mode(MessageReceiverDisallowStart::StartMode::FAIL);
+  // Fail once.
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, context->GetVersionFailureCount(id));
+  // Fail again.
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, context->GetVersionFailureCount(id));
+  // Succeed. It should choose the "new process".
+  set_start_mode(MessageReceiverDisallowStart::StartMode::SUCCEED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(helper_->new_render_process_id(),
+            version_->embedded_worker()->process_id());
+  EXPECT_EQ(0, context->GetVersionFailureCount(id));
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+
+  // (2) Fail three times. The worker should be disabled.
+  set_start_mode(MessageReceiverDisallowStart::StartMode::FAIL);
+  // Fail once.
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, context->GetVersionFailureCount(id));
+  // Fail again.
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, context->GetVersionFailureCount(id));
+  // Fail again.
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, context->GetVersionFailureCount(id));
+
+  // The worker should be disabled.
+  EXPECT_TRUE(version_->IsDisabled());
+  set_start_mode(MessageReceiverDisallowStart::StartMode::SUCCEED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_DISABLED_WORKER, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+
+  // (3) The worker is re-enabled when the failure counts expire.
+  EXPECT_TRUE(version_->IsDisabled());
+  base::Time yesterday = GetYesterday();
+  context->failure_counts_expiration_time_ = yesterday;
+  EXPECT_EQ(0, context->GetVersionFailureCount(id));
+  EXPECT_LT(yesterday, context->failure_counts_expiration_time_);
+  EXPECT_FALSE(version_->IsDisabled());
 }
 
 TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {

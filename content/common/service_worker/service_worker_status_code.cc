@@ -49,6 +49,8 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
       return "Redundant worker";
     case SERVICE_WORKER_ERROR_DISALLOWED:
       return "Worker disallowed";
+    case SERVICE_WORKER_ERROR_DISABLED_WORKER:
+      return "Worker disabled";
     case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED();
   }
