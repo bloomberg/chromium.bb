@@ -4,16 +4,13 @@
 
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
+#include "base/allocator/allocator_extension.h"
 #include "base/files/file_enumerator.h"
 #include "base/process/kill.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/content_browser_client.h"
 #include "sandbox/linux/suid/common/sandbox.h"
-
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif
 
 namespace content {
 
@@ -104,13 +101,12 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
   }
 
   if (use_suid_sandbox_for_adj_oom_score_ && !selinux) {
-#if defined(USE_TCMALLOC)
     // If heap profiling is running, these processes are not exiting, at least
     // on ChromeOS. The easiest thing to do is not launch them when profiling.
     // TODO(stevenjb): Investigate further and fix.
-    if (IsHeapProfilerRunning())
+    if (base::allocator::IsHeapProfilerRunning())
       return;
-#endif
+
     std::vector<std::string> adj_oom_score_cmdline;
     adj_oom_score_cmdline.push_back(sandbox_binary_);
     adj_oom_score_cmdline.push_back(sandbox::kAdjustOOMScoreSwitch);

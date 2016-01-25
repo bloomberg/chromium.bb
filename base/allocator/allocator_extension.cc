@@ -6,34 +6,32 @@
 
 #include "base/logging.h"
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
+#endif
+
 namespace base {
 namespace allocator {
 
-namespace {
-ReleaseFreeMemoryFunction g_release_free_memory_function = nullptr;
-GetNumericPropertyFunction g_get_numeric_property_function = nullptr;
-}
-
 void ReleaseFreeMemory() {
-  if (g_release_free_memory_function)
-    g_release_free_memory_function();
+#if defined(USE_TCMALLOC)
+  ::MallocExtension::instance()->ReleaseFreeMemory();
+#endif
 }
 
 bool GetNumericProperty(const char* name, size_t* value) {
-  return g_get_numeric_property_function &&
-         g_get_numeric_property_function(name, value);
+#if defined(USE_TCMALLOC)
+  return ::MallocExtension::instance()->GetNumericProperty(name, value);
+#endif
+  return false;
 }
 
-void SetReleaseFreeMemoryFunction(
-    ReleaseFreeMemoryFunction release_free_memory_function) {
-  DCHECK(!g_release_free_memory_function);
-  g_release_free_memory_function = release_free_memory_function;
-}
-
-void SetGetNumericPropertyFunction(
-    GetNumericPropertyFunction get_numeric_property_function) {
-  DCHECK(!g_get_numeric_property_function);
-  g_get_numeric_property_function = get_numeric_property_function;
+bool IsHeapProfilerRunning() {
+#if defined(USE_TCMALLOC)
+  return ::IsHeapProfilerRunning();
+#endif
+  return false;
 }
 
 }  // namespace allocator

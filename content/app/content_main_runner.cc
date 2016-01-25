@@ -417,16 +417,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       Shutdown();
   }
 
-#if defined(USE_TCMALLOC)
-  static bool GetNumericPropertyThunk(const char* name, size_t* value) {
-    return MallocExtension::instance()->GetNumericProperty(name, value);
-  }
-
-  static void ReleaseFreeMemoryThunk() {
-    MallocExtension::instance()->ReleaseFreeMemory();
-  }
-#endif
-
   int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
 
@@ -454,10 +444,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
     // For tcmalloc, we need to tell it to behave like new.
     tc_set_new_mode(1);
-
-    // On windows, we've already set these thunks up in _heap_init()
-    base::allocator::SetGetNumericPropertyFunction(GetNumericPropertyThunk);
-    base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
 
     // Provide optional hook for monitoring allocation quantities on a
     // per-thread basis.  Only set the hook if the environment indicates this

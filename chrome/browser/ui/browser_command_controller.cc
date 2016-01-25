@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/debugging_flags.h"
+#include "base/debug/profiler.h"
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"
@@ -1166,9 +1167,9 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-#if BUILDFLAG(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
-  command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
-#endif
+
+  if (base::debug::IsProfilingSupported())
+    command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 
   // Disable explicit fullscreen toggling when in metro snap mode.
   bool fullscreen_enabled = window_state != WINDOW_STATE_METRO_SNAP;
