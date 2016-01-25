@@ -34,7 +34,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/http/disk_based_cert_cache.h"
 #include "net/http/disk_cache_based_quic_server_info.h"
 #include "net/http/http_cache_transaction.h"
 #include "net/http/http_network_layer.h"
@@ -48,15 +47,6 @@
 #if defined(OS_POSIX)
 #include <unistd.h>
 #endif
-
-namespace {
-
-bool UseCertCache() {
-  return base::FieldTrialList::FindFullName("CertCacheTrial") ==
-         "ExperimentGroup";
-}
-
-}  // namespace
 
 namespace net {
 
@@ -354,7 +344,6 @@ HttpCache::~HttpCache() {
 
   // Before deleting pending_ops_, we have to make sure that the disk cache is
   // done with said operations, or it will attempt to use deleted data.
-  cert_cache_.reset();
   disk_cache_.reset();
 
   PendingOpsMap::iterator pending_it = pending_ops_.begin();
@@ -1144,8 +1133,6 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     backend_factory_.reset();  // Reclaim memory.
     if (result == OK) {
       disk_cache_ = std::move(pending_op->backend);
-      if (UseCertCache())
-        cert_cache_.reset(new DiskBasedCertCache(disk_cache_.get()));
     }
   }
 

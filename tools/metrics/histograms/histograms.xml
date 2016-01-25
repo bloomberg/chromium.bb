@@ -7711,6 +7711,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DiskBasedCertCache.CertIo" enum="CertificateChainPosition">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <owner>brandonsalmon@chromium.org</owner>
   <summary>
     Records information about DiskBasedCertCache operations with respect to
@@ -7720,6 +7724,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DiskBasedCertCache.CertIoCacheResult" enum="CacheResult">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <owner>brandonsalmon@chromium.org</owner>
   <summary>
     Records the outcome of requests to retrieve certificates from the disk
@@ -7729,6 +7737,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DiskBasedCertCache.CertIoReadSuccessLeaf"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <owner>brandonsalmon@chromium.org</owner>
   <summary>
     Whether or not the leaf certificate of a certificate chain was successfuly
@@ -7738,6 +7750,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DiskBasedCertCache.CertIoWriteSuccessLeaf"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <owner>brandonsalmon@chromium.org</owner>
   <summary>
     Whether or not the leaf certificate of a certificate chain was successfully
@@ -7746,6 +7762,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DiskBasedCertCache.ChainReadTime" units="ms">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <owner>brandonsalmon@chromium.org</owner>
   <summary>
     Measures the wall clock time spent reading a certificate chain. The starting
@@ -7755,6 +7775,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DiskBasedCertCache.ChainWriteTime" units="ms">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <owner>brandonsalmon@chromium.org</owner>
   <summary>
     Measures the wall clock time spent writing a certificate chain to disk. The
@@ -58595,6 +58619,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CertificateChainPosition" type="int">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <int value="0" label="Root Certificate"/>
 </enum>
 
@@ -81840,6 +81868,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="CertIo" separator="">
+  <obsolete>
+    Deprecated as of 01/2016. CertCacheTrial has been removed.
+    https://crbug.com/522312
+  </obsolete>
   <suffix name="ReadSuccess"
       label="success rate of reading a certificate from the disk cache"/>
   <suffix name="ReadFailure"

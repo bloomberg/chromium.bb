@@ -36,7 +36,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/http/disk_based_cert_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
@@ -53,111 +52,6 @@ namespace {
 
 // TODO(ricea): Move this to HttpResponseHeaders once it is standardised.
 static const char kFreshnessHeader[] = "Resource-Freshness";
-
-// Stores data relevant to the statistics of writing and reading entire
-// certificate chains using DiskBasedCertCache. |num_pending_ops| is the number
-// of certificates in the chain that have pending operations in the
-// DiskBasedCertCache. |start_time| is the time that the read and write
-// commands began being issued to the DiskBasedCertCache.
-// TODO(brandonsalmon): Remove this when it is no longer necessary to
-// collect data.
-class SharedChainData : public base::RefCounted<SharedChainData> {
- public:
-  SharedChainData(int num_ops, TimeTicks start)
-      : num_pending_ops(num_ops), start_time(start) {}
-
-  int num_pending_ops;
-  TimeTicks start_time;
-
- private:
-  friend class base::RefCounted<SharedChainData>;
-  ~SharedChainData() {}
-  DISALLOW_COPY_AND_ASSIGN(SharedChainData);
-};
-
-// Used to obtain a cache entry key for an OSCertHandle.
-// TODO(brandonsalmon): Remove this when cache keys are stored
-// and no longer have to be recomputed to retrieve the OSCertHandle
-// from the disk.
-std::string GetCacheKeyForCert(X509Certificate::OSCertHandle cert_handle) {
-  SHA1HashValue fingerprint =
-      X509Certificate::CalculateFingerprint(cert_handle);
-
-  return "cert:" +
-         base::HexEncode(fingerprint.data, arraysize(fingerprint.data));
-}
-
-// |dist_from_root| indicates the position of the read certificate in the
-// certificate chain, 0 indicating it is the root. |is_leaf| indicates
-// whether or not the read certificate was the leaf of the chain.
-// |shared_chain_data| contains data shared by each certificate in
-// the chain.
-void OnCertReadIOComplete(
-    int dist_from_root,
-    bool is_leaf,
-    const scoped_refptr<SharedChainData>& shared_chain_data,
-    X509Certificate::OSCertHandle cert_handle) {
-  // If |num_pending_ops| is one, this was the last pending read operation
-  // for this chain of certificates. The total time used to read the chain
-  // can be calculated by subtracting the starting time from Now().
-  shared_chain_data->num_pending_ops--;
-  if (!shared_chain_data->num_pending_ops) {
-    const TimeDelta read_chain_wait =
-        TimeTicks::Now() - shared_chain_data->start_time;
-    UMA_HISTOGRAM_CUSTOM_TIMES("DiskBasedCertCache.ChainReadTime",
-                               read_chain_wait,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMinutes(10),
-                               50);
-  }
-
-  bool success = (cert_handle != NULL);
-  if (is_leaf)
-    UMA_HISTOGRAM_BOOLEAN("DiskBasedCertCache.CertIoReadSuccessLeaf", success);
-
-  if (success)
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "DiskBasedCertCache.CertIoReadSuccess", dist_from_root, 0, 10, 7);
-  else
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "DiskBasedCertCache.CertIoReadFailure", dist_from_root, 0, 10, 7);
-}
-
-// |dist_from_root| indicates the position of the written certificate in the
-// certificate chain, 0 indicating it is the root. |is_leaf| indicates
-// whether or not the written certificate was the leaf of the chain.
-// |shared_chain_data| contains data shared by each certificate in
-// the chain.
-void OnCertWriteIOComplete(
-    int dist_from_root,
-    bool is_leaf,
-    const scoped_refptr<SharedChainData>& shared_chain_data,
-    const std::string& key) {
-  // If |num_pending_ops| is one, this was the last pending write operation
-  // for this chain of certificates. The total time used to write the chain
-  // can be calculated by subtracting the starting time from Now().
-  shared_chain_data->num_pending_ops--;
-  if (!shared_chain_data->num_pending_ops) {
-    const TimeDelta write_chain_wait =
-        TimeTicks::Now() - shared_chain_data->start_time;
-    UMA_HISTOGRAM_CUSTOM_TIMES("DiskBasedCertCache.ChainWriteTime",
-                               write_chain_wait,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMinutes(10),
-                               50);
-  }
-
-  bool success = !key.empty();
-  if (is_leaf)
-    UMA_HISTOGRAM_BOOLEAN("DiskBasedCertCache.CertIoWriteSuccessLeaf", success);
-
-  if (success)
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "DiskBasedCertCache.CertIoWriteSuccess", dist_from_root, 0, 10, 7);
-  else
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "DiskBasedCertCache.CertIoWriteFailure", dist_from_root, 0, 10, 7);
-}
 
 // From http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-21#section-6
 //      a "non-error response" is one with a 2xx (Successful) or 3xx
@@ -1276,10 +1170,6 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     return OnCacheReadError(result, true);
   }
 
-  // cert_cache() will be null if the CertCacheTrial field trial is disabled.
-  if (cache_->cert_cache() && response_.ssl_info.is_valid())
-    ReadCertChain();
-
   // Some resources may have slipped in as truncated when they're not.
   int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
   if (response_.headers->GetContentLength() == current_size)
@@ -1918,63 +1808,6 @@ int HttpCache::Transaction::DoCacheWriteTruncatedResponseComplete(int result) {
 }
 
 //-----------------------------------------------------------------------------
-
-void HttpCache::Transaction::ReadCertChain() {
-  std::string key =
-      GetCacheKeyForCert(response_.ssl_info.cert->os_cert_handle());
-  const X509Certificate::OSCertHandles& intermediates =
-      response_.ssl_info.cert->GetIntermediateCertificates();
-  int dist_from_root = intermediates.size();
-
-  scoped_refptr<SharedChainData> shared_chain_data(
-      new SharedChainData(intermediates.size() + 1, TimeTicks::Now()));
-  cache_->cert_cache()->GetCertificate(key,
-                                       base::Bind(&OnCertReadIOComplete,
-                                                  dist_from_root,
-                                                  true /* is leaf */,
-                                                  shared_chain_data));
-
-  for (X509Certificate::OSCertHandles::const_iterator it =
-           intermediates.begin();
-       it != intermediates.end();
-       ++it) {
-    --dist_from_root;
-    key = GetCacheKeyForCert(*it);
-    cache_->cert_cache()->GetCertificate(key,
-                                         base::Bind(&OnCertReadIOComplete,
-                                                    dist_from_root,
-                                                    false /* is not leaf */,
-                                                    shared_chain_data));
-  }
-  DCHECK_EQ(0, dist_from_root);
-}
-
-void HttpCache::Transaction::WriteCertChain() {
-  const X509Certificate::OSCertHandles& intermediates =
-      response_.ssl_info.cert->GetIntermediateCertificates();
-  int dist_from_root = intermediates.size();
-
-  scoped_refptr<SharedChainData> shared_chain_data(
-      new SharedChainData(intermediates.size() + 1, TimeTicks::Now()));
-  cache_->cert_cache()->SetCertificate(
-      response_.ssl_info.cert->os_cert_handle(),
-      base::Bind(&OnCertWriteIOComplete,
-                 dist_from_root,
-                 true /* is leaf */,
-                 shared_chain_data));
-  for (X509Certificate::OSCertHandles::const_iterator it =
-           intermediates.begin();
-       it != intermediates.end();
-       ++it) {
-    --dist_from_root;
-    cache_->cert_cache()->SetCertificate(*it,
-                                         base::Bind(&OnCertWriteIOComplete,
-                                                    dist_from_root,
-                                                    false /* is not leaf */,
-                                                    shared_chain_data));
-  }
-  DCHECK_EQ(0, dist_from_root);
-}
 
 void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
                                         const HttpRequestInfo* request) {
@@ -2662,10 +2495,6 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
       net_log_.EndEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
     return OK;
   }
-
-  // cert_cache() will be null if the CertCacheTrial field trial is disabled.
-  if (cache_->cert_cache() && response_.ssl_info.is_valid())
-    WriteCertChain();
 
   if (truncated)
     DCHECK_EQ(200, response_.headers->response_code());

@@ -299,11 +299,6 @@ class HttpCache::Transaction : public HttpTransaction {
   int DoCacheWriteTruncatedResponse();
   int DoCacheWriteTruncatedResponseComplete(int result);
 
-  // These functions are involved in a field trial testing storing certificates
-  // in seperate entries from the HttpResponseInfo.
-  void ReadCertChain();
-  void WriteCertChain();
-
   // Sets request_ and fields derived from it.
   void SetRequest(const BoundNetLog& net_log, const HttpRequestInfo* request);
 

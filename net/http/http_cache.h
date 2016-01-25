@@ -49,7 +49,6 @@ namespace net {
 
 class CertVerifier;
 class ChannelIDService;
-class DiskBasedCertCache;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpNetworkSession;
@@ -148,8 +147,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   ~HttpCache() override;
 
   HttpTransactionFactory* network_layer() { return network_layer_.get(); }
-
-  DiskBasedCertCache* cert_cache() const { return cert_cache_.get(); }
 
   // Retrieves the cache backend for this HttpCache instance. If the backend
   // is not initialized yet, this method will initialize it. The return value is
@@ -418,8 +415,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   scoped_ptr<HttpTransactionFactory> network_layer_;
 
   scoped_ptr<disk_cache::Backend> disk_cache_;
-
-  scoped_ptr<DiskBasedCertCache> cert_cache_;
 
   // The set of active entries indexed by cache key.
   ActiveEntriesMap active_entries_;
