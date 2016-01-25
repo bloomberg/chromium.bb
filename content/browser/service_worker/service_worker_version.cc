@@ -94,6 +94,8 @@ template <typename IDMAP, typename... Params>
 void RunIDMapCallbacks(IDMAP* requests, const Params&... params) {
   typename IDMAP::iterator iter(requests);
   while (!iter.IsAtEnd()) {
+    TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                           iter.GetCurrentValue());
     iter.GetCurrentValue()->callback.Run(params...);
     iter.Advance();
   }
@@ -108,6 +110,8 @@ bool RunIDMapCallback(IDMap<CallbackType, IDMapOwnPointer>* requests,
   if (!request)
     return false;
 
+  TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                         request);
   request->callback.Run(params...);
   requests->Remove(request_id);
   return true;
@@ -897,6 +901,8 @@ ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
   while (!iter.IsAtEnd()) {
     PendingRequest<StatusCallback>* request = iter.GetCurrentValue();
     if (request->mojo_service == service_name_) {
+      TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                             request);
       request->callback.Run(SERVICE_WORKER_ERROR_FAILED);
       worker_->custom_requests_.Remove(iter.GetCurrentKey());
     }
@@ -1812,6 +1818,11 @@ template <typename IDMAP>
 void ServiceWorkerVersion::RemoveCallbackAndStopIfRedundant(IDMAP* callbacks,
                                                             int request_id) {
   RestartTick(&idle_time_);
+  auto* request = callbacks->Lookup(request_id);
+  if (request) {
+    TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerVersion::Request",
+                           request);
+  }
   callbacks->Remove(request_id);
   if (is_redundant()) {
     // The stop should be already scheduled, but try to stop immediately, in
@@ -1841,8 +1852,12 @@ int ServiceWorkerVersion::AddRequestWithExpiration(
     ServiceWorkerMetrics::EventType event_type,
     base::TimeTicks expiration,
     TimeoutBehavior timeout_behavior) {
-  int request_id = callback_map->Add(new PendingRequest<CallbackType>(
-      callback, base::TimeTicks::Now(), event_type));
+  PendingRequest<CallbackType>* request = new PendingRequest<CallbackType>(
+      callback, base::TimeTicks::Now(), event_type);
+  int request_id = callback_map->Add(request);
+  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
+                           request, "Request id", request_id, "Event type",
+                           ServiceWorkerMetrics::EventTypeToString(event_type));
   requests_.push(RequestInfo(request_id, request_type, event_type, expiration,
                              timeout_behavior));
   return request_id;

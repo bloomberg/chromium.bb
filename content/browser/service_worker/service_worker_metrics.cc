@@ -46,6 +46,33 @@ enum EventHandledRatioType {
 
 }  // namespace
 
+const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
+  switch (event_type) {
+    case EventType::ACTIVATE:
+      return "Activate";
+    case EventType::INSTALL:
+      return "Install";
+    case EventType::FETCH:
+      return "Fetch";
+    case EventType::SYNC:
+      return "Sync";
+    case EventType::NOTIFICATION_CLICK:
+      return "Notification Click";
+    case EventType::PUSH:
+      return "Push";
+    case EventType::GEOFENCING:
+      return "Geofencing";
+    case EventType::SERVICE_PORT_CONNECT:
+      return "Service Port Connect";
+    case EventType::MESSAGE:
+      return "Message";
+    case EventType::NUM_TYPES:
+      break;
+  }
+  NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
+  return "Unknown";
+}
+
 bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
   return site == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
 }

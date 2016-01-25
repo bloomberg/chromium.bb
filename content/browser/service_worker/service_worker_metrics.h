@@ -91,6 +91,9 @@ class ServiceWorkerMetrics {
   // Used for UMA. Append only.
   enum class Site { OTHER, NEW_TAB_PAGE, NUM_TYPES };
 
+  // Converts an event type to a string. Used for tracing.
+  static const char* EventTypeToString(EventType event_type);
+
   // Excludes NTP scope from UMA for now as it tends to dominate the stats and
   // makes the results largely skewed. Some metrics don't follow this policy
   // and hence don't call this function.

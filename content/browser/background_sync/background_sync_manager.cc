@@ -126,8 +126,6 @@ void OnSyncEventFinished(
     int request_id,
     const ServiceWorkerVersion::StatusCallback& callback,
     ServiceWorkerEventStatus status) {
-  TRACE_EVENT1("ServiceWorker", "BackgroundSyncManager::OnSyncEventFinished",
-               "Request id", request_id);
   if (!active_version->FinishRequest(request_id))
     return;
   callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
