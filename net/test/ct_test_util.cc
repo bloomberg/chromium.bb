@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/cert/ct_serialization.h"
-#include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/x509_certificate.h"
 
@@ -358,6 +358,38 @@ std::string CreateConsistencyProofJsonString(
   consistency_proof_json += std::string("]}");
 
   return consistency_proof_json;
+}
+
+std::string GetSCTListForTesting() {
+  const std::string sct = ct::GetTestSignedCertificateTimestamp();
+  std::string sct_list;
+  ct::EncodeSCTListForTesting(sct, &sct_list);
+  return sct_list;
+}
+
+std::string GetSCTListWithInvalidSCT() {
+  std::string sct(ct::GetTestSignedCertificateTimestamp());
+
+  // Change a byte inside the Log ID part of the SCT so it does not match the
+  // log used in the tests.
+  sct[15] = 't';
+
+  std::string sct_list;
+  ct::EncodeSCTListForTesting(sct, &sct_list);
+  return sct_list;
+}
+
+bool CheckForSingleVerifiedSCTInResult(const ct::CTVerifyResult& result,
+                                       const std::string& log_description) {
+  return (result.verified_scts.size() == 1U) && result.invalid_scts.empty() &&
+         result.unknown_logs_scts.empty() &&
+         result.verified_scts[0]->log_description == log_description;
+}
+
+bool CheckForSCTOrigin(const ct::CTVerifyResult& result,
+                       ct::SignedCertificateTimestamp::Origin origin) {
+  return (result.verified_scts.size() > 0) &&
+         (result.verified_scts[0]->origin == origin);
 }
 
 }  // namespace ct

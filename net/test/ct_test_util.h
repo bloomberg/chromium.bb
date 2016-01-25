@@ -12,14 +12,15 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "net/cert/signed_certificate_timestamp.h"
 
 namespace net {
 
 namespace ct {
 
+struct CTVerifyResult;
 struct DigitallySigned;
 struct LogEntry;
-struct SignedCertificateTimestamp;
 struct SignedTreeHead;
 
 // Note: unless specified otherwise, all test data is taken from Certificate
@@ -102,6 +103,23 @@ std::string CreateSignedTreeHeadJsonString(size_t tree_size,
 // the provided raw nodes (i.e. the raw nodes will be base64-encoded).
 std::string CreateConsistencyProofJsonString(
     const std::vector<std::string>& raw_nodes);
+
+// Returns SCTList for testing.
+std::string GetSCTListForTesting();
+
+// Returns a corrupted SCTList. This is done by changing a byte inside the
+// Log ID part of the SCT so it does not match the log used in the tests.
+std::string GetSCTListWithInvalidSCT();
+
+// Returns true if |log_description| is in the |result|'s |verified_scts| and
+// number of |verified_scts| in |result| is equal to 1.
+bool CheckForSingleVerifiedSCTInResult(const CTVerifyResult& result,
+                                       const std::string& log_description);
+
+// Returns true if |origin| is in the |result|'s |verified_scts|.
+bool CheckForSCTOrigin(const CTVerifyResult& result,
+                       SignedCertificateTimestamp::Origin origin);
+
 }  // namespace ct
 
 }  // namespace net
