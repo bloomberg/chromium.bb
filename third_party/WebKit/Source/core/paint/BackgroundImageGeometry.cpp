@@ -119,16 +119,16 @@ LayoutSize calculateFillTileSize(const LayoutBoxModelObject& obj, const FillLaye
     return LayoutSize();
 }
 
-IntPoint accumulatedScrollOffset(const LayoutBoxModelObject& object, const LayoutBoxModelObject* container)
+IntPoint accumulatedScrollOffsetForFixedBackground(const LayoutBoxModelObject& object, const LayoutBoxModelObject* container)
 {
-    const LayoutBlock* block = object.isLayoutBlock() ? toLayoutBlock(&object) : object.containingBlock();
     IntPoint result;
-    while (block) {
+    if (&object == container)
+        return result;
+    for (const LayoutBlock* block = object.containingBlock(); block; block = block->containingBlock()) {
         if (block->hasOverflowClip())
             result += block->scrolledContentOffset();
         if (block == container)
             break;
-        block = block->containingBlock();
     }
     return result;
 }
@@ -257,7 +257,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
                 viewportRect.setLocation(frameView->scrollPosition());
             // Compensate the translations created by ScrollRecorders.
             // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.
-            viewportRect.moveBy(accumulatedScrollOffset(obj, paintContainer));
+            viewportRect.moveBy(accumulatedScrollOffsetForFixedBackground(obj, paintContainer));
         }
 
         if (paintContainer)
