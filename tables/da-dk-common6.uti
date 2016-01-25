@@ -101,10 +101,10 @@ lastwordemphafter underline 56
 firstletteremph underline 56
 lastletteremph underline 56
 
-capsign 46
-begcaps 456
-# endcaps 6
-# multind 46 letsign capsign
+singlelettercaps 46
+capsword 456
+# capswordstop 6
+# multind 46 letsign singlelettercaps
 capsnocont
 
 numsign 3456
@@ -204,7 +204,7 @@ always  \x00df 5-234 LATIN SMALL LETTER SHARP S
 always \x00ff 5-13456 LATIN SMALL LETTER Y WITH DIAERESIS
 
 # The following lines are needed to ensure correct backtranslation
-# of capital letters within or after numbers when there is no letsign but only capsign.
+# of capital letters within or after numbers when there is no letsign but only singlelettercaps.
 
 endnum A 46-1
 endnum B 46-12

@@ -224,10 +224,6 @@ static const char *opcodeNames[CTO_None] = {
   "include",
   "locale",
   "undefined",
-  "capsign",
-  "begcaps",
-  "lenbegcaps",
-  "endcaps",
   "firstwordcaps",
   "lastwordcapsbefore",
   "lastwordcapsafter",
@@ -248,15 +244,6 @@ static const char *opcodeNames[CTO_None] = {
   "seqbeforechars",
   "seqafterchars",
   "seqafterpattern",
-  "italsign",
-  "begital",
-  "endital",
-  "boldsign",
-  "begbold",
-  "endbold",
-  "undersign",
-  "begunder",
-  "endunder",
   "emphclass",
   "singleletteremph",
   "emphword",
@@ -4211,7 +4198,6 @@ doOpcode:
 		}
 
 	  case CTO_SingleLetterCaps:
-    case CTO_CapitalSign:
       ok =
 	compileBrailleIndicator (nested, "capital sign", CTO_CapitalRule,
 				 &table->capitalSign);
@@ -4222,20 +4208,15 @@ doOpcode:
 				 CTO_BeginCapitalRule,
 				 &table->beginCapitalSign);
       break;
-    case CTO_LenBegcaps:
-      ok = table->lenBeginCaps = compileNumber (nested);
-      break;
     case CTO_CapsWord:
-    case CTO_BeginCapitalSign:
       ok =
 	compileBrailleIndicator (nested, "capital word", CTO_CapsWordRule,
-				 &table->CapsWord);
+				 &table->capsWord);
       break;
 	  
 	case CTO_CapsWordStop:
-    case CTO_EndCapitalSign:
 		ok = compileBrailleIndicator(nested, "capital word stop",
-		                             CTO_CapsWordStopRule, &table->CapsWordStop);
+		                             CTO_CapsWordStopRule, &table->capsWordStop);
 		break;
 	
 	  case CTO_LastLetterCaps:
@@ -4500,7 +4481,6 @@ doOpcode:
 				 CTO_FirstWordItalRule,
 				 &table->firstWordItal);
       break;
-    case CTO_ItalSign:
     case CTO_LastWordItalBefore:
       ok =
 	compileBrailleIndicator (nested, "first word italic before",
@@ -4513,14 +4493,12 @@ doOpcode:
 				 CTO_LastWordItalAfterRule,
 				 &table->lastWordItalAfter);
       break;
-    case CTO_BegItal:
     case CTO_FirstLetterItal:
       ok =
 	compileBrailleIndicator (nested, "first letter italic",
 				 CTO_FirstLetterItalRule,
 				 &table->firstLetterItal);
       break;
-    case CTO_EndItal:
     case CTO_LastLetterItal:
       ok =
 	compileBrailleIndicator (nested, "last letter italic",
@@ -4553,7 +4531,6 @@ doOpcode:
 				 CTO_FirstWordBoldRule,
 				 &table->firstWordBold);
       break;
-    case CTO_BoldSign:
     case CTO_LastWordBoldBefore:
       ok =
 	compileBrailleIndicator (nested, "last word bold before",
@@ -4566,14 +4543,12 @@ doOpcode:
 				 CTO_LastWordBoldAfterRule,
 				 &table->lastWordBoldAfter);
       break;
-    case CTO_BegBold:
     case CTO_FirstLetterBold:
       ok =
 	compileBrailleIndicator (nested, "first  letter bold",
 				 CTO_FirstLetterBoldRule,
 				 &table->firstLetterBold);
       break;
-    case CTO_EndBold:
     case CTO_LastLetterBold:
       ok =
 	compileBrailleIndicator (nested, "last letter bold",
@@ -4606,7 +4581,6 @@ doOpcode:
 				 CTO_FirstWordUnderRule,
 				 &table->firstWordUnder);
       break;
-    case CTO_UnderSign:
     case CTO_LastWordUnderBefore:
       ok =
 	compileBrailleIndicator (nested, "last word underline before",
@@ -4619,14 +4593,12 @@ doOpcode:
 				 CTO_LastWordUnderAfterRule,
 				 &table->lastWordUnderAfter);
       break;
-    case CTO_BegUnder:
     case CTO_FirstLetterUnder:
       ok =
 	compileBrailleIndicator (nested, "first letter underline",
 				 CTO_FirstLetterUnderRule,
 				 &table->firstLetterUnder);
       break;
-    case CTO_EndUnder:
     case CTO_LastLetterUnder:
       ok =
 	compileBrailleIndicator (nested, "last letter underline",
@@ -5156,7 +5128,7 @@ doOpcode:
 	    while ((lastToken = getToken (nested, &token, "multind opcodes")))
 	      {
 		opcode = getOpcode (nested, &token);
-		if (opcode >= CTO_CapitalSign && opcode < CTO_MultInd)
+		if (opcode >= CTO_FirstWordCaps && opcode < CTO_MultInd)
 		  ruleChars.chars[ruleChars.length++] = (widechar) opcode;
 		else
 		  {
@@ -5409,8 +5381,6 @@ makeDoubleRule (TranslationTableOpcode opcode, TranslationTableOffset
 static int
 setDefaults ()
 {
-  if (!table->lenBeginCaps)
-    table->lenBeginCaps = 2;
   makeDoubleRule (CTO_FirstWordItal, &table->lastWordItalBefore,
 		  &table->firstWordItal);
   if (!table->lenItalPhrase)

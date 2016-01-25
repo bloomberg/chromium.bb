@@ -12,9 +12,9 @@ lowword \x2013 36-36         # make double when surrounded by white spaces
 lowword - 36-36              # make double when hyphen surrounded by white spaces
 
 numsign 3456
-capsign 6                    # single capital letter indicator
-begcaps 6-6                  # a block of consecutive capital letters indicator
-endcaps 56                   # TODO
+singlelettercaps 6                    # single capital letter indicator
+capsword 6-6                  # a block of consecutive capital letters indicator
+capswordstop 56                   # TODO
 
 emphclass italic
 emphclass underline

@@ -137,9 +137,9 @@ math \x215E 3456-1245-0-34-3456-125 ⅞
 
 # Braille indicators
 numsign 3456
-capsign 6 
-begcaps 6-6
-endcaps 56
+singlelettercaps 6 
+capsword 6-6
+capswordstop 56
 
 # Emphasis
 emphclass italic

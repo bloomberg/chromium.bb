@@ -29,7 +29,7 @@ include en-ueb-g1.ctb.bak
 letsign 56
 noletsignafter .
 noletsignafter '
-multind 56-6 letsign capsign
+multind 56-6 letsign singlelettercaps
 
 # Contractions beginning with the letter a
 word a 1

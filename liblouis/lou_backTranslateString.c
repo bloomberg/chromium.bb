@@ -494,13 +494,19 @@ handleMultind ()
     return 0;
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
-    case CTO_CapitalSign:
+    case CTO_SingleLetterCaps: // FIXME: make sure this works
       found = findBrailleIndicatorRule (table->capitalSign);
       break;
-    case CTO_BeginCapitalSign:
+    // FIXME: the next two opcodes were begcaps/endcaps,
+    // and they were aliased to capsword/capswordstop.
+    // However, the table attributes they use are
+    // table->beginCapitalSign and table->endCapitalSign.
+    // These are actually compiled with firstlettercaps/lastlettercaps.
+    // Which to use here?
+    case CTO_FirstLetterCaps:
       found = findBrailleIndicatorRule (table->beginCapitalSign);
       break;
-    case CTO_EndCapitalSign:
+    case CTO_LastLetterCaps:
       found = findBrailleIndicatorRule (table->endCapitalSign);
       break;
     case CTO_LetterSign:
@@ -512,7 +518,7 @@ handleMultind ()
     case CTO_LastWordItalBefore:
       found = findBrailleIndicatorRule (table->lastWordItalBefore);
       break;
-    case CTO_BegItal:
+    case CTO_FirstLetterItal:
       found = findBrailleIndicatorRule (table->firstLetterItal);
       break;
     case CTO_LastLetterItal:
@@ -533,7 +539,7 @@ handleMultind ()
     case CTO_FirstLetterUnder:
       found = findBrailleIndicatorRule (table->firstLetterUnder);
       break;
-    case CTO_EndUnder:
+    case CTO_LastLetterUnder:
       found = findBrailleIndicatorRule (table->lastLetterUnder);
       break;
     case CTO_BegComp:

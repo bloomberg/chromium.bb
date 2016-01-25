@@ -660,17 +660,6 @@ validMatch ()
   return 1;
 }
 
-static int
-checkMultCaps ()
-{
-  int k;
-  for (k = 0; k < (int) table->lenBeginCaps; k++)
-    if (k >= srcmax - src ||
-	!checkAttr (currentInput[src + k], CTC_UpperCase, 0))
-      return 0;
-  return 1;
-}
-
 static int prevPrevType = 0;
 static int nextType = 0;
 static TranslationTableCharacterAttributes prevPrevAttr = 0;

@@ -207,10 +207,6 @@ extern "C"
     CTO_IncludeFile,
     CTO_Locale,			/*Deprecated, do not use */
     CTO_Undefined,
-    CTO_CapitalSign,
-    CTO_BeginCapitalSign,
-    CTO_LenBegcaps,
-    CTO_EndCapitalSign,
     CTO_FirstWordCaps,
     CTO_LastWordCapsBefore,
     CTO_LastWordCapsAfter,
@@ -231,15 +227,6 @@ extern "C"
     CTO_SeqBeforeChars,
     CTO_SeqAfterChars,
     CTO_SeqAfterPattern,
-    CTO_ItalSign,
-    CTO_BegItal,
-    CTO_EndItal,
-    CTO_BoldSign,
-    CTO_BegBold,
-    CTO_EndBold,
-    CTO_UnderSign,
-    CTO_BegUnder,
-    CTO_EndUnder,
     CTO_EmphClass,
     
     /* the following 9 opcodes are compiled further down to one of the 10 x 9 values defined below
@@ -639,8 +626,8 @@ extern "C"
     TranslationTableOffset beginCapitalSign;
     TranslationTableOffset endCapitalSign;	/*end capitals sign */
     TranslationTableOffset capitalSign;
-    TranslationTableOffset CapsWord;
-    TranslationTableOffset CapsWordStop;
+    TranslationTableOffset capsWord;
+    TranslationTableOffset capsWordStop;
     TranslationTableOffset lenCapsPhrase;
     TranslationTableOffset firstWordScript;
     TranslationTableOffset lastWordScriptBefore;
@@ -706,7 +693,6 @@ extern "C"
     TranslationTableOffset transNoteWordStop;
     TranslationTableOffset lenTransNotePhrase;
     /* End of ordered emphasis rule poiinters */
-    TranslationTableOffset lenBeginCaps;
     TranslationTableOffset begComp;
     TranslationTableOffset compBegEmph1;
     TranslationTableOffset compEndEmph1;

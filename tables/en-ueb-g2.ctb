@@ -25,7 +25,7 @@
 
 include en-ueb-g1.ctb
 
-multind 56-6 letsign capsign
+multind 56-6 letsign singlelettercaps
 
 seqdelimiter -—
 seqdelimiter ‐   \x2010

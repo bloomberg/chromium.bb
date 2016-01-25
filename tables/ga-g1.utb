@@ -21,13 +21,16 @@ punctuation • 456-256	# filled round bullet point
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
-capsign 6
-begcaps 6-6
-endcaps 6-3
-begital 46-2356
-endital 46-3
-begbold 45-2356
-endbold 45-3
+singlelettercaps 6
+capsword 6-6
+capswordstop 6-3
+emphclass italic
+emphclass underline
+emphclass bold
+firstletteremph italic 46-2356
+lastletteremph italic 46-3
+firstletteremph bold 45-2356
+lastletteremph bold 45-3
 
 # the decimal digits
 include litdigits6Dots.uti
