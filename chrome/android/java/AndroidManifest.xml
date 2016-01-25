@@ -517,7 +517,7 @@ by a child template that "extends" this file.
             android:exported="false" />
             
         <!-- Receiver for GCM messages. -->
-        <receiver android:name="org.chromium.chrome.browser.services.gcm.ChromeGcmReceiver"
+        <receiver android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>

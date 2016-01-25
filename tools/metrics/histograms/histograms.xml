@@ -14458,6 +14458,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="GCM.AndroidGcmReceiverError" enum="GcmReceiverStatus">
   <owner>khushalsagar@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 01/2016. The error has been fixed by GCM. (crbug/580367)
+  </obsolete>
   <summary>Result of a message received by the GcmReceiver on Android.</summary>
 </histogram>
 
@@ -66893,6 +66896,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="GcmReceiverStatus" type="int">
+  <obsolete>
+    Deprecated as of 01/2016. The error has been fixed by GCM. (crbug/580367)
+  </obsolete>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="ERROR_SECURITY_EXCEPTION"/>
 </enum>
