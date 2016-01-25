@@ -66,12 +66,12 @@ class Base(unittest.TestCase):
     def get_basic_expectations(self):
         return """
 Bug(test) failures/expected/text.html [ Failure ]
-Bug(test) failures/expected/crash.html [ WontFix ]
+Bug(test) failures/expected/crash.html [ Crash ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
 Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/missing_image.html [ Rebaseline Missing ]
-Bug(test) failures/expected/image_checksum.html [ WontFix ]
-Bug(test) failures/expected/image.html [ WontFix Mac ]
+Bug(test) failures/expected/image_checksum.html [ Crash ]
+Bug(test) failures/expected/image.html [ Crash Mac ]
 """
 
     def parse_exp(self, expectations, overrides=None, is_lint_mode=False):
@@ -97,7 +97,7 @@ class BasicTests(Base):
     def test_basic(self):
         self.parse_exp(self.get_basic_expectations())
         self.assert_exp('failures/expected/text.html', FAIL)
-        self.assert_exp_list('failures/expected/image_checksum.html', [WONTFIX, SKIP])
+        self.assert_exp_list('failures/expected/image_checksum.html', [CRASH])
         self.assert_exp('passes/text.html', PASS)
         self.assert_exp('failures/expected/image.html', PASS)
 
@@ -162,13 +162,13 @@ class MiscTests(Base):
         # This test checks unknown tests are not present in the
         # expectations and that known test part of a test category is
         # present in the expectations.
-        exp_str = 'Bug(x) failures/expected [ WontFix ]'
+        exp_str = 'Bug(x) failures/expected [ CRASH ]'
         self.parse_exp(exp_str)
         test_name = 'failures/expected/unknown-test.html'
         unknown_test = test_name
         self.assertRaises(KeyError, self._exp.get_expectations,
                           unknown_test)
-        self.assert_exp_list('failures/expected/crash.html', [WONTFIX, SKIP])
+        self.assert_exp_list('failures/expected/crash.html', [PASS])
 
     def test_get_expectations_string(self):
         self.parse_exp(self.get_basic_expectations())
@@ -183,7 +183,7 @@ class MiscTests(Base):
     def test_get_test_set(self):
         # Handle some corner cases for this routine not covered by other tests.
         self.parse_exp(self.get_basic_expectations())
-        s = self._exp.get_test_set(WONTFIX)
+        s = self._exp.get_test_set(CRASH)
         self.assertEqual(s, set(['failures/expected/crash.html', 'failures/expected/image_checksum.html']))
 
     def test_needs_rebaseline_reftest(self):
@@ -265,9 +265,9 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
         self.assertTrue(match('failures/expected/text.html', FAIL, False))
         self.assertFalse(match('failures/expected/text.html', CRASH, True))
         self.assertFalse(match('failures/expected/text.html', CRASH, False))
-        self.assertTrue(match('failures/expected/image_checksum.html', PASS, True))
-        self.assertTrue(match('failures/expected/image_checksum.html', PASS, False))
-        self.assertTrue(match('failures/expected/crash.html', PASS, False))
+        self.assertFalse(match('failures/expected/image_checksum.html', PASS, True))
+        self.assertFalse(match('failures/expected/image_checksum.html', PASS, False))
+        self.assertFalse(match('failures/expected/crash.html', PASS, False))
         self.assertTrue(match('failures/expected/needsrebaseline.html', TEXT, True))
         self.assertFalse(match('failures/expected/needsrebaseline.html', CRASH, True))
         self.assertTrue(match('failures/expected/needsmanualrebaseline.html', TEXT, True))
@@ -304,12 +304,12 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         test_name2 = 'passes/text.html'
 
         expectations_dict = OrderedDict()
-        expectations_dict['expectations'] = "Bug(x) %s [ Failure ]\nBug(x) %s [ Slow ]\n" % (test_name1, test_name2)
+        expectations_dict['expectations'] = "Bug(x) %s [ Failure ]\nBug(x) %s [ Crash ]\n" % (test_name1, test_name2)
         self._port.expectations_dict = lambda: expectations_dict
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(test_name1), set([FAIL]))
-        self.assertEqual(expectations.get_expectations(test_name2), set([SLOW]))
+        self.assertEqual(expectations.get_expectations(test_name2), set([CRASH]))
 
         def bot_expectations():
             return {test_name1: ['PASS', 'TIMEOUT'], test_name2: ['CRASH']}
@@ -318,7 +318,7 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(test_name1), set([PASS, FAIL, TIMEOUT]))
-        self.assertEqual(expectations.get_expectations(test_name2), set([CRASH, SLOW]))
+        self.assertEqual(expectations.get_expectations(test_name2), set([CRASH]))
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False, expected_results=[WONTFIX, SKIP, FAIL]):
@@ -418,12 +418,11 @@ class ExpectationSyntaxTests(Base):
         self.assert_tokenize_exp('foo.html [ Skip ]', specifiers=[], expectations=['SKIP'])
 
     def test_slow(self):
-        self.assert_tokenize_exp('foo.html [ Slow ]', specifiers=[], expectations=['SLOW'])
+        self.assert_tokenize_exp('foo.html [ Slow ]', specifiers=[], expectations=['SLOW'], warnings=['SLOW tests should ony be added to SlowTests and not to TestExpectations.'])
 
     def test_wontfix(self):
-        self.assert_tokenize_exp('foo.html [ WontFix ]', specifiers=[], expectations=['WONTFIX', 'SKIP'])
-        self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'],
-            warnings=['A test marked Skip or WontFix must not have other expectations.'])
+        self.assert_tokenize_exp('foo.html [ WontFix ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=['WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
+        self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=['A test marked Skip or WontFix must not have other expectations.', 'WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
 
     def test_blank_line(self):
         self.assert_tokenize_exp('', name=None)
@@ -502,19 +501,19 @@ class PrecedenceTests(Base):
         # and tests expectations covering entire directories.
         exp_str = """
 Bug(x) failures/expected/text.html [ Failure ]
-Bug(y) failures/expected [ WontFix ]
+Bug(y) failures/expected [ Crash ]
 """
         self.parse_exp(exp_str)
         self.assert_exp('failures/expected/text.html', FAIL)
-        self.assert_exp_list('failures/expected/crash.html', [WONTFIX, SKIP])
+        self.assert_exp_list('failures/expected/crash.html', [CRASH])
 
         exp_str = """
-Bug(x) failures/expected [ WontFix ]
+Bug(x) failures/expected [ Crash ]
 Bug(y) failures/expected/text.html [ Failure ]
 """
         self.parse_exp(exp_str)
         self.assert_exp('failures/expected/text.html', FAIL)
-        self.assert_exp_list('failures/expected/crash.html', [WONTFIX, SKIP])
+        self.assert_exp_list('failures/expected/crash.html', [CRASH])
 
     def test_ambiguous(self):
         self.assert_bad_expectations("Bug(test) [ Release ] passes/text.html [ Pass ]\n"

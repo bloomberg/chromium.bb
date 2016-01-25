@@ -368,6 +368,12 @@ class TestExpectationParser(object):
         if ('SKIP' in expectations or 'WONTFIX' in expectations) and len(set(expectations) - set(['SKIP', 'WONTFIX'])):
             warnings.append('A test marked Skip or WontFix must not have other expectations.')
 
+        if 'SLOW' in expectations and 'SlowTests' not in filename:
+            warnings.append('SLOW tests should ony be added to SlowTests and not to TestExpectations.')
+
+        if 'WONTFIX' in expectations and ('NeverFixTests' not in filename and 'StaleTestExpectations' not in filename):
+            warnings.append('WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.')
+
         if not expectations and not has_unrecognized_expectation:
             warnings.append('Missing expectations.')
 

@@ -49,7 +49,7 @@ class MockPort(base.Port):
         host.filesystem.write_text_file(self._absolute_path('VirtualTestSuites'), '[]')
         host.filesystem.write_text_file(self._absolute_path('TestExpectations'), """
 crbug.com/42 [ Debug ] origin/path/test.html [ Pass Timeout Failure ]
-crbug.com/42 [ Win ] origin/path [ Slow ]
+crbug.com/42 [ Win ] origin/path [ Crash ]
 crbug.com/42 [ Release ] origin [ Crash ]
 """)
         host.filesystem.write_text_file(self._absolute_path('existing_directory_with_contents', 'test.html'), '')
@@ -170,7 +170,7 @@ class LayoutTestsMoverTest(unittest.TestCase):
     def test_directory_expectation_is_updated(self):
         self._mover.move('origin/path', 'destination')
         self.assertFalse('origin/path' in self._filesystem.read_text_file(self._port._absolute_path('TestExpectations')))
-        self.assertTrue('crbug.com/42 [ Win ] destination [ Slow ]' in self._filesystem.read_text_file(self._port._absolute_path('TestExpectations')))
+        self.assertTrue('crbug.com/42 [ Win ] destination [ Crash ]' in self._filesystem.read_text_file(self._port._absolute_path('TestExpectations')))
 
     def test_expectation_is_added_when_subdirectory_moved(self):
         self._mover.move('origin/path', 'destination')

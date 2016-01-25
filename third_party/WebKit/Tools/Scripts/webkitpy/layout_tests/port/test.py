@@ -104,8 +104,8 @@ class TestList(object):
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
 TOTAL_TESTS = 114
-TOTAL_SKIPS = 29
-
+TOTAL_SKIPS = 26
+TOTAL_CRASHES = 80
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 26
 
@@ -301,9 +301,9 @@ Bug(test) failures/expected/newlines_with_excess_CR.html [ Failure ]
 Bug(test) failures/expected/reftest.html [ Failure ]
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
-Bug(test) failures/expected/keyboard.html [ WontFix ]
-Bug(test) failures/expected/exception.html [ WontFix ]
-Bug(test) failures/expected/device_failure.html [ WontFix ]
+Bug(test) failures/expected/keyboard.html [ Crash ]
+Bug(test) failures/expected/exception.html [ Crash ]
+Bug(test) failures/expected/device_failure.html [ Crash ]
 Bug(test) failures/expected/leak.html [ Leak ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
 Bug(test) passes/skipped/skip.html [ Skip ]
