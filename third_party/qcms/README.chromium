@@ -124,15 +124,17 @@ The following changes have been made since qcms was imported:
  - Compute the pole and zero values needed by lut_inverse_interp16 once
    - https://code.google.com/p/chromium/issues/detail?id=505793
  - Store the profile media white point during iccread.c
-   - http://code.google.com/p/chromium/issues/detail?id=565222
+   - https://code.google.com/p/chromium/issues/detail?id=565222
  - Add an API to check for profile media white point
-   - http://code.google.com/p/chromium/issues/detail?id=565222
+   - https://code.google.com/p/chromium/issues/detail?id=565222
  - Add a qcms_profile_get_white_point() api
-   - http://code.google.com/p/chromium/issues/detail?id=565222
+   - https://code.google.com/p/chromium/issues/detail?id=565222
  - Set the media white point of the sRGB profile
-   - http://code.google.com/p/chromium/issues/detail?id=565222
+   - https://code.google.com/p/chromium/issues/detail?id=565222
  - Don't build QCMS on Android and iOS
    - https://code.google.com/p/chromium/issues/detail?id=577155
+ - Fix para curve tag interval paramater use
+   - https://code.google.com/p/chromium/issues/detail?id=580920
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
