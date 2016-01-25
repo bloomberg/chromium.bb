@@ -142,12 +142,12 @@ SVGParsingError SVGLength::setValueAsString(const String& string)
     CSSParserContext svgParserContext(SVGAttributeMode, 0);
     RefPtrWillBeRawPtr<CSSValue> parsed = CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
     if (!parsed || !parsed->isPrimitiveValue())
-        return SVGParseStatus::ParsingFailed;
+        return SVGParseStatus::ExpectedLength;
 
     CSSPrimitiveValue* newValue = toCSSPrimitiveValue(parsed.get());
     // TODO(fs): Enable calc for SVG lengths
     if (newValue->isCalculated() || !isSupportedCSSUnitType(newValue->typeWithCalcResolved()))
-        return SVGParseStatus::ParsingFailed;
+        return SVGParseStatus::ExpectedLength;
 
     m_value = newValue;
     return SVGParseStatus::NoError;

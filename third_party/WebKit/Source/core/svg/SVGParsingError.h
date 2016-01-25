@@ -41,6 +41,7 @@ enum class SVGParseStatus {
     TrailingGarbage,
     ExpectedBoolean,
     ExpectedEnumeration,
+    ExpectedLength,
     ExpectedNumber,
 
     // Semantic errors
@@ -64,6 +65,9 @@ public:
 
     bool hasLocus() const { return m_locus != kNoLocus; }
     unsigned locus() const { return m_locus; }
+
+    // Move the locus of this error by |offset|, returning in a new error.
+    SVGParsingError offsetWith(size_t offset) const { return SVGParsingError(status(), offset + locus()); }
 
     // Generates a string describing this error for |value| in the context of
     // an <element, attribute>-name pair.
