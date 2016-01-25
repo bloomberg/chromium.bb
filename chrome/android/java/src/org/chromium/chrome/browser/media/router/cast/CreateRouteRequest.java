@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.router.cast;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.common.ConnectionResult;
@@ -55,6 +56,13 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
         @Override
         public void onApplicationStatusChanged() {
+            if (mSession == null) return;
+
+            mSession.updateSessionStatus();
+        }
+
+        @Override
+        public void onApplicationMetadataChanged(ApplicationMetadata metadata) {
             if (mSession == null) return;
 
             mSession.updateSessionStatus();

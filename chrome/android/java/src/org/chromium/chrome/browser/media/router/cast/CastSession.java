@@ -33,6 +33,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -202,8 +203,7 @@ public class CastSession implements MediaNotificationListener {
         mHandler = new Handler();
 
         mMessageChannel = new CastMessagingChannel(this);
-        addNamespace(MEDIA_NAMESPACE);
-        addNamespace(GAMES_NAMESPACE);
+        updateNamespaces();
 
         final Context context = ApplicationStatus.getApplicationContext();
 
@@ -656,7 +656,7 @@ public class CastSession implements MediaNotificationListener {
         String namespaceName = jsonAppMessageWrapper.getString("namespaceName");
         if (namespaceName == null || namespaceName.isEmpty()) return false;
 
-        if (!mNamespaces.contains(namespaceName)) addNamespace(namespaceName);
+        if (!mNamespaces.contains(namespaceName)) return false;
 
         int sequenceNumber = jsonMessage.optInt("sequenceNumber", INVALID_SEQUENCE_NUMBER);
         return sendCastMessage(actualMessage, namespaceName, clientId, sequenceNumber);
@@ -778,6 +778,8 @@ public class CastSession implements MediaNotificationListener {
             mApplicationStatus = Cast.CastApi.getApplicationStatus(mApiClient);
             mApplicationMetadata = Cast.CastApi.getApplicationMetadata(mApiClient);
 
+            updateNamespaces();
+
             broadcastClientMessage("update_session", buildSessionMessage());
         } catch (IllegalStateException e) {
             Log.e(TAG, "Can't get application status", e);
@@ -869,14 +871,26 @@ public class CastSession implements MediaNotificationListener {
 
     private JSONArray extractNamespaces() throws JSONException {
         JSONArray jsonNamespaces = new JSONArray();
-        // TODO(avayvod): Need a way to retrieve all the supported namespaces (e.g. YouTube).
-        // See crbug.com/529680.
         for (String namespace : mNamespaces) {
             JSONObject jsonNamespace = new JSONObject();
             jsonNamespace.put("name", namespace);
             jsonNamespaces.put(jsonNamespace);
         }
         return jsonNamespaces;
+    }
+
+    private void updateNamespaces() {
+        if (mApplicationMetadata == null) return;
+
+        List<String> newNamespaces = mApplicationMetadata.getSupportedNamespaces();
+
+        Set<String> toRemove = new HashSet<String>(mNamespaces);
+        toRemove.removeAll(newNamespaces);
+        for (String namespaceToRemove : toRemove) unregisterNamespace(namespaceToRemove);
+
+        for (String newNamespace : newNamespaces) {
+            if (!mNamespaces.contains(newNamespace)) addNamespace(newNamespace);
+        }
     }
 
     private boolean isApiClientInvalid() {
