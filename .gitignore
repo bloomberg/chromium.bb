@@ -31,6 +31,7 @@
 
 # Ignore common compiled artifacts.
 *~
+*.dwo
 *.o
 lib*.a
 /breakpad.pc

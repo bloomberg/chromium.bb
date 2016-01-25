@@ -1304,3 +1304,6 @@ EXTRA_DIST = \
 	src/tools/windows/dump_syms/testdata/dump_syms_regtest.sym \
 	src/tools/windows/symupload/symupload.cc \
 	src/tools/windows/symupload/symupload.vcproj
+
+mostlyclean-local:
+	-find src -name '*.dwo' -exec rm -f {} +
