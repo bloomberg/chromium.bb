@@ -10,8 +10,6 @@ crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
 crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
 
-crbug.com/580422 [ Mac ] editing/spelling/spelling-huge-text-sync.html [ Failure Pass ]
-
 crbug.com/231612 fast/parser/changing-attrbutes-crash.html [ NeedsRebaseline ]
 crbug.com/231612 svg/custom/viewbox-syntax.svg [ NeedsRebaseline ]
 crbug.com/231612 svg/custom/poly-parsing-error.html [ NeedsRebaseline ]
