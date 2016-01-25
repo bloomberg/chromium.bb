@@ -18,6 +18,17 @@ namespace {
 
 static const int kDefaultTimeout = 60000;
 
+bool IsProcessRunning(HANDLE process) {
+  DWORD exit_code = 0;
+  if (::GetExitCodeProcess(process, &exit_code))
+    return exit_code == STILL_ACTIVE;
+  return false;
+}
+
+}  // namespace
+
+namespace sandbox {
+
 // Constructs a full path to a file inside the system32 folder.
 base::string16 MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
   wchar_t windows_path[MAX_PATH] = {0};
@@ -53,17 +64,6 @@ base::string16 MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
   full_path += name;
   return full_path;
 }
-
-bool IsProcessRunning(HANDLE process) {
-  DWORD exit_code = 0;
-  if (::GetExitCodeProcess(process, &exit_code))
-    return exit_code == STILL_ACTIVE;
-  return false;
-}
-
-}  // namespace
-
-namespace sandbox {
 
 base::string16 MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
