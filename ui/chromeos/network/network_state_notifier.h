@@ -6,6 +6,7 @@
 #define UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
 
 #include <set>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -108,7 +109,7 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   bool did_show_out_of_credits_;
   base::Time out_of_credits_notify_time_;
   std::set<std::string> cellular_activating_;
-  bool need_vpn_disconnection_notify_;
+  std::string connected_vpn_;
   base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);

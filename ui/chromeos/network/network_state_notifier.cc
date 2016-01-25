@@ -103,7 +103,6 @@ const char NetworkStateNotifier::kNetworkOutOfCreditsNotificationId[] =
 NetworkStateNotifier::NetworkStateNotifier(NetworkConnect* network_connect)
     : network_connect_(network_connect),
       did_show_out_of_credits_(false),
-      need_vpn_disconnection_notify_(false),
       weak_ptr_factory_(this) {
   if (!NetworkHandler::IsInitialized())
     return;
@@ -123,6 +122,12 @@ NetworkStateNotifier::~NetworkStateNotifier() {
 
 void NetworkStateNotifier::ConnectToNetworkRequested(
     const std::string& service_path) {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  if (network && network->type() == shill::kTypeVPN)
+    connected_vpn_.clear();
+
   RemoveConnectNotification();
 }
 
@@ -152,7 +157,7 @@ void NetworkStateNotifier::DisconnectRequested(
       NetworkHandler::Get()->network_state_handler()->GetNetworkState(
           service_path);
   if (network && network->type() == shill::kTypeVPN)
-    need_vpn_disconnection_notify_ = false;
+    connected_vpn_.clear();
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
@@ -191,9 +196,14 @@ bool NetworkStateNotifier::UpdateDefaultNetwork(const NetworkState* network) {
 }
 
 void NetworkStateNotifier::UpdateVpnConnectionState(const NetworkState* vpn) {
-  if (!vpn->IsConnectedState() && need_vpn_disconnection_notify_)
-    ShowVpnDisconnectedNotification(vpn);
-  need_vpn_disconnection_notify_ = vpn->IsConnectedState();
+  if (vpn->path() == connected_vpn_) {
+    if (!vpn->IsConnectedState()) {
+      ShowVpnDisconnectedNotification(vpn);
+      connected_vpn_.clear();
+    }
+  } else if (vpn->IsConnectedState()) {
+    connected_vpn_ = vpn->path();
+  }
 }
 
 void NetworkStateNotifier::UpdateCellularOutOfCredits(
