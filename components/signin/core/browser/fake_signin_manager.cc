@@ -64,7 +64,8 @@ void FakeSigninManager::SignIn(const std::string& gaia_id,
 
 void FakeSigninManager::ForceSignOut() {
   prohibit_signout_ = false;
-  SignOut(signin_metrics::SIGNOUT_TEST);
+  SignOut(signin_metrics::SIGNOUT_TEST,
+          signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
 void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
@@ -73,7 +74,8 @@ void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
 }
 
 void FakeSigninManager::SignOut(
-    signin_metrics::ProfileSignout signout_source_metric) {
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
   if (IsSignoutProhibited())
     return;
   set_auth_in_progress(std::string());

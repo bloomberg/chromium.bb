@@ -50,7 +50,8 @@ void FakeSigninManager::SignIn(const std::string& account_id) {
 }
 
 void FakeSigninManager::SignOut(
-    signin_metrics::ProfileSignout signout_source_metric) {
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
   const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = GetAuthenticatedAccountInfo().email;
   clear_authenticated_user();

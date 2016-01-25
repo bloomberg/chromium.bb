@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -623,11 +625,16 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
 void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS);
 
   bool delete_profile = false;
-  if (args->GetBoolean(0, &delete_profile) && delete_profile) {
+  args->GetBoolean(0, &delete_profile);
+  signin_metrics::SignoutDelete delete_metric =
+      delete_profile ? signin_metrics::SignoutDelete::DELETED
+                     : signin_metrics::SignoutDelete::KEEPING;
+  SigninManagerFactory::GetForProfile(profile_)
+      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+
+  if (delete_profile) {
     // Do as BrowserOptionsHandler::DeleteProfile().
     options::helper::DeleteProfileAtPath(profile_->GetPath(), web_ui());
   }
@@ -680,7 +687,8 @@ void PeopleHandler::CloseSyncSetup() {
           // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
           if (sync_service->IsFirstSetupInProgress()) {
             SigninManagerFactory::GetForProfile(profile_)
-                ->SignOut(signin_metrics::ABORT_SIGNIN);
+                ->SignOut(signin_metrics::ABORT_SIGNIN,
+                          signin_metrics::SignoutDelete::IGNORE_METRIC);
           }
 #endif
         }

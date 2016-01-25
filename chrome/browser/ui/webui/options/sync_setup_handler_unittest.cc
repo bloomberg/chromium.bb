@@ -311,7 +311,8 @@ TEST_F(SyncSetupHandlerFirstSigninTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Ensure that the user is not signed in before calling |HandleStartSignin()|.
   SigninManager* manager = static_cast<SigninManager*>(mock_signin_);
-  manager->SignOut(signin_metrics::SIGNOUT_TEST);
+  manager->SignOut(signin_metrics::SIGNOUT_TEST,
+                   signin_metrics::SignoutDelete::IGNORE_METRIC);
   handler_->HandleStartSignin(NULL);
 
   // Sync setup hands off control to the gaia login tab.

@@ -287,7 +287,8 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
 
-  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                            signin_metrics::SignoutDelete::IGNORE_METRIC);
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 }
 
@@ -603,7 +604,8 @@ TEST_F(AccountReconcilorTest, SignoutAfterErrorDoesNotRecordUma) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
-  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                            signin_metrics::SignoutDelete::IGNORE_METRIC);
 
   base::HistogramTester::CountsMap expected_counts;
   expected_counts["Signin.Reconciler.Duration.Failure"] = 1;

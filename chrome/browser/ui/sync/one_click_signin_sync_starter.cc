@@ -330,7 +330,8 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       // the signin for the original profile was cancelled (must do this after
       // we have called Initialize() with the new profile, as otherwise this
       // object will get freed when the signin on the old profile is cancelled.
-      old_signin_manager->SignOut(signin_metrics::TRANSFER_CREDENTIALS);
+      old_signin_manager->SignOut(signin_metrics::TRANSFER_CREDENTIALS,
+                                  signin_metrics::SignoutDelete::IGNORE_METRIC);
 
       // Load policy for the just-created profile - once policy has finished
       // loading the signin process will complete.
@@ -357,8 +358,9 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
 #endif
 
 void OneClickSigninSyncStarter::CancelSigninAndDelete() {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut(
-      signin_metrics::ABORT_SIGNIN);
+  SigninManagerFactory::GetForProfile(profile_)
+      ->SignOut(signin_metrics::ABORT_SIGNIN,
+                signin_metrics::SignoutDelete::IGNORE_METRIC);
   // The statement above results in a call to SigninFailed() which will free
   // this object, so do not refer to the OneClickSigninSyncStarter object
   // after this point.

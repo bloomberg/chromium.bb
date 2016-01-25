@@ -58,7 +58,8 @@ class FakeSigninManager : public SigninManager {
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback) override;
 
-  void SignOut(signin_metrics::ProfileSignout signout_source_metric) override;
+  void SignOut(signin_metrics::ProfileSignout signout_source_metric,
+               signin_metrics::SignoutDelete signout_delete_metric) override;
 
   void CompletePendingSignin() override;
 

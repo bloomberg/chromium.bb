@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -295,7 +299,8 @@ TEST_F(CrossDevicePromoTest, SignedInAndOut) {
 
   {
     base::HistogramTester test_signed_out;
-    signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
+    signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                              signin_metrics::SignoutDelete::IGNORE_METRIC);
     promo()->CheckPromoEligibilityForTesting();
     test_signed_out.ExpectUniqueSample("Signin.XDevicePromo.Eligibility",
                                        signin_metrics::NOT_SINGLE_GAIA_ACCOUNT,

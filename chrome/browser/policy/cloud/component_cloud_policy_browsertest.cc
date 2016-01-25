@@ -201,7 +201,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(signin_manager);
-    signin_manager->SignOut(signin_metrics::SIGNOUT_TEST);
+    signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
+                            signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 #endif
 

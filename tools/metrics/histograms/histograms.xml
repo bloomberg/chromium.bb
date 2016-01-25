@@ -45452,6 +45452,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.SignoutDeleteProfile" enum="BooleanDeletedOrNot">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    If the user chose to delete their profile or not when signing out of an
+    unmanaged account. When the user is not given a choice this metric is not
+    recorded.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SignoutProfile" enum="SigninSignoutProfile">
   <owner>mlerman@chromium.org</owner>
   <summary>Track how a profile gets signed out.</summary>
@@ -58004,6 +58013,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="BooleanDelete" type="int">
   <int value="0" label="Ignored"/>
+  <int value="1" label="Deleted"/>
+</enum>
+
+<enum name="BooleanDeletedOrNot" type="int">
+  <int value="0" label="Not deleted"/>
   <int value="1" label="Deleted"/>
 </enum>
 

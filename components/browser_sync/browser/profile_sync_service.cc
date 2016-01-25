@@ -1379,7 +1379,8 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       if (!startup_controller_->auto_start_enabled()) {
         SigninManager* signin_manager =
             static_cast<SigninManager*>(signin_->GetOriginal());
-        signin_manager->SignOut(signin_metrics::SERVER_FORCED_DISABLE);
+        signin_manager->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
+                                signin_metrics::SignoutDelete::IGNORE_METRIC);
       }
 #endif
       break;

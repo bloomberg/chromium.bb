@@ -159,8 +159,9 @@ void SigninManagerAndroid::OnSignInCompleted(
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut(
-      signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS);
+  SigninManagerFactory::GetForProfile(profile_)
+      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+                signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
 base::android::ScopedJavaLocalRef<jstring>

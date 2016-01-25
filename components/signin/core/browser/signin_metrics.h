@@ -228,6 +228,15 @@ enum class AccountEquality : int {
   HISTOGRAM_COUNT,
 };
 
+// When the user is give a choice of deleting their profile or not when signing
+// out, the |DELETED| or |KEEPING| metric should be used. If the user is not
+// given any option, then use the |IGNORE_METRIC| value should be used.
+enum class SignoutDelete : int {
+  DELETED = 0,
+  KEEPING,
+  IGNORE_METRIC,
+};
+
 // Tracks the access point of sign in.
 void LogSigninAccessPointStarted(AccessPoint access_point);
 void LogSigninAccessPointCompleted(AccessPoint access_point);
@@ -269,7 +278,7 @@ void LogSigninAddAccount();
 void LogSigninProfile(bool is_first_run, base::Time install_date);
 
 // Track a profile signout.
-void LogSignout(ProfileSignout metric);
+void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric);
 
 // Tracks whether the external connection results were all fetched before
 // the gaia cookie manager service tried to use them with merge session.

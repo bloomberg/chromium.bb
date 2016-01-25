@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -340,7 +341,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void CreateServiceWithoutSignIn() {
     CreateService(browser_sync::AUTO_START);
-    signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);
+    signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                             signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 #endif
 
@@ -434,10 +436,12 @@ class ProfileSyncServiceTest : public ::testing::Test {
   AccountTrackerService* account_tracker() { return account_tracker_.get(); }
 
 #if defined(OS_CHROMEOS)
-  SigninManagerBase* signin_manager() {
+  SigninManagerBase* signin_manager()
 #else
-  SigninManager* signin_manager() {
+  SigninManager* signin_manager()
 #endif
+  // Opening brace is outside of macro to avoid confusing lint.
+  {
     return signin_manager_.get();
   }
 
@@ -632,7 +636,8 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   EXPECT_TRUE(service()->IsSyncActive());
   EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 
-  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                            signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(service()->IsSyncActive());
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -717,7 +722,8 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                            signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 #endif

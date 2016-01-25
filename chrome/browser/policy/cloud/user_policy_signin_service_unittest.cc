@@ -584,8 +584,9 @@ TEST_F(UserPolicySigninServiceSignedInTest, SignOutAfterInit) {
   EXPECT_CALL(*mock_store_, Clear());
 
   // Now sign out.
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut(
-      signin_metrics::SIGNOUT_TEST);
+  SigninManagerFactory::GetForProfile(profile_.get())
+      ->SignOut(signin_metrics::SIGNOUT_TEST,
+                signin_metrics::SignoutDelete::IGNORE_METRIC);
 
   // UserCloudPolicyManager should be shut down.
   ASSERT_FALSE(manager_->core()->service());

@@ -100,9 +100,14 @@ void LogSigninAddAccount() {
   UMA_HISTOGRAM_BOOLEAN("Signin.AddAccount", true);
 }
 
-void LogSignout(ProfileSignout metric) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.SignoutProfile", metric,
+void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.SignoutProfile", source_metric,
                             NUM_PROFILE_SIGNOUT_METRICS);
+  if (delete_metric != SignoutDelete::IGNORE_METRIC) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Signin.SignoutDeleteProfile",
+        delete_metric == SignoutDelete::DELETED ? true : false);
+  }
 }
 
 void LogExternalCcResultFetches(

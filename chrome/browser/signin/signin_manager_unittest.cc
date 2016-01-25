@@ -314,7 +314,8 @@ TEST_F(SigninManagerTest, SignOut) {
       "user@gmail.com",
       "password",
       SigninManager::OAuthTokenFetchedCallback());
-  manager_->SignOut(signin_metrics::SIGNOUT_TEST);
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
@@ -335,10 +336,12 @@ TEST_F(SigninManagerTest, SignOutWhileProhibited) {
 
   manager_->SetAuthenticatedAccountInfo("gaia_id", "user@gmail.com");
   manager_->ProhibitSignout(true);
-  manager_->SignOut(signin_metrics::SIGNOUT_TEST);
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_TRUE(manager_->IsAuthenticated());
   manager_->ProhibitSignout(false);
-  manager_->SignOut(signin_metrics::SIGNOUT_TEST);
+  manager_->SignOut(signin_metrics::SIGNOUT_TEST,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(manager_->IsAuthenticated());
 }
 
