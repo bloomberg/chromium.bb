@@ -988,15 +988,13 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
 
     bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
-    bool willNeedCaretRectUpdate = false;
-
     // If the caret moved, stop the blink timer so we can restart with a
     // black caret in the new location.
     if (option == ResetCaretBlink || !shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame)) {
         m_caretBlinkTimer.stop();
 
         m_shouldPaintCaret = false;
-        willNeedCaretRectUpdate = true;
+        setCaretRectNeedsUpdate();
     }
 
     // Start blinking with a black caret. Be sure not to restart if we're
@@ -1006,11 +1004,8 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
             m_caretBlinkTimer.startRepeating(blinkInterval, BLINK_FROM_HERE);
 
         m_shouldPaintCaret = true;
-        willNeedCaretRectUpdate = true;
-    }
-
-    if (willNeedCaretRectUpdate)
         setCaretRectNeedsUpdate();
+    }
 
     LayoutView* view = m_frame->contentLayoutObject();
     if (!view)
@@ -1321,6 +1316,8 @@ DEFINE_TRACE(FrameSelection)
 
 void FrameSelection::setCaretRectNeedsUpdate()
 {
+    if (m_caretRectDirty)
+        return;
     m_caretRectDirty = true;
 
     scheduleVisualUpdate();
