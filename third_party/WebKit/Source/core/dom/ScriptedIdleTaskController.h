@@ -39,7 +39,6 @@ public:
     void stop() override;
     void suspend() override;
     void resume() override;
-    bool hasPendingActivity() const override;
 
     void callbackFired(CallbackId, double deadlineSeconds, IdleDeadline::CallbackType);
 

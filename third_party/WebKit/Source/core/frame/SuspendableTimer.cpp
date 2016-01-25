@@ -47,11 +47,6 @@ SuspendableTimer::~SuspendableTimer()
 {
 }
 
-bool SuspendableTimer::hasPendingActivity() const
-{
-    return isActive();
-}
-
 void SuspendableTimer::stop()
 {
     m_nextFireInterval = kNextFireIntervalInvalid;

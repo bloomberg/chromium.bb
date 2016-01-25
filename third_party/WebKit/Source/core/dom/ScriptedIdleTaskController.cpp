@@ -159,9 +159,4 @@ void ScriptedIdleTaskController::resume()
     }
 }
 
-bool ScriptedIdleTaskController::hasPendingActivity() const
-{
-    return !m_callbacks.isEmpty();
-}
-
 } // namespace blink

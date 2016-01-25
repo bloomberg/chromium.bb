@@ -39,7 +39,6 @@ public:
     ~SuspendableTimer() override;
 
     // ActiveDOMObject
-    bool hasPendingActivity() const final;
     void stop() override;
     void suspend() final;
     void resume() final;
