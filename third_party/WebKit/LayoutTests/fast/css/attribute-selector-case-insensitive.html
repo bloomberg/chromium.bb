@@ -7,7 +7,10 @@
   div[attr2="upper"] { border-right-color: yellow }
   div[attr2="UPPER"] { border-right-color: green }
   div[attr3="lower" i] { border-bottom-color: green }
-  div[attr4="UPPER" i] { border-left-color: green }
+  div[attr4="UPPER" I] { border-left-color: green }
+  div[attr4="UPPER" \0130] { border-left-color: yellow }
+  div[attr4="UPPER" \0131] { border-left-color: yellow }
+  div[attr4="UPPER" i\0i] { border-left-color: yellow }
 
   div[attr-list~="BaR" i] { border: 2px solid green; }
   div[attr-hyphen|="FoO" i] { border: 2px solid green; }
