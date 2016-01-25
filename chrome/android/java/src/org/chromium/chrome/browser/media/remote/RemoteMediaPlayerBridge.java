@@ -119,24 +119,30 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
 
         @Override
         public void pauseLocal() {
+            if (mNativeRemoteMediaPlayerBridge == 0) return;
             nativePauseLocal(mNativeRemoteMediaPlayerBridge);
         }
 
         @Override
         public long getLocalPosition() {
+            if (mNativeRemoteMediaPlayerBridge == 0) return 0L;
             return nativeGetLocalPosition(mNativeRemoteMediaPlayerBridge);
         }
 
         @Override
         public void onCastStarting(String routeName) {
-            nativeOnCastStarting(mNativeRemoteMediaPlayerBridge,
-                    RemoteMediaPlayerController.instance().getCastingMessage(routeName));
+            if (mNativeRemoteMediaPlayerBridge != 0) {
+                nativeOnCastStarting(mNativeRemoteMediaPlayerBridge,
+                        RemoteMediaPlayerController.instance().getCastingMessage(routeName));
+            }
             mActive = true;
         }
 
         @Override
         public void onCastStopping() {
-            nativeOnCastStopping(mNativeRemoteMediaPlayerBridge);
+            if (mNativeRemoteMediaPlayerBridge != 0) {
+                nativeOnCastStopping(mNativeRemoteMediaPlayerBridge);
+            }
             mActive = false;
         }
 
