@@ -1070,7 +1070,8 @@ Polymer({
     if (this.computeShowFirstRunFlow_(showFirstRunFlow, currentView)) {
       // Ensures that first run flow elements have finished stamping.
       this.async(function() {
-        var firstRunFlowHeight = this.$$('#first-run-flow').offsetHeight;
+        var firstRunFlowHeight = this.$$('#first-run-flow') ?
+            this.$$('#first-run-flow').offsetHeight : 0;
         this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
         this.$['sink-list-view'].style.marginTop =
             firstRunFlowHeight + headerHeight + 'px';
