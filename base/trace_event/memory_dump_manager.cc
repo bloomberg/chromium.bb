@@ -339,9 +339,12 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   scoped_ptr<ProcessMemoryDumpAsyncState> pmd_async_state;
   {
     AutoLock lock(lock_);
-    pmd_async_state.reset(
-        new ProcessMemoryDumpAsyncState(args, dump_providers_, session_state_,
-                                        callback, dump_thread_->task_runner()));
+    // |dump_thread_| can be nullptr is tracing was disabled before reaching
+    // here. ContinueAsyncProcessDump is robust enough to tolerate it and will
+    // NACK the dump.
+    pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
+        args, dump_providers_, session_state_, callback,
+        dump_thread_ ? dump_thread_->task_runner() : nullptr));
   }
 
   TRACE_EVENT_WITH_FLOW0(kTraceCategory, "MemoryDumpManager::CreateProcessDump",
@@ -404,7 +407,12 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     task_runner = pmd_async_state->dump_thread_task_runner.get();
 
   bool post_task_failed = false;
-  if (!task_runner->BelongsToCurrentThread()) {
+  if (!task_runner) {
+    // If tracing was disabled before reaching CreateProcessDump() |task_runner|
+    // will be null, as the dump_thread_ would have been already torn down.
+    post_task_failed = true;
+    pmd_async_state->dump_successful = false;
+  } else if (!task_runner->BelongsToCurrentThread()) {
     // It's time to hop onto another thread.
     post_task_failed = !task_runner->PostTask(
         FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
@@ -441,7 +449,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
       }
     }
     should_dump = !mdpinfo->disabled && !post_task_failed;
-  }
+  }  // AutoLock lock(lock_);
 
   if (disabled_reason) {
     LOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name << "\". "
@@ -510,8 +518,13 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
         TRACE_EVENT_FLAG_HAS_ID);
   }
 
+  bool tracing_still_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &tracing_still_enabled);
+  if (!tracing_still_enabled)
+    pmd_async_state->dump_successful = false;
+
   if (!pmd_async_state->callback.is_null()) {
-    pmd_async_state->callback.Run(dump_guid, true /* success */);
+    pmd_async_state->callback.Run(dump_guid, pmd_async_state->dump_successful);
     pmd_async_state->callback.Reset();
   }
 
@@ -605,6 +618,9 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 }
 
 void MemoryDumpManager::OnTraceLogDisabled() {
+  // There might be a memory dump in progress while this happens. Therefore,
+  // ensure that the MDM state which depends on the tracing enabled / disabled
+  // state is always accessed by the dumping methods holding the |lock_|.
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
   scoped_ptr<Thread> dump_thread;
   {
@@ -659,6 +675,7 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     : req_args(req_args),
       session_state(session_state),
       callback(callback),
+      dump_successful(true),
       callback_task_runner(MessageLoop::current()->task_runner()),
       dump_thread_task_runner(dump_thread_task_runner) {
   pending_dump_providers.reserve(dump_providers.size());

@@ -90,6 +90,9 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
     NOTREACHED();
     return MemoryDumpManager::kInvalidTracingProcessId;
   }
+
+  // Promote the CreateProcessDump to public so it can be used by test fixtures.
+  using MemoryDumpManagerDelegate::CreateProcessDump;
 };
 
 class MockMemoryDumpProvider : public MemoryDumpProvider {
@@ -826,9 +829,30 @@ TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
   tracing_disabled_event.Signal();
   run_loop.Run();
 
-  // RequestGlobalMemoryDump() should still suceed even if some threads were
-  // torn down during the dump.
-  EXPECT_TRUE(last_callback_success_);
+  EXPECT_FALSE(last_callback_success_);
+}
+
+// Tests against race conditions that can happen if tracing is disabled before
+// the CreateProcessDump() call. Real-world regression: crbug.com/580295 .
+TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
+  base::WaitableEvent tracing_disabled_event(false, false);
+  InitializeMemoryDumpManager(false /* is_coordinator */);
+
+  MockMemoryDumpProvider mdp;
+  RegisterDumpProvider(&mdp);
+  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
+
+  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _))
+      .WillOnce(Invoke([this](const MemoryDumpRequestArgs& args,
+                              const MemoryDumpCallback& callback) {
+        DisableTracing();
+        delegate_->CreateProcessDump(args, callback);
+      }));
+
+  last_callback_success_ = true;
+  RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::DETAILED);
+  EXPECT_FALSE(last_callback_success_);
 }
 
 TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
