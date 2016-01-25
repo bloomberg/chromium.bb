@@ -24,9 +24,7 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
   BackgroundSyncRegistrationOptions out;
 
   out.tag = in->tag;
-  out.min_period = in->min_period_ms;
   out.network_state = static_cast<SyncNetworkState>(in->network_state);
-  out.periodicity = static_cast<SyncPeriodicity>(in->periodicity);
   return out;
 }
 
@@ -35,9 +33,6 @@ SyncRegistrationPtr ToMojoRegistration(
   SyncRegistrationPtr out(content::SyncRegistration::New());
   out->handle_id = in.handle_id();
   out->tag = in.options()->tag;
-  out->min_period_ms = in.options()->min_period;
-  out->periodicity = static_cast<content::BackgroundSyncPeriodicity>(
-      in.options()->periodicity);
   out->network_state = static_cast<content::BackgroundSyncNetworkState>(
       in.options()->network_state);
   return out;
@@ -72,13 +67,6 @@ COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ONLINE,
                              SyncNetworkState::NETWORK_STATE_ONLINE);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
                              SyncNetworkState::NETWORK_STATE_ONLINE);
-
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::PERIODIC,
-                             SyncPeriodicity::SYNC_PERIODIC);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::ONE_SHOT,
-                             SyncPeriodicity::SYNC_ONE_SHOT);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::MAX,
-                             SyncPeriodicity::SYNC_ONE_SHOT);
 
 BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -142,7 +130,6 @@ void BackgroundSyncServiceImpl::Unregister(
 }
 
 void BackgroundSyncServiceImpl::GetRegistration(
-    BackgroundSyncPeriodicity periodicity,
     const mojo::String& tag,
     int64_t sw_registration_id,
     const GetRegistrationCallback& callback) {
@@ -151,13 +138,12 @@ void BackgroundSyncServiceImpl::GetRegistration(
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->GetRegistration(
-      sw_registration_id, tag.get(), static_cast<SyncPeriodicity>(periodicity),
+      sw_registration_id, tag.get(),
       base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BackgroundSyncServiceImpl::GetRegistrations(
-    BackgroundSyncPeriodicity periodicity,
     int64_t sw_registration_id,
     const GetRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -165,20 +151,18 @@ void BackgroundSyncServiceImpl::GetRegistrations(
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->GetRegistrations(
-      sw_registration_id, static_cast<SyncPeriodicity>(periodicity),
+      sw_registration_id,
       base::Bind(&BackgroundSyncServiceImpl::OnGetRegistrationsResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BackgroundSyncServiceImpl::GetPermissionStatus(
-    BackgroundSyncPeriodicity periodicity,
     int64_t sw_registration_id,
     const GetPermissionStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(iclelland): Implement a real policy. This is a stub implementation.
   // OneShot: crbug.com/482091
-  // Periodic: crbug.com/482093
   callback.Run(BackgroundSyncError::NONE, PermissionStatus::GRANTED);
 }
 

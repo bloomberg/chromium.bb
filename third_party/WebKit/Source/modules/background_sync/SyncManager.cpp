@@ -58,9 +58,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
 
     WebSyncRegistration* webSyncRegistration = new WebSyncRegistration(
         WebSyncRegistration::UNREGISTERED_SYNC_ID /* id */,
-        WebSyncRegistration::PeriodicityOneShot,
         tag,
-        0 /* minPeriod */,
         WebSyncRegistration::NetworkStateOnline /* networkState */
     );
     backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), context->isServiceWorkerGlobalScope(), new SyncRegistrationCallbacks(resolver, m_registration));
@@ -73,7 +71,7 @@ ScriptPromise SyncManager::getTags(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    backgroundSyncProvider()->getRegistrations(WebSyncRegistration::PeriodicityOneShot, m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
+    backgroundSyncProvider()->getRegistrations(m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
 
     return promise;
 }

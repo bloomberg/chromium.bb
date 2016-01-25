@@ -9,24 +9,6 @@
 namespace mojo {
 namespace {
 
-TEST(BackgroundSyncTypeConverterTest, TestBlinkToMojoPeriodicityConversions) {
-  ASSERT_EQ(blink::WebSyncRegistration::PeriodicityPeriodic,
-            ConvertTo<blink::WebSyncRegistration::Periodicity>(
-                content::BackgroundSyncPeriodicity::PERIODIC));
-  ASSERT_EQ(blink::WebSyncRegistration::PeriodicityOneShot,
-            ConvertTo<blink::WebSyncRegistration::Periodicity>(
-                content::BackgroundSyncPeriodicity::ONE_SHOT));
-}
-
-TEST(BackgroundSyncTypeConverterTest, TestMojoToBlinkPeriodicityConversions) {
-  ASSERT_EQ(content::BackgroundSyncPeriodicity::PERIODIC,
-            ConvertTo<content::BackgroundSyncPeriodicity>(
-                blink::WebSyncRegistration::PeriodicityPeriodic));
-  ASSERT_EQ(content::BackgroundSyncPeriodicity::ONE_SHOT,
-            ConvertTo<content::BackgroundSyncPeriodicity>(
-                blink::WebSyncRegistration::PeriodicityOneShot));
-}
-
 TEST(BackgroundSyncTypeConverterTest, TestBlinkToMojoNetworkStateConversions) {
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateAny,
             ConvertTo<blink::WebSyncRegistration::NetworkState>(
@@ -57,38 +39,18 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultBlinkToMojoConversion) {
       ConvertTo<content::SyncRegistrationPtr>(in);
 
   ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->handle_id);
-  ASSERT_EQ(content::BackgroundSyncPeriodicity::ONE_SHOT, out->periodicity);
   ASSERT_EQ("", out->tag);
-  ASSERT_EQ(0UL, out->min_period_ms);
   ASSERT_EQ(content::BackgroundSyncNetworkState::ONLINE, out->network_state);
-}
-
-TEST(BackgroundSyncTypeConverterTest, TestFullPeriodicBlinkToMojoConversion) {
-  blink::WebSyncRegistration in(
-      7, blink::WebSyncRegistration::PeriodicityPeriodic, "BlinkToMojo",
-      12340000, blink::WebSyncRegistration::NetworkStateAvoidCellular);
-  content::SyncRegistrationPtr out =
-      ConvertTo<content::SyncRegistrationPtr>(in);
-
-  ASSERT_EQ(7, out->handle_id);
-  ASSERT_EQ(content::BackgroundSyncPeriodicity::PERIODIC, out->periodicity);
-  ASSERT_EQ("BlinkToMojo", out->tag);
-  ASSERT_EQ(12340000UL, out->min_period_ms);
-  ASSERT_EQ(content::BackgroundSyncNetworkState::AVOID_CELLULAR,
-            out->network_state);
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestFullOneShotBlinkToMojoConversion) {
   blink::WebSyncRegistration in(
-      7, blink::WebSyncRegistration::PeriodicityOneShot, "BlinkToMojo",
-      12340000, blink::WebSyncRegistration::NetworkStateAvoidCellular);
+      7, "BlinkToMojo", blink::WebSyncRegistration::NetworkStateAvoidCellular);
   content::SyncRegistrationPtr out =
       ConvertTo<content::SyncRegistrationPtr>(in);
 
   ASSERT_EQ(7, out->handle_id);
-  ASSERT_EQ(content::BackgroundSyncPeriodicity::ONE_SHOT, out->periodicity);
   ASSERT_EQ("BlinkToMojo", out->tag);
-  ASSERT_EQ(12340000UL, out->min_period_ms);
   ASSERT_EQ(content::BackgroundSyncNetworkState::AVOID_CELLULAR,
             out->network_state);
 }
@@ -100,46 +62,21 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultMojoToBlinkConversion) {
       ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(in);
 
   ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->id);
-  ASSERT_EQ(blink::WebSyncRegistration::PeriodicityOneShot, out->periodicity);
   ASSERT_EQ("",out->tag);
-  ASSERT_EQ(0UL, out->minPeriodMs);
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateOnline, out->networkState);
-}
-
-TEST(BackgroundSyncTypeConverterTest, TestFullPeriodicMojoToBlinkConversion) {
-  content::SyncRegistrationPtr in(
-      content::SyncRegistration::New());
-  in->handle_id = 41;
-  in->periodicity = content::BackgroundSyncPeriodicity::PERIODIC;
-  in->tag = mojo::String("MojoToBlink");
-  in->min_period_ms = 43210000;
-  in->network_state = content::BackgroundSyncNetworkState::AVOID_CELLULAR;
-  scoped_ptr<blink::WebSyncRegistration> out =
-      ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(in);
-
-  ASSERT_EQ(41, out->id);
-  ASSERT_EQ(blink::WebSyncRegistration::PeriodicityPeriodic, out->periodicity);
-  ASSERT_EQ("MojoToBlink", out->tag.utf8());
-  ASSERT_EQ(43210000UL, out->minPeriodMs);
-  ASSERT_EQ(blink::WebSyncRegistration::NetworkStateAvoidCellular,
-            out->networkState);
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestFullOneShotMojoToBlinkConversion) {
   content::SyncRegistrationPtr in(
       content::SyncRegistration::New());
   in->handle_id = 41;
-  in->periodicity = content::BackgroundSyncPeriodicity::ONE_SHOT;
   in->tag = mojo::String("MojoToBlink");
-  in->min_period_ms = 43210000;
   in->network_state = content::BackgroundSyncNetworkState::AVOID_CELLULAR;
   scoped_ptr<blink::WebSyncRegistration> out =
       ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(in);
 
   ASSERT_EQ(41, out->id);
-  ASSERT_EQ(blink::WebSyncRegistration::PeriodicityOneShot, out->periodicity);
   ASSERT_EQ("MojoToBlink", out->tag.utf8());
-  ASSERT_EQ(43210000UL, out->minPeriodMs);
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateAvoidCellular,
             out->networkState);
 }

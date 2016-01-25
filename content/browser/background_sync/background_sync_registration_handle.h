@@ -53,8 +53,7 @@ class CONTENT_EXPORT BackgroundSyncRegistrationHandle {
   // succeeded. The provided state is BackgroundSyncState::SUCCESS on success,
   // BACKGRUOND_SYNC_STATE_FAILED on final failure, and
   // BackgroundSyncState::UNREGISTERED if the registration was unregistered
-  // before it could complete. NotifyWhenFinished should only be called for
-  // SYNC_ONE_SHOT registrations.
+  // before it could complete.
   void NotifyWhenFinished(const StatusAndStateCallback& callback);
 
   // Returns true if the handle is backed by a BackgroundSyncRegistration in the

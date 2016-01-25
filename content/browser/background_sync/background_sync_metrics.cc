@@ -33,40 +33,18 @@ ResultPattern EventResultToResultPattern(bool success,
 namespace content {
 
 // static
-void BackgroundSyncMetrics::RecordEventStarted(SyncPeriodicity periodicity,
-                                               bool started_in_foreground) {
-  switch (periodicity) {
-    case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.OneShotStartedInForeground",
-                            started_in_foreground);
-      return;
-    case SYNC_PERIODIC:
-      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.PeriodicStartedInForeground",
-                            started_in_foreground);
-      return;
-  }
-  NOTREACHED();
+void BackgroundSyncMetrics::RecordEventStarted(bool started_in_foreground) {
+  UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.OneShotStartedInForeground",
+                        started_in_foreground);
 }
 
 // static
-void BackgroundSyncMetrics::RecordEventResult(SyncPeriodicity periodicity,
-                                              bool success,
+void BackgroundSyncMetrics::RecordEventResult(bool success,
                                               bool finished_in_foreground) {
-  switch (periodicity) {
-    case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_ENUMERATION(
-          "BackgroundSync.Event.OneShotResultPattern",
-          EventResultToResultPattern(success, finished_in_foreground),
-          RESULT_PATTERN_MAX + 1);
-      return;
-    case SYNC_PERIODIC:
-      UMA_HISTOGRAM_ENUMERATION(
-          "BackgroundSync.Event.PeriodicResultPattern",
-          EventResultToResultPattern(success, finished_in_foreground),
-          RESULT_PATTERN_MAX + 1);
-      return;
-  }
-  NOTREACHED();
+  UMA_HISTOGRAM_ENUMERATION(
+      "BackgroundSync.Event.OneShotResultPattern",
+      EventResultToResultPattern(success, finished_in_foreground),
+      RESULT_PATTERN_MAX + 1);
 }
 
 // static
@@ -84,62 +62,30 @@ void BackgroundSyncMetrics::RecordBatchSyncEventComplete(
 
 // static
 void BackgroundSyncMetrics::CountRegisterSuccess(
-    SyncPeriodicity periodicity,
     RegistrationCouldFire registration_could_fire,
     RegistrationIsDuplicate registration_is_duplicate) {
-  switch (periodicity) {
-    case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot",
-                                BACKGROUND_SYNC_STATUS_OK,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
-      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Registration.OneShot.CouldFire",
-                            registration_could_fire == REGISTRATION_COULD_FIRE);
-      UMA_HISTOGRAM_BOOLEAN(
-          "BackgroundSync.Registration.OneShot.IsDuplicate",
-          registration_is_duplicate == REGISTRATION_IS_DUPLICATE);
-      return;
-    case SYNC_PERIODIC:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.Periodic",
-                                BACKGROUND_SYNC_STATUS_OK,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
-      UMA_HISTOGRAM_BOOLEAN(
-          "BackgroundSync.Registration.Periodic.IsDuplicate",
-          registration_is_duplicate == REGISTRATION_IS_DUPLICATE);
-      return;
-  }
-  NOTREACHED();
+  UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot",
+                            BACKGROUND_SYNC_STATUS_OK,
+                            BACKGROUND_SYNC_STATUS_MAX + 1);
+  UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Registration.OneShot.CouldFire",
+                        registration_could_fire == REGISTRATION_COULD_FIRE);
+  UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Registration.OneShot.IsDuplicate",
+                        registration_is_duplicate == REGISTRATION_IS_DUPLICATE);
+  return;
 }
 
 // static
-void BackgroundSyncMetrics::CountRegisterFailure(SyncPeriodicity periodicity,
-                                                 BackgroundSyncStatus result) {
-  switch (periodicity) {
-    case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot", result,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
-      return;
-    case SYNC_PERIODIC:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.Periodic", result,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
-      return;
-  }
-  NOTREACHED();
+void BackgroundSyncMetrics::CountRegisterFailure(BackgroundSyncStatus result) {
+  UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot", result,
+                            BACKGROUND_SYNC_STATUS_MAX + 1);
+  return;
 }
 
 // static
-void BackgroundSyncMetrics::CountUnregister(SyncPeriodicity periodicity,
-                                            BackgroundSyncStatus result) {
-  switch (periodicity) {
-    case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.OneShot", result,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
-      return;
-    case SYNC_PERIODIC:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.Periodic",
-                                result, BACKGROUND_SYNC_STATUS_MAX + 1);
-      return;
-  }
-  NOTREACHED();
+void BackgroundSyncMetrics::CountUnregister(BackgroundSyncStatus result) {
+  UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.OneShot", result,
+                            BACKGROUND_SYNC_STATUS_MAX + 1);
+  return;
 }
 
 }  // namespace content

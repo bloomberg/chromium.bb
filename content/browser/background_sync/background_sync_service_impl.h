@@ -39,15 +39,12 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void Unregister(BackgroundSyncRegistrationHandle::HandleId handle_id,
                   int64_t sw_registration_id,
                   const UnregisterCallback& callback) override;
-  void GetRegistration(BackgroundSyncPeriodicity periodicity,
-                       const mojo::String& tag,
+  void GetRegistration(const mojo::String& tag,
                        int64_t sw_registration_id,
                        const GetRegistrationCallback& callback) override;
-  void GetRegistrations(BackgroundSyncPeriodicity periodicity,
-                        int64_t sw_registration_id,
+  void GetRegistrations(int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;
   void GetPermissionStatus(
-      BackgroundSyncPeriodicity periodicity,
       int64_t sw_registration_id,
       const GetPermissionStatusCallback& callback) override;
   void DuplicateRegistrationHandle(

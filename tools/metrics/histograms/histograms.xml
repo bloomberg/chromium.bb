@@ -2811,9 +2811,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the number of sync events which were fired in a batch. A batch is
     defined as the set of sync events dispatched at the same time by the
-    BackgroundSyncManager. Periodic syncs often run in a batch. One-shots
-    usually run individually (a batch of one), unless the device was offline and
-    multiple are waiting for the device to go back online.
+    BackgroundSyncManager. One-shots usually run individually (a batch of one),
+    unless the device was offline and multiple are waiting for the device to go
+    back online.
   </summary>
 </histogram>
 
@@ -2860,6 +2860,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BackgroundSync.Event.PeriodicResultPattern"
     enum="BackgroundSyncResultPattern">
   <owner>jkarlin@chromium.org</owner>
+  <obsolete>
+    Stopped recording as of 1/2016.
+  </obsolete>
   <summary>
     Records whether a one-shot sync event succeeded or failed and whether the
     sync event finished in the foreground or background.
@@ -2873,6 +2876,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BackgroundSync.Event.PeriodicStartedInForeground"
     enum="BooleanInForeground">
   <owner>jkarlin@chromium.org</owner>
+  <obsolete>
+    Stopped recording as of 1/2016.
+  </obsolete>
   <summary>
     Records whether a periodic sync event started firing in the foreground or
     background. Called shortly before the event is fired.
@@ -2956,6 +2962,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BackgroundSync.Registration.Periodic"
     enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
+  <obsolete>
+    Stopped recording as of 1/2016.
+  </obsolete>
   <summary>
     Records the result of attempting to register a periodic sync.
   </summary>
@@ -2964,6 +2973,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BackgroundSync.Registration.Periodic.IsDuplicate"
     enum="BooleanRegistrationIsDuplicate">
   <owner>iclelland@chromium.org</owner>
+  <obsolete>
+    Stopped recording as of 1/2016.
+  </obsolete>
   <summary>
     Records whether a periodic sync registration exactly duplicates an existing
     registered sync.
@@ -2981,6 +2993,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BackgroundSync.Unregistration.Periodic"
     enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
+  <obsolete>
+    Stopped recording as of 1/2016.
+  </obsolete>
   <summary>
     Records the result of attempting to unregister a periodic sync.
   </summary>

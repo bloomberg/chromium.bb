@@ -8,9 +8,7 @@ namespace content {
 
 bool BackgroundSyncRegistrationOptions::Equals(
     const BackgroundSyncRegistrationOptions& other) const {
-  return tag == other.tag && min_period == other.min_period &&
-         network_state == other.network_state &&
-         periodicity == other.periodicity;
+  return tag == other.tag && network_state == other.network_state;
 }
 
 }  // namespace content

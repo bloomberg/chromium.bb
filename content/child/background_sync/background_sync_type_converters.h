@@ -15,23 +15,6 @@
 
 namespace mojo {
 
-// blink::WebSyngRegistration::Periodicity <=>
-//    content::BackgroundSyncPeriodicity
-
-template <>
-struct CONTENT_EXPORT TypeConverter<blink::WebSyncRegistration::Periodicity,
-                     content::BackgroundSyncPeriodicity> {
-  static blink::WebSyncRegistration::Periodicity Convert(
-      content::BackgroundSyncPeriodicity input);
-};
-
-template <>
-struct CONTENT_EXPORT TypeConverter<content::BackgroundSyncPeriodicity,
-                     blink::WebSyncRegistration::Periodicity> {
-  static content::BackgroundSyncPeriodicity Convert(
-      blink::WebSyncRegistration::Periodicity input);
-};
-
 // blink::WebSyncRegistration::NetworkState <=>
 //     content::BackgroundSyncNetworkState
 

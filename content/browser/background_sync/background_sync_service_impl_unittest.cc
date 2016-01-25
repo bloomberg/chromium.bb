@@ -211,15 +211,13 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void GetRegistrationOneShot(
       const mojo::String& tag,
       const BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->GetRegistration(BackgroundSyncPeriodicity::ONE_SHOT, tag,
-                                   sw_registration_id_, callback);
+    service_impl_->GetRegistration(tag, sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 
   void GetRegistrationsOneShot(
       const BackgroundSyncService::GetRegistrationsCallback& callback) {
-    service_impl_->GetRegistrations(BackgroundSyncPeriodicity::ONE_SHOT,
-                                    sw_registration_id_, callback);
+    service_impl_->GetRegistrations(sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 

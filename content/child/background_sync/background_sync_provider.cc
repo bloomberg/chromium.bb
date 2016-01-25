@@ -127,7 +127,6 @@ void BackgroundSyncProvider::unregisterBackgroundSync(
 }
 
 void BackgroundSyncProvider::getRegistration(
-    blink::WebSyncRegistration::Periodicity periodicity,
     const blink::WebString& tag,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncRegistrationCallbacks* callbacks) {
@@ -140,15 +139,13 @@ void BackgroundSyncProvider::getRegistration(
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->GetRegistration(
-      mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity), tag.utf8(),
-      service_worker_registration_id,
+      tag.utf8(), service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetRegistrationCallback,
                  base::Unretained(this),
                  base::Passed(std::move(callbacksPtr))));
 }
 
 void BackgroundSyncProvider::getRegistrations(
-    blink::WebSyncRegistration::Periodicity periodicity,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncGetRegistrationsCallbacks* callbacks) {
   DCHECK(service_worker_registration);
@@ -160,7 +157,6 @@ void BackgroundSyncProvider::getRegistrations(
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->GetRegistrations(
-      mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity),
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetRegistrationsCallback,
                  base::Unretained(this),
@@ -168,7 +164,6 @@ void BackgroundSyncProvider::getRegistrations(
 }
 
 void BackgroundSyncProvider::getPermissionStatus(
-    blink::WebSyncRegistration::Periodicity periodicity,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncGetPermissionStatusCallbacks* callbacks) {
   DCHECK(service_worker_registration);
@@ -181,7 +176,6 @@ void BackgroundSyncProvider::getPermissionStatus(
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->GetPermissionStatus(
-      mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity),
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetPermissionStatusCallback,
                  base::Unretained(this),

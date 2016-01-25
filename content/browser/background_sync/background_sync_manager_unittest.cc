@@ -288,11 +288,9 @@ class BackgroundSyncManagerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
     sync_options_1_.tag = "foo";
-    sync_options_1_.periodicity = SYNC_ONE_SHOT;
     sync_options_1_.network_state = NETWORK_STATE_ONLINE;
 
     sync_options_2_.tag = "bar";
-    sync_options_2_.periodicity = SYNC_ONE_SHOT;
     sync_options_2_.network_state = NETWORK_STATE_ONLINE;
   }
 
@@ -536,7 +534,6 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool was_called = false;
     background_sync_manager_->GetRegistration(
         sw_registration_id, registration_options.tag,
-        registration_options.periodicity,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -550,16 +547,14 @@ class BackgroundSyncManagerTest : public testing::Test {
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
-  bool GetRegistrations(SyncPeriodicity periodicity) {
-    return GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
-                                              periodicity);
+  bool GetRegistrations() {
+    return GetRegistrationWithServiceWorkerId(sw_registration_id_1_);
   }
 
-  bool GetRegistrationWithServiceWorkerId(int64_t sw_registration_id,
-                                          SyncPeriodicity periodicity) {
+  bool GetRegistrationWithServiceWorkerId(int64_t sw_registration_id) {
     bool was_called = false;
     background_sync_manager_->GetRegistrations(
-        sw_registration_id, periodicity,
+        sw_registration_id,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -689,36 +684,6 @@ TEST_F(BackgroundSyncManagerTest, RegisterWithoutActiveSWRegistration) {
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback_status_);
 }
 
-TEST_F(BackgroundSyncManagerTest, RegisterOverwrites) {
-  EXPECT_TRUE(Register(sync_options_1_));
-  scoped_ptr<BackgroundSyncRegistrationHandle> first_registration_handle =
-      std::move(callback_registration_handle_);
-
-  sync_options_1_.min_period = 100;
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_LT(first_registration_handle->handle_id(),
-            callback_registration_handle_->handle_id());
-  EXPECT_FALSE(first_registration_handle->options()->Equals(
-      *callback_registration_handle_->options()));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegisterOverlappingPeriodicAndOneShotTags) {
-  // Registrations with the same tags but different periodicities should not
-  // collide.
-  sync_options_1_.tag = "";
-  sync_options_2_.tag = "";
-  sync_options_1_.periodicity = SYNC_PERIODIC;
-  sync_options_2_.periodicity = SYNC_ONE_SHOT;
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(SYNC_PERIODIC,
-            callback_registration_handle_->options()->periodicity);
-  EXPECT_TRUE(GetRegistration(sync_options_2_));
-  EXPECT_EQ(SYNC_ONE_SHOT,
-            callback_registration_handle_->options()->periodicity);
-}
-
 TEST_F(BackgroundSyncManagerTest, RegisterBadBackend) {
   test_background_sync_manager_->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_options_1_));
@@ -769,55 +734,38 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationBadBackend) {
 }
 
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsZero) {
-  EXPECT_TRUE(GetRegistrations(SYNC_ONE_SHOT));
+  EXPECT_TRUE(GetRegistrations());
   EXPECT_EQ(0u, callback_registration_handles_->size());
 }
 
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsOne) {
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(GetRegistrations(sync_options_1_.periodicity));
+  EXPECT_TRUE(GetRegistrations());
 
   EXPECT_EQ(1u, callback_registration_handles_->size());
   sync_options_1_.Equals(*(*callback_registration_handles_)[0]->options());
 }
 
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsTwo) {
-  EXPECT_EQ(sync_options_1_.periodicity, sync_options_2_.periodicity);
-
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_TRUE(GetRegistrations(sync_options_1_.periodicity));
+  EXPECT_TRUE(GetRegistrations());
 
   EXPECT_EQ(2u, callback_registration_handles_->size());
   sync_options_1_.Equals(*(*callback_registration_handles_)[0]->options());
   sync_options_2_.Equals(*(*callback_registration_handles_)[1]->options());
 }
 
-TEST_F(BackgroundSyncManagerTest, GetRegistrationsPeriodicity) {
-  sync_options_1_.periodicity = SYNC_ONE_SHOT;
-  sync_options_2_.periodicity = SYNC_PERIODIC;
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-
-  EXPECT_TRUE(GetRegistrations(SYNC_ONE_SHOT));
-  EXPECT_EQ(1u, callback_registration_handles_->size());
-  sync_options_1_.Equals(*(*callback_registration_handles_)[0]->options());
-
-  EXPECT_TRUE(GetRegistrations(SYNC_PERIODIC));
-  EXPECT_EQ(1u, callback_registration_handles_->size());
-  sync_options_2_.Equals(*(*callback_registration_handles_)[0]->options());
-}
-
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsBadBackend) {
   EXPECT_TRUE(Register(sync_options_1_));
   test_background_sync_manager_->set_corrupt_backend(true);
-  EXPECT_TRUE(GetRegistrations(sync_options_1_.periodicity));
+  EXPECT_TRUE(GetRegistrations());
   EXPECT_FALSE(Register(sync_options_2_));
   // Registration should have discovered the bad backend and disabled the
   // BackgroundSyncManager.
-  EXPECT_FALSE(GetRegistrations(sync_options_1_.periodicity));
+  EXPECT_FALSE(GetRegistrations());
   test_background_sync_manager_->set_corrupt_backend(false);
-  EXPECT_FALSE(GetRegistrations(sync_options_1_.periodicity));
+  EXPECT_FALSE(GetRegistrations());
 }
 
 TEST_F(BackgroundSyncManagerTest, Unregister) {
@@ -841,7 +789,6 @@ TEST_F(BackgroundSyncManagerTest, UnregisterSecond) {
 }
 
 TEST_F(BackgroundSyncManagerTest, UnregisterBadBackend) {
-  sync_options_1_.min_period += 1;
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
   test_background_sync_manager_->set_corrupt_backend(true);
@@ -937,7 +884,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
   test_background_sync_manager_->GetRegistration(
-      sw_registration_id_1_, sync_options_1_.tag, sync_options_1_.periodicity,
+      sw_registration_id_1_, sync_options_1_.tag,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &get_registration_called));
 
@@ -1048,23 +995,6 @@ TEST_F(BackgroundSyncManagerTest, RegistrationEqualsTag) {
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsPeriodicity) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options()->periodicity = SYNC_PERIODIC;
-  reg_2.options()->periodicity = SYNC_ONE_SHOT;
-  EXPECT_FALSE(reg_1.Equals(reg_2));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsMinPeriod) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_2.options()->min_period = reg_1.options()->min_period + 1;
-  EXPECT_FALSE(reg_1.Equals(reg_2));
-}
-
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
   BackgroundSyncRegistration reg_1;
   BackgroundSyncRegistration reg_2;
@@ -1075,14 +1005,13 @@ TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
 }
 
 TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
+  InitDelayedSyncEventTest();
   BackgroundSyncRegistrationOptions options;
+
   // Set non-default values for each field.
   options.tag = "foo";
-  EXPECT_NE(SYNC_PERIODIC, options.periodicity);
-  options.periodicity = SYNC_PERIODIC;
-  options.min_period += 1;
-  EXPECT_NE(NETWORK_STATE_ANY, options.network_state);
-  options.network_state = NETWORK_STATE_ANY;
+  EXPECT_NE(NETWORK_STATE_AVOID_CELLULAR, options.network_state);
+  options.network_state = NETWORK_STATE_AVOID_CELLULAR;
 
   // Store the registration.
   EXPECT_TRUE(Register(options));
@@ -1103,35 +1032,6 @@ TEST_F(BackgroundSyncManagerTest, EmptyTagSupported) {
       sync_options_1_.Equals(*callback_registration_handle_->options()));
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest, OverlappingPeriodicAndOneShotTags) {
-  // Registrations with the same tags but different periodicities should not
-  // collide.
-  sync_options_1_.tag = "";
-  sync_options_2_.tag = "";
-  sync_options_1_.periodicity = SYNC_PERIODIC;
-  sync_options_2_.periodicity = SYNC_ONE_SHOT;
-
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(SYNC_PERIODIC,
-            callback_registration_handle_->options()->periodicity);
-  EXPECT_TRUE(GetRegistration(sync_options_2_));
-  EXPECT_EQ(SYNC_ONE_SHOT,
-            callback_registration_handle_->options()->periodicity);
-
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(GetRegistration(sync_options_2_));
-  EXPECT_EQ(SYNC_ONE_SHOT,
-            callback_registration_handle_->options()->periodicity);
-
-  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_FALSE(GetRegistration(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, OneShotFiresOnRegistration) {
@@ -1365,6 +1265,8 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_EQ(NETWORK_STATE_ONLINE,
             callback_registration_handle_->options()->network_state);
+  EXPECT_LT(original_handle->handle_id(),
+            callback_registration_handle_->handle_id());
 
   EXPECT_TRUE(NotifyWhenFinished(original_handle.get()));
   EXPECT_EQ(BackgroundSyncState::UNREGISTERED, FinishedState());

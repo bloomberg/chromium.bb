@@ -22,12 +22,12 @@ class SingleThreadTaskRunner;
 namespace content {
 
 // The BackgroundSyncProvider is called by the SyncManager and SyncRegistration
-// objects (and their Periodic counterparts) and communicates with the
-// BackgroundSyncManager object in the browser process. Each thread will have
-// its own instance (e.g. main thread, worker threads), instantiated as needed
-// by BlinkPlatformImpl.  Each instance of the provider creates a new mojo
-// connection to a new BackgroundSyncManagerImpl, which then talks to the
-// BackgroundSyncManager object.
+// objects and communicates with the BackgroundSyncManager object in the browser
+// process. Each thread will have its own instance (e.g. main thread, worker
+// threads), instantiated as needed by BlinkPlatformImpl.  Each instance of
+// the provider creates a new mojo connection to a new
+// BackgroundSyncManagerImpl, which then talks to the BackgroundSyncManager
+// object.
 class BackgroundSyncProvider : public blink::WebSyncProvider,
                                public WorkerThread::Observer {
  public:
@@ -55,16 +55,13 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncUnregistrationCallbacks* callbacks) override;
   void getRegistration(
-      blink::WebSyncRegistration::Periodicity,
       const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncRegistrationCallbacks* callbacks) override;
   void getRegistrations(
-      blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetRegistrationsCallbacks* callbacks) override;
   void getPermissionStatus(
-      blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetPermissionStatusCallbacks* callbacks) override;
   // TODO(jkarlin): Rename to releaseRegistrationHandle.

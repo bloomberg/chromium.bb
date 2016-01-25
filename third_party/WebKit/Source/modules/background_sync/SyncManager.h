@@ -25,8 +25,6 @@ public:
         return new SyncManager(registration);
     }
 
-    unsigned long minAllowablePeriod();
-
     ScriptPromise registerFunction(ScriptState*, ExecutionContext*, const String&);
     ScriptPromise getTags(ScriptState*);
 

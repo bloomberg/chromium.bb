@@ -13,14 +13,6 @@ namespace mojo {
                     static_cast<int>(blink::blink_name),    \
                 "mojo and blink enums must match")
 
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::PERIODIC,
-                             WebSyncRegistration::PeriodicityPeriodic);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::ONE_SHOT,
-                             WebSyncRegistration::PeriodicityOneShot);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::MAX,
-                             WebSyncRegistration::PeriodicityOneShot);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::MAX,
-                             WebSyncRegistration::PeriodicityLast);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ANY,
                              WebSyncRegistration::NetworkStateAny);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::AVOID_CELLULAR,
@@ -35,22 +27,6 @@ COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
                              WebServiceWorkerContextProxy::IsNotLastChance);
 COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncEventLastChance::IS_LAST_CHANCE,
                              WebServiceWorkerContextProxy::IsLastChance);
-
-// static
-blink::WebSyncRegistration::Periodicity
-    TypeConverter<blink::WebSyncRegistration::Periodicity,
-                  content::BackgroundSyncPeriodicity>::Convert(
-        content::BackgroundSyncPeriodicity input) {
-  return static_cast<blink::WebSyncRegistration::Periodicity>(input);
-}
-
-// static
-content::BackgroundSyncPeriodicity
-    TypeConverter<content::BackgroundSyncPeriodicity,
-                  blink::WebSyncRegistration::Periodicity>::Convert(
-        blink::WebSyncRegistration::Periodicity input) {
-  return static_cast<content::BackgroundSyncPeriodicity>(input);
-}
 
 // static
 blink::WebSyncRegistration::NetworkState
@@ -76,10 +52,7 @@ scoped_ptr<blink::WebSyncRegistration> TypeConverter<
   scoped_ptr<blink::WebSyncRegistration> result(
       new blink::WebSyncRegistration());
   result->id = input->handle_id;
-  result->periodicity =
-      ConvertTo<blink::WebSyncRegistration::Periodicity>(input->periodicity);
   result->tag = blink::WebString::fromUTF8(input->tag);
-  result->minPeriodMs = input->min_period_ms;
   result->networkState =
       ConvertTo<blink::WebSyncRegistration::NetworkState>(input->network_state);
   return result;
@@ -93,10 +66,7 @@ content::SyncRegistrationPtr TypeConverter<
   content::SyncRegistrationPtr result(
       content::SyncRegistration::New());
   result->handle_id = input.id;
-  result->periodicity =
-      ConvertTo<content::BackgroundSyncPeriodicity>(input.periodicity);
   result->tag = input.tag.utf8();
-  result->min_period_ms = input.minPeriodMs;
   result->network_state =
       ConvertTo<content::BackgroundSyncNetworkState>(input.networkState);
   return result;

@@ -37,15 +37,15 @@ public:
 
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistration(blink::WebSyncRegistration::Periodicity, const WebString&, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
+    virtual void getRegistration(const WebString&, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistrations(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
+    virtual void getRegistrations(WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
 
     // Takes ownership of the WebSyncGetPermissionStatusCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getPermissionStatus(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
+    virtual void getPermissionStatus(WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
 
     // Takes ownership of the WebSyncNotifyWhenFinishedCallbacks.
     virtual void notifyWhenFinished(int64_t handleId, WebSyncNotifyWhenFinishedCallbacks*) = 0;

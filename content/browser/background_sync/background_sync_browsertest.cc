@@ -85,7 +85,7 @@ void OneShotPendingDidGetSWRegistration(
   int64_t service_worker_id = registration->id();
   BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
   sync_manager->GetRegistration(
-      service_worker_id, tag, SYNC_ONE_SHOT,
+      service_worker_id, tag,
       base::Bind(&OneShotPendingDidGetSyncRegistration, callback));
 }
 

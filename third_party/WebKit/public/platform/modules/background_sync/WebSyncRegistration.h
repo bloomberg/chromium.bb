@@ -20,28 +20,18 @@ struct WebSyncRegistration {
 
     enum { UNREGISTERED_SYNC_ID = -1};
 
-    enum Periodicity {
-        PeriodicityPeriodic = 0,
-        PeriodicityOneShot,
-        PeriodicityLast = PeriodicityOneShot
-    };
-
     WebSyncRegistration()
         : id(UNREGISTERED_SYNC_ID)
-        , periodicity(PeriodicityOneShot)
         , tag("")
-        , minPeriodMs(0)
         , networkState(NetworkState::NetworkStateOnline)
     {
     }
 
-    WebSyncRegistration(int64_t id, Periodicity periodicity,
-        const WebString& registrationTag, unsigned long minPeriodMs,
+    WebSyncRegistration(int64_t id,
+        const WebString& registrationTag,
         NetworkState networkState)
         : id(id)
-        , periodicity(periodicity)
         , tag(registrationTag)
-        , minPeriodMs(minPeriodMs)
         , networkState(networkState)
     {
     }
@@ -49,19 +39,7 @@ struct WebSyncRegistration {
     /* Internal identity; not exposed to JS API. */
     int64_t id;
 
-    /* Internal flag; not directly exposed to JS API.
-     * Instead, this determines whether this object is represented in JS as a
-     * SyncRegistration or a PeriodicSyncRegistration.
-     */
-    Periodicity periodicity;
-
     WebString tag;
-
-    /* Minimum time between periodic sync events, in milliseconds. A 0 value
-     * here means that the event is a one-shot (not periodic.)
-     */
-    unsigned long minPeriodMs;
-
     NetworkState networkState;
 };
 
