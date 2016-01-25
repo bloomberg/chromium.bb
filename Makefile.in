@@ -2057,6 +2057,12 @@ includepdir = $(includedir)/$(PACKAGE)/processor
 includep_HEADERS = $(top_srcdir)/src/processor/*.h
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(am__append_6) $(am__append_9)
+TEST_CFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+	-I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+
 noinst_LIBRARIES = $(am__append_7)
 lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = src/client/linux/crash_generation/crash_generation_client.cc \
@@ -2280,11 +2286,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 @LINUX_HOST_TRUE@	$(am__append_19)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest/include \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing
+@LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-shared -Wl,-h,linux_client_unittest_shlib \
@@ -2441,11 +2443,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/testing/src/gmock-all.cc
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_CPPFLAGS = \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
@@ -2476,11 +2474,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/testing/src/gmock-all.cc
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_mac_macho_reader_unittest_CPPFLAGS = \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/third_party/mac_headers \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-DHAVE_MACH_O_NLIST_H \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS)
@@ -2493,11 +2487,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_memory_range_unittest.cc
 
 @LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS = \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest/include \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
-@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing
+@LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_unittest_LDADD = \
 @LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
@@ -2515,11 +2505,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_basic_source_line_resolver_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_basic_source_line_resolver_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
@@ -2543,11 +2529,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_cfi_frame_info_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_contained_range_map_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/contained_range_map_unittest.cc
@@ -2563,11 +2545,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_exploitability_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_exploitability_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
@@ -2612,11 +2590,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_disassembler_x86_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_disassembler_x86_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
@@ -2629,11 +2603,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_fast_source_line_resolver_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_fast_source_line_resolver_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/fast_source_line_resolver.o \
@@ -2653,11 +2623,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_map_serializers_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_map_serializers_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
@@ -2670,11 +2636,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_processor_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_processor_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
@@ -2710,11 +2672,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
@@ -2760,11 +2718,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
@@ -2784,11 +2738,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_proc_maps_linux_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_proc_maps_linux_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
@@ -2802,11 +2752,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_address_map_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_address_map_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
@@ -2819,11 +2765,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_contained_range_map_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_contained_range_map_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
@@ -2836,11 +2778,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_map_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_map_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
@@ -2853,11 +2791,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_range_map_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_range_map_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
@@ -2930,11 +2864,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_amd64_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -2948,11 +2878,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm64_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -2966,11 +2892,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm64_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_address_list_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -2984,11 +2906,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_address_list_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_mips_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -3002,11 +2920,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_mips_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_x86_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -3020,11 +2934,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_x86_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_synth_minidump_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -3037,11 +2947,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump.h
 
 @DISABLE_PROCESSOR_FALSE@src_processor_synth_minidump_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_synth_minidump_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 @DISABLE_PROCESSOR_FALSE@src_common_test_assembler_unittest_SOURCES = \
@@ -3053,11 +2959,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_common_test_assembler_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_common_test_assembler_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 @DISABLE_PROCESSOR_FALSE@noinst_SCRIPTS = $(check_SCRIPTS)
