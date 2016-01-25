@@ -480,8 +480,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicFormFill) {
   TryBasicFormFill();
 }
 
+// Flaky. See http://crbug.com/516052.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AutofillViaDownArrow DISABLED_AutofillViaDownArrow
+#else
+#define MAYBE_AutofillViaDownArrow AutofillViaDownArrow
+#endif
 // Test that form filling can be initiated by pressing the down arrow.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaDownArrow) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
   CreateTestProfile();
 
   // Load the test page.
