@@ -71,7 +71,7 @@ usage(int ret)
 }
 
 static bool
-is_dtd_valid(FILE *input)
+is_dtd_valid(FILE *input, const char *filename)
 {
 	bool rc = true;
 #if HAVE_LIBXML
@@ -101,7 +101,7 @@ is_dtd_valid(FILE *input)
 		abort();
 	}
 
-	doc = xmlCtxtReadFd(ctx, fd, "protocol", NULL, 0);
+	doc = xmlCtxtReadFd(ctx, fd, filename, NULL, 0);
 	if (!doc) {
 		fprintf(stderr, "Failed to read XML\n");
 		abort();
@@ -1623,6 +1623,7 @@ int main(int argc, char *argv[])
 	struct parse_context ctx;
 	struct protocol protocol;
 	FILE *input = stdin;
+	char *input_filename = NULL;
 	int len;
 	void *buf;
 	bool help = false, core_headers = false;
@@ -1678,7 +1679,8 @@ int main(int argc, char *argv[])
 		usage(EXIT_FAILURE);
 
 	if (argc == 3) {
-		input = fopen(argv[1], "r");
+		input_filename = argv[1];
+		input = fopen(input_filename, "r");
 		if (input == NULL) {
 			fprintf(stderr, "Could not open input file: %s\n",
 				strerror(errno));
@@ -1700,9 +1702,12 @@ int main(int argc, char *argv[])
 	/* initialize context */
 	memset(&ctx, 0, sizeof ctx);
 	ctx.protocol = &protocol;
-	ctx.loc.filename = "<stdin>";
+	if (input == stdin)
+		ctx.loc.filename = "<stdin>";
+	else
+		ctx.loc.filename = input_filename;
 
-	if (!is_dtd_valid(input)) {
+	if (!is_dtd_valid(input, ctx.loc.filename)) {
 		fprintf(stderr,
 		"*******************************************************\n"
 		"*                                                     *\n"
