@@ -983,6 +983,10 @@ public:
         WheelEvent = 1126,
         MouseWheelAndWheelEvent = 1127,
         BodyScrollsInAdditionToViewport = 1128,
+        DocumentDesignModeEnabeld = 1129,
+        ContentEditableTrue = 1130,
+        ContentEditableTrueOnHTML = 1131,
+        ContentEditablePlainTextOnly = 1132,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
