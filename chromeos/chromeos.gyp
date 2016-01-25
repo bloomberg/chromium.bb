@@ -529,7 +529,6 @@
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
         'cryptohome_proto',
-        'ime/input_method.gyp:gencode',
         'power_manager_proto',
       ],
       'defines': [

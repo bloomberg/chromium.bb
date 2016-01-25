@@ -84,7 +84,7 @@ class InputMethodUtilTest : public testing::Test {
                                      GURL(""));
     input_methods.push_back(zhuyin_ime);
 
-    util_.InitXkbInputMethodsForTesting();
+    util_.InitXkbInputMethodsForTesting(*whitelist_.GetSupportedInputMethods());
     util_.AppendInputMethods(input_methods);
   }
 

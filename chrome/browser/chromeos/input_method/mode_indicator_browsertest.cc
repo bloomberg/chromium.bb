@@ -104,7 +104,8 @@ class ModeIndicatorBrowserTest : public InProcessBrowserTest {
   void InitializeIMF() {
     InputMethodManager::Get()
         ->GetInputMethodUtil()
-        ->InitXkbInputMethodsForTesting();
+        ->InitXkbInputMethodsForTesting(
+            *InputMethodWhitelist().GetSupportedInputMethods());
   }
 
  private:

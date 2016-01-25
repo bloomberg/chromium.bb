@@ -56,8 +56,6 @@
         'chromeos/input_method_descriptor.h',
         'chromeos/input_method_manager.cc',
         'chromeos/input_method_manager.h',
-        'chromeos/input_method_whitelist.cc',
-        'chromeos/input_method_whitelist.h',
         'chromeos/mock_component_extension_ime_manager_delegate.cc',
         'chromeos/mock_component_extension_ime_manager_delegate.h',
         'chromeos/mock_ime_candidate_window_handler.cc',

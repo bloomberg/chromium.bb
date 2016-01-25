@@ -28,7 +28,6 @@
 // For SetHardwareKeyboardLayoutForTesting.
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
-#include "ui/base/ime/chromeos/input_method_whitelist.h"
 
 #include "ui/base/l10n/l10n_util.h"
 
@@ -805,9 +804,10 @@ void InputMethodUtil::ResetInputMethods(const InputMethodDescriptors& imes) {
   AppendInputMethods(imes);
 }
 
-void InputMethodUtil::InitXkbInputMethodsForTesting() {
+void InputMethodUtil::InitXkbInputMethodsForTesting(
+    const InputMethodDescriptors& imes) {
   cached_hardware_layouts_.clear();
-  ResetInputMethods(*(InputMethodWhitelist().GetSupportedInputMethods()));
+  ResetInputMethods(imes);
 }
 
 const InputMethodUtil::InputMethodIdToDescriptorMap&

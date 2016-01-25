@@ -1035,7 +1035,6 @@
         ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
-            '../chromeos/ime/input_method.gyp:gencode',
             '../components/components.gyp:chrome_apps',
             '../components/components.gyp:cryptauth',
             '../components/components.gyp:cryptauth_proto',

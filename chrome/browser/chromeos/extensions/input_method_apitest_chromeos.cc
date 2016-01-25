@@ -20,6 +20,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_whitelist.h"
+
+using namespace chromeos::input_method;
 
 namespace {
 
@@ -46,9 +49,9 @@ class TestListener : public content::NotificationObserver {
     if (content == kBackgroundReady) {
       // Initializes IMF for testing when receives ready message from
       // background.
-      chromeos::input_method::InputMethodManager* manager =
-          chromeos::input_method::InputMethodManager::Get();
-      manager->GetInputMethodUtil()->InitXkbInputMethodsForTesting();
+      InputMethodManager* manager = InputMethodManager::Get();
+      manager->GetInputMethodUtil()->InitXkbInputMethodsForTesting(
+          *InputMethodWhitelist().GetSupportedInputMethods());
 
       std::vector<std::string> keyboard_layouts;
       keyboard_layouts.push_back(

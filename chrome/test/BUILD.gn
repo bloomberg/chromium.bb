@@ -1036,6 +1036,7 @@ if (!is_android) {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       ]
       deps += [
+        "//chromeos/ime:gencode",
         "//dbus",
         "//dbus:test_support",
         "//ui/login:resources",
@@ -1873,7 +1874,10 @@ test("unit_tests") {
             "//chrome")
   }
   if (is_chromeos) {
-    deps += [ "//chrome/browser/chromeos:unit_tests" ]
+    deps += [
+      "//chrome/browser/chromeos:unit_tests",
+      "//chromeos/ime:gencode",
+    ]
     sources -= [ "../browser/signin/signin_manager_unittest.cc" ]
   }
   if (use_x11) {

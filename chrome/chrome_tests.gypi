@@ -826,6 +826,8 @@
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
       'browser/ui/webui/options/chromeos/shared_options_browsertest.cc',
+      '../ui/base/ime/chromeos/input_method_whitelist.h',
+      '../ui/base/ime/chromeos/input_method_whitelist.cc',
     ],
     'chrome_browser_tests_views_non_cros_or_mac_sources': [
       # This should be brought up on OSX Views but not CrOS.
@@ -2366,6 +2368,7 @@
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
             '../build/linux/system.gyp:dbus',
+            '../chromeos/ime/input_method.gyp:gencode',
             '../components/components.gyp:drive_test_support',
             '../ui/login/login.gyp:login_resources',
           ],

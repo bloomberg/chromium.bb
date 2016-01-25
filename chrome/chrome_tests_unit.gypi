@@ -1142,6 +1142,8 @@
       'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
       'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
       'common/extensions/api/file_system_provider/file_system_provider_handler_unittest.cc',
+      '../ui/base/ime/chromeos/input_method_whitelist.h',
+      '../ui/base/ime/chromeos/input_method_whitelist.cc',
     ],
     'chrome_unit_tests_chromeos_js_sources': [
       'browser/resources/chromeos/braille_ime/braille_ime.js',
@@ -2548,6 +2550,7 @@
           ],
           'dependencies': [
             '../ash/ash_resources.gyp:ash_resources',
+            '../chromeos/ime/input_method.gyp:gencode',
             '../components/components.gyp:drive_test_support',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
