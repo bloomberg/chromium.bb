@@ -221,6 +221,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestParseV4HashResponseNonPermissionMetadata);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestParseV4HashResponseInconsistentThreatTypes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetHashBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetV4HashBackOffTimes);

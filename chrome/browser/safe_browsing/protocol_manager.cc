@@ -360,6 +360,10 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
         response.minimum_wait_duration().seconds());
   }
 
+  // We only expect one threat type per request, so we make sure
+  // the threat types are consistent between matches.
+  ThreatType expected_threat_type = THREAT_TYPE_UNSPECIFIED;
+
   // Loop over the threat matches and fill in full_hashes.
   for (const ThreatMatch& match : response.matches()) {
     // Make sure the platform and threat entry type match.
@@ -367,6 +371,18 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
           match.threat_entry_type() == URL_EXPRESSION &&
           match.has_threat())) {
       RecordParseGetHashResult(UNEXPECTED_THREAT_ENTRY_TYPE_ERROR);
+      return false;
+    }
+
+    if (!match.has_threat_type()) {
+      // TODO(kcarattini): Add UMA.
+      return false;
+    }
+
+    if (expected_threat_type == THREAT_TYPE_UNSPECIFIED) {
+      expected_threat_type = match.threat_type();
+    } else if (match.threat_type() != expected_threat_type) {
+      // TODO(kcarattini): Add UMA.
       return false;
     }
 

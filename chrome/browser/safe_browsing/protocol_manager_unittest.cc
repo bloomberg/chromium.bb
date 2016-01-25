@@ -1,7 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #include <vector>
 
@@ -540,7 +539,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestParseV4HashResponse) {
   Time now = Time::Now();
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
-  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+  EXPECT_TRUE(
+      pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
   EXPECT_EQ(1ul, full_hashes.size());
@@ -566,10 +566,11 @@ TEST_F(SafeBrowsingProtocolManagerTest,
 
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
-  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+  EXPECT_FALSE(
+      pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
-  // THere should be no hash results.
+  // There should be no hash results.
   EXPECT_EQ(0ul, full_hashes.size());
 }
 
@@ -597,7 +598,8 @@ TEST_F(SafeBrowsingProtocolManagerTest,
 
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
-  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+  EXPECT_FALSE(
+      pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
   EXPECT_EQ(0ul, full_hashes.size());
@@ -627,7 +629,8 @@ TEST_F(SafeBrowsingProtocolManagerTest,
 
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
-  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+  EXPECT_TRUE(
+      pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
   EXPECT_EQ(1ul, full_hashes.size());
@@ -637,6 +640,34 @@ TEST_F(SafeBrowsingProtocolManagerTest,
   // Metadata should be empty.
   EXPECT_EQ("", full_hashes[0].metadata);
   EXPECT_EQ(base::TimeDelta::FromSeconds(0), full_hashes[0].cache_duration);
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest,
+TestParseV4HashResponseInconsistentThreatTypes) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  FindFullHashesResponse res;
+  ThreatMatch* m1 = res.add_matches();
+  m1->set_threat_type(API_ABUSE);
+  m1->set_platform_type(CHROME_PLATFORM);
+  m1->set_threat_entry_type(URL_EXPRESSION);
+  m1->mutable_threat()->set_hash(SBFullHashToString(
+      SBFullHashForString("Everything's shiny, Cap'n.")));
+  m1->mutable_threat_entry_metadata()->add_entries();
+  ThreatMatch* m2 = res.add_matches();
+  m2->set_threat_type(MALWARE_THREAT);
+  m2->set_threat_entry_type(URL_EXPRESSION);
+  m2->mutable_threat()->set_hash(SBFullHashToString(
+      SBFullHashForString("Not to fret.")));
+
+  // Serialize.
+  std::string res_data;
+  res.SerializeToString(&res_data);
+
+  std::vector<SBFullHashResult> full_hashes;
+  base::TimeDelta cache_lifetime;
+  EXPECT_FALSE(
+      pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
