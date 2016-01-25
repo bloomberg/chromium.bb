@@ -2687,7 +2687,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4927301649992043040">ארוז תוסף</translation>
 <translation id="4927753642311223124">אין התראות להצגה, המשך הלאה.</translation>
 <translation id="4929925845384605079">הפעלת התצוגה של מודעות באנר להוספה למדף, המנחות את המשתמש להוסיף אפליקציית אינטרנט למדף או אפליקצייה שוות ערך אחרת של פלטפורמה ספציפית.</translation>
-<translation id="4930497775425430760">אתה רואה את ההודעה הזו מפני שההורה שלך צריך לאשר אתרים חדשים עם הביקור הראשון שלך.</translation>
+<translation id="4930497775425430760">אתה רואה את ההודעה הזו מפני שההורה שלך צריך לאשר אתרים חדשים בביקור הראשון שלך.</translation>
 <translation id="4933484234309072027">מוטבע ב-<ph name="URL" /></translation>
 <translation id="493571969993549666">הוסף משתמש בפיקוח</translation>
 <translation id="4938972461544498524">הגדרות לוח מגע</translation>
@@ -3188,7 +3188,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5669267381087807207">מפעיל</translation>
 <translation id="5669462439438204699">שמירת כרטיס אשראי</translation>
 <translation id="5671961047338275645">ניהול אתרים</translation>
-<translation id="5675224880872496917">מעבר חלק בעת גלילת תוכן הדף.</translation>
+<translation id="5675224880872496917">מעבר חלק כשגוללים את תוכן הדף.</translation>
 <translation id="5676267133227121599">גש לסיסמאות שלך מכל מכשיר ב-<ph name="MANAGEMENT_LINK" />.</translation>
 <translation id="5677503058916217575">שפת הדף:</translation>
 <translation id="5677928146339483299">במצב חסום</translation>
@@ -3434,7 +3434,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="604001903249547235">גיבוי בענן</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="604124094241169006">אוטומטי</translation>
-<translation id="6042308850641462728">עוד</translation>
 <translation id="604257181445267932">‏התכונה Smart Lock עוזרת לך להיכנס במהירות לאפליקציות ולאתרים באמצעות סיסמאות ששמרת ב-Google.</translation>
 <translation id="6049065490165456785">תמונה מהמצלמה הפנימית</translation>
 <translation id="6051028581720248124">‏על ידי הדפסה ל-FedEx Office, אתה מקבל את <ph name="START_LINK" />תנאי השימוש<ph name="END_LINK" /> שלהם.</translation>

@@ -2589,7 +2589,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4791148004876134991">Canvia el comportament de Cmd+` quan s'activa una aplicació de Chrome. Si s'activa aquesta opció, les Aplicacions de Chrome no es processaran quan es premi Cmd+` des d'una finestra del navegador, i les finestres del navegador no es processaran quan hi hagi una aplicació de Chrome activa.</translation>
 <translation id="4792711294155034829">&amp;Informa d'un problema...</translation>
 <translation id="479280082949089240">Galetes emmagatzemades per aquesta pàgina</translation>
-<translation id="4793866834012505469">Restableix el model de veu</translation>
+<translation id="4793866834012505469">Torna a entrenar el model de veu</translation>
 <translation id="479536056609751218">Pàgina web, només HTML</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4801257000660565496">Creació de dreceres a aplicacions</translation>
@@ -3192,7 +3192,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="5669267381087807207">S'està activant</translation>
 <translation id="5669462439438204699">Desa la targeta de crèdit</translation>
 <translation id="5671961047338275645">Gestió dels llocs</translation>
-<translation id="5675224880872496917">Anima suaument en desplaçar-se pel contingut de la pàgina.</translation>
+<translation id="5675224880872496917">Mostra una animació harmoniosa en desplaçar-se pel contingut de la pàgina.</translation>
 <translation id="5676267133227121599">Accediu a totes les contrasenyes des de qualsevol dispositiu a <ph name="MANAGEMENT_LINK" />.</translation>
 <translation id="5677503058916217575">Idioma de la pàgina:</translation>
 <translation id="5677928146339483299">Bloquejat</translation>
@@ -3439,7 +3439,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="604001903249547235">Còpia de seguretat a Cloud</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="604124094241169006">Automàtic</translation>
-<translation id="6042308850641462728">Més</translation>
 <translation id="604257181445267932">Smart Lock serveix per iniciar la sessió ràpidament a les aplicacions i als llocs amb contrasenyes que hàgiu desat a Google.</translation>
 <translation id="6049065490165456785">Foto de la càmera interna</translation>
 <translation id="6051028581720248124">En imprimir a FedEx Office, accepteu les seves <ph name="START_LINK" />condicions del servei<ph name="END_LINK" />.</translation>
@@ -4605,7 +4604,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7892500982332576204">Detecció de comptes secundaris</translation>
 <translation id="7893008570150657497">Accedir a fotos, a música i a d'altres elements multimèdia de l'equip</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Predeterminada)</translation>
-<translation id="7894616681410591072">Necessiteu que <ph name="NAME" /> us doni permís per accedir a aquesta pàgina.</translation>
+<translation id="7894616681410591072"><ph name="NAME" /> us ha de donar permís per accedir a aquesta pàgina.</translation>
 <translation id="78957024357676568">esquerra</translation>
 <translation id="7896906914454843592">Teclat nord-americà ampliat</translation>
 <translation id="7897900149154324287">La propera vegada, assegureu-vos d'expulsar el dispositiu extraïble des de l'aplicació Fitxers abans de desconnectar-lo si no en voleu perdre les dades.</translation>

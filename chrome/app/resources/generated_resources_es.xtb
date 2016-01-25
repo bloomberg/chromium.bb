@@ -2593,7 +2593,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4791148004876134991">Cambia el comportamiento de Cmd+ cuando se activa una aplicación de Chrome. Cuando se habilita, las aplicaciones de Chrome no rotan cuando se pulsa Cmd+ desde una ventana del navegador y las ventanas del navegador no rotan cuando una aplicación de Chrome está activa.</translation>
 <translation id="4792711294155034829">&amp;Notificar un error...</translation>
 <translation id="479280082949089240">Cookies almacenadas por esta página</translation>
-<translation id="4793866834012505469">Restablecer modelo de voz</translation>
+<translation id="4793866834012505469">Volver a entrenar el modelo de voz</translation>
 <translation id="479536056609751218">Página web (solo HTML)</translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4801257000660565496">Crear accesos directos a aplicaciones</translation>
@@ -3441,7 +3441,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="604001903249547235">Copia de seguridad en la nube</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="604124094241169006">Automático</translation>
-<translation id="6042308850641462728">Más</translation>
 <translation id="604257181445267932">Smart Lock te ayuda a iniciar sesión rápidamente en aplicaciones y sitios web con contraseñas que hayas guardado en Google.</translation>
 <translation id="6049065490165456785">Foto de cámara interna</translation>
 <translation id="6051028581720248124">Al imprimir en un establecimiento FedEx Office, aceptas sus <ph name="START_LINK" />condiciones de uso<ph name="END_LINK" />.</translation>

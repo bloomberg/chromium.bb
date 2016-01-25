@@ -290,7 +290,7 @@
 <translation id="1429740407920618615">Sinyal Gücü:</translation>
 <translation id="143027896309062157">Bilgisayarınızda ve ziyaret ettiğiniz web sitelerinde tüm verilerinizi okuma ve değiştirme</translation>
 <translation id="1430915738399379752">Yazdır</translation>
-<translation id="1434696352799406980">Bu işlem, başlangıç sayfanızı, yeni sekme sayfanızı, arama motorunuzu ve sabit sekmelerinizi sıfırlar. Ayrıca, tüm uzantılar devre dışı bırakılır ve çerezler gibi geçici veriler temizlenir. Yer işaretleriniz, geçmişiniz ve kayıtlı parolalarınız temizlenmez.</translation>
+<translation id="1434696352799406980">Bu işlem, başlangıç sayfanızı, yeni sekme sayfanızı, arama motorunuzu ve sabit sekmelerinizi sıfırlar. Ayrıca, tüm uzantılar devre dışı bırakılır ve çerezler gibi geçici veriler temizlenir. Yer işaretleriniz, geçmişiniz ve kayıtlı şifreleriniz temizlenmez.</translation>
 <translation id="1434886155212424586">Ana sayfa Yeni Sekme sayfasıdır</translation>
 <translation id="1435550882135542937">Uzantı araç çubuğu yeniden tasarımı</translation>
 <translation id="1436784010935106834">Kaldırıldı</translation>
@@ -2392,7 +2392,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4449996769074858870">Bu sekmede ses çalınıyor.</translation>
 <translation id="4450974146388585462">Teşhis Et</translation>
 <translation id="4454939697743986778">Bu sertifika, sistem yöneticiniz tarafından yüklenmiştir.</translation>
-<translation id="4458874409874303848">Google SafeSites</translation>
+<translation id="4458874409874303848">SafeSites</translation>
 <translation id="445923051607553918">Kablosuz ağa bağlan</translation>
 <translation id="4461847750548395463">Google SafeSites etkinleştirilmiş olduğu için bu iletiyi görüyorsunuz.</translation>
 <translation id="4462159676511157176">Özel ad sunucuları</translation>
@@ -3446,7 +3446,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="604001903249547235">Bulut yedekleme</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="604124094241169006">Otomatik</translation>
-<translation id="6042308850641462728">Daha fazla</translation>
 <translation id="604257181445267932">Smart Lock, Google'a kaydettiğiniz şifreleri kullanarak uygulamalarda ve sitelerde hızlı şekilde oturum açmanıza yardımcı olur.</translation>
 <translation id="6049065490165456785">Dahili kamera fotoğrafı</translation>
 <translation id="6051028581720248124">FedEx Office'e yazdırarak, kendilerinin <ph name="START_LINK" />kullanım şartlarını<ph name="END_LINK" /> kabul etmiş olursunuz.</translation>
@@ -5096,7 +5095,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8584280235376696778">Videoyu yeni sekmede &amp;aç</translation>
 <translation id="8589311641140863898">Deneysel Uzantı API'ları</translation>
 <translation id="8590375307970699841">Otomatik güncellemeleri ayarla</translation>
-<translation id="8591846766485502580">Ebeveynlerinizden biri bu siteyi engellediği için bu iletiyi görüyorsunuz.</translation>
+<translation id="8591846766485502580">Bir ebeveyniniz bu siteyi engellediği için bu iletiyi görüyorsunuz.</translation>
 <translation id="8592071947729879125">iframe izinlerini kısıtla.</translation>
 <translation id="859285277496340001">Sertifika, iptal edilip edilmediğinin denetlenebileceği bir mekanizma belirtmiyor.</translation>
 <translation id="8594787581355215556"><ph name="USER_EMAIL_ADDRESS" /> olarak oturum açıldı. Senkronize edilmiş verilerinizi <ph name="BEGIN_LINK" />Google Hesap Özeti<ph name="END_LINK" />'nde yönetebilirsiniz.</translation>
@@ -5505,7 +5504,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="9188441292293901223">Bu <ph name="DEVICE_TYPE" /> cihazın kilidini açmak için lütfen telefonunuzu daha yeni bir Android sürümüne güncelleyin.</translation>
 <translation id="9189690067274055051">Giriş yapmak için telefonunuzun kilidini açın ve <ph name="DEVICE_TYPE" /> cihazınıza yaklaştırın.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + önceden paylaşılan anahtar</translation>
-<translation id="9201305942933582053">Chrome içinGoogle Now!</translation>
+<translation id="9201305942933582053">Chrome için Google Now!</translation>
 <translation id="9203398526606335860">&amp;Profil oluşturma etkin</translation>
 <translation id="9203478404496196495">Sekmenin sesini aç</translation>
 <translation id="9203962528777363226">Bu cihazın yöneticisi yeni kullanıcıların eklenmesini devre dışı bıraktı</translation>

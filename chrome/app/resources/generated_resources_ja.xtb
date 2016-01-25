@@ -2373,7 +2373,7 @@
 <translation id="4422347585044846479">このページのブックマークを編集します</translation>
 <translation id="4422428420715047158">ドメイン:</translation>
 <translation id="442477792133831654">近くのデバイスとの通信</translation>
-<translation id="4425149324548788773">マイ ドライブ</translation>
+<translation id="4425149324548788773">マイドライブ</translation>
 <translation id="4428582326923056538">Adobe Flash Player のカメラの例外が異なります。</translation>
 <translation id="4433914671537236274">リカバリ メディアの作成</translation>
 <translation id="4434147949468540706">スクロール終了時の効果</translation>
@@ -3199,7 +3199,7 @@
 <translation id="5669267381087807207">有効にしています</translation>
 <translation id="5669462439438204699">クレジット カードを保存</translation>
 <translation id="5671961047338275645">サイトの管理</translation>
-<translation id="5675224880872496917">ページ コンテンツのスクロールを滑らかに表示します。</translation>
+<translation id="5675224880872496917">スクロール時にコンテンツを滑らかに表示します。</translation>
 <translation id="5676267133227121599">どのデバイスからでも、<ph name="MANAGEMENT_LINK" /> でパスワードにアクセスできます。</translation>
 <translation id="5677503058916217575">ページの言語:</translation>
 <translation id="5677928146339483299">ブロック</translation>
@@ -3445,7 +3445,6 @@
 <translation id="604001903249547235">クラウド バックアップ</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="604124094241169006">自動設定</translation>
-<translation id="6042308850641462728">詳細表示</translation>
 <translation id="604257181445267932">スマートロックを使用すると、Google に保存したパスワードを使ってアプリやサイトにすばやくログインできます。</translation>
 <translation id="6049065490165456785">内蔵カメラの写真</translation>
 <translation id="6051028581720248124">FedEx Office で印刷すると、<ph name="START_LINK" />利用規約<ph name="END_LINK" />に同意したことになります。</translation>

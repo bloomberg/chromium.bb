@@ -693,7 +693,7 @@
 <translation id="2028997212275086731">RAR 압축 파일</translation>
 <translation id="203168018648013061">동기화 오류: Google 대시보드를 통해 동기화를 다시 설정하세요.</translation>
 <translation id="2031695690821674406">사용자가 계정을 명시적으로 선택한 경우 페이지 로드 시 사용자 인증 정보를 자동완성하지 않고 비밀번호를 입력합니다.</translation>
-<translation id="2031925387125903299">새로운 사이트를 처음으로 방문했을 때 부모님이 이 사이트를 승인해야 하므로 이러한 알림이 나타납니다.</translation>
+<translation id="2031925387125903299">이 알림은 새로운 사이트를 처음으로 방문할 때 부모님의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="2040460856718599782">인증을 시도하는 중에 문제가 발생했습니다. 로그인 사용자 인증 정보를 확인하고 다시 시도해 주세요.</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045969484888636535">쿠키 계속 차단</translation>
@@ -1206,7 +1206,7 @@
 <translation id="2772936498786524345">닌자</translation>
 <translation id="2773948261276885771">페이지 설정</translation>
 <translation id="2776441542064982094">네트워크에 등록할 수 있는 기기가 없는 것 같습니다. 기기의 전원이 켜져 있고 인터넷에 연결되어 있다면 사용 설명서의 안내에 따라 등록해 보세요.</translation>
-<translation id="2778107779445548489">부모님이 이 사이트를 차단했으므로 이러한 알림이 표시됩니다.</translation>
+<translation id="2778107779445548489">부모님이 이 사이트를 차단해 이 알림이 표시되었습니다.</translation>
 <translation id="2778459533137481732">권한 블랙리스트</translation>
 <translation id="2779552785085366231">이 페이지를 앱 런처에 추가할 수 있습니다.</translation>
 <translation id="2781645665747935084">벨기에어</translation>
@@ -2394,7 +2394,7 @@
 <translation id="4454939697743986778">이 인증서는 시스템 관리자가 설치했습니다.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="445923051607553918">WiFi 네트워크 연결</translation>
-<translation id="4461847750548395463">Google SafeSites가 사용 설정되어 있으므로 이 알림이 표시됩니다.</translation>
+<translation id="4461847750548395463">Google SafeSites가 사용 설정되어 있어 이 알림이 표시되었습니다.</translation>
 <translation id="4462159676511157176">맞춤 이름 서버</translation>
 <translation id="4465830120256509958">브라질어 키보드</translation>
 <translation id="4467100756425880649">Chrome 웹 스토어 갤러리</translation>
@@ -2698,7 +2698,7 @@
 <translation id="4927301649992043040">확장 프로그램 압축</translation>
 <translation id="4927753642311223124">표시할 내용이 없습니다.</translation>
 <translation id="4929925845384605079">실행기에 추가 배너를 표시하도록 허용하여 사용자에게 실행기에 웹 앱을 추가하라는 메시지 또는 기타 플랫폼별로 이에 상응하는 메시지가 표시되도록 합니다.</translation>
-<translation id="4930497775425430760">새로운 사이트를 처음으로 방문했을 때 부모님이 이 사이트를 승인해야 하므로 이 알림이 표시됩니다.</translation>
+<translation id="4930497775425430760">이 메시지는 새로운 사이트를 처음으로 방문할 때 부모님의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="4933484234309072027"><ph name="URL" />에 삽입</translation>
 <translation id="493571969993549666">관리 대상 사용자 추가</translation>
 <translation id="4938972461544498524">터치패드 설정</translation>
@@ -3337,7 +3337,7 @@
 <translation id="5854409662653665676">문제가 자주 발생할 경우 다음 단계에 따라 모듈 문제를 해결할 수 있습니다.</translation>
 <translation id="5854912040170951372">피자왕</translation>
 <translation id="5855119960719984315">창 전환</translation>
-<translation id="5855235287355719921">관리자가 이 사이트를 차단했으므로 이 메시지가 표시됩니다.</translation>
+<translation id="5855235287355719921">관리자가 이 사이트를 차단해 이 메시지가 표시되었습니다.</translation>
 <translation id="5856721540245522153">디버깅 기능 사용</translation>
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5859272821192576954">계속해서 행아웃을 사용할 준비가 되었습니다.</translation>
@@ -3447,7 +3447,6 @@
 <translation id="604001903249547235">클라우드 백업</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="604124094241169006">자동</translation>
-<translation id="6042308850641462728">더보기</translation>
 <translation id="604257181445267932">Smart Lock을 사용하면 Google에 저장한 비밀번호로 앱과 사이트에 빠르게 로그인할 수 있습니다.</translation>
 <translation id="6049065490165456785">내부 카메라의 사진</translation>
 <translation id="6051028581720248124">FedEx Office로 인쇄하면 해당 회사의 <ph name="START_LINK" />이용약관<ph name="END_LINK" />에 동의하게 됩니다.</translation>
@@ -3518,7 +3517,7 @@
 <translation id="6144890426075165477">현재 <ph name="PRODUCT_NAME" />이(가) 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="6147020289383635445">인쇄 미리보기에 실패했습니다.</translation>
 <translation id="614998064310228828">기기 모델:</translation>
-<translation id="6150607114729249911">죄송합니다. 이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
+<translation id="6150607114729249911">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="6150853954427645995">오프라인에서 사용하기 위해 이 파일을 저장하려면 온라인으로 돌아가서 마우스 오른쪽 버튼으로 파일을 클릭한 다음 <ph name="OFFLINE_CHECKBOX_NAME" /> 옵션을 선택하세요.</translation>
 <translation id="6151323131516309312"><ph name="SEARCH_KEY" />을(를) 눌러 <ph name="SITE_NAME" /> 검색</translation>
 <translation id="6154697846084421647">현재 로그인되어 있음</translation>
@@ -4200,12 +4199,12 @@
 <translation id="7224023051066864079">서브넷 마스크:</translation>
 <translation id="7225179976675429563">네트워크 유형이 없습니다.</translation>
 <translation id="7231224339346098802">숫자로 인쇄 매수를 표시하세요(1 이상).</translation>
-<translation id="7231308970288859235">죄송합니다. 이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
+<translation id="7231308970288859235">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="7238585580608191973">SHA-256 지문</translation>
 <translation id="7240120331469437312">인증서 대상 대체 이름</translation>
 <translation id="7241389281993241388"><ph name="TOKEN_NAME" />에 로그인하여 클라이언트 인증서를 가져오세요.</translation>
 <translation id="7243055093079293866">새 탭과 google.com에서 "Ok Google"이라고 말하기</translation>
-<translation id="7246609911581847514">새로운 사이트를 처음으로 방문했을 때 관리자가 이 사이트를 승인해야 하므로 이 알림이 표시됩니다.</translation>
+<translation id="7246609911581847514">이 알림은 새로운 사이트를 처음으로 방문할 때 관리자의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="724691107663265825">다음 사이트에 멀웨어가 있습니다.</translation>
 <translation id="725109152065019550">관리자가 계정에서 외부 저장소를 사용 중지했습니다.</translation>
 <translation id="7252661675567922360">로드하지 마세요.</translation>
@@ -5099,7 +5098,7 @@
 <translation id="8584280235376696778">새 탭에서 동영상 열기(&amp;O)</translation>
 <translation id="8589311641140863898">실험실 확장 프로그램 API</translation>
 <translation id="8590375307970699841">자동 업데이트 설정</translation>
-<translation id="8591846766485502580">부모님 중 한 명이 이 사이트를 차단했으므로 이 알림이 표시됩니다.</translation>
+<translation id="8591846766485502580">부모님 중 한 명이 이 사이트를 차단해 이 알림이 표시되었습니다.</translation>
 <translation id="8592071947729879125">iframe 권한 제한</translation>
 <translation id="859285277496340001">인증서는 취소 여부를 확인하는 매커니즘을 지정하지 않습니다.</translation>
 <translation id="8594787581355215556"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되었습니다. <ph name="BEGIN_LINK" />Google 대시보드<ph name="END_LINK" />에서 동기화된 데이터를 관리합니다.</translation>

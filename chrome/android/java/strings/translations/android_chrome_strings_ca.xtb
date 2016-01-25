@@ -54,7 +54,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1648687357130613845">Espai d'emmagatzematge</translation>
 <translation id="1657479659644194568">Configurar Chrome</translation>
 <translation id="169033420419426091">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè no s'ha trobat la targeta SD.</translation>
-<translation id="1692118695553449118">Sincronització activada</translation>
+<translation id="1692118695553449118">La sincronització està activada</translation>
 <translation id="1709438864123551175">Economitzador de dades</translation>
 <translation id="1741127251791687432">Heu iniciat la sessió als comptes de Google següents.</translation>
 <translation id="1742134235943978220">S'ha traduït a <ph name="TARGET_LANGUAGE" />.</translation>
@@ -357,7 +357,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5913211790276112891">Si heu oblidat la frase de contrasenya, atureu i restabliu la sincronització al <ph name="BEGIN_LINK" />Tauler de control de Google<ph name="END_LINK" />.</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5939518447894949180">Restableix</translation>
-<translation id="5953603475187800576">Mostra les adreces i les targetes de crèdit de Google Payments</translation>
 <translation id="5968595432776860642">S'està reproduint "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">S'està accedint a l'entrada de vídeo</translation>
 <translation id="6012342843556706400">Chrome necessita accés a la ubicació per compartir-la amb aquest lloc web.</translation>

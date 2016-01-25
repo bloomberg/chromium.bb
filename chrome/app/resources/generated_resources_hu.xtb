@@ -290,7 +290,7 @@
 <translation id="1429740407920618615">Jelerősség:</translation>
 <translation id="143027896309062157">A számítógépén és az Ön által felkeresett webhelyeken lévő adatainak olvasása és módosítása</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
-<translation id="1434696352799406980">Ez a művelet visszaállítja a kezdőoldalt, az új lap oldalt, a keresőmotort és a rögzített lapokat. Kikapcsol továbbá minden bővítményt, és törli az ideiglenes adatokat, például a cookie-kat. Könyvjelzői, előzményei és mentett jelszavai nem törlődnek.</translation>
+<translation id="1434696352799406980">Ez a művelet visszaállítja a kezdőoldalt, az új lap oldalt, a keresőmotort és a rögzített lapokat. Kikapcsol továbbá minden bővítményt, és törli az ideiglenes adatokat, például a cookie-kat. Könyvjelzői, előzményei és mentett jelszavai megmaradnak.</translation>
 <translation id="1434886155212424586">Az Új lap oldal a kezdőoldal</translation>
 <translation id="1435550882135542937">Új kialakítású eszköztár</translation>
 <translation id="1436784010935106834">Eltávolítva</translation>
@@ -3444,7 +3444,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="604001903249547235">Biztonsági mentés a felhőbe</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="604124094241169006">Automatikus</translation>
-<translation id="6042308850641462728">Hosszabban</translation>
 <translation id="604257181445267932">A Smart Lock segítségével gyorsan beléphet különféle alkalmazásokba és webhelyekre a Google rendszerében mentett jelszavakkal.</translation>
 <translation id="6049065490165456785">Fotó a belső kamerával</translation>
 <translation id="6051028581720248124">A FedEx Office üzletben történő nyomtatással elfogadja az ő <ph name="START_LINK" />felhasználási feltételeiket<ph name="END_LINK" />.</translation>

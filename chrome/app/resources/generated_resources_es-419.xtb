@@ -290,7 +290,7 @@
 <translation id="1429740407920618615">Intensidad de la señal:</translation>
 <translation id="143027896309062157">Leer y cambiar todos los datos de la computadora y los sitios web que visites</translation>
 <translation id="1430915738399379752">Imprimir</translation>
-<translation id="1434696352799406980">Esta acción restablecerá la página de inicio, la página Nueva pestaña, el motor de búsqueda y las pestañas fijas. Además, inhabilitará todas las extensiones y borrará datos temporales, como las cookies. No se borrarán tus marcadores, historial y contraseñas guardadas.</translation>
+<translation id="1434696352799406980">Esta acción restablecerá la página de inicio, la página Nueva pestaña, el motor de búsqueda y las pestañas fijas. Además, inhabilitará todas las extensiones y borrará datos temporales, como las cookies. No se borrarán tus marcadores, historial ni contraseñas guardadas.</translation>
 <translation id="1434886155212424586">La página Nueva pestaña es la nueva página principal.</translation>
 <translation id="1435550882135542937">Nuevo diseño de la barra de herramientas de extensiones</translation>
 <translation id="1436784010935106834">Eliminado</translation>
@@ -316,7 +316,7 @@
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1467999917853307373"><ph name="URL" /> quiere almacenar datos de forma permanente en el dispositivo.</translation>
 <translation id="1468038450257740950">WebGL no es compatible.</translation>
-<translation id="1469042717030597817">Si esta opción está habilitada, las pestañas se descartarán automáticamente de la memoria cuando la memoria del sistema sea baja. Las pestañas descartadas siguen siendo visibles en la barra de pestañas y se vuelven a cargar cuando haces clic. Puedes encontrar información acerca de pestañas descartadas en chrome://discards.</translation>
+<translation id="1469042717030597817">Si esta opción está habilitada, las pestañas se descartarán automáticamente de la memoria cuando la memoria del sistema sea baja. Las pestañas descartadas siguen siendo visibles en la barra de pestañas y se vuelven a cargar cuando haces clic en ellas. Puedes encontrar información acerca de pestañas descartadas en chrome://discards.</translation>
 <translation id="1470719357688513792">La nueva configuración de cookie se hará efectiva cuando vuelvas a cargar la página.</translation>
 <translation id="1470811252759861213">Para usar tus extensiones en todas tus computadoras, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Permite habilitar la compatibilidad con el teclado virtual.</translation>
@@ -1005,7 +1005,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2482081114970574549">Utiliza un flujo de acceso basado en marcos flotantes en vez de un flujo basado en la vista web.</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2485056306054380289">Certificado CA del servidor:</translation>
-<translation id="2487915095798731898">Participar</translation>
+<translation id="2487915095798731898">Unirse</translation>
 <translation id="2489316678672211764">Uno de los complementos (<ph name="PLUGIN_NAME" />) no responde.</translation>
 <translation id="2489428929217601177">el último día</translation>
 <translation id="2489435327075806094">Velocidad del puntero</translation>
@@ -3194,7 +3194,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5669462439438204699">Guardar la tarjeta de crédito</translation>
 <translation id="5671961047338275645">Administrar sitios</translation>
-<translation id="5675224880872496917">Anima suavemente al desplazarte por el contenido de la página.</translation>
+<translation id="5675224880872496917">Se muestra una animación suave al desplazarte por el contenido de la página.</translation>
 <translation id="5676267133227121599">Accede a tus contraseñas desde cualquier dispositivo en <ph name="MANAGEMENT_LINK" />.</translation>
 <translation id="5677503058916217575">Idioma de la página:</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
@@ -3440,7 +3440,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="604001903249547235">Copia de seguridad en la nube</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="604124094241169006">Automático</translation>
-<translation id="6042308850641462728">Más</translation>
 <translation id="604257181445267932">Smart Lock te ayuda a acceder rápidamente a aplicaciones y sitios con las contraseñas que hayas guardado en Google.</translation>
 <translation id="6049065490165456785">Foto de la cámara interna</translation>
 <translation id="6051028581720248124">Al imprimir en una sucursal de FedEx Office, aceptas sus <ph name="START_LINK" />condiciones de uso<ph name="END_LINK" />.</translation>

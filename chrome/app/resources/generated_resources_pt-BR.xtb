@@ -290,7 +290,7 @@
 <translation id="1429740407920618615">Intensidade do sinal:</translation>
 <translation id="143027896309062157">Ler e modificar todos os dados no seu computador e nos sites que você visitar</translation>
 <translation id="1430915738399379752">Imprimir</translation>
-<translation id="1434696352799406980">Isso redefinirá sua página de inicialização, a página "Nova guia", o mecanismo de pesquisa e as guias fixadas. Além disso, também desativará todas as extensões e limpará os dados temporários, como cookies. Seus favoritos, histórico e senhas salvas não serão limpos.</translation>
+<translation id="1434696352799406980">Esta função irá redefinir sua página de inicialização, a página "Nova guia", o mecanismo de pesquisa e as guias fixadas. Além disso, desativará todas as extensões e limpará dados temporários, como cookies. Seus favoritos, histórico e senhas salvas não serão limpos.</translation>
 <translation id="1434886155212424586">A página inicial é a página "Nova guia"</translation>
 <translation id="1435550882135542937">Reformulação da barra de ferramentas da extensão.</translation>
 <translation id="1436784010935106834">Removido</translation>
@@ -316,7 +316,7 @@
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1467999917853307373"><ph name="URL" /> deseja armazenar permanentemente os dados em seu dispositivo.</translation>
 <translation id="1468038450257740950">O WebGL não é suportado.</translation>
-<translation id="1469042717030597817">Se essa opção estiver ativada, as guias serão descartadas automaticamente da memória quando a memória do sistema estiver baixa. Guias descartadas ainda ficam visíveis na barra de guias e são recarregadas quando se clica nelas. Informações sobre guias descartadas podem ser encontradas em chrome://discards.</translation>
+<translation id="1469042717030597817">Se essa opção estiver ativada, as guias serão descartadas automaticamente da memória quando a memória do sistema estiver baixa. Guias descartadas ainda ficam visíveis na barra de guias e são recarregadas ao serem clicadas. Informações sobre guias descartadas podem ser encontradas em chrome://discards.</translation>
 <translation id="1470719357688513792">Novas configurações de cookies entrarão em vigor depois que a página for atualizada.</translation>
 <translation id="1470811252759861213">Para ter suas extensões em todos os computadores, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Ativar suporte ao teclado virtual.</translation>
@@ -2371,7 +2371,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4422347585044846479">Editar favorito para esta página</translation>
 <translation id="4422428420715047158">Domínio:</translation>
 <translation id="442477792133831654">Comunicar-se com dispositivos próximos</translation>
-<translation id="4425149324548788773">Meu Google Drive</translation>
+<translation id="4425149324548788773">Meu Drive</translation>
 <translation id="4428582326923056538">As exceções da câmera do Adobe Flash Player são diferentes.</translation>
 <translation id="4433914671537236274">Criar mídia de recuperação</translation>
 <translation id="4434147949468540706">Efeito final de rolagem</translation>
@@ -3196,7 +3196,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5669462439438204699">Salvar cartão de crédito</translation>
 <translation id="5671961047338275645">Gerenciar sites</translation>
-<translation id="5675224880872496917">Animar levemente ao rolar o conteúdo da página.</translation>
+<translation id="5675224880872496917">Anima suavemente ao rolar o conteúdo da página.</translation>
 <translation id="5676267133227121599">Acesse suas senhas em qualquer dispositivo em <ph name="MANAGEMENT_LINK" />.</translation>
 <translation id="5677503058916217575">Idioma da página:</translation>
 <translation id="5677928146339483299">Bloqueados</translation>
@@ -3442,7 +3442,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="604001903249547235">Backup em nuvem</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="604124094241169006">Automático</translation>
-<translation id="6042308850641462728">Mais</translation>
 <translation id="604257181445267932">O Smart Lock ajuda você a fazer login rapidamente em aplicativos e sites usando senhas salvas com o Google.</translation>
 <translation id="6049065490165456785">Foto da câmera interna</translation>
 <translation id="6051028581720248124">Ao imprimir no FedEx Office, você aceita os <ph name="START_LINK" />termos de uso<ph name="END_LINK" />.</translation>
@@ -3513,7 +3512,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6144890426075165477">Atualmente, o <ph name="PRODUCT_NAME" />  não é seu navegador padrão.</translation>
 <translation id="6147020289383635445">A visualização de impressão falhou.</translation>
 <translation id="614998064310228828">Modelo do dispositivo:</translation>
-<translation id="6150607114729249911">Ops! Você precisa pedir permissão para seus pais para visitar esta página.</translation>
+<translation id="6150607114729249911">Ops! É preciso permissão dos seus pais para visitar esta página.</translation>
 <translation id="6150853954427645995">Para salvar este arquivo para uso off-line, fique on-line novamente, clique com o botão direito no arquivo e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pressione <ph name="SEARCH_KEY" /> para pesquisar <ph name="SITE_NAME" /></translation>
 <translation id="6154697846084421647">Conectado no momento</translation>
@@ -3917,7 +3916,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6809448577646370871">Alternância entre janelas personalizada para aplicativos do Google Chrome.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> não pode ser executado como raiz.</translation>
 <translation id="6812841287760418429">Manter alterações</translation>
-<translation id="6814124696888326520">Facilitar a alternância entre os métodos de entrada e o acesso a mais recursos de entrada: entrada de texto por voz, manuscrito e emoticons.</translation>
+<translation id="6814124696888326520">Facilita a alternância entre os métodos de entrada e o acesso a mais recursos de entrada: entrada de texto por voz, manuscrito e emoticons.</translation>
 <translation id="6815206662964743929">Trocar usuário</translation>
 <translation id="6815353853907306610">O <ph name="IDS_SHORT_PRODUCT_NAME" /> detectou que as configurações do navegador podem ter sido alteradas sem seu conhecimento. Gostaria de redefini-las para os padrões originais?</translation>
 <translation id="6815551780062710681">editar</translation>
@@ -4195,12 +4194,12 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7224023051066864079">Máscara de sub-rede:</translation>
 <translation id="7225179976675429563">Tipo de rede ausente</translation>
 <translation id="7231224339346098802">Use um número para indicar quantas cópias você quer imprimir (1 ou mais).</translation>
-<translation id="7231308970288859235">Ops! Você precisa pedir permissão para seus pais para visitar esta página.</translation>
+<translation id="7231308970288859235">Ops! É preciso permissão dos seus pais para visitar esta página.</translation>
 <translation id="7238585580608191973">Assinatura digital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7241389281993241388">Faça login no <ph name="TOKEN_NAME" /> para importar o certificado do cliente.</translation>
 <translation id="7243055093079293866">Diga "OK Google" em uma nova guia e no google.com</translation>
-<translation id="7246609911581847514">Esta mensagem está sendo exibida porque você precisa da aprovação do seu gerente para novos sites na sua primeira visita.</translation>
+<translation id="7246609911581847514">Esta mensagem está sendo exibida porque é preciso aprovação do seu gerente para novos sites na sua primeira visita.</translation>
 <translation id="724691107663265825">O site a seguir contém malware</translation>
 <translation id="725109152065019550">Seu administrador desabilitou o armazenamento externo em sua conta.</translation>
 <translation id="7252661675567922360">Não carregar</translation>
@@ -4619,7 +4618,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7892500982332576204">Detecção de contas filhas</translation>
 <translation id="7893008570150657497">Acessar fotos, música e outras mídias em seu computador</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (padrão)</translation>
-<translation id="7894616681410591072">Ops! Você precisa da permissão de <ph name="NAME" /> para acessar esta página.</translation>
+<translation id="7894616681410591072">Ops! É preciso permissão de <ph name="NAME" /> para acessar esta página.</translation>
 <translation id="78957024357676568">para a esquerda</translation>
 <translation id="7896906914454843592">Teclado americano estendido</translation>
 <translation id="7897900149154324287">No futuro, não se esqueça de ejetar o dispositivo removível no aplicativo "Arquivos" antes de desconectá-lo. Caso contrário, você poderá perder dados.</translation>

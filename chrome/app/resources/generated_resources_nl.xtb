@@ -316,7 +316,7 @@
 <translation id="1467432559032391204">Links</translation>
 <translation id="1467999917853307373"><ph name="URL" /> vraagt toestemming om gegevens permanent op je apparaat op te slaan.</translation>
 <translation id="1468038450257740950">WebGL wordt niet ondersteund.</translation>
-<translation id="1469042717030597817">Indien ingeschakeld, worden tabbladen automatisch weggegooid uit het geheugen wanneer er weinig systeemgeheugen beschikbaar is. Weggegooide tabbladen zijn nog steeds zichtbaar op de tabbladstrook en worden opnieuw geladen wanneer er op ze wordt geklikt. Je kunt informatie over weggegooide tabbladen vinden op chrome://discards.</translation>
+<translation id="1469042717030597817">Indien ingeschakeld, worden tabbladen automatisch weggegooid uit het geheugen wanneer er weinig systeemgeheugen beschikbaar is. Weggegooide tabbladen zijn nog steeds zichtbaar op de tabbladstrook en worden opnieuw geladen wanneer erop wordt geklikt. Je kunt informatie over weggegooide tabbladen vinden op chrome://discards.</translation>
 <translation id="1470719357688513792">De nieuwe cookie-instellingen worden van kracht nadat de pagina opnieuw is geladen.</translation>
 <translation id="1470811252759861213">Als je je extensies wilt gebruiken op al je computers, moet je <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Hiermee schakel je ondersteuning voor een virtueel toetsenbord in.</translation>
@@ -1009,7 +1009,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2482081114970574549">Gebruikt een inlogprocedure op basis van iframes en niet op basis van webweergaven.</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2485056306054380289">CA-certificaat van server:</translation>
-<translation id="2487915095798731898">Samenvoegen</translation>
+<translation id="2487915095798731898">Deelnemen</translation>
 <translation id="2489316678672211764">Een plug-in (<ph name="PLUGIN_NAME" />) reageert niet.</translation>
 <translation id="2489428929217601177">de afgelopen dag</translation>
 <translation id="2489435327075806094">Snelheid van aanwijzer:</translation>
@@ -3445,7 +3445,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="604001903249547235">Cloudback-up</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="604124094241169006">Automatisch</translation>
-<translation id="6042308850641462728">Meer</translation>
 <translation id="604257181445267932">Met Smart Lock kun je snel inloggen bij apps en op sites met de wachtwoorden die je hebt opgeslagen via Google.</translation>
 <translation id="6049065490165456785">Foto via interne camera</translation>
 <translation id="6051028581720248124">Je gaat akkoord met de <ph name="START_LINK" />gebruiksvoorwaarden<ph name="END_LINK" /> door af te drukken naar FedEx Office.</translation>

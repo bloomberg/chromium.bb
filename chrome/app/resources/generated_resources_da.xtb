@@ -290,7 +290,7 @@
 <translation id="1429740407920618615">Signalstyrke:</translation>
 <translation id="143027896309062157">Læse og redigere alle dine data på din computer og de websites, du besøger</translation>
 <translation id="1430915738399379752">Udskriv</translation>
-<translation id="1434696352799406980">Denne funktion nulstiller din opstartsside, siden Ny fane, din søgemaskine og dine fastgjorte faner. Den deaktiverer også alle udvidelser og rydder midlertidige data såsom cookies. Dine bogmærker, din historik og dine gemte adgangskoder slettes ikke.</translation>
+<translation id="1434696352799406980">Denne funktion nulstiller din opstartsside, siden Ny fane, din søgemaskine og dine fastgjorte faner. Den deaktiverer også alle udvidelser og rydder midlertidige data, såsom cookies. Dine bogmærker, din historik og dine gemte adgangskoder slettes ikke.</translation>
 <translation id="1434886155212424586">Startsiden er siden Ny fane</translation>
 <translation id="1435550882135542937">Nyt design af udvidelsesværktøjslinjen</translation>
 <translation id="1436784010935106834">Fjernet</translation>
@@ -1721,7 +1721,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3460771772332290399">Tilstanden Offline automatisk genindlæsning</translation>
 <translation id="3462413494201477527">Vil du annullere konfigurationen af kontoen?</translation>
 <translation id="346431825526753">Dette er en børnekonto, som administreres af <ph name="CUSTODIAN_EMAIL" />.</translation>
-<translation id="3464726836683998962">Deaktiver dataroaming for mobil</translation>
+<translation id="3464726836683998962">Deaktiver mobildataroaming</translation>
 <translation id="3465566417615315331">Klik på dit foto</translation>
 <translation id="3466147780910026086">Din medieenhed scannes...</translation>
 <translation id="3467267818798281173">Bed Google om forslag</translation>
@@ -3439,7 +3439,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="604001903249547235">Sikkerhedskopiering i skyen</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="604124094241169006">Automatisk</translation>
-<translation id="6042308850641462728">Mere</translation>
 <translation id="604257181445267932">Med Smart Lock kan du hurtigt logge ind på apps og websites, der anvender adgangskoder, du har gemt med Google.</translation>
 <translation id="6049065490165456785">Billede fra internt kamera</translation>
 <translation id="6051028581720248124">Ved udskrivning til FedEx Office accepterer du deres <ph name="START_LINK" />servicevilkår<ph name="END_LINK" />.</translation>
@@ -3510,7 +3509,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME" /> er i øjeblikket ikke din standardbrowser.</translation>
 <translation id="6147020289383635445">Visning af udskrift mislykkedes.</translation>
 <translation id="614998064310228828">Enhedsmodel:</translation>
-<translation id="6150607114729249911">Ups! Du er nødt til at spørge dine forældre, om det er i orden, at du åbner denne side.</translation>
+<translation id="6150607114729249911">Ups! Du er nødt til at spørge dine forældre, om det er i orden, at du åbner dette website.</translation>
 <translation id="6150853954427645995">Hvis du vil gemme denne fil til offlinebrug, skal du gå online igen, højreklikke på filerne og vælge indstillingen <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Tryk på <ph name="SEARCH_KEY" /> for at søge på <ph name="SITE_NAME" /></translation>
 <translation id="6154697846084421647">Logget ind</translation>
@@ -4191,7 +4190,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7224023051066864079">Undernetmaske:</translation>
 <translation id="7225179976675429563">Netværkstype mangler</translation>
 <translation id="7231224339346098802">Brug et tal til at angive, hvor mange kopier der skal udskrives (én eller flere).</translation>
-<translation id="7231308970288859235">Ups! Du skal spørge en af dine forældre, om det er i orden, at du besøger denne side.</translation>
+<translation id="7231308970288859235">Ups! Du skal spørge en af dine forældre, om det er i orden, at du besøger dette website.</translation>
 <translation id="7238585580608191973">SHA-256-fingeraftryk</translation>
 <translation id="7240120331469437312">Alternativt navn på certifikatemne</translation>
 <translation id="7241389281993241388">Log ind på <ph name="TOKEN_NAME" /> for at importere klientcertifikatet.</translation>
@@ -4614,7 +4613,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7892500982332576204">Registrering af underkonti</translation>
 <translation id="7893008570150657497">Få adgang til billeder, musik og andre medier fra din computer</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Standard)</translation>
-<translation id="7894616681410591072">Ups! Du skal have tilladelse fra <ph name="NAME" /> for at få adgang til denne side.</translation>
+<translation id="7894616681410591072">Ups! Du skal have tilladelse fra <ph name="NAME" /> for at få adgang til dette website.</translation>
 <translation id="78957024357676568">venstre</translation>
 <translation id="7896906914454843592">Udvidet amerikansk tastatur</translation>
 <translation id="7897900149154324287">For fremtiden skal du sørge for at skubbe din flytbare enhed ud i appen Filer, før du kobler den fra. Hvis ikke du gør dette, kan du risikere at miste data.</translation>

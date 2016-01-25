@@ -290,7 +290,7 @@
 <translation id="1429740407920618615">Intensidade do Sinal:</translation>
 <translation id="143027896309062157">Ler e alterar todos os dados no computador e os Websites que visita</translation>
 <translation id="1430915738399379752">Imprimir</translation>
-<translation id="1434696352799406980">Isto repõe a página inicial, a página novo separador, o motor de pesquisa e os separadores fixos. Também desativa todas as extensões e limpa os dados temporários como os cookies. Os marcadores, o histórico e as palavras-passe guardadas não são limpos.</translation>
+<translation id="1434696352799406980">Repõe a página inicial, a página novo separador, o motor de pesquisa e os separadores fixos. Também desativa todas as extensões e limpa os dados temporários como os cookies. Os marcadores, o histórico e as palavras-passe guardadas não são limpos.</translation>
 <translation id="1434886155212424586">A Página inicial é a página Novo separador</translation>
 <translation id="1435550882135542937">Reformulação da barra de ferramentas de extensões</translation>
 <translation id="1436784010935106834">Removido</translation>
@@ -506,7 +506,7 @@
 <translation id="1702534956030472451">Ocidental</translation>
 <translation id="1702987929180449188">Quando ativado, a barra de ferramentas nunca é oculta devido ao deslocamento em dispositivos com ecrãs com um tamanho mínimo &gt;= 800 PD (pressão diferencial). Contudo, continua a ser oculta se os conteúdos da página passarem para ecrã inteiro.</translation>
 <translation id="1707463636381878959">Partilhar esta rede com outros utilizadores</translation>
-<translation id="1708199901407471282">Quando abrir uma página Web sugerida da página Novo separador, se um separador já estiver aberto para a sugestão, mude para esse em vez de carregar a sugestão no novo separador.</translation>
+<translation id="1708199901407471282">Ao abrir uma página Web sugerida da página Novo separador, se um separador já estiver aberto para a sugestão, alterne para esse em vez de carregar a sugestão no novo separador.</translation>
 <translation id="1708338024780164500">(Inativa)</translation>
 <translation id="1711973684025117106">Falha na criação de zip; erro inesperado: $1</translation>
 <translation id="1715941336038158809">Nome de utilizador ou palavra-passe inválidos.</translation>
@@ -693,7 +693,7 @@
 <translation id="2028997212275086731">Arquivo RAR</translation>
 <translation id="203168018648013061">Erro de Sincronização: reinicialize a Sincronização através do Painel de Controlo do Google.</translation>
 <translation id="2031695690821674406">Preenchimento de palavras-passe quando o utilizador selecionar explicitamente uma palavra-passe, em vez de preencher automaticamente as credenciais durante o carregamento da página.</translation>
-<translation id="2031925387125903299">Estás a ver esta mensagem porque os teus pais necessitam de aprovar os sites novos da primeira vez que os visitas.</translation>
+<translation id="2031925387125903299">Estás a ver esta mensagem porque os teus pais necessitam de aprovar os sites novos sempre que os visitas pela primeira vez.</translation>
 <translation id="2040460856718599782">Ups! Ocorreu um erro ao tentar autenticá-lo. Verifique bem as suas credenciais de início de sessão e tente novamente.</translation>
 <translation id="204497730941176055">Nome do modelo de certificado Microsoft</translation>
 <translation id="2045969484888636535">Continuar a bloquear cookies</translation>
@@ -2373,7 +2373,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4422347585044846479">Editar marcador para esta página</translation>
 <translation id="4422428420715047158">Domínio:</translation>
 <translation id="442477792133831654">Comunicar com dispositivos nas proximidades</translation>
-<translation id="4425149324548788773">O Meu Disco</translation>
+<translation id="4425149324548788773">O meu disco</translation>
 <translation id="4428582326923056538">As exceções de câmara do Adobe Flash Player são diferentes.</translation>
 <translation id="4433914671537236274">Criar um Suporte de Dados de Recuperação</translation>
 <translation id="4434147949468540706">Deslocamento e efeito</translation>
@@ -2697,7 +2697,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4927301649992043040">Comprimir extensão</translation>
 <translation id="4927753642311223124">Nada de novo a apresentar por aqui.</translation>
 <translation id="4929925845384605079">Ativa a visualização das faixas de adicionar à prateleira, que pedem ao utilizador que adicione uma aplicação Web à respetiva prateleira, ou de um equivalente específico de outra plataforma.</translation>
-<translation id="4930497775425430760">Estás a ver esta mensagem porque o teu encarregado de educação necessita de aprovar os sites novos da primeira vez que os visitas.</translation>
+<translation id="4930497775425430760">Estás a ver esta mensagem porque o teu encarregado de educação necessita de aprovar os sites novos sempre que os visitas pela primeira vez.</translation>
 <translation id="4933484234309072027">incorporada em <ph name="URL" /></translation>
 <translation id="493571969993549666">Adicionar utilizador supervisionado</translation>
 <translation id="4938972461544498524">Definições do touchpad</translation>
@@ -3445,7 +3445,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="604001903249547235">Cópia de segurança na nuvem</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="604124094241169006">Automático</translation>
-<translation id="6042308850641462728">Mais</translation>
 <translation id="604257181445267932">O Smart Lock ajuda-o a iniciar sessão rapidamente em aplicações e sites com palavras-passe que guardou com o Google.</translation>
 <translation id="6049065490165456785">Fotografia tirada com a câmara interna</translation>
 <translation id="6051028581720248124">Ao imprimir para a FedEx Office, aceita os seus <ph name="START_LINK" />termos de utilização<ph name="END_LINK" />.</translation>
@@ -4201,7 +4200,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7241389281993241388">Inicie sessão no <ph name="TOKEN_NAME" /> para importar o certificado de cliente.</translation>
 <translation id="7243055093079293866">Dizer "Ok Google" num separador novo e em google.com</translation>
-<translation id="7246609911581847514">Está a ver esta mensagem porque o seu gestor necessita de aprovar os sites novos da primeira vez que os visita.</translation>
+<translation id="7246609911581847514">Está a ver esta mensagem porque o seu gestor necessita de aprovar os sites novos sempre que o visita pela primeira vez.</translation>
 <translation id="724691107663265825">O site seguinte contém software malicioso</translation>
 <translation id="725109152065019550">Lamentamos, mas o administrador desativou o armazenamento externo na sua conta.</translation>
 <translation id="7252661675567922360">Não carregar</translation>

@@ -505,7 +505,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1702534956030472451">Europa occidentale</translation>
 <translation id="1702987929180449188">Quando l'opzione è attiva, la barra degli strumenti non viene mai nascosta quando viene eseguito lo scorrimento su dispositivi con schermo di dimensioni minime pari a dp &gt;= 800. La barra continuerà a essere nascosta se i contenuti della pagina vengono mostrati a schermo intero.</translation>
 <translation id="1707463636381878959">Condividi questa rete con altri utenti</translation>
-<translation id="1708199901407471282">Se apri una pagina web suggerita dalla pagina Nuova scheda ed è già aperta una scheda relativa al suggerimento, il suggerimento non viene caricato nella nuova scheda, ma viene attivata la scheda aperta.</translation>
+<translation id="1708199901407471282">Se apri una pagina web suggerita dalla pagina Nuova scheda ed è già aperta una scheda relativa al suggerimento, quest'ultimo non viene caricato nella nuova scheda, ma viene attivata la scheda aperta.</translation>
 <translation id="1708338024780164500">(Non attiva)</translation>
 <translation id="1711973684025117106">Compressione non riuscita. Errore imprevisto: $1</translation>
 <translation id="1715941336038158809">Password o nome utente non valido.</translation>
@@ -3437,7 +3437,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="604001903249547235">Backup nella cloud</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="604124094241169006">Automatica</translation>
-<translation id="6042308850641462728">Più</translation>
 <translation id="604257181445267932">Smart Lock ti aiuta ad accedere rapidamente ad app e siti utilizzando le password che hai salvato con Google.</translation>
 <translation id="6049065490165456785">Foto dalla fotocamera interna</translation>
 <translation id="6051028581720248124">Se stampi presso una sede FedEx Office, accetti i relativi <ph name="START_LINK" />termini e condizioni d'uso<ph name="END_LINK" />.</translation>

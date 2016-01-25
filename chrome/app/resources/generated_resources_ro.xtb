@@ -1008,7 +1008,7 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2482081114970574549">Folosește un flux de conectare bazat pe iframe, nu un flux bazat pe WebView.</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="2485056306054380289">Certificat CA server:</translation>
-<translation id="2487915095798731898">Înscrie-te</translation>
+<translation id="2487915095798731898">Urmează</translation>
 <translation id="2489316678672211764">Un plugin (<ph name="PLUGIN_NAME" />) nu răspunde.</translation>
 <translation id="2489428929217601177">ultima zi</translation>
 <translation id="2489435327075806094">Viteza cursorului:</translation>
@@ -2371,7 +2371,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4422347585044846479">Editați marcajul pentru această pagină</translation>
 <translation id="4422428420715047158">Domeniul:</translation>
 <translation id="442477792133831654">Comunică cu dispozitive din apropiere</translation>
-<translation id="4425149324548788773">Discul meu</translation>
+<translation id="4425149324548788773">Contul meu Drive</translation>
 <translation id="4428582326923056538">Excepțiile Adobe Flash Player pentru camera foto sunt diferite.</translation>
 <translation id="4433914671537236274">Creează un suport de recuperare</translation>
 <translation id="4434147949468540706">Efect la finalizarea derulării</translation>
@@ -3442,7 +3442,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="604001903249547235">Backup în cloud</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="604124094241169006">Automat</translation>
-<translation id="6042308850641462728">Mai multe</translation>
 <translation id="604257181445267932">Smart Lock te ajută să te conectezi rapid la aplicații și site-uri folosind parolele pe care le-ai salvat cu Google.</translation>
 <translation id="6049065490165456785">Fotografii de pe camera foto internă</translation>
 <translation id="6051028581720248124">Printând cu FedEx Office, sunteți de acord cu <ph name="START_LINK" />termenii și condițiile<ph name="END_LINK" /> acestui serviciu.</translation>

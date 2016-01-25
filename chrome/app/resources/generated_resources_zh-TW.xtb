@@ -692,7 +692,7 @@
 <translation id="2028997212275086731">RAR 封存</translation>
 <translation id="203168018648013061">同步功能錯誤：請透過「Google 資訊主頁」重設「同步功能」。</translation>
 <translation id="2031695690821674406">當使用者明確選取帳戶時才填入密碼，而不要在網頁載入後自動填入憑證。</translation>
-<translation id="2031925387125903299">Chrome 顯示這則訊息是因為您的家長需要核准您首次瀏覽的新網站。</translation>
+<translation id="2031925387125903299">Chrome 顯示這則訊息是因為您首次瀏覽的新網站需要獲得您的家長核准。</translation>
 <translation id="2040460856718599782">糟糕！嘗試驗證您的身分時發生錯誤。請重新檢查您的登入憑證，然後再試一次。</translation>
 <translation id="204497730941176055">Microsoft 憑證範本名稱</translation>
 <translation id="2045969484888636535">繼續封鎖 Cookie</translation>
@@ -2692,7 +2692,7 @@
 <translation id="4927301649992043040">封裝擴充功能</translation>
 <translation id="4927753642311223124">這裡沒有任何通知訊息，以後再來看看吧！</translation>
 <translation id="4929925845384605079">顯示加到檔案櫃橫幅，提示使用者將網路應用程式加到個人檔案櫃或其他平台的同等容器中。</translation>
-<translation id="4930497775425430760">Chrome 顯示這則訊息是因為您的家長需要核准您首次瀏覽的新網站。</translation>
+<translation id="4930497775425430760">Chrome 顯示這則訊息是因為您首次瀏覽的新網站需要獲得您的家長核准。</translation>
 <translation id="4933484234309072027">嵌入至 <ph name="URL" /></translation>
 <translation id="493571969993549666">新增受監管的使用者</translation>
 <translation id="4938972461544498524">觸控板設定</translation>
@@ -3437,7 +3437,6 @@
 <translation id="604001903249547235">雲端備份</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
-<translation id="6042308850641462728">詳細資訊</translation>
 <translation id="604257181445267932">有了 Smart Lock，您就可以透過儲存在 Google 系統中的密碼快速登入應用程式和網站。</translation>
 <translation id="6049065490165456785">內部相機中的相片</translation>
 <translation id="6051028581720248124">透過 FedEx Office 進行列印，即表示您接受其<ph name="START_LINK" />使用條款<ph name="END_LINK" />。</translation>
@@ -4192,7 +4191,7 @@
 <translation id="7240120331469437312">憑證主體替代名稱</translation>
 <translation id="7241389281993241388">登入 <ph name="TOKEN_NAME" /> 即可匯入用戶端憑證。</translation>
 <translation id="7243055093079293866">在新分頁和 google.com 中說出「Ok Google」</translation>
-<translation id="7246609911581847514">Chrome 顯示這則訊息是因為您的管理員需要核准您首次瀏覽的新網站。</translation>
+<translation id="7246609911581847514">Chrome 顯示這則訊息是因為您首次瀏覽的新網站需要獲得管理員核准。</translation>
 <translation id="724691107663265825">您要造訪的網站含有惡意軟體</translation>
 <translation id="725109152065019550">很抱歉，您的管理員已停用您帳戶中的外部儲存裝置。</translation>
 <translation id="7252661675567922360">不要載入</translation>

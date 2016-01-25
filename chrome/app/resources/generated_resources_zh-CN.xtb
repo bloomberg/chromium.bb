@@ -689,7 +689,7 @@
 <translation id="2028997212275086731">RAR 归档</translation>
 <translation id="203168018648013061">发生同步错误：请通过 Google 信息中心重置同步。</translation>
 <translation id="2031695690821674406">在用户明确选择了帐户时填充密码，而不是在页面加载时自动填充凭据。</translation>
-<translation id="2031925387125903299">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得父母的批准。</translation>
+<translation id="2031925387125903299">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得家长的批准。</translation>
 <translation id="2040460856718599782">糟糕！尝试验证您的身份时出现错误。请仔细检查您的登录凭据，然后重试。</translation>
 <translation id="204497730941176055">Microsoft 证书模板名称</translation>
 <translation id="2045969484888636535">继续拦截 Cookie</translation>
@@ -1199,7 +1199,7 @@
 <translation id="2772936498786524345">忍者</translation>
 <translation id="2773948261276885771">设置网页</translation>
 <translation id="2776441542064982094">似乎没有可用于在网络中注册的设备。如果您的设备已开启并连接到互联网，请按照说明手册中的说明尝试对其进行注册。</translation>
-<translation id="2778107779445548489">您之所以看到这条消息，是因为您父母屏蔽了此网站。</translation>
+<translation id="2778107779445548489">您之所以看到这条消息，是因为您的家长屏蔽了此网站。</translation>
 <translation id="2778459533137481732">权限黑名单</translation>
 <translation id="2779552785085366231">您可以将此网页添加到应用启动器</translation>
 <translation id="2781645665747935084">比利时语</translation>
@@ -2684,7 +2684,7 @@
 <translation id="4927301649992043040">打包扩展程序</translation>
 <translation id="4927753642311223124">这里没有任何通知，往前走吧。</translation>
 <translation id="4929925845384605079">显示“添加到文件架”横幅（提示用户将网络应用添加到文件架或其他平台上的同等位置）。</translation>
-<translation id="4930497775425430760">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得父母的批准。</translation>
+<translation id="4930497775425430760">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得家长的批准。</translation>
 <translation id="4933484234309072027">嵌入 <ph name="URL" /></translation>
 <translation id="493571969993549666">添加受监管用户</translation>
 <translation id="4938972461544498524">触控板设置</translation>
@@ -3182,7 +3182,7 @@
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5669462439438204699">保存信用卡</translation>
 <translation id="5671961047338275645">管理网站</translation>
-<translation id="5675224880872496917">在滚动页面内容时显示流畅的动画效果。</translation>
+<translation id="5675224880872496917">在滚动页面内容时平滑移动画面。</translation>
 <translation id="5676267133227121599">您可以在任意设备上通过 <ph name="MANAGEMENT_LINK" /> 获取您的密码。</translation>
 <translation id="5677503058916217575">网页语言：</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
@@ -3428,7 +3428,6 @@
 <translation id="604001903249547235">云端备份</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="604124094241169006">自动</translation>
-<translation id="6042308850641462728">更多</translation>
 <translation id="604257181445267932">借助 Smart Lock，您可以使用 Google 为您保存的密码快速登录应用和网站。</translation>
 <translation id="6049065490165456785">内部相机中的照片</translation>
 <translation id="6051028581720248124">通过 FedEx Office 进行打印即表示您接受其<ph name="START_LINK" />使用条款<ph name="END_LINK" />。</translation>
@@ -3499,7 +3498,7 @@
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME" />目前不是默认浏览器。</translation>
 <translation id="6147020289383635445">打印预览失败。</translation>
 <translation id="614998064310228828">设备型号：</translation>
-<translation id="6150607114729249911">糟糕！您必须先征得父母同意，然后才能访问此网页。</translation>
+<translation id="6150607114729249911">糟糕！您必须先征得家长同意，然后才能访问此网页。</translation>
 <translation id="6150853954427645995">要保存此文件以供离线使用，请恢复联网状态，右键点击文件，然后选择<ph name="OFFLINE_CHECKBOX_NAME" />选项。</translation>
 <translation id="6151323131516309312">按 <ph name="SEARCH_KEY" /> 可通过 <ph name="SITE_NAME" /> 进行搜索</translation>
 <translation id="6154697846084421647">当前已登录</translation>
@@ -4178,7 +4177,7 @@
 <translation id="7224023051066864079">子网掩码：</translation>
 <translation id="7225179976675429563">缺少网络类型</translation>
 <translation id="7231224339346098802">用数字指明要打印多少份（1 份或多份）。</translation>
-<translation id="7231308970288859235">糟糕！您必须先征得父母同意，然后才能访问此网页。</translation>
+<translation id="7231308970288859235">糟糕！您必须先征得家长同意，然后才能访问此网页。</translation>
 <translation id="7238585580608191973">SHA-256 指纹</translation>
 <translation id="7240120331469437312">证书主题背景的备用名称</translation>
 <translation id="7241389281993241388">请登录“<ph name="TOKEN_NAME" />”，导入客户端证书。</translation>
@@ -5066,7 +5065,7 @@
 <translation id="8584280235376696778">在新标签页中打开视频(&amp;O)</translation>
 <translation id="8589311641140863898">实验性扩展程序 API</translation>
 <translation id="8590375307970699841">设置自动更新</translation>
-<translation id="8591846766485502580">您之所以看到这条消息，是因为您父母屏蔽了此网站。</translation>
+<translation id="8591846766485502580">您之所以看到这条消息，是因为您的一位家长屏蔽了此网站。</translation>
 <translation id="8592071947729879125">限制 iframe 的权限。</translation>
 <translation id="859285277496340001">证书未指定用于检查是否已吊销证书的机制。</translation>
 <translation id="8594787581355215556">您已用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。可以在 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />里管理已同步的数据。</translation>
