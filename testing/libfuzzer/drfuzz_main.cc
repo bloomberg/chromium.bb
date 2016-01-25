@@ -9,7 +9,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size);
 // Provide main for running fuzzer tests with Dr. Fuzz.
 int main(int argc, char **argv)
 {
-  static const size_t kFuzzInputMaxSize = 1024;
+  static const size_t kFuzzInputMaxSize = 8;
   unsigned char* fuzz_input = new unsigned char[kFuzzInputMaxSize]();
   // The buffer and size arguments can be changed by Dr. Fuzz.
   int result = LLVMFuzzerTestOneInput(fuzz_input, kFuzzInputMaxSize);
