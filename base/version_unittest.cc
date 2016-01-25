@@ -26,9 +26,9 @@ TEST(VersionTest, ValueSemantics) {
     Version v2(v1);
     v3 = v2;
     EXPECT_TRUE(v2.IsValid());
-    EXPECT_TRUE(v1.Equals(v2));
+    EXPECT_EQ(v1, v2);
   }
-  EXPECT_TRUE(v3.Equals(v1));
+  EXPECT_EQ(v3, v1);
 }
 
 TEST(VersionTest, GetVersionFromString) {
@@ -101,7 +101,33 @@ TEST(VersionTest, Compare) {
     EXPECT_EQ(lhs.CompareTo(rhs), cases[i].expected) <<
         cases[i].lhs << " ? " << cases[i].rhs;
 
-    EXPECT_EQ(lhs.IsOlderThan(cases[i].rhs), (cases[i].expected == -1));
+    // Test comparison operators
+    switch (cases[i].expected) {
+    case -1:
+      EXPECT_LT(lhs, rhs);
+      EXPECT_LE(lhs, rhs);
+      EXPECT_NE(lhs, rhs);
+      EXPECT_FALSE(lhs == rhs);
+      EXPECT_FALSE(lhs >= rhs);
+      EXPECT_FALSE(lhs > rhs);
+      break;
+    case 0:
+      EXPECT_FALSE(lhs < rhs);
+      EXPECT_LE(lhs, rhs);
+      EXPECT_FALSE(lhs != rhs);
+      EXPECT_EQ(lhs, rhs);
+      EXPECT_GE(lhs, rhs);
+      EXPECT_FALSE(lhs > rhs);
+      break;
+    case 1:
+      EXPECT_FALSE(lhs < rhs);
+      EXPECT_FALSE(lhs <= rhs);
+      EXPECT_NE(lhs, rhs);
+      EXPECT_FALSE(lhs == rhs);
+      EXPECT_GE(lhs, rhs);
+      EXPECT_GT(lhs, rhs);
+      break;
+    }
   }
 }
 

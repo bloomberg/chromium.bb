@@ -421,8 +421,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       const auto& ping_items = items();
       EXPECT_EQ(1U, ping_items.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.9").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.9"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(0, ping_items[0].error_category);
       EXPECT_EQ(0, ping_items[0].error_code);
     }
@@ -645,13 +645,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       const auto& ping_items = items();
       EXPECT_EQ(2U, ping_items.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.9").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.9"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(0, ping_items[0].error_category);
       EXPECT_EQ(0, ping_items[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_items[1].id);
-      EXPECT_TRUE(base::Version("0.8").Equals(ping_items[1].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[1].next_version));
+      EXPECT_EQ(base::Version("0.8"), ping_items[1].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[1].next_version);
       EXPECT_EQ(0, ping_items[1].error_category);
       EXPECT_EQ(0, ping_items[1].error_code);
     }
@@ -884,13 +884,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       const auto& ping_items = items();
       EXPECT_EQ(2U, ping_items.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.9").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.9"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(1, ping_items[0].error_category);  // Network error.
       EXPECT_EQ(-118, ping_items[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_items[1].id);
-      EXPECT_TRUE(base::Version("0.8").Equals(ping_items[1].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[1].next_version));
+      EXPECT_EQ(base::Version("0.8"), ping_items[1].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[1].next_version);
       EXPECT_EQ(0, ping_items[1].error_category);
       EXPECT_EQ(0, ping_items[1].error_code);
     }
@@ -1143,13 +1143,13 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       const auto& ping_items = items();
       EXPECT_EQ(2U, ping_items.size());
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.8").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.8"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(0, ping_items[0].error_category);
       EXPECT_EQ(0, ping_items[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_items[1].id);
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[1].previous_version));
-      EXPECT_TRUE(base::Version("2.0").Equals(ping_items[1].next_version));
+      EXPECT_EQ(base::Version("1.0"), ping_items[1].previous_version);
+      EXPECT_EQ(base::Version("2.0"), ping_items[1].next_version);
       EXPECT_EQ(0, ping_items[1].diff_error_category);
       EXPECT_EQ(0, ping_items[1].diff_error_code);
     }
@@ -1361,8 +1361,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       const auto& ping_items = items();
       EXPECT_EQ(1U, ping_items.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.9").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.9"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(3, ping_items[0].error_category);  // kInstallError.
       EXPECT_EQ(9, ping_items[0].error_code);      // kInstallerError.
     }
@@ -1616,13 +1616,13 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       const auto& ping_items = items();
       EXPECT_EQ(2U, ping_items.size());
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.8").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.8"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(0, ping_items[0].error_category);
       EXPECT_EQ(0, ping_items[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_items[1].id);
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[1].previous_version));
-      EXPECT_TRUE(base::Version("2.0").Equals(ping_items[1].next_version));
+      EXPECT_EQ(base::Version("1.0"), ping_items[1].previous_version);
+      EXPECT_EQ(base::Version("2.0"), ping_items[1].next_version);
       EXPECT_TRUE(ping_items[1].diff_update_failed);
       EXPECT_EQ(1, ping_items[1].diff_error_category);  // kNetworkError.
       EXPECT_EQ(-1, ping_items[1].diff_error_code);
@@ -1920,8 +1920,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       const auto& ping_items = items();
       EXPECT_EQ(1U, ping_items.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
-      EXPECT_TRUE(base::Version("0.0").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("0.0"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].next_version);
       EXPECT_EQ(0, ping_items[0].error_category);
       EXPECT_EQ(0, ping_items[0].error_code);
     }
@@ -2176,8 +2176,8 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
       const auto& ping_items = items();
       EXPECT_EQ(1U, ping_items.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
-      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].previous_version));
-      EXPECT_TRUE(base::Version("0.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(base::Version("1.0"), ping_items[0].previous_version);
+      EXPECT_EQ(base::Version("0.0"), ping_items[0].next_version);
       EXPECT_EQ(10, ping_items[0].extra_code1);
     }
   };

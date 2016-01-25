@@ -213,15 +213,18 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
     last_version = base::Version(last_version_str);
   }
 
-  std::string current_version = version_info::GetVersionNumber();
-  pref_service->SetString(pref_names::kLastChromeVersion,
-                          current_version);
+  std::string current_version_str = version_info::GetVersionNumber();
+  base::Version current_version(current_version_str);
+  pref_service->SetString(pref_names::kLastChromeVersion, current_version_str);
 
   // If there was no version string in prefs, assume we're out of date.
   if (!last_version.IsValid())
     return true;
+  // If the current version string is invalid, assume we didn't update.
+  if (!current_version.IsValid())
+    return false;
 
-  return last_version.IsOlderThan(current_version);
+  return last_version < current_version;
 }
 
 void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {

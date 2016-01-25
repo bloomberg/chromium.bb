@@ -77,8 +77,9 @@ volatile base::subtle::Atomic32 needs_on_demand_update = 0;
 void CheckVersionCompatiblity(const base::Version& current_version) {
   // Using NoBarrier, since needs_on_demand_update is standalone and does
   // not have other associated data.
-  base::subtle::NoBarrier_Store(&needs_on_demand_update,
-                                current_version.IsOlderThan(kMinPnaclVersion));
+  base::subtle::NoBarrier_Store(
+    &needs_on_demand_update,
+    current_version < base::Version(kMinPnaclVersion));
 }
 
 // PNaCl is packaged as a multi-CRX.  This returns the platform-specific
@@ -272,7 +273,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
 // |installed_file| actually exists.
 bool PnaclComponentInstaller::GetInstalledFile(const std::string& file,
                                                base::FilePath* installed_file) {
-  if (current_version().Equals(Version(kNullVersion)))
+  if (current_version() == Version(kNullVersion))
     return false;
 
   *installed_file = GetPnaclBaseDirectory()
@@ -339,7 +340,7 @@ void StartPnaclUpdateRegistration(
         !CheckPnaclComponentManifest(*manifest,
                                      *pnacl_manifest,
                                      &manifest_version) ||
-        !current_version.Equals(manifest_version)) {
+        current_version != manifest_version) {
       current_version = Version(kNullVersion);
     } else {
       OverrideDirPnaclComponent(path);

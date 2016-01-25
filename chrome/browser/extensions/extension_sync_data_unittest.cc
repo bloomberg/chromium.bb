@@ -70,7 +70,7 @@ void SyncDataToProtobufEqual(const ExtensionSyncData& input) {
   EXPECT_EQ(input.remote_install(), output->remote_install());
   EXPECT_EQ(input.installed_by_custodian(), output->installed_by_custodian());
   EXPECT_EQ(input.all_urls_enabled(), output->all_urls_enabled());
-  EXPECT_TRUE(input.version().Equals(output->version()));
+  EXPECT_EQ(input.version(), output->version());
   EXPECT_EQ(input.update_url(), output->update_url());
   EXPECT_EQ(input.name(), output->name());
 }
@@ -110,7 +110,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   EXPECT_FALSE(extension_sync_data.remote_install());
   EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE,
             extension_sync_data.all_urls_enabled());
-  EXPECT_TRUE(Version(kVersion).Equals(extension_sync_data.version()));
+  EXPECT_EQ(Version(kVersion), extension_sync_data.version());
   EXPECT_EQ(std::string(kName), extension_sync_data.name());
 
   // Check the serialize-deserialize process for ExtensionSyncData to proto.

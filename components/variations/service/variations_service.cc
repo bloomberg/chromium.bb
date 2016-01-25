@@ -799,7 +799,7 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
 
   // Determine if the version from the saved pref matches |version|.
   const bool does_version_match =
-      is_pref_valid && version.Equals(base::Version(stored_version_string));
+      is_pref_valid && version == base::Version(stored_version_string);
 
   // Determine if the country in the saved pref matches the country in
   // |latest_country|.

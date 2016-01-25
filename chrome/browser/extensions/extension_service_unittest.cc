@@ -2463,7 +2463,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionWrongVersion) {
   InitializeEmptyExtensionService();
   base::Version other_version("0.1");
   ASSERT_TRUE(other_version.IsValid());
-  ASSERT_FALSE(other_version.Equals(base::Version(kGoodVersion)));
+  ASSERT_NE(other_version, base::Version(kGoodVersion));
   EXPECT_TRUE(
       service()->pending_extension_manager()->AddFromSync(
           kGoodId,
@@ -5487,8 +5487,8 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
 
   // Tests assume |older_version| is less than the installed version, and
   // |newer_version| is greater.  Verify this:
-  ASSERT_TRUE(older_version.IsOlderThan(ext->VersionString()));
-  ASSERT_TRUE(ext->version()->IsOlderThan(newer_version.GetString()));
+  ASSERT_LT(older_version, *ext->version());
+  ASSERT_GT(newer_version, *ext->version());
 
   // An external install for the same location should fail if the version is
   // older, or the same, and succeed if the version is newer.
@@ -5601,7 +5601,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
   const extensions::PendingExtensionInfo* info;
   EXPECT_TRUE((info = pending->GetById(kGoodId)));
   EXPECT_TRUE(info->version().IsValid());
-  EXPECT_TRUE(info->version().Equals(kVersion123));
+  EXPECT_EQ(info->version(), kVersion123);
 
   // Adding a newer version overrides the currently pending version.
   EXPECT_TRUE(service()->OnExternalExtensionFileFound(
@@ -5614,7 +5614,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
       kDontInstallImmediately));
   EXPECT_TRUE((info = pending->GetById(kGoodId)));
   EXPECT_TRUE(info->version().IsValid());
-  EXPECT_TRUE(info->version().Equals(kVersion124));
+  EXPECT_EQ(info->version(), kVersion124);
 
   // Adding an older version fails.
   EXPECT_FALSE(service()->OnExternalExtensionFileFound(
@@ -5627,7 +5627,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
       kDontInstallImmediately));
   EXPECT_TRUE((info = pending->GetById(kGoodId)));
   EXPECT_TRUE(info->version().IsValid());
-  EXPECT_TRUE(info->version().Equals(kVersion124));
+  EXPECT_EQ(info->version(), kVersion124);
 
   // Adding an older version fails even when coming from a higher-priority
   // location.
@@ -5641,7 +5641,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
       kDontInstallImmediately));
   EXPECT_TRUE((info = pending->GetById(kGoodId)));
   EXPECT_TRUE(info->version().IsValid());
-  EXPECT_TRUE(info->version().Equals(kVersion124));
+  EXPECT_EQ(info->version(), kVersion124);
 
   // Adding the latest version from the webstore overrides a specific version.
   GURL kUpdateUrl("http://example.com/update");

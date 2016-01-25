@@ -178,7 +178,7 @@ bool ExtensionSyncService::HasPendingReenable(
   if (it == pending_updates_.end())
     return false;
   const PendingUpdate& pending = it->second;
-  return pending.version.Equals(version) &&
+  return pending.version == version &&
          pending.grant_permissions_and_reenable;
 }
 

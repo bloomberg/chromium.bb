@@ -268,7 +268,7 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
   }
 
   if (expected_version_.IsValid() && fail_install_if_unexpected_version_ &&
-      !expected_version_.Equals(*extension->version())) {
+      expected_version_ != *extension->version()) {
     return CrxInstallError(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
         base::ASCIIToUTF16(expected_version_.GetString()),
@@ -810,7 +810,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     if ((client_ || allow_silent_install_) &&
         grant_permissions_ &&
         (!expected_version_.IsValid() ||
-         expected_version_.Equals(*extension()->version()))) {
+         expected_version_ == *extension()->version())) {
       PermissionsUpdater perms_updater(profile());
       perms_updater.InitializePermissions(extension());
       perms_updater.GrantActivePermissions(extension());

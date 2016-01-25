@@ -118,7 +118,7 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
 bool DefaultComponentInstaller::GetInstalledFile(
     const std::string& file,
     base::FilePath* installed_file) {
-  if (current_version_.Equals(base::Version(kNullVersion)))
+  if (current_version_ == base::Version(kNullVersion))
     return false;  // No component has been installed yet.
 
   *installed_file = installer_traits_->GetBaseDirectory()

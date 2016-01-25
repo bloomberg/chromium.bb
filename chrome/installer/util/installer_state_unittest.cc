@@ -378,7 +378,7 @@ TEST_F(InstallerStateTest, WithProduct) {
       Version found_version(*installer_state.GetCurrentVersion(machine_state));
       EXPECT_TRUE(found_version.IsValid());
       if (found_version.IsValid())
-        EXPECT_TRUE(current_version.Equals(found_version));
+        EXPECT_EQ(current_version, found_version);
     }
   }
 }
@@ -745,7 +745,7 @@ Version* InstallerStateCriticalVersionTest::high_version_ = NULL;
 TEST_F(InstallerStateCriticalVersionTest, CriticalBeforeOpv) {
   MockInstallerState& installer_state(Initialize(low_version_));
 
-  EXPECT_TRUE(installer_state.critical_update_version().Equals(*low_version_));
+  EXPECT_EQ(installer_state.critical_update_version(), *low_version_);
   // Unable to determine the installed version, so assume critical update.
   EXPECT_TRUE(
       installer_state.DetermineCriticalVersion(NULL, *pv_version_).IsValid());
@@ -764,7 +764,7 @@ TEST_F(InstallerStateCriticalVersionTest, CriticalBeforeOpv) {
 TEST_F(InstallerStateCriticalVersionTest, CriticalEqualsOpv) {
   MockInstallerState& installer_state(Initialize(opv_version_));
 
-  EXPECT_TRUE(installer_state.critical_update_version().Equals(*opv_version_));
+  EXPECT_EQ(installer_state.critical_update_version(), *opv_version_);
   // Unable to determine the installed version, so assume critical update.
   EXPECT_TRUE(
       installer_state.DetermineCriticalVersion(NULL, *pv_version_).IsValid());
@@ -783,8 +783,7 @@ TEST_F(InstallerStateCriticalVersionTest, CriticalEqualsOpv) {
 TEST_F(InstallerStateCriticalVersionTest, CriticalBetweenOpvAndPv) {
   MockInstallerState& installer_state(Initialize(middle_version_));
 
-  EXPECT_TRUE(installer_state.critical_update_version().Equals(
-      *middle_version_));
+  EXPECT_EQ(installer_state.critical_update_version(), *middle_version_);
   // Unable to determine the installed version, so assume critical update.
   EXPECT_TRUE(
       installer_state.DetermineCriticalVersion(NULL, *pv_version_).IsValid());
@@ -803,8 +802,7 @@ TEST_F(InstallerStateCriticalVersionTest, CriticalBetweenOpvAndPv) {
 TEST_F(InstallerStateCriticalVersionTest, CriticalEqualsPv) {
   MockInstallerState& installer_state(Initialize(pv_version_));
 
-  EXPECT_TRUE(installer_state.critical_update_version().Equals(
-      *pv_version_));
+  EXPECT_EQ(installer_state.critical_update_version(), *pv_version_);
   // Unable to determine the installed version, so assume critical update.
   EXPECT_TRUE(
       installer_state.DetermineCriticalVersion(NULL, *pv_version_).IsValid());
@@ -823,8 +821,7 @@ TEST_F(InstallerStateCriticalVersionTest, CriticalEqualsPv) {
 TEST_F(InstallerStateCriticalVersionTest, CriticalAfterPv) {
   MockInstallerState& installer_state(Initialize(high_version_));
 
-  EXPECT_TRUE(installer_state.critical_update_version().Equals(
-      *high_version_));
+  EXPECT_EQ(installer_state.critical_update_version(), *high_version_);
   // Critical update newer than the new version.
   EXPECT_FALSE(
       installer_state.DetermineCriticalVersion(NULL, *pv_version_).IsValid());

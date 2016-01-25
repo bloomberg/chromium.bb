@@ -211,7 +211,7 @@ installer::InstallStatus InstallNewVersion(
     installer_state.UpdateStage(installer::ROLLINGBACK);
     installer::InstallStatus result =
         base::PathExists(new_chrome_exe) && current_version->get() &&
-        new_version.Equals(*current_version->get()) ?
+        new_version == *current_version->get() ?
         installer::SAME_VERSION_REPAIR_FAILED :
         installer::INSTALL_FAILED;
     LOG(ERROR) << "Install failed, rolling back... result: " << result;
@@ -225,28 +225,28 @@ installer::InstallStatus InstallNewVersion(
   installer::RefreshElevationPolicy();
 
   if (!current_version->get()) {
-    VLOG(1) << "First install of version " << new_version.GetString();
+    VLOG(1) << "First install of version " << new_version;
     return installer::FIRST_INSTALL_SUCCESS;
   }
 
-  if (new_version.Equals(**current_version)) {
-    VLOG(1) << "Install repaired of version " << new_version.GetString();
+  if (new_version == **current_version) {
+    VLOG(1) << "Install repaired of version " << new_version;
     return installer::INSTALL_REPAIRED;
   }
 
-  if (new_version.CompareTo(**current_version) > 0) {
+  if (new_version > **current_version) {
     if (base::PathExists(new_chrome_exe)) {
-      VLOG(1) << "Version updated to " << new_version.GetString()
-              << " while running " << (*current_version)->GetString();
+      VLOG(1) << "Version updated to " << new_version
+              << " while running " << **current_version;
       return installer::IN_USE_UPDATED;
     }
-    VLOG(1) << "Version updated to " << new_version.GetString();
+    VLOG(1) << "Version updated to " << new_version;
     return installer::NEW_VERSION_UPDATED;
   }
 
   LOG(ERROR) << "Not sure how we got here while updating"
-             << ", new version: " << new_version.GetString()
-             << ", old version: " << (*current_version)->GetString();
+             << ", new version: " << new_version
+             << ", old version: " << **current_version;
 
   return installer::INSTALL_FAILED;
 }

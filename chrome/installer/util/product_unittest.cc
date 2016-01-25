@@ -78,7 +78,7 @@ TEST(ProductTest, ProductInstallBasic) {
         machine_state.GetProductState(system_level, distribution->GetType());
     EXPECT_TRUE(chrome_state != NULL);
     if (chrome_state != NULL) {
-      EXPECT_TRUE(chrome_state->version().Equals(current_version));
+      EXPECT_EQ(chrome_state->version(), current_version);
       EXPECT_FALSE(chrome_state->is_msi());
     }
 

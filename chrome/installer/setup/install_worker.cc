@@ -365,7 +365,7 @@ void AddChromeWorkItems(const InstallationState& original_state,
   // Note that we pass true for check_duplicates to avoid failing on in-use
   // repair runs if the current_version is the same as the new_version.
   bool check_for_duplicates = (current_version &&
-                               current_version->Equals(new_version));
+                               *current_version == new_version);
   install_list->AddMoveTreeWorkItem(
       src_path.AppendASCII(new_version.GetString()).value(),
       target_path.AppendASCII(new_version.GetString()).value(),

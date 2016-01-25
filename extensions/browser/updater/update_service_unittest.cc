@@ -203,7 +203,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   ASSERT_NE(nullptr, data);
   ASSERT_EQ(1u, data->size());
 
-  ASSERT_TRUE(data->at(0).version.Equals(*extension1->version()));
+  ASSERT_EQ(data->at(0).version, *extension1->version());
   update_client::CrxInstaller* installer = data->at(0).installer.get();
   ASSERT_NE(installer, nullptr);
 

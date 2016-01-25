@@ -470,9 +470,9 @@ content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
         Version version_x(x->version);
         Version version_y(y->version);
         DCHECK(version_x.IsValid() && version_y.IsValid());
-        if (version_x.Equals(version_y))
+        if (version_x == version_y)
           return !x->is_debug && y->is_debug;
-        return version_x.IsOlderThan(y->version);
+        return version_x < version_y;
       });
   return it != plugins.end() ? *it : nullptr;
 }

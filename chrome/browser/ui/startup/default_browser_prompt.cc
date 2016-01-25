@@ -314,9 +314,9 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
             prefs::kBrowserSuppressDefaultBrowserPrompt);
     const Version disable_version(disable_version_string);
     DCHECK(disable_version_string.empty() || disable_version.IsValid());
-    if (disable_version.IsValid()) {
-      if (disable_version.Equals(Version(version_info::GetVersionNumber())))
-        show_prompt = false;
+    if (disable_version.IsValid() &&
+        disable_version == Version(version_info::GetVersionNumber())) {
+      show_prompt = false;
     }
   }
 

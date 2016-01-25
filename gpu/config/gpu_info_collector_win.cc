@@ -397,7 +397,7 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
     UMA_HISTOGRAM_ENUMERATION("GPU.DisplayLinkInstallationStatus",
                               DISPLAY_LINK_NOT_INSTALLED,
                               DISPLAY_LINK_INSTALLATION_STATUS_MAX);
-  } else if (gpu_info->display_link_version.IsOlderThan("7.2")) {
+  } else if (gpu_info->display_link_version < base::Version("7.2")) {
     UMA_HISTOGRAM_ENUMERATION("GPU.DisplayLinkInstallationStatus",
                               DISPLAY_LINK_7_1_OR_EARLIER,
                               DISPLAY_LINK_INSTALLATION_STATUS_MAX);
