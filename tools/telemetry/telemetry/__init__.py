@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 """A library for cross-platform browser tests."""
+import logging
 import os
 import sys
 
@@ -55,3 +56,8 @@ _AddDirToPythonPath(util.GetTelemetryThirdPartyDir(), 'websocket-client')
 
 # Install Telemtry global hooks.
 global_hooks.InstallHooks()
+
+logging.warn(
+    'Telemetry has moved to Catapult, and will be deleted from Chromium on '
+    '2016-01-29. Please use Telemetry from third_party/catapult/telemetry '
+    'instead.')
