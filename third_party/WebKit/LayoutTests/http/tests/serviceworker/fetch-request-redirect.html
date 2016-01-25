@@ -166,8 +166,7 @@ promise_test(function(t) {
             assert_resolves(
                 iframe_test(SCOPE + '?url=' +
                             encodeURIComponent(REDIRECT_TO_HTML_URL) +
-                            '&redirect-mode=manual',
-                            true /* timeout_enabled */),
+                            '&redirect-mode=manual'),
                 'Redirected iframe loading with Request.redirect=manual should'+
                 ' succeed.'),
           ]);

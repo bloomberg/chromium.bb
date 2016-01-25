@@ -1578,7 +1578,6 @@ crbug.com/530095 svg/custom/dasharrayOrigin.svg [ NeedsRebaseline ]
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
-crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/fetch-request-redirect.html [ Failure ]
 
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
 
