@@ -13,9 +13,9 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/simple_thread.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/shared/platform/nacl_threads.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/serialized_handle.h"
 
@@ -81,15 +81,30 @@ class PnaclTranslateThread {
   ppapi::proxy::SerializedHandle GetHandleForSubprocess(
       base::File* file, int32_t open_flags, base::ProcessId peer_pid);
 
-  // Helper thread entry point for compilation. Takes a pointer to
-  // PnaclTranslateThread and calls DoCompile().
-  static void WINAPI DoCompileThread(void* arg);
   // Runs the streaming compilation. Called from the helper thread.
   void DoCompile();
-
-  // Similar to DoCompile*, but for linking.
-  static void WINAPI DoLinkThread(void* arg);
+  // Similar to DoCompile(), but for linking.
   void DoLink();
+
+  class CompileThread : public base::SimpleThread {
+   public:
+    CompileThread(PnaclTranslateThread* obj)
+      : base::SimpleThread("pnacl_compile"), pnacl_translate_thread_(obj) {}
+   private:
+    PnaclTranslateThread* pnacl_translate_thread_;
+    void Run() override;
+    DISALLOW_COPY_AND_ASSIGN(CompileThread);
+  };
+
+  class LinkThread : public base::SimpleThread {
+   public:
+    LinkThread(PnaclTranslateThread* obj)
+      : base::SimpleThread("pnacl_link"), pnacl_translate_thread_(obj) {}
+   private:
+    PnaclTranslateThread* pnacl_translate_thread_;
+    void Run() override;
+    DISALLOW_COPY_AND_ASSIGN(LinkThread);
+  };
 
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(PP_NaClError err_code,
@@ -101,7 +116,7 @@ class PnaclTranslateThread {
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
 
-  scoped_ptr<NaClThread> translate_thread_;
+  scoped_ptr<base::SimpleThread> translate_thread_;
 
   // Used to guard compiler_subprocess, ld_subprocess,
   // compiler_subprocess_active_, and ld_subprocess_active_

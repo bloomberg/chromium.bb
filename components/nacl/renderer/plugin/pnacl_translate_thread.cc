@@ -124,19 +124,8 @@ void PnaclTranslateThread::RunCompile(
       compiler_subprocess_->service_runtime()->get_process_id();
 
   compile_finished_callback_ = compile_finished_callback;
-  translate_thread_.reset(new NaClThread);
-  if (translate_thread_ == NULL) {
-    TranslateFailed(PP_NACL_ERROR_PNACL_THREAD_CREATE,
-                    "could not allocate thread struct.");
-    return;
-  }
-  const int32_t kArbitraryStackSize = 128 * 1024;
-  if (!NaClThreadCreateJoinable(translate_thread_.get(), DoCompileThread, this,
-                                kArbitraryStackSize)) {
-    TranslateFailed(PP_NACL_ERROR_PNACL_THREAD_CREATE,
-                    "could not create thread.");
-    translate_thread_.reset(NULL);
-  }
+  translate_thread_.reset(new CompileThread(this));
+  translate_thread_->Start();
 }
 
 void PnaclTranslateThread::RunLink() {
@@ -157,22 +146,9 @@ void PnaclTranslateThread::RunLink() {
   ld_channel_peer_pid_ = ld_subprocess_->service_runtime()->get_process_id();
 
   // Tear down the previous thread.
-  // TODO(jvoung): Use base/threading or something where we can have a
-  // persistent thread and easily post tasks to that persistent thread.
-  NaClThreadJoin(translate_thread_.get());
-  translate_thread_.reset(new NaClThread);
-  if (translate_thread_ == NULL) {
-    TranslateFailed(PP_NACL_ERROR_PNACL_THREAD_CREATE,
-                    "could not allocate thread struct.");
-    return;
-  }
-  const int32_t kArbitraryStackSize = 128 * 1024;
-  if (!NaClThreadCreateJoinable(translate_thread_.get(), DoLinkThread, this,
-                                kArbitraryStackSize)) {
-    TranslateFailed(PP_NACL_ERROR_PNACL_THREAD_CREATE,
-                    "could not create thread.");
-    translate_thread_.reset(NULL);
-  }
+  translate_thread_->Join();
+  translate_thread_.reset(new LinkThread(this));
+  translate_thread_->Start();
 }
 
 // Called from main thread to send bytes to the translator.
@@ -220,10 +196,8 @@ ppapi::proxy::SerializedHandle PnaclTranslateThread::GetHandleForSubprocess(
   return handle;
 }
 
-void WINAPI PnaclTranslateThread::DoCompileThread(void* arg) {
-  PnaclTranslateThread* translator =
-      reinterpret_cast<PnaclTranslateThread*>(arg);
-  translator->DoCompile();
+void PnaclTranslateThread::CompileThread::Run() {
+  pnacl_translate_thread_->DoCompile();
 }
 
 void PnaclTranslateThread::DoCompile() {
@@ -349,10 +323,8 @@ void PnaclTranslateThread::DoCompile() {
   core->CallOnMainThread(0, compile_finished_callback_, PP_OK);
 }
 
-void WINAPI PnaclTranslateThread::DoLinkThread(void* arg) {
-  PnaclTranslateThread* translator =
-      reinterpret_cast<PnaclTranslateThread*>(arg);
-  translator->DoLink();
+void PnaclTranslateThread::LinkThread::Run() {
+  pnacl_translate_thread_->DoLink();
 }
 
 void PnaclTranslateThread::DoLink() {
@@ -457,8 +429,8 @@ void PnaclTranslateThread::AbortSubprocesses() {
 PnaclTranslateThread::~PnaclTranslateThread() {
   PLUGIN_PRINTF(("~PnaclTranslateThread (translate_thread=%p)\n", this));
   AbortSubprocesses();
-  if (translate_thread_ != NULL)
-    NaClThreadJoin(translate_thread_.get());
+  if (translate_thread_)
+    translate_thread_->Join();
   PLUGIN_PRINTF(("~PnaclTranslateThread joined\n"));
   NaClCondVarDtor(&buffer_cond_);
   NaClMutexDtor(&cond_mu_);
