@@ -371,9 +371,4 @@ inline void InlineFlowBox::setHasBadChildList()
 
 } // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const blink::InlineFlowBox*);
-#endif
-
 #endif // InlineFlowBox_h
