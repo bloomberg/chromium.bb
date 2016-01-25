@@ -4014,6 +4014,7 @@
             'loader/MixedContentCheckerTest.cpp',
             'page/ChromeClientTest.cpp',
             'page/ContextMenuControllerTest.cpp',
+            'page/EventSourceTest.cpp',
             'page/NetworkStateNotifierTest.cpp',
             'page/PagePopupClientTest.cpp',
             'page/PrintContextTest.cpp',
