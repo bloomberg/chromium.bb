@@ -576,7 +576,7 @@ CSSSelector::Relation CSSSelectorParser::consumeCombinator(CSSParserTokenRange& 
         return fallbackResult;
     range.consume();
     const CSSParserToken& ident = range.consume();
-    if (ident.type() != IdentToken || !ident.valueEqualsIgnoringCase("deep"))
+    if (ident.type() != IdentToken || !ident.valueEqualsIgnoringASCIICase("deep"))
         m_failedParsing = true;
     const CSSParserToken& slash = range.consumeIncludingWhitespace();
     if (slash.type() != DelimiterToken || slash.delimiter() != '/')
@@ -612,7 +612,7 @@ CSSSelector::AttributeMatchType CSSSelectorParser::consumeAttributeFlags(CSSPars
     if (range.peek().type() != IdentToken)
         return CSSSelector::CaseSensitive;
     const CSSParserToken& flag = range.consumeIncludingWhitespace();
-    if (flag.valueEqualsIgnoringCase("i"))
+    if (flag.valueEqualsIgnoringASCIICase("i"))
         return CSSSelector::CaseInsensitive;
     m_failedParsing = true;
     return CSSSelector::CaseSensitive;
@@ -626,11 +626,11 @@ bool CSSSelectorParser::consumeANPlusB(CSSParserTokenRange& range, std::pair<int
         return true;
     }
     if (token.type() == IdentToken) {
-        if (token.valueEqualsIgnoringCase("odd")) {
+        if (token.valueEqualsIgnoringASCIICase("odd")) {
             result = std::make_pair(2, 1);
             return true;
         }
-        if (token.valueEqualsIgnoringCase("even")) {
+        if (token.valueEqualsIgnoringASCIICase("even")) {
             result = std::make_pair(2, 0);
             return true;
         }

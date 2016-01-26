@@ -128,7 +128,8 @@ public:
         ret.initRaw(m_valueDataCharRaw, m_valueLength, m_valueIs8Bit);
         return ret;
     }
-    bool valueEqualsIgnoringCase(const char* str) const { return value().equalIgnoringCase(str); }
+    template<unsigned matchLength>
+    bool valueEqualsIgnoringASCIICase(const char (&match)[matchLength]) const { return value().equalIgnoringASCIICase<matchLength>(match); }
 
     UChar delimiter() const;
     NumericSign numericSign() const;

@@ -1534,7 +1534,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationName(CSSParserTokenRange
             context.useCounter()->count(UseCounter::QuotedAnimationName);
 
         const CSSParserToken& token = range.consumeIncludingWhitespace();
-        if (token.valueEqualsIgnoringCase("none"))
+        if (token.valueEqualsIgnoringASCIICase("none"))
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return CSSCustomIdentValue::create(token.value());
     }

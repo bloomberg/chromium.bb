@@ -59,20 +59,20 @@ TEST(CSSParserValuesTest, InitWithEmptyString)
     EXPECT_FALSE(String(cssParserString).isNull());
 }
 
-TEST(CSSParserValuesTest, EqualIgnoringCase8BitsString)
+TEST(CSSParserValuesTest, EqualIgnoringASCIICase8BitsString)
 {
     CSSParserString cssParserString;
     String string8bit("sHaDOw");
     cssParserString.init(string8bit);
 
-    ASSERT_TRUE(cssParserString.equalIgnoringCase("shadow"));
-    ASSERT_TRUE(cssParserString.equalIgnoringCase("ShaDow"));
-    ASSERT_FALSE(cssParserString.equalIgnoringCase("shadow-all"));
-    ASSERT_FALSE(cssParserString.equalIgnoringCase("sha"));
-    ASSERT_FALSE(cssParserString.equalIgnoringCase("abCD"));
+    ASSERT_TRUE(cssParserString.equalIgnoringASCIICase("shadow"));
+    ASSERT_TRUE(cssParserString.equalIgnoringASCIICase("ShaDow"));
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("shadow-all"));
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("sha"));
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("abCD"));
 }
 
-TEST(CSSParserValuesTest, EqualIgnoringCase16BitsString)
+TEST(CSSParserValuesTest, EqualIgnoringASCIICase16BitsString)
 {
     String string16bit("sHaDOw");
     string16bit.ensure16Bit();
@@ -80,11 +80,21 @@ TEST(CSSParserValuesTest, EqualIgnoringCase16BitsString)
     CSSParserString cssParserString;
     cssParserString.init(string16bit);
 
-    ASSERT_TRUE(cssParserString.equalIgnoringCase("shadow"));
-    ASSERT_TRUE(cssParserString.equalIgnoringCase("ShaDow"));
-    ASSERT_FALSE(cssParserString.equalIgnoringCase("shadow-all"));
-    ASSERT_FALSE(cssParserString.equalIgnoringCase("sha"));
-    ASSERT_FALSE(cssParserString.equalIgnoringCase("abCD"));
+    ASSERT_TRUE(cssParserString.equalIgnoringASCIICase("shadow"));
+    ASSERT_TRUE(cssParserString.equalIgnoringASCIICase("ShaDow"));
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("shadow-all"));
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("sha"));
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("abCD"));
+
+    StringBuilder builder;
+    builder.append(0x017f); // LATIN SMALL LETTER LONG S
+    builder.append("HaDOw");
+    ASSERT_FALSE(builder.is8Bit());
+
+    String string16BitFoldingToASCII = builder.toString();
+    cssParserString.init(string16BitFoldingToASCII);
+
+    ASSERT_FALSE(cssParserString.equalIgnoringASCIICase("shadow"));
 }
 
 TEST(CSSParserValuesTest, CSSParserValuelistClear)

@@ -81,13 +81,12 @@ struct CSSParserString {
         return m_data.characters16[i];
     }
 
-    bool equalIgnoringCase(const char* str) const
+    template<unsigned matchLength>
+    bool equalIgnoringASCIICase(const char (&match)[matchLength]) const
     {
-        bool match = is8Bit() ? WTF::equalIgnoringCase(str, characters8(), length()) : WTF::equalIgnoringCase(str, characters16(), length());
-        if (!match)
+        if (matchLength - 1 != length())
             return false;
-        ASSERT(strlen(str) >= length());
-        return str[length()] == '\0';
+        return is8Bit() ? WTF::equalIgnoringASCIICase(characters8(), match, length()) : WTF::equalIgnoringASCIICase(characters16(), match, length());
     }
 
     operator String() const { return is8Bit() ? String(m_data.characters8, m_length) : StringImpl::create8BitIfPossible(m_data.characters16, m_length); }

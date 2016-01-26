@@ -55,16 +55,6 @@
 
 namespace blink {
 
-template <unsigned N>
-static bool equalIgnoringCase(const CSSParserString& a, const char (&b)[N])
-{
-    unsigned length = N - 1; // Ignore the trailing null character
-    if (a.length() != length)
-        return false;
-
-    return a.is8Bit() ? WTF::equalIgnoringCase(b, a.characters8(), length) : WTF::equalIgnoringCase(b, a.characters16(), length);
-}
-
 void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
 {
     ASSERT(!isPropertyAlias(propId));

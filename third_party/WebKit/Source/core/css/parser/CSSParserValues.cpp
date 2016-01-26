@@ -46,7 +46,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
         CSSParserValue value;
         switch (token.type()) {
         case FunctionToken: {
-            if (token.valueEqualsIgnoringCase("url")) {
+            if (token.valueEqualsIgnoringASCIICase("url")) {
                 range.consume();
                 const CSSParserToken& next = range.consumeIncludingWhitespace();
                 if (next.type() == BadStringToken || range.consume().type() != RightParenthesisToken) {
@@ -59,7 +59,8 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 value.m_unit = CSSParserValue::URI;
                 value.string = next.value();
                 break;
-            } else if (token.valueEqualsIgnoringCase("var")) {
+            }
+            if (token.valueEqualsIgnoringASCIICase("var")) {
                 destroyAndClear();
                 return;
             }

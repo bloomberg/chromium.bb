@@ -11,25 +11,25 @@ namespace blink {
 
 CSSAtRuleID cssAtRuleID(const CSSParserString& name)
 {
-    if (name.equalIgnoringCase("charset"))
+    if (name.equalIgnoringASCIICase("charset"))
         return CSSAtRuleCharset;
-    if (name.equalIgnoringCase("font-face"))
+    if (name.equalIgnoringASCIICase("font-face"))
         return CSSAtRuleFontFace;
-    if (name.equalIgnoringCase("import"))
+    if (name.equalIgnoringASCIICase("import"))
         return CSSAtRuleImport;
-    if (name.equalIgnoringCase("keyframes"))
+    if (name.equalIgnoringASCIICase("keyframes"))
         return CSSAtRuleKeyframes;
-    if (name.equalIgnoringCase("media"))
+    if (name.equalIgnoringASCIICase("media"))
         return CSSAtRuleMedia;
-    if (name.equalIgnoringCase("namespace"))
+    if (name.equalIgnoringASCIICase("namespace"))
         return CSSAtRuleNamespace;
-    if (name.equalIgnoringCase("page"))
+    if (name.equalIgnoringASCIICase("page"))
         return CSSAtRulePage;
-    if (name.equalIgnoringCase("supports"))
+    if (name.equalIgnoringASCIICase("supports"))
         return CSSAtRuleSupports;
-    if (name.equalIgnoringCase("viewport"))
+    if (name.equalIgnoringASCIICase("viewport"))
         return CSSAtRuleViewport;
-    if (name.equalIgnoringCase("-webkit-keyframes"))
+    if (name.equalIgnoringASCIICase("-webkit-keyframes"))
         return CSSAtRuleWebkitKeyframes;
     return CSSAtRuleInvalid;
 }

@@ -358,7 +358,7 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     if (token.type() == StringToken || token.type() == UrlToken)
         return range.consumeIncludingWhitespace().value();
 
-    if (token.type() != FunctionToken || !token.valueEqualsIgnoringCase("url"))
+    if (token.type() != FunctionToken || !token.valueEqualsIgnoringASCIICase("url"))
         return AtomicString();
 
     CSSParserTokenRange contents = range.consumeBlock();
@@ -700,7 +700,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     const CSSParserToken* last = range.end() - 1;
     while (last->type() == WhitespaceToken)
         --last;
-    if (last->type() == IdentToken && last->valueEqualsIgnoringCase("important")) {
+    if (last->type() == IdentToken && last->valueEqualsIgnoringASCIICase("important")) {
         --last;
         while (last->type() == WhitespaceToken)
             --last;
@@ -748,9 +748,9 @@ PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenR
         const CSSParserToken& token = range.consumeIncludingWhitespace();
         if (token.type() == PercentageToken && token.numericValue() >= 0 && token.numericValue() <= 100)
             result->append(token.numericValue() / 100);
-        else if (token.type() == IdentToken && token.valueEqualsIgnoringCase("from"))
+        else if (token.type() == IdentToken && token.valueEqualsIgnoringASCIICase("from"))
             result->append(0);
-        else if (token.type() == IdentToken && token.valueEqualsIgnoringCase("to"))
+        else if (token.type() == IdentToken && token.valueEqualsIgnoringASCIICase("to"))
             result->append(1);
         else
             return nullptr; // Parser error, invalid value in keyframe selector
