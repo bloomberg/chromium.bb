@@ -632,11 +632,7 @@ compileError (FileInfo * nested, char *format, ...)
   char buffer[MAXSTRING];
   va_list arguments;
   va_start (arguments, format);
-#ifdef _WIN32
-  _vsnprintf (buffer, sizeof (buffer), format, arguments);
-#else
   vsnprintf (buffer, sizeof (buffer), format, arguments);
-#endif
   va_end (arguments);
   if (nested)
     logMessage (LOG_ERROR, "%s:%d: error: %s", nested->fileName,
@@ -654,11 +650,7 @@ compileWarning (FileInfo * nested, char *format, ...)
   char buffer[MAXSTRING];
   va_list arguments;
   va_start (arguments, format);
-#ifdef _WIN32
-  _vsnprintf (buffer, sizeof (buffer), format, arguments);
-#else
   vsnprintf (buffer, sizeof (buffer), format, arguments);
-#endif
   va_end (arguments);
   if (nested)
     logMessage (LOG_WARN, "%s:%d: warning: %s", nested->fileName,

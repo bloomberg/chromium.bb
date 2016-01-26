@@ -103,11 +103,6 @@ void logMessage(logLevels level, const char *format, ...)
 #ifdef _WIN32
       double f = 2.3; // Needed to force VC++ runtime floating point support
 #endif
-#ifdef _MSC_VER
-	#if _MSC_VER < 1500
-		#define vsnprintf _vsnprintf
-	#endif
-#endif
       char *s;
       size_t len;
       va_list argp;
