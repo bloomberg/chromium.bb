@@ -1009,7 +1009,7 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject, L
     }
 
     if (fullRemoveInsert && isLayoutBlock() && child->isBox())
-        LayoutBlock::removePercentHeightDescendantIfNeeded(toLayoutBox(child));
+        toLayoutBox(child)->removeFromPercentHeightContainer();
 
     if (fullRemoveInsert && (toBoxModelObject->isLayoutBlock() || toBoxModelObject->isLayoutInline())) {
         // Takes care of adding the new child correctly if toBlock and fromBlock
@@ -1028,7 +1028,7 @@ void LayoutBoxModelObject::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject
     if (fullRemoveInsert && isLayoutBlock()) {
         LayoutBlock* block = toLayoutBlock(this);
         block->removePositionedObjects(nullptr);
-        LayoutBlock::removePercentHeightDescendantIfNeeded(block);
+        block->removeFromPercentHeightContainer();
         if (block->isLayoutBlockFlow())
             toLayoutBlockFlow(block)->removeFloatingObjects();
     }

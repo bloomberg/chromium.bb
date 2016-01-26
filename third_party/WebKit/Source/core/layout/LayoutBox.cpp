@@ -130,7 +130,9 @@ void LayoutBox::willBeDestroyed()
     clearContainingBlockOverrideSize();
     clearExtraInlineAndBlockOffests();
 
-    LayoutBlock::removePercentHeightDescendantIfNeeded(this);
+    if (isOutOfFlowPositioned())
+        LayoutBlock::removePositionedObject(this);
+    removeFromPercentHeightContainer();
 
     ShapeOutsideInfo::removeInfo(*this);
 
@@ -219,11 +221,10 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
 
     const ComputedStyle& newStyle = styleRef();
     if (needsLayout() && oldStyle)
-        LayoutBlock::removePercentHeightDescendantIfNeeded(this);
+        removeFromPercentHeightContainer();
 
-    if (LayoutBlock::hasPercentHeightContainerMap() && slowFirstChild()
-        && oldHorizontalWritingMode != isHorizontalWritingMode())
-        LayoutBlock::clearPercentHeightDescendantsFrom(this);
+    if (oldHorizontalWritingMode != isHorizontalWritingMode())
+        clearPercentHeightDescendants();
 
     // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
     // new zoomed coordinate space.
@@ -4609,6 +4610,33 @@ void LayoutBox::clearPreviousPaintInvalidationRects()
     LayoutBoxModelObject::clearPreviousPaintInvalidationRects();
     if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea())
         scrollableArea->clearPreviousPaintInvalidationRects();
+}
+
+void LayoutBox::setPercentHeightContainer(LayoutBlock* container)
+{
+    ASSERT(!container || !percentHeightContainer());
+    if (!container && !m_rareData)
+        return;
+    ensureRareData().m_percentHeightContainer = container;
+}
+
+void LayoutBox::removeFromPercentHeightContainer()
+{
+    if (!percentHeightContainer())
+        return;
+
+    ASSERT(percentHeightContainer()->hasPercentHeightDescendant(this));
+    percentHeightContainer()->removePercentHeightDescendant(this);
+    // The above call should call this object's setPercentHeightContainer(nullptr).
+    ASSERT(!percentHeightContainer());
+}
+
+void LayoutBox::clearPercentHeightDescendants()
+{
+    for (LayoutObject* curr = slowFirstChild(); curr; curr = curr->nextInPreOrder(this)) {
+        if (curr->isBox())
+            toLayoutBox(curr)->removeFromPercentHeightContainer();
+    }
 }
 
 } // namespace blink

@@ -128,7 +128,7 @@ void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild)
             // Make sure we don't leave anything in the percentage descendant
             // map before moving the children to the new base.
             if (hasPercentHeightDescendants())
-                clearPercentHeightDescendantsFrom(this);
+                clearPercentHeightDescendants();
             rubyBaseSafe()->moveChildren(newRun->rubyBaseSafe(), beforeChild);
         }
     } else {

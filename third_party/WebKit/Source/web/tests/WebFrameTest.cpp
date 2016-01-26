@@ -6663,8 +6663,8 @@ TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants)
     LayoutBox* percentHeightInAnonymous = toLayoutBox(document->getElementById("percent-height-in-anonymous")->layoutObject());
     LayoutBox* percentHeightDirectChild = toLayoutBox(document->getElementById("percent-height-direct-child")->layoutObject());
 
-    EXPECT_TRUE(LayoutBlock::hasPercentHeightDescendant(percentHeightInAnonymous));
-    EXPECT_TRUE(LayoutBlock::hasPercentHeightDescendant(percentHeightDirectChild));
+    EXPECT_TRUE(container->hasPercentHeightDescendant(percentHeightInAnonymous));
+    EXPECT_TRUE(container->hasPercentHeightDescendant(percentHeightDirectChild));
 
     ASSERT_TRUE(container->percentHeightDescendants());
     ASSERT_TRUE(container->hasPercentHeightDescendants());

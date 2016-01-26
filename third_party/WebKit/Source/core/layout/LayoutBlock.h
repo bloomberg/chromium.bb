@@ -44,7 +44,7 @@ class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
 typedef WTF::HashMap<const LayoutBlock*, OwnPtr<TrackedLayoutBoxListHashSet>> TrackedDescendantsMap;
-typedef WTF::HashMap<const LayoutBox*, OwnPtr<HashSet<LayoutBlock*>>> TrackedContainerMap;
+typedef WTF::HashMap<const LayoutBox*, LayoutBlock*> TrackedContainerMap;
 typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
@@ -159,25 +159,22 @@ public:
     static void removePositionedObject(LayoutBox*);
     void removePositionedObjects(LayoutBlock*, ContainingBlockState = SameContainingBlock);
 
-    TrackedLayoutBoxListHashSet* positionedObjects() const;
+    TrackedLayoutBoxListHashSet* positionedObjects() const { return hasPositionedObjects() ? positionedObjectsInternal() : nullptr; }
     bool hasPositionedObjects() const
     {
-        TrackedLayoutBoxListHashSet* objects = positionedObjects();
-        return objects && !objects->isEmpty();
+        ASSERT(m_hasPositionedObjects ? (positionedObjectsInternal() && !positionedObjectsInternal()->isEmpty()) : !positionedObjectsInternal());
+        return m_hasPositionedObjects;
     }
 
     void addPercentHeightDescendant(LayoutBox*);
-    static void removePercentHeightDescendant(LayoutBox*);
-    static bool hasPercentHeightContainerMap();
-    static bool hasPercentHeightDescendant(LayoutBox*);
-    static void clearPercentHeightDescendantsFrom(LayoutBox*);
-    static void removePercentHeightDescendantIfNeeded(LayoutBox*);
+    void removePercentHeightDescendant(LayoutBox*);
+    bool hasPercentHeightDescendant(LayoutBox* o) const { return hasPercentHeightDescendants() && percentHeightDescendantsInternal()->contains(o); }
 
-    TrackedLayoutBoxListHashSet* percentHeightDescendants() const;
+    TrackedLayoutBoxListHashSet* percentHeightDescendants() const { return hasPercentHeightDescendants() ? percentHeightDescendantsInternal() : nullptr; }
     bool hasPercentHeightDescendants() const
     {
-        TrackedLayoutBoxListHashSet* descendants = percentHeightDescendants();
-        return descendants && !descendants->isEmpty();
+        ASSERT(m_hasPercentHeightDescendants ? (percentHeightDescendantsInternal() && !percentHeightDescendantsInternal()->isEmpty()) : !percentHeightDescendantsInternal());
+        return m_hasPercentHeightDescendants;
     }
 
     void notifyScrollbarThicknessChanged() { m_widthAvailableToChildrenChanged = true; }
@@ -399,8 +396,8 @@ private:
 
     bool isSelfCollapsingBlock() const override;
 
-    void insertIntoTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
-    static void removeFromTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
+    TrackedLayoutBoxListHashSet* positionedObjectsInternal() const;
+    TrackedLayoutBoxListHashSet* percentHeightDescendantsInternal() const;
 
     Node* nodeForHitTest() const;
 
@@ -495,6 +492,9 @@ protected:
     mutable unsigned m_hasOnlySelfCollapsingChildren : 1;
     mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
     mutable unsigned m_needsRecalcLogicalWidthAfterLayoutChildren : 1;
+
+    unsigned m_hasPositionedObjects : 1;
+    unsigned m_hasPercentHeightDescendants : 1;
 
     // LayoutRubyBase objects need to be able to split and merge, moving their children around
     // (calling moveChildTo, moveAllChildrenTo, and makeChildrenNonInline).

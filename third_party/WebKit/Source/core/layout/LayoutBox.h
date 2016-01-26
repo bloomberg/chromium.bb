@@ -57,6 +57,7 @@ public:
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
         , m_previousBorderBoxSize(-1, -1)
+        , m_percentHeightContainer(nullptr)
     {
     }
 
@@ -74,6 +75,8 @@ public:
     LayoutUnit m_pageLogicalOffset;
 
     LayoutUnit m_paginationStrut;
+
+    LayoutBlock* m_percentHeightContainer;
 };
 
 // LayoutBox implements the full CSS box model.
@@ -867,6 +870,11 @@ public:
     void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
 
     void clearPreviousPaintInvalidationRects() override;
+
+    LayoutBlock* percentHeightContainer() const { return m_rareData ? m_rareData->m_percentHeightContainer : nullptr; }
+    void setPercentHeightContainer(LayoutBlock*);
+    void removeFromPercentHeightContainer();
+    void clearPercentHeightDescendants();
 
 protected:
     void willBeDestroyed() override;
