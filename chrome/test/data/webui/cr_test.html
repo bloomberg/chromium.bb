@@ -243,7 +243,7 @@ function testAddSingletonGetter() {
   assertEquals('object', typeof z, 'Should work after clearing for testing');
   assertNotEqual(null, z, 'Created object should not be null');
 
-  assertNotEqual(x, z, 
+  assertNotEqual(x, z,
       'Should return a different object after clearing for testing');
 }
 
@@ -264,70 +264,7 @@ function testDefineWithGetter() {
 }
 
 /**
- * Executes a function given a potentially namespaced function name, e.g.,
- * cr.webUIListenerCallback.
- * @param {string} functionName The name of the function, including any
- *     namespaces, to execute.
- */
-function executeFunctionByName(functionName) {
-  var args = Array.prototype.slice.call(arguments, 1);
-  var func = (0, eval)(functionName);
-  func.apply(undefined, args);
-}
-
-/**
- * Tests that cr.sendWithCallback correctly handles the case where the JS sends
- * no arguments to the WebUI handler.
- */
-function testSendWithCallback_PassesJSArgs() {
- var testMethodName = 'getFullscreenState';
-
- // Mock out chrome.send to emulate a WebUI handler calling back with the
- // result of a getFullscreenState call.
- window.chrome = {};
- window.chrome.send = function(method, args) {
-   assertEquals(testMethodName, method);
-   var callbackName = args[0];
-   var id = args[1];
-   executeFunctionByName(callbackName, id, /* fullscreen */ true);
- };
-
- var callbackResponse;
- cr.sendWithCallback(testMethodName, undefined, function(fullscreen) {
-   callbackResponse = fullscreen;
- });
-
- assertTrue(callbackResponse);
-}
-
-/**
- * Tests that cr.sendWithCallback passes arguments from JS to the WebUI
- * handler.
- */
-function testSendWithCallback_PassesJSArgs() {
-  var testMethodName = 'getSquareOfX';
-
-  // Mock out chrome.send to emulate a WebUI handler calling back with the
-  // result of a getSquareOfX call.
-  window.chrome = {};
-  window.chrome.send = function(method, args) {
-    assertEquals(testMethodName, method);
-    var callbackName = args[0];
-    var id = args[1];
-    var x = args[2];
-    executeFunctionByName(callbackName, id, x * x);
-  };
-
-  var callbackResponse;
-  cr.sendWithCallback(testMethodName, [5], function(square) {
-    callbackResponse = square;
-  });
-
-  assertEquals(25, callbackResponse);
-}
-
-/**
- * Tests that an event fired by a WebUI handler is sent to all listeners. 
+ * Tests that an event fired by a WebUI handler is sent to all listeners.
  */
 function testAddWebUIListener() {
   var responses = new Map();
@@ -338,9 +275,7 @@ function testAddWebUIListener() {
     responses.set('second', enabled);
   });
 
-  executeFunctionByName(
-      'cr.webUIListenerCallback', 'fullscreen-enabled', true);
-
+  cr.webUIListenerCallback('fullscreen-enabled', true);
   assertTrue(responses.get('first'));
   assertTrue(responses.get('second'));
 }
