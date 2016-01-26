@@ -71,6 +71,11 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     }
 
     @Override
+    public void onPageLoadStarted(Tab tab, String newUrl) {
+        OfflinePageUtils.preferOnlineVersion(mActivity, tab, newUrl);
+    }
+
+    @Override
     public void onDestroyed(Tab destroyedTab) {
         // Unregister this tab for OS connectivity notifications.
         if (mListener != null) {

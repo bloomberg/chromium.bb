@@ -193,6 +193,18 @@ public class OfflinePageUtils {
     }
 
     /**
+     * Whenever we reload an offline page, if we are online, load the online version of the page
+     * instead, on the theory that the user prefers the online version of the page.
+     */
+    public static void preferOnlineVersion(ChromeActivity activity, Tab tab, String newUrl) {
+        // If we are reloading an offline page, but are online, get the online version.
+        if (newUrl.equals(tab.getUrl()) && isConnected(activity.getBaseContext())) {
+            Log.i(TAG, "Refreshing to the online version of an offline page, since we are online");
+            tab.loadUrl(new LoadUrlParams(tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
+        }
+    }
+
+    /**
      * Shows the snackbar for the current tab to provide offline specific information if needed.
      * @param activity The activity owning the tab.
      * @param tab The current tab.
