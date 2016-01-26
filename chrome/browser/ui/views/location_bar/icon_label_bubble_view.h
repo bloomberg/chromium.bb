@@ -28,7 +28,7 @@ class Painter;
 // View used to draw a bubble, containing an icon and a label. We use this as a
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
-class IconLabelBubbleView : public views::ImageView {
+class IconLabelBubbleView : public views::View {
  public:
   IconLabelBubbleView(int contained_image,
                       const gfx::FontList& font_list,
@@ -46,6 +46,8 @@ class IconLabelBubbleView : public views::ImageView {
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;
   }
+
+  const views::ImageView* GetImageView() const { return image_; }
 
  protected:
   views::ImageView* image() { return image_; }

@@ -113,7 +113,7 @@ void IconLabelBubbleView::Layout() {
   // this up when MD is on by default.
   bool icon_has_enough_padding =
       !is_extension_icon_ || ui::MaterialDesignController::IsModeMaterial();
-  const int image_width = image()->GetPreferredSize().width();
+  const int image_width = image_->GetPreferredSize().width();
   image_->SetBounds(std::min((width() - image_width) / 2,
                              GetBubbleOuterPadding(icon_has_enough_padding)),
                     0, image_->GetPreferredSize().width(), height());

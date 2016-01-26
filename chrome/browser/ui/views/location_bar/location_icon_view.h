@@ -33,11 +33,13 @@ class LocationIconView : public IconLabelBubbleView {
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
   SkColor GetTextColor() const override;
   SkColor GetBorderColor() const override;
 
   // Whether we should show the tooltip for this icon or not.
-  void ShowTooltip(bool show);
+  void set_show_tooltip(bool show_tooltip) { show_tooltip_ = show_tooltip; }
 
   // Returns what the minimum size would be if the label text were |text|.
   gfx::Size GetMinimumSizeForLabelText(const base::string16& text) const;
@@ -63,6 +65,9 @@ class LocationIconView : public IconLabelBubbleView {
   // clicked. This suppresses re-showing the bubble on mouse release, so that
   // clicking the icon repeatedly will appear to toggle the bubble on and off.
   bool suppress_mouse_released_action_;
+
+  // True if hovering this view should display a tooltip.
+  bool show_tooltip_;
 
   LocationBarView* location_bar_;
 

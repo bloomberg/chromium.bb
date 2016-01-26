@@ -118,17 +118,19 @@ void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+bool LocationIconView::GetTooltipText(const gfx::Point& p,
+                                      base::string16* tooltip) const {
+  if (show_tooltip_)
+    *tooltip = l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON);
+  return show_tooltip_;
+}
+
 void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
   // Do not show page info if the user has been editing the location bar or the
   // location bar is at the NTP.
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
     return;
   ProcessEvent(event);
-}
-
-void LocationIconView::ShowTooltip(bool show) {
-  SetTooltipText(show ?
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON) : base::string16());
 }
 
 void LocationIconView::ProcessEvent(const ui::LocatedEvent& event) {

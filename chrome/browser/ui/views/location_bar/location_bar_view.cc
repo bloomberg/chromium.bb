@@ -445,13 +445,13 @@ void LocationBarView::SelectAll() {
 }
 
 gfx::Point LocationBarView::GetLocationBarAnchorPoint() const {
+  const views::ImageView* image = location_icon_view_->GetImageView();
   // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-  const int icon_padding = GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
-  gfx::Point icon_bottom(
-      0, location_icon_view_->GetImageBounds().bottom() - icon_padding + 1);
-  gfx::Point icon_center(location_icon_view_->GetImageBounds().CenterPoint());
-  gfx::Point point(icon_center.x(), icon_bottom.y());
-  ConvertPointToTarget(location_icon_view_, this, &point);
+  int icon_bottom = image->GetImageBounds().bottom() -
+                    GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING) + 1;
+  gfx::Point icon_center(image->GetImageBounds().CenterPoint());
+  gfx::Point point(icon_center.x(), icon_bottom);
+  ConvertPointToTarget(image, this, &point);
   return point;
 }
 
@@ -1353,7 +1353,7 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 
 void LocationBarView::OnChanged() {
   RefreshLocationIcon();
-  location_icon_view_->ShowTooltip(!GetOmniboxView()->IsEditingOrEmpty());
+  location_icon_view_->set_show_tooltip(!GetOmniboxView()->IsEditingOrEmpty());
   Layout();
   SchedulePaint();
 }
