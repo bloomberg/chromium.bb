@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -41,6 +41,7 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,10 +65,10 @@ const char kDummyPassword[] = "";
 
 ProfileSyncService::InitParams GetInitParams(
     scoped_ptr<sync_driver::SyncClient> sync_client,
-    Profile* profile,
     scoped_ptr<SigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
-    browser_sync::ProfileSyncServiceStartBehavior start_behavior) {
+    browser_sync::ProfileSyncServiceStartBehavior start_behavior,
+    net::URLRequestContextGetter* url_request_context) {
   ProfileSyncService::InitParams init_params;
 
   init_params.signin_wrapper = std::move(signin_wrapper);
@@ -76,10 +77,10 @@ ProfileSyncService::InitParams GetInitParams(
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback =
       base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
-  init_params.base_directory = profile->GetPath();
-  init_params.url_request_context = profile->GetRequestContext();
-  init_params.debug_identifier = profile->GetDebugName();
-  init_params.channel = chrome::GetChannel();
+  init_params.base_directory = base::FilePath(FILE_PATH_LITERAL("dummyPath"));
+  init_params.url_request_context = url_request_context;
+  init_params.debug_identifier = "dummyDebugName";
+  init_params.channel = version_info::Channel::UNKNOWN;
   init_params.db_thread = content::BrowserThread::GetMessageLoopProxyForThread(
       content::BrowserThread::DB);
   init_params.file_thread =
@@ -112,15 +113,15 @@ class TestProfileSyncServiceNoBackup : public ProfileSyncService {
  public:
   TestProfileSyncServiceNoBackup(
       scoped_ptr<sync_driver::SyncClient> sync_client,
-      Profile* profile,
       scoped_ptr<SigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
-      browser_sync::ProfileSyncServiceStartBehavior start_behavior)
+      browser_sync::ProfileSyncServiceStartBehavior start_behavior,
+      net::URLRequestContextGetter* url_request_context)
       : ProfileSyncService(GetInitParams(std::move(sync_client),
-                                         profile,
                                          std::move(signin_wrapper),
                                          oauth2_token_service,
-                                         start_behavior)) {}
+                                         start_behavior,
+                                         url_request_context)) {}
 
  protected:
   bool NeedBackup() const override { return false; }
@@ -164,12 +165,15 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         new browser_sync::ChromeSyncClient(profile));
     sync_client->SetSyncApiComponentFactoryForTesting(
         make_scoped_ptr(new SyncApiComponentFactoryMock()));
+    scoped_refptr<net::URLRequestContextGetter> url_request_context =
+        new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get());
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
-        std::move(sync_client), profile,
+        std::move(sync_client),
         make_scoped_ptr(new SigninManagerWrapper(
             SigninManagerFactory::GetForProfile(profile))),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-        browser_sync::MANUAL_START));
+        browser_sync::MANUAL_START, url_request_context.get()));
   }
 
   void CreateSyncService() {
@@ -271,10 +275,13 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         new browser_sync::ChromeSyncClient(profile));
     sync_client->SetSyncApiComponentFactoryForTesting(
         make_scoped_ptr(new SyncApiComponentFactoryMock()));
+    scoped_refptr<net::URLRequestContextGetter> url_request_context =
+        new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get());
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
-        std::move(sync_client), profile,
+        std::move(sync_client),
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
-        browser_sync::AUTO_START));
+        browser_sync::AUTO_START, url_request_context.get()));
   }
 };
 
