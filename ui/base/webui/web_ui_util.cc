@@ -123,7 +123,7 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
 }
 
 std::string GetWebUiCssTextDefaults(const std::string& css_template) {
-  std::map<base::StringPiece, std::string> placeholders;
+  ui::TemplateReplacements placeholders;
   placeholders["textDirection"] = GetTextDirection();
   placeholders["fontFamily"] = GetFontFamily();
   placeholders["fontSize"] = GetFontSize();

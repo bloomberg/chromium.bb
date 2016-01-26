@@ -1,53 +1,53 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
 html {
   background-attachment: fixed;
-  background-color: ${colorBackground};
-  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?${themeId});
-  background-position: ${backgroundBarDetached};
-  background-repeat: ${backgroundTiling};
+  background-color: $i18n{colorBackground};
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$i18n{themeId});
+  background-position: $i18n{backgroundBarDetached};
+  background-repeat: $i18n{backgroundTiling};
 }
 
 #attribution {
-  left: ${leftAlignAttribution};
-  right: ${rightAlignAttribution};
-  text-align: ${textAlignAttribution};
-  display: ${displayAttribution};
+  left: $i18n{leftAlignAttribution};
+  right: $i18n{rightAlignAttribution};
+  text-align: $i18n{textAlignAttribution};
+  display: $i18n{displayAttribution};
 }
 
 #attribution-img {
-  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?${themeId});
+  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?$i18n{themeId});
 }
 
 html[bookmarkbarattached='true'] {
-  background-position: ${backgroundBarAttached};
+  background-position: $i18n{backgroundBarAttached};
 }
 
 body {
-  color: ${colorTextRgba};
+  color: $i18n{colorTextRgba};
   height: 100%;
   overflow: auto;
 }
 
 #attribution,
 [is='action-link'] {
-  color: ${colorTextLight};
+  color: $i18n{colorTextLight};
 }
 
 [is='action-link']:active {
-  color: ${colorTextRgba};
+  color: $i18n{colorTextRgba};
 }
 
 .page-switcher {
-  color: rgba(${colorText}, 0.5);
+  color: rgba($i18n{colorText}, 0.5);
 }
 
 .page-switcher:hover,
 .page-switcher:focus,
 .page-switcher.drag-target {
-  background-color: rgba(${colorText}, 0.06);
+  background-color: rgba($i18n{colorText}, 0.06);
 }
 
 /* Only change the background to a gradient when a promo is showing. */
@@ -55,34 +55,34 @@ body {
 .showing-login-area #page-switcher-end:focus,
 .showing-login-area #page-switcher-end.drag-target {
   background: linear-gradient(top,
-      rgba(${colorText}, 0) 0,
-      rgba(${colorText}, .01) 60px,
-      rgba(${colorText}, .06) 183px);
+      rgba($i18n{colorText}, 0) 0,
+      rgba($i18n{colorText}, .01) 60px,
+      rgba($i18n{colorText}, .06) 183px);
 }
 
 .tile-page-scrollbar {
-  background-color: ${colorTextLight};
+  background-color: $i18n{colorTextLight};
 }
 
 /* Footer *********************************************************************/
 
 #footer-border {
   background: linear-gradient(left,
-      rgba(${colorSectionBorder}, 0.2),
-      rgba(${colorSectionBorder}, 0.3) 20%,
-      rgba(${colorSectionBorder}, 0.3) 80%,
-      rgba(${colorSectionBorder}, 0.2));
+      rgba($i18n{colorSectionBorder}, 0.2),
+      rgba($i18n{colorSectionBorder}, 0.3) 20%,
+      rgba($i18n{colorSectionBorder}, 0.3) 80%,
+      rgba($i18n{colorSectionBorder}, 0.2));
 }
 
 .dot input:focus {
-  background-color: ${colorBackground};
+  background-color: $i18n{colorBackground};
 }
 
 .thumbnail-wrapper {
   /* This shows through at the (rounded) thumbnail's corners. */
-  background-color: ${colorSectionBorder};
+  background-color: $i18n{colorSectionBorder};
 }
 
 .filler .thumbnail {
-  border-color: ${colorBackground};
+  border-color: $i18n{colorBackground};
 }

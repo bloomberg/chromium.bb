@@ -16,12 +16,15 @@
 
 namespace ui {
 
+// Map of strings for template replacement in |ReplaceTemplateExpressions|.
+typedef std::map<const std::string, std::string> TemplateReplacements;
+
 // Replace ${foo} in the format string with the value for the foo key in
 // |subst|.  If the key is not found in the |substitutions| that item will
 // be unaltered.
 UI_BASE_EXPORT std::string ReplaceTemplateExpressions(
     base::StringPiece format_string,
-    const std::map<base::StringPiece, std::string>& substitutions);
+    const TemplateReplacements& substitutions);
 
 }  // namespace ui
 
