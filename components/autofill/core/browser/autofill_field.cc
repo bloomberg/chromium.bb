@@ -196,49 +196,65 @@ bool FillCountrySelectControl(const base::string16& value,
   return false;
 }
 
+// Attempt to fill the user's expiration month |value| inside the <select>
+// |field|. Since |value| is well defined but the website's |field| option
+// values may not be, some heuristics are run to cover all observed cases.
 bool FillExpirationMonthSelectControl(const base::string16& value,
                                       const std::string& app_locale,
                                       FormFieldData* field) {
-  int index = 0;
-  if (!StringToInt(value, &index) || index <= 0 || index > 12)
+  // |value| is defined to be between 1 and 12, inclusively.
+  int month = 0;
+  if (!StringToInt(value, &month) || month <= 0 || month > 12)
     return false;
 
-  if (field->option_values.size() == 12) {
-    // The select only contains the months.
-    // If the first value of the select is 0, decrement the value of the index
-    // so January is associated with 0 instead of 1.
+  // We trim the whitespace from the select values before attempting to convert
+  // them to months.
+  std::vector<base::string16> trimmed_values(field->option_values.size());
+  for (size_t i = 0; i < field->option_values.size(); ++i)
+    base::TrimWhitespace(field->option_values[i], base::TRIM_ALL,
+                         &trimmed_values[i]);
+
+  if (trimmed_values.size() == 12) {
+    // The select presumable only contains the year's months.
+    // If the first value of the select is 0, decrement the value of |month| so
+    // January is associated with 0 instead of 1.
     int first_value;
-    if (StringToInt(field->option_values[0], &first_value) && first_value == 0)
-      --index;
-  } else if (field->option_values.size() == 13) {
-    // The select uses the first value as a placeholder.
-    // If the first value of the select is 1, increment the value of the index
-    // to skip the placeholder value (January = 2).
+    if (StringToInt(trimmed_values[0], &first_value) && first_value == 0)
+      --month;
+  } else if (trimmed_values.size() == 13) {
+    // The select presumably uses the first value as a placeholder.
+    // If the first value of the select is 1, increment the value of |month| to
+    // skip the placeholder value (January = 2).
     int first_value;
-    if (StringToInt(field->option_values[0], &first_value) && first_value == 1)
-      ++index;
+    if (StringToInt(trimmed_values[0], &first_value) && first_value == 1)
+      ++month;
   }
 
-  for (const base::string16& option_value : field->option_values) {
+  // Attempt to match the user's |month| with the field's value attributes.
+  for (size_t i = 0; i < trimmed_values.size(); ++i) {
     int converted_value = 0;
-    if (CreditCard::ConvertMonth(option_value, app_locale, &converted_value) &&
-        index == converted_value) {
-      field->value = option_value;
+    // We use the trimmed value to match with |month|, but the original select
+    // value to fill the field (otherwise filling wouldn't work).
+    if (CreditCard::ConvertMonth(trimmed_values[i], app_locale,
+                                 &converted_value) &&
+        month == converted_value) {
+      field->value = field->option_values[i];
       return true;
     }
   }
 
+  // Attempt to match with each of the options' content.
   for (const base::string16& option_contents : field->option_contents) {
     int converted_contents = 0;
     if (CreditCard::ConvertMonth(option_contents, app_locale,
                                  &converted_contents) &&
-        index == converted_contents) {
+        month == converted_contents) {
       field->value = option_contents;
       return true;
     }
   }
 
-  return FillNumericSelectControl(index, field);
+  return FillNumericSelectControl(month, field);
 }
 
 // Returns true if the last two digits in |year| match those in |str|.

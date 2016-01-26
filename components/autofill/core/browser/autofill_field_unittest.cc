@@ -470,6 +470,9 @@ TEST_F(AutofillFieldTest, FillSelectControlWithExpirationMonth) {
       // Values start at 1.
       {{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
        NotNumericMonthsContentsNoPlaceholder()},
+      // Values start at 1 but single digits are whitespace padded!
+      {{" 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12"},
+       NotNumericMonthsContentsNoPlaceholder()},
       // Values start at 0.
       {{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
        NotNumericMonthsContentsNoPlaceholder()},
