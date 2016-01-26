@@ -13,6 +13,5 @@ const char kMetricUserPolicyInvalidations[] = "Enterprise.PolicyInvalidations";
 const char kMetricDevicePolicyRefresh[] = "Enterprise.DevicePolicyRefresh";
 const char kMetricDevicePolicyInvalidations[] =
     "Enterprise.DevicePolicyInvalidations";
-const char kMetricSystemLogPII[] = "Enterprise.SystemLogPIILeak";
 
 }  // namespace policy

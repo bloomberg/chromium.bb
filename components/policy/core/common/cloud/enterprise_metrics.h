@@ -265,24 +265,6 @@ enum PolicyInvalidationType {
   POLICY_INVALIDATION_TYPE_SIZE  // Must be the last.
 };
 
-// Types of sensitive data that is removed from system logs to upload.
-// This enum is used to define the buckets for an enumerated UMA histogram.
-// Hence,
-// (a) existing enumerated constants should never be deleted or reordered, and
-// (b) new constants should only be appended at the end of the enumeration.
-enum SystemLogPIIType {
-  // Found email address in system logs to  upload.
-  SYSTEM_LOG_PII_TYPE_EMAIL_ADDRESS = 0,
-  // Found IP address in system logs to upload.
-  SYSTEM_LOG_PII_TYPE_IP_ADDRESS = 1,
-  // Found Web URL in system logs to upload.
-  SYSTEM_LOG_PII_TYPE_WEB_URL = 2,
-  // Found SSID in system logs to upload.
-  SYSTEM_LOG_PII_TYPE_SSID = 3,
-
-  SYSTEM_LOG_PII_TYPE_SIZE  // Must be the last.
-};
-
 // Names for the UMA counters. They are shared from here since the events
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.
@@ -292,7 +274,6 @@ POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
 POLICY_EXPORT extern const char kMetricDevicePolicyRefresh[];
 POLICY_EXPORT extern const char kMetricDevicePolicyInvalidations[];
-POLICY_EXPORT extern const char kMetricSystemLogPII[];
 
 }  // namespace policy
 

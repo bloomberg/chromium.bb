@@ -21,6 +21,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace feedback {
+class AnonymizerTool;
+}
+
 namespace policy {
 
 // Class responsible for periodically uploading system logs, it handles the
@@ -78,9 +82,11 @@ class SystemLogUploader : public UploadJob::Delegate {
   void OnSuccess() override;
   void OnFailure(UploadJob::ErrorCode error_code) override;
 
-  // Remove lines from |data| that contain common PII (IP addresses, SSIDs, URLs
-  // e-mail addresses).
-  static std::string RemoveSensitiveData(const std::string& data);
+  // Remove lines from |data| that contain common PII (IP addresses, BSSIDs,
+  // SSIDs, URLs, e-mail addresses).
+  static std::string RemoveSensitiveData(
+      feedback::AnonymizerTool* const anonymizer,
+      const std::string& data);
 
  private:
   // Updates the system log upload enabled field from settings.

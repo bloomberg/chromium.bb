@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/system_log_uploader.h"
+#include "system_log_uploader.h"
 
 #include <utility>
 
@@ -10,11 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/location.h"
-#include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
@@ -22,11 +18,10 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/feedback/anonymizer_tool.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
-#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 // The maximum number of successive retries.
@@ -44,39 +39,12 @@ const char* const kSystemLogFileNames[] = {
     "/var/log/net.log",       "/var/log/net.1.log",
     "/var/log/ui/ui.LATEST",  "/var/log/update_engine.log"};
 
-const char kEmailAddress[] =
-    "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}\\@"
-    "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+";
-const char kIPAddress[] =
-    "((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])"
-    "\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2"
-    "[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]"
-    "[0-9]{2}|[1-9][0-9]|[0-9]))";
-const char kIPv6Address[] =
-    "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|"
-    "([0-9a-fA-F]{1,4}:){1,7}:|"
-    "([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|"
-    "([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|"
-    "([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|"
-    "([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|"
-    "([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|"
-    "[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|"
-    ":((:[0-9a-fA-F]{1,4}){1,7}|:)|"
-    "fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|"
-    "::(ffff(:0{1,4}){0,1}:){0,1}"
-    "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}"
-    "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|"
-    "([0-9a-fA-F]{1,4}:){1,4}:"
-    "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}"
-    "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))";
-
-const char kWebUrl[] = "(http|https|Http|Https|rtsp|Rtsp):\\/\\/";
-
-// Reads the system log files as binary files, stores the files as pairs
-// (file name, data) and returns. Called on blocking thread.
+// Reads the system log files as binary files, anonymizes data, stores the files
+// as pairs (file name, data) and returns. Called on blocking thread.
 scoped_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
   scoped_ptr<policy::SystemLogUploader::SystemLogs> system_logs(
       new policy::SystemLogUploader::SystemLogs());
+  feedback::AnonymizerTool anonymizer;
   for (auto const file_path : kSystemLogFileNames) {
     if (!base::PathExists(base::FilePath(file_path)))
       continue;
@@ -86,7 +54,8 @@ scoped_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
                  << file_path << std::endl;
     }
     system_logs->push_back(std::make_pair(
-        file_path, policy::SystemLogUploader::RemoveSensitiveData(data)));
+        file_path,
+        policy::SystemLogUploader::RemoveSensitiveData(&anonymizer, data)));
   }
   return system_logs;
 }
@@ -153,11 +122,6 @@ base::TimeDelta GetUploadFrequency() {
     }
   }
   return upload_frequency;
-}
-
-void RecordSystemLogPIILeak(policy::SystemLogPIIType type) {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricSystemLogPII, type,
-                            policy::SYSTEM_LOG_PII_TYPE_SIZE);
 }
 
 std::string GetUploadUrl() {
@@ -248,48 +212,11 @@ void SystemLogUploader::OnFailure(UploadJob::ErrorCode error_code) {
 }
 
 // static
-std::string SystemLogUploader::RemoveSensitiveData(const std::string& data) {
-  std::string result = "";
-  RE2 email_pattern(kEmailAddress), ipv4_pattern(kIPAddress),
-      ipv6_pattern(kIPv6Address), url_pattern(kWebUrl);
-
-  for (const std::string& line : base::SplitString(
-           data, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    // Email.
-    if (RE2::PartialMatch(line, email_pattern)) {
-      RecordSystemLogPIILeak(SYSTEM_LOG_PII_TYPE_EMAIL_ADDRESS);
-      continue;
-    }
-
-    // IPv4 address.
-    if (RE2::PartialMatch(line, ipv4_pattern)) {
-      RecordSystemLogPIILeak(SYSTEM_LOG_PII_TYPE_IP_ADDRESS);
-      continue;
-    }
-
-    // IPv6 address.
-    if (RE2::PartialMatch(line, ipv6_pattern)) {
-      RecordSystemLogPIILeak(SYSTEM_LOG_PII_TYPE_IP_ADDRESS);
-      continue;
-    }
-
-    // URL.
-    if (RE2::PartialMatch(line, url_pattern)) {
-      RecordSystemLogPIILeak(SYSTEM_LOG_PII_TYPE_WEB_URL);
-      continue;
-    }
-
-    // SSID.
-    if (line.find("SSID=") != std::string::npos) {
-      RecordSystemLogPIILeak(SYSTEM_LOG_PII_TYPE_SSID);
-      continue;
-    }
-
-    result += line + "\n";
-  }
-  return result;
+std::string SystemLogUploader::RemoveSensitiveData(
+    feedback::AnonymizerTool* const anonymizer,
+    const std::string& data) {
+  return anonymizer->Anonymize(data);
 }
-
 void SystemLogUploader::RefreshUploadSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called

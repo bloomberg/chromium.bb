@@ -10362,6 +10362,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Enterprise.SystemLogPIILeak" enum="SystemLogPIIType">
+  <obsolete>
+    Deprecated and removed from code as of 01/2016.
+  </obsolete>
   <owner>pbond@chromium.org</owner>
   <summary>
     Events for counting sensitive data occurrences in system logs to upload.
@@ -79678,6 +79681,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SystemLogPIIType" type="int">
+  <obsolete>
+    Deprecated and removed from code as of 01/2016.
+  </obsolete>
   <int value="0" label="Email address"/>
   <int value="1" label="IP address"/>
   <int value="2" label="Web URL"/>

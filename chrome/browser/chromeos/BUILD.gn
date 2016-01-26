@@ -62,6 +62,7 @@ source_set("chromeos") {
     "//components/certificate_reporting:encrypted_cert_logger_proto",
     "//components/drive",
     "//components/drive:drive_chromeos",
+    "//components/feedback",
     "//components/flags_ui",
     "//components/login",
     "//components/onc",

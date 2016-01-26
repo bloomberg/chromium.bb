@@ -10,6 +10,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "components/feedback/anonymizer_tool.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/http/http_request_headers.h"
@@ -288,23 +289,31 @@ TEST_F(SystemLogUploaderTest, DisableLogUpload) {
 
 // Test RemovePII function.
 TEST_F(SystemLogUploaderTest, TestPII) {
+  feedback::AnonymizerTool anonymizer;
   std::string data =
-      "aaaaaaaaSSID=123aaaaaaaaaaa\n"     // SSID.
+      "aaaaaaaa [SSID=123aaaaaa]aaaaa\n"  // SSID.
       "aaaaaaaahttp://tets.comaaaaaaa\n"  // URL.
       "aaaaaemail@example.comaaa\n"       //  Email address.
-      "example@@1234\n"          //  No PII, it is not valid email address.
-      "255.255.355.255\n"        // No PII, it is not valid IP address format.
-      "aaaa123.123.45.4aaa\n"    // IP address.
-      "11:11;11::11\n"           // IP address.
-      "11::11\n"                 // IP address.
-      "11:11:abcdef:0:0:0:0:0";  // No PII, it is not valid IP address format.
+      "example@@1234\n"           //  No PII, it is not valid email address.
+      "255.255.155.255\n"         // IP address.
+      "aaaa123.123.45.4aaa\n"     // IP address.
+      "11:11;11::11\n"            // IP address.
+      "11::11\n"                  // IP address.
+      "11:11:abcdef:0:0:0:0:0\n"  // No PII.
+      "aa:aa:aa:aa:aa:aa";        // MAC address (BSSID).
 
   std::string result =
+      "aaaaaaaa [SSID=1]aaaaa\n"
+      "aaaaaaaa<URL: 1>\n"
+      "<email: 1>\n"
       "example@@1234\n"
-      "255.255.355.255\n"
-      "11:11:abcdef:0:0:0:0:0\n";
-
-  EXPECT_EQ(result, SystemLogUploader::RemoveSensitiveData(data));
+      "<IPv4: 1>55\n"
+      "aaaa<IPv4: 2>aaa\n"
+      "11:11;<IPv6: 1>\n"
+      "<IPv6: 1>\n"
+      "11:11:abcdef:0:0:0:0:0\n"
+      "aa:aa:aa:00:00:01";
+  EXPECT_EQ(result, SystemLogUploader::RemoveSensitiveData(&anonymizer, data));
 }
 
 }  // namespace policy
