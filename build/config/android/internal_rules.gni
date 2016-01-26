@@ -764,6 +764,11 @@ template("package_apk") {
       _rebased_emma_device_jar = rebase_path(_emma_device_jar, root_build_dir)
       args += [ "--emma-device-jar=$_rebased_emma_device_jar" ]
     }
+
+    if (defined(invoker.uncompress_shared_libraries) &&
+        invoker.uncompress_shared_libraries) {
+      args += [ "--uncompress-shared-libraries" ]
+    }
   }
 }
 
@@ -824,6 +829,11 @@ template("finalize_apk") {
         "--rezip-apk-jar-path",
         rebase_path(_rezip_jar_path, root_build_dir),
       ]
+    }
+
+    if (defined(invoker.page_align_shared_libraries) &&
+        invoker.page_align_shared_libraries) {
+      args += [ "--page-align-shared-libraries" ]
     }
   }
 }
@@ -1061,6 +1071,7 @@ template("create_apk") {
                              "emma_instrument",
                              "native_lib_placeholders",
                              "native_libs_filearg",
+                             "uncompress_shared_libraries",
                              "write_asset_list",
                            ])
     deps = _deps + [ ":${_package_resources_target_name}" ]
@@ -1080,6 +1091,7 @@ template("create_apk") {
                            [
                              "assets_build_config",
                              "emma_instrument",
+                             "uncompress_shared_libraries",
                            ])
     _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
     deps = _incremental_deps + [
@@ -1107,6 +1119,8 @@ template("create_apk") {
 
   _finalize_apk_rule_name = "${target_name}__finalize"
   finalize_apk(_finalize_apk_rule_name) {
+    forward_variables_from(invoker, [ "page_align_shared_libraries" ])
+
     input_apk_path = _packaged_apk_path
     output_apk_path = _final_apk_path
     keystore_path = _keystore_path

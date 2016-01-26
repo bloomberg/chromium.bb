@@ -57,6 +57,9 @@ def _ParseArgs(args):
                       default='[]')
   parser.add_argument('--emma-device-jar',
                       help='Path to emma_device.jar to include.')
+  parser.add_argument('--uncompress-shared-libraries',
+                      action='store_true',
+                      help='Uncompress shared libraries')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGypList(options.assets)
   options.uncompressed_assets = build_utils.ParseGypList(
@@ -206,7 +209,16 @@ def main(args):
         for path in native_libs:
           basename = os.path.basename(path)
           apk_path = 'lib/%s/%s' % (options.android_abi, basename)
-          build_utils.AddToZipHermetic(out_apk, apk_path, src_path=path)
+
+          compress = None
+          if (options.uncompress_shared_libraries and
+              os.path.splitext(basename)[1] == '.so'):
+            compress = False
+
+          build_utils.AddToZipHermetic(out_apk,
+                                       apk_path,
+                                       src_path=path,
+                                       compress=compress)
 
         for name in sorted(options.native_lib_placeholders):
           # Empty libs files are ignored by md5check, but rezip requires them

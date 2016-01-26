@@ -1707,8 +1707,10 @@ template("android_apk") {
                              "deps",
                              "extensions_to_not_compress",
                              "language_splits",
+                             "page_align_shared_libraries",
                              "public_deps",
                              "shared_resources",
+                             "uncompress_shared_libraries",
                              "write_asset_list",
                            ])
     apk_path = _final_apk_path

@@ -55,10 +55,17 @@ def JarSigner(key_path, key_name, key_passwd, unsigned_path, signed_path):
   build_utils.CheckOutput(sign_cmd)
 
 
-def AlignApk(zipalign_path, unaligned_path, final_path):
+def AlignApk(zipalign_path, package_align, unaligned_path, final_path):
   align_cmd = [
       zipalign_path,
-      '-f', '4',  # 4 bytes
+      '-f'
+      ]
+
+  if package_align:
+    align_cmd += ['-p']
+
+  align_cmd += [
+      '4',  # 4 bytes
       unaligned_path,
       final_path,
       ]
@@ -74,6 +81,9 @@ def main(args):
   parser.add_option('--rezip-apk-jar-path',
                     help='Path to the RezipApk jar file.')
   parser.add_option('--zipalign-path', help='Path to the zipalign tool.')
+  parser.add_option('--page-align-shared-libraries',
+                    action='store_true',
+                    help='Page align shared libraries.')
   parser.add_option('--unsigned-apk-path', help='Path to input unsigned APK.')
   parser.add_option('--final-apk-path',
       help='Path to output signed and aligned APK.')
@@ -100,6 +110,7 @@ def main(args):
     options.load_library_from_zip,
     options.key_name,
     options.key_passwd,
+    options.page_align_shared_libraries,
   ]
 
   build_utils.CallAndWriteDepfileIfStale(
@@ -140,7 +151,10 @@ def FinalizeApk(options):
           options.rezip_apk_jar_path, signed_apk_path, options.final_apk_path)
     else:
       # Align uncompressed items to 4 bytes
-      AlignApk(options.zipalign_path, signed_apk_path, options.final_apk_path)
+      AlignApk(options.zipalign_path,
+               options.page_align_shared_libraries,
+               signed_apk_path,
+               options.final_apk_path)
 
 
 if __name__ == '__main__':
