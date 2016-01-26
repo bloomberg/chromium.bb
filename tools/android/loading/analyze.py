@@ -24,6 +24,7 @@ sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 import devil_chromium
 from pylib import constants
 
+import content_classification_lens
 import device_setup
 import loading_model
 import loading_trace
@@ -147,10 +148,14 @@ def _FullFetch(url, json_output, prefetch, local, prefetch_delay_seconds):
 
 # TODO(mattcary): it would be nice to refactor so the --noads flag gets dealt
 # with here.
-def _ProcessRequests(filename):
+def _ProcessRequests(filename, ad_rules_filename='',
+                     tracking_rules_filename=''):
   with open(filename) as f:
-    return loading_model.ResourceGraph(
-        loading_trace.LoadingTrace.FromJsonDict(json.load(f)))
+    trace = loading_trace.LoadingTrace.FromJsonDict(json.load(f))
+    content_lens = (
+        content_classification_lens.ContentClassificationLens.WithRulesFiles(
+            trace, ad_rules_filename, tracking_rules_filename))
+    return loading_model.ResourceGraph(trace, content_lens)
 
 
 def InvalidCommand(cmd):
@@ -185,8 +190,11 @@ def DoPng(arg_str):
   parser.add_argument('--eog', action='store_true')
   parser.add_argument('--highlight')
   parser.add_argument('--noads', action='store_true')
+  parser.add_argument('--ad_rules', default='')
+  parser.add_argument('--tracking_rules', default='')
   args = parser.parse_args(arg_str)
-  graph = _ProcessRequests(args.request_json)
+  graph = _ProcessRequests(
+      args.request_json, args.ad_rules, args.tracking_rules)
   if args.noads:
     graph.Set(node_filter=graph.FilterAds)
   tmp = tempfile.NamedTemporaryFile()

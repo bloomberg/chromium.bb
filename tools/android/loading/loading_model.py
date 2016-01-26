@@ -30,14 +30,17 @@ class ResourceGraph(object):
   Set parameters:
     cache_all: if true, assume zero loading time for all resources.
   """
-  def __init__(self, trace):
+  def __init__(self, trace, content_lens=None):
     """Create from a LoadingTrace (or json of a trace).
 
     Args:
       trace: (LoadingTrace/JSON) Loading trace or JSON of a trace.
+      content_lens: (ContentClassificationLens) Lens used to annotate the
+                    nodes, or None.
     """
     if type(trace) == dict:
       trace = loading_trace.LoadingTrace.FromJsonDict(trace)
+    self._content_lens = content_lens
     self._BuildDag(trace)
     self._global_start = min([n.StartTime() for n in self._node_info])
     # Sort before splitting children so that we can correctly dectect if a
@@ -339,6 +342,8 @@ class ResourceGraph(object):
         request: The request associated with this node.
       """
       self._request = request
+      self._is_ad = False
+      self._is_tracking = False
       self._node = node
       self._edge_costs = {}
       self._edge_annotations = {}
@@ -356,6 +361,21 @@ class ResourceGraph(object):
 
     def Index(self):
       return self._node.Index()
+
+    def SetRequestContent(self, is_ad, is_tracking):
+      """Sets the kind of content the request relates to.
+
+      Args:
+        is_ad: (bool) Whether the request is an Ad.
+        is_tracking: (bool) Whether the request is related to tracking.
+      """
+      (self._is_ad, self._is_tracking) = (is_ad, is_tracking)
+
+    def IsAd(self):
+      return self._is_ad
+
+    def IsTracking(self):
+      return self._is_tracking
 
     def Request(self):
       return self._request
@@ -481,6 +501,9 @@ class ResourceGraph(object):
       index_by_request[request] = next_index
       node = dag.Node(next_index)
       node_info = self._NodeInfo(node, request)
+      if self._content_lens:
+        node.SetRequestContent(self._content_lens.IsAdRequest(request),
+                               self._content_lens.IsTrackingRequest(request))
       self._nodes.append(node)
       self._node_info.append(node_info)
 
@@ -606,6 +629,8 @@ class ResourceGraph(object):
         if fragment in node_info.Url():
           styles.append('dotted')
           break
+    if node_info.IsAd() or node_info.IsTracking():
+      styles += ['bold', 'diagonals']
     return ('%d [label = "%s\\n%.2f->%.2f (%.2f)"; style = "%s"; '
             'fillcolor = %s; shape = %s];\n'
             % (index, node_info.ShortName(),
