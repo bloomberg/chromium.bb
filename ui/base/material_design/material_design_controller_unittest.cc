@@ -77,33 +77,33 @@ TEST_F(
             MaterialDesignController::GetMode());
 }
 
-// Verify command line value "" maps to Mode::NON_MATERIAL when the compile time
+// Verify command line value "" maps to the default mode when the compile time
 // flag is defined.
 TEST_F(
     MaterialDesignControllerTest,
     DisabledCommandLineValueMapsToNonMaterialModeWhenCompileTimeFlagEnabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTopChromeMD, "");
-  EXPECT_EQ(MaterialDesignController::Mode::NON_MATERIAL,
+  EXPECT_EQ(MaterialDesignController::DefaultMode(),
             MaterialDesignController::GetMode());
 }
 
-// Verify no command line value maps to Mode::NON_MATERIAL when the compile time
+// Verify the current mode is reported as the default mode when no command line
 // flag is defined.
 TEST_F(MaterialDesignControllerTest,
        NoCommandLineValueMapsToNonMaterialModeWhenCompileTimeFlagEnabled) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTopChromeMD));
-  EXPECT_EQ(MaterialDesignController::Mode::NON_MATERIAL,
+  EXPECT_EQ(MaterialDesignController::DefaultMode(),
             MaterialDesignController::GetMode());
 }
 
-// Verify an invalid command line value uses the default NON_MATERIAL mode.
+// Verify an invalid command line value uses the default mode.
 TEST_F(MaterialDesignControllerTest, InvalidCommandLineValue) {
   const std::string kInvalidValue = "1nvalid-valu3";
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTopChromeMD, kInvalidValue);
-  EXPECT_EQ(MaterialDesignController::Mode::NON_MATERIAL,
+  EXPECT_EQ(MaterialDesignController::DefaultMode(),
             MaterialDesignController::GetMode());
 }
 

@@ -376,13 +376,17 @@ const FeatureEntry::Choice kFillOnAccountSelectChoices[] = {
 
 #if defined(ENABLE_TOPCHROME_MD)
 const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
-    {IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL, "", ""},
-    {IDS_FLAGS_TOP_CHROME_MD_MATERIAL,
-     switches::kTopChromeMD,
-     switches::kTopChromeMDMaterial},
-    {IDS_FLAGS_TOP_CHROME_MD_MATERIAL_HYBRID,
-     switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialHybrid}};
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL,
+    switches::kTopChromeMD,
+    switches::kTopChromeMDNonMaterial },
+  { IDS_FLAGS_TOP_CHROME_MD_MATERIAL,
+    switches::kTopChromeMD,
+    switches::kTopChromeMDMaterial },
+  { IDS_FLAGS_TOP_CHROME_MD_MATERIAL_HYBRID,
+    switches::kTopChromeMD,
+    switches::kTopChromeMDMaterialHybrid },
+};
 #endif
 
 #if defined(OS_CHROMEOS)

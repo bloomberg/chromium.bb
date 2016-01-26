@@ -34,6 +34,9 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Returns true if the current mode is a material design variant.
   static bool IsModeMaterial();
 
+  // Returns the per-platform default material design variant.
+  static Mode DefaultMode();
+
  private:
   friend class test::MaterialDesignControllerTestAPI;
 

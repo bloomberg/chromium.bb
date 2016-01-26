@@ -28,6 +28,14 @@ bool MaterialDesignController::IsModeMaterial() {
          GetMode() == Mode::MATERIAL_HYBRID;
 }
 
+MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
+#if defined(OS_CHROMEOS)
+  return Mode::MATERIAL_NORMAL;
+#else
+  return Mode::NON_MATERIAL;
+#endif  // defined(OS_CHROMEOS)
+}
+
 void MaterialDesignController::InitializeMode() {
 #if !defined(ENABLE_TOPCHROME_MD)
   SetMode(Mode::NON_MATERIAL);
@@ -43,10 +51,12 @@ void MaterialDesignController::InitializeMode() {
   } else if (switch_value == switches::kTopChromeMDNonMaterial) {
     SetMode(Mode::NON_MATERIAL);
   } else {
-    LOG(ERROR) << "Invalid value='" << switch_value
-               << "' for command line switch '" << switches::kTopChromeMD
-               << "'.";
-    SetMode(Mode::NON_MATERIAL);
+    if (!switch_value.empty()) {
+      LOG(ERROR) << "Invalid value='" << switch_value
+                 << "' for command line switch '" << switches::kTopChromeMD
+                 << "'.";
+    }
+    SetMode(DefaultMode());
   }
 #endif  // !defined(ENABLE_TOPCHROME_MD)
 }
