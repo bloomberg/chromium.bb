@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "mkvparser.hpp"
@@ -94,7 +95,7 @@ class ParserTest : public testing::Test {
     EXPECT_EQ(kFrameLength, frame.len);
     std::memset(dummy_data_, -1, kFrameLength);
     frame.Read(&reader_, dummy_data_);
-    EXPECT_EQ(0, memcmp(gold_frame_, dummy_data_, kFrameLength));
+    EXPECT_EQ(0, std::memcmp(gold_frame_, dummy_data_, kFrameLength));
   }
 
   void CompareCuePointContents(const Track* const track,
@@ -114,7 +115,7 @@ class ParserTest : public testing::Test {
   bool is_reader_open_;
   Segment* segment_;
   std::string filename_;
-  std::int64_t pos_;
+  long long pos_;
   std::uint8_t dummy_data_[kFrameLength];
   std::uint8_t gold_frame_[kFrameLength];
 };
