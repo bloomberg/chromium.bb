@@ -385,11 +385,6 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   scoped_ptr<ChromotingHostContext> context_;
 
-  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
-
-  // Accessed on the UI thread.
-  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
-
   // XMPP server/remoting bot configuration (initialized from the command line).
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
   std::string directory_bot_jid_;
@@ -460,7 +455,14 @@ class HostProcess : public ConfigWatcher::Delegate,
   scoped_refptr<HostProcess> self_;
 
 #if defined(REMOTING_MULTI_PROCESS)
-  DesktopSessionConnector* desktop_session_connector_;
+  // Accessed on the UI thread.
+  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+
+  // AttachmentBroker for |daemon_channel_|.
+  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
+
+  // Owned as |desktop_environment_factory_|.
+  DesktopSessionConnector* desktop_session_connector_ = nullptr;
 #endif  // defined(REMOTING_MULTI_PROCESS)
 
   int* exit_code_out_;
@@ -477,7 +479,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
                          int* exit_code_out,
                          ShutdownWatchdog* shutdown_watchdog)
     : context_(std::move(context)),
-      attachment_broker_(IPC::AttachmentBrokerUnprivileged::CreateBroker()),
       state_(HOST_STARTING),
       use_service_account_(false),
       enable_vp9_(false),
@@ -492,9 +493,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       enable_window_capture_(false),
       window_id_(0),
       self_(this),
-#if defined(REMOTING_MULTI_PROCESS)
-      desktop_session_connector_(nullptr),
-#endif  // defined(REMOTING_MULTI_PROCESS)
       exit_code_out_(exit_code_out),
       signal_parent_(false),
       shutdown_watchdog_(shutdown_watchdog) {
@@ -504,7 +502,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
 HostProcess::~HostProcess() {
   // Verify that UI components have been torn down.
   DCHECK(!config_watcher_);
-  DCHECK(!daemon_channel_);
   DCHECK(!desktop_environment_factory_);
 
   // We might be getting deleted on one of the threads the |host_context| owns,
@@ -544,25 +541,14 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
                                               IPC::Channel::MODE_CLIENT,
                                               this,
                                               context_->network_task_runner());
+
+  attachment_broker_ = IPC::AttachmentBrokerUnprivileged::CreateBroker();
   if (attachment_broker_) {
     attachment_broker_->DesignateBrokerCommunicationChannel(
         daemon_channel_.get());
   }
 
 #else  // !defined(REMOTING_MULTI_PROCESS)
-  // Connect to the daemon process.
-  std::string channel_name =
-      cmd_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
-  if (!channel_name.empty()) {
-    daemon_channel_ =
-        IPC::ChannelProxy::Create(channel_name, IPC::Channel::MODE_CLIENT, this,
-                                  context_->network_task_runner().get());
-    if (attachment_broker_) {
-      attachment_broker_->DesignateBrokerCommunicationChannel(
-          daemon_channel_.get());
-    }
-  }
-
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
     host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
 
@@ -905,7 +891,7 @@ void HostProcess::StartOnUiThread() {
 
   // Create a desktop environment factory appropriate to the build type &
   // platform.
-#if defined(OS_WIN)
+#if defined(REMOTING_MULTI_PROCESS)
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
           context_->audio_task_runner(),
@@ -914,7 +900,7 @@ void HostProcess::StartOnUiThread() {
           context_->network_task_runner(),
           daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
-#else  // !defined(OS_WIN)
+#else  // !defined(REMOTING_MULTI_PROCESS)
   BasicDesktopEnvironmentFactory* desktop_environment_factory;
   if (enable_window_capture_) {
     desktop_environment_factory =
@@ -930,7 +916,7 @@ void HostProcess::StartOnUiThread() {
           context_->input_task_runner(),
           context_->ui_task_runner());
   }
-#endif  // !defined(OS_WIN)
+#endif  // !defined(REMOTING_MULTI_PROCESS)
   desktop_environment_factory->set_supports_touch_events(
       InputInjector::SupportsTouchEvents());
 
@@ -946,9 +932,13 @@ void HostProcess::ShutdownOnUiThread() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
   // Tear down resources that need to be torn down on the UI thread.
-  daemon_channel_.reset();
   desktop_environment_factory_.reset();
   policy_watcher_.reset();
+
+#if defined(REMOTING_MULTI_PROCESS)
+  attachment_broker_.reset();
+  daemon_channel_.reset();
+#endif  // defined(REMOTING_MULTI_PROCESS)
 
   // It is now safe for the HostProcess to be deleted.
   self_ = nullptr;
