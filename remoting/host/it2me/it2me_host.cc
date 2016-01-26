@@ -243,7 +243,7 @@ void It2MeHost::FinishConnect() {
           network_settings, protocol::TransportRole::SERVER);
 
   scoped_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(signal_strategy.get()));
+      new protocol::JingleSessionManager(signal_strategy_.get()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
