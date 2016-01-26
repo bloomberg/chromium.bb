@@ -428,6 +428,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     case Resource::Font:
     case Resource::Raw:
     case Resource::LinkPrefetch:
+    case Resource::LinkPreload:
     case Resource::LinkSubresource:
     case Resource::TextTrack:
     case Resource::ImportResource:
@@ -505,6 +506,11 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
             return ResourceRequestBlockedReasonCSP;
         break;
     }
+    case Resource::LinkPreload:
+        ASSERT(csp);
+        if (!shouldBypassMainWorldCSP && !csp->allowConnectToSource(url, redirectStatus, cspReporting))
+            return ResourceRequestBlockedReasonCSP;
+        break;
     case Resource::MainResource:
     case Resource::Raw:
     case Resource::LinkPrefetch:

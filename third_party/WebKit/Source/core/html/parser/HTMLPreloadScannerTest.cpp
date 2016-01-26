@@ -365,7 +365,7 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy)
 TEST_F(HTMLPreloadScannerTest, testLinkRelPreload)
 {
     TestCase testCases[] = {
-        {"http://example.test", "<link rel=preload href=bla>", "bla", "http://example.test/", Resource::LinkSubresource, 0},
+        {"http://example.test", "<link rel=preload href=bla>", "bla", "http://example.test/", Resource::LinkPreload, 0},
         {"http://example.test", "<link rel=preload href=bla as=script>", "bla", "http://example.test/", Resource::Script, 0},
         {"http://example.test", "<link rel=preload href=bla as=style>", "bla", "http://example.test/", Resource::CSSStyleSheet, 0},
         {"http://example.test", "<link rel=preload href=bla as=image>", "bla", "http://example.test/", Resource::Image, 0},

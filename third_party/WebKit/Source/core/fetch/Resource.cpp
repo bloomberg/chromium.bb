@@ -1115,6 +1115,8 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
         return "XSL stylesheet";
     case Resource::LinkPrefetch:
         return "Link prefetch resource";
+    case Resource::LinkPreload:
+        return "Link preload resource";
     case Resource::LinkSubresource:
         return "Link subresource";
     case Resource::TextTrack:
@@ -1149,6 +1151,7 @@ bool Resource::isLoadEventBlockingResourceType() const
         return true;
     case Resource::Raw:
     case Resource::LinkPrefetch:
+    case Resource::LinkPreload:
     case Resource::LinkSubresource:
     case Resource::TextTrack:
     case Resource::Media:
@@ -1182,6 +1185,8 @@ const char* Resource::resourceTypeName(Resource::Type type)
         return "XSLStyleSheet";
     case Resource::LinkPrefetch:
         return "LinkPrefetch";
+    case Resource::LinkPreload:
+        return "LinkPreload";
     case Resource::LinkSubresource:
         return "LinkSubresource";
     case Resource::TextTrack:

@@ -184,8 +184,7 @@ Resource::Type LinkLoader::getTypeFromAsAttribute(const String& as, Document* do
         return Resource::TextTrack;
     if (document && !as.isEmpty())
         document->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
-    // TODO(yoav): Is this correct? If as is missing or invalid, it should be subject to "connect-src" CSP directives.
-    return Resource::LinkSubresource;
+    return Resource::LinkPreload;
 }
 
 void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)

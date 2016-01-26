@@ -89,6 +89,7 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
     case Resource::Manifest:
         return ResourceLoadPriorityMedium;
     case Resource::LinkSubresource:
+    case Resource::LinkPreload:
     case Resource::TextTrack:
     case Resource::Media:
     case Resource::SVGDocument:
@@ -151,6 +152,8 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
         return WebURLRequest::RequestContextImport;
     case Resource::LinkPrefetch:
         return WebURLRequest::RequestContextPrefetch;
+    case Resource::LinkPreload:
+        return WebURLRequest::RequestContextSubresource;
     case Resource::LinkSubresource:
         return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
