@@ -213,6 +213,9 @@ inline bool equalIgnoringCase(const LChar* a, const AtomicString& b) { return eq
 inline bool equalIgnoringCase(const char* a, const AtomicString& b) { return equalIgnoringCase(reinterpret_cast<const LChar*>(a), b.impl()); }
 inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return equalIgnoringCase(a.impl(), b.impl()); }
 
+inline bool equalIgnoringASCIICase(const AtomicString& a, const AtomicString& b) { return equalIgnoringASCIICase(a.impl(), b.impl()); }
+inline bool equalIgnoringASCIICase(const AtomicString& a, const char* b) { return equalIgnoringASCIICase(a.impl(), reinterpret_cast<const LChar*>(b)); }
+
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
 WTF_EXPORT extern const AtomicString& nullAtom;

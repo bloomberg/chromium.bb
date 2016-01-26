@@ -513,21 +513,8 @@ inline bool equalIgnoringASCIICase(const CharacterTypeA* a, const CharacterTypeB
     return true;
 }
 
-template<typename CharacterTypeA, typename CharacterTypeB>
-inline bool equalIgnoringASCIICase(const CharacterTypeA& a, const CharacterTypeB& b)
-{
-    unsigned length = b.length();
-    if (a.length() != length)
-        return false;
-    if (a.is8Bit()) {
-        if (b.is8Bit())
-            return equalIgnoringASCIICase(a.characters8(), b.characters8(), length);
-        return equalIgnoringASCIICase(a.characters8(), b.characters16(), length);
-    }
-    if (b.is8Bit())
-        return equalIgnoringASCIICase(a.characters16(), b.characters8(), length);
-    return equalIgnoringASCIICase(a.characters16(), b.characters16(), length);
-}
+WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const StringImpl*);
+WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const LChar*);
 
 template<typename CharacterType>
 inline size_t find(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = 0)

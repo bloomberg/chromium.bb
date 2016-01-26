@@ -67,13 +67,13 @@ DEFINE_NODE_FACTORY(HTMLAreaElement)
 void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == shapeAttr) {
-        if (equalIgnoringCase(value, "default"))
+        if (equalIgnoringASCIICase(value, "default"))
             m_shape = Default;
-        else if (equalIgnoringCase(value, "circle"))
+        else if (equalIgnoringASCIICase(value, "circle"))
             m_shape = Circle;
-        else if (equalIgnoringCase(value, "poly"))
+        else if (equalIgnoringASCIICase(value, "poly"))
             m_shape = Poly;
-        else if (equalIgnoringCase(value, "rect"))
+        else if (equalIgnoringASCIICase(value, "rect"))
             m_shape = Rect;
         invalidateCachedRegion();
     } else if (name == coordsAttr) {
