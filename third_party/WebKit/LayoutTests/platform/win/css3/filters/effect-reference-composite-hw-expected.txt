@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 61: Error: Invalid value for <feComposite> attribute y="20\""
+CONSOLE ERROR: line 61: Error: <feComposite> attribute y: Expected length, "20\"".
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600

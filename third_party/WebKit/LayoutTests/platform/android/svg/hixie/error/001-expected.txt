@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 3: Error: <circle> attribute r: Expected length, "r".
+CONSOLE ERROR: line 3: Error: Invalid value for <circle> attribute r="r"
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
