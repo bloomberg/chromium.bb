@@ -6,12 +6,16 @@ import os
 import sys
 
 
+from core import path_util
 from chrome_telemetry_build import chromium_config
 sys.path.append(chromium_config.GetTelemetryDir())
 
 from telemetry import record_wpr
 
+# This is required to resolve importing davclient in tools/perf/third_party/
+# when record_wpr try to dynamically discover benchmark classes.
+import third_party  # pylint: disable=unused-import
+
 
 if __name__ == '__main__':
-  _perf_dir = os.path.dirname(__file__)
-  sys.exit(record_wpr.Main(_perf_dir))
+  sys.exit(record_wpr.Main(path_util.GetPerfDir()))
