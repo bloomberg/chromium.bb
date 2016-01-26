@@ -38,7 +38,7 @@ class AutofillPopupLayoutModel {
   static const int kIconPadding = 5;
 
   // The amount of padding at the end of the popup in pixels.
-  static const int kEndPadding = 3;
+  static const int kEndPadding = 18;
 
 #if !defined(OS_ANDROID)
   // Calculates the desired height of the popup based on its contents.

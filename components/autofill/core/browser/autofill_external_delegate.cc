@@ -303,6 +303,8 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   suggestions->push_back(Suggestion(l10n_util::GetStringUTF16(
       IsKeyboardAccessoryEnabled() ? IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION
                                    : IDS_AUTOFILL_OPTIONS_POPUP)));
+  suggestions->back().label =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP_LABEL);
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
   if (IsKeyboardAccessoryEnabled())
     suggestions->back().icon = base::ASCIIToUTF16("settings");

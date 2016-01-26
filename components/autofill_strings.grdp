@@ -132,14 +132,18 @@
     Privacy Policy
   </message>
 
+  <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+     Manage My Info
+   </message>
+
   <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
-      Chrome Autofill settings...
+    <message name="IDS_AUTOFILL_OPTIONS_POPUP_LABEL" desc="The label of the text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+      Chrome
     </message>
   </if>
   <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
-      Chromium Autofill settings...
+    <message name="IDS_AUTOFILL_OPTIONS_POPUP_LABEL" desc="The label of the text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+      Chromium
     </message>
   </if>
   <message name="IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION" desc="The text verbalised by a screen reader for the button that directs the user to the Autofill settings UI. This string is not displayed.">

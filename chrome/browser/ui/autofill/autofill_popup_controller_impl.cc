@@ -32,7 +32,7 @@ const int kNoSelection = -1;
 
 #if !defined(OS_ANDROID)
 // Size difference between name and label in pixels.
-const int kLabelFontSizeDelta = -2;
+const int kLabelFontSizeDelta = -3;
 #endif
 
 }  // namespace

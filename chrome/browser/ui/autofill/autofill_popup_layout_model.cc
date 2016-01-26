@@ -22,7 +22,7 @@ namespace autofill {
 namespace {
 
 // The vertical height of each row in pixels.
-const size_t kRowHeight = 24;
+const size_t kRowHeight = 44;
 
 // The vertical height of a separator in pixels.
 const size_t kSeparatorHeight = 1;
