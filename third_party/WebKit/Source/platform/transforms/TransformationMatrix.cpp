@@ -78,7 +78,7 @@ namespace blink {
 typedef double Vector4[4];
 typedef double Vector3[3];
 
-const double SMALL_NUMBER = 1.e-8;
+const double SmallNumber = 1.e-8;
 
 // inverse(original_matrix, inverse_matrix)
 //
@@ -220,7 +220,7 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix, TransformationM
     // then the inverse matrix is not unique.
     double det = determinant4x4(matrix);
 
-    if (fabs(det) < SMALL_NUMBER)
+    if (fabs(det) < SmallNumber)
         return false;
 
 #if CPU(ARM64)
@@ -1449,7 +1449,7 @@ bool TransformationMatrix::isInvertible() const
 
     double det = blink::determinant4x4(m_matrix);
 
-    if (fabs(det) < SMALL_NUMBER)
+    if (fabs(det) < SmallNumber)
         return false;
 
     return true;

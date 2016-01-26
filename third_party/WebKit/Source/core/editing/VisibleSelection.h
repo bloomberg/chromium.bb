@@ -40,8 +40,7 @@ namespace blink {
 
 class LayoutPoint;
 
-// TODO(yosin) We should use capitalized name instead of |SEL_DEFAULT_AFFINITY|.
-const TextAffinity SEL_DEFAULT_AFFINITY = TextAffinity::Downstream; // NOLINT
+const TextAffinity SelDefaultAffinity = TextAffinity::Downstream;
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
 
 // Listener of |VisibleSelection| modification. |didChangeVisibleSelection()|
@@ -66,8 +65,8 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 public:
     VisibleSelectionTemplate();
     VisibleSelectionTemplate(const PositionTemplate<Strategy>&, TextAffinity, bool isDirectional = false);
-    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
-    explicit VisibleSelectionTemplate(const EphemeralRangeTemplate<Strategy>&, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
+    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+    explicit VisibleSelectionTemplate(const EphemeralRangeTemplate<Strategy>&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
 
     explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);
     VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);

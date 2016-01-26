@@ -63,10 +63,11 @@ public:
     String url() const;
     bool withCredentials() const;
 
-    typedef short State;
-    static const State CONNECTING = 0;
-    static const State OPEN = 1;
-    static const State CLOSED = 2;
+    enum State : unsigned short {
+        CONNECTING = 0,
+        OPEN = 1,
+        CLOSED = 2
+    };
 
     State readyState() const;
 
