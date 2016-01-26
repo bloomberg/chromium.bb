@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <ios>
 #include <memory>
@@ -48,7 +49,7 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
     const std::size_t r1 = std::fread(buf1, 1, kBlockSize, f1.get());
     const std::size_t r2 = std::fread(buf2, 1, kBlockSize, f2.get());
 
-    if (r1 != r2 || memcmp(buf1, buf2, r1)) {
+    if (r1 != r2 || std::memcmp(buf1, buf2, r1)) {
       return 0;  // Files are not equal
     }
   } while (!std::feof(f1.get()) && !std::feof(f2.get()));
@@ -65,10 +66,12 @@ std::string GetTempFileName() {
 std::uint64_t GetFileSize(const std::string& file_name) {
   std::uint64_t file_size = 0;
 #ifndef _MSC_VER
-  struct stat st = {0};
+  struct stat st;
+  st.st_size = 0;
   if (stat(file_name.c_str(), &st) == 0) {
 #else
-  struct _stat st = {0};
+  struct _stat st;
+  st.st_size = 0;
   if (_stat(file_name.c_str(), &st) == 0) {
 #endif
     file_size = st.st_size;
