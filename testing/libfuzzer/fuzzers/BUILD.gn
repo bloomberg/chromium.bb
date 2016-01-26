@@ -303,3 +303,12 @@ fuzzer_test("libpng_read_fuzzer") {
     "//third_party/libpng",
   ]
 }
+
+fuzzer_test("icu_uregex_open_fuzzer") {
+  sources = [
+    "icu_uregex_open_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/icu",
+  ]
+}
