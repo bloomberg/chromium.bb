@@ -155,4 +155,4 @@ crbug.com/578297 [ Linux ] http/tests/media/media-source/mediasource-appendstrea
 # -----------------------------------------------------------------
 # Temmporary leaks that must be fixed in a reasonable timeline.
 # -----------------------------------------------------------------
-crbug.com/581210 editing/execCommand/outdent-collapse-table-crash.html
+crbug.com/581210 editing/execCommand/outdent-collapse-table-crash.html [ Leak ]
