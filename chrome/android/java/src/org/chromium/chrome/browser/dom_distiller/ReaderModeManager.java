@@ -85,7 +85,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
     private final int mHeaderBackgroundColor;
     private boolean mIsFullscreenModeEntered;
-    private boolean mIsInfobarContainerShown;
+    private boolean mIsInfoBarContainerShown;
     private boolean mIsFindToolbarShowing;
 
     public ReaderModeManager(TabModelSelector selector, ChromeActivity activity) {
@@ -258,7 +258,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
         // Temporarily hides the reader mode button while the infobars are shown.
         if (isFirst) {
-            mIsInfobarContainerShown = true;
+            mIsInfoBarContainerShown = true;
             closeReaderPanel(StateChangeReason.INFOBAR_SHOWN, false);
         }
     }
@@ -267,7 +267,17 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast) {
         // Re-shows the reader mode button if necessary once the infobars are dismissed.
         if (isLast) {
-            mIsInfobarContainerShown = false;
+            mIsInfoBarContainerShown = false;
+            requestReaderPanelShow(StateChangeReason.INFOBAR_HIDDEN);
+        }
+    }
+
+    @Override
+    public void onInfoBarContainerAttachedToWindow(boolean hasInfoBars) {
+        mIsInfoBarContainerShown = hasInfoBars;
+        if (mIsInfoBarContainerShown) {
+            closeReaderPanel(StateChangeReason.INFOBAR_SHOWN, false);
+        } else {
             requestReaderPanelShow(StateChangeReason.INFOBAR_HIDDEN);
         }
     }
@@ -394,7 +404,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         if (mReaderModePanel == null || !mTabStatusMap.containsKey(currentTabId)
                 || mTabStatusMap.get(currentTabId).getStatus() != POSSIBLE
                 || mTabStatusMap.get(currentTabId).isDismissed()
-                || mIsInfobarContainerShown
+                || mIsInfoBarContainerShown
                 || mIsFindToolbarShowing
                 || mIsFullscreenModeEntered
                 || DeviceClassManager.isAccessibilityModeEnabled(mChromeActivity)) {

@@ -78,6 +78,12 @@ public class InfoBarContainer extends SwipableOverlayView {
          * @param isLast Whether the infobar container is going to be empty
          */
         void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast);
+
+        /**
+         * Called when the InfobarContainer is attached to the window.
+         * @param hasInfobars True if infobar container has infobars to show.
+         */
+        void onInfoBarContainerAttachedToWindow(boolean hasInfobars);
     }
 
     /** Toggles visibility of the InfoBarContainer when the keyboard appears. */
@@ -353,6 +359,10 @@ public class InfoBarContainer extends SwipableOverlayView {
             setVisibility(VISIBLE);
             setAlpha(0f);
             animate().alpha(1f).setDuration(REATTACH_FADE_IN_MS);
+        }
+        // Notify observers that the container has attached to the window.
+        for (InfoBarContainerObserver observer : mObservers) {
+            observer.onInfoBarContainerAttachedToWindow(!mInfoBars.isEmpty());
         }
     }
 
