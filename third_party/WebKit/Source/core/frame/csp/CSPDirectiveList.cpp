@@ -34,6 +34,11 @@ String getSha256String(const String& content)
     return "sha256-" + base64Encode(reinterpret_cast<char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
+template<typename CharType> inline bool isASCIIAlphanumericOrHyphen(CharType c)
+{
+    return isASCIIAlphanumeric(c) || c == '-';
+}
+
 } // namespace
 
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
@@ -719,7 +724,7 @@ String CSPDirectiveList::parseSuboriginName(const String& policy)
 
     const UChar* begin = position;
 
-    skipWhile<UChar, isASCIIAlphanumeric>(position, end);
+    skipWhile<UChar, isASCIIAlphanumericOrHyphen>(position, end);
     if (position != end && !isASCIISpace(*position)) {
         m_policy->reportInvalidSuboriginFlags("Invalid character \'" + String(position, 1) + "\' in suborigin.");
         return String();

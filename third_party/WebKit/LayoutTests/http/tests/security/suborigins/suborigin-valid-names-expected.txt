@@ -3,4 +3,7 @@ ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from a
 ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+ALERT: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 
