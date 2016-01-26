@@ -80,6 +80,8 @@ const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 // Methods
 const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
 const char kCheckLiveness[] = "CheckLiveness";
+const char kGetKioskAppRequiredPlatforVersion[] =
+    "GetKioskAppRequiredPlatformVersion";
 const char kLockScreen[] = "LockScreen";
 const char kSetDisplayPower[] = "SetDisplayPower";
 const char kSetDisplaySoftwareDimming[] = "SetDisplaySoftwareDimming";
