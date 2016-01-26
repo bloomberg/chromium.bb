@@ -22,6 +22,16 @@ enum BindingsPolicy {
   // metrics. (By default this isn't allowed unless the app has been started up
   // with the --enable-stats-collection-bindings switch.)
   BINDINGS_POLICY_STATS_COLLECTION = 1 << 2,
+  // Bindings that allows the JS content to access Mojo system API and
+  // ServiceRegistry modules. The system API modules are defined in
+  // //mojo/public/js and provide the ability to create Mojo primitives such as
+  // message and data pipes. The ServiceRegistry module (see
+  // //content/renderer/mojo/service_registry_js_wrapper.h) in turn allows these
+  // Mojo primitives to be used to connect to named services exposed either by
+  // the browser or testing code. These bindings should not be exposed to
+  // normal web contents and are intended only for use with WebUI and layout
+  // tests.
+  BINDINGS_POLICY_MOJO = 1 << 3,
 
 };
 

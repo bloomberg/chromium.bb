@@ -1087,7 +1087,7 @@ void RenderFrameImpl::Initialize() {
 
   if (IsMainFrame() &&
       RenderProcess::current()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) {
-    EnableMojoBindings();
+    EnableMojoBindings(false /* for_layout_tests */);
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -5754,12 +5754,12 @@ void RenderFrameImpl::SendUpdateState() {
       routing_id_, SingleHistoryItemToPageState(current_history_item_)));
 }
 
-void RenderFrameImpl::EnableMojoBindings() {
+void RenderFrameImpl::EnableMojoBindings(bool for_layout_tests) {
   // If an MojoBindingsController already exists for this RenderFrameImpl, avoid
   // creating another one. It is not kept as a member, as it deletes itself when
   // the frame is destroyed.
   if (!RenderFrameObserverTracker<MojoBindingsController>::Get(this))
-    new MojoBindingsController(this);
+    new MojoBindingsController(this, for_layout_tests);
 }
 
 void RenderFrameImpl::SendFailedProvisionalLoad(

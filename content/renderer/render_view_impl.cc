@@ -2361,7 +2361,13 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
     new WebUIExtensionData(this);
 
     if (main_render_frame_)
-      main_render_frame_->EnableMojoBindings();
+      main_render_frame_->EnableMojoBindings(false /* for_layout_tests */);
+  }
+
+  if ((enabled_bindings_flags & BINDINGS_POLICY_MOJO) &&
+      !(enabled_bindings_ & BINDINGS_POLICY_MOJO) &&
+      main_render_frame_) {
+    main_render_frame_->EnableMojoBindings(true /* for_layout_tests */);
   }
 
   enabled_bindings_ |= enabled_bindings_flags;

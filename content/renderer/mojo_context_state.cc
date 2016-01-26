@@ -6,8 +6,16 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <string>
+
 #include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
+#include "content/grit/content_resources.h"
+#include "content/public/common/content_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/resource_fetcher.h"
 #include "content/renderer/mojo_main_runner.h"
@@ -16,6 +24,7 @@
 #include "gin/per_context_data.h"
 #include "gin/public/context_holder.h"
 #include "gin/try_catch.h"
+#include "mojo/public/js/constants.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -40,10 +49,52 @@ void RunMain(base::WeakPtr<gin::Runner> runner,
   runner->Call(start, runner->global(), 0, NULL);
 }
 
+using ModuleSourceMap =
+    std::map<std::string, scoped_refptr<base::RefCountedMemory>>;
+
+base::LazyInstance<scoped_ptr<ModuleSourceMap>>::Leaky g_module_sources;
+
+scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
+    const std::string& path) {
+  static const struct {
+    const char* path;
+    const int id;
+  } kBuiltinModuleResources[] = {
+    { mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS },
+    { mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS },
+    { mojo::kCodecModuleName, IDR_MOJO_CODEC_JS },
+    { mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS },
+    { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },
+    { mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS },
+    { mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS },
+    { mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS },
+  };
+
+  scoped_ptr<ModuleSourceMap>& module_sources = g_module_sources.Get();
+  if (!module_sources) {
+    // Initialize the module source map on first access.
+    module_sources.reset(new ModuleSourceMap);
+    for (size_t i = 0; i < arraysize(kBuiltinModuleResources); ++i) {
+      const auto& resource = kBuiltinModuleResources[i];
+      scoped_refptr<base::RefCountedMemory> data =
+          GetContentClient()->GetDataResourceBytes(resource.id);
+      DCHECK_GT(data->size(), 0u);
+      module_sources->insert(std::make_pair(std::string(resource.path), data));
+    }
+  }
+
+  DCHECK(module_sources);
+  auto source_iter = module_sources->find(path);
+  if (source_iter == module_sources->end())
+    return nullptr;
+  return source_iter->second;
+}
+
 }  // namespace
 
 MojoContextState::MojoContextState(blink::WebFrame* frame,
-                                   v8::Local<v8::Context> context)
+                                   v8::Local<v8::Context> context,
+                                   bool for_layout_tests)
     : frame_(frame),
       module_added_(false),
       module_prefix_(frame_->securityOrigin().toString().utf8() + "/") {
@@ -54,7 +105,21 @@ MojoContextState::MojoContextState(blink::WebFrame* frame,
   gin::ModuleRegistry::From(context)->AddObserver(this);
   content::RenderFrame::FromWebFrame(frame)
       ->EnsureMojoBuiltinsAreAvailable(context_holder->isolate(), context);
-  gin::ModuleRegistry::InstallGlobals(context->GetIsolate(), context->Global());
+  v8::Local<v8::Object> install_target;
+  if (for_layout_tests) {
+    // In layout tests we install the module system under 'mojo.define'
+    // for now to avoid globally exposing something as generic as 'define'.
+    //
+    // TODO(rockot): Remove this if/when we can integrate gin + ES6 modules.
+    install_target = v8::Object::New(context->GetIsolate());
+    gin::SetProperty(context->GetIsolate(), context->Global(),
+                     gin::StringToSymbol(context->GetIsolate(), "mojo"),
+                     install_target);
+  } else {
+    // Otherwise we're fine installing a global 'define'.
+    install_target = context->Global();
+  }
+  gin::ModuleRegistry::InstallGlobals(context->GetIsolate(), install_target);
   // Warning |frame| may be destroyed.
   // TODO(sky): add test for this.
 }
@@ -81,7 +146,11 @@ void MojoContextState::FetchModules(const std::vector<std::string>& ids) {
   for (size_t i = 0; i < ids.size(); ++i) {
     if (fetched_modules_.find(ids[i]) == fetched_modules_.end() &&
         registry->available_modules().count(ids[i]) == 0) {
-      FetchModule(ids[i]);
+      scoped_refptr<base::RefCountedMemory> data = GetBuiltinModuleData(ids[i]);
+      if (data)
+        runner_->Run(std::string(data->front_as<char>(), data->size()), ids[i]);
+      else
+        FetchModule(ids[i]);
     }
   }
 }

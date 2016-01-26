@@ -28,7 +28,7 @@ class MojoBindingsController
     : public RenderFrameObserver,
       public RenderFrameObserverTracker<MojoBindingsController> {
  public:
-  explicit MojoBindingsController(RenderFrame* render_frame);
+  MojoBindingsController(RenderFrame* render_frame, bool for_layout_tests);
 
  private:
   ~MojoBindingsController() override;
@@ -43,6 +43,8 @@ class MojoBindingsController
   void DidFinishDocumentLoad() override;
   void DidCreateDocumentElement() override;
   void DidClearWindowObject() override;
+
+  const bool for_layout_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoBindingsController);
 };

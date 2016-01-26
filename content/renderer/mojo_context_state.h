@@ -33,7 +33,9 @@ class MojoMainRunner;
 // by way of gin. Non-builtin modules are downloaded by way of ResourceFetchers.
 class MojoContextState : public gin::ModuleRegistryObserver {
  public:
-  MojoContextState(blink::WebFrame* frame, v8::Local<v8::Context> context);
+  MojoContextState(blink::WebFrame* frame,
+                   v8::Local<v8::Context> context,
+                   bool for_layout_tests);
   ~MojoContextState() override;
 
   void Run();

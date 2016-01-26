@@ -654,8 +654,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void SendUpdateState();
 
   // Creates a MojoBindingsController to allow WebUI documents to communicate
-  // with the browser process.
-  void EnableMojoBindings();
+  // with the browser process. If |for_layout_tests| is true, the module system
+  // is exposed on a global "mojo" object rather than "define".
+  void EnableMojoBindings(bool for_layout_tests);
 
  protected:
   explicit RenderFrameImpl(const CreateParams& params);

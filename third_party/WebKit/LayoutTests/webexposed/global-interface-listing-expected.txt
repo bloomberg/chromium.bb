@@ -6681,6 +6681,7 @@ interface webkitURL
     attribute location
     attribute locationbar
     attribute menubar
+    attribute mojo
     attribute name
     attribute navigator
     attribute offscreenBuffering

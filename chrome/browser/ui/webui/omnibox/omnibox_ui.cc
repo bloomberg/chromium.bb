@@ -22,7 +22,6 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
   source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
   source->AddResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
                           IDR_OMNIBOX_MOJO_JS);
-  source->AddMojoResources();
   source->SetDefaultResource(IDR_OMNIBOX_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);

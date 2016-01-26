@@ -15,7 +15,6 @@
 #include "content/grit/content_resources.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/js/constants.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -137,24 +136,6 @@ void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
 void WebUIDataSourceImpl::SetRequestFilter(
     const WebUIDataSource::HandleRequestCallback& callback) {
   filter_callback_ = callback;
-}
-
-void WebUIDataSourceImpl::AddMojoResources() {
-  static const struct {
-    const char* path;
-    int id;
-  } resources[] = {
-      {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
-      {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
-      {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},
-      {mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS},
-      {mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS},
-      {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},
-      {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
-      {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
-  };
-  for (size_t i = 0; i < arraysize(resources); ++i)
-    AddResourcePath(resources[i].path, resources[i].id);
 }
 
 void WebUIDataSourceImpl::DisableReplaceExistingSource() {
