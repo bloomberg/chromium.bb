@@ -639,8 +639,8 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   // that the DisplayManager can track the |internal_display_info| as inactive
   // instead of non-existent.
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->UpdateDisplays(display_info_list_two_active);
-  display_manager->UpdateDisplays(display_info_list_one_active);
+  display_manager->UpdateDisplaysWith(display_info_list_two_active);
+  display_manager->UpdateDisplaysWith(display_info_list_one_active);
 
   test::ScopedSetInternalDisplayId set_internal(kInternalDisplayId);
 

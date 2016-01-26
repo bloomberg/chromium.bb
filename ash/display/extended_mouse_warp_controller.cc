@@ -52,11 +52,11 @@ ExtendedMouseWarpController::WarpRegion::WarpRegion(
     int64_t b_display_id,
     const gfx::Rect& a_indicator_bounds,
     const gfx::Rect& b_indicator_bounds)
-    : a_display_id(a_display_id),
-      b_display_id(b_display_id),
-      a_indicator_bounds(a_indicator_bounds),
-      b_indicator_bounds(b_indicator_bounds),
-      shared_display_edge_indicator(nullptr) {
+    : a_display_id_(a_display_id),
+      b_display_id_(b_display_id),
+      a_indicator_bounds_(a_indicator_bounds),
+      b_indicator_bounds_(b_indicator_bounds),
+      shared_display_edge_indicator_(nullptr) {
   // Initialize edge bounds from indicator bounds.
   aura::Window* a_window = GetRootWindowForDisplayId(a_display_id);
   aura::Window* b_window = GetRootWindowForDisplayId(b_display_id);
@@ -64,8 +64,10 @@ ExtendedMouseWarpController::WarpRegion::WarpRegion(
   AshWindowTreeHost* a_ash_host = GetRootWindowController(a_window)->ash_host();
   AshWindowTreeHost* b_ash_host = GetRootWindowController(b_window)->ash_host();
 
-  a_edge_bounds_in_native = GetNativeEdgeBounds(a_ash_host, a_indicator_bounds);
-  b_edge_bounds_in_native = GetNativeEdgeBounds(b_ash_host, b_indicator_bounds);
+  a_edge_bounds_in_native_ =
+      GetNativeEdgeBounds(a_ash_host, a_indicator_bounds);
+  b_edge_bounds_in_native_ =
+      GetNativeEdgeBounds(b_ash_host, b_indicator_bounds);
 }
 
 ExtendedMouseWarpController::WarpRegion::~WarpRegion() {}
@@ -88,18 +90,21 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
                     drag_source != nullptr);
     }
   } else {
+    // Make sure to set |a| as the primary display, and |b| as the secondary
+    // display. DisplayLayout::Position is defined in terms of primary.
     DisplayLayout::Position position =
         display_manager->GetCurrentDisplayLayout().position;
-    const gfx::Display& a = display_manager->GetDisplayAt(0);
-    const gfx::Display& b = display_manager->GetDisplayAt(1);
+    const gfx::Display& a = Shell::GetScreen()->GetPrimaryDisplay();
+    const gfx::Display& b = ScreenUtil::GetSecondaryDisplay();
 
     // TODO(oshima): Use ComputeBondary instead.
-    if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM)
+    if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM) {
       AddWarpRegion(CreateHorizontalEdgeBounds(a, b, position),
                     drag_source != nullptr);
-    else
+    } else {
       AddWarpRegion(CreateVerticalEdgeBounds(a, b, position),
                     drag_source != nullptr);
+    }
   }
 }
 
@@ -148,12 +153,12 @@ void ExtendedMouseWarpController::SetEnabled(bool enabled) {
 
 void ExtendedMouseWarpController::AddWarpRegion(
     scoped_ptr<WarpRegion> warp_region,
-    bool drag_source) {
-  if (drag_source) {
-    warp_region->shared_display_edge_indicator.reset(
+    bool has_drag_source) {
+  if (has_drag_source) {
+    warp_region->shared_display_edge_indicator_.reset(
         new SharedDisplayEdgeIndicator);
-    warp_region->shared_display_edge_indicator->Show(
-        warp_region->a_indicator_bounds, warp_region->b_indicator_bounds);
+    warp_region->shared_display_edge_indicator_->Show(
+        warp_region->a_indicator_bounds_, warp_region->b_indicator_bounds_);
   }
 
   warp_regions_.emplace_back(std::move(warp_region));
@@ -164,14 +169,14 @@ bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
     const gfx::Point& point_in_screen,
     bool update_mouse_location_now) {
   for (const scoped_ptr<WarpRegion>& warp : warp_regions_) {
-    bool in_a_edge = warp->a_edge_bounds_in_native.Contains(point_in_native);
-    bool in_b_edge = warp->b_edge_bounds_in_native.Contains(point_in_native);
+    bool in_a_edge = warp->a_edge_bounds_in_native_.Contains(point_in_native);
+    bool in_b_edge = warp->b_edge_bounds_in_native_.Contains(point_in_native);
     if (!in_a_edge && !in_b_edge)
       continue;
 
     // The mouse must move.
     aura::Window* dst_window = GetRootWindowForDisplayId(
-        in_a_edge ? warp->b_display_id : warp->a_display_id);
+        in_a_edge ? warp->b_display_id_ : warp->a_display_id_);
     AshWindowTreeHost* target_ash_host =
         GetRootWindowController(dst_window)->ash_host();
 

@@ -457,13 +457,8 @@ void WindowTreeHostManager::SetPrimaryDisplay(
                                        new_primary_display.GetWorkAreaInsets());
 
   // Update the dispay manager with new display info.
-  std::vector<DisplayInfo> display_info_list;
-  display_info_list.push_back(
-      display_manager->GetDisplayInfo(primary_display_id));
-  display_info_list.push_back(
-      display_manager->GetDisplayInfo(ScreenUtil::GetSecondaryDisplay().id()));
   GetDisplayManager()->set_force_bounds_changed(true);
-  GetDisplayManager()->UpdateDisplays(display_info_list);
+  GetDisplayManager()->UpdateDisplays();
   GetDisplayManager()->set_force_bounds_changed(false);
 }
 

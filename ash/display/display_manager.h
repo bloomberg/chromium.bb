@@ -225,7 +225,7 @@ class ASH_EXPORT DisplayManager
       const std::vector<DisplayInfo>& display_info_list);
 
   // Updates the internal display data and notifies observers about the changes.
-  void UpdateDisplays(const std::vector<DisplayInfo>& display_info_list);
+  void UpdateDisplaysWith(const std::vector<DisplayInfo>& display_info_list);
 
   // Updates current displays using current |display_info_|.
   void UpdateDisplays();

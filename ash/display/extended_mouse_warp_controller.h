@@ -52,7 +52,7 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
                            IndicatorBoundsTestThreeDisplays);
 
   // Defined in header file because tests need access.
-  struct WarpRegion {
+  class WarpRegion {
    public:
     WarpRegion(int64_t a_display_id,
                int64_t b_display_id,
@@ -60,35 +60,40 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
                const gfx::Rect& b_indicator_bounds);
     ~WarpRegion();
 
+    const gfx::Rect& a_indicator_bounds() { return a_indicator_bounds_; }
+    const gfx::Rect& b_indicator_bounds() { return b_indicator_bounds_; }
+
+   private:
+    friend class ExtendedMouseWarpController;
+
     // If the mouse cursor is in |a_edge_bounds_in_native|, then it will be
     // moved to |b_display_id|. Similarily, if the cursor is in
     // |b_edge_bounds_in_native|, then it will be moved to |a_display_id|.
 
     // The id for the displays. Used for warping the cursor.
-    int64_t a_display_id;
-    int64_t b_display_id;
+    int64_t a_display_id_;
+    int64_t b_display_id_;
 
-    gfx::Rect a_edge_bounds_in_native;
-    gfx::Rect b_edge_bounds_in_native;
+    gfx::Rect a_edge_bounds_in_native_;
+    gfx::Rect b_edge_bounds_in_native_;
 
     // The bounds for warp hole windows. These are kept in the instance for
     // testing.
-    gfx::Rect a_indicator_bounds;
-    gfx::Rect b_indicator_bounds;
+    gfx::Rect a_indicator_bounds_;
+    gfx::Rect b_indicator_bounds_;
 
     // Shows the area where a window can be dragged in to/out from another
     // display.
-    scoped_ptr<SharedDisplayEdgeIndicator> shared_display_edge_indicator;
+    scoped_ptr<SharedDisplayEdgeIndicator> shared_display_edge_indicator_;
 
-   private:
     DISALLOW_COPY_AND_ASSIGN(WarpRegion);
   };
 
   std::vector<scoped_ptr<WarpRegion>> warp_regions_;
 
   // Registers the WarpRegion; also displays a drag indicator on the screen if
-  // |drag_source| is true.
-  void AddWarpRegion(scoped_ptr<WarpRegion> region, bool drag_source);
+  // |has_drag_source| is true.
+  void AddWarpRegion(scoped_ptr<WarpRegion> region, bool has_drag_source);
 
   // Warps the mouse cursor to an alternate root window when the
   // mouse location in |event|, hits the edge of the event target's root and
