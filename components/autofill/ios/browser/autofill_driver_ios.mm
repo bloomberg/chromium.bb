@@ -8,6 +8,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 DEFINE_WEB_STATE_USER_DATA_KEY(autofill::AutofillDriverIOS);
 
@@ -96,6 +97,11 @@ void AutofillDriverIOS::RendererShouldPreviewFieldWithValue(
 }
 
 void AutofillDriverIOS::PopupHidden() {
+}
+
+gfx::RectF AutofillDriverIOS::TransformBoundingBoxToViewportCoordinates(
+    const gfx::RectF& bounding_box) {
+  return bounding_box;
 }
 
 }  // namespace autofill

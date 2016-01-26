@@ -168,6 +168,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void InsertVisualStateCallback(
       const VisualStateCallback& callback) override;
   bool IsRenderFrameLive() override;
+  RenderWidgetHostView* GetView() override;
 #if defined(OS_ANDROID)
   void ActivateNearestFindResult(int request_id, float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
@@ -251,9 +252,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // pointer to the RenderViewHost (which inherits RenderWidgetHost).
   RenderWidgetHostImpl* GetRenderWidgetHost();
 
-  // This returns the RenderWidgetHostView that can be used to control
-  // focus and visibility for this frame.
-  RenderWidgetHostView* GetView();
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The

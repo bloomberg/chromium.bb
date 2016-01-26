@@ -61,6 +61,8 @@ class ContentAutofillDriver : public AutofillDriver {
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
   void PopupHidden() override;
+  gfx::RectF TransformBoundingBoxToViewportCoordinates(
+      const gfx::RectF& bounding_box) override;
 
   // Handles a message that came from the associated render frame.
   bool HandleMessage(const IPC::Message& message);

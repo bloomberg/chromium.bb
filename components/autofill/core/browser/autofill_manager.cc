@@ -401,7 +401,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
 
   std::vector<Suggestion> suggestions;
 
-  external_delegate_->OnQuery(query_id, form, field, bounding_box);
+  gfx::RectF transformed_box =
+      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
+  external_delegate_->OnQuery(query_id, form, field, transformed_box);
 
   // Need to refresh models before using the form_event_loggers.
   bool is_autofill_possible = RefreshDataModels();

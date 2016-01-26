@@ -14,6 +14,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/screen.h"
@@ -682,10 +683,15 @@ uint32_t RenderWidgetHostViewBase::SurfaceIdNamespaceAtPoint(
   return 0;
 }
 
-void RenderWidgetHostViewBase::TransformPointToRootCoordSpace(
-    const gfx::Point& point,
-    gfx::Point* transformed_point) {
-  *transformed_point = point;
+gfx::Point RenderWidgetHostViewBase::TransformPointToRootCoordSpace(
+    const gfx::Point& point) {
+  return point;
+}
+
+gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
+    const gfx::PointF& point) {
+  return gfx::PointF(TransformPointToRootCoordSpace(
+      gfx::ToRoundedPoint(point)));
 }
 
 void RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(

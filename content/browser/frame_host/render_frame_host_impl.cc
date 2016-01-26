@@ -1327,9 +1327,9 @@ void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   // It is necessary to transform the coordinates to account for nested
   // RenderWidgetHosts, such as with out-of-process iframes.
   gfx::Point original_point(validated_params.x, validated_params.y);
-  gfx::Point transformed_point = original_point;
-  static_cast<RenderWidgetHostViewBase*>(GetView())
-      ->TransformPointToRootCoordSpace(original_point, &transformed_point);
+  gfx::Point transformed_point =
+      static_cast<RenderWidgetHostViewBase*>(GetView())
+          ->TransformPointToRootCoordSpace(original_point);
   validated_params.x = transformed_point.x();
   validated_params.y = transformed_point.y();
 

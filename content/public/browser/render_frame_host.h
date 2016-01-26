@@ -26,6 +26,7 @@ class Value;
 namespace content {
 class RenderProcessHost;
 class RenderViewHost;
+class RenderWidgetHostView;
 class ServiceRegistry;
 class SiteInstance;
 
@@ -72,6 +73,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the process for this frame.
   virtual RenderProcessHost* GetProcess() = 0;
+
+  // Returns the RenderWidgetHostView that can be used to control focus and
+  // visibility for this frame.
+  virtual RenderWidgetHostView* GetView() = 0;
 
   // Returns the current RenderFrameHost of the parent frame, or nullptr if
   // there is no parent. The result may be in a different process than the

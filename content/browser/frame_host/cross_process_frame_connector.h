@@ -101,9 +101,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   float device_scale_factor() const { return device_scale_factor_; }
   void GetScreenInfo(blink::WebScreenInfo* results);
   void UpdateCursor(const WebCursor& cursor);
-  void TransformPointToRootCoordSpace(const gfx::Point& point,
-                                      cc::SurfaceId surface_id,
-                                      gfx::Point* transformed_point);
+  gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point,
+                                            cc::SurfaceId surface_id);
 
   // Determines whether the root RenderWidgetHostView (and thus the current
   // page) has focus.

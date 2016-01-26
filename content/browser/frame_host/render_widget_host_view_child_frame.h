@@ -128,8 +128,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
-  void TransformPointToRootCoordSpace(const gfx::Point& point,
-                                      gfx::Point* transformed_point) override;
+  gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.

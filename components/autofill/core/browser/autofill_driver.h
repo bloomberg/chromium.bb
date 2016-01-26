@@ -17,6 +17,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace gfx {
+class RectF;
+}
+
 namespace autofill {
 
 class FormStructure;
@@ -89,6 +93,12 @@ class AutofillDriver {
 
   // Informs the renderer that the popup has been hidden.
   virtual void PopupHidden() = 0;
+
+  // Transform bounding box coordinates to real viewport coordinates. In
+  // the case of a page spanning multiple renderer processes, subframe
+  // renderers cannot do this transformation themselves.
+  virtual gfx::RectF TransformBoundingBoxToViewportCoordinates(
+      const gfx::RectF& bounding_box) = 0;
 };
 
 }  // namespace autofill

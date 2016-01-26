@@ -20,8 +20,10 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace autofill {
 
@@ -145,6 +147,19 @@ void ContentAutofillDriver::PopupHidden() {
   // will be cleared when the prompt closes.
   if (!autofill_manager_->IsShowingUnmaskPrompt())
     RendererShouldClearPreviewedForm();
+}
+
+gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
+    const gfx::RectF& bounding_box) {
+  gfx::Point orig_point(bounding_box.x(), bounding_box.y());
+  gfx::Point transformed_point;
+  transformed_point =
+      render_frame_host_->GetView()->TransformPointToRootCoordSpace(orig_point);
+
+  gfx::RectF new_box;
+  new_box.SetRect(transformed_point.x(), transformed_point.y(),
+                  bounding_box.width(), bounding_box.height());
+  return new_box;
 }
 
 bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {

@@ -88,6 +88,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
 
+  // This only needs to be overridden by RenderWidgetHostViewBase subclasses
+  // that handle content embedded within other RenderWidgetHostViews.
+  gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
+  gfx::PointF TransformPointToRootCoordSpaceF(
+      const gfx::PointF& point) override;
+
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
 
@@ -203,15 +209,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}
   virtual void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) {}
-
-  // If a RenderWidgetHost is dealing with points that are transformed from the
-  // root frame for a page (i.e. because its content is contained within
-  // that of another RenderWidgetHost), this provides a facility to convert
-  // a point from its own coordinate space to that of the root frame.
-  // This only needs to be overriden by RenderWidgetHostView subclasses
-  // that handle content embedded within other RenderWidgetHostViews.
-  virtual void TransformPointToRootCoordSpace(const gfx::Point& point,
-                                              gfx::Point* transformed_point);
 
   // Transform a point that is in the coordinate space of a Surface that is
   // embedded within the RenderWidgetHostViewBase's Surface to the

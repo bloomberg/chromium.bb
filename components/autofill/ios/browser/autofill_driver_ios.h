@@ -58,6 +58,8 @@ class AutofillDriverIOS : public AutofillDriver,
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
   void PopupHidden() override;
+  gfx::RectF TransformBoundingBoxToViewportCoordinates(
+      const gfx::RectF& bounding_box) override;
 
  private:
   AutofillDriverIOS(
