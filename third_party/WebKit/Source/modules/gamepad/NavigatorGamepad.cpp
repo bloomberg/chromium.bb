@@ -220,7 +220,7 @@ static bool isGamepadEvent(const AtomicString& eventType)
 void NavigatorGamepad::didAddEventListener(LocalDOMWindow*, const AtomicString& eventType)
 {
     if (isGamepadEvent(eventType)) {
-        if (page() && page()->visibilityState() == PageVisibilityStateVisible)
+        if (page() && page()->isPageVisible())
             startUpdatingIfAttached();
         m_hasEventListener = true;
     }
@@ -250,7 +250,7 @@ void NavigatorGamepad::didRemoveGamepadEventListeners()
 void NavigatorGamepad::pageVisibilityChanged()
 {
     // Inform the embedder whether it needs to provide gamepad data for us.
-    bool visible = page()->visibilityState() == PageVisibilityStateVisible;
+    bool visible = page()->isPageVisible();
     if (visible && (m_hasEventListener || m_gamepads))
         startUpdatingIfAttached();
     else

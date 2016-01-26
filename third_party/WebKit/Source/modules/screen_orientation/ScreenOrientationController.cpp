@@ -106,7 +106,7 @@ void ScreenOrientationController::updateOrientation()
 
 bool ScreenOrientationController::isActiveAndVisible() const
 {
-    return m_orientation && frame() && page() && page()->visibilityState() == PageVisibilityStateVisible;
+    return m_orientation && frame() && page() && page()->isPageVisible();
 }
 
 void ScreenOrientationController::pageVisibilityChanged()
@@ -230,7 +230,7 @@ void ScreenOrientationController::willDetachFrameHost()
 
 void ScreenOrientationController::notifyDispatcher()
 {
-    if (m_orientation && page()->visibilityState() == PageVisibilityStateVisible)
+    if (m_orientation && page()->isPageVisible())
         startUpdating();
     else
         stopUpdating();

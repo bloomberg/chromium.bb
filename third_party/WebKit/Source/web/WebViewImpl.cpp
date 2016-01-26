@@ -4296,8 +4296,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // propagated to the WebView in some circumstances.  This needs to
         // be refreshed here when setting a new root layer to avoid being
         // stuck in a presumed incorrectly invisible state.
-        bool visible = page()->visibilityState() == PageVisibilityStateVisible;
-        m_layerTreeView->setVisible(visible);
+        m_layerTreeView->setVisible(page()->isPageVisible());
     } else {
         m_rootGraphicsLayer = nullptr;
         m_rootLayer = nullptr;
@@ -4624,8 +4623,7 @@ void WebViewImpl::attachPaintArtifactCompositor()
 
     // TODO(jbroman): This is cargo-culted from setRootGraphicsLayer. Is it
     // necessary?
-    bool visible = page()->visibilityState() == PageVisibilityStateVisible;
-    m_layerTreeView->setVisible(visible);
+    m_layerTreeView->setVisible(page()->isPageVisible());
 }
 
 void WebViewImpl::detachPaintArtifactCompositor()

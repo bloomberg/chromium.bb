@@ -60,7 +60,7 @@ void PlatformEventController::pageVisibilityChanged()
     if (!m_hasEventListener)
         return;
 
-    if (page()->visibilityState() == PageVisibilityStateVisible)
+    if (page()->isPageVisible())
         startUpdating();
     else
         stopUpdating();

@@ -145,7 +145,7 @@ void NavigatorVibration::timerStopFired(Timer<NavigatorVibration>* timer)
 
 void NavigatorVibration::pageVisibilityChanged()
 {
-    if (page()->visibilityState() != PageVisibilityStateVisible)
+    if (!page()->isPageVisible())
         cancelVibration();
 }
 
@@ -176,7 +176,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
     if (!page)
         return false;
 
-    if (page->visibilityState() != PageVisibilityStateVisible)
+    if (!page->isPageVisible())
         return false;
 
     return NavigatorVibration::from(*page).vibrate(pattern);

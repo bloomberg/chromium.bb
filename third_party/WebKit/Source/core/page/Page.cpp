@@ -381,6 +381,11 @@ PageVisibilityState Page::visibilityState() const
     return m_visibilityState;
 }
 
+bool Page::isPageVisible() const
+{
+    return visibilityState() == PageVisibilityStateVisible;
+}
+
 bool Page::isCursorVisible() const
 {
     return m_isCursorVisible && settings().deviceSupportsMouse();

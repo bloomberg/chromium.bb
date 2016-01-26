@@ -1016,8 +1016,7 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
         TRACE_EVENT0("blink", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
         m_layerTreeView->setRootLayer(*m_rootLayer);
 
-        bool visible = page()->visibilityState() == PageVisibilityStateVisible;
-        m_layerTreeView->setVisible(visible);
+        m_layerTreeView->setVisible(page()->isPageVisible());
         updateLayerTreeDeviceScaleFactor();
         updateLayerTreeBackgroundColor();
         m_layerTreeView->setHasTransparentBackground(isTransparent());

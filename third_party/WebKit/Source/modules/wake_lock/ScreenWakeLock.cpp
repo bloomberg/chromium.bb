@@ -104,8 +104,7 @@ void ScreenWakeLock::notifyClient()
     if (!m_client)
         return;
 
-    bool visible = page() && page()->visibilityState() == PageVisibilityStateVisible;
-    m_client->requestKeepScreenAwake(m_keepAwake && visible);
+    m_client->requestKeepScreenAwake(m_keepAwake && page() && page()->isPageVisible());
 }
 
 } // namespace blink

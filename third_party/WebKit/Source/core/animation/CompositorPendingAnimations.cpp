@@ -49,7 +49,7 @@ void CompositorPendingAnimations::add(Animation* animation)
     if (document->view())
         document->view()->scheduleAnimation();
 
-    bool visible = document->page() && document->page()->visibilityState() == PageVisibilityStateVisible;
+    bool visible = document->page() && document->page()->isPageVisible();
     if (!visible && !m_timer.isActive()) {
         m_timer.startOneShot(0, BLINK_FROM_HERE);
     }

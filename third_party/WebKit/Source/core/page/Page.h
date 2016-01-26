@@ -187,8 +187,9 @@ public:
     static void allVisitedStateChanged(bool invalidateVisitedLinkHashes);
     static void visitedStateChanged(LinkHash visitedHash);
 
-    PageVisibilityState visibilityState() const;
     void setVisibilityState(PageVisibilityState, bool);
+    PageVisibilityState visibilityState() const;
+    bool isPageVisible() const;
 
     bool isCursorVisible() const;
     void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
