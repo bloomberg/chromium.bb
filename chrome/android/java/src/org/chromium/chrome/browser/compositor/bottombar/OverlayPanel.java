@@ -323,7 +323,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         content.setContentViewClient(new ContentViewClient() {
             @Override
             public int getDesiredWidthMeasureSpec() {
-                if (isFullscreenSizePanel()) {
+                if (isFullWidthSizePanel()) {
                     return super.getDesiredWidthMeasureSpec();
                 } else {
                     return MeasureSpec.makeMeasureSpec(
@@ -334,7 +334,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
             @Override
             public int getDesiredHeightMeasureSpec() {
-                if (isFullscreenSizePanel()) {
+                if (isFullWidthSizePanel()) {
                     return super.getDesiredHeightMeasureSpec();
                 } else {
                     return MeasureSpec.makeMeasureSpec(
@@ -391,7 +391,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     public void updateTopControlsState() {
         if (mContent == null) return;
 
-        if (isFullscreenSizePanel()) {
+        if (isFullWidthSizePanel()) {
             // Consider the ContentView height to be fullscreen, and inform the system that
             // the Toolbar is always visible (from the Compositor's perspective), even though
             // the Toolbar and Base Page might be offset outside the screen. This means the

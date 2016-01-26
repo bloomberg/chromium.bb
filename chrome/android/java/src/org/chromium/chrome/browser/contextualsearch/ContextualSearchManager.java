@@ -1121,8 +1121,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void onSelectionChanged(String selection) {
-        // Workaround to disable Contextual Search in HTML fullscreen mode. crbug.com/511977
-        if (!mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+        if (!mActivity.getFullscreenManager().isOverlayVideoMode()) {
             mSelectionController.handleSelectionChanged(selection);
             mSearchPanel.updateTopControlsState(TopControlsState.BOTH, true);
         }
@@ -1130,7 +1129,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void onSelectionEvent(int eventType, float posXPix, float posYPix) {
-        if (!mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+        if (!mActivity.getFullscreenManager().isOverlayVideoMode()) {
             mSelectionController.handleSelectionEvent(eventType, posXPix, posYPix);
         }
     }
@@ -1138,7 +1137,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @Override
     public void showUnhandledTapUIIfNeeded(final int x, final int y) {
         mDidBasePageLoadJustStart = false;
-        if (!mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+        if (!mActivity.getFullscreenManager().isOverlayVideoMode()) {
             mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
         }
     }

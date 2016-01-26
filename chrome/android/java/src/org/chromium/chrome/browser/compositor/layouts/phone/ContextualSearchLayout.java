@@ -78,13 +78,14 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
      * @param width  The new width in dp.
      * @param height The new height in dp.
      */
+    @Override
     protected void onSizeChanged(float width, float height) {
         if (mBaseTab != null) {
             OverlayPanel panel = mPanelManager.getActivePanel();
             if (panel != null) {
                 mBaseTab.setMaxContentWidth(width);
-                mBaseTab.setMaxContentHeight(panel.getMaximumHeight());
-                mBaseTab.setContentSize(width, panel.getMaximumHeight());
+                mBaseTab.setMaxContentHeight(panel.getTabHeight());
+                mBaseTab.setContentSize(width, panel.getTabHeight());
             }
         }
     }

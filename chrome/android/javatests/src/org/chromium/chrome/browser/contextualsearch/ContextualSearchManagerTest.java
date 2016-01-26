@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -2543,5 +2544,59 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         // Make sure we did not try to trigger translate.
         assertFalse(mManager.getRequest().isTranslationForced());
+    }
+
+    /**
+     * Tests that Contextual Search works in fullscreen. Specifically, tests that tapping a word
+     * peeks the panel, expanding the bar results in the bar ending at the correct spot in the page
+     * and tapping the base page closes the panel.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testTapContentAndExpandPanelInFullscreen()
+            throws InterruptedException, TimeoutException {
+        // Toggle tab to fulllscreen.
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(getActivity().getActivityTab(),
+                true, getActivity());
+
+        // Simulate a tap and assert that the panel peeks.
+        simulateTapSearch("search");
+
+        // Expand the panel and assert that it ends up in the right place.
+        tapPeekingBarToExpandAndAssert();
+        assertEquals(mManager.getContextualSearchPanel().getHeight(),
+                mManager.getContextualSearchPanel().getPanelHeightFromState(PanelState.EXPANDED));
+
+        // Tap the base page and assert that the panel is closed.
+        tapBasePageToClosePanel();
+    }
+
+    /**
+     * Tests that the Contextual Search panel is dismissed when entering or exiting fullscreen.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testPanelDismissedOnToggleFullscreen()
+            throws InterruptedException, TimeoutException {
+        // Simulate a tap and assert that the panel peeks.
+        simulateTapSearch("search");
+
+        // Toggle tab to fullscreen.
+        Tab tab = getActivity().getActivityTab();
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, true, getActivity());
+
+        // Assert that the panel is closed.
+        waitForPanelToClose();
+
+        // Simulate a tap and assert that the panel peeks.
+        simulateTapSearch("search");
+
+        // Toggle tab to non-fullscreen.
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, false, getActivity());
+
+        // Assert that the panel is closed.
+        waitForPanelToClose();
     }
 }

@@ -15,7 +15,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -27,6 +26,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -88,16 +88,12 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         Tab tab = getActivity().getActivityTab();
         final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
 
-        waitForFullscreenFlag(tab, false);
-        waitForPersistentFullscreen(delegate, false);
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, getActivity());
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
 
-        togglePersistentFullscreen(delegate, true);
-        waitForFullscreenFlag(tab, true);
-        waitForPersistentFullscreen(delegate, true);
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, true, getActivity());
 
-        togglePersistentFullscreen(delegate, false);
-        waitForFullscreenFlag(tab, false);
-        waitForPersistentFullscreen(delegate, false);
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, false, getActivity());
     }
 
     @LargeTest
@@ -111,12 +107,10 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         final Tab tab = getActivity().getActivityTab();
         final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
 
-        waitForFullscreenFlag(tab, false);
-        waitForPersistentFullscreen(delegate, false);
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, getActivity());
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
 
-        togglePersistentFullscreen(delegate, true);
-        waitForFullscreenFlag(tab, true);
-        waitForPersistentFullscreen(delegate, true);
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, true, getActivity());
 
         // There is a race condition in android when setting various system UI flags.
         // Adding this wait to allow the animation transitions to complete before continuing
@@ -131,8 +125,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
                         view.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_FULLSCREEN);
             }
         });
-        waitForFullscreenFlag(tab, true);
-        waitForPersistentFullscreen(delegate, true);
+        FullscreenTestUtils.waitForFullscreenFlag(tab, true, getActivity());
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
     }
 
     @LargeTest
@@ -150,12 +144,13 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
                 tab.getTabWebContentsDelegateAndroid();
 
         singleClickView(view);
-        waitForPersistentFullscreen(delegate, true);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
+
         waitForTopControlsPosition(-topControlsHeight);
 
         TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
         singleClickView(view);
-        waitForPersistentFullscreen(delegate, false);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
         waitForNoBrowserTopControlsOffset();
         waitForTopControlsPosition(0);
 
@@ -369,57 +364,6 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         dragTo(dragX, dragX, dragStartY, dragEndY, 100, downTime);
         dragEnd(dragX, dragEndY, downTime);
         waitForTopControlsPosition(expectedPosition);
-    }
-
-    private void togglePersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
-            final boolean state) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                delegate.toggleFullscreenModeForTab(state);
-            }
-        });
-    }
-
-    private static boolean isFlagSet(int flags, int flag) {
-        return (flags & flag) == flag;
-    }
-
-    private boolean isFullscreenFlagSet(final Tab tab, final boolean state) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            View view = tab.getContentViewCore().getContainerView();
-            int visibility = view.getSystemUiVisibility();
-            // SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN should only be used during the transition between
-            // fullscreen states, so it should always be cleared when fullscreen transitions are
-            // completed.
-            return (!isFlagSet(visibility, View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN))
-                    && (isFlagSet(visibility, View.SYSTEM_UI_FLAG_FULLSCREEN) == state);
-        } else {
-            WindowManager.LayoutParams attributes =
-                    getActivity().getWindow().getAttributes();
-            return isFlagSet(
-                    attributes.flags, WindowManager.LayoutParams.FLAG_FULLSCREEN) == state;
-        }
-    }
-
-    private void waitForFullscreenFlag(final Tab tab, final boolean state)
-            throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return isFullscreenFlagSet(tab, state);
-            }
-        });
-    }
-
-    private void waitForPersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
-            final boolean state) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return state == delegate.isFullscreenForTabOrPending();
-            }
-        });
     }
 
     private void waitForTopControlsPosition(final float position)

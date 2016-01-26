@@ -83,6 +83,16 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      */
     private boolean mIsAnimatingPanelClosing;
 
+    /**
+     * Whether the panel's expand animation is running.
+     */
+    private boolean mIsAnimatingPanelExpanding;
+
+    /**
+     * The reason for the panel expanding.
+     */
+    private StateChangeReason mPanelExpansionStateChangeReason;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -121,6 +131,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * @param reason The reason for the change of panel state.
      */
     protected void expandPanel(StateChangeReason reason) {
+        mIsAnimatingPanelExpanding = true;
+        mPanelExpansionStateChangeReason = reason;
         animatePanelToState(PanelState.EXPANDED, reason);
     }
 
@@ -161,6 +173,19 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
             animatePanelToState(PanelState.CLOSED, reason);
         } else {
             resizePanelToState(PanelState.CLOSED, reason);
+        }
+    }
+
+    @Override
+    public void onSizeChanged(float width, float height, boolean isToolbarShowing) {
+        super.onSizeChanged(width, height, isToolbarShowing);
+        // In fullscreen, when the panel is opened the bottom Android controls show causing
+        // a call to onSizeChanged(). Since the screen size changes, the height of the panel
+        // needs to be recalculated. If the expansion animation is running, cancel it and start
+        // a new one, so that the panel ends up in the right position.
+        if (mIsAnimatingPanelExpanding) {
+            cancelHeightAnimation();
+            expandPanel(mPanelExpansionStateChangeReason);
         }
     }
 
@@ -422,9 +447,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
             onPromoAcceptanceAnimationFinished();
         }
 
-        if (mIsAnimatingPanelClosing) {
-            mIsAnimatingPanelClosing = false;
-        }
+        mIsAnimatingPanelClosing = false;
+        mIsAnimatingPanelExpanding = false;
 
         // If animating to a particular PanelState, and after completing
         // resizing the Panel to its desired state, then the Panel's state

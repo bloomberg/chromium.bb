@@ -275,8 +275,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     private float mMaximumWidth;
     private float mMaximumHeight;
 
-    private boolean mIsFullscreenSizePanelForTesting;
-    private boolean mOverrideIsFullscreenSizePanelForTesting;
+    private boolean mIsFullWidthSizePanelForTesting;
+    private boolean mOverrideIsFullWidthSizePanelForTesting;
 
     /**
      * Called when the size of the view has changed.
@@ -285,32 +285,41 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @param height The new width in dp.
      * @param isToolbarShowing Whether the Toolbar is showing.
      */
-    public final void onSizeChanged(float width, float height, boolean isToolbarShowing) {
+    public void onSizeChanged(float width, float height, boolean isToolbarShowing) {
         mLayoutWidth = width;
         mLayoutHeight = height;
         mIsToolbarShowing = isToolbarShowing;
 
         mMaximumWidth = calculateOverlayPanelWidth();
         mMaximumHeight = getPanelHeightFromState(PanelState.MAXIMIZED);
+
+        // If the panel is closed, the height and offsets aren't changing. In a few tests, we get
+        // calls to onSizeChanged() when the panel isn't fully initialized, which causes the tests
+        // to fail if we try to call setPanelHeight().
+        if (mPanelState != PanelState.UNDEFINED && mPanelState != PanelState.CLOSED) {
+            setPanelHeight(getPanelHeightFromState(getPanelState()));
+            mOffsetX = calculateOverlayPanelX();
+            mOffsetY = calculateOverlayPanelY();
+        }
     }
 
     /**
-     * Overrides the FullscreenSizePanel state for testing.
+     * Overrides the FullWidthSizePanel state for testing.
      *
-     * @param isFullscreenSizePanel
+     * @param isFullWidthSizePanel
      */
     @VisibleForTesting
-    public void setIsFullscreenSizePanelForTesting(boolean isFullscreenSizePanel) {
-        mOverrideIsFullscreenSizePanelForTesting = true;
-        mIsFullscreenSizePanelForTesting = isFullscreenSizePanel;
+    public void setIsFullWidthSizePanelForTesting(boolean isFullWidthSizePanel) {
+        mOverrideIsFullWidthSizePanelForTesting = true;
+        mIsFullWidthSizePanelForTesting = isFullWidthSizePanel;
     }
 
     /**
-     * @return Whether the Panel is in fullscreen size.
+     * @return Whether the Panel is in full width size.
      */
-    protected boolean isFullscreenSizePanel() {
-        if (mOverrideIsFullscreenSizePanelForTesting) {
-            return mIsFullscreenSizePanelForTesting;
+    protected boolean isFullWidthSizePanel() {
+        if (mOverrideIsFullWidthSizePanelForTesting) {
+            return mIsFullWidthSizePanelForTesting;
         }
         return getFullscreenWidth() <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
     }
@@ -319,14 +328,29 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return Whether the narrow version of the Panel is supported, in any orientation.
      */
     protected boolean isNarrowSizePanelSupported() {
-        return !isFullscreenSizePanel() || getFullscreenHeight() > SMALL_PANEL_WIDTH_THRESHOLD_DP;
+        return !isFullWidthSizePanel() || getTabHeight() > SMALL_PANEL_WIDTH_THRESHOLD_DP;
+    }
+
+    /**
+     * @return The current X-position of the Overlay Panel.
+     */
+    protected float calculateOverlayPanelX() {
+        return isFullWidthSizePanel() ? 0.f
+                : Math.round((getFullscreenWidth() - calculateOverlayPanelWidth()) / 2.f);
+    }
+
+    /**
+     * @return The current Y-position of the Overlay Panel.
+     */
+    protected float calculateOverlayPanelY() {
+        return getTabHeight() - mHeight;
     }
 
     /**
      * @return The current width of the Overlay Panel.
      */
     protected float calculateOverlayPanelWidth() {
-        return isFullscreenSizePanel() ? getFullscreenWidth() : SMALL_PANEL_WIDTH_DP;
+        return isFullWidthSizePanel() ? getFullscreenWidth() : SMALL_PANEL_WIDTH_DP;
     }
 
     /**
@@ -376,9 +400,9 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * @return The fullscreen height.
+     * @return The height of the tab the panel is displayed on top of.
      */
-    private float getFullscreenHeight() {
+    public float getTabHeight() {
         // NOTE(mdjones): This value will always be the same for a particular orientation; it is
         // the content height + visible toolbar height.
         return mLayoutHeight + (getToolbarHeight() - getTopControlsOffsetDp());
@@ -387,7 +411,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     /**
      * @return The maximum height of the Overlay Panel in dps.
      */
-    public float getMaximumHeight() {
+    public float getMaximumPanelHeight() {
         return mMaximumHeight;
     }
 
@@ -426,7 +450,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return The height of the Overlay Panel Content View in pixels.
      */
     public int getContentViewHeightPx() {
-        float barExpandedHeight = isFullscreenSizePanel()
+        float barExpandedHeight = isFullWidthSizePanel()
                 ? getToolbarHeight() : mBarHeightPeeking;
         return Math.round((mMaximumHeight - barExpandedHeight) / mPxToDp);
     }
@@ -859,8 +883,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @param state The state whose height will be calculated.
      * @return The height of the Overlay Panel in dps for a given |state|.
      */
-    protected float getPanelHeightFromState(PanelState state) {
-        float fullscreenHeight = getFullscreenHeight();
+    public float getPanelHeightFromState(PanelState state) {
+        float tabHeight = getTabHeight();
         float panelHeight = 0;
 
         if (state == PanelState.UNDEFINED) {
@@ -870,17 +894,17 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         } else if (state == PanelState.PEEKED) {
             panelHeight = mBarHeightPeeking + getPeekPromoHeightPeekingPx() * mPxToDp;
         } else if (state == PanelState.EXPANDED) {
-            if (isFullscreenSizePanel()) {
-                panelHeight = fullscreenHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
+            if (isFullWidthSizePanel()) {
+                panelHeight = tabHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             } else {
-                panelHeight = (fullscreenHeight - mToolbarHeight)
+                panelHeight = (tabHeight - mToolbarHeight)
                         * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             }
         } else if (state == PanelState.MAXIMIZED) {
-            if (isFullscreenSizePanel()) {
-                panelHeight = fullscreenHeight;
+            if (isFullWidthSizePanel()) {
+                panelHeight = tabHeight;
             } else {
-                panelHeight = fullscreenHeight - mToolbarHeight;
+                panelHeight = tabHeight - mToolbarHeight;
             }
         }
 
@@ -1006,9 +1030,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private void updatePanelSize(float height, PanelState endState, float percentage) {
         mHeight = height;
-        mOffsetX = isFullscreenSizePanel() ? 0.f
-                : Math.round((getFullscreenWidth() - calculateOverlayPanelWidth()) / 2.f);
-        mOffsetY = getFullscreenHeight() - mHeight;
+        mOffsetX = calculateOverlayPanelX();
+        mOffsetY = calculateOverlayPanelY();
         mIsMaximized = height == getPanelHeightFromState(PanelState.MAXIMIZED);
     }
 
@@ -1215,7 +1238,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     private float getBarHeightExpanded() {
-        if (isFullscreenSizePanel()) {
+        if (isFullWidthSizePanel()) {
             return mBarHeightExpanded;
         } else {
             return mBarHeightPeeking;
@@ -1223,7 +1246,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     private float getBarHeightMaximized() {
-        if (isFullscreenSizePanel()) {
+        if (isFullWidthSizePanel()) {
             return mBarHeightMaximized;
         } else {
             return mBarHeightPeeking;
@@ -1312,7 +1335,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     protected float calculateBasePageTargetY(PanelState expandedState) {
         // Only a fullscreen wide Panel should offset the base page. A small panel should
         // always return zero to ensure the Base Page remains in the same position.
-        if (!isFullscreenSizePanel()) return 0.f;
+        if (!isFullWidthSizePanel()) return 0.f;
 
         // Convert from px to dp.
         final float selectionY = mBasePageSelectionYPx * mPxToDp;
@@ -1324,8 +1347,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         final float expandedHeight = getPanelHeightFromState(expandedState);
 
         // Calculate the offset to center the selection on the available area.
-        final float fullscreenHeight = getFullscreenHeight();
-        final float availableHeight = fullscreenHeight - expandedHeight;
+        final float tabHeight = getTabHeight();
+        final float availableHeight = tabHeight - expandedHeight;
         float offset = -selectionY + availableHeight / 2;
 
         // Make sure offset is negative to prevent Base Page from moving down,
@@ -1445,7 +1468,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
             final int maximumWidth = getMaximumWidthPx();
 
             // Adjust size for small Panel.
-            if (!isFullscreenSizePanel()) {
+            if (!isFullWidthSizePanel()) {
                 mPromoView.getLayoutParams().width = maximumWidth;
                 mPromoView.requestLayout();
             }

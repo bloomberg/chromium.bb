@@ -46,7 +46,7 @@ public class OverlayPanelBaseTest extends InstrumentationTestCase {
          * Override to return arbitrary test heights.
          */
         @Override
-        protected float getPanelHeightFromState(PanelState state) {
+        public float getPanelHeightFromState(PanelState state) {
             switch (state) {
                 case PEEKED:
                     return MOCK_PEEKED_HEIGHT;
