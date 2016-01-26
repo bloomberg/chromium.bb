@@ -558,6 +558,7 @@
                 '../crypto/crypto.gyp:crypto_nacl_win64',
                 '../ipc/ipc.gyp:ipc_win64',
                 '../sandbox/sandbox.gyp:sandbox_win64',
+                '../third_party/kasko/kasko.gyp:kasko_features',
               ],
               'defines': [
                 '<@(nacl_win64_defines)',
