@@ -66,6 +66,10 @@ std::string ChromeUpdateClientConfig::ExtraRequestParams() const {
   return impl_.ExtraRequestParams();
 }
 
+std::string ChromeUpdateClientConfig::GetDownloadPreference() const {
+  return std::string();
+}
+
 net::URLRequestContextGetter* ChromeUpdateClientConfig::RequestContext() const {
   return impl_.RequestContext();
 }

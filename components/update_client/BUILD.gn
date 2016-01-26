@@ -96,6 +96,7 @@ source_set("unit_tests") {
     "update_client_unittest.cc",
     "update_query_params_unittest.cc",
     "update_response_unittest.cc",
+    "utils_unittest.cc",
   ]
 
   deps = [

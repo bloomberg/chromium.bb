@@ -7,11 +7,18 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
+#if defined(OS_WIN)
+#include "chrome/installer/util/google_update_settings.h"
+#endif
 #include "components/component_updater/configurator_impl.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -37,6 +44,7 @@ class ChromeConfigurator : public update_client::Configurator {
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
+  std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<update_client::OutOfProcessPatcher> CreateOutOfProcessPatcher()
       const override;
@@ -104,6 +112,19 @@ std::string ChromeConfigurator::GetOSLongName() const {
 
 std::string ChromeConfigurator::ExtraRequestParams() const {
   return configurator_impl_.ExtraRequestParams();
+}
+
+std::string ChromeConfigurator::GetDownloadPreference() const {
+#if defined(OS_WIN)
+  // This group policy is supported only on Windows and only for computers
+  // which are joined to a Windows domain.
+  return base::win::IsEnrolledToDomain()
+             ? base::SysWideToUTF8(
+                   GoogleUpdateSettings::GetDownloadPreference())
+             : std::string("");
+#else
+  return std::string("");
+#endif
 }
 
 net::URLRequestContextGetter* ChromeConfigurator::RequestContext() const {

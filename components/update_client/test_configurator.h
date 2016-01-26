@@ -68,6 +68,7 @@ class TestConfigurator : public Configurator {
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
+  std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
   bool DeltasEnabled() const override;
@@ -77,6 +78,7 @@ class TestConfigurator : public Configurator {
 
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(int seconds);
+  void SetDownloadPreference(const std::string& download_preference);
 
  private:
   friend class base::RefCountedThreadSafe<TestConfigurator>;
@@ -87,6 +89,7 @@ class TestConfigurator : public Configurator {
 
   int initial_time_;
   int ondemand_time_;
+  std::string download_preference_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_;
 

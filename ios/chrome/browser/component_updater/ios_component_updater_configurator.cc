@@ -36,6 +36,7 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
+  std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<update_client::OutOfProcessPatcher> CreateOutOfProcessPatcher()
       const override;
@@ -103,6 +104,10 @@ std::string IOSConfigurator::GetOSLongName() const {
 
 std::string IOSConfigurator::ExtraRequestParams() const {
   return configurator_impl_.ExtraRequestParams();
+}
+
+std::string IOSConfigurator::GetDownloadPreference() const {
+  return configurator_impl_.GetDownloadPreference();
 }
 
 net::URLRequestContextGetter* IOSConfigurator::RequestContext() const {

@@ -787,6 +787,7 @@
       'update_client/update_client_unittest.cc',
       'update_client/update_query_params_unittest.cc',
       'update_client/update_response_unittest.cc',
+      'update_client/utils_unittest.cc',
     ],
     'upload_list_unittest_sources': [
       'upload_list/upload_list_unittest.cc',

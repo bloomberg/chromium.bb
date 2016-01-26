@@ -163,6 +163,10 @@ std::string ConfiguratorImpl::ExtraRequestParams() const {
   return extra_info_;
 }
 
+std::string ConfiguratorImpl::GetDownloadPreference() const {
+  return std::string();
+}
+
 net::URLRequestContextGetter* ConfiguratorImpl::RequestContext() const {
   return url_request_getter_;
 }

@@ -26,9 +26,11 @@ class ChannelInfo;
 class InstallationState;
 }
 
-// This class provides accessors to the Google Update 'ClientState' information
-// that recorded when the user downloads the chrome installer. It is
-// google_update.exe responsibility to write the initial values.
+// This class provides accessors to the Google Update group policies and
+// 'ClientState' information. The group policies are set using specific
+// administrative templates. The 'ClientState' information is recorded when the
+// user downloads the Chrome installer. It is google_update.exe responsibility
+// to write the initial values.
 class GoogleUpdateSettings {
  public:
   // Update policy constants defined by Google Update; do not change these.
@@ -44,6 +46,7 @@ class GoogleUpdateSettings {
   static const wchar_t kUpdatePolicyValue[];
   static const wchar_t kUpdateOverrideValuePrefix[];
   static const wchar_t kCheckPeriodOverrideMinutes[];
+  static const wchar_t kDownloadPreferencePolicyValue[];
   static const int kCheckPeriodOverrideMinutesDefault;
   static const int kCheckPeriodOverrideMinutesMax;
   static const GoogleUpdateSettings::UpdatePolicy kDefaultUpdatePolicy;
@@ -265,6 +268,14 @@ class GoogleUpdateSettings {
   // otherwise. Note that for Chromium builds, this returns true since Chromium
   // is assumed not to autoupdate.
   static bool ReenableAutoupdates();
+
+  // Returns a string if the corresponding Google Update group policy is set.
+  // Returns an empty string if no policy or an invalid policy is set.
+  // A valid policy for DownloadPreference is a string that matches the
+  // following regex:  `[a-zA-z]{0-32}`. The actual values for this policy
+  // are specific to Google Update and documented as part of the Google Update
+  // protocol.
+  static base::string16 GetDownloadPreference();
 
   // Records UMA stats about Chrome's update policy.
   static void RecordChromeUpdatePolicyHistograms();

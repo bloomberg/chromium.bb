@@ -164,7 +164,8 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
 
   return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
                               config.GetChannel(), config.GetLang(),
-                              config.GetOSLongName(), app_element, "");
+                              config.GetOSLongName(),
+                              config.GetDownloadPreference(), app_element, "");
 }
 
 // Sends a fire and forget ping. The instances of this class have no

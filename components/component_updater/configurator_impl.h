@@ -67,6 +67,10 @@ class ConfiguratorImpl {
   // XML element.
   std::string ExtraRequestParams() const;
 
+  // Provides a hint for the server to control the order in which multiple
+  // download urls are returned.
+  std::string GetDownloadPreference() const;
+
   // The source of contexts for all the url requests.
   net::URLRequestContextGetter* RequestContext() const;
 

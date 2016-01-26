@@ -990,6 +990,58 @@ TEST_F(GoogleUpdateSettingsTest, ExperimentsLabelHelperUser) {
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
+TEST_F(GoogleUpdateSettingsTest, GetDownloadPreference) {
+  RegKey policy_key;
+
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, GoogleUpdateSettings::kPoliciesKey,
+                      KEY_SET_VALUE) == ERROR_SUCCESS) {
+    policy_key.DeleteValue(
+        GoogleUpdateSettings::kDownloadPreferencePolicyValue);
+  }
+  policy_key.Close();
+
+  // When no policy is present expect to return an empty string.
+  EXPECT_TRUE(GoogleUpdateSettings::GetDownloadPreference().empty());
+
+  // Expect "cacheable" when the correct policy is present.
+  EXPECT_EQ(ERROR_SUCCESS, policy_key.Create(HKEY_LOCAL_MACHINE,
+                                             GoogleUpdateSettings::kPoliciesKey,
+                                             KEY_SET_VALUE));
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      policy_key.WriteValue(
+          GoogleUpdateSettings::kDownloadPreferencePolicyValue, L"cacheable"));
+  EXPECT_STREQ(L"cacheable",
+               GoogleUpdateSettings::GetDownloadPreference().c_str());
+
+  EXPECT_EQ(ERROR_SUCCESS,
+            policy_key.WriteValue(
+                GoogleUpdateSettings::kDownloadPreferencePolicyValue,
+                base::string16(32, L'a').c_str()));
+  EXPECT_STREQ(base::string16(32, L'a').c_str(),
+               GoogleUpdateSettings::GetDownloadPreference().c_str());
+
+  // Expect an empty string when an unsupported policy is set.
+  // It contains spaces.
+  EXPECT_EQ(ERROR_SUCCESS,
+            policy_key.WriteValue(
+                GoogleUpdateSettings::kDownloadPreferencePolicyValue, L"a b"));
+  EXPECT_TRUE(GoogleUpdateSettings::GetDownloadPreference().empty());
+
+  // It contains non alpha-numeric characters.
+  EXPECT_EQ(ERROR_SUCCESS,
+            policy_key.WriteValue(
+                GoogleUpdateSettings::kDownloadPreferencePolicyValue, L"<a>"));
+  EXPECT_TRUE(GoogleUpdateSettings::GetDownloadPreference().empty());
+
+  // It is too long.
+  EXPECT_EQ(ERROR_SUCCESS,
+            policy_key.WriteValue(
+                GoogleUpdateSettings::kDownloadPreferencePolicyValue,
+                base::string16(33, L'a').c_str()));
+  EXPECT_TRUE(GoogleUpdateSettings::GetDownloadPreference().empty());
+}
+
 // Test GoogleUpdateSettings::GetUninstallCommandLine at system- or user-level,
 // according to the param.
 class GetUninstallCommandLine : public GoogleUpdateSettingsTest,

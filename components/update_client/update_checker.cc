@@ -69,10 +69,10 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
     VLOG(1) << "Appending to update request: " << app;
   }
 
-  return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
-                              config.GetChannel(), config.GetLang(),
-                              config.GetOSLongName(), app_elements,
-                              additional_attributes);
+  return BuildProtocolRequest(
+      config.GetBrowserVersion().GetString(), config.GetChannel(),
+      config.GetLang(), config.GetOSLongName(), config.GetDownloadPreference(),
+      app_elements, additional_attributes);
 }
 
 class UpdateCheckerImpl : public UpdateChecker {

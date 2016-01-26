@@ -64,6 +64,7 @@ std::string BuildProtocolRequest(const std::string& browser_version,
                                  const std::string& channel,
                                  const std::string& lang,
                                  const std::string& os_long_name,
+                                 const std::string& download_preference,
                                  const std::string& request_body,
                                  const std::string& additional_attributes) {
   const std::string prod_id(
@@ -98,6 +99,9 @@ std::string BuildProtocolRequest(const std::string& browser_version,
   if (is_wow64)
     base::StringAppendF(&request, " wow64=\"1\"");
 #endif
+  if (!download_preference.empty())
+    base::StringAppendF(&request, " dlpref=\"%s\"",
+                        download_preference.c_str());
   base::StringAppendF(&request, ">");
 
   // HW platform information.

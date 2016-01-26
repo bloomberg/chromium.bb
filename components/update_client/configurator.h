@@ -77,6 +77,12 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // XML element.
   virtual std::string ExtraRequestParams() const = 0;
 
+  // Provides a hint for the server to control the order in which multiple
+  // download urls are returned. The hint may or may not be honored in the
+  // response returned by the server.
+  // Returns an empty string if no policy is in effect.
+  virtual std::string GetDownloadPreference() const = 0;
+
   // The source of contexts for all the url requests.
   virtual net::URLRequestContextGetter* RequestContext() const = 0;
 

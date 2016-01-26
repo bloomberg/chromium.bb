@@ -82,6 +82,10 @@ std::string TestConfigurator::ExtraRequestParams() const {
   return "extra=\"foo\"";
 }
 
+std::string TestConfigurator::GetDownloadPreference() const {
+  return download_preference_;
+}
+
 net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
   return context_.get();
 }
@@ -105,6 +109,11 @@ void TestConfigurator::SetOnDemandTime(int seconds) {
 
 void TestConfigurator::SetInitialDelay(int seconds) {
   initial_time_ = seconds;
+}
+
+void TestConfigurator::SetDownloadPreference(
+    const std::string& download_preference) {
+  download_preference_ = download_preference;
 }
 
 scoped_refptr<base::SequencedTaskRunner>

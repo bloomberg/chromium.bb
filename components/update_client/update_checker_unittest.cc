@@ -187,6 +187,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   // Sanity check the request.
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
                               "request protocol=\"3.0\" extra=\"params\""));
+  // The request must not contain any "dlpref" in the default case.
+  EXPECT_EQ(string::npos,
+            post_interceptor_->GetRequests()[0].find(" dlpref=\""));
   EXPECT_NE(
       string::npos,
       post_interceptor_->GetRequests()[0].find(
@@ -234,6 +237,30 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_EQ(403, error_);
   EXPECT_STREQ("network error", error_message_.c_str());
   EXPECT_EQ(0ul, results_.list.size());
+}
+
+TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  config_->SetDownloadPreference(string("cacheable"));
+
+  update_checker_ = UpdateChecker::Create(config_);
+
+  CrxUpdateItem item(BuildCrxUpdateItem());
+  std::vector<CrxUpdateItem*> items_to_check;
+  items_to_check.push_back(&item);
+
+  update_checker_->CheckForUpdates(
+      items_to_check, "extra=\"params\"",
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
+
+  RunThreads();
+
+  // The request must contain dlpref="cacheable".
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find(" dlpref=\"cacheable\""));
 }
 
 }  // namespace update_client
