@@ -20,6 +20,9 @@ SSLUITest.TestWSSInvalidCertAndGoForward
 # http://crbug.com/403007
 WorkerDevToolsSanityTest.InspectSharedWorker
 
+# http://crbug.com/432444
+WorkerDevToolsSanityTest.PauseInSharedWorkerInitialization
+
 # http://crbug.com/451991
 AppViewTest.TestAppViewMultipleConnects
 BrowserViewTest.DevToolsUpdatesBrowserWindow
