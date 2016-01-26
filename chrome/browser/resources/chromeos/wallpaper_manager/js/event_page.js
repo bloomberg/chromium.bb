@@ -296,11 +296,6 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
               Constants.CustomWallpaperThumbnailSuffix, '');
           WallpaperUtil.deleteWallpaperFromLocalFS(fileName);
         }
-      } else {  // detail.direction == 'local_to_remote'
-        if (detail.action == 'deleted') {
-          WallpaperUtil.deleteWallpaperFromSyncFS(detail.fileEntry.name);
-          WallpaperUtil.deleteWallpaperFromLocalFS(detail.fileEntry.name);
-        }
       }
     }
   });
