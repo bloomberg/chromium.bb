@@ -54,23 +54,6 @@
 namespace content {
 
 namespace {
-// ViewDelegate implementation for aura content shell
-class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
- public:
-  ShellViewsDelegateAura() : use_transparent_windows_(false) {
-  }
-
-  ~ShellViewsDelegateAura() override {}
-
-  void SetUseTransparentWindows(bool transparent) {
-    use_transparent_windows_ = transparent;
-  }
-
- private:
-  bool use_transparent_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegateAura);
-};
 
 // Model for the "Debug" menu
 class ContextMenuModel : public ui::SimpleMenuModel,
@@ -421,7 +404,7 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 #endif
-  views_delegate_ = new ShellViewsDelegateAura();
+  views_delegate_ = new views::DesktopTestViewsDelegate();
 }
 
 void Shell::PlatformExit() {
