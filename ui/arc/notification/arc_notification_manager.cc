@@ -87,4 +87,39 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
       ->SendNotificationEventToAndroid(key, ArcNotificationEvent::BODY_CLICKED);
 }
 
+void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
+    const std::string& key, int button_index) {
+  if (!items_.contains(key)) {
+    VLOG(3) << "Chrome requests to fire a click event on notification (key: "
+            << key << "), but it is gone.";
+    return;
+  }
+
+  arc::ArcNotificationEvent command;
+  switch (button_index) {
+    case 0:
+      command = ArcNotificationEvent::BUTTON1_CLICKED;
+      break;
+    case 1:
+      command = ArcNotificationEvent::BUTTON2_CLICKED;
+      break;
+    case 2:
+      command = ArcNotificationEvent::BUTTON3_CLICKED;
+      break;
+    case 3:
+      command = ArcNotificationEvent::BUTTON4_CLICKED;
+      break;
+    case 4:
+      command = ArcNotificationEvent::BUTTON5_CLICKED;
+      break;
+    default:
+      VLOG(3) << "Invalid button index (key: " << key << ", index: " <<
+          button_index << ").";
+      return;
+  }
+
+  arc_bridge_service()
+      ->notifications_instance()->SendNotificationEventToAndroid(key, command);
+}
+
 }  // namespace arc

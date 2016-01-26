@@ -35,6 +35,7 @@ class ArcNotificationItem {
   // Methods called from ArcNotificationItemDelegate:
   void Close(bool by_user);
   void Click();
+  void ButtonClick(int button_index);
 
  private:
   void OnImageDecoded(const SkBitmap& bitmap);

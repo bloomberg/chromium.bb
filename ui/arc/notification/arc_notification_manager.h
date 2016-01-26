@@ -37,6 +37,8 @@ class ArcNotificationManager : public ArcService,
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
   void SendNotificationClickedOnChrome(const std::string& key);
+  void SendNotificationButtonClickedOnChrome(
+      const std::string& key, int button_index);
 
  private:
   const AccountId main_profile_id_;

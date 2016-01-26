@@ -27,6 +27,11 @@ enum ArcNotificationType {
   MAX = PROGRESS
 };
 
+struct ArcNotificationButton {
+  // Title
+  string label;
+};
+
 struct ArcNotificationData {
   // Identifier of notification
   string key;
@@ -48,6 +53,8 @@ struct ArcNotificationData {
   int32 progress_current;
   // The maximum value of progress.
   int32 progress_max;
+  // Action buttons
+  array<ArcNotificationButton> buttons;
 };
 
 interface NotificationsHost {

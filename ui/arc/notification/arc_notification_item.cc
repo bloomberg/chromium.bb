@@ -60,6 +60,11 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
       item_->Click();
   }
 
+  void ButtonClick(int button_index) override {
+    if (item_)
+      item_->ButtonClick(button_index);
+  }
+
  private:
   // The destructor is private since this class is ref-counted.
   ~ArcNotificationDelegate() override {}
@@ -125,6 +130,11 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   DCHECK(ArcNotificationType_IsValidValue(data.type))
       << "Unsupported notification type: " << data.type;
 
+  for (size_t i = 0; i < data.buttons.size(); i++) {
+    rich_data.buttons.push_back(message_center::ButtonInfo(
+        base::UTF8ToUTF16(data.buttons.at(i)->label.get())));
+  }
+
   // The identifier of the notifier, which is used to distinguish the notifiers
   // in the message center.
   message_center::NotifierId notifier_id(
@@ -177,6 +187,11 @@ void ArcNotificationItem::Close(bool by_user) {
 
 void ArcNotificationItem::Click() {
   manager_->SendNotificationClickedOnChrome(notification_key_);
+}
+
+void ArcNotificationItem::ButtonClick(int button_index) {
+  manager_->SendNotificationButtonClickedOnChrome(
+      notification_key_, button_index);
 }
 
 void ArcNotificationItem::OnImageDecoded(const SkBitmap& bitmap) {
