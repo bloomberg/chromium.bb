@@ -876,9 +876,9 @@ crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
 
-crbug.com/578663 fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
-crbug.com/578663 fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/578663 virtual/display_list_2d_canvas/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
+crbug.com/578663 [ XP ] fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
+crbug.com/578663 [ XP ] fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
+crbug.com/578663 [ XP ] virtual/display_list_2d_canvas/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
 
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
