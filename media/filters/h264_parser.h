@@ -73,7 +73,14 @@ struct MEDIA_EXPORT H264SPS {
     kProfileIDCBaseline = 66,
     kProfileIDCConstrainedBaseline = kProfileIDCBaseline,
     kProfileIDCMain = 77,
+    kProfileIDScalableBaseline = 83,
+    kProfileIDScalableHigh = 86,
     kProfileIDCHigh = 100,
+    kProfileIDHigh10 = 110,
+    kProfileIDSMultiviewHigh = 118,
+    kProfileIDHigh422 = 122,
+    kProfileIDStereoHigh = 128,
+    kProfileIDHigh444Predictive = 244,
   };
 
   enum AspectRatioIdc {
