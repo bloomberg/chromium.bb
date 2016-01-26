@@ -11,6 +11,7 @@
        '--enable-platform-mode',
        '-e', 'local',
        '--apk-under-test', '<(PRODUCT_DIR)/apks/AndroidWebView.apk',
+       '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '../third_party/proguard/lib/proguard.jar',
