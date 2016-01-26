@@ -8,6 +8,7 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_ui_touch_selection_unittests',
+      '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '<(PRODUCT_DIR)/bin/run_ui_touch_selection_unittests',
