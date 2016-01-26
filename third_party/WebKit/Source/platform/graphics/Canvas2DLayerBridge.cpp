@@ -520,8 +520,6 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
     ASSERT(!m_destructionInProgress);
     if (m_destructionInProgress)
         return false;
-    if (isHibernating())
-        return true;
     if (!m_layer)
         return true;
     if (!m_surface)

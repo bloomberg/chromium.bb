@@ -482,7 +482,6 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycle)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_TRUE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Test exiting hibernation
     OwnPtr<WebWaitableEvent> hibernationEndedEvent = adoptPtr(Platform::current()->createWaitableEvent());
@@ -492,7 +491,6 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycle)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     EXPECT_TRUE(bridge->isAccelerated());
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
     // without crashing due to thread checks
@@ -535,7 +533,6 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycleWithDeferredRenderingDisable
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_TRUE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Test exiting hibernation
     OwnPtr<WebWaitableEvent> hibernationEndedEvent = adoptPtr(Platform::current()->createWaitableEvent());
@@ -547,7 +544,6 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycleWithDeferredRenderingDisable
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_TRUE(bridge->isAccelerated());
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
     // without crashing due to thread checks
@@ -607,7 +603,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_TRUE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Rendering in the background -> temp switch to SW
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithSwitchToBackgroundRendering));
@@ -617,7 +612,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Unhide
     OwnPtr<WebWaitableEvent> unhideEvent = adoptPtr(Platform::current()->createWaitableEvent());
@@ -626,7 +620,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     EXPECT_TRUE(bridge->isAccelerated()); // Becoming visible causes switch back to GPU
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
     // without crashing due to thread checks
@@ -669,7 +662,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernatingWithDeferredR
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_TRUE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Rendering in the background -> temp switch to SW
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithSwitchToBackgroundRendering));
@@ -681,7 +673,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernatingWithDeferredR
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Unhide
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AtLeast(1));
@@ -692,7 +683,6 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernatingWithDeferredR
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_TRUE(bridge->isAccelerated()); // Becoming visible causes switch back to GPU
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
     // without crashing due to thread checks
@@ -733,7 +723,6 @@ TEST_F(Canvas2DLayerBridgeTest, DisableDeferredRenderingWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_TRUE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Disable deferral while background rendering
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithSwitchToBackgroundRendering));
@@ -743,7 +732,6 @@ TEST_F(Canvas2DLayerBridgeTest, DisableDeferredRenderingWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Unhide
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AtLeast(1));
@@ -754,7 +742,6 @@ TEST_F(Canvas2DLayerBridgeTest, DisableDeferredRenderingWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_TRUE(bridge->isAccelerated()); // Becoming visible causes switch back to GPU
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
     // without crashing due to thread checks
@@ -939,7 +926,6 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToVisibilityChange)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     EXPECT_TRUE(bridge->isAccelerated());
     EXPECT_FALSE(bridge->isHibernating());
-    EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
     // without crashing due to thread checks
