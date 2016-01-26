@@ -53,6 +53,9 @@ bool UseOnlyLocalHeuristicsForPasswordGeneration();
 // Whether the Tab Switcher is enabled for iPad or not.
 bool IsTabSwitcherEnabled();
 
+// Whether the reading list is enabled.
+bool IsReadingListEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

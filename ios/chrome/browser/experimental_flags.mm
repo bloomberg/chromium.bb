@@ -28,6 +28,7 @@ NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 const char* const kWKWebViewTrialName = "IOSUseWKWebView";
+NSString* const kEnableReadingList = @"EnableReadingList";
 
 enum class WKWebViewEligibility {
   // UNSET indicates that no explicit call to set eligibility has been made,
@@ -228,6 +229,10 @@ bool IsTabSwitcherEnabled() {
   std::string group_name = base::FieldTrialList::FindFullName("IOSTabSwitcher");
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
+}
+
+bool IsReadingListEnabled() {
+  return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableReadingList];
 }
 
 }  // namespace experimental_flags
