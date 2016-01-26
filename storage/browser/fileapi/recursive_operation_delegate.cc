@@ -14,15 +14,9 @@
 
 namespace storage {
 
-namespace {
-// Don't start too many inflight operations.
-const int kMaxInflightOperations = 5;
-}
-
 RecursiveOperationDelegate::RecursiveOperationDelegate(
     FileSystemContext* file_system_context)
     : file_system_context_(file_system_context),
-      inflight_operations_(0),
       canceled_(false),
       error_behavior_(FileSystemOperation::ERROR_BEHAVIOR_ABORT),
       failed_some_operations_(false) {
@@ -42,7 +36,6 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
     const StatusCallback& callback) {
   DCHECK(pending_directory_stack_.empty());
   DCHECK(pending_files_.empty());
-  DCHECK_EQ(0, inflight_operations_);
 
   error_behavior_ = error_behavior;
   callback_ = callback;
@@ -51,7 +44,6 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
 }
 
 void RecursiveOperationDelegate::TryProcessFile(const FileSystemURL& root) {
-  ++inflight_operations_;
   ProcessFile(root, base::Bind(&RecursiveOperationDelegate::DidTryProcessFile,
                                AsWeakPtr(), root));
 }
@@ -68,9 +60,7 @@ void RecursiveOperationDelegate::DidTryProcessFile(
     base::File::Error error) {
   DCHECK(pending_directory_stack_.empty());
   DCHECK(pending_files_.empty());
-  DCHECK_EQ(1, inflight_operations_);
 
-  --inflight_operations_;
   if (canceled_ || error != base::File::FILE_ERROR_NOT_A_FILE) {
     Done(error);
     return;
@@ -85,11 +75,9 @@ void RecursiveOperationDelegate::ProcessNextDirectory() {
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK(!pending_directory_stack_.top().empty());
-  DCHECK_EQ(0, inflight_operations_);
 
   const FileSystemURL& url = pending_directory_stack_.top().front();
 
-  ++inflight_operations_;
   ProcessDirectory(
       url,
       base::Bind(
@@ -101,9 +89,7 @@ void RecursiveOperationDelegate::DidProcessDirectory(
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK(!pending_directory_stack_.top().empty());
-  DCHECK_EQ(1, inflight_operations_);
 
-  --inflight_operations_;
   if (canceled_ || error != base::File::FILE_OK) {
     Done(error);
     return;
@@ -123,7 +109,6 @@ void RecursiveOperationDelegate::DidReadDirectory(
     const FileEntryList& entries,
     bool has_more) {
   DCHECK(!pending_directory_stack_.empty());
-  DCHECK_EQ(0, inflight_operations_);
 
   if (canceled_ || error != base::File::FILE_OK) {
     Done(error);
@@ -151,7 +136,7 @@ void RecursiveOperationDelegate::DidReadDirectory(
 void RecursiveOperationDelegate::ProcessPendingFiles() {
   DCHECK(!pending_directory_stack_.empty());
 
-  if ((pending_files_.empty() || canceled_) && inflight_operations_ == 0) {
+  if (pending_files_.empty() || canceled_) {
     ProcessSubDirectory();
     return;
   }
@@ -160,12 +145,10 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
   if (canceled_)
     return;
 
-  // Run ProcessFile in parallel (upto kMaxInflightOperations).
+  // Run ProcessFile.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  while (!pending_files_.empty() &&
-         inflight_operations_ < kMaxInflightOperations) {
-    ++inflight_operations_;
+  if (!pending_files_.empty()) {
     current_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&RecursiveOperationDelegate::ProcessFile, AsWeakPtr(),
@@ -178,8 +161,6 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
 
 void RecursiveOperationDelegate::DidProcessFile(const FileSystemURL& url,
                                                 base::File::Error error) {
-  --inflight_operations_;
-
   if (error != base::File::FILE_OK) {
     if (error_behavior_ == FileSystemOperation::ERROR_BEHAVIOR_ABORT) {
       // If an error occurs, invoke Done immediately (even if there remain
@@ -198,7 +179,6 @@ void RecursiveOperationDelegate::DidProcessFile(const FileSystemURL& url,
 void RecursiveOperationDelegate::ProcessSubDirectory() {
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
-  DCHECK_EQ(0, inflight_operations_);
 
   if (canceled_) {
     Done(base::File::FILE_ERROR_ABORT);
@@ -220,7 +200,6 @@ void RecursiveOperationDelegate::ProcessSubDirectory() {
   }
 
   DCHECK(!pending_directory_stack_.top().empty());
-  ++inflight_operations_;
   PostProcessDirectory(
       pending_directory_stack_.top().front(),
       base::Bind(&RecursiveOperationDelegate::DidPostProcessDirectory,
@@ -232,9 +211,7 @@ void RecursiveOperationDelegate::DidPostProcessDirectory(
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK(!pending_directory_stack_.top().empty());
-  DCHECK_EQ(1, inflight_operations_);
 
-  --inflight_operations_;
   pending_directory_stack_.top().pop();
   if (canceled_ || error != base::File::FILE_OK) {
     Done(error);

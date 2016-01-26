@@ -619,8 +619,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   ASSERT_TRUE(helper.DirectoryExists(src));
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
+  // In the move operation, [file 0, file 2, file 3] are processed as LIFO.
+  // After file 3 is processed, file 2 is rejected by the validator and the
+  // operation fails. That is, only file 3 should be in dest.
   FileSystemTestCaseRecord kMoveDirResultCases[] = {
-    {false, FILE_PATH_LITERAL("file 0"), 38},
     {false, FILE_PATH_LITERAL("file 3"), 0},
   };
 

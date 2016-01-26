@@ -74,7 +74,7 @@ class STORAGE_EXPORT RecursiveOperationDelegate
   // ProcessDirectory is called first for the directory.
   // Then the directory contents are read (to obtain its sub directories and
   // files in it).
-  // ProcessFile is called for found files. This may run in parallel.
+  // ProcessFile is called for found files.
   // The same step is recursively applied to each subdirectory.
   // After all files and subdirectories in a directory are processed,
   // PostProcessDirectory is called for the directory.
@@ -91,11 +91,13 @@ class STORAGE_EXPORT RecursiveOperationDelegate
   // Then traverse order is:
   // ProcessFile(a_dir) (This should return File::FILE_NOT_A_FILE).
   // ProcessDirectory(a_dir).
-  // ProcessFile(b3_file), ProcessFile(b4_file). (in parallel).
+  // ProcessFile(b3_file).
+  // ProcessFile(b4_file).
   // ProcessDirectory(b1_dir).
   // ProcessFile(c2_file)
   // ProcessDirectory(c1_dir).
-  // ProcessFile(d1_file), ProcessFile(d2_file). (in parallel).
+  // ProcessFile(d1_file).
+  // ProcessFile(d2_file).
   // PostProcessDirectory(c1_dir)
   // PostProcessDirectory(b1_dir).
   // ProcessDirectory(b2_dir)
@@ -146,7 +148,6 @@ class STORAGE_EXPORT RecursiveOperationDelegate
   std::stack<FileSystemURL> pending_directories_;
   std::stack<std::queue<FileSystemURL> > pending_directory_stack_;
   std::queue<FileSystemURL> pending_files_;
-  int inflight_operations_;
   bool canceled_;
   ErrorBehavior error_behavior_;
   bool failed_some_operations_;
