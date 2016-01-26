@@ -599,6 +599,9 @@ class GceContext(object):
       zone: The zone that |operation| belongs to.
       timeout_sec: The maximum number of seconds to wait for.
       timeout_handler: A callable to be executed when timeout happens.
+
+    Raises:
+      Error when timeout happens or the operation fails.
     """
     get_request = self.gce_client.zoneOperations().get(
         project=self.project, zone=zone or self.zone, operation=operation)
@@ -614,6 +617,9 @@ class GceContext(object):
       region: The region that |operation| belongs to.
       timeout_sec: The maximum number of seconds to wait for.
       timeout_handler: A callable to be executed when timeout happens.
+
+    Raises:
+      Error when timeout happens or the operation fails.
     """
     get_request = self.gce_client.regionOperations().get(
         project=self.project, region=region or self.region, operation=operation)
@@ -628,6 +634,9 @@ class GceContext(object):
       operation: The GCE operation to wait for.
       timeout_sec: The maximum number of seconds to wait for.
       timeout_handler: A callable to be executed when timeout happens.
+
+    Raises:
+      Error when timeout happens or the operation fails.
     """
     get_request = self.gce_client.globalOperations().get(project=self.project,
                                                          operation=operation)
@@ -646,6 +655,9 @@ class GceContext(object):
         'DONE'.
       timeout_sec: The maximum number of seconds to wait for.
       timeout_handler: A callable to be executed when times out.
+
+    Raises:
+      Error when timeout happens or the operation fails.
     """
     def _IsDone():
       result = get_operation_request.execute()
@@ -661,7 +673,7 @@ class GceContext(object):
                    timeout, operation)
       timeout_util.WaitForReturnTrue(_IsDone, timeout, period=1)
     except timeout_util.TimeoutError:
-      if not timeout_handler:
+      if timeout_handler:
         timeout_handler()
       raise Error('Timeout wating for operation [%s] to complete' % operation)
 
