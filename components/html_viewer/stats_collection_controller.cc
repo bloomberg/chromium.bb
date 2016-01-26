@@ -35,11 +35,12 @@ void GetStartupPerformanceTimesCallbackImpl(
   startup_metric_utils::RecordMainEntryPointTime(
       base::Time::FromInternalValue(times->shell_main_entry_point_time));
 
-  // TODO(msw): Determine if this is the first run.
+  // TODO(msw): Determine if this is the first run and provide a PrefService
+  // to generate stats that span multiple startups.
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::FromInternalValue(
           times->browser_message_loop_start_ticks),
-      false);
+      false, nullptr);
 
   startup_metric_utils::RecordBrowserWindowDisplay(
       base::TimeTicks::FromInternalValue(times->browser_window_display_ticks));

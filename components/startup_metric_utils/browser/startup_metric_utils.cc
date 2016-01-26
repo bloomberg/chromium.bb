@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -181,30 +182,52 @@ void RecordSystemUptimeHistogram() {
 }
 
 // On Windows, records the number of hard-faults that have occurred in the
-// current chrome.exe process since it was started. This is a nop on other
-// platforms.
-void RecordHardFaultHistogram(bool is_first_run) {
+// current chrome.exe process since it was started. A version of the histograms
+// recorded in this method suffixed by |same_version_startup_count| will also be
+// recorded (unless |same_version_startup_count| is 0 which indicates it's
+// unknown). This is a nop on other platforms.
+void RecordHardFaultHistogram(int same_version_startup_count) {
 #if defined(OS_WIN)
   uint32_t hard_fault_count = 0;
 
-  // Don't log a histogram value if unable to get the hard fault count.
+  // Don't record histograms if unable to get the hard fault count.
   if (!GetHardFaultCountForCurrentProcess(&hard_fault_count))
     return;
+
+  std::string same_version_startup_count_suffix;
+  if (same_version_startup_count != 0) {
+    // Histograms below will be suffixed by |same_version_startup_count| up to
+    // |kMaxSameVersionCountRecorded|, higher counts will be grouped in the
+    // ".Over" suffix. Make sure to reflect changes to
+    // kMaxSameVersionCountRecorded in the "SameVersionStartupCounts" histogram
+    // suffix.
+    const int kMaxSameVersionCountRecorded = 9;
+    same_version_startup_count_suffix.push_back('.');
+    DCHECK_GE(same_version_startup_count, 1);
+    if (same_version_startup_count <= kMaxSameVersionCountRecorded) {
+      same_version_startup_count_suffix.append(
+          base::IntToString(same_version_startup_count));
+    } else {
+      same_version_startup_count_suffix.append("Over");
+    }
+  }
 
   // Hard fault counts are expected to be in the thousands range,
   // corresponding to faulting in ~10s of MBs of code ~10s of KBs at a time.
   // (Observed to vary from 1000 to 10000 on various test machines and
   // platforms.)
-  if (is_first_run) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Startup.BrowserMessageLoopStartHardFaultCount.FirstRun",
-        hard_fault_count,
-        0, 40000, 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Startup.BrowserMessageLoopStartHardFaultCount",
-        hard_fault_count,
-        0, 40000, 50);
+  const char kHardFaultCountHistogram[] =
+      "Startup.BrowserMessageLoopStartHardFaultCount";
+  UMA_HISTOGRAM_CUSTOM_COUNTS(kHardFaultCountHistogram, hard_fault_count, 1,
+                              40000, 50);
+  // Also record the hard fault count histogram suffixed by the number of
+  // startups this specific version has been through.
+  // Factory properties copied from UMA_HISTOGRAM_CUSTOM_COUNTS macro.
+  if (!same_version_startup_count_suffix.empty()) {
+    base::Histogram::FactoryGet(
+        kHardFaultCountHistogram + same_version_startup_count_suffix, 1, 40000,
+        50, base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(hard_fault_count);
   }
 
   // Determine the startup type based on the number of observed hard faults.
@@ -218,8 +241,18 @@ void RecordHardFaultHistogram(bool is_first_run) {
   }
 
   // Record the startup 'temperature'.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Startup.Temperature", g_startup_temperature, STARTUP_TEMPERATURE_COUNT);
+  const char kStartupTemperatureHistogram[] = "Startup.Temperature";
+  UMA_HISTOGRAM_ENUMERATION(kStartupTemperatureHistogram, g_startup_temperature,
+                            STARTUP_TEMPERATURE_COUNT);
+  // As well as its suffixed twin.
+  // Factory properties copied from UMA_HISTOGRAM_ENUMERATION macro.
+  if (!same_version_startup_count_suffix.empty()) {
+    base::LinearHistogram::FactoryGet(
+        kStartupTemperatureHistogram + same_version_startup_count_suffix, 1,
+        STARTUP_TEMPERATURE_COUNT, STARTUP_TEMPERATURE_COUNT + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(g_startup_temperature);
+  }
 #endif  // defined(OS_WIN)
 }
 
@@ -343,6 +376,71 @@ void AddStartupEventsForTelemetry()
   }
 }
 
+// Logs the Startup.TimeSinceLastStartup histogram. Obtains the timestamp of the
+// last startup from |pref_service| and overwrites it with the timestamp of the
+// current startup. If the startup temperature has been set by
+// RecordBrowserMainMessageLoopStart, the time since last startup is also logged
+// to an histogram suffixed with the startup temperature.
+void RecordTimeSinceLastStartup(PrefService* pref_service) {
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+  DCHECK(pref_service);
+
+  // Get the timestamp of the current startup.
+  const base::Time process_start_time =
+      base::CurrentProcessInfo::CreationTime();
+
+  // Get the timestamp of the last startup from |pref_service|.
+  const int64_t last_startup_timestamp_internal =
+      pref_service->GetInt64(prefs::kLastStartupTimestamp);
+  if (last_startup_timestamp_internal != 0) {
+    // Log the Startup.TimeSinceLastStartup histogram.
+    const base::Time last_startup_timestamp =
+        base::Time::FromInternalValue(last_startup_timestamp_internal);
+    const base::TimeDelta time_since_last_startup =
+        process_start_time - last_startup_timestamp;
+    const int minutes_since_last_startup = time_since_last_startup.InMinutes();
+
+    // Ignore negative values, which can be caused by system clock changes.
+    if (minutes_since_last_startup >= 0) {
+      UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
+          UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE,
+          "Startup.TimeSinceLastStartup", minutes_since_last_startup);
+    }
+  }
+
+  // Write the timestamp of the current startup in |pref_service|.
+  pref_service->SetInt64(prefs::kLastStartupTimestamp,
+                         process_start_time.ToInternalValue());
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+}
+
+// Logs the Startup.SameVersionStartupCount histogram. Relies on |pref_service|
+// to know information about the previous startups and store information for
+// future ones. Returns the number of startups with the same version count that
+// was logged.
+int RecordSameVersionStartupCount(PrefService* pref_service) {
+  DCHECK(pref_service);
+
+  const std::string current_version = version_info::GetVersionNumber();
+
+  int startups_with_current_version = 0;
+  if (current_version == pref_service->GetString(prefs::kLastStartupVersion)) {
+    startups_with_current_version =
+        pref_service->GetInteger(prefs::kSameVersionStartupCount);
+    ++startups_with_current_version;
+    pref_service->SetInteger(prefs::kSameVersionStartupCount,
+                             startups_with_current_version);
+  } else {
+    startups_with_current_version = 1;
+    pref_service->SetString(prefs::kLastStartupVersion, current_version);
+    pref_service->SetInteger(prefs::kSameVersionStartupCount, 1);
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Startup.SameVersionStartupCount",
+                           startups_with_current_version);
+  return startups_with_current_version;
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -444,9 +542,17 @@ void RecordExeMainEntryPointTime(const base::Time& time) {
 }
 
 void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
-                                       bool is_first_run) {
+                                       bool is_first_run,
+                                       PrefService* pref_service) {
+  int same_version_startup_count = 0;
+  if (pref_service)
+    same_version_startup_count = RecordSameVersionStartupCount(pref_service);
+  // Keep RecordHardFaultHistogram() first as much as possible as many other
+  // histograms depend on it setting |g_startup_temperature|.
+  RecordHardFaultHistogram(same_version_startup_count);
   AddStartupEventsForTelemetry();
-  RecordHardFaultHistogram(is_first_run);
+  if (pref_service)
+    RecordTimeSinceLastStartup(pref_service);
   RecordSystemUptimeHistogram();
   RecordMainEntryTimeHistogram();
 
@@ -503,61 +609,6 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
           g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
     }
   }
-}
-
-void RecordTimeSinceLastStartup(PrefService* pref_service) {
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  DCHECK(pref_service);
-
-  // Get the timestamp of the current startup.
-  const base::Time process_start_time =
-      base::CurrentProcessInfo::CreationTime();
-
-  // Get the timestamp of the last startup from |pref_service|.
-  const int64_t last_startup_timestamp_internal =
-      pref_service->GetInt64(prefs::kLastStartupTimestamp);
-  if (last_startup_timestamp_internal != 0) {
-    // Log the Startup.TimeSinceLastStartup histogram.
-    const base::Time last_startup_timestamp =
-        base::Time::FromInternalValue(last_startup_timestamp_internal);
-    const base::TimeDelta time_since_last_startup =
-        process_start_time - last_startup_timestamp;
-    const int minutes_since_last_startup = time_since_last_startup.InMinutes();
-
-    // Ignore negative values, which can be caused by system clock changes.
-    if (minutes_since_last_startup >= 0) {
-      UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
-          UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE,
-          "Startup.TimeSinceLastStartup", minutes_since_last_startup);
-    }
-  }
-
-  // Write the timestamp of the current startup in |pref_service|.
-  pref_service->SetInt64(prefs::kLastStartupTimestamp,
-                         process_start_time.ToInternalValue());
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-}
-
-void RecordStartupCount(PrefService* pref_service) {
-  DCHECK(pref_service);
-
-  const std::string current_version = version_info::GetVersionNumber();
-
-  int startups_with_current_version = 0;
-  if (current_version == pref_service->GetString(prefs::kLastStartupVersion)) {
-    startups_with_current_version =
-        pref_service->GetInteger(prefs::kSameVersionStartupCount);
-    ++startups_with_current_version;
-    pref_service->SetInteger(prefs::kSameVersionStartupCount,
-                             startups_with_current_version);
-  } else {
-    startups_with_current_version = 1;
-    pref_service->SetString(prefs::kLastStartupVersion, current_version);
-    pref_service->SetInteger(prefs::kSameVersionStartupCount, 1);
-  }
-
-  UMA_HISTOGRAM_COUNTS_100("Startup.SameVersionStartupCount",
-                           startups_with_current_version);
 }
 
 void RecordBrowserWindowDisplay(const base::TimeTicks& ticks) {

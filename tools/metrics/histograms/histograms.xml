@@ -47578,6 +47578,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount.FirstRun"
     units="faults">
+  <obsolete>
+    Removed 1/2016.
+  </obsolete>
   <owner>chrisha@chromium.org</owner>
   <summary>
     The number of hard faults incurred in the browser process from startup to
@@ -86190,6 +86193,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="UnwantedSoftware" label="UnwantedSoftware"/>
   <affected-histogram name="SB2.DatabaseSizeKilobytes"/>
   <affected-histogram name="SB2.PrefixSetSizeKilobytes"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SameVersionStartupCounts">
+  <suffix name="1" label="1st startup with same version"/>
+  <suffix name="2" label="2nd startup with same version"/>
+  <suffix name="3" label="3rd startup with same version"/>
+  <suffix name="4" label="4th startup with same version"/>
+  <suffix name="5" label="5th startup with same version"/>
+  <suffix name="6" label="6th startup with same version"/>
+  <suffix name="7" label="7th startup with same version"/>
+  <suffix name="8" label="8th startup with same version"/>
+  <suffix name="9" label="9th startup with same version"/>
+  <suffix name="Over" label="&gt; 9th startup with same version"/>
+  <affected-histogram name="Startup.BrowserMessageLoopStartHardFaultCount"/>
+  <affected-histogram name="Startup.Temperature"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SB2ResourceTypes" separator=".">
