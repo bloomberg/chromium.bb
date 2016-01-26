@@ -16,19 +16,7 @@
 #include "build/build_config.h"
 
 #if defined(USE_TCMALLOC)
-// Used by UncheckedMalloc. If tcmalloc is linked to the executable
-// this will be replaced by a strong symbol that actually implement
-// the semantics and don't call new handler in case the allocation fails.
-extern "C" {
-
-__attribute__((weak, visibility("default")))
-void* tc_malloc_skip_new_handler_weak(size_t size);
-
-void* tc_malloc_skip_new_handler_weak(size_t size) {
-  return malloc(size);
-}
-
-}
+#include "third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h"
 #endif
 
 namespace base {
@@ -162,6 +150,10 @@ void EnableTerminationOnOutOfMemory() {
   // If we're using glibc's allocator, the above functions will override
   // malloc and friends and make them die on out of memory.
 #endif
+#if defined(USE_TCMALLOC)
+  // For tcmalloc, we need to tell it to behave like new.
+  tc_set_new_mode(1);
+#endif
 }
 
 // NOTE: This is not the only version of this function in the source:
@@ -208,7 +200,7 @@ bool UncheckedMalloc(size_t size, void** result) {
 #elif defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
   *result = __libc_malloc(size);
 #elif defined(USE_TCMALLOC)
-  *result = tc_malloc_skip_new_handler_weak(size);
+  *result = tc_malloc_skip_new_handler(size);
 #endif
   return *result != NULL;
 }

@@ -93,7 +93,6 @@ Modifications:
   simulated stack from the embedding application.
 - Inserted spaces around PRIx64, SCNx64 and friends, for c++11 compatibility.
 - Fix sprintf formatting warning in MaybeDumpProfileLocked
-- Added tc_malloc_skip_new_handler.
 - Fix logging issues in android
 - Changed DEFINE_foo macros to ignore envname unless ENABLE_PROFILING is defined
 - Changed DEFINE_string to define const char*s instead of strings
@@ -102,3 +101,4 @@ Modifications:
 - Add generic.total_physical_bytes property to MallocExtension
 - Conditionally define HAVE_VDSO_SUPPORT only on linux_x86 to avoid static initializers
 - Add TC_MALLOPT_IS_OVERRIDDEN_BY_TCMALLOC mallopt() arg
+- Added tc_malloc_skip_new_handler.

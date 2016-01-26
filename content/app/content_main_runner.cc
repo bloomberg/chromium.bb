@@ -115,12 +115,6 @@
 #include "crypto/nss_util.h"
 #endif
 
-#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-extern "C" {
-int tc_set_new_mode(int mode);
-}
-#endif
-
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
 #if defined(ENABLE_PLUGINS)
@@ -149,10 +143,6 @@ base::LazyInstance<ContentRendererClient>
 base::LazyInstance<ContentUtilityClient>
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
-
-#if defined(OS_WIN)
-
-#endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX) && !defined(OS_IOS)
 
@@ -435,16 +425,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
 
-    // NOTE(willchan): One might ask why these TCMalloc-related calls are done
-    // here rather than in process_util_linux.cc with the definition of
-    // EnableTerminationOnOutOfMemory().  That's because base shouldn't have a
-    // dependency on TCMalloc.  Really, we ought to have our allocator shim code
-    // implement this EnableTerminationOnOutOfMemory() function.  Whateverz.
-    // This works for now.
 #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-    // For tcmalloc, we need to tell it to behave like new.
-    tc_set_new_mode(1);
-
     // Provide optional hook for monitoring allocation quantities on a
     // per-thread basis.  Only set the hook if the environment indicates this
     // needs to be enabled.
