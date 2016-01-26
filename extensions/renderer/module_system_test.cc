@@ -22,7 +22,6 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/utils_native_handler.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
@@ -241,7 +240,6 @@ void ModuleSystemTest::TearDown() {
     old_heap_size = stats.used_heap_size();
     isolate_->RequestGarbageCollectionForTesting(
         v8::Isolate::kFullGarbageCollection);
-    blink::WebHeap::collectAllGarbageForTesting();
     isolate_->GetHeapStatistics(&stats);
   }
 }
