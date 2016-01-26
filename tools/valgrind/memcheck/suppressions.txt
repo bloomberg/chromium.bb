@@ -3405,31 +3405,3 @@
    fun:_ZN2cc10GLRenderer18DrawRenderPassQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_18RenderPassDrawQuadEPKN3gfx5QuadFE
    fun:_ZN2cc10GLRenderer10DoDrawQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadEPKN3gfx5QuadFE
 }
-{
-   bug_581092_a
-   Memcheck:Leak
-   ...
-   fun:_ZN5blink15ContextFeatures13defaultSwitchEv
-   fun:_ZN5blink8DocumentC2ERKNS_12DocumentInitEh
-   fun:_ZN5blink12HTMLDocumentC1ERKNS_12DocumentInitEh
-   fun:_ZN5blink12HTMLDocument6createERKNS_12DocumentInitE
-   fun:_ZN5blink17DOMImplementation14createDocumentERKN3WTF6StringERKNS_12DocumentInitEb
-   fun:_ZN5blink14LocalDOMWindow14createDocumentERKN3WTF6StringERKNS_12DocumentInitEb
-   fun:_ZN5blink14LocalDOMWindow18installNewDocumentERKN3WTF6StringERKNS_12DocumentInitEb
-   fun:_ZN5blink14DocumentLoader15createWriterForEPKNS_*
-}
-{
-   bug_581092_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink26RefCountedGarbageCollectedINS_15StyleFilterDataEE13makeKeepAliveEv
-   fun:_ZN5blink26RefCountedGarbageCollectedINS_15StyleFilterDataEE3refEv
-   ...
-   fun:_ZN5blink7DataRefINS_15StyleFilterDataEE4initEv
-   ...
-   fun:_ZN5blink13ComputedStyle6createEv
-   fun:_ZN5blink13StyleResolver16styleForDocumentERNS_8DocumentE
-   fun:_ZN5blink8Document6attachERKNS_4Node13AttachContextE
-   fun:_ZN5blink14LocalDOMWindow18installNewDocumentERKN3WTF6StringERKNS_12DocumentInitEb
-   fun:_ZN5blink14DocumentLoader15createWriterForEPKNS_*
-}
