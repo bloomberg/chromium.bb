@@ -8,6 +8,7 @@ import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 
@@ -28,6 +29,7 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        RecordHistogram.disableForTests();
         mContext = new AdvancedMockContext();
         mPreferences = new HashMap<String, Object>();
         mContext.addSharedPreferences(ActivityAssigner.PREF_PACKAGE, mPreferences);
