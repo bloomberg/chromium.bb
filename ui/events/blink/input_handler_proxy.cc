@@ -601,12 +601,11 @@ InputHandlerProxy::HandleGestureScrollUpdate(
       default:
         return DID_NOT_HANDLE;
     }
-  } else {
-    cc::InputHandlerScrollResult scroll_result =
-        input_handler_->ScrollBy(&scroll_state);
-    HandleOverscroll(scroll_point, scroll_result);
-    return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
   }
+  cc::InputHandlerScrollResult scroll_result =
+      input_handler_->ScrollBy(&scroll_state);
+  HandleOverscroll(scroll_point, scroll_result);
+  return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
