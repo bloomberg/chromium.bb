@@ -41,9 +41,19 @@ public class MultiWindowUtils {
 
     /**
      * @param activity The {@link Activity} to check.
-     * @return Whether or not {@code activity} is currently in multi-window mode.
+     * @return Whether or not {@code activity} is currently in Android N+ multi-window mode.
      */
     public boolean isMultiWindow(Activity activity) {
+        // This logic is overridden in a subclass.
+        return false;
+    }
+
+    /**
+     * @param activity The {@link Activity} to check.
+     * @return Whether or not {@code activity} is currently in legacy pre-N multi-window mode
+     *         (e.g. Samsung's multi-window mode).
+     */
+    public boolean isLegacyMultiWindow(Activity activity) {
         // This logic is overridden in a subclass.
         return false;
     }
@@ -55,7 +65,7 @@ public class MultiWindowUtils {
     public boolean shouldRunInMultiInstanceMode(ChromeLauncherActivity activity) {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP
                 && TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
-                && isMultiWindow(activity)
+                && isLegacyMultiWindow(activity)
                 && activity.isChromeBrowserActivityRunning();
     }
 
@@ -64,7 +74,7 @@ public class MultiWindowUtils {
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void makeMultiInstanceIntent(Activity activity, Intent intent) {
-        if (activity instanceof ChromeLauncherActivity && isMultiWindow(activity)) {
+        if (activity instanceof ChromeLauncherActivity && isLegacyMultiWindow(activity)) {
             if (TextUtils.equals(ChromeTabbedActivity.class.getName(),
                     intent.getComponent().getClassName())) {
                 intent.setClassName(activity, MultiInstanceChromeTabbedActivity.class.getName());

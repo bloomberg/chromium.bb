@@ -48,7 +48,7 @@ public class SigninPromoScreen
         // navigate to and view a URL on startup), the instance is part of the field trial,
         // and the promo has been marked to display.
         ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance(activity);
-        if (MultiWindowUtils.getInstance().isMultiWindow(activity)) return false;
+        if (MultiWindowUtils.getInstance().isLegacyMultiWindow(activity)) return false;
         if (!preferenceManager.getShowSigninPromo()) return false;
         preferenceManager.setShowSigninPromo(false);
 

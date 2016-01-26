@@ -52,7 +52,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         if (getDisplayedDataReductionPromo(parentActivity)) return;
         // Showing the promo dialog in multiwindow mode is broken on Galaxy Note devices:
         // http://crbug.com/354696. If we're in multiwindow mode, save the dialog for later.
-        if (MultiWindowUtils.getInstance().isMultiWindow(parentActivity)) return;
+        if (MultiWindowUtils.getInstance().isLegacyMultiWindow(parentActivity)) return;
 
         DataReductionPromoScreen promoScreen = new DataReductionPromoScreen(parentActivity);
         promoScreen.setOnDismissListener(promoScreen);

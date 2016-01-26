@@ -208,7 +208,8 @@ public class ChromeApplication extends ContentApplication {
                 }
 
                 // For multiwindow mode we do not track keyboard visibility.
-                return activity != null && MultiWindowUtils.getInstance().isMultiWindow(activity);
+                return activity != null
+                        && MultiWindowUtils.getInstance().isLegacyMultiWindow(activity);
             }
         });
 
