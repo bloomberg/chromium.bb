@@ -98,6 +98,9 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
+crbug.com/524134 media/color-profile-munsell-bt601-smpte-to-srgb.html [ NeedsRebaseline ]
+crbug.com/524134 media/color-profile-munsell-bt709-to-srgb.html [ NeedsRebaseline ]
+
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
