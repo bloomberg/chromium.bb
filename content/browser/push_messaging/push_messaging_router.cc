@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +23,7 @@ namespace {
 void RunDeliverCallback(
     const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
     PushDeliveryStatus delivery_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(deliver_message_callback, delivery_status));
@@ -87,11 +89,27 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
   // alive until the callback dies. Otherwise the registration could be
   // released when this method returns - before the event is delivered to the
   // service worker.
-  base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
+  version->RunAfterStartWorker(
+      base::Bind(&PushMessagingRouter::DeliverMessageToWorker,
+                 make_scoped_refptr(version), service_worker_registration, data,
+                 deliver_message_callback),
       base::Bind(&PushMessagingRouter::DeliverMessageEnd,
-                 deliver_message_callback, service_worker_registration);
+                 deliver_message_callback, service_worker_registration));
+}
 
-  version->DispatchPushEvent(dispatch_event_callback, data);
+// static
+void PushMessagingRouter::DeliverMessageToWorker(
+    const scoped_refptr<ServiceWorkerVersion>& service_worker,
+    const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
+    const std::string& data,
+    const DeliverMessageCallback& deliver_message_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  int request_id = service_worker->StartRequest(
+      ServiceWorkerMetrics::EventType::PUSH,
+      base::Bind(&PushMessagingRouter::DeliverMessageEnd,
+                 deliver_message_callback, service_worker_registration));
+  service_worker->DispatchSimpleEvent<ServiceWorkerHostMsg_PushEventFinished>(
+      request_id, ServiceWorkerMsg_PushEvent(request_id, data));
 }
 
 // static

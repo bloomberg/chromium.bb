@@ -33,6 +33,12 @@ IPC_MESSAGE_ROUTED1(TestMsg_MessageFromWorker, int)
 
 IPC_MESSAGE_CONTROL1(TestMsg_TestEvent, int)
 IPC_MESSAGE_ROUTED2(TestMsg_TestEventResult, int, std::string)
+IPC_MESSAGE_ROUTED2(TestMsg_TestSimpleEventResult,
+                    int,
+                    blink::WebServiceWorkerEventResult)
+
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
+                          blink::WebServiceWorkerEventResultLast)
 
 // ---------------------------------------------------------------------------
 
@@ -72,6 +78,13 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
                                const std::string& reply) {
     SimulateSend(
         new TestMsg_TestEventResult(embedded_worker_id, request_id, reply));
+  }
+
+  void SimulateSendSimpleEventResult(int embedded_worker_id,
+                                     int request_id,
+                                     blink::WebServiceWorkerEventResult reply) {
+    SimulateSend(new TestMsg_TestSimpleEventResult(embedded_worker_id,
+                                                   request_id, reply));
   }
 
  private:
@@ -238,6 +251,30 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_ = 0;
     registration_ = 0;
     helper_.reset();
+  }
+
+  void SimulateDispatchEvent() {
+    ServiceWorkerStatusCode status =
+        SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+
+    // Make sure worker is running.
+    scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
+    version_->RunAfterStartWorker(runner->QuitClosure(),
+                                  CreateReceiverOnCurrentThread(&status));
+    runner->Run();
+    EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
+    EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+    // Start request, as if an event is being dispatched.
+    int request_id =
+        version_->StartRequest(ServiceWorkerMetrics::EventType::PUSH,
+                               CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+
+    // And finish request, as if a response to the event was received.
+    EXPECT_TRUE(version_->FinishRequest(request_id));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -723,16 +760,11 @@ TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
 
 // Test that update isn't triggered for a non-stale worker.
 TEST_F(ServiceWorkerVersionTest, StaleUpdate_FreshWorker) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(base::Time::Now());
-  version_->DispatchPushEvent(CreateReceiverOnCurrentThread(&status),
-                              std::string());
-  base::RunLoop().RunUntilIdle();
+  SimulateDispatchEvent();
 
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_FALSE(version_->update_timer_.IsRunning());
 }
@@ -760,10 +792,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(GetYesterday());
-  version_->DispatchPushEvent(CreateReceiverOnCurrentThread(&status),
-                              std::string());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  SimulateDispatchEvent();
   EXPECT_FALSE(version_->stale_time_.is_null());
   EXPECT_FALSE(version_->update_timer_.IsRunning());
 
@@ -777,16 +806,11 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
 
 // Test that staleness is detected on a running worker.
 TEST_F(ServiceWorkerVersionTest, StaleUpdate_RunningWorker) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-
   // Start a fresh worker.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(base::Time::Now());
-  version_->DispatchPushEvent(CreateReceiverOnCurrentThread(&status),
-                              std::string());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  SimulateDispatchEvent();
   EXPECT_TRUE(version_->stale_time_.is_null());
 
   // Simulate it running for a day. It will be marked stale.
@@ -819,10 +843,13 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   version_->stale_time_ = stale_time;
 
   // Stale time is not deferred.
-  version_->DispatchPushEvent(
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
-  version_->DispatchPushEvent(
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  version_->RunAfterStartWorker(
+      base::Bind(&base::DoNothing),
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  version_->RunAfterStartWorker(
+      base::Bind(&base::DoNothing),
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(stale_time, version_->stale_time_);
 
   // Timeout triggers the update.
@@ -832,12 +859,9 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
 
   // Update timer is not deferred.
   base::TimeTicks run_time = version_->update_timer_.desired_run_time();
-  version_->DispatchPushEvent(
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
-  version_->DispatchPushEvent(
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
-  version_->DispatchPushEvent(
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  SimulateDispatchEvent();
+  SimulateDispatchEvent();
+  SimulateDispatchEvent();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());
@@ -1423,6 +1447,78 @@ TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   EXPECT_EQ(reply1, received_data1);
   EXPECT_EQ(SERVICE_WORKER_OK, status1);
   EXPECT_TRUE(version_->FinishRequest(request_id1));
+}
+
+TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Completed) {
+  ServiceWorkerStatusCode status =
+      SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+
+  // Activate and start worker.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // Start request and dispatch test event.
+  status = SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
+  int request_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::SYNC,
+      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
+  version_->DispatchSimpleEvent<TestMsg_TestSimpleEventResult>(
+      request_id, TestMsg_TestEvent(request_id));
+
+  // Verify event got dispatched to worker.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, helper_->inner_ipc_sink()->message_count());
+  const IPC::Message* msg = helper_->inner_ipc_sink()->GetMessageAt(0);
+  EXPECT_EQ(TestMsg_TestEvent::ID, msg->type());
+
+  // Simulate sending reply to event.
+  helper_->SimulateSendSimpleEventResult(
+      version_->embedded_worker()->embedded_worker_id(), request_id,
+      blink::WebServiceWorkerEventResultCompleted);
+  runner->Run();
+
+  // Verify callback was called with correct status.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+}
+
+TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Rejected) {
+  ServiceWorkerStatusCode status =
+      SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+
+  // Activate and start worker.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // Start request and dispatch test event.
+  status = SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
+  int request_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::SYNC,
+      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
+  version_->DispatchSimpleEvent<TestMsg_TestSimpleEventResult>(
+      request_id, TestMsg_TestEvent(request_id));
+
+  // Verify event got dispatched to worker.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, helper_->inner_ipc_sink()->message_count());
+  const IPC::Message* msg = helper_->inner_ipc_sink()->GetMessageAt(0);
+  EXPECT_EQ(TestMsg_TestEvent::ID, msg->type());
+
+  // Simulate sending reply to event.
+  helper_->SimulateSendSimpleEventResult(
+      version_->embedded_worker()->embedded_worker_id(), request_id,
+      blink::WebServiceWorkerEventResultRejected);
+  runner->Run();
+
+  // Verify callback was called with correct status.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, status);
 }
 
 }  // namespace content

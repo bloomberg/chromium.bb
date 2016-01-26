@@ -227,6 +227,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
                      const IPC::Message& message,
                      const ResponseCallbackType& callback);
 
+  // For simple events where the full functionality of DispatchEvent is not
+  // needed, this method can be used instead. The ResponseMessage must consist
+  // of just a request_id and a blink::WebServiceWorkerEventResult field. The
+  // result is converted to a ServiceWorkerStatusCode and passed to the error
+  // handler associated with the request. Additionally this methods calls
+  // FinishRequest before passing the reply to the callback.
+  template <typename ResponseMessage>
+  void DispatchSimpleEvent(int request_id, const IPC::Message& message);
+
   // Sends a message event to the associated embedded worker.
   void DispatchMessageEvent(
       const base::string16& message,
@@ -272,14 +281,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       int64_t persistent_notification_id,
       const PlatformNotificationData& notification_data,
       int action_index);
-
-  // Sends push event to the associated embedded worker and asynchronously calls
-  // |callback| when it errors out or it gets a response from the worker to
-  // notify completion.
-  //
-  // This must be called when the status() is ACTIVATED.
-  void DispatchPushEvent(const StatusCallback& callback,
-                         const std::string& data);
 
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
@@ -409,7 +410,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_INSTALL,
     REQUEST_FETCH,
     REQUEST_NOTIFICATION_CLICK,
-    REQUEST_PUSH,
     REQUEST_CUSTOM,
     NUM_REQUEST_TYPES
   };
@@ -571,8 +571,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
   void OnNotificationClickEventFinished(int request_id);
-  void OnPushEventFinished(int request_id,
-                           blink::WebServiceWorkerEventResult result);
+  void OnSimpleEventResponse(int request_id,
+                             blink::WebServiceWorkerEventResult result);
   void OnOpenWindow(int request_id, GURL url);
   void OnOpenWindowFinished(int request_id,
                             ServiceWorkerStatusCode status,
@@ -701,7 +701,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<PendingRequest<FetchCallback>, IDMapOwnPointer> fetch_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>
       notification_click_requests_;
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> push_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
 
   // Stores all open connections to mojo services. Maps the service name to
@@ -813,6 +812,14 @@ void ServiceWorkerVersion::DispatchEvent(int request_id,
   }
 }
 
+template <typename ResponseMessage>
+void ServiceWorkerVersion::DispatchSimpleEvent(int request_id,
+                                               const IPC::Message& message) {
+  DispatchEvent<ResponseMessage>(
+      request_id, message,
+      base::Bind(&ServiceWorkerVersion::OnSimpleEventResponse, this));
+}
+
 template <typename ResponseMessage, typename CallbackType>
 bool ServiceWorkerVersion::EventResponseHandler<ResponseMessage, CallbackType>::
     OnMessageReceived(const IPC::Message& message) {
@@ -823,6 +830,7 @@ bool ServiceWorkerVersion::EventResponseHandler<ResponseMessage, CallbackType>::
   if (!result || received_request_id != request_id_)
     return false;
 
+  CallbackType protect(callback_);
   // Essentially same code as what IPC_MESSAGE_FORWARD expands to.
   void* param = nullptr;
   if (!ResponseMessage::Dispatch(&message, &callback_, this, param,
