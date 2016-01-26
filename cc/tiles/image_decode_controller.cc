@@ -108,7 +108,8 @@ bool ImageDecodeController::GetTaskForImageAndRef(
   // will be decoded at raster time which is when it will be temporarily put in
   // the cache.
   ImageKey key = ImageKey::FromDrawImage(image);
-  TRACE_EVENT1("cc", "ImageDecodeController::GetTaskForImageAndRef", "key",
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::GetTaskForImageAndRef", "key",
                key.ToString());
   // If we're not going to do a scale, we will just create a task to preroll the
   // image the first time we see it. This doesn't need to account for memory.
@@ -181,7 +182,8 @@ bool ImageDecodeController::GetTaskForImageAndRef(
 }
 
 void ImageDecodeController::RefImage(const ImageKey& key) {
-  TRACE_EVENT1("cc", "ImageDecodeController::RefImage", "key", key.ToString());
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::RefImage", "key", key.ToString());
   lock_.AssertAcquired();
   int ref = ++decoded_images_ref_counts_[key];
   if (ref == 1) {
@@ -199,8 +201,8 @@ void ImageDecodeController::UnrefImage(const DrawImage& image) {
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
   DCHECK(CanHandleImage(key, image));
-  TRACE_EVENT1("cc", "ImageDecodeController::UnrefImage", "key",
-               key.ToString());
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::UnrefImage", "key", key.ToString());
 
   base::AutoLock lock(lock_);
   auto ref_count_it = decoded_images_ref_counts_.find(key);
@@ -291,7 +293,8 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
 scoped_refptr<ImageDecodeController::DecodedImage>
 ImageDecodeController::DecodeImageInternal(const ImageKey& key,
                                            const SkImage* image) {
-  TRACE_EVENT1("cc", "ImageDecodeController::DecodeImageInternal", "key",
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::DecodeImageInternal", "key",
                key.ToString());
 
   // Get the decoded image first (at the original scale).
@@ -300,13 +303,13 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
   scoped_ptr<uint8_t[]> decoded_pixels;
   {
     TRACE_EVENT0(
-        "cc",
+        "disabled-by-default-cc.debug",
         "ImageDecodeController::DecodeImageInternal - allocate decoded pixels");
     decoded_pixels.reset(
         new uint8_t[decoded_info.minRowBytes() * decoded_info.height()]);
   }
   {
-    TRACE_EVENT0("cc",
+    TRACE_EVENT0("disabled-by-default-cc.debug",
                  "ImageDecodeController::DecodeImageInternal - read pixels");
     bool result = image->readPixels(
         decoded_info, decoded_pixels.get(), decoded_info.minRowBytes(),
@@ -327,7 +330,7 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
   scoped_ptr<base::DiscardableMemory> scaled_pixels;
   {
     TRACE_EVENT0(
-        "cc",
+        "disabled-by-default-cc.debug",
         "ImageDecodeController::DecodeImageInternal - allocate scaled pixels");
     scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
                         ->AllocateLockedDiscardableMemory(
@@ -338,7 +341,7 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
   // TODO(vmpstr): Start handling more than just high filter quality.
   DCHECK_EQ(kHigh_SkFilterQuality, key.filter_quality());
   {
-    TRACE_EVENT0("cc",
+    TRACE_EVENT0("disabled-by-default-cc.debug",
                  "ImageDecodeController::DecodeImageInternal - scale pixels");
     bool result =
         decoded_pixmap.scalePixels(scaled_pixmap, kHigh_SkFilterQuality);
@@ -352,7 +355,8 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
 DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   ImageKey key = ImageKey::FromDrawImage(draw_image);
-  TRACE_EVENT1("cc", "ImageDecodeController::GetDecodedImageAndRef", "key",
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::GetDecodedImageAndRef", "key",
                key.ToString());
   if (!CanHandleImage(key, draw_image))
     return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
@@ -440,7 +444,8 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
 void ImageDecodeController::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
-  TRACE_EVENT1("cc", "ImageDecodeController::DrawWithImageFinished", "key",
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
   if (!CanHandleImage(key, image))
@@ -454,7 +459,8 @@ void ImageDecodeController::DrawWithImageFinished(
 }
 
 void ImageDecodeController::RefAtRasterImage(const ImageKey& key) {
-  TRACE_EVENT1("cc", "ImageDecodeController::RefAtRasterImage", "key",
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::RefAtRasterImage", "key",
                key.ToString());
   DCHECK(FindImage(&at_raster_decoded_images_, key) !=
          at_raster_decoded_images_.end());
@@ -462,7 +468,8 @@ void ImageDecodeController::RefAtRasterImage(const ImageKey& key) {
 }
 
 void ImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
-  TRACE_EVENT1("cc", "ImageDecodeController::UnrefAtRasterImage", "key",
+  TRACE_EVENT1("disabled-by-default-cc.debug",
+               "ImageDecodeController::UnrefAtRasterImage", "key",
                key.ToString());
   base::AutoLock lock(lock_);
 

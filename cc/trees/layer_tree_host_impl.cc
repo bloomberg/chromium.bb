@@ -1334,7 +1334,8 @@ void LayerTreeHostImpl::DidModifyTilePriorities() {
 scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
     TreePriority tree_priority,
     RasterTilePriorityQueue::Type type) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
+  TRACE_EVENT0("disabled-by-default-cc.debug",
+               "LayerTreeHostImpl::BuildRasterQueue");
 
   return RasterTilePriorityQueue::Create(active_tree_->picture_layers(),
                                          pending_tree_
@@ -1345,7 +1346,8 @@ scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
 
 scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
     TreePriority tree_priority) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildEvictionQueue");
+  TRACE_EVENT0("disabled-by-default-cc.debug",
+               "LayerTreeHostImpl::BuildEvictionQueue");
 
   scoped_ptr<EvictionTilePriorityQueue> queue(new EvictionTilePriorityQueue);
   queue->Build(active_tree_->picture_layers(),

@@ -249,7 +249,8 @@ cc::NamespaceToken RasterWorkerPool::GetNamespaceToken() {
 
 void RasterWorkerPool::ScheduleTasks(cc::NamespaceToken token,
                                      cc::TaskGraph* graph) {
-  TRACE_EVENT2("cc", "RasterWorkerPool::ScheduleTasks", "num_nodes",
+  TRACE_EVENT2("disabled-by-default-cc.debug",
+               "RasterWorkerPool::ScheduleTasks", "num_nodes",
                graph->nodes.size(), "num_edges", graph->edges.size());
   {
     base::AutoLock lock(lock_);
@@ -271,7 +272,8 @@ void RasterWorkerPool::ScheduleTasksWithLockAcquired(cc::NamespaceToken token,
 }
 
 void RasterWorkerPool::WaitForTasksToFinishRunning(cc::NamespaceToken token) {
-  TRACE_EVENT0("cc", "RasterWorkerPool::WaitForTasksToFinishRunning");
+  TRACE_EVENT0("disabled-by-default-cc.debug",
+               "RasterWorkerPool::WaitForTasksToFinishRunning");
 
   DCHECK(token.IsValid());
 
@@ -292,7 +294,8 @@ void RasterWorkerPool::WaitForTasksToFinishRunning(cc::NamespaceToken token) {
 void RasterWorkerPool::CollectCompletedTasks(
     cc::NamespaceToken token,
     cc::Task::Vector* completed_tasks) {
-  TRACE_EVENT0("cc", "RasterWorkerPool::CollectCompletedTasks");
+  TRACE_EVENT0("disabled-by-default-cc.debug",
+               "RasterWorkerPool::CollectCompletedTasks");
 
   {
     base::AutoLock lock(lock_);
