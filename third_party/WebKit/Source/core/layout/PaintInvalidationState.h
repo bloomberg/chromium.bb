@@ -68,7 +68,7 @@ public:
     bool viewClippingAndScrollOffsetDisabled() const { return m_viewClippingAndScrollOffsetDisabled; }
     void setViewClippingAndScrollOffsetDisabled(bool b) { m_viewClippingAndScrollOffsetDisabled = b; }
 
-    PaintLayer& enclosingLayer(const LayoutObject&) const;
+    PaintLayer& enclosingSelfPaintingLayer(const LayoutObject&) const;
 
 private:
     PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, PaintInvalidationState* ownerPaintInvalidationState);
@@ -101,7 +101,7 @@ private:
 
     Vector<LayoutObject*>& m_pendingDelayedPaintInvalidations;
 
-    PaintLayer& m_enclosingLayer;
+    PaintLayer& m_enclosingSelfPaintingLayer;
 };
 
 } // namespace blink

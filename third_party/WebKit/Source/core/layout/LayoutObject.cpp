@@ -1231,8 +1231,6 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
 
 void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient) const
 {
-    // TODO(wangxianzhu): Ensure correct bounds for the client will be or has been passed to PaintController. crbug.com/547119.
-    // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
     if (PaintLayer* enclosingLayer = this->enclosingLayer()) {
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
@@ -1242,19 +1240,38 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& displayI
     }
 }
 
+#if ENABLE(ASSERT)
+static void assertEnclosingSelfPaintingLayerHasSetNeedsRepaint(const LayoutObject& layoutObject)
+{
+    PaintLayer* enclosingSelfPaintingLayer = nullptr;
+    const LayoutObject* curr = &layoutObject;
+    while (curr) {
+        if (curr->hasLayer() && toLayoutBoxModelObject(curr)->hasSelfPaintingLayer()) {
+            enclosingSelfPaintingLayer = toLayoutBoxModelObject(curr)->layer();
+            break;
+        }
+        // Multi-column spanner is painted by the layer of the multi-column container instead of
+        // its enclosing layer (the layer of the multi-column flow thread).
+        curr = curr->isColumnSpanAll() ? curr->containingBlock() : curr->parent();
+    }
+    ASSERT(!enclosingSelfPaintingLayer || enclosingSelfPaintingLayer->needsRepaint());
+}
+#endif
+
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason) const
 {
-    // It's caller's responsibility to ensure enclosingLayer's needsRepaint is set.
-    // Don't set the flag here because enclosingLayer() has cost and the caller can use
-    // various ways (e.g. PaintInvalidatinState::enclosingLayer()) to reduce the cost.
-    ASSERT(!enclosingLayer() || enclosingLayer()->needsRepaint());
+    // It's caller's responsibility to ensure enclosingSelfPaintingLayer's needsRepaint is set.
+    // Don't set the flag here because getting enclosingSelfPaintLayer has cost and the caller can use
+    // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
+#if ENABLE(ASSERT)
+    assertEnclosingSelfPaintingLayerHasSetNeedsRepaint(*this);
+#endif
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason);
 }
 
 void LayoutObject::invalidateDisplayItemClientsWithPaintInvalidationState(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason) const
 {
-    ASSERT(&paintInvalidationState.enclosingLayer(*this) == enclosingLayer());
-    paintInvalidationState.enclosingLayer(*this).setNeedsRepaint();
+    paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsRepaint();
     invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
 }
 
@@ -3418,10 +3435,12 @@ void LayoutObject::invalidateDisplayItemClientsIncludingNonCompositingDescendant
 
 void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason reason)
 {
-    // It's caller's responsibility to ensure enclosingLayer's needsRepaint is set.
-    // Don't set the flag here because enclosingLayer() has cost and the caller can use
-    // various ways (e.g. PaintInvalidatinState::enclosingLayer()) to reduce the cost.
-    ASSERT(!enclosingLayer() || enclosingLayer()->needsRepaint());
+    // It's caller's responsibility to ensure enclosingSelfPaintingLayer's needsRepaint is set.
+    // Don't set the flag here because getting enclosingSelfPaintLayer has cost and the caller can use
+    // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
+#if ENABLE(ASSERT)
+    assertEnclosingSelfPaintingLayerHasSetNeedsRepaint(*this);
+#endif
 
     // These disablers are valid because we want to use the current compositing/invalidation status.
     DisablePaintInvalidationStateAsserts invalidationDisabler;

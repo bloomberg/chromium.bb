@@ -20,7 +20,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     , m_viewClippingAndScrollOffsetDisabled(false)
     , m_paintInvalidationContainer(layoutView.containerForPaintInvalidation())
     , m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations)
-    , m_enclosingLayer(*layoutView.layer())
+    , m_enclosingSelfPaintingLayer(*layoutView.layer())
 {
     bool establishesPaintInvalidationContainer = layoutView == m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
@@ -47,7 +47,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
     , m_viewClippingAndScrollOffsetDisabled(false)
     , m_paintInvalidationContainer(paintInvalidationContainer)
     , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
-    , m_enclosingLayer(next.enclosingLayer(layoutObject))
+    , m_enclosingSelfPaintingLayer(next.enclosingSelfPaintingLayer(layoutObject))
 {
     // FIXME: SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054
     bool establishesPaintInvalidationContainer = layoutObject == m_paintInvalidationContainer;
@@ -109,7 +109,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, con
     , m_paintOffset(next.m_paintOffset)
     , m_paintInvalidationContainer(next.m_paintInvalidationContainer)
     , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
-    , m_enclosingLayer(next.enclosingLayer(layoutObject))
+    , m_enclosingSelfPaintingLayer(next.enclosingSelfPaintingLayer(layoutObject))
 {
     ASSERT(layoutObject != m_paintInvalidationContainer);
 
@@ -145,19 +145,12 @@ void PaintInvalidationState::applyClipIfNeeded(const LayoutObject& layoutObject)
     m_paintOffset -= box.scrolledContentOffset();
 }
 
-PaintLayer& PaintInvalidationState::enclosingLayer(const LayoutObject& layoutObject) const
+PaintLayer& PaintInvalidationState::enclosingSelfPaintingLayer(const LayoutObject& layoutObject) const
 {
-    if (layoutObject.hasLayer())
+    if (layoutObject.hasLayer() && toLayoutBoxModelObject(layoutObject).hasSelfPaintingLayer())
         return *toLayoutBoxModelObject(layoutObject).layer();
 
-    // During paint invalidation, a multi-column spanner place holder invokes paint invalidation of
-    // its layoutObjectInFlowThread (which has a non-null spannerPlaceHolder) directly, skipping the
-    // parent of its layoutObjectInFlowThread which has a PaintLayer.
-    if (layoutObject.spannerPlaceholder())
-        return *layoutObject.enclosingLayer();
-
-    ASSERT(layoutObject.enclosingLayer() == &m_enclosingLayer);
-    return m_enclosingLayer;
+    return m_enclosingSelfPaintingLayer;
 }
 
 } // namespace blink
