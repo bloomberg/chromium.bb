@@ -848,8 +848,14 @@ class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
   }
 };
 
+// Flaky on linux_chromium_asan_rel_ng: crbug.com/581448
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_RenderThreadShutdownTest DISABLED_RenderThreadShutdownTest
+#else
+#define MAYBE_RenderThreadShutdownTest RenderThreadShutdownTest
+#endif
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestSingleProcess,
-                       RenderThreadShutdownTest) {
+                       MAYBE_RenderThreadShutdownTest) {
   SimpleTest(GetTestUrl("indexeddb", "shutdown_with_requests.html"));
 }
 
