@@ -6,15 +6,19 @@
 
 #include "android_webview/browser/net/token_binding_manager.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/ec_private_key.h"
 #include "jni/AwTokenBindingManager_jni.h"
+#include "net/base/net_errors.h"
+#include "net/ssl/channel_id_service.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
+using net::ChannelIDService;
 
 namespace android_webview {
 
@@ -26,10 +30,27 @@ void OnKeyReady(const ScopedJavaGlobalRef<jobject>& callback,
                 crypto::ECPrivateKey* key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(sgurun) implement conversion and plumbing the keypair to java.
-
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AwTokenBindingManager_onKeyReady(env, callback.obj());
+
+  if (status != net::OK || !key) {
+    Java_AwTokenBindingManager_onKeyReady(env, callback.obj(), nullptr,
+                                          nullptr);
+    return;
+  }
+
+  std::vector<uint8_t> private_key;
+  key->ExportEncryptedPrivateKey(ChannelIDService::kEPKIPassword, 1,
+                                 &private_key);
+  ScopedJavaLocalRef<jbyteArray> jprivate_key = base::android::ToJavaByteArray(
+      env, private_key.data(), private_key.size());
+
+  std::vector<uint8_t> public_key;
+  key->ExportPublicKey(&public_key);
+  ScopedJavaLocalRef<jbyteArray> jpublic_key = base::android::ToJavaByteArray(
+      env, public_key.data(), public_key.size());
+
+  Java_AwTokenBindingManager_onKeyReady(env, callback.obj(), jprivate_key.obj(),
+                                        jpublic_key.obj());
 }
 
 // Indicates webview client that key deletion is complete.
