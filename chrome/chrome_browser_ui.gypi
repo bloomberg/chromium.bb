@@ -2903,6 +2903,7 @@
             '<@(chrome_browser_ui_toolbar_model_sources)',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/engagement/site_engagement.mojom.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/plugins/plugins.mojom.cc',
           ],
           'dependencies': [
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
