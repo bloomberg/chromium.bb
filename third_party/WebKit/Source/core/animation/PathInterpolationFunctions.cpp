@@ -160,7 +160,7 @@ PassRefPtr<SVGPathByteStream> PathInterpolationFunctions::appliedValue(const Int
         toInterpolableList(*toInterpolableList(interpolableValue).get(PathArgsIndex)),
         toSVGPathNonInterpolableValue(nonInterpolableValue)->pathSegTypes());
     SVGPathByteStreamBuilder builder(*pathByteStream);
-    SVGPathParser(&source, &builder).parsePathDataFromSource(UnalteredParsing, false);
+    SVGPathParser(&source, &builder).parsePathDataFromSource(false);
     return pathByteStream.release();
 }
 

@@ -30,11 +30,6 @@
 
 namespace blink {
 
-enum PathParsingMode {
-    NormalizedParsing,
-    UnalteredParsing
-};
-
 class SVGPathConsumer;
 class SVGPathSource;
 
@@ -50,21 +45,18 @@ public:
         ASSERT(m_consumer);
     }
 
-    bool parsePathDataFromSource(PathParsingMode pathParsingMode, bool checkForInitialMoveTo = true)
+    bool parsePathDataFromSource(bool checkForInitialMoveTo = true)
     {
         ASSERT(m_source);
         ASSERT(m_consumer);
         if (checkForInitialMoveTo && !initialCommandIsMoveTo())
             return false;
-        if (pathParsingMode == NormalizedParsing)
-            return parseAndNormalizePath();
         return parsePath();
     }
 
 private:
     bool initialCommandIsMoveTo();
     bool parsePath();
-    bool parseAndNormalizePath();
 
     SVGPathSource* m_source;
     SVGPathConsumer* m_consumer;

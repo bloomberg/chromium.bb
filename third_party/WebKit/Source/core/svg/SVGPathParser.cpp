@@ -297,18 +297,4 @@ bool SVGPathNormalizer::decomposeArcToCubic(const FloatPoint& currentPoint, cons
     return true;
 }
 
-bool SVGPathParser::parseAndNormalizePath()
-{
-    SVGPathNormalizer normalizer(m_consumer);
-
-    while (m_source->hasMoreData()) {
-        PathSegmentData segment = m_source->parseSegment();
-        if (segment.command == PathSegUnknown)
-            return false;
-
-        normalizer.emitSegment(segment);
-    }
-    return true;
-}
-
 } // namespace blink
