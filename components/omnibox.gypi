@@ -181,6 +181,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'omnibox/browser/history_index_restore_observer.cc',
+        'omnibox/browser/history_index_restore_observer.h',
         'omnibox/browser/mock_autocomplete_provider_client.cc',
         'omnibox/browser/mock_autocomplete_provider_client.h',
         'omnibox/browser/test_scheme_classifier.cc',

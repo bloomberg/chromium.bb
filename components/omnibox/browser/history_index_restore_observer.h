@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_HISTORY_INDEX_RESTORE_OBSERVER_H_
-#define CHROME_TEST_BASE_HISTORY_INDEX_RESTORE_OBSERVER_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_HISTORY_INDEX_RESTORE_OBSERVER_H_
+#define COMPONENTS_OMNIBOX_BROWSER_HISTORY_INDEX_RESTORE_OBSERVER_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -31,4 +31,4 @@ class HistoryIndexRestoreObserver
   DISALLOW_COPY_AND_ASSIGN(HistoryIndexRestoreObserver);
 };
 
-#endif  // CHROME_TEST_BASE_HISTORY_INDEX_RESTORE_OBSERVER_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_HISTORY_INDEX_RESTORE_OBSERVER_H_

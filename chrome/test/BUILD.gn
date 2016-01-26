@@ -42,8 +42,6 @@ source_set("test_support") {
     "base/dialog_test_browser_window.h",
     "base/find_in_page_observer.cc",
     "base/find_in_page_observer.h",
-    "base/history_index_restore_observer.cc",
-    "base/history_index_restore_observer.h",
     "base/scoped_browser_locale.cc",
     "base/scoped_browser_locale.h",
     "base/scoped_bundle_swizzler_mac.h",
