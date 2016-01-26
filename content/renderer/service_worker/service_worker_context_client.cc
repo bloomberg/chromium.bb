@@ -521,7 +521,7 @@ void ServiceWorkerContextClient::didHandleNotificationClickEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
   Send(new ServiceWorkerHostMsg_NotificationClickEventFinished(
-      GetRoutingID(), request_id));
+      GetRoutingID(), request_id, result));
 }
 
 void ServiceWorkerContextClient::didHandlePushEvent(

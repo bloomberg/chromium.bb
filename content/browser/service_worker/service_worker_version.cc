@@ -654,37 +654,6 @@ void ServiceWorkerVersion::DispatchFetchEvent(
   }
 }
 
-void ServiceWorkerVersion::DispatchNotificationClickEvent(
-    const StatusCallback& callback,
-    int64_t persistent_notification_id,
-    const PlatformNotificationData& notification_data,
-    int action_index) {
-  OnBeginEvent();
-  DCHECK_EQ(ACTIVATED, status()) << status();
-  if (running_status() != RUNNING) {
-    // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(
-        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
-        base::Bind(&self::DispatchNotificationClickEvent,
-                   weak_factory_.GetWeakPtr(), callback,
-                   persistent_notification_id, notification_data,
-                   action_index)));
-    return;
-  }
-
-  int request_id = AddRequest(
-      callback, &notification_click_requests_, REQUEST_NOTIFICATION_CLICK,
-      ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK);
-  ServiceWorkerStatusCode status =
-      embedded_worker_->SendMessage(ServiceWorkerMsg_NotificationClickEvent(
-          request_id, persistent_notification_id, notification_data,
-          action_index));
-  if (status != SERVICE_WORKER_OK) {
-    notification_click_requests_.Remove(request_id);
-    RunSoon(base::Bind(callback, status));
-  }
-}
-
 void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
     const NavigatorConnectClient& client,
     const base::string16& message,
@@ -994,8 +963,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnInstallEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FetchEventFinished,
                         OnFetchEventFinished)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NotificationClickEventFinished,
-                        OnNotificationClickEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
                         OnOpenWindow)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetCachedMetadata,
@@ -1163,26 +1130,6 @@ void ServiceWorkerVersion::OnFetchEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   request->callback.Run(SERVICE_WORKER_OK, result, response);
   RemoveCallbackAndStopIfRedundant(&fetch_requests_, request_id);
-}
-
-void ServiceWorkerVersion::OnNotificationClickEventFinished(
-    int request_id) {
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerVersion::OnNotificationClickEventFinished",
-               "Request id", request_id);
-  PendingRequest<StatusCallback>* request =
-      notification_click_requests_.Lookup(request_id);
-  if (!request) {
-    NOTREACHED() << "Got unexpected message: " << request_id;
-    return;
-  }
-
-  ServiceWorkerMetrics::RecordEventDuration(
-      request->event_type, base::TimeTicks::Now() - request->start_time);
-
-  scoped_refptr<ServiceWorkerVersion> protect(this);
-  request->callback.Run(SERVICE_WORKER_OK);
-  RemoveCallbackAndStopIfRedundant(&notification_click_requests_, request_id);
 }
 
 void ServiceWorkerVersion::OnSimpleEventResponse(
@@ -1736,7 +1683,6 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
 bool ServiceWorkerVersion::HasInflightRequests() const {
   return !activate_requests_.IsEmpty() || !install_requests_.IsEmpty() ||
          !fetch_requests_.IsEmpty() ||
-         !notification_click_requests_.IsEmpty() ||
          !custom_requests_.IsEmpty() || !streaming_url_request_jobs_.empty();
 }
 
@@ -1843,9 +1789,6 @@ bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
           &fetch_requests_, info.id, SERVICE_WORKER_ERROR_TIMEOUT,
           /* The other args are ignored for non-OK status. */
           SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse());
-    case REQUEST_NOTIFICATION_CLICK:
-      return RunIDMapCallback(&notification_click_requests_, info.id,
-                              SERVICE_WORKER_ERROR_TIMEOUT);
     case REQUEST_CUSTOM:
       return RunIDMapCallback(&custom_requests_, info.id,
                               SERVICE_WORKER_ERROR_TIMEOUT);
@@ -1964,7 +1907,6 @@ void ServiceWorkerVersion::OnStoppedInternal(
   RunIDMapCallbacks(&fetch_requests_, SERVICE_WORKER_ERROR_FAILED,
                     SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
                     ServiceWorkerResponse());
-  RunIDMapCallbacks(&notification_click_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&custom_requests_, SERVICE_WORKER_ERROR_FAILED);
 
   // Close all mojo services. This will also fire and clear all callbacks

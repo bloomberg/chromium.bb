@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_database_data.h"
@@ -73,6 +74,24 @@ void NotificationClickEventFinished(
                           base::Bind(dispatch_complete_callback, status));
 }
 
+// Dispatches the notificationclick event on |service_worker|. Most be called on
+// the IO thread, and with the worker running.
+void DispatchNotificationClickEventOnWorker(
+    const scoped_refptr<ServiceWorkerVersion>& service_worker,
+    const NotificationDatabaseData& notification_database_data,
+    int action_index,
+    const ServiceWorkerVersion::StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  int request_id = service_worker->StartRequest(
+      ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK, callback);
+  service_worker->DispatchSimpleEvent<
+      ServiceWorkerHostMsg_NotificationClickEventFinished>(
+      request_id,
+      ServiceWorkerMsg_NotificationClickEvent(
+          request_id, notification_database_data.notification_id,
+          notification_database_data.notification_data, action_index));
+}
+
 // Dispatches the notificationclick on |service_worker_registration| if the
 // registration was available. Must be called on the IO thread.
 void DispatchNotificationClickEventOnRegistration(
@@ -91,15 +110,17 @@ void DispatchNotificationClickEventOnRegistration(
             << service_worker_status << " action_index: " << action_index;
 #endif
   if (service_worker_status == SERVICE_WORKER_OK) {
-    base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
+    ServiceWorkerVersion::StatusCallback dispatch_event_callback =
         base::Bind(&NotificationClickEventFinished, dispatch_complete_callback,
                    service_worker_registration);
 
     DCHECK(service_worker_registration->active_version());
-    service_worker_registration->active_version()
-        ->DispatchNotificationClickEvent(
-            dispatch_event_callback, notification_database_data.notification_id,
-            notification_database_data.notification_data, action_index);
+    service_worker_registration->active_version()->RunAfterStartWorker(
+        base::Bind(
+            &DispatchNotificationClickEventOnWorker,
+            make_scoped_refptr(service_worker_registration->active_version()),
+            notification_database_data, action_index, dispatch_event_callback),
+        dispatch_event_callback);
     return;
   }
 

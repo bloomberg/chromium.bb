@@ -53,7 +53,6 @@ class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
 struct NavigatorConnectClient;
-struct PlatformNotificationData;
 struct ServiceWorkerClientInfo;
 struct ServiceWorkerVersionInfo;
 struct TransferredMessagePort;
@@ -271,17 +270,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                           const base::Closure& prepare_callback,
                           const FetchCallback& fetch_callback);
 
-  // Sends notificationclick event to the associated embedded worker and
-  // asynchronously calls |callback| when it errors out or it gets a response
-  // from the worker to notify completion.
-  //
-  // This must be called when the status() is ACTIVATED.
-  void DispatchNotificationClickEvent(
-      const StatusCallback& callback,
-      int64_t persistent_notification_id,
-      const PlatformNotificationData& notification_data,
-      int action_index);
-
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
   // sent).
@@ -409,7 +397,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_ACTIVATE,
     REQUEST_INSTALL,
     REQUEST_FETCH,
-    REQUEST_NOTIFICATION_CLICK,
     REQUEST_CUSTOM,
     NUM_REQUEST_TYPES
   };
@@ -570,7 +557,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnFetchEventFinished(int request_id,
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
-  void OnNotificationClickEventFinished(int request_id);
   void OnSimpleEventResponse(int request_id,
                              blink::WebServiceWorkerEventResult result);
   void OnOpenWindow(int request_id, GURL url);
@@ -699,8 +685,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> activate_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> install_requests_;
   IDMap<PendingRequest<FetchCallback>, IDMapOwnPointer> fetch_requests_;
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>
-      notification_click_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
 
   // Stores all open connections to mojo services. Maps the service name to
@@ -836,6 +820,9 @@ bool ServiceWorkerVersion::EventResponseHandler<ResponseMessage, CallbackType>::
   if (!ResponseMessage::Dispatch(&message, &callback_, this, param,
                                  &CallbackType::Run))
     message.set_dispatch_error();
+
+  // At this point |this| can have been deleted, so don't do anything other
+  // than returning.
 
   return true;
 }
