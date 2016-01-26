@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#include <string>
-
 #include "ipc/ipc_export.h"
 
 namespace base {

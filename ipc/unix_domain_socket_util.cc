@@ -5,7 +5,6 @@
 #include "ipc/unix_domain_socket_util.h"
 
 #include <errno.h>
-#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
@@ -118,13 +117,10 @@ bool CreateClientUnixDomainSocket(const base::FilePath& socket_path,
                                   int* client_socket) {
   DCHECK(client_socket);
 
-  std::string socket_name = socket_path.value();
-  base::FilePath socket_dir = socket_path.DirName();
-
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
   base::ScopedFD fd(
-      MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len));
+      MakeUnixAddrForPath(socket_path.value(), &unix_addr, &unix_addr_len));
   if (!fd.is_valid())
     return false;
 
