@@ -20,12 +20,12 @@ executable("mandoline") {
     "//components/tracing:startup_tracing",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/runner:lib",
-    "//mojo/runner:register_local_aliases_fwd",
     "//mojo/shell",
     "//mojo/shell/package_manager",
     "//mojo/shell/runner/host:lib",
     "//mojo/shell/runner/host:switches",
+    "//mojo/shell/standalone:lib",
+    "//mojo/shell/standalone:register_local_aliases_fwd",
   ]
 
   data_deps = [

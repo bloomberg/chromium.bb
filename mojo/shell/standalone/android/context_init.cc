@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/standalone/register_local_aliases.h"
+#include "mojo/shell/standalone/android/context_init.h"
 
 namespace mojo {
 namespace shell {
 
-void RegisterLocalAliases(PackageManagerImpl* manager) {
-}
+void InitContext(Context* context) {}
 
 }  // namespace shell
 }  // namespace mojo

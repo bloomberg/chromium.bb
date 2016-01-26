@@ -5,10 +5,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/runner/context.h"
+#include "mojo/shell/standalone/context.h"
 
 namespace mojo {
-namespace runner {
+namespace shell {
 
 void InitContext(Context* context) {
   base::MessageLoopForUI::current()->PostTask(
@@ -18,5 +18,5 @@ void InitContext(Context* context) {
                  GURL("mojo:phone_ui")));
 }
 
-}  // namespace runner
+}  // namespace shell
 }  // namespace mojo

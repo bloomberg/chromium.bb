@@ -24,10 +24,7 @@ group("mojo") {
     deps += [ "//mojo/android" ]
   }
 
-  deps += [
-    "//mojo/runner",
-    "//mojo/shell:all",
-  ]
+  deps += [ "//mojo/shell:all" ]
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.
@@ -105,6 +102,6 @@ group("tests") {
   ]
 
   if (is_android) {
-    deps += [ "//mojo/runner:mojo_runner_apptests_apk" ]
+    deps += [ "//mojo/shell/standalone:mojo_shell_standalone_apptests_apk" ]
   }
 }

@@ -105,7 +105,7 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
   } else if (url_ == "about:blank") {
     // This is a little unfortunate. At the browser side, when starting a new
     // app for "about:blank", the application manager uses
-    // mojo::runner::AboutFetcher to construct a response for "about:blank".
+    // mojo::shell::AboutFetcher to construct a response for "about:blank".
     // However, when an app for "about:blank" already exists, it is reused and
     // we end up here. We cannot fetch the URL using mojo::URLLoader because it
     // is not an actual Web resource.

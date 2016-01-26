@@ -7,7 +7,7 @@ source_set("gles2") {
     "//components/mus:*",
     "//components/mus/ws:*",
     "//components/mus/surfaces:*",
-    "//mojo/runner:lib",  # For android
+    "//mojo/shell/standalone:lib",  # For android
   ]
 
   sources = [

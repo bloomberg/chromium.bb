@@ -21,11 +21,11 @@ executable("mandoline_runner") {
     "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/runner:lib",
-    "//mojo/runner:mojo_runner_lib",
-    "//mojo/runner:register_local_aliases_fwd",
     "//mojo/shell",
     "//mojo/shell/package_manager",
+    "//mojo/shell/standalone:lib",
+    "//mojo/shell/standalone:main_lib",
+    "//mojo/shell/standalone:register_local_aliases_fwd",
   ]
 
   sources = [
@@ -57,8 +57,8 @@ android_assets("mandoline_assets") {
     "//components/html_viewer:html_viewer_assets",
     "//components/resource_provider:resource_provider_assets",
     "//mandoline/services/core_services:core_services_assets",
-    "//mojo/runner:android_assets",
     "//mojo/services/network:network_assets",
+    "//mojo/shell/standalone:android_assets",
   ]
 
   if (use_aura) {
@@ -74,7 +74,7 @@ android_library("java") {
 
   deps = [
     "//base:base_java",
-    "//mojo/runner:java",
+    "//mojo/shell/standalone:java",
   ]
 }
 
@@ -103,8 +103,8 @@ android_apk("mandoline_apk") {
     ":mandoline_apk_resources",
     ":mandoline_assets",
     "//base:base_java",
-    "//mojo/runner:java",
-    "//mojo/runner:resources",
+    "//mojo/shell/standalone:java",
+    "//mojo/shell/standalone:resources",
     "//ui/platform_window/android:platform_window_java",
     google_play_services_resources,
   ]

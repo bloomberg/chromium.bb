@@ -7,8 +7,7 @@
 namespace mojo {
 namespace shell {
 
-void RegisterLocalAliases(PackageManagerImpl* manager) {
-}
+void RegisterLocalAliases(PackageManagerImpl* manager) {}
 
 }  // namespace shell
 }  // namespace mojo

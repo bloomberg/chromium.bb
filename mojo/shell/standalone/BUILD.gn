@@ -1,0 +1,307 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/mojo_application.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/test.gni")
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+source_set("register_local_aliases_fwd") {
+  sources = [
+    "register_local_aliases.h",
+  ]
+}
+
+# main() entrypoint definition is structured into a static lib for Android's
+# benefit, as it is shared between the standalone executable and other
+# executables (e.g. Mandoline).
+source_set("main_lib") {
+  sources = []
+
+  deps = [
+    ":lib",
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/message_pump",
+    "//mojo/shell/runner/host:lib",
+    "//mojo/shell/runner/host:switches",
+  ]
+
+  if (!is_android) {
+    sources += [
+      "desktop/main.cc",
+      "register_local_aliases.cc",
+      "register_local_aliases.h",
+    ]
+    deps += [
+      "//components/tracing:startup_tracing",
+      "//third_party/icu:icudata",
+    ]
+  } else {
+    sources += [
+      "android/context_init.h",
+      "android/library_loader.cc",
+      "android/main.cc",
+      "android/main.h",
+    ]
+
+    deps += [
+      ":jni_headers",
+      "//components/mus",
+      "//components/mus/ws:lib",
+      "//mojo/shell",
+      "//ui/gl",
+      "//ui/platform_window/android",
+    ]
+  }
+}
+
+executable("standalone") {
+  output_name = "mojo_runner"
+  deps = [
+    ":main_lib",
+    "//build/config/sanitizers:deps",
+  ]
+
+  if (is_android) {
+    sources = [
+      "android/context_init.cc",
+      "register_local_aliases.cc",
+    ]
+
+    deps += [
+      ":lib",
+      ":register_local_aliases_fwd",
+      "//third_party/mojo/src/mojo/edk/system",
+    ]
+
+    # On android, the executable is also the native library used by the apk.
+    # It means dynamic symbols must be preserved and exported.
+    ldflags = [ "-Wl,--export-dynamic" ]
+  }
+}
+
+source_set("lib") {
+  sources = [
+    "context.cc",
+    "context.h",
+    "scoped_user_data_dir.cc",
+    "scoped_user_data_dir.h",
+    "task_runners.cc",
+    "task_runners.h",
+    "tracer.cc",
+    "tracer.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base:base_static",
+    "//base/third_party/dynamic_annotations",
+    "//components/devtools_service/public/cpp",
+    "//components/devtools_service/public/interfaces",
+    "//components/tracing:startup_tracing",
+    "//mojo/message_pump",
+    "//mojo/services/network/public/interfaces",
+    "//mojo/services/tracing/public/cpp",
+    "//mojo/services/tracing/public/interfaces",
+    "//mojo/shell",
+    "//mojo/shell/package_manager",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/runner:init",
+    "//mojo/shell/runner/child:interfaces",
+    "//mojo/shell/runner/host:lib",
+    "//mojo/util:filename_util",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//ui/gl",
+    "//url",
+  ]
+
+  public_deps = [
+    ":switches",
+    "//mojo/shell",
+    "//mojo/shell/runner:init",
+  ]
+
+  if (!is_component_build) {
+    data_deps = [
+      "//components/devtools_service",
+      "//mojo/services/tracing",
+    ]
+  }
+
+  if (is_android) {
+    sources += [
+      "android/android_handler.cc",
+      "android/android_handler.h",
+      "android/android_handler_loader.cc",
+      "android/android_handler_loader.h",
+      "android/background_application_loader.cc",
+      "android/background_application_loader.h",
+      "android/ui_application_loader_android.cc",
+      "android/ui_application_loader_android.h",
+    ]
+
+    deps += [
+      ":jni_headers",
+      ":run_android_application_function",
+      "//components/mus/gles2",
+      "//mojo/shell/public/cpp:content_handler",
+    ]
+  } else {
+    sources += [
+      "desktop/launcher_process.cc",
+      "desktop/launcher_process.h",
+      "desktop/main_helper.cc",
+      "desktop/main_helper.h",
+    ]
+  }
+
+  # This target includes some files behind #ifdef OS... guards. Since gn is not
+  # smart enough to understand preprocess includes, it does complains about
+  # these includes when not using the build files for that OS. Suppress checking
+  # so we can enable checking for the rest of the targets in this file.
+  # TODO: Might be better to split the files with OS-specific includes out to a
+  # separate source_set so we can leave checking on for the rest of the target.
+  check_includes = false
+}
+
+source_set("switches") {
+  sources = [
+    "switches.cc",
+    "switches.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+if (is_android) {
+  generate_jni("jni_headers") {
+    sources = [
+      "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
+      "android/apk/src/org/chromium/mojo/shell/Bootstrap.java",
+      "android/apk/src/org/chromium/mojo/shell/ShellMain.java",
+    ]
+    jni_package = "mojo/shell"
+  }
+
+  android_library("bootstrap_java") {
+    java_files = [ "android/apk/src/org/chromium/mojo/shell/Bootstrap.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+
+    dex_path = "$target_out_dir/bootstrap_java.dex.jar"
+  }
+
+  shared_library("bootstrap") {
+    sources = [
+      "android/bootstrap.cc",
+      "register_local_aliases.cc",
+      "register_local_aliases.h",
+    ]
+    deps = [
+      ":jni_headers",
+      ":lib",
+      ":run_android_application_function",
+      "//base",
+      "//build/config/sanitizers:deps",
+    ]
+  }
+
+  # Shared header between the bootstrap and the main shell .so.
+  source_set("run_android_application_function") {
+    sources = [
+      "android/run_android_application_function.h",
+    ]
+
+    deps = [
+      "//base",
+    ]
+  }
+
+  android_library("java") {
+    java_files = [
+      "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
+      "android/apk/src/org/chromium/mojo/shell/FileHelper.java",
+      "android/apk/src/org/chromium/mojo/shell/MojoShellActivity.java",
+      "android/apk/src/org/chromium/mojo/shell/MojoShellApplication.java",
+      "android/apk/src/org/chromium/mojo/shell/ShellMain.java",
+    ]
+
+    deps = [
+      ":resources",
+      "//base:base_java",
+    ]
+  }
+
+  android_resources("resources") {
+    resource_dirs = [ "android/apk/res" ]
+    custom_package = "org.chromium.mojo.shell"
+  }
+
+  android_assets("android_assets") {
+    deps = [
+      ":bootstrap",
+      ":bootstrap_java",
+    ]
+    sources = [
+      "$root_out_dir/obj/mojo/shell/standalone/bootstrap_java.dex.jar",
+      "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
+    ]
+  }
+
+  android_assets("mojo_shell_standalone_apptests_assets") {
+    testonly = true
+    deps = [
+      ":android_assets",
+      "//components/clipboard:apptests_assets",
+      "//components/clipboard:clipboard_assets",
+      "//components/mus/ws:apptests_assets",
+      "//components/resource_provider:apptests_assets",
+      "//components/resource_provider:resource_provider_assets",
+      "//mojo/services/network:apptests_assets",
+      "//mojo/services/network:network_assets",
+      "//third_party/icu:icu_assets",
+    ]
+  }
+
+  copy("copy_mojo_shell_standalone") {
+    sources = [
+      "$root_out_dir/mojo_runner",
+    ]
+    outputs = [
+      "$root_shlib_dir/${shlib_prefix}mojo_runner$shlib_extension",
+    ]
+    deps = [
+      ":standalone",
+    ]
+  }
+
+  android_apk("mojo_shell_standalone_apptests_apk") {
+    testonly = true
+    apk_name = "MojoRunnerApptests"
+    android_manifest = "android/apk/AndroidManifest.xml"
+    native_libs = [ "${shlib_prefix}mojo_runner$shlib_extension" ]
+    write_asset_list = true
+
+    deps = [
+      ":copy_mojo_shell_standalone",
+      ":java",
+      ":mojo_shell_standalone_apptests_assets",
+      ":resources",
+      "//base:base_java",
+      "//ui/platform_window/android:platform_window_java",
+      google_play_services_resources,
+    ]
+  }
+}
