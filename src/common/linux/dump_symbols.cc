@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <link.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -220,7 +221,7 @@ class DumperLineToModule: public DwarfCUToModule::LineToModuleHandler {
   void StartCompilationUnit(const string& compilation_dir) {
     compilation_dir_ = compilation_dir;
   }
-  void ReadProgram(const char* program, uint64 length,
+  void ReadProgram(const uint8_t *program, uint64 length,
                    Module* module, std::vector<Module::Line>* lines) {
     DwarfLineToModule handler(module, compilation_dir_, lines);
     dwarf2reader::LineInfo parser(program, length, byte_reader_, &handler);
@@ -258,8 +259,8 @@ bool LoadDwarf(const string& dwarf_filename,
     string name = GetOffset<ElfClass, char>(elf_header,
                                             section_names->sh_offset) +
                   section->sh_name;
-    const char* contents = GetOffset<ElfClass, char>(elf_header,
-                                                     section->sh_offset);
+    const uint8_t *contents = GetOffset<ElfClass, uint8_t>(elf_header,
+                                                           section->sh_offset);
     file_context.AddSectionToSectionMap(name, contents, section->sh_size);
   }
 
@@ -268,7 +269,7 @@ bool LoadDwarf(const string& dwarf_filename,
   dwarf2reader::SectionMap::const_iterator debug_info_entry =
       file_context.section_map().find(".debug_info");
   assert(debug_info_entry != file_context.section_map().end());
-  const std::pair<const char*, uint64>& debug_info_section =
+  const std::pair<const uint8_t *, uint64>& debug_info_section =
       debug_info_entry->second;
   // This should never have been called if the file doesn't have a
   // .debug_info section.
@@ -345,8 +346,8 @@ bool LoadDwarfCFI(const string& dwarf_filename,
       dwarf2reader::ENDIANNESS_BIG : dwarf2reader::ENDIANNESS_LITTLE;
 
   // Find the call frame information and its size.
-  const char* cfi =
-      GetOffset<ElfClass, char>(elf_header, section->sh_offset);
+  const uint8_t *cfi =
+      GetOffset<ElfClass, uint8_t>(elf_header, section->sh_offset);
   size_t cfi_size = section->sh_size;
 
   // Plug together the parser, handler, and their entourages.
@@ -433,12 +434,13 @@ bool IsSameFile(const char* left_abspath, const string& right_path) {
 
 // Read the .gnu_debuglink and get the debug file name. If anything goes
 // wrong, return an empty string.
-string ReadDebugLink(const char* debuglink,
+string ReadDebugLink(const uint8_t *debuglink,
                      const size_t debuglink_size,
                      const bool big_endian,
                      const string& obj_file,
                      const std::vector<string>& debug_dirs) {
-  size_t debuglink_len = strlen(debuglink) + 5;  // Include '\0' + CRC32.
+  // Include '\0' + CRC32 (4 bytes).
+  size_t debuglink_len = strlen(reinterpret_cast<const char *>(debuglink)) + 5;
   debuglink_len = 4 * ((debuglink_len + 3) / 4);  // Round up to 4 bytes.
 
   // Sanity check.
@@ -459,7 +461,8 @@ string ReadDebugLink(const char* debuglink,
   std::vector<string>::const_iterator it;
   for (it = debug_dirs.begin(); it < debug_dirs.end(); ++it) {
     const string& debug_dir = *it;
-    debuglink_path = debug_dir + "/" + debuglink;
+    debuglink_path = debug_dir + "/" +
+                     reinterpret_cast<const char *>(debuglink);
 
     // There is the annoying case of /path/to/foo.so having foo.so as the
     // debug link file name. Thus this may end up opening /path/to/foo.so again,
@@ -769,9 +772,9 @@ bool LoadSymbols(const string& obj_file,
                                            names_end, elf_header->e_shnum);
       if (gnu_debuglink_section) {
         if (!info->debug_dirs().empty()) {
-          const char* debuglink_contents =
-              GetOffset<ElfClass, char>(elf_header,
-                                        gnu_debuglink_section->sh_offset);
+          const uint8_t *debuglink_contents =
+              GetOffset<ElfClass, uint8_t>(elf_header,
+                                           gnu_debuglink_section->sh_offset);
           string debuglink_file =
               ReadDebugLink(debuglink_contents,
                             gnu_debuglink_section->sh_size,

@@ -40,6 +40,8 @@
 #ifndef COMMON_DWARF_DWARF2READER_H__
 #define COMMON_DWARF_DWARF2READER_H__
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
@@ -58,7 +60,7 @@ class LineInfoHandler;
 
 // This maps from a string naming a section to a pair containing a
 // the data for the section, and the size of the section.
-typedef std::map<string, std::pair<const char*, uint64> > SectionMap;
+typedef std::map<string, std::pair<const uint8_t *, uint64> > SectionMap;
 typedef std::list<std::pair<enum DwarfAttribute, enum DwarfForm> >
     AttributeList;
 typedef AttributeList::iterator AttributeIterator;
@@ -85,7 +87,7 @@ class LineInfo {
   // to the beginning and length of the line information to read.
   // Reader is a ByteReader class that has the endianness set
   // properly.
-  LineInfo(const char* buffer_, uint64 buffer_length,
+  LineInfo(const uint8_t *buffer_, uint64 buffer_length,
            ByteReader* reader, LineInfoHandler* handler);
 
   virtual ~LineInfo() {
@@ -111,7 +113,7 @@ class LineInfo {
   static bool ProcessOneOpcode(ByteReader* reader,
                                LineInfoHandler* handler,
                                const struct LineInfoHeader &header,
-                               const char* start,
+                               const uint8_t *start,
                                struct LineStateMachine* lsm,
                                size_t* len,
                                uintptr pc,
@@ -139,11 +141,11 @@ class LineInfo {
   // buffer is the buffer for our line info, starting at exactly where
   // the line info to read is.  after_header is the place right after
   // the end of the line information header.
-  const char* buffer_;
+  const uint8_t *buffer_;
 #ifndef NDEBUG
   uint64 buffer_length_;
 #endif
-  const char* after_header_;
+  const uint8_t *after_header_;
 };
 
 // This class is the main interface between the line info reader and
@@ -268,29 +270,27 @@ class CompilationUnit {
 
   // Processes a single DIE for this compilation unit and return a new
   // pointer just past the end of it
-  const char* ProcessDIE(uint64 dieoffset,
-                                  const char* start,
-                                  const Abbrev& abbrev);
+  const uint8_t *ProcessDIE(uint64 dieoffset,
+                            const uint8_t *start,
+                            const Abbrev& abbrev);
 
   // Processes a single attribute and return a new pointer just past the
   // end of it
-  const char* ProcessAttribute(uint64 dieoffset,
-                                        const char* start,
-                                        enum DwarfAttribute attr,
-                                        enum DwarfForm form);
+  const uint8_t *ProcessAttribute(uint64 dieoffset,
+                                  const uint8_t *start,
+                                  enum DwarfAttribute attr,
+                                  enum DwarfForm form);
 
   // Processes all DIEs for this compilation unit
   void ProcessDIEs();
 
   // Skips the die with attributes specified in ABBREV starting at
   // START, and return the new place to position the stream to.
-  const char* SkipDIE(const char* start,
-                               const Abbrev& abbrev);
+  const uint8_t *SkipDIE(const uint8_t *start, const Abbrev& abbrev);
 
   // Skips the attribute starting at START, with FORM, and return the
   // new place to position the stream to.
-  const char* SkipAttribute(const char* start,
-                                     enum DwarfForm form);
+  const uint8_t *SkipAttribute(const uint8_t *start, enum DwarfForm form);
 
   // Offset from section start is the offset of this compilation unit
   // from the beginning of the .debug_info section.
@@ -299,9 +299,9 @@ class CompilationUnit {
   // buffer is the buffer for our CU, starting at .debug_info + offset
   // passed in from constructor.
   // after_header points to right after the compilation unit header.
-  const char* buffer_;
+  const uint8_t *buffer_;
   uint64 buffer_length_;
-  const char* after_header_;
+  const uint8_t *after_header_;
 
   // The associated ByteReader that handles endianness issues for us
   ByteReader* reader_;
@@ -320,7 +320,7 @@ class CompilationUnit {
   // String section buffer and length, if we have a string section.
   // This is here to avoid doing a section lookup for strings in
   // ProcessAttribute, which is in the hot path for DWARF2 reading.
-  const char* string_buffer_;
+  const uint8_t *string_buffer_;
   uint64 string_buffer_length_;
 };
 
@@ -383,7 +383,7 @@ class Dwarf2Handler {
   virtual void ProcessAttributeBuffer(uint64 offset,
                                       enum DwarfAttribute attr,
                                       enum DwarfForm form,
-                                      const char* data,
+                                      const uint8_t *data,
                                       uint64 len) { }
 
   // Called when we have an attribute with string data to give to our handler.
@@ -639,7 +639,7 @@ class CallFrameInfo {
   // The mechanics of C++ exception handling, personality routines,
   // and language-specific data areas are described here, rather nicely:
   // http://www.codesourcery.com/public/cxx-abi/abi-eh.html
-  CallFrameInfo(const char *buffer, size_t buffer_length,
+  CallFrameInfo(const uint8_t *buffer, size_t buffer_length,
                 ByteReader *reader, Handler *handler, Reporter *reporter,
                 bool eh_frame = false)
       : buffer_(buffer), buffer_length_(buffer_length),
@@ -667,7 +667,7 @@ class CallFrameInfo {
     size_t offset;
 
     // The start of this entry in the buffer.
-    const char *start;
+    const uint8_t *start;
     
     // Which kind of entry this is.
     //
@@ -678,16 +678,16 @@ class CallFrameInfo {
 
     // The end of this entry's common prologue (initial length and id), and
     // the start of this entry's kind-specific fields.
-    const char *fields;
+    const uint8_t *fields;
 
     // The start of this entry's instructions.
-    const char *instructions;
+    const uint8_t *instructions;
 
     // The address past the entry's last byte in the buffer. (Note that
     // since offset points to the entry's initial length field, and the
     // length field is the number of bytes after that field, this is not
     // simply buffer_ + offset + length.)
-    const char *end;
+    const uint8_t *end;
 
     // For both DWARF CFI and .eh_frame sections, this is the CIE id in a
     // CIE, and the offset of the associated CIE in an FDE.
@@ -764,7 +764,7 @@ class CallFrameInfo {
   // true. On failure, report the problem, and return false. Even if we
   // return false, set ENTRY->end to the first byte after the entry if we
   // were able to figure that out, or NULL if we weren't.
-  bool ReadEntryPrologue(const char *cursor, Entry *entry);
+  bool ReadEntryPrologue(const uint8_t *cursor, Entry *entry);
 
   // Parse the fields of a CIE after the entry prologue, including any 'z'
   // augmentation data. Assume that the 'Entry' fields of CIE are
@@ -792,7 +792,7 @@ class CallFrameInfo {
   }
 
   // The contents of the DWARF .debug_info section we're parsing.
-  const char *buffer_;
+  const uint8_t *buffer_;
   size_t buffer_length_;
 
   // For reading multi-byte values with the appropriate endianness.

@@ -41,6 +41,7 @@
 #include <libgen.h>
 #include <mach-o/arch.h>
 #include <mach-o/fat.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -316,7 +317,7 @@ class DumpSymbols::DumperLineToModule:
     compilation_dir_ = compilation_dir;
   }
 
-  void ReadProgram(const char *program, uint64 length,
+  void ReadProgram(const uint8_t *program, uint64 length,
                    Module *module, vector<Module::Line> *lines) {
     DwarfLineToModule handler(module, compilation_dir_, lines);
     dwarf2reader::LineInfo parser(program, length, byte_reader_, &handler);
@@ -346,7 +347,7 @@ bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
        it != dwarf_sections.end(); ++it) {
     file_context.AddSectionToSectionMap(
         it->first,
-        reinterpret_cast<const char *>(it->second.contents.start),
+        it->second.contents.start,
         it->second.contents.Size());
   }
 
@@ -354,7 +355,7 @@ bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
   dwarf2reader::SectionMap::const_iterator debug_info_entry =
       file_context.section_map().find("__debug_info");
   assert(debug_info_entry != file_context.section_map().end());
-  const std::pair<const char*, uint64>& debug_info_section =
+  const std::pair<const uint8_t *, uint64>& debug_info_section =
       debug_info_entry->second;
   // There had better be a __debug_info section!
   if (!debug_info_section.first) {
@@ -424,7 +425,7 @@ bool DumpSymbols::ReadCFI(google_breakpad::Module *module,
   }
 
   // Find the call frame information and its size.
-  const char *cfi = reinterpret_cast<const char *>(section.contents.start);
+  const uint8_t *cfi = section.contents.start;
   size_t cfi_size = section.contents.Size();
 
   // Plug together the parser, handler, and their entourages.

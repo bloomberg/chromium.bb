@@ -83,9 +83,9 @@ void CompilationUnit::ReadAbbrevs() {
   // The only way to check whether we are reading over the end of the
   // buffer would be to first compute the size of the leb128 data by
   // reading it, then go back and read it again.
-  const char* abbrev_start = iter->second.first +
+  const uint8_t *abbrev_start = iter->second.first +
                                       header_.abbrev_offset;
-  const char* abbrevptr = abbrev_start;
+  const uint8_t *abbrevptr = abbrev_start;
 #ifndef NDEBUG
   const uint64 abbrev_length = iter->second.second - header_.abbrev_offset;
 #endif
@@ -132,8 +132,8 @@ void CompilationUnit::ReadAbbrevs() {
 }
 
 // Skips a single DIE's attributes.
-const char* CompilationUnit::SkipDIE(const char* start,
-                                              const Abbrev& abbrev) {
+const uint8_t *CompilationUnit::SkipDIE(const uint8_t* start,
+                                        const Abbrev& abbrev) {
   for (AttributeList::const_iterator i = abbrev.attributes.begin();
        i != abbrev.attributes.end();
        i++)  {
@@ -143,8 +143,8 @@ const char* CompilationUnit::SkipDIE(const char* start,
 }
 
 // Skips a single attribute form's data.
-const char* CompilationUnit::SkipAttribute(const char* start,
-                                                    enum DwarfForm form) {
+const uint8_t *CompilationUnit::SkipAttribute(const uint8_t *start,
+                                              enum DwarfForm form) {
   size_t len;
 
   switch (form) {
@@ -171,7 +171,7 @@ const char* CompilationUnit::SkipAttribute(const char* start,
     case DW_FORM_ref_sig8:
       return start + 8;
     case DW_FORM_string:
-      return start + strlen(start) + 1;
+      return start + strlen(reinterpret_cast<const char *>(start)) + 1;
     case DW_FORM_udata:
     case DW_FORM_ref_udata:
       reader_->ReadUnsignedLEB128(start, &len);
@@ -218,7 +218,7 @@ const char* CompilationUnit::SkipAttribute(const char* start,
 // the offset in the .debug_abbrev section for our abbrevs, and an
 // address size.
 void CompilationUnit::ReadHeader() {
-  const char* headerptr = buffer_;
+  const uint8_t *headerptr = buffer_;
   size_t initial_length_size;
 
   assert(headerptr + 4 < buffer_ + buffer_length_);
@@ -305,8 +305,8 @@ uint64 CompilationUnit::Start() {
 // If one really wanted, you could merge SkipAttribute and
 // ProcessAttribute
 // This is all boring data manipulation and calling of the handler.
-const char* CompilationUnit::ProcessAttribute(
-    uint64 dieoffset, const char* start, enum DwarfAttribute attr,
+const uint8_t *CompilationUnit::ProcessAttribute(
+    uint64 dieoffset, const uint8_t *start, enum DwarfAttribute attr,
     enum DwarfForm form) {
   size_t len;
 
@@ -340,7 +340,7 @@ const char* CompilationUnit::ProcessAttribute(
                                          reader_->ReadEightBytes(start));
       return start + 8;
     case DW_FORM_string: {
-      const char* str = start;
+      const char *str = reinterpret_cast<const char *>(start);
       handler_->ProcessAttributeString(dieoffset, attr, form,
                                        str);
       return start + strlen(str) + 1;
@@ -440,7 +440,7 @@ const char* CompilationUnit::ProcessAttribute(
       const uint64 offset = reader_->ReadOffset(start);
       assert(string_buffer_ + offset < string_buffer_ + string_buffer_length_);
 
-      const char* str = string_buffer_ + offset;
+      const char *str = reinterpret_cast<const char *>(string_buffer_ + offset);
       handler_->ProcessAttributeString(dieoffset, attr, form,
                                        str);
       return start + reader_->OffsetSize();
@@ -450,9 +450,9 @@ const char* CompilationUnit::ProcessAttribute(
   return NULL;
 }
 
-const char* CompilationUnit::ProcessDIE(uint64 dieoffset,
-                                                 const char* start,
-                                                 const Abbrev& abbrev) {
+const uint8_t *CompilationUnit::ProcessDIE(uint64 dieoffset,
+                                           const uint8_t *start,
+                                           const Abbrev& abbrev) {
   for (AttributeList::const_iterator i = abbrev.attributes.begin();
        i != abbrev.attributes.end();
        i++)  {
@@ -462,12 +462,12 @@ const char* CompilationUnit::ProcessDIE(uint64 dieoffset,
 }
 
 void CompilationUnit::ProcessDIEs() {
-  const char* dieptr = after_header_;
+  const uint8_t *dieptr = after_header_;
   size_t len;
 
   // lengthstart is the place the length field is based on.
   // It is the point in the header after the initial length field
-  const char* lengthstart = buffer_;
+  const uint8_t *lengthstart = buffer_;
 
   // In 64 bit dwarf, the initial length is 12 bytes, because of the
   // 0xffffffff at the start.
@@ -515,7 +515,7 @@ void CompilationUnit::ProcessDIEs() {
   }
 }
 
-LineInfo::LineInfo(const char* buffer, uint64 buffer_length,
+LineInfo::LineInfo(const uint8_t *buffer, uint64 buffer_length,
                    ByteReader* reader, LineInfoHandler* handler):
     handler_(handler), reader_(reader), buffer_(buffer) {
 #ifndef NDEBUG
@@ -533,7 +533,7 @@ uint64 LineInfo::Start() {
 // The header for a debug_line section is mildly complicated, because
 // the line info is very tightly encoded.
 void LineInfo::ReadHeader() {
-  const char* lineptr = buffer_;
+  const uint8_t *lineptr = buffer_;
   size_t initial_length_size;
 
   const uint64 initial_length
@@ -580,7 +580,7 @@ void LineInfo::ReadHeader() {
   if (*lineptr) {
     uint32 dirindex = 1;
     while (*lineptr) {
-      const char* dirname = lineptr;
+      const char *dirname = reinterpret_cast<const char *>(lineptr);
       handler_->DefineDir(dirname, dirindex);
       lineptr += strlen(dirname) + 1;
       dirindex++;
@@ -593,7 +593,7 @@ void LineInfo::ReadHeader() {
     uint32 fileindex = 1;
     size_t len;
     while (*lineptr) {
-      const char* filename = lineptr;
+      const char *filename = reinterpret_cast<const char *>(lineptr);
       lineptr += strlen(filename) + 1;
 
       uint64 dirindex = reader_->ReadUnsignedLEB128(lineptr, &len);
@@ -618,7 +618,7 @@ void LineInfo::ReadHeader() {
 bool LineInfo::ProcessOneOpcode(ByteReader* reader,
                                 LineInfoHandler* handler,
                                 const struct LineInfoHeader &header,
-                                const char* start,
+                                const uint8_t *start,
                                 struct LineStateMachine* lsm,
                                 size_t* len,
                                 uintptr pc,
@@ -759,7 +759,7 @@ bool LineInfo::ProcessOneOpcode(ByteReader* reader,
         }
           break;
         case DW_LNE_define_file: {
-          const char* filename  = start;
+          const char *filename = reinterpret_cast<const char *>(start);
 
           templen = strlen(filename) + 1;
           start += templen;
@@ -806,7 +806,7 @@ void LineInfo::ReadLines() {
 
   // lengthstart is the place the length field is based on.
   // It is the point in the header after the initial length field
-  const char* lengthstart = buffer_;
+  const uint8_t *lengthstart = buffer_;
 
   // In 64 bit dwarf, the initial length is 12 bytes, because of the
   // 0xffffffff at the start.
@@ -815,7 +815,7 @@ void LineInfo::ReadLines() {
   else
     lengthstart += 4;
 
-  const char* lineptr = after_header_;
+  const uint8_t *lineptr = after_header_;
   lsm.Reset(header_.default_is_stmt);
 
   // The LineInfoHandler interface expects each line's length along
@@ -1314,7 +1314,7 @@ class CallFrameInfo::State {
   const Entry *entry_;
 
   // The next instruction to process.
-  const char *cursor_;
+  const uint8_t *cursor_;
 
   // The current set of rules.
   RuleMap rules_;
@@ -1412,7 +1412,8 @@ bool CallFrameInfo::State::ParseOperands(const char *format,
         if (len > bytes_left || expression_length > bytes_left - len)
           return ReportIncomplete();
         cursor_ += len;
-        operands->expression = string(cursor_, expression_length);
+        operands->expression = string(reinterpret_cast<const char *>(cursor_),
+                                      expression_length);
         cursor_ += expression_length;
         break;
       }
@@ -1765,8 +1766,8 @@ bool CallFrameInfo::State::DoRestore(unsigned reg) {
   return DoRule(reg, rule);
 }
 
-bool CallFrameInfo::ReadEntryPrologue(const char *cursor, Entry *entry) {
-  const char *buffer_end = buffer_ + buffer_length_;
+bool CallFrameInfo::ReadEntryPrologue(const uint8_t *cursor, Entry *entry) {
+  const uint8_t *buffer_end = buffer_ + buffer_length_;
 
   // Initialize enough of ENTRY for use in error reporting.
   entry->offset = cursor - buffer_;
@@ -1844,7 +1845,7 @@ bool CallFrameInfo::ReadEntryPrologue(const char *cursor, Entry *entry) {
 }
 
 bool CallFrameInfo::ReadCIEFields(CIE *cie) {
-  const char *cursor = cie->fields;
+  const uint8_t *cursor = cie->fields;
   size_t len;
 
   assert(cie->kind == kCIE);
@@ -1875,13 +1876,14 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
     return false;
   }
 
-  const char *augmentation_start = cursor;
-  const void *augmentation_end =
-      memchr(augmentation_start, '\0', cie->end - augmentation_start);
+  const uint8_t *augmentation_start = cursor;
+  const uint8_t *augmentation_end =
+      reinterpret_cast<const uint8_t *>(memchr(augmentation_start, '\0',
+                                               cie->end - augmentation_start));
   if (! augmentation_end) return ReportIncomplete(cie);
-  cursor = static_cast<const char *>(augmentation_end);
-  cie->augmentation = string(augmentation_start,
-                                  cursor - augmentation_start);
+  cursor = augmentation_end;
+  cie->augmentation = string(reinterpret_cast<const char *>(augmentation_start),
+                             cursor - augmentation_start);
   // Skip the terminating '\0'.
   cursor++;
 
@@ -1927,9 +1929,9 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
     if (size_t(cie->end - cursor) < len + data_size)
       return ReportIncomplete(cie);
     cursor += len;
-    const char *data = cursor;
+    const uint8_t *data = cursor;
     cursor += data_size;
-    const char *data_end = cursor;
+    const uint8_t *data_end = cursor;
 
     cie->has_z_lsda = false;
     cie->has_z_personality = false;
@@ -2021,7 +2023,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
 }
   
 bool CallFrameInfo::ReadFDEFields(FDE *fde) {
-  const char *cursor = fde->fields;
+  const uint8_t *cursor = fde->fields;
   size_t size;
 
   fde->address = reader_->ReadEncodedPointer(cursor, fde->cie->pointer_encoding,
@@ -2087,10 +2089,10 @@ bool CallFrameInfo::ReadFDEFields(FDE *fde) {
 }
   
 bool CallFrameInfo::Start() {
-  const char *buffer_end = buffer_ + buffer_length_;
-  const char *cursor;
+  const uint8_t *buffer_end = buffer_ + buffer_length_;
+  const uint8_t *cursor;
   bool all_ok = true;
-  const char *entry_end;
+  const uint8_t *entry_end;
   bool ok;
 
   // Traverse all the entries in buffer_, skipping CIEs and offering
