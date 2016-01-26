@@ -200,7 +200,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
   // Creates a copy of the object.
   RSAPrivateKey* Copy() const;
 
-  // Exports the private key to a PKCS #1 PrivateKey block.
+  // Exports the private key to a PKCS #8 PrivateKeyInfo block.
   bool ExportPrivateKey(std::vector<uint8_t>* output) const;
 
   // Exports the public key to an X509 SubjectPublicKeyInfo block.
