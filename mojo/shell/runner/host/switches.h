@@ -11,6 +11,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kChildProcess[];
 extern const char kEnableSandbox[];
+extern const char kPrimordialPipeToken[];
 
 }  // namespace switches
 

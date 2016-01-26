@@ -7,6 +7,8 @@ import("//testing/test.gni")
 source_set("test_support") {
   testonly = true
   sources = [
+    "mojo_test_base.cc",
+    "mojo_test_base.h",
     "multiprocess_test_helper.cc",
     "multiprocess_test_helper.h",
     "scoped_ipc_support.cc",

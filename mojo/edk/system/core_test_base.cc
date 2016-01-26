@@ -31,110 +31,87 @@ class MockDispatcher : public Dispatcher {
     return make_scoped_refptr(new MockDispatcher(info));
   }
 
-  // |Dispatcher| private methods:
+  // Dispatcher:
   Type GetType() const override { return Type::UNKNOWN; }
 
- private:
-  explicit MockDispatcher(CoreTestBase::MockHandleInfo* info) : info_(info) {
-    CHECK(info_);
-    info_->IncrementCtorCallCount();
-  }
-
-  ~MockDispatcher() override { info_->IncrementDtorCallCount(); }
-
-  // |Dispatcher| protected methods:
-  void CloseImplNoLock() override {
+  MojoResult Close() override {
     info_->IncrementCloseCallCount();
-    lock().AssertAcquired();
+    return MOJO_RESULT_OK;
   }
 
-  MojoResult WriteMessageImplNoLock(
+  MojoResult WriteMessage(
       const void* bytes,
       uint32_t num_bytes,
-      std::vector<DispatcherTransport>* transports,
+      const DispatcherInTransit* dispatchers,
+      uint32_t num_dispatchers,
       MojoWriteMessageFlags /*flags*/) override {
     info_->IncrementWriteMessageCallCount();
-    lock().AssertAcquired();
 
     if (num_bytes > GetConfiguration().max_message_num_bytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-    if (transports)
+    if (dispatchers)
       return MOJO_RESULT_UNIMPLEMENTED;
 
     return MOJO_RESULT_OK;
   }
 
-  MojoResult ReadMessageImplNoLock(void* bytes,
-                                   uint32_t* num_bytes,
-                                   DispatcherVector* dispatchers,
-                                   uint32_t* num_dispatchers,
-                                   MojoReadMessageFlags /*flags*/) override {
+  MojoResult ReadMessage(void* bytes,
+                         uint32_t* num_bytes,
+                         MojoHandle* handle,
+                         uint32_t* num_handles,
+                         MojoReadMessageFlags /*flags*/) override {
     info_->IncrementReadMessageCallCount();
-    lock().AssertAcquired();
 
-    if (num_dispatchers) {
-      *num_dispatchers = 1;
-      if (dispatchers) {
-        // Okay to leave an invalid dispatcher.
-        dispatchers->resize(1);
-      }
-    }
+    if (num_handles)
+      *num_handles = 1;
 
     return MOJO_RESULT_OK;
   }
 
-  MojoResult WriteDataImplNoLock(const void* /*elements*/,
-                                 uint32_t* /*num_bytes*/,
-                                 MojoWriteDataFlags /*flags*/) override {
+  MojoResult WriteData(const void* elements,
+                       uint32_t* num_bytes,
+                       MojoWriteDataFlags flags) override {
     info_->IncrementWriteDataCallCount();
-    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult BeginWriteDataImplNoLock(
-      void** /*buffer*/,
-      uint32_t* /*buffer_num_bytes*/,
-      MojoWriteDataFlags /*flags*/) override {
+  MojoResult BeginWriteData(void** buffer,
+                            uint32_t* buffer_num_bytes,
+                            MojoWriteDataFlags flags) override {
     info_->IncrementBeginWriteDataCallCount();
-    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult EndWriteDataImplNoLock(uint32_t /*num_bytes_written*/) override {
+  MojoResult EndWriteData(uint32_t num_bytes_written) override {
     info_->IncrementEndWriteDataCallCount();
-    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult ReadDataImplNoLock(void* /*elements*/,
-                                uint32_t* /*num_bytes*/,
-                                MojoReadDataFlags /*flags*/) override {
+  MojoResult ReadData(void* elements,
+                      uint32_t* num_bytes,
+                      MojoReadDataFlags flags) override {
     info_->IncrementReadDataCallCount();
-    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult BeginReadDataImplNoLock(const void** /*buffer*/,
-                                     uint32_t* /*buffer_num_bytes*/,
-                                     MojoReadDataFlags /*flags*/) override {
+  MojoResult BeginReadData(const void** buffer,
+                           uint32_t* buffer_num_bytes,
+                           MojoReadDataFlags flags) override {
     info_->IncrementBeginReadDataCallCount();
-    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) override {
+  MojoResult EndReadData(uint32_t num_bytes_read) override {
     info_->IncrementEndReadDataCallCount();
-    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult AddAwakableImplNoLock(Awakable* awakable,
-                                   MojoHandleSignals /*signals*/,
-                                   uintptr_t /*context*/,
-                                   HandleSignalsState* signals_state) override {
+  MojoResult AddAwakable(Awakable* awakable,
+                         MojoHandleSignals /*signals*/,
+                         uintptr_t /*context*/,
+                         HandleSignalsState* signals_state) override {
     info_->IncrementAddAwakableCallCount();
-    lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
     if (info_->IsAddAwakableAllowed()) {
@@ -145,23 +122,20 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  void RemoveAwakableImplNoLock(Awakable* /*awakable*/,
-                                HandleSignalsState* signals_state) override {
+  void RemoveAwakable(Awakable* /*awakable*/,
+                      HandleSignalsState* signals_state) override {
     info_->IncrementRemoveAwakableCallCount();
-    lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
   }
 
-  void CancelAllAwakablesNoLock() override {
-    info_->IncrementCancelAllAwakablesCallCount();
-    lock().AssertAcquired();
+ private:
+  explicit MockDispatcher(CoreTestBase::MockHandleInfo* info) : info_(info) {
+    CHECK(info_);
+    info_->IncrementCtorCallCount();
   }
 
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
-      override {
-    return Create(info_);
-  }
+  ~MockDispatcher() override { info_->IncrementDtorCallCount(); }
 
   CoreTestBase::MockHandleInfo* const info_;
 
@@ -203,7 +177,6 @@ CoreTestBase_MockHandleInfo::CoreTestBase_MockHandleInfo()
       end_read_data_call_count_(0),
       add_awakable_call_count_(0),
       remove_awakable_call_count_(0),
-      cancel_all_awakables_call_count_(0),
       add_awakable_allowed_(false) {
 }
 
@@ -273,11 +246,6 @@ unsigned CoreTestBase_MockHandleInfo::GetAddAwakableCallCount() const {
 unsigned CoreTestBase_MockHandleInfo::GetRemoveAwakableCallCount() const {
   base::AutoLock locker(lock_);
   return remove_awakable_call_count_;
-}
-
-unsigned CoreTestBase_MockHandleInfo::GetCancelAllAwakablesCallCount() const {
-  base::AutoLock locker(lock_);
-  return cancel_all_awakables_call_count_;
 }
 
 size_t CoreTestBase_MockHandleInfo::GetAddedAwakableSize() const {
@@ -353,11 +321,6 @@ void CoreTestBase_MockHandleInfo::IncrementAddAwakableCallCount() {
 void CoreTestBase_MockHandleInfo::IncrementRemoveAwakableCallCount() {
   base::AutoLock locker(lock_);
   remove_awakable_call_count_++;
-}
-
-void CoreTestBase_MockHandleInfo::IncrementCancelAllAwakablesCallCount() {
-  base::AutoLock locker(lock_);
-  cancel_all_awakables_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::AllowAddAwakable(bool alllow) {

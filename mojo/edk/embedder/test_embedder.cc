@@ -19,18 +19,12 @@ namespace edk {
 namespace internal {
 
 bool ShutdownCheckNoLeaks(Core* core) {
-  // No point in taking the lock.
-  const HandleTable::HandleToEntryMap& handle_to_entry_map =
-      core->handle_table_.handle_to_entry_map_;
-
-  if (handle_to_entry_map.empty())
+  std::vector<MojoHandle> leaked_handles;
+  core->GetActiveHandlesForTest(&leaked_handles);
+  if (leaked_handles.empty())
     return true;
-
-  for (HandleTable::HandleToEntryMap::const_iterator it =
-           handle_to_entry_map.begin();
-       it != handle_to_entry_map.end(); ++it) {
-    LOG(ERROR) << "Mojo embedder shutdown: Leaking handle " << (*it).first;
-  }
+  for (auto handle : leaked_handles)
+    LOG(ERROR) << "Mojo embedder shutdown: Leaking handle " << handle;
   return false;
 }
 
@@ -47,10 +41,6 @@ bool Shutdown() {
   CHECK(internal::g_platform_support);
   delete internal::g_platform_support;
   internal::g_platform_support = nullptr;
-
-  CHECK(internal::g_broker);
-  delete internal::g_broker;
-  internal::g_broker = nullptr;
 
   return rv;
 }

@@ -300,42 +300,34 @@ scoped_ptr<mojo::shell::LinuxSandbox> InitializeSandbox() {
 }
 #endif
 
-ScopedMessagePipeHandle InitializeHostMessagePipe(
+void InitializeHostMessagePipe(
     embedder::ScopedPlatformHandle platform_channel,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
-  ScopedMessagePipeHandle host_message_pipe(
-      embedder::CreateChannel(std::move(platform_channel),
-                              base::Bind(&DidCreateChannel), io_task_runner));
-
+    scoped_refptr<base::TaskRunner> io_task_runner,
+    const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-    // When using the new Mojo EDK, each message pipe is backed by a platform
-    // handle. The one platform handle that comes on the command line is used
-    // to bind to the ChildController interface. However we also want a
-    // platform handle to setup the communication channel by which we exchange
-    // handles to/from tokens, which is needed for sandboxed Windows
-    // processes.
-    char broker_handle[10];
-    MojoHandleSignalsState state;
-    MojoResult rv =
-        MojoWait(host_message_pipe.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                 MOJO_DEADLINE_INDEFINITE, &state);
-    CHECK_EQ(MOJO_RESULT_OK, rv);
-    uint32_t num_bytes = arraysize(broker_handle);
-    rv = MojoReadMessage(host_message_pipe.get().value(),
-                         broker_handle, &num_bytes, nullptr, 0,
-                         MOJO_READ_MESSAGE_FLAG_NONE);
-    CHECK_EQ(MOJO_RESULT_OK, rv);
-
-    edk::ScopedPlatformHandle broker_channel =
-        edk::PlatformChannelPair::PassClientHandleFromParentProcessFromString(
-            std::string(broker_handle, num_bytes));
-    CHECK(broker_channel.is_valid());
-    embedder::SetParentPipeHandle(
-        mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
-            broker_channel.release().handle)));
+    embedder::SetParentPipeHandle(std::move(platform_channel));
+    std::string primordial_pipe_token =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kPrimordialPipeToken);
+    edk::CreateChildMessagePipe(primordial_pipe_token, callback);
+  } else {
+    ScopedMessagePipeHandle host_message_pipe;
+    host_message_pipe =
+        embedder::CreateChannel(std::move(platform_channel),
+                                base::Bind(&DidCreateChannel), io_task_runner);
+    callback.Run(std::move(host_message_pipe));
   }
+}
 
-  return host_message_pipe;
+void OnHostMessagePipeCreated(AppContext* app_context,
+                              base::NativeLibrary app_library,
+                              const Blocker::Unblocker& unblocker,
+                              ScopedMessagePipeHandle pipe) {
+  app_context->controller_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChildControllerImpl::Init, base::Unretained(app_context),
+                 base::Unretained(app_library), base::Passed(&pipe),
+                 unblocker));
 }
 
 }  // namespace
@@ -350,11 +342,14 @@ int ChildProcessMain() {
 #endif
   base::NativeLibrary app_library = 0;
   // Load the application library before we engage the sandbox.
-  app_library = mojo::shell::LoadNativeApplication(
-      command_line.GetSwitchValuePath(switches::kChildProcess));
+  base::FilePath app_library_path =
+      command_line.GetSwitchValuePath(switches::kChildProcess);
+  if (!app_library_path.empty())
+    app_library = mojo::shell::LoadNativeApplication(app_library_path);
   base::i18n::InitializeICU();
   if (app_library)
     CallLibraryEarlyInitialization(app_library);
+
 #if !defined(OFFICIAL_BUILD)
   // Initialize stack dumping just before initializing sandbox to make
   // sure symbol names in all loaded libraries will be cached.
@@ -372,17 +367,19 @@ int ChildProcessMain() {
 
   DCHECK(!base::MessageLoop::current());
 
+  Blocker blocker;
   AppContext app_context;
   app_context.Init();
-  ScopedMessagePipeHandle host_message_pipe = InitializeHostMessagePipe(
-      std::move(platform_channel), app_context.io_runner());
   app_context.StartControllerThread();
-  Blocker blocker;
+
   app_context.controller_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChildControllerImpl::Init, base::Unretained(&app_context),
-                 base::Unretained(app_library),
-                 base::Passed(&host_message_pipe), blocker.GetUnblocker()));
+      base::Bind(
+          &InitializeHostMessagePipe, base::Passed(&platform_channel),
+          make_scoped_refptr(app_context.io_runner()),
+          base::Bind(&OnHostMessagePipeCreated, base::Unretained(&app_context),
+                     base::Unretained(app_library), blocker.GetUnblocker())));
+
   // This will block, then run whatever the controller wants.
   blocker.Block();
 

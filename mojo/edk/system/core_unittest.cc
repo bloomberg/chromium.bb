@@ -158,9 +158,7 @@ TEST_F(CoreTest, Basic) {
 
   ASSERT_EQ(0u, info.GetDtorCallCount());
   ASSERT_EQ(0u, info.GetCloseCallCount());
-  ASSERT_EQ(0u, info.GetCancelAllAwakablesCallCount());
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
-  ASSERT_EQ(1u, info.GetCancelAllAwakablesCallCount());
   ASSERT_EQ(1u, info.GetCloseCallCount());
   ASSERT_EQ(1u, info.GetDtorCallCount());
 
@@ -718,16 +716,10 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             core()->WriteMessage(h_passing[0], kHello, kHelloSize,
                                  &h_passing[0], 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-#endif
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             core()->WriteMessage(h_passing[0], kHello, kHelloSize,
                                  &h_passing[1], 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-#if defined(OS_WIN)
-  }
-#endif
 
   MojoHandle h_passed[2];
   MojoCreateMessagePipeOptions options;

@@ -18,7 +18,8 @@ namespace content {
 
 MojoApplication::MojoApplication(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : io_task_runner_(io_task_runner) {
+    : io_task_runner_(io_task_runner),
+      weak_factory_(this) {
   DCHECK(io_task_runner_);
 }
 
@@ -42,13 +43,17 @@ void MojoApplication::OnActivate(
   base::PlatformFile handle = file;
 #endif
 
-  mojo::ScopedMessagePipeHandle message_pipe =
-      channel_init_.Init(handle, io_task_runner_);
-  DCHECK(message_pipe.is_valid());
+  channel_init_.Init(handle, io_task_runner_,
+                     base::Bind(&MojoApplication::OnMessagePipeCreated,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void MojoApplication::OnMessagePipeCreated(mojo::ScopedMessagePipeHandle pipe) {
+  DCHECK(pipe.is_valid());
 
   ApplicationSetupPtr application_setup;
   application_setup.Bind(
-      mojo::InterfacePtrInfo<ApplicationSetup>(std::move(message_pipe), 0u));
+      mojo::InterfacePtrInfo<ApplicationSetup>(std::move(pipe), 0u));
 
   mojo::ServiceProviderPtr services;
   mojo::ServiceProviderPtr exposed_services;

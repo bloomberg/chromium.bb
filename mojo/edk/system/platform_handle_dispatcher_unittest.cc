@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,7 +62,7 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
 }
 
-TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
+TEST(PlatformHandleDispatcherTest, Serialization) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -76,22 +77,34 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
       PlatformHandleDispatcher::Create(
           test::PlatformHandleFromFILE(std::move(fp)));
 
-  DispatcherTransport transport(
-      test::DispatcherTryStartTransport(dispatcher.get()));
-  EXPECT_TRUE(transport.is_valid());
-  EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, transport.GetType());
-  EXPECT_FALSE(transport.IsBusy());
+  uint32_t num_bytes = 0;
+  uint32_t num_ports = 0;
+  uint32_t num_handles = 0;
+  EXPECT_TRUE(dispatcher->BeginTransit());
+  dispatcher->StartSerialize(&num_bytes, &num_ports, &num_handles);
 
-  scoped_refptr<Dispatcher> generic_dispatcher =
-      transport.CreateEquivalentDispatcherAndClose();
-  ASSERT_TRUE(generic_dispatcher);
+  EXPECT_EQ(0u, num_bytes);
+  EXPECT_EQ(0u, num_ports);
+  EXPECT_EQ(1u, num_handles);
 
-  transport.End();
-  EXPECT_TRUE(dispatcher->HasOneRef());
-  dispatcher = nullptr;
+  ScopedPlatformHandleVectorPtr handles(new PlatformHandleVector(1));
+  EXPECT_TRUE(dispatcher->EndSerialize(nullptr, nullptr, handles->data()));
+  dispatcher->CompleteTransitAndClose();
 
-  ASSERT_EQ(Dispatcher::Type::PLATFORM_HANDLE, generic_dispatcher->GetType());
-  dispatcher = static_cast<PlatformHandleDispatcher*>(generic_dispatcher.get());
+  EXPECT_TRUE(handles->at(0).is_valid());
+
+  ScopedPlatformHandle handle = dispatcher->PassPlatformHandle();
+  EXPECT_FALSE(handle.is_valid());
+
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher->Close());
+
+  dispatcher = static_cast<PlatformHandleDispatcher*>(
+      Dispatcher::Deserialize(Dispatcher::Type::PLATFORM_HANDLE, nullptr,
+                              num_bytes, nullptr, num_ports, handles->data(),
+                              1).get());
+
+  EXPECT_FALSE(handles->at(0).is_valid());
+  EXPECT_TRUE(dispatcher->GetType() == Dispatcher::Type::PLATFORM_HANDLE);
 
   fp = test::FILEFromPlatformHandle(dispatcher->PassPlatformHandle(), "rb");
   EXPECT_TRUE(fp);

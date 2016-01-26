@@ -11,12 +11,12 @@
 #include <map>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {
@@ -25,8 +25,26 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
  public:
   WaitSetDispatcher();
 
-  // |Dispatcher| public methods:
+  // Dispatcher:
   Type GetType() const override;
+  MojoResult Close() override;
+  MojoResult AddWaitingDispatcher(const scoped_refptr<Dispatcher>& dispatcher,
+                                  MojoHandleSignals signals,
+                                  uintptr_t context) override;
+  MojoResult RemoveWaitingDispatcher(
+      const scoped_refptr<Dispatcher>& dispatcher) override;
+  MojoResult GetReadyDispatchers(uint32_t* count,
+                                 DispatcherVector* dispatchers,
+                                 MojoResult* results,
+                                 uintptr_t* contexts) override;
+  HandleSignalsState GetHandleSignalsState() const override;
+  MojoResult AddAwakable(Awakable* awakable,
+                         MojoHandleSignals signals,
+                         uintptr_t context,
+                         HandleSignalsState* signals_state) override;
+  void RemoveAwakable(Awakable* awakable,
+                      HandleSignalsState* signals_state) override;
+  bool BeginTransit() override;
 
  private:
   // Internal implementation of Awakable.
@@ -43,38 +61,21 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
 
   ~WaitSetDispatcher() override;
 
-  // |Dispatcher| protected methods:
-  void CloseImplNoLock() override;
-  void CancelAllAwakablesNoLock() override;
-  MojoResult AddAwakableImplNoLock(Awakable* awakable,
-                                   MojoHandleSignals signals,
-                                   uintptr_t context,
-                                   HandleSignalsState* signals_state) override;
-  void RemoveAwakableImplNoLock(Awakable* awakable,
-                                HandleSignalsState* signals_state) override;
-  MojoResult AddWaitingDispatcherImplNoLock(
-      const scoped_refptr<Dispatcher>& dispatcher,
-      MojoHandleSignals signals,
-      uintptr_t context) override;
-  MojoResult RemoveWaitingDispatcherImplNoLock(
-      const scoped_refptr<Dispatcher>& dispatcher) override;
-  MojoResult GetReadyDispatchersImplNoLock(uint32_t* count,
-                                           DispatcherVector* dispatchers,
-                                           MojoResult* results,
-                                           uintptr_t* contexts) override;
-  HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
-      override;
-
   // Signal that the dispatcher indexed by |context| has been woken up with
   // |result| and is now ready.
   void WakeDispatcher(MojoResult result, uintptr_t context);
+
+  // Guards |is_closed_|, |waiting_dispatchers_|, and |waiter_|.
+  //
+  // TODO: Consider removing this.
+  base::Lock lock_;
+  bool is_closed_ = false;
 
   // Map of dispatchers being waited on. Key is a Dispatcher* casted to a
   // uintptr_t, and should be treated as an opaque value and not casted back.
   std::map<uintptr_t, WaitState> waiting_dispatchers_;
 
-  // Separate lock that can be locked without locking |lock()|.
+  // Separate lock that can be locked without locking |lock_|.
   mutable base::Lock awoken_lock_;
   // List of dispatchers that have been woken up. Any dispatcher in this queue
   // will NOT currently be waited on.
@@ -82,13 +83,15 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
   // List of dispatchers that have been woken up and retrieved.
   std::deque<uintptr_t> processed_dispatchers_;
 
-  // Separate lock that can be locked without locking |lock()|.
+  // Separate lock that can be locked without locking |lock_|.
   base::Lock awakable_lock_;
   // List of dispatchers being waited on.
   AwakableList awakable_list_;
 
   // Waiter used to wait on dispatchers.
   scoped_ptr<Waiter> waiter_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitSetDispatcher);
 };
 
 }  // namespace edk

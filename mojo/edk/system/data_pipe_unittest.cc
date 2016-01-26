@@ -15,7 +15,7 @@
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
@@ -38,9 +38,9 @@ const size_t kMaxPoll = 100;
 // Used in Multiprocess test.
 const size_t kMultiprocessCapacity = 37;
 const char kMultiprocessTestData[] = "hello i'm a string that is 36 bytes";
-const int kMultiprocessMaxIter = 513;
+const int kMultiprocessMaxIter = 5;
 
-class DataPipeTest : public testing::Test {
+class DataPipeTest : public test::MojoTestBase {
  public:
   DataPipeTest() : producer_(MOJO_HANDLE_INVALID),
                    consumer_(MOJO_HANDLE_INVALID) {}
@@ -391,10 +391,8 @@ TEST_F(DataPipeTest, BasicProducerWaiting) {
   ASSERT_EQ(MOJO_RESULT_OK,
             BeginReadData(&read_buffer, &num_bytes, false));
   EXPECT_TRUE(read_buffer);
-  // Since we only read one element (after having written three in all), the
-  // two-phase read should only allow us to read one. This checks an
-  // implementation detail!
-  ASSERT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
+  // The two-phase read should be able to read at least one element.
+  ASSERT_GE(num_bytes, static_cast<uint32_t>(1u * sizeof(elements[0])));
   ASSERT_EQ(456, static_cast<const int32_t*>(read_buffer)[0]);
   ASSERT_EQ(MOJO_RESULT_OK, EndReadData(static_cast<uint32_t>(
                                         1u * sizeof(elements[0]))));
@@ -560,7 +558,7 @@ TEST_F(DataPipeTest, BasicConsumerWaiting) {
   ASSERT_EQ(MOJO_RESULT_OK,
             MojoWait(consumer_, MOJO_HANDLE_SIGNAL_READABLE,
                      MOJO_DEADLINE_INDEFINITE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+  ASSERT_TRUE((hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE) != 0);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss.satisfiable_signals);
 
@@ -952,14 +950,11 @@ TEST_F(DataPipeTest, AllOrNone) {
   ASSERT_EQ(0u, num_bytes);
 }
 
-/*
-jam: this is testing that the implementation uses a circular buffer, which we
-don't use currently.
 // Tests that |ProducerWriteData()| and |ConsumerReadData()| writes and reads,
 // respectively, as much as possible, even if it may have to "wrap around" the
 // internal circular buffer. (Note that the two-phase write and read need not do
 // this.)
-TYPED_TEST(DataPipeImplTest, WrapAround) {
+TEST_F(DataPipeTest, WrapAround) {
   unsigned char test_data[1000];
   for (size_t i = 0; i < MOJO_ARRAYSIZE(test_data); i++)
     test_data[i] = static_cast<unsigned char>(i);
@@ -970,119 +965,80 @@ TYPED_TEST(DataPipeImplTest, WrapAround) {
       1u,                                       // |element_num_bytes|.
       100u                                      // |capacity_num_bytes|.
   };
-  MojoCreateDataPipeOptions validated_options = {};
-  // This test won't be valid if |ValidateCreateOptions()| decides to give the
-  // pipe more space.
-  ASSERT_EQ(MOJO_RESULT_OK, DataPipe::ValidateCreateOptions(
-                                &options, &validated_options));
-  ASSERT_EQ(100u, validated_options.capacity_num_bytes);
-  this->Create(options);
-  this->DoTransfer();
 
-  Waiter waiter;
-  HandleSignalsState hss;
-
-  // Add waiter.
-  waiter.Init();
-  ASSERT_EQ(MOJO_RESULT_OK,
-            this->ConsumerAddAwakable(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 1,
-                                      nullptr));
+  ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
+  MojoHandleSignalsState hss;
 
   // Write 20 bytes.
   uint32_t num_bytes = 20u;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            this->ProducerWriteData(&test_data[0], &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(&test_data[0], &num_bytes, true));
   ASSERT_EQ(20u, num_bytes);
 
   // Wait for data.
-  // TODO(vtl): (See corresponding TODO in AllOrNone.)
-  ASSERT_EQ(MOJO_RESULT_OK, waiter.Wait(test::TinyDeadline(), nullptr));
-  hss = HandleSignalsState();
-  this->ConsumerRemoveAwakable(&waiter, &hss);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(consumer_, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_TRUE((hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE) != 0);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss.satisfiable_signals);
 
   // Read 10 bytes.
   unsigned char read_buffer[1000] = {0};
   num_bytes = 10u;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            this->ConsumerReadData(read_buffer, &num_bytes, false, false));
+  ASSERT_EQ(MOJO_RESULT_OK, ReadData(read_buffer, &num_bytes, true));
   ASSERT_EQ(10u, num_bytes);
   ASSERT_EQ(0, memcmp(read_buffer, &test_data[0], 10u));
 
-  if (this->IsStrictCircularBuffer()) {
-    // Check that a two-phase write can now only write (at most) 80 bytes. (This
-    // checks an implementation detail; this behavior is not guaranteed.)
-    void* write_buffer_ptr = nullptr;
-    num_bytes = 0u;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              this->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes,
-                                           false));
-    EXPECT_TRUE(write_buffer_ptr);
-    ASSERT_EQ(80u, num_bytes);
-    ASSERT_EQ(MOJO_RESULT_OK, this->ProducerEndWriteData(0u));
-  }
+  // Check that a two-phase write can now only write (at most) 80 bytes. (This
+  // checks an implementation detail; this behavior is not guaranteed.)
+  void* write_buffer_ptr = nullptr;
+  num_bytes = 0u;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            BeginWriteData(&write_buffer_ptr, &num_bytes, false));
+  EXPECT_TRUE(write_buffer_ptr);
+  ASSERT_EQ(80u, num_bytes);
+  ASSERT_EQ(MOJO_RESULT_OK, EndWriteData(0));
 
-  // TODO(vtl): (See corresponding TODO in TwoPhaseAllOrNone.)
   size_t total_num_bytes = 0;
-  for (size_t i = 0; i < kMaxPoll; i++) {
-    // Write as much data as we can (using |ProducerWriteData()|). We should
-    // write 90 bytes (eventually).
-    num_bytes = 200u;
-    MojoResult result = this->ProducerWriteData(
-        &test_data[20 + total_num_bytes], &num_bytes, false);
-    if (result == MOJO_RESULT_OK) {
-      total_num_bytes += num_bytes;
-      if (total_num_bytes >= 90u)
-        break;
-    } else {
-      ASSERT_EQ(MOJO_RESULT_OUT_OF_RANGE, result);
-    }
+  while (total_num_bytes < 90) {
+    // Wait to write.
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoWait(producer_, MOJO_HANDLE_SIGNAL_WRITABLE,
+                       MOJO_DEADLINE_INDEFINITE, &hss));
+    ASSERT_EQ(hss.satisfied_signals, MOJO_HANDLE_SIGNAL_WRITABLE);
+    ASSERT_EQ(hss.satisfiable_signals,
+              MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
-    test::Sleep(test::EpsilonDeadline());
+    // Write as much as we can.
+    num_bytes = 100;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              WriteData(&test_data[20 + total_num_bytes], &num_bytes, false));
+    total_num_bytes += num_bytes;
   }
+
   ASSERT_EQ(90u, total_num_bytes);
 
-  // TODO(vtl): (See corresponding TODO in TwoPhaseAllOrNone.)
-  for (size_t i = 0; i < kMaxPoll; i++) {
-    // We have 100.
-    num_bytes = 0u;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              this->ConsumerQueryData(&num_bytes));
-    if (num_bytes >= 100u)
-      break;
-
-    test::Sleep(test::EpsilonDeadline());
-  }
+  num_bytes = 0;
+  ASSERT_EQ(MOJO_RESULT_OK, QueryData(&num_bytes));
   ASSERT_EQ(100u, num_bytes);
 
-  if (this->IsStrictCircularBuffer()) {
-    // Check that a two-phase read can now only read (at most) 90 bytes. (This
-    // checks an implementation detail; this behavior is not guaranteed.)
-    const void* read_buffer_ptr = nullptr;
-    num_bytes = 0u;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              this->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
-    EXPECT_TRUE(read_buffer_ptr);
-    ASSERT_EQ(90u, num_bytes);
-    ASSERT_EQ(MOJO_RESULT_OK, this->ConsumerEndReadData(0u));
-  }
+  // Check that a two-phase read can now only read (at most) 90 bytes. (This
+  // checks an implementation detail; this behavior is not guaranteed.)
+  const void* read_buffer_ptr = nullptr;
+  num_bytes = 0;
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer_ptr, &num_bytes, false));
+  EXPECT_TRUE(read_buffer_ptr);
+  ASSERT_EQ(90u, num_bytes);
+  ASSERT_EQ(MOJO_RESULT_OK, EndReadData(0));
 
-  // Read as much as possible (using |ConsumerReadData()|). We should read 100
-  // bytes.
+  // Read as much as possible. We should read 100 bytes.
   num_bytes = static_cast<uint32_t>(MOJO_ARRAYSIZE(read_buffer) *
                                     sizeof(read_buffer[0]));
   memset(read_buffer, 0, num_bytes);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            this->ConsumerReadData(read_buffer, &num_bytes, false, false));
+  ASSERT_EQ(MOJO_RESULT_OK, ReadData(read_buffer, &num_bytes));
   ASSERT_EQ(100u, num_bytes);
   ASSERT_EQ(0, memcmp(read_buffer, &test_data[10], 100u));
-
-  this->ProducerClose();
-  this->ConsumerClose();
 }
-*/
 
 // Tests the behavior of writing (simple and two-phase), closing the producer,
 // then reading (simple and two-phase).
@@ -1717,79 +1673,68 @@ TEST_F(DataPipeTest, MAYBE_Multiprocess) {
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
 
-  test::MultiprocessTestHelper multiprocess_test_helper;
-  multiprocess_test_helper.StartChild("MultiprocessClient");
+  RUN_CHILD_ON_PIPE(MultiprocessClient, server_mp)
+    // Send some data before serialising and sending the data pipe over.
+    // This is the first write so we don't need to use WriteAllData.
+    uint32_t num_bytes = kTestDataSize;
+    ASSERT_EQ(MOJO_RESULT_OK, WriteData(kMultiprocessTestData, &num_bytes,
+                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+    ASSERT_EQ(kTestDataSize, num_bytes);
 
-  // Send some data before serialising and sending the data pipe over.
-  // This is the first write so we don't need to use WriteAllData.
-  uint32_t num_bytes = kTestDataSize;
-  ASSERT_EQ(MOJO_RESULT_OK, WriteData(kMultiprocessTestData, &num_bytes,
-                                      MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-  ASSERT_EQ(kTestDataSize, num_bytes);
+    // Send child process the data pipe.
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoWriteMessage(server_mp, nullptr, 0, &consumer_, 1,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  MojoHandle server_mp =
-      CreateMessagePipe(
-          std::move(multiprocess_test_helper.server_platform_handle))
-          .release()
-          .value();
-
-  // Send child process the data pipe.
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(server_mp, nullptr, 0, &consumer_,
-                                             1, MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-  // Send a bunch of data of varying sizes.
-  uint8_t buffer[100];
-  int seq = 0;
-  for (int i = 0; i < kMultiprocessMaxIter; ++i) {
-    for (uint32_t size = 1; size <= kMultiprocessCapacity; size++) {
-      for (unsigned int j = 0; j < size; ++j)
-        buffer[j] = seq + j;
-      EXPECT_TRUE(WriteAllData(producer_, buffer, size));
-      seq += size;
+    // Send a bunch of data of varying sizes.
+    uint8_t buffer[100];
+    int seq = 0;
+    for (int i = 0; i < kMultiprocessMaxIter; ++i) {
+      for (uint32_t size = 1; size <= kMultiprocessCapacity; size++) {
+        for (unsigned int j = 0; j < size; ++j)
+          buffer[j] = seq + j;
+        EXPECT_TRUE(WriteAllData(producer_, buffer, size));
+        seq += size;
+      }
     }
-  }
 
-  // Write the test string in again.
-  EXPECT_TRUE(WriteAllData(producer_, kMultiprocessTestData, kTestDataSize));
+    // Write the test string in again.
+    ASSERT_TRUE(WriteAllData(producer_, kMultiprocessTestData, kTestDataSize));
 
-  // Swap ends.
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(server_mp, nullptr, 0, &producer_,
-                                             1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    // Swap ends.
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoWriteMessage(server_mp, nullptr, 0, &producer_, 1,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  // Receive the consumer from the other side.
-  producer_ = MOJO_HANDLE_INVALID;
-  MojoHandleSignalsState hss = MojoHandleSignalsState();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &hss));
-  MojoHandle handles[2];
-  uint32_t num_handles = MOJO_ARRAYSIZE(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(server_mp, nullptr, 0, handles, &num_handles,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(1u, num_handles);
-  consumer_ = handles[0];
+    // Receive the consumer from the other side.
+    producer_ = MOJO_HANDLE_INVALID;
+    MojoHandleSignalsState hss = MojoHandleSignalsState();
+    ASSERT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE, &hss));
+    MojoHandle handles[2];
+    uint32_t num_handles = MOJO_ARRAYSIZE(handles);
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoReadMessage(server_mp, nullptr, 0, handles, &num_handles,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(1u, num_handles);
+    consumer_ = handles[0];
 
-  // Read the test string twice. Once for when we sent it, and once for the
-  // other end sending it.
-  for (int i = 0; i < 2; ++i) {
-    EXPECT_TRUE(ReadAllData(consumer_, buffer, kTestDataSize, i == 1));
-    EXPECT_EQ(0, memcmp(buffer, kMultiprocessTestData, kTestDataSize));
-  }
+    // Read the test string twice. Once for when we sent it, and once for the
+    // other end sending it.
+    for (int i = 0; i < 2; ++i) {
+      EXPECT_TRUE(ReadAllData(consumer_, buffer, kTestDataSize, i == 1));
+      EXPECT_EQ(0, memcmp(buffer, kMultiprocessTestData, kTestDataSize));
+    }
 
-  // Don't have to close the consumer here because it will be done for us.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
-  EXPECT_TRUE(multiprocess_test_helper.WaitForChildTestShutdown());
+    WriteMessage(server_mp, "quit");
+
+    // Don't have to close the consumer here because it will be done for us.
+  END_CHILD()
 }
 
-MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessClient) {
-  ScopedPlatformHandle client_platform_handle =
-      std::move(test::MultiprocessTestHelper::client_platform_handle);
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessClient, DataPipeTest, client_mp) {
   const uint32_t kTestDataSize =
       static_cast<uint32_t>(sizeof(kMultiprocessTestData));
-  EXPECT_TRUE(client_platform_handle.is_valid());
-
-  MojoHandle client_mp =
-      CreateMessagePipe(std::move(client_platform_handle)).release().value();
 
   // Receive the data pipe from the other side.
   MojoHandle consumer = MOJO_HANDLE_INVALID;
@@ -1844,7 +1789,68 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessClient) {
 
   // We swapped ends, so close the producer.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
+
+  // Wait to receive a "quit" message before exiting.
+  EXPECT_EQ("quit", ReadMessage(client_mp));
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(WriteAndCloseProducer, DataPipeTest, h) {
+  MojoHandle p;
+  std::string message = ReadMessageWithHandles(h, &p, 1);
+
+  // Write some data to the producer and close it.
+  uint32_t num_bytes = static_cast<uint32_t>(message.size());
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteData(p, message.data(), &num_bytes,
+                                          MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(num_bytes, static_cast<uint32_t>(message.size()));
+
+  // Close the producer before quitting.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(p));
+
+  // Wait for a quit message.
+  EXPECT_EQ("quit", ReadMessage(h));
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndCloseConsumer, DataPipeTest, h) {
+  MojoHandle c;
+  std::string expected_message = ReadMessageWithHandles(h, &c, 1);
+
+  // Wait for the consumer to become readable.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(c, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  // Drain the consumer and expect to find the given message.
+  uint32_t num_bytes = static_cast<uint32_t>(expected_message.size());
+  std::vector<char> bytes(expected_message.size());
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadData(c, bytes.data(), &num_bytes,
+                                         MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(num_bytes, static_cast<uint32_t>(bytes.size()));
+
+  std::string message(bytes.data(), bytes.size());
+  EXPECT_EQ(expected_message, message);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
+
+  // Wait for a quit message.
+  EXPECT_EQ("quit", ReadMessage(h));
+}
+
+TEST_F(DataPipeTest, SendConsumerAndCloseProducer) {
+  // Create a new data pipe.
+  MojoHandle p, c;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p ,&c));
+
+  RUN_CHILD_ON_PIPE(WriteAndCloseProducer, producer_client)
+    RUN_CHILD_ON_PIPE(ReadAndCloseConsumer, consumer_client)
+      const std::string kMessage = "Hello, world!";
+      WriteMessageWithHandles(producer_client, kMessage, &p, 1);
+      WriteMessageWithHandles(consumer_client, kMessage, &c, 1);
+
+      WriteMessage(consumer_client, "quit");
+    END_CHILD()
+
+    WriteMessage(producer_client, "quit");
+  END_CHILD()
 }
 
 }  // namespace

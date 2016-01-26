@@ -41,12 +41,9 @@ void OutOfProcessNativeRunner::Start(
 
   child_process_host_.reset(
       new ChildProcessHost(launch_process_runner_, start_sandboxed, app_path));
-  child_process_host_->Start(pid_available_callback);
-
-  child_process_host_->StartApp(
-      std::move(application_request),
-      base::Bind(&OutOfProcessNativeRunner::AppCompleted,
-                 base::Unretained(this)));
+  child_process_host_->Start(base::Bind(
+      &OutOfProcessNativeRunner::OnProcessLaunched, base::Unretained(this),
+      base::Passed(&application_request), pid_available_callback));
 }
 
 void OutOfProcessNativeRunner::InitHost(
@@ -71,7 +68,19 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   app_completed_callback.Run();
 }
 
-scoped_ptr<NativeRunner> OutOfProcessNativeRunnerFactory::Create(
+void OutOfProcessNativeRunner::OnProcessLaunched(
+    InterfaceRequest<Application> application_request,
+    const base::Callback<void(base::ProcessId)>& pid_available_callback,
+    base::ProcessId pid) {
+  DCHECK(child_process_host_);
+  child_process_host_->StartApp(
+      std::move(application_request),
+      base::Bind(&OutOfProcessNativeRunner::AppCompleted,
+                 base::Unretained(this)));
+  pid_available_callback.Run(pid);
+}
+
+scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
   return make_scoped_ptr(new OutOfProcessNativeRunner(launch_process_runner_));
 }

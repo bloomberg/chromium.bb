@@ -5,60 +5,54 @@
 #ifndef MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 
-#include <stddef.h>
-
-#include <utility>
-
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/simple_dispatcher.h"
+#include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {
 
-// A dispatcher that simply wraps/transports a |PlatformHandle| (only for use by
-// the embedder).
-class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher final
-    : public SimpleDispatcher {
+class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
  public:
   static scoped_refptr<PlatformHandleDispatcher> Create(
-      ScopedPlatformHandle platform_handle) {
-    return make_scoped_refptr(
-        new PlatformHandleDispatcher(std::move(platform_handle)));
-  }
+      ScopedPlatformHandle platform_handle);
 
   ScopedPlatformHandle PassPlatformHandle();
 
-  // |Dispatcher| public methods:
+  // Dispatcher:
   Type GetType() const override;
+  MojoResult Close() override;
+  void StartSerialize(uint32_t* num_bytes,
+                      uint32_t* num_ports,
+                      uint32_t* num_handles) override;
+  bool EndSerialize(void* destination,
+                    ports::PortName* ports,
+                    PlatformHandle* handles) override;
+  bool BeginTransit() override;
+  void CompleteTransitAndClose() override;
+  void CancelTransit() override;
 
-  // The "opposite" of |SerializeAndClose()|. (Typically this is called by
-  // |Dispatcher::Deserialize()|.)
   static scoped_refptr<PlatformHandleDispatcher> Deserialize(
-      const void* source,
-      size_t size,
-      PlatformHandleVector* platform_handles);
+      const void* bytes,
+      size_t num_bytes,
+      const ports::PortName* ports,
+      size_t num_ports,
+      PlatformHandle* handles,
+      size_t num_handles);
 
  private:
-  explicit PlatformHandleDispatcher(
-      ScopedPlatformHandle platform_handle);
+  PlatformHandleDispatcher(ScopedPlatformHandle platform_handle);
   ~PlatformHandleDispatcher() override;
 
-  // |Dispatcher| protected methods:
-  void CloseImplNoLock() override;
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
-      override;
-  void StartSerializeImplNoLock(size_t* max_size,
-                                size_t* max_platform_handles) override;
-  bool EndSerializeAndCloseImplNoLock(
-      void* destination,
-      size_t* actual_size,
-      PlatformHandleVector* platform_handles) override;
-
+  base::Lock lock_;
+  bool in_transit_ = false;
+  bool is_closed_ = false;
   ScopedPlatformHandle platform_handle_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
 };
 
 }  // namespace edk

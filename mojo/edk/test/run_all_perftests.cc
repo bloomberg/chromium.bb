@@ -14,12 +14,6 @@
 int main(int argc, char** argv) {
   base::PerfTestSuite test(argc, argv);
 
-  // Must be run before mojo::edk::Init.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          mojo::edk::test::kBrokerHandleSwitch)) {
-    mojo::edk::PreInitializeChildProcess();
-  }
-
   // TODO(use_chrome_edk): temporary to force new EDK.
   base::CommandLine::ForCurrentProcess()->AppendSwitch("--use-new-edk");
 

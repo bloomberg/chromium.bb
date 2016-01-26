@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <limits>
 #include <utility>
 
@@ -25,8 +24,7 @@ namespace edk {
 namespace {
 
 struct MOJO_ALIGNAS(8) SerializedSharedBufferDispatcher {
-  MOJO_ALIGNAS(4) uint32_t num_bytes;
-  MOJO_ALIGNAS(4) uint32_t platform_handle_index;
+  size_t num_bytes;
 };
 
 }  // namespace
@@ -85,33 +83,28 @@ MojoResult SharedBufferDispatcher::Create(
   return MOJO_RESULT_OK;
 }
 
-Dispatcher::Type SharedBufferDispatcher::GetType() const {
-  return Type::SHARED_BUFFER;
-}
-
 // static
 scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
-    const void* source,
-    size_t size,
-    PlatformHandleVector* platform_handles) {
-
-  if (size != sizeof(SerializedSharedBufferDispatcher)) {
+    const void* bytes,
+    size_t num_bytes,
+    const ports::PortName* ports,
+    size_t num_ports,
+    PlatformHandle* platform_handles,
+    size_t num_platform_handles) {
+  if (num_bytes != sizeof(SerializedSharedBufferDispatcher)) {
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
     return nullptr;
   }
 
   const SerializedSharedBufferDispatcher* serialization =
-      static_cast<const SerializedSharedBufferDispatcher*>(source);
-  size_t num_bytes = serialization->num_bytes;
-  size_t platform_handle_index = serialization->platform_handle_index;
-
-  if (!num_bytes) {
+      static_cast<const SerializedSharedBufferDispatcher*>(bytes);
+  if (!serialization->num_bytes) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes)";
     return nullptr;
   }
 
-  if (!platform_handles || platform_handle_index >= platform_handles->size()) {
+  if (!platform_handles || num_platform_handles != 1 || num_ports) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (missing handles)";
     return nullptr;
@@ -121,13 +114,13 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   PlatformHandle platform_handle;
   // We take ownership of the handle, so we have to invalidate the one in
   // |platform_handles|.
-  std::swap(platform_handle, (*platform_handles)[platform_handle_index]);
+  std::swap(platform_handle, *platform_handles);
 
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
   scoped_refptr<PlatformSharedBuffer> shared_buffer(
       internal::g_platform_support->CreateSharedBufferFromHandle(
-          num_bytes, ScopedPlatformHandle(platform_handle)));
+          serialization->num_bytes, ScopedPlatformHandle(platform_handle)));
   if (!shared_buffer) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
@@ -137,6 +130,108 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   return CreateInternal(std::move(shared_buffer));
 }
 
+Dispatcher::Type SharedBufferDispatcher::GetType() const {
+  return Type::SHARED_BUFFER;
+}
+
+MojoResult SharedBufferDispatcher::Close() {
+  base::AutoLock lock(lock_);
+  if (!shared_buffer_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  shared_buffer_ = nullptr;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult SharedBufferDispatcher::DuplicateBufferHandle(
+    const MojoDuplicateBufferHandleOptions* options,
+    scoped_refptr<Dispatcher>* new_dispatcher) {
+  MojoDuplicateBufferHandleOptions validated_options;
+  MojoResult result = ValidateDuplicateOptions(options, &validated_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  // Note: Since this is "duplicate", we keep our ref to |shared_buffer_|.
+  base::AutoLock lock(lock_);
+  if (in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  *new_dispatcher = CreateInternal(shared_buffer_);
+  return MOJO_RESULT_OK;
+}
+
+MojoResult SharedBufferDispatcher::MapBuffer(
+    uint64_t offset,
+    uint64_t num_bytes,
+    MojoMapBufferFlags flags,
+    scoped_ptr<PlatformSharedBufferMapping>* mapping) {
+  if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (num_bytes > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  base::AutoLock lock(lock_);
+  DCHECK(shared_buffer_);
+  if (in_transit_ ||
+      !shared_buffer_->IsValidMap(static_cast<size_t>(offset),
+                                  static_cast<size_t>(num_bytes))) {
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  DCHECK(mapping);
+  *mapping = shared_buffer_->MapNoCheck(static_cast<size_t>(offset),
+                                        static_cast<size_t>(num_bytes));
+  if (!*mapping)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  return MOJO_RESULT_OK;
+}
+
+void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
+                                            uint32_t* num_ports,
+                                            uint32_t* num_platform_handles) {
+  *num_bytes = sizeof(SerializedSharedBufferDispatcher);
+  *num_ports = 0;
+  *num_platform_handles = 1;
+}
+
+bool SharedBufferDispatcher::EndSerialize(void* destination,
+                                          ports::PortName* ports,
+                                          PlatformHandle* handles) {
+  SerializedSharedBufferDispatcher* serialization =
+      static_cast<SerializedSharedBufferDispatcher*>(destination);
+  base::AutoLock lock(lock_);
+  serialization->num_bytes = shared_buffer_->GetNumBytes();
+
+  handle_for_transit_ = shared_buffer_->DuplicatePlatformHandle();
+  if (!handle_for_transit_.is_valid()) {
+    shared_buffer_ = nullptr;
+    return false;
+  }
+  handles[0] = handle_for_transit_.get();
+  return true;
+}
+
+bool SharedBufferDispatcher::BeginTransit() {
+  base::AutoLock lock(lock_);
+  if (in_transit_)
+    return false;
+  in_transit_ = shared_buffer_ != nullptr;
+  return in_transit_;
+}
+
+void SharedBufferDispatcher::CompleteTransitAndClose() {
+  base::AutoLock lock(lock_);
+  in_transit_ = false;
+  shared_buffer_ = nullptr;
+  ignore_result(handle_for_transit_.release());
+}
+
+void SharedBufferDispatcher::CancelTransit() {
+  base::AutoLock lock(lock_);
+  in_transit_ = false;
+  handle_for_transit_.reset();
+}
+
 SharedBufferDispatcher::SharedBufferDispatcher(
     scoped_refptr<PlatformSharedBuffer> shared_buffer)
     : shared_buffer_(shared_buffer) {
@@ -144,6 +239,7 @@ SharedBufferDispatcher::SharedBufferDispatcher(
 }
 
 SharedBufferDispatcher::~SharedBufferDispatcher() {
+  DCHECK(!shared_buffer_ && !in_transit_);
 }
 
 // static
@@ -177,101 +273,6 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
 
   return MOJO_RESULT_OK;
 }
-
-void SharedBufferDispatcher::CloseImplNoLock() {
-  lock().AssertAcquired();
-  DCHECK(shared_buffer_);
-  shared_buffer_ = nullptr;
-}
-
-scoped_refptr<Dispatcher>
-SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  lock().AssertAcquired();
-  DCHECK(shared_buffer_);
-  return CreateInternal(std::move(shared_buffer_));
-}
-
-MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
-    const MojoDuplicateBufferHandleOptions* options,
-    scoped_refptr<Dispatcher>* new_dispatcher) {
-  lock().AssertAcquired();
-
-  MojoDuplicateBufferHandleOptions validated_options;
-  MojoResult result = ValidateDuplicateOptions(options, &validated_options);
-  if (result != MOJO_RESULT_OK)
-    return result;
-
-  // Note: Since this is "duplicate", we keep our ref to |shared_buffer_|.
-  *new_dispatcher = CreateInternal(shared_buffer_);
-  return MOJO_RESULT_OK;
-}
-
-MojoResult SharedBufferDispatcher::MapBufferImplNoLock(
-    uint64_t offset,
-    uint64_t num_bytes,
-    MojoMapBufferFlags flags,
-    scoped_ptr<PlatformSharedBufferMapping>* mapping) {
-  lock().AssertAcquired();
-  DCHECK(shared_buffer_);
-
-  if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (num_bytes > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  if (!shared_buffer_->IsValidMap(static_cast<size_t>(offset),
-                                  static_cast<size_t>(num_bytes)))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  DCHECK(mapping);
-  *mapping = shared_buffer_->MapNoCheck(static_cast<size_t>(offset),
-                                        static_cast<size_t>(num_bytes));
-  if (!*mapping)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-  return MOJO_RESULT_OK;
-}
-
-void SharedBufferDispatcher::StartSerializeImplNoLock(
-    size_t* max_size,
-    size_t* max_platform_handles) {
-  *max_size = sizeof(SerializedSharedBufferDispatcher);
-  *max_platform_handles = 1;
-}
-
-bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
-    void* destination,
-    size_t* actual_size,
-    PlatformHandleVector* platform_handles) {
-  DCHECK(shared_buffer_);
-
-  SerializedSharedBufferDispatcher* serialization =
-      static_cast<SerializedSharedBufferDispatcher*>(destination);
-  // If there's only one reference to |shared_buffer_|, then it's ours (and no
-  // one else can make any more references to it), so we can just take its
-  // handle.
-  ScopedPlatformHandle platform_handle(
-      shared_buffer_->HasOneRef() ? shared_buffer_->PassPlatformHandle()
-                                  : shared_buffer_->DuplicatePlatformHandle());
-  if (!platform_handle.is_valid()) {
-    shared_buffer_ = nullptr;
-    return false;
-  }
-
-  DCHECK(shared_buffer_->GetNumBytes() < std::numeric_limits<uint32_t>::max());
-  serialization->num_bytes =
-      static_cast<uint32_t>(shared_buffer_->GetNumBytes());
-  DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
-  serialization->platform_handle_index =
-      static_cast<uint32_t>(platform_handles->size());
-  platform_handles->push_back(platform_handle.release());
-  *actual_size = sizeof(SerializedSharedBufferDispatcher);
-
-  shared_buffer_ = nullptr;
-
-  return true;
-}
-
 
 }  // namespace edk
 }  // namespace mojo

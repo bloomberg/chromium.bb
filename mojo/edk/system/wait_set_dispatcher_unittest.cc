@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/system/core.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
@@ -54,12 +56,14 @@ class WaitSetDispatcherTest : public ::testing::Test {
 
   void CreateMessagePipe(scoped_refptr<MessagePipeDispatcher>* d0,
                          scoped_refptr<MessagePipeDispatcher>* d1) {
-    *d0 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
-    *d1 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
-    (*d0)->InitNonTransferable(pipe_id_generator_);
-    (*d1)->InitNonTransferable(pipe_id_generator_);
+    MojoHandle h0, h1;
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &h0, &h1));
+
+    Core* core = mojo::edk::internal::GetCore();
+    *d0 = scoped_refptr<MessagePipeDispatcher>(
+        static_cast<MessagePipeDispatcher*>(core->GetDispatcher(h0).get()));
+    *d1 = scoped_refptr<MessagePipeDispatcher>(
+        static_cast<MessagePipeDispatcher*>(core->GetDispatcher(h1).get()));
     pipe_id_generator_++;
 
     dispatchers_to_close_.push_back(*d0);
@@ -133,7 +137,7 @@ TEST_F(WaitSetDispatcherTest, Basic) {
   char buffer[] = "abcd";
   w.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            dispatcher1_->WriteMessage(buffer, sizeof(buffer), nullptr,
+            dispatcher1_->WriteMessage(buffer, sizeof(buffer), nullptr, 0,
                                        MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
   woken_dispatcher = nullptr;
@@ -180,7 +184,7 @@ TEST_F(WaitSetDispatcherTest, HandleWithoutRemoving) {
     char buffer[] = "abcd";
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              dispatcher1_->WriteMessage(buffer, sizeof(buffer), nullptr,
+              dispatcher1_->WriteMessage(buffer, sizeof(buffer), nullptr, 0,
                                          MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
     woken_dispatcher = nullptr;
@@ -307,7 +311,7 @@ TEST_F(WaitSetDispatcherTest, MultipleReady) {
   char buffer[] = "abcd";
   w.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            dispatcher1_->WriteMessage(buffer, sizeof(buffer), nullptr,
+            dispatcher1_->WriteMessage(buffer, sizeof(buffer), nullptr, 0,
                                        MOJO_WRITE_MESSAGE_FLAG_NONE));
   {
     Waiter mp_w;

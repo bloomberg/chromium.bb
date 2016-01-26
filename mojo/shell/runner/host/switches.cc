@@ -14,4 +14,8 @@ const char kChildProcess[] = "child-process";
 // Enables the sandbox on this process.
 const char kEnableSandbox[] = "enable-sandbox";
 
+// Provides a child process with a token string they can use to establish a
+// primordial message pipe to the parent.
+const char kPrimordialPipeToken[] = "primordial-pipe-token";
+
 }  // namespace switches

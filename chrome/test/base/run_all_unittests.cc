@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "content/public/test/unittest_test_suite.h"
@@ -10,6 +11,10 @@
 
 int main(int argc, char **argv) {
   content::UnitTestTestSuite test_suite(new ChromeUnitTestSuite(argc, argv));
+
+  // TODO(use_chrome_edk): This flag will go away and be default behavior soon,
+  // but we explicitly add it here for test coverage.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("use-new-edk");
 
   mojo::embedder::Init();
   return base::LaunchUnitTests(

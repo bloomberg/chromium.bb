@@ -43,6 +43,12 @@ class OutOfProcessNativeRunner : public NativeRunner {
   // |ChildController::StartApp()| callback:
   void AppCompleted(int32_t result);
 
+  // Callback run when the child process has launched.
+  void OnProcessLaunched(
+      InterfaceRequest<Application> application_request,
+      const base::Callback<void(base::ProcessId)>& pid_available_callback,
+      base::ProcessId pid);
+
   base::TaskRunner* const launch_process_runner_;
 
   base::FilePath app_path_;

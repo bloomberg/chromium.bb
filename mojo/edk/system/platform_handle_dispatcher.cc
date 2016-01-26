@@ -4,30 +4,19 @@
 
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 
-#include <stddef.h>
-
-#include <algorithm>
-#include <limits>
-#include <utility>
-
-#include "base/logging.h"
+#include "base/synchronization/lock.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 
 namespace mojo {
 namespace edk {
 
-namespace {
-
-const uint32_t kInvalidPlatformHandleIndex = static_cast<uint32_t>(-1);
-
-struct MOJO_ALIGNAS(8) SerializedPlatformHandleDispatcher {
-  MOJO_ALIGNAS(4) uint32_t
-      platform_handle_index;  // (Or |kInvalidPlatformHandleIndex|.)
-};
-
-}  // namespace
+// static
+scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Create(
+    ScopedPlatformHandle platform_handle) {
+  return new PlatformHandleDispatcher(std::move(platform_handle));
+}
 
 ScopedPlatformHandle PlatformHandleDispatcher::PassPlatformHandle() {
-  base::AutoLock locker(lock());
   return std::move(platform_handle_);
 }
 
@@ -35,37 +24,71 @@ Dispatcher::Type PlatformHandleDispatcher::GetType() const {
   return Type::PLATFORM_HANDLE;
 }
 
+MojoResult PlatformHandleDispatcher::Close() {
+  base::AutoLock lock(lock_);
+  if (is_closed_ || in_transit_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  is_closed_ = true;
+  platform_handle_.reset();
+  return MOJO_RESULT_OK;
+}
+
+void PlatformHandleDispatcher::StartSerialize(uint32_t* num_bytes,
+                                              uint32_t* num_ports,
+                                              uint32_t* num_handles) {
+  *num_bytes = 0;
+  *num_ports = 0;
+  *num_handles = 1;
+}
+
+bool PlatformHandleDispatcher::EndSerialize(void* destination,
+                                            ports::PortName* ports,
+                                            PlatformHandle* handles) {
+  base::AutoLock lock(lock_);
+  if (is_closed_)
+    return false;
+  handles[0] = platform_handle_.get();
+  return true;
+}
+
+bool PlatformHandleDispatcher::BeginTransit() {
+  base::AutoLock lock(lock_);
+  if (in_transit_)
+    return false;
+  in_transit_ = !is_closed_;
+  return in_transit_;
+}
+
+void PlatformHandleDispatcher::CompleteTransitAndClose() {
+  base::AutoLock lock(lock_);
+
+  in_transit_ = false;
+  is_closed_ = true;
+
+  // The system has taken ownership of our handle.
+  ignore_result(platform_handle_.release());
+}
+
+void PlatformHandleDispatcher::CancelTransit() {
+  base::AutoLock lock(lock_);
+  in_transit_ = false;
+}
+
 // static
 scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
-    const void* source,
-    size_t size,
-    PlatformHandleVector* platform_handles) {
-  if (size != sizeof(SerializedPlatformHandleDispatcher)) {
-    LOG(ERROR) << "Invalid serialized platform handle dispatcher (bad size)";
+    const void* bytes,
+    size_t num_bytes,
+    const ports::PortName* ports,
+    size_t num_ports,
+    PlatformHandle* handles,
+    size_t num_handles) {
+  if (num_bytes || num_ports || num_handles != 1)
     return nullptr;
-  }
 
-  const SerializedPlatformHandleDispatcher* serialization =
-      static_cast<const SerializedPlatformHandleDispatcher*>(source);
-  size_t platform_handle_index = serialization->platform_handle_index;
+  PlatformHandle handle;
+  std::swap(handle, handles[0]);
 
-  // Starts off invalid, which is what we want.
-  PlatformHandle platform_handle;
-
-  if (platform_handle_index != kInvalidPlatformHandleIndex) {
-    if (!platform_handles ||
-        platform_handle_index >= platform_handles->size()) {
-      LOG(ERROR)
-          << "Invalid serialized platform handle dispatcher (missing handles)";
-      return nullptr;
-    }
-
-    // We take ownership of the handle, so we have to invalidate the one in
-    // |platform_handles|.
-    std::swap(platform_handle, (*platform_handles)[platform_handle_index]);
-  }
-
-  return Create(ScopedPlatformHandle(platform_handle));
+  return PlatformHandleDispatcher::Create(ScopedPlatformHandle(handle));
 }
 
 PlatformHandleDispatcher::PlatformHandleDispatcher(
@@ -73,43 +96,8 @@ PlatformHandleDispatcher::PlatformHandleDispatcher(
     : platform_handle_(std::move(platform_handle)) {}
 
 PlatformHandleDispatcher::~PlatformHandleDispatcher() {
-}
-
-void PlatformHandleDispatcher::CloseImplNoLock() {
-  lock().AssertAcquired();
-  platform_handle_.reset();
-}
-
-scoped_refptr<Dispatcher>
-PlatformHandleDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  lock().AssertAcquired();
-  return Create(std::move(platform_handle_));
-}
-
-void PlatformHandleDispatcher::StartSerializeImplNoLock(
-    size_t* max_size,
-    size_t* max_platform_handles) {
-  *max_size = sizeof(SerializedPlatformHandleDispatcher);
-  *max_platform_handles = 1;
-}
-
-bool PlatformHandleDispatcher::EndSerializeAndCloseImplNoLock(
-    void* destination,
-    size_t* actual_size,
-    PlatformHandleVector* platform_handles) {
-  SerializedPlatformHandleDispatcher* serialization =
-      static_cast<SerializedPlatformHandleDispatcher*>(destination);
-  if (platform_handle_.is_valid()) {
-    DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
-    serialization->platform_handle_index =
-        static_cast<uint32_t>(platform_handles->size());
-    platform_handles->push_back(platform_handle_.release());
-  } else {
-    serialization->platform_handle_index = kInvalidPlatformHandleIndex;
-  }
-
-  *actual_size = sizeof(SerializedPlatformHandleDispatcher);
-  return true;
+  DCHECK(is_closed_ && !in_transit_);
+  DCHECK(!platform_handle_.is_valid());
 }
 
 }  // namespace edk

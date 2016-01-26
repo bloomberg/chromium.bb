@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -136,6 +137,10 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
 
 int main(int argc, char** argv) {
   ComponentsTestSuite test_suite(argc, argv);
+
+  // TODO(use_chrome_edk): This flag will go away and be default behavior soon,
+  // but we explicitly add it here for test coverage.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("use-new-edk");
 
   // The listener will set up common test environment for all components unit
   // tests.

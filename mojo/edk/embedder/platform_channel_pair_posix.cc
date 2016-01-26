@@ -49,14 +49,6 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
 
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
 
-  // Store a common id in the SO_PEEK_OFF option (which we don't use since we
-  // don't peek) as a way of determining later if two sockets are connected to
-  // each other.
-  int identifier = base::RandInt(std::numeric_limits<int32_t>::min(),
-                                 std::numeric_limits<int32_t>::max());
-  setsockopt(fds[0], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
-  setsockopt(fds[1], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
-
   // Set the ends to nonblocking.
   PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
   if (!client_is_blocking)

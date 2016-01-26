@@ -7,10 +7,15 @@
 
 #include <stdint.h>
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -39,6 +44,8 @@ namespace shell {
 // remained alive until the |on_app_complete| callback is called.
 class ChildProcessHost {
  public:
+  using ProcessReadyCallback = base::Callback<void(base::ProcessId)>;
+
   // |name| is just for debugging ease. We will spawn off a process so that it
   // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
   // mojo application we wish to start.
@@ -52,8 +59,7 @@ class ChildProcessHost {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  void Start(
-      const base::Callback<void(base::ProcessId)>& pid_available_callback);
+  void Start(const ProcessReadyCallback& callback);
 
   // Waits for the child process to terminate, and returns its exit code.
   int Join();
@@ -64,17 +70,56 @@ class ChildProcessHost {
   void ExitNow(int32_t exit_code);
 
  protected:
-  // virtual for testing.
-  virtual void DidStart(
-      const base::Callback<void(base::ProcessId)>& pid_available_callback);
+  void DidStart();
 
  private:
+  // A thread-safe holder for the bootstrap message pipe to this child process.
+  // The pipe is established on an arbitrary thread and may not be connected
+  // until the host's message loop has stopped running.
+  class PipeHolder : public base::RefCountedThreadSafe<PipeHolder> {
+   public:
+    PipeHolder();
+
+    void Reject();
+    void SetPipe(ScopedMessagePipeHandle pipe);
+    ScopedMessagePipeHandle PassPipe();
+
+   private:
+    friend class base::RefCountedThreadSafe<PipeHolder>;
+
+    ~PipeHolder();
+
+    base::Lock lock_;
+    bool reject_pipe_ = false;
+    ScopedMessagePipeHandle pipe_;
+
+    DISALLOW_COPY_AND_ASSIGN(PipeHolder);
+  };
+
   void DoLaunch();
 
   void AppCompleted(int32_t result);
 
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info);
+
+  // Called once |pipe_holder_| is bound to a pipe.
+  void OnMessagePipeCreated();
+
+  // Called when the child process is launched and when the bootstrap
+  // message pipe is created. Once both things have happened (which may happen
+  // in either order), |process_ready_callback_| is invoked.
+  void MaybeNotifyProcessReady();
+
+  // Callback used to receive the child message pipe from the ports EDK.
+  // This may be called on any thread. It will always stash the pipe in
+  // |holder|, and it will then attempt to call |callback| on
+  // |callback_task_runner| (which may or may not still be running tasks.)
+  static void OnParentMessagePipeCreated(
+      scoped_refptr<PipeHolder> holder,
+      scoped_refptr<base::TaskRunner> callback_task_runner,
+      const base::Closure& callback,
+      ScopedMessagePipeHandle pipe);
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   bool start_sandboxed_;
@@ -87,16 +132,24 @@ class ChildProcessHost {
   ChildController::StartAppCallback on_app_complete_;
   embedder::HandlePassingInformation handle_passing_info_;
 
-  // Used only when --use-new-edk is specified, as a communication channel for
-  // Broker.
-  scoped_ptr<edk::PlatformChannelPair> serializer_platform_channel_pair_;
+  // Used only when --use-new-edk is specified. Used to back the NodeChannel
+  // between the parent and child node.
+  scoped_ptr<edk::PlatformChannelPair> node_channel_;
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.
   base::WaitableEvent start_child_process_event_;
 
-  // A message pipe to the child process. Valid immediately after creation.
-  mojo::ScopedMessagePipeHandle child_message_pipe_;
+  // A token the child can use to connect a primordial pipe to the host.
+  std::string primordial_pipe_token_;
+
+  // Holds the message pipe to the child process until it is either closed or
+  // bound to the controller interface.
+  scoped_refptr<PipeHolder> pipe_holder_;
+
+  // Invoked exactly once, as soon as the child process's ID is known and
+  // a pipe to the child has been established.
+  ProcessReadyCallback process_ready_callback_;
 
   base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 

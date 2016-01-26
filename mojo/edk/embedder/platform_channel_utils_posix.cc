@@ -160,17 +160,9 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
   msg.msg_control = cmsg_buf;
   msg.msg_controllen = sizeof(cmsg_buf);
 
-  // We use SO_PEEK_OFF to hold a common identifier between sockets to detect if
-  // they're connected. recvmsg modifies it, so we cache it and set it again
-  // after the call.
-  int id = 0;
-  socklen_t peek_off_size = sizeof(id);
-  getsockopt(h.handle, SOL_SOCKET, SO_PEEK_OFF, &id, &peek_off_size);
   ssize_t result = HANDLE_EINTR(recvmsg(h.handle, &msg, MSG_DONTWAIT));
   if (result < 0)
     return result;
-
-  setsockopt(h.handle, SOL_SOCKET, SO_PEEK_OFF, &id, sizeof(id));
 
   // Success; no control messages.
   if (msg.msg_controllen == 0)

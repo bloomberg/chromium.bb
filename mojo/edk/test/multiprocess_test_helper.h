@@ -7,11 +7,12 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace mojo {
@@ -21,23 +22,27 @@ class PlatformChannelPair;
 
 namespace test {
 
-extern const char kBrokerHandleSwitch[];
-
 class MultiprocessTestHelper {
  public:
+  using HandlerCallback = base::Callback<void(ScopedMessagePipeHandle)>;
+
   MultiprocessTestHelper();
   ~MultiprocessTestHelper();
 
   // Start a child process and run the "main" function "named" |test_child_name|
   // declared using |MOJO_MULTIPROCESS_TEST_CHILD_MAIN()| or
   // |MOJO_MULTIPROCESS_TEST_CHILD_TEST()| (below).
-  void StartChild(const std::string& test_child_name);
+  void StartChild(const std::string& test_child_name,
+                  const HandlerCallback& callback);
+
   // Like |StartChild()|, but appends an extra switch (with ASCII value) to the
   // command line. (The switch must not already be present in the default
   // command line.)
   void StartChildWithExtraSwitch(const std::string& test_child_name,
                                  const std::string& switch_string,
-                                 const std::string& switch_value);
+                                 const std::string& switch_value,
+                                 const HandlerCallback& callback);
+
   // Wait for the child process to terminate.
   // Returns the exit code of the child process. Note that, though it's declared
   // to be an |int|, the exit code is subject to mangling by the OS. E.g., we
@@ -48,54 +53,24 @@ class MultiprocessTestHelper {
 
   // Like |WaitForChildShutdown()|, but returns true on success (exit code of 0)
   // and false otherwise. You probably want to do something like
-  // |EXPECT_TRUE(WaitForChildTestShutdown());|. Mainly for use with
-  // |MOJO_MULTIPROCESS_TEST_CHILD_TEST()|.
+  // |EXPECT_TRUE(WaitForChildTestShutdown());|.
   bool WaitForChildTestShutdown();
 
-  // For use by |MOJO_MULTIPROCESS_TEST_CHILD_MAIN()| only:
+  // Used by macros in mojo/edk/test/mojo_test_base.h to support multiprocess
+  // test client initialization.
   static void ChildSetup();
-
-  // For use in the main process:
-  ScopedPlatformHandle server_platform_handle;
+  static int RunClientMain(const base::Callback<int(MojoHandle)>& main);
+  static int RunClientTestMain(const base::Callback<void(MojoHandle)>& main);
 
   // For use (and only valid) in the child process:
-  static ScopedPlatformHandle client_platform_handle;
+  static std::string primordial_pipe_token;
 
  private:
-  // Used differently depending on the test.
-  scoped_ptr<PlatformChannelPair> platform_channel_pair_;
-
-  // Used by the broker.
-  scoped_ptr<PlatformChannelPair> broker_platform_channel_pair_;
-
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::Process test_child_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };
-
-// Use this to declare the child process's "main()" function for tests using
-// |MultiprocessTestHelper|. It returns an |int|, which will be the process's
-// exit code (but see the comment about |WaitForChildShutdown()|).
-#define MOJO_MULTIPROCESS_TEST_CHILD_MAIN(test_child_name) \
-  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                       \
-      test_child_name##TestChildMain,                      \
-      test::MultiprocessTestHelper::ChildSetup)
-
-// Use this (and |WaitForChildTestShutdown()|) for the child process's "main()",
-// if you want to use |EXPECT_...()| or |ASSERT_...()|; it has a |void| return
-// type. (Note that while an |ASSERT_...()| failure will abort the test in the
-// child, it will not abort the test in the parent.)
-#define MOJO_MULTIPROCESS_TEST_CHILD_TEST(test_child_name) \
-  void test_child_name##TestChildTest();                   \
-  MOJO_MULTIPROCESS_TEST_CHILD_MAIN(test_child_name) {     \
-    test_child_name##TestChildTest();                      \
-    return (::testing::Test::HasFatalFailure() ||          \
-            ::testing::Test::HasNonfatalFailure())         \
-               ? 1                                         \
-               : 0;                                        \
-  }                                                        \
-  void test_child_name##TestChildTest()
 
 }  // namespace test
 }  // namespace edk

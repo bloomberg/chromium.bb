@@ -23,6 +23,19 @@
       ],
     },
     {
+      # GN version: //mojo/edk/system/ports:mojo_system_ports_unittests
+      'target_name': 'mojo_system_ports_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        '../testing/gtest.gyp:gtest_main',
+        'mojo_edk.gyp:mojo_system_impl2',
+      ],
+      'sources': [
+        'edk/system/ports/ports_unittest.cc',
+      ],
+    }
+    {
       # GN version: //mojo/edk/system:mojo_system_unittests
       'target_name': 'mojo_system_unittests2',
       'type': 'executable',
@@ -41,20 +54,15 @@
         'edk/system/core_test_base.h',
         'edk/system/core_unittest.cc',
         'edk/system/data_pipe_unittest.cc',
-        'edk/system/dispatcher_unittest.cc',
-        'edk/system/message_in_transit_queue_unittest.cc',
-        'edk/system/message_in_transit_test_utils.cc',
-        'edk/system/message_in_transit_test_utils.h',
         'edk/system/message_pipe_test_utils.cc',
         'edk/system/message_pipe_test_utils.h',
         'edk/system/message_pipe_unittest.cc',
         'edk/system/multiprocess_message_pipe_unittest.cc',
         'edk/system/options_validation_unittest.cc',
         'edk/system/platform_handle_dispatcher_unittest.cc',
-        'edk/system/raw_channel_unittest.cc',
         'edk/system/run_all_unittests.cc',
         'edk/system/shared_buffer_dispatcher_unittest.cc',
-        'edk/system/simple_dispatcher_unittest.cc',
+        'edk/system/shared_buffer_unittest.cc',
         'edk/system/test_utils.cc',
         'edk/system/test_utils.h',
         'edk/system/wait_set_dispatcher_unittest.cc',
@@ -68,7 +76,7 @@
           'sources!': [
             'edk/embedder/embedder_unittest.cc',
             'edk/system/multiprocess_message_pipe_unittest.cc',
-            'edk/test/multiprocess_test_helper_unittest.cc',
+            'edk/system/shared_buffer_unittest.cc',
           ],
         }],
       ],

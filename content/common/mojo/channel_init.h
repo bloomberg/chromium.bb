@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_MOJO_CHANNEL_INIT_H_
 #define CONTENT_COMMON_MOJO_CHANNEL_INIT_H_
 
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -27,11 +28,12 @@ class CONTENT_EXPORT ChannelInit {
   ChannelInit();
   ~ChannelInit();
 
-  // Initializes the channel. This takes ownership of |file|. Returns the
-  // primordial MessagePipe for the channel.
-  mojo::ScopedMessagePipeHandle Init(
+  // Initializes the channel. This takes ownership of |file|. Calls |callback|
+  // on the calling thread once the pipe is created.
+  void Init(
       base::PlatformFile file,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner);
+      scoped_refptr<base::TaskRunner> io_thread_task_runner,
+      const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback);
 
   // Notifies the channel that we (hence it) will soon be destroyed.
   void WillDestroySoon();
@@ -44,6 +46,12 @@ class CONTENT_EXPORT ChannelInit {
       base::WeakPtr<ChannelInit> self,
       scoped_ptr<IPC::ScopedIPCSupport> ipc_support,
       mojo::embedder::ChannelInfo* channel);
+
+  // Callback used with the new ports EDK on pipe creation.
+  void OnCreateMessagePipe(
+      scoped_ptr<IPC::ScopedIPCSupport> ipc_support,
+      const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
+      mojo::ScopedMessagePipeHandle pipe);
 
   // If non-null the channel has been established.
   mojo::embedder::ChannelInfo* channel_info_;

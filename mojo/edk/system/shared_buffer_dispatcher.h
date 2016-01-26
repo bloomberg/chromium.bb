@@ -10,21 +10,19 @@
 
 #include <utility>
 
+#include "base/macros.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/system/simple_dispatcher.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
 namespace edk {
 class PlatformSupport;
 
-// TODO(vtl): We derive from SimpleDispatcher, even though we don't currently
-// have anything that's waitable. I want to add a "transferrable" wait flag
-// (which would entail overriding |GetHandleSignalsStateImplNoLock()|, etc.).
-class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final
-    : public SimpleDispatcher {
+class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
  public:
   // The default options to use for |MojoCreateSharedBuffer()|. (Real uses
   // should obtain this via |ValidateCreateOptions()| with a null |in_options|;
@@ -50,15 +48,35 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final
       uint64_t num_bytes,
       scoped_refptr<SharedBufferDispatcher>* result);
 
-  // |Dispatcher| public methods:
-  Type GetType() const override;
-
-  // The "opposite" of |SerializeAndClose()|. (Typically this is called by
-  // |Dispatcher::Deserialize()|.)
+  // The "opposite" of SerializeAndClose(). Called by Dispatcher::Deserialize().
   static scoped_refptr<SharedBufferDispatcher> Deserialize(
-      const void* source,
-      size_t size,
-      PlatformHandleVector* platform_handles);
+      const void* bytes,
+      size_t num_bytes,
+      const ports::PortName* ports,
+      size_t num_ports,
+      PlatformHandle* platform_handles,
+      size_t num_platform_handles);
+
+  // Dispatcher:
+  Type GetType() const override;
+  MojoResult Close() override;
+  MojoResult DuplicateBufferHandle(
+      const MojoDuplicateBufferHandleOptions* options,
+      scoped_refptr<Dispatcher>* new_dispatcher) override;
+  MojoResult MapBuffer(
+      uint64_t offset,
+      uint64_t num_bytes,
+      MojoMapBufferFlags flags,
+      scoped_ptr<PlatformSharedBufferMapping>* mapping) override;
+  void StartSerialize(uint32_t* num_bytes,
+                      uint32_t* num_ports,
+                      uint32_t* num_platform_handles) override;
+  bool EndSerialize(void* destination,
+                    ports::PortName* ports,
+                    PlatformHandle* handles) override;
+  bool BeginTransit() override;
+  void CompleteTransitAndClose() override;
+  void CancelTransit() override;
 
  private:
   static scoped_refptr<SharedBufferDispatcher> CreateInternal(
@@ -80,28 +98,18 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final
       const MojoDuplicateBufferHandleOptions* in_options,
       MojoDuplicateBufferHandleOptions* out_options);
 
-  // |Dispatcher| protected methods:
-  void CloseImplNoLock() override;
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
-      override;
-  MojoResult DuplicateBufferHandleImplNoLock(
-      const MojoDuplicateBufferHandleOptions* options,
-      scoped_refptr<Dispatcher>* new_dispatcher) override;
-  MojoResult MapBufferImplNoLock(
-      uint64_t offset,
-      uint64_t num_bytes,
-      MojoMapBufferFlags flags,
-      scoped_ptr<PlatformSharedBufferMapping>* mapping) override;
-  void StartSerializeImplNoLock(size_t* max_size,
-                                size_t* max_platform_handles) override;
-  bool EndSerializeAndCloseImplNoLock(
-      void* destination,
-      size_t* actual_size,
-      PlatformHandleVector* platform_handles) override;
+  // Guards access to |shared_buffer_|.
+  base::Lock lock_;
+
+  bool in_transit_ = false;
+
+  // We keep a copy of the buffer's platform handle during transit so we can
+  // close it if something goes wrong.
+  ScopedPlatformHandle handle_for_transit_;
 
   scoped_refptr<PlatformSharedBuffer> shared_buffer_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcher);
 };
 
 }  // namespace edk

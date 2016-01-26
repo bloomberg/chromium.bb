@@ -59,7 +59,6 @@ class CoreTestBase_MockHandleInfo {
   unsigned GetEndReadDataCallCount() const;
   unsigned GetAddAwakableCallCount() const;
   unsigned GetRemoveAwakableCallCount() const;
-  unsigned GetCancelAllAwakablesCallCount() const;
 
   size_t GetAddedAwakableSize() const;
   Awakable* GetAddedAwakableAt(unsigned i) const;
@@ -78,7 +77,6 @@ class CoreTestBase_MockHandleInfo {
   void IncrementEndReadDataCallCount();
   void IncrementAddAwakableCallCount();
   void IncrementRemoveAwakableCallCount();
-  void IncrementCancelAllAwakablesCallCount();
 
   void AllowAddAwakable(bool alllow);
   bool IsAddAwakableAllowed() const;
@@ -99,7 +97,6 @@ class CoreTestBase_MockHandleInfo {
   unsigned end_read_data_call_count_;
   unsigned add_awakable_call_count_;
   unsigned remove_awakable_call_count_;
-  unsigned cancel_all_awakables_call_count_;
 
   bool add_awakable_allowed_;
   std::vector<Awakable*> added_awakables_;
