@@ -48,7 +48,8 @@ bool ResourceUpdater::Update(const std::wstring& name,
                        static_cast<DWORD>(input.length())) != FALSE) {
       return true;
     }
-    PLOG(DFATAL) << "UpdateResource failed for resource \"" << name << "\"";
+    PLOG(ERROR) << "UpdateResource failed for resource \"" << name
+                << "\" of size " << input.length() << " bytes";
   } else {
     PLOG(DFATAL) << "Failed mapping \"" << input_file.value() << "\"";
   }

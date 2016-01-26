@@ -43,6 +43,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -60,7 +61,8 @@ const wchar_t k7zaPathRelative[] = L"..\\..\\third_party\\lzma_sdk\\Executable";
 const wchar_t kB7[] = L"B7";
 const wchar_t kBl[] = L"BL";
 const wchar_t kChromeBin[] = L"Chrome-bin";
-const wchar_t kChromePacked7z[] = L"chrome.packed.7z";
+const wchar_t kChromePacked7z[] = L"CHROME.PACKED.7Z";
+const wchar_t kChrome7z[] = L"CHROME.7Z";
 const wchar_t kExe[] = L"exe";
 const wchar_t kExpandExe[] = L"expand.exe";
 const wchar_t kExtDll[] = L".dll";
@@ -130,6 +132,8 @@ class ChromeVersion {
   ULONGLONG value() const { return version_; }
   void set_value(ULONGLONG value) { version_ = value; }
   std::wstring ToString() const;
+  std::string ToASCII() const;
+
  private:
   ULONGLONG version_;
 };  // class ChromeVersion
@@ -144,6 +148,14 @@ std::wstring ChromeVersion::ToString() const {
   return std::wstring(&buffer[0], string_len);
 }
 
+std::string ChromeVersion::ToASCII() const {
+  char buffer[24];
+  int string_len = sprintf_s(&buffer[0], arraysize(buffer), "%hu.%hu.%hu.%hu",
+                             major(), minor(), build(), patch());
+  DCHECK_NE(-1, string_len);
+  DCHECK_GT(static_cast<int>(arraysize(buffer)), string_len);
+  return std::string(&buffer[0], string_len);
+}
 
 // A read/write mapping of a file.
 // Note: base::MemoryMappedFile is not used because it doesn't support
@@ -166,16 +178,10 @@ class MappedFile {
 };  // class MappedFile
 
 MappedFile::~MappedFile() {
-  if (view_ != NULL) {
-    if (UnmapViewOfFile(view_) == 0) {
-      PLOG(DFATAL) << "MappedFile failed to unmap view.";
-    }
-  }
-  if (mapping_ != NULL) {
-    if (CloseHandle(mapping_) == 0) {
-      PLOG(DFATAL) << "Could not close file mapping handle.";
-    }
-  }
+  if (view_ && !UnmapViewOfFile(view_))
+    PLOG(DFATAL) << "MappedFile failed to unmap view.";
+  if (mapping_ && !CloseHandle(mapping_))
+    PLOG(DFATAL) << "Could not close file mapping handle.";
 }
 
 bool MappedFile::Initialize(base::File file) {
@@ -191,11 +197,10 @@ bool MappedFile::Initialize(base::File file) {
       if (mapping_ != NULL) {
         view_ = MapViewOfFile(mapping_, FILE_MAP_WRITE, 0, 0,
                               static_cast<size_t>(file_info.size));
-        if (view_ != NULL) {
+        if (view_)
           result = true;
-        } else {
+        else
           PLOG(DFATAL) << "MapViewOfFile failed";
-        }
       } else {
         PLOG(DFATAL) << "CreateFileMapping failed";
       }
@@ -275,9 +280,8 @@ bool GetSetupExeVersion(const base::FilePath& work_dir,
   return GetFileVersion(work_dir.Append(&kSetupExe[0]), version);
 }
 
-
-// Replace all occurrences in the sequence [|dest_first|, |dest_last) that
-// equals [|src_first|, |src_last) with the sequence at |replacement_first| of
+// Replace all occurrences in the sequence [|dest_first|, |dest_last|) that
+// equals [|src_first|, |src_last|) with the sequence at |replacement_first| of
 // the same length.  Returns true on success.  If non-NULL, |replacements_made|
 // is set to true/false accordingly.
 bool ReplaceAll(uint8_t* dest_first,
@@ -290,9 +294,8 @@ bool ReplaceAll(uint8_t* dest_first,
   bool changed = false;
   do {
     dest_first = std::search(dest_first, dest_last, src_first, src_last);
-    if (dest_first == dest_last) {
+    if (dest_first == dest_last)
       break;
-    }
     changed = true;
     if (memcpy_s(dest_first, dest_last - dest_first,
                  replacement_first, src_last - src_first) != 0) {
@@ -302,9 +305,8 @@ bool ReplaceAll(uint8_t* dest_first,
     dest_first += (src_last - src_first);
   } while (true);
 
-  if (replacements_made != NULL) {
+  if (replacements_made != NULL)
     *replacements_made = changed;
-  }
 
   return result;
 }
@@ -320,6 +322,7 @@ struct VisitResourceContext {
 // Replaces the old version with the new in a resource.  A first pass is made to
 // replace the string form (e.g., "9.0.584.0").  If any replacements are made, a
 // second pass is made to replace the binary form (e.g., 0x0000024800000009).
+// A final pass is made to replace the ASCII string form.
 void VisitResource(const upgrade_test::EntryPath& path,
                    uint8_t* data,
                    DWORD size,
@@ -337,7 +340,7 @@ void VisitResource(const upgrade_test::EntryPath& path,
           reinterpret_cast<const uint8_t*>(ctx.new_version_str.c_str()),
           &changing_version) &&
       changing_version) {
-    // Replace all occurrences of current_version with new_version
+    // Replace all binary occurrences of current_version with new_version.
     struct VersionPair {
       DWORD high;
       DWORD low;
@@ -352,6 +355,14 @@ void VisitResource(const upgrade_test::EntryPath& path,
                reinterpret_cast<const uint8_t*>(&cur_ver) + sizeof(cur_ver),
                reinterpret_cast<const uint8_t*>(&new_ver), NULL);
   }
+
+  // Replace all ASCII occurrences of current_version with new_version.
+  std::string current_version(ctx.current_version.ToASCII());
+  std::string new_version(ctx.new_version.ToASCII());
+  ReplaceAll(
+      data, data + size, reinterpret_cast<uint8_t*>(&current_version[0]),
+      reinterpret_cast<uint8_t*>(&current_version[current_version.size()]),
+      reinterpret_cast<uint8_t*>(&new_version[0]), NULL);
 }
 
 // Updates the version strings and numbers in all of |image_file|'s resources.
@@ -398,6 +409,26 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
   return result;
 }
 
+bool UpdateManifestVersion(const base::FilePath& manifest,
+                           VisitResourceContext* context) {
+  std::string contents;
+  if (!base::ReadFileToString(manifest, &contents))
+    return false;
+  std::string old_version(context->current_version.ToASCII());
+  std::string new_version(context->new_version.ToASCII());
+  bool modified = false;
+  if (!ReplaceAll(reinterpret_cast<uint8_t*>(&contents[0]),
+                  reinterpret_cast<uint8_t*>(&contents[contents.size()]),
+                  reinterpret_cast<uint8_t*>(&old_version[0]),
+                  reinterpret_cast<uint8_t*>(&old_version[old_version.size()]),
+                  reinterpret_cast<uint8_t*>(&new_version[0]), &modified)) {
+    return false;
+  }
+  DCHECK(modified);
+  return base::WriteFile(manifest, &contents[0], contents.size()) ==
+         contents.size();
+}
+
 bool IncrementNewVersion(upgrade_test::Direction direction,
                          VisitResourceContext* ctx) {
   DCHECK(ctx);
@@ -421,50 +452,60 @@ bool IncrementNewVersion(upgrade_test::Direction direction,
 
 // Raises or lowers the version of all .exe and .dll files in |work_dir| as well
 // as the |work-dir|\Chrome-bin\w.x.y.z directory.  |original_version| and
-// |new_version|, when non-NULL, are given the original and new version numbers
+// |new_version|, when non-null, are given the original and new version numbers
 // on success.
 bool ApplyAlternateVersion(const base::FilePath& work_dir,
                            upgrade_test::Direction direction,
                            std::wstring* original_version,
                            std::wstring* new_version) {
   VisitResourceContext ctx;
-  if (!GetSetupExeVersion(work_dir, &ctx.current_version)) {
+  if (!GetSetupExeVersion(work_dir, &ctx.current_version))
     return false;
-  }
   ctx.current_version_str = ctx.current_version.ToString();
 
-  if (!IncrementNewVersion(direction, &ctx)) {
+  if (!IncrementNewVersion(direction, &ctx))
     return false;
-  }
 
   // Modify all .dll and .exe files with the current version.
-  bool doing_great = true;
   base::FileEnumerator all_files(work_dir, true, base::FileEnumerator::FILES);
-  do {
+  while (true) {
     base::FilePath file = all_files.Next();
-    if (file.empty()) {
+    if (file.empty())
       break;
-    }
     std::wstring extension = file.Extension();
-    if (extension == &kExtExe[0] || extension == &kExtDll[0]) {
-      doing_great = UpdateVersionIfMatch(file, &ctx);
+    if ((extension == &kExtExe[0] || extension == &kExtDll[0]) &&
+        !UpdateVersionIfMatch(file, &ctx)) {
+      return false;
     }
-  } while (doing_great);
+  }
 
   // Change the versioned directory.
   base::FilePath chrome_bin = work_dir.Append(&kChromeBin[0]);
-  doing_great = base::Move(chrome_bin.Append(ctx.current_version_str),
-                           chrome_bin.Append(ctx.new_version_str));
-
-  if (doing_great) {
-    // Report the version numbers if requested.
-    if (original_version != NULL)
-      original_version->assign(ctx.current_version_str);
-    if (new_version != NULL)
-      new_version->assign(ctx.new_version_str);
+  if (!base::Move(chrome_bin.Append(ctx.current_version_str),
+                  chrome_bin.Append(ctx.new_version_str))) {
+    return false;
   }
 
-  return doing_great;
+  // Update the manifest (revise post-XP; see https://crbug.com/581133).
+  base::FilePath current_manifest =
+      chrome_bin.Append(ctx.new_version_str)
+          .Append(ctx.current_version_str + L".manifest");
+  if (base::PathExists(current_manifest)) {
+    base::FilePath new_manifest =
+        current_manifest.DirName().Append(ctx.new_version_str + L".manifest");
+    if (!base::Move(current_manifest, new_manifest) ||
+        !UpdateManifestVersion(new_manifest, &ctx)) {
+      return false;
+    }
+  }
+
+  // Report the version numbers if requested.
+  if (original_version)
+    original_version->assign(ctx.current_version_str);
+  if (new_version)
+    new_version->assign(ctx.new_version_str);
+
+  return true;
 }
 
 // Returns the path to the directory holding the 7za executable.  By default, it
@@ -537,8 +578,10 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   }
 
   base::FilePath setup_ex_ = work_dir.directory().Append(&kSetupEx_[0]);
-  base::FilePath chrome_packed_7z =
-      work_dir.directory().Append(&kChromePacked7z[0]);
+  base::FilePath chrome_packed_7z;  // Empty for component builds.
+  base::FilePath chrome_7z;
+  const wchar_t* archive_resource_name = nullptr;
+  base::FilePath* archive_file = nullptr;
   // Load the original file and extract setup.ex_ and chrome.packed.7z
   {
     ResourceLoader resource_loader;
@@ -559,15 +602,26 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
       return false;
     }
 
-    // Write out chrome.packed.7z
-    if (!resource_loader.Load(&kChromePacked7z[0], &kB7[0], &resource_data))
+    // Write out chrome.packed.7z (static build) or chrome.7z (component build)
+    if (resource_loader.Load(&kChromePacked7z[0], &kB7[0], &resource_data)) {
+      archive_resource_name = &kChromePacked7z[0];
+      chrome_packed_7z = work_dir.directory().Append(archive_resource_name);
+      archive_file = &chrome_packed_7z;
+    } else if (resource_loader.Load(&kChrome7z[0], &kB7[0], &resource_data)) {
+      archive_resource_name = &kChrome7z[0];
+      chrome_7z = work_dir.directory().Append(archive_resource_name);
+      archive_file = &chrome_7z;
+    } else {
       return false;
-    written =
-        base::WriteFile(chrome_packed_7z,
-                        reinterpret_cast<const char*>(resource_data.first),
-                        static_cast<int>(resource_data.second));
+    }
+    DCHECK(archive_resource_name);
+    DCHECK(!chrome_packed_7z.empty() || !chrome_7z.empty());
+    DCHECK(archive_file);
+    written = base::WriteFile(
+        *archive_file, reinterpret_cast<const char*>(resource_data.first),
+        static_cast<int>(resource_data.second));
     if (written != static_cast<int>(resource_data.second)) {
-      LOG(DFATAL) << "Failed writing \"" << chrome_packed_7z.value() << "\"";
+      LOG(DFATAL) << "Failed writing \"" << archive_file->value() << "\"";
       return false;
     }
   }
@@ -590,26 +644,30 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
     return false;
   }
 
-  // Unpack chrome.packed.7z
-  std::wstring chrome_7z_name;
-  if (LzmaUtil::UnPackArchive(chrome_packed_7z.value(),
-                              work_dir.directory().value(),
-                              &chrome_7z_name) != NO_ERROR) {
-    LOG(DFATAL) << "Failed unpacking \"" << chrome_packed_7z.value() << "\"";
-    return false;
+  // Unpack chrome.packed.7z (static build only).
+  if (!chrome_packed_7z.empty()) {
+    base::string16 chrome_7z_name;
+    if (LzmaUtil::UnPackArchive(chrome_packed_7z.value(),
+                                work_dir.directory().value(),
+                                &chrome_7z_name) != NO_ERROR) {
+      LOG(DFATAL) << "Failed unpacking \"" << chrome_packed_7z.value() << "\"";
+      return false;
+    }
+    chrome_7z = base::FilePath(chrome_7z_name);
   }
+  DCHECK(!chrome_7z.empty());
 
   // Unpack chrome.7z
-  if (LzmaUtil::UnPackArchive(chrome_7z_name, work_dir.directory().value(),
+  if (LzmaUtil::UnPackArchive(chrome_7z.value(), work_dir.directory().value(),
                               NULL) != NO_ERROR) {
-    LOG(DFATAL) << "Failed unpacking \"" << chrome_7z_name << "\"";
+    LOG(DFATAL) << "Failed unpacking \"" << chrome_7z.value() << "\"";
     return false;
   }
 
   // Get rid of intermediate files
-  base::FilePath chrome_7z(chrome_7z_name);
   if (!base::DeleteFile(chrome_7z, false) ||
-      !base::DeleteFile(chrome_packed_7z, false) ||
+      (!chrome_packed_7z.empty() &&
+       !base::DeleteFile(chrome_packed_7z, false)) ||
       !base::DeleteFile(setup_ex_, false)) {
     LOG(DFATAL) << "Failed deleting intermediate files";
     return false;
@@ -623,9 +681,11 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   if (!CreateArchive(chrome_7z, work_dir.directory().Append(&kChromeBin[0]), 0))
     return false;
 
-  // Compress chrome.7z into chrome.packed.7z
-  if (!CreateArchive(chrome_packed_7z, chrome_7z, 9))
+  // Compress chrome.7z into chrome.packed.7z for static builds.
+  if (!chrome_packed_7z.empty() &&
+      !CreateArchive(chrome_packed_7z, chrome_7z, 9)) {
     return false;
+  }
 
   // Compress setup.exe into setup.ex_
   command_line.assign(1, L'"')
@@ -641,16 +701,20 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
     return false;
   }
 
-  // Replace the mini_installer's setup.ex_ and chrome.packed.7z resources.
+  // Replace the mini_installer's setup.ex_ and chrome.packed.7z (or chrome.7z
+  // in component builds) resources.
   ResourceUpdater updater;
   if (!updater.Initialize(mini_installer) ||
       !updater.Update(&kSetupEx_[0], &kBl[0],
                       MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
                       setup_ex_) ||
-      !updater.Update(&kChromePacked7z[0], &kB7[0],
+      !updater.Update(archive_resource_name, &kB7[0],
                       MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-                      chrome_packed_7z) ||
+                      *archive_file) ||
       !updater.Commit()) {
+    LOG(ERROR) << "It is common for this step to fail for very large resources,"
+                  " as is the case for Debug component=shared_library builds. "
+                  "Try with a Release or component=static_library build.";
     return false;
   }
 
