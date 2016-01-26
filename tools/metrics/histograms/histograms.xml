@@ -65777,6 +65777,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1119" label="MediaDevicesEnumerateDevices"/>
   <int value="1120" label="NonSecureSharedWorkerAccessedFromSecureContext"/>
   <int value="1121" label="SecureSharedWorkerAccessedFromNonSecureContext"/>
+  <int value="1122" label="NonCSSStyleSheetType"/>
+  <int value="1123" label="EventDeepPath"/>
+  <int value="1124" label="LinkHeaderPreload"/>
+  <int value="1125" label="MouseWheelEvent"/>
+  <int value="1126" label="WheelEvent"/>
+  <int value="1127" label="MouseWheelAndWheelEvent"/>
+  <int value="1128" label="BodyScrollsInAdditionToViewport"/>
+  <int value="1129" label="DocumentDesignModeEnabeld"/>
+  <int value="1130" label="ContentEditableTrue"/>
+  <int value="1131" label="ContentEditableTrueOnHTML"/>
+  <int value="1132" label="ContentEditablePlainTextOnly"/>
+  <int value="1133" label="V8RegExpPrototypeUnicodeGetter"/>
+  <int value="1134" label="V8IntlV8Parse"/>
+  <int value="1135" label="V8IntlPattern"/>
+  <int value="1136" label="V8IntlResolved"/>
+  <int value="1137" label="V8PromiseChain"/>
+  <int value="1138" label="V8PromiseAccept"/>
+  <int value="1139" label="V8PromiseDefer"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

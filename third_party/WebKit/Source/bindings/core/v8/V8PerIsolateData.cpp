@@ -86,6 +86,27 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
     case v8::Isolate::kRegExpPrototypeToString:
         blinkFeature = UseCounter::V8RegExpPrototypeToString;
         break;
+    case v8::Isolate::kRegExpPrototypeUnicodeGetter:
+        blinkFeature = UseCounter::V8RegExpPrototypeUnicodeGetter;
+        break;
+    case v8::Isolate::kIntlV8Parse:
+        blinkFeature = UseCounter::V8IntlV8Parse;
+        break;
+    case v8::Isolate::kIntlPattern:
+        blinkFeature = UseCounter::V8IntlPattern;
+        break;
+    case v8::Isolate::kIntlResolved:
+        blinkFeature = UseCounter::V8IntlResolved;
+        break;
+    case v8::Isolate::kPromiseChain:
+        blinkFeature = UseCounter::V8PromiseChain;
+        break;
+    case v8::Isolate::kPromiseAccept:
+        blinkFeature = UseCounter::V8PromiseAccept;
+        break;
+    case v8::Isolate::kPromiseDefer:
+        blinkFeature = UseCounter::V8PromiseDefer;
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.

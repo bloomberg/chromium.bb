@@ -987,6 +987,13 @@ public:
         ContentEditableTrue = 1130,
         ContentEditableTrueOnHTML = 1131,
         ContentEditablePlainTextOnly = 1132,
+        V8RegExpPrototypeUnicodeGetter = 1133,
+        V8IntlV8Parse = 1134,
+        V8IntlPattern = 1135,
+        V8IntlResolved = 1136,
+        V8PromiseChain = 1137,
+        V8PromiseAccept = 1138,
+        V8PromiseDefer = 1139,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
