@@ -311,6 +311,7 @@
               'xcode_settings' : {
                 'WARNING_CFLAGS': [
                   # See https://bugs.chromium.org/p/google-breakpad/issues/detail?id=675.
+                  # TODO(crbug.com/569158): remove when fixed.
                   '-Wno-deprecated-declarations',
                 ],
               },
@@ -869,6 +870,13 @@
           'direct_dependent_settings': {
             'include_dirs': [
               'src',
+            ],
+          },
+          'xcode_settings' : {
+            'WARNING_CFLAGS': [
+              # See https://bugs.chromium.org/p/google-breakpad/issues/detail?id=675.
+              # TODO(crbug.com/569158): remove when fixed.
+              '-Wno-deprecated-declarations',
             ],
           },
         }
