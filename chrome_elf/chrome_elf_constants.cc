@@ -5,6 +5,9 @@
 #include "chrome_elf/chrome_elf_constants.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
+// Using PRODUCT_STRING_PATH will make Google Chrome and Canary configurations
+// collide. This was deemed to be the best option due to ELF's inability to
+// depend on BrowserDistribution. http://crbug.com/577820
 #define PRODUCT_STRING_PATH L"Google\\Chrome"
 #elif defined(CHROMIUM_BUILD)
 #define PRODUCT_STRING_PATH L"Chromium"
