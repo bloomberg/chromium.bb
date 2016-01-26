@@ -20,10 +20,6 @@ class MouseEvent;
 
 namespace aura {
 
-namespace internal {
-class TouchEventCalibrate;
-}
-
 class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
  public:
   explicit WindowTreeHostMac(const gfx::Rect& bounds);

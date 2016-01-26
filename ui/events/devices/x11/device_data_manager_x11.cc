@@ -801,20 +801,6 @@ double DeviceDataManagerX11::ExtractAndUpdateScrollOffset(
   return offset / axis->increment;
 }
 
-bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
-#if defined(OS_CHROMEOS)
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return false;
-
-  const std::vector<TouchscreenDevice>& touch_devices =
-      ui::DeviceDataManager::GetInstance()->touchscreen_devices();
-  std::vector<TouchscreenDevice>::const_iterator it = FindDeviceWithId(
-      touch_devices.begin(), touch_devices.end(), touch_device_id);
-  return it != touch_devices.end() && it->type == INPUT_DEVICE_INTERNAL;
-#endif  // defined(OS_CHROMEOS)
-  return false;
-}
-
 void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
     scoped_ptr<std::set<KeyboardCode> > excepted_keys) {
   DCHECK(!excepted_keys.get() ||
