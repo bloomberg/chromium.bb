@@ -912,14 +912,14 @@ crbug.com/418091 [ Mac10.6 ] fast/text/international/zerowidthjoiner.html [ Fail
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
-crbug.com/579816 fast/borders/border-image-outset-in-shorthand.html [ NeedsRebaseline ]
-crbug.com/579816 fast/borders/border-image-outset-split-inline.html [ NeedsRebaseline ]
-crbug.com/579816 fast/borders/border-image-outset.html [ NeedsRebaseline ]
-crbug.com/579816 fast/borders/border-image-slice-constrained.html [ NeedsRebaseline ]
-crbug.com/579816 fast/gradients/border-image-gradient-sides-and-corners.html [ NeedsRebaseline ]
-crbug.com/579816 fast/writing-mode/border-image-vertical-lr.html [ NeedsRebaseline ]
-crbug.com/579816 fast/writing-mode/border-image-vertical-rl.html [ NeedsRebaseline ]
-crbug.com/579816 svg/W3C-SVG-1.1/coords-units-01-b.svg [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/borders/border-image-outset-in-shorthand.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/borders/border-image-outset-split-inline.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/borders/border-image-outset.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/borders/border-image-slice-constrained.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/gradients/border-image-gradient-sides-and-corners.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/writing-mode/border-image-vertical-lr.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] fast/writing-mode/border-image-vertical-rl.html [ NeedsRebaseline ]
+crbug.com/579816 [ XP ] svg/W3C-SVG-1.1/coords-units-01-b.svg [ NeedsRebaseline ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
