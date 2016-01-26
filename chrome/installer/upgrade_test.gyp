@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'chromium_code': 1,
     'branding_dir': '../app/theme/<(branding_path_component)',
     'version_py': '<(DEPTH)/build/util/version.py',
     'version_path': '../../chrome/VERSION',
