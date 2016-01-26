@@ -99,12 +99,12 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
         TextView textView = (TextView) findViewById(R.id.offline_page_size);
         View bookmarkRowView = findViewById(R.id.bookmark_row);
         if (offlinePage != null) {
-            int bottomPadding = textView.getResources().getDimensionPixelSize(
+            int verticalPadding = textView.getResources().getDimensionPixelSize(
                     R.dimen.offline_page_item_vertical_spacing);
             textView.setText(Formatter.formatFileSize(getContext(), offlinePage.getFileSize()));
             // Get the embedded bookmark_row layout, and add padding.  This is because the entries
             // in filter view are larger (contain more items) than normal bookmark view.
-            bookmarkRowView.setPadding(0, 0, 0, bottomPadding);
+            bookmarkRowView.setPadding(0, verticalPadding / 2, 0, verticalPadding / 2);
             textView.setVisibility(View.VISIBLE);
         } else {
             textView.setVisibility(View.GONE);
