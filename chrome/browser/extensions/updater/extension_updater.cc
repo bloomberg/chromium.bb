@@ -269,7 +269,7 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
 
 void ExtensionUpdater::TimerFired() {
   DCHECK(alive_);
-  CheckNow(default_params_);
+  CheckNow(CheckParams());
 
   // If the user has overridden the update frequency, don't bother reporting
   // this.
@@ -321,7 +321,7 @@ void ExtensionUpdater::StopTimerForTesting() {
 
 void ExtensionUpdater::DoCheckSoon() {
   DCHECK(will_check_soon_);
-  CheckNow(default_params_);
+  CheckNow(CheckParams());
   will_check_soon_ = false;
 }
 

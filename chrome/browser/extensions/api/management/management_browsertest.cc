@@ -624,8 +624,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
       browser()->profile())->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
   const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
-  extensions::ExtensionUpdater::CheckParams params;
-  service->updater()->set_default_check_params(params);
   const size_t size_before = registry->enabled_extensions().size();
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   ASSERT_TRUE(registry->disabled_extensions().is_empty());
