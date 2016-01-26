@@ -41,21 +41,6 @@ public abstract class CronetEngine {
      * then {@link #build} is called to create the {@code CronetEngine}.
      */
     public static class Builder {
-        /**
-         * A class which provides a method for loading the cronet native library. Apps needing to
-         * implement custom library loading logic can inherit from this class and pass an instance
-         * to {@link CronetEngine.Builder#setLibraryLoader}. For example, this might be required
-         * to work around {@code UnsatisfiedLinkError}s caused by flaky installation on certain
-         * older devices.
-         */
-        public abstract static class LibraryLoader {
-            /**
-             * Loads the native library.
-             * @param libName name of the library to load
-             */
-            public abstract void loadLibrary(String libName);
-        }
-
         // A hint that a host supports QUIC.
         static class QuicHint {
             // The host.
@@ -101,7 +86,6 @@ public abstract class CronetEngine {
         private String mUserAgent;
         private String mStoragePath;
         private boolean mLegacyModeEnabled;
-        private LibraryLoader mLibraryLoader;
         private String mLibraryName;
         private boolean mQuicEnabled;
         private boolean mHttp2Enabled;
@@ -203,22 +187,8 @@ public abstract class CronetEngine {
             return this;
         }
 
-        /**
-         * Sets a {@link LibraryLoader} to be used to load the native library.
-         * If not set, the library will be loaded using {@link System#loadLibrary}.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder setLibraryLoader(LibraryLoader loader) {
-            mLibraryLoader = loader;
-            return this;
-        }
-
-        void loadLibrary() {
-            if (mLibraryLoader == null) {
-                System.loadLibrary(mLibraryName);
-            } else {
-                mLibraryLoader.loadLibrary(mLibraryName);
-            }
+        String libraryName() {
+            return mLibraryName;
         }
 
         /**
