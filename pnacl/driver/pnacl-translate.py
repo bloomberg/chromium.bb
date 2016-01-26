@@ -495,11 +495,16 @@ def RunHostLD(infile, outfile):
                       infile])
   lib_dir = (env.getone('BASE_LIB_NATIVE')
              + 'x86-32-%s/lib' % env.getone('TARGET_OS'))
+  # TODO(stichnot): Consider making fully linked executable smaller by packaging
+  # the .o files into an archive, and/or building the .o files with
+  # -function-sections and linking with -gc-sections.
   args = ['gcc', '-m32', infile, '-o', outfile,
           os.path.join(lib_dir, 'unsandboxed_irt.o'),
           os.path.join(lib_dir, 'irt_random.o'),
           os.path.join(lib_dir, 'irt_query_list.o'),
-          '-lpthread']
+          os.path.join(lib_dir, 'szrt.o'),
+          os.path.join(lib_dir, 'szrt_ll.o'),
+          '-lm', '-lpthread']
   if env.getone('TARGET_OS') == 'linux':
     args.append('-lrt')  # For clock_gettime()
   driver_tools.Run(args)
