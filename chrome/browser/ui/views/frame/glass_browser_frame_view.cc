@@ -546,6 +546,7 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
 }
 
 void GlassBrowserFrameView::LayoutIncognitoIcon() {
+  const bool md = ui::MaterialDesignController::IsModeMaterial();
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
   gfx::Size size;
   // During startup it's possible to reach here before the browser view has been
@@ -562,11 +563,17 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
     x = width() - frame()->GetMinimizeButtonOffset() +
         (new_avatar_button() ?
             (new_avatar_button()->width() + kNewAvatarButtonOffset) : 0);
+  } else if (!md && !avatar_button() &&
+             (base::win::GetVersion() < base::win::VERSION_WIN10)) {
+    // In non-MD before Win 10, the toolbar has a rounded corner that we don't
+    // want the tabstrip to overlap.
+    x += browser_view()->GetToolbarBounds().x() - kContentEdgeShadowThickness +
+        GetThemeProvider()->GetImageSkiaNamed(
+            IDR_CONTENT_TOP_LEFT_CORNER)->width();
   }
   const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
       insets.bottom();
-  const int y = (ui::MaterialDesignController::IsModeMaterial() ||
-                 !frame()->IsMaximized()) ?
+  const int y = (md || !frame()->IsMaximized()) ?
       (bottom - size.height()) : FrameTopBorderHeight(false);
   incognito_bounds_.SetRect(x + (avatar_button() ? insets.left() : 0), y,
                             avatar_button() ? size.width() : 0, bottom - y);
