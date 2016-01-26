@@ -57,4 +57,10 @@ test("cast_media_unittests") {
     "//testing/gtest",
     "//ui/gfx/geometry",
   ]
+
+  if (chromecast_branding == "public") {
+    # Link default libcast_media_1.0 statically not to link dummy one
+    # dynamically for public unittests.
+    deps += [ "//chromecast/media/base:libcast_media_1.0_default_core" ]
+  }
 }
