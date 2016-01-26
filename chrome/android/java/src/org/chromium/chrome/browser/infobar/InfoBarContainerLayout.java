@@ -21,7 +21,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Layout that displays infobars in a stack. Handles all the animations when adding or removing
@@ -117,16 +116,6 @@ class InfoBarContainerLayout extends FrameLayout {
      */
     void removeInfoBar(Item item) {
         mItems.remove(item);
-        processPendingAnimations();
-    }
-
-    /**
-     * Removes multiple infobars simultaneously. This method (as opposed to calling removeInfoBar()
-     * multiple times) ensures that the animations will happen in the optimal order, i.e. back
-     * infobars disappear first.
-     */
-    void removeInfoBars(Collection<Item> items) {
-        mItems.removeAll(items);
         processPendingAnimations();
     }
 
@@ -243,16 +232,18 @@ class InfoBarContainerLayout extends FrameLayout {
      * content fades in.
      */
     private class FrontInfoBarAppearingAnimation extends InfoBarAnimation {
+        private Item mFrontItem;
         private InfoBarWrapper mFrontWrapper;
         private View mFrontContents;
 
-        FrontInfoBarAppearingAnimation(View frontContents) {
-            mFrontContents = frontContents;
+        FrontInfoBarAppearingAnimation(Item frontItem) {
+            mFrontItem = frontItem;
         }
 
         @Override
         void prepareAnimation() {
-            mFrontWrapper = new InfoBarWrapper(getContext());
+            mFrontContents = mFrontItem.getView();
+            mFrontWrapper = new InfoBarWrapper(getContext(), mFrontItem);
             mFrontWrapper.addView(mFrontContents);
             addWrapper(mFrontWrapper);
         }
@@ -289,9 +280,12 @@ class InfoBarContainerLayout extends FrameLayout {
     private class BackInfoBarAppearingAnimation extends InfoBarAnimation {
         private InfoBarWrapper mAppearingWrapper;
 
+        BackInfoBarAppearingAnimation(Item appearingItem) {
+            mAppearingWrapper = new InfoBarWrapper(getContext(), appearingItem);
+        }
+
         @Override
         void prepareAnimation() {
-            mAppearingWrapper = new InfoBarWrapper(getContext());
             addWrapper(mAppearingWrapper);
         }
 
@@ -318,14 +312,11 @@ class InfoBarContainerLayout extends FrameLayout {
         private InfoBarWrapper mNewFrontWrapper;
         private View mNewFrontContents;
 
-        FrontInfoBarDisappearingAndRevealingAnimation(View newFrontContents) {
-            mNewFrontContents = newFrontContents;
-        }
-
         @Override
         void prepareAnimation() {
             mOldFrontWrapper = mInfoBarWrappers.get(0);
             mNewFrontWrapper = mInfoBarWrappers.get(1);
+            mNewFrontContents = mNewFrontWrapper.getItem().getView();
             mNewFrontWrapper.addView(mNewFrontContents);
         }
 
@@ -366,7 +357,7 @@ class InfoBarContainerLayout extends FrameLayout {
             for (int i = 0; i < mInfoBarWrappers.size(); i++) {
                 mInfoBarWrappers.get(i).setTranslationY(0);
             }
-            announceForAccessibility(mFrontItem.getAccessibilityText());
+            announceForAccessibility(mNewFrontWrapper.getItem().getAccessibilityText());
         }
 
         @Override
@@ -415,14 +406,11 @@ class InfoBarContainerLayout extends FrameLayout {
         private View mOldContents;
         private View mNewContents;
 
-        FrontInfoBarSwapContentsAnimation(View newContents) {
-            mNewContents = newContents;
-        }
-
         @Override
         void prepareAnimation() {
             mFrontWrapper = mInfoBarWrappers.get(0);
             mOldContents = mFrontWrapper.getChildAt(0);
+            mNewContents = mFrontWrapper.getItem().getView();
             mFrontWrapper.addView(mNewContents);
         }
 
@@ -447,8 +435,8 @@ class InfoBarContainerLayout extends FrameLayout {
         void onAnimationEnd() {
             mFrontWrapper.removeViewAt(0);
             InfoBarContainerLayout.this.setTranslationY(0f);
-            mFrontItem.setControlsEnabled(true);
-            announceForAccessibility(mFrontItem.getAccessibilityText());
+            mFrontWrapper.getItem().setControlsEnabled(true);
+            announceForAccessibility(mFrontWrapper.getItem().getAccessibilityText());
         }
 
         @Override
@@ -589,13 +577,7 @@ class InfoBarContainerLayout extends FrameLayout {
     private final ArrayList<Item> mItems = new ArrayList<>();
 
     /**
-     * The Item that is currently shown on the front (i.e. top) of the stack. Like mItems, this
-     * value is not meaningful during animations.
-     */
-    private Item mFrontItem;
-
-    /**
-     * The list of InfoBarWrapper views that are currently visible.
+     * The currently visible InfoBarWrappers, in front to back order.
      */
     private final ArrayList<InfoBarWrapper> mInfoBarWrappers = new ArrayList<>();
 
@@ -618,51 +600,48 @@ class InfoBarContainerLayout extends FrameLayout {
         // removals happen before additions or swaps, and changes are made to back infobars before
         // front infobars.
 
-        int childCount = mInfoBarWrappers.size();
-        int desiredChildCount = Math.min(mItems.size(), MAX_STACK_DEPTH);
-        boolean shouldRemoveFrontView = mFrontItem != null && !mItems.contains(mFrontItem);
+        // First, remove any infobars that are no longer in mItems, if any. Check the back infobars
+        // before the front.
+        for (int i = mInfoBarWrappers.size() - 1; i >= 0; i--) {
+            Item visibleItem = mInfoBarWrappers.get(i).getItem();
+            if (!mItems.contains(visibleItem)) {
+                if (i == 0 && mInfoBarWrappers.size() >= 2) {
+                    // Remove the front infobar and reveal the second-to-front infobar.
+                    runAnimation(new FrontInfoBarDisappearingAndRevealingAnimation());
+                    return;
 
-        // First, check if we can remove any back infobars.
-        if (childCount > desiredChildCount + 1
-                || (childCount == desiredChildCount + 1 && !shouldRemoveFrontView)) {
-            runAnimation(new InfoBarDisappearingAnimation());
-            return;
-        }
+                } else {
+                    // Move the infobar to the very back if it's not already there.
+                    InfoBarWrapper wrapper = mInfoBarWrappers.get(i);
+                    if (i != mInfoBarWrappers.size() - 1) {
+                        removeWrapper(wrapper);
+                        addWrapper(wrapper);
+                    }
 
-        // Second, check if we should remove the front infobar.
-        if (shouldRemoveFrontView) {
-            // The second to front infobar, if any, will become the new front infobar.
-            if (!mItems.isEmpty() && childCount >= 2) {
-                mFrontItem = mItems.get(0);
-                runAnimation(new FrontInfoBarDisappearingAndRevealingAnimation(
-                        mFrontItem.getView()));
-                return;
-            } else {
-                mFrontItem = null;
-                runAnimation(new InfoBarDisappearingAnimation());
-                return;
+                    // Remove the backmost infobar (which may be the front infobar).
+                    runAnimation(new InfoBarDisappearingAnimation());
+                    return;
+                }
             }
         }
 
-        // Third, run swap animation on front infobar if needed.
-        if (mFrontItem != null && mItems.contains(mFrontItem)) {
+        // Second, run swap animation on front infobar if needed.
+        if (!mInfoBarWrappers.isEmpty()) {
+            Item frontItem = mInfoBarWrappers.get(0).getItem();
             View frontContents = mInfoBarWrappers.get(0).getChildAt(0);
-            if (frontContents != mFrontItem.getView()) {
-                runAnimation(new FrontInfoBarSwapContentsAnimation(mFrontItem.getView()));
+            if (frontContents != frontItem.getView()) {
+                runAnimation(new FrontInfoBarSwapContentsAnimation());
                 return;
             }
         }
 
-        // Fourth, check if we should add any infobars.
-        if (childCount < desiredChildCount) {
-            if (childCount == 0) {
-                mFrontItem = mItems.get(0);
-                runAnimation(new FrontInfoBarAppearingAnimation(mFrontItem.getView()));
-                return;
-            } else {
-                runAnimation(new BackInfoBarAppearingAnimation());
-                return;
-            }
+        // Third, check if we should add any infobars.
+        int desiredChildCount = Math.min(mItems.size(), MAX_STACK_DEPTH);
+        if (mInfoBarWrappers.size() < desiredChildCount) {
+            Item itemToShow = mItems.get(mInfoBarWrappers.size());
+            runAnimation(mInfoBarWrappers.isEmpty()
+                    ? new FrontInfoBarAppearingAnimation(itemToShow)
+                    : new BackInfoBarAppearingAnimation(itemToShow));
         }
     }
 
@@ -722,7 +701,8 @@ class InfoBarContainerLayout extends FrameLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         // Trap any attempts to fiddle with the infobars while we're animating.
         return super.onInterceptTouchEvent(ev) || mAnimation != null
-                || (mFrontItem != null && !mFrontItem.areControlsEnabled());
+                || (!mInfoBarWrappers.isEmpty()
+                        && !mInfoBarWrappers.get(0).getItem().areControlsEnabled());
     }
 
     @Override

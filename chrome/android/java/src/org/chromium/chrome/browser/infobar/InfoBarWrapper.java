@@ -17,11 +17,14 @@ import org.chromium.chrome.R;
  */
 class InfoBarWrapper extends FrameLayout {
 
+    private final InfoBarContainerLayout.Item mItem;
+
     /**
      * Constructor for inflating from Java.
      */
-    InfoBarWrapper(Context context) {
+    InfoBarWrapper(Context context, InfoBarContainerLayout.Item item) {
         super(context);
+        mItem = item;
         Resources res = context.getResources();
         int peekingHeight = res.getDimensionPixelSize(R.dimen.infobar_peeking_height);
         int shadowHeight = res.getDimensionPixelSize(R.dimen.infobar_shadow_height);
@@ -30,6 +33,10 @@ class InfoBarWrapper extends FrameLayout {
         // setBackgroundResource() changes the padding, so call setPadding() second.
         setBackgroundResource(R.drawable.infobar_wrapper_bg);
         setPadding(0, shadowHeight, 0, 0);
+    }
+
+    InfoBarContainerLayout.Item getItem() {
+        return mItem;
     }
 
     @Override
