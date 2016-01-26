@@ -29,17 +29,17 @@ crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received
 crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
 crbug.com/572723 inspector/sources/debugger/debugger-autocontinue-on-syntax-error.html [ Pass Failure ]
 
-crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests16.html [ Timeout ]
-crbug.com/569901 [ Debug ] fast/dom/minor-dom-gc.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-percentage.html [ Timeout ]
-crbug.com/569901 [ Debug ] virtual/pointerevent/fast/events/touch/gesture/pad-gesture-fling.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_template.html [ Timeout ]
-crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html [ Timeout ]
+crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Failure Pass ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests16.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] fast/dom/minor-dom-gc.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-percentage.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] virtual/pointerevent/fast/events/touch/gesture/pad-gesture-fling.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_template.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html [ Timeout Failure ]
 
 # ====== Oilpan-only failures until here ======
 
