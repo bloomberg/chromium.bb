@@ -714,7 +714,8 @@ void TracingControllerImpl::OnEndAgentTracingAcked(
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (trace_data_sink_.get()) {
+  if (trace_data_sink_.get() && events_str_ptr &&
+      !events_str_ptr->data().empty()) {
     std::string json_string;
     if (agent_name == kETWTracingAgentName) {
       // The Windows kernel events are kept into a JSON format stored as string

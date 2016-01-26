@@ -26,6 +26,8 @@ class TraceConfig;
 // system trace and PowerTracingAgent for BattOr power trace.
 class BASE_EXPORT TracingAgent {
  public:
+  // Passing a null or empty events_str_ptr indicates that no trace data is
+  // available for the specified agent.
   using StopAgentTracingCallback = base::Callback<void(
       const std::string& agent_name,
       const std::string& events_label,
