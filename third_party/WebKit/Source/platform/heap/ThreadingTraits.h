@@ -5,6 +5,7 @@
 #ifndef ThreadingTraits_h
 #define ThreadingTraits_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
@@ -40,11 +41,13 @@ template<typename T,
 
 template<typename T>
 struct DefaultThreadingTrait<T, false> {
+    STATIC_ONLY(DefaultThreadingTrait);
     static const ThreadAffinity Affinity = AnyThread;
 };
 
 template<typename T>
 struct DefaultThreadingTrait<T, true> {
+    STATIC_ONLY(DefaultThreadingTrait);
     static const ThreadAffinity Affinity = MainThreadOnly;
 };
 
@@ -56,6 +59,7 @@ template<typename T> class WeakMember;
 
 template<typename T>
 struct ThreadingTrait {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = DefaultThreadingTrait<T>::Affinity;
 };
 
@@ -63,16 +67,19 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 
 template<typename T>
 struct ThreadingTrait<Member<T>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T>
 struct ThreadingTrait<WeakMember<T>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename Key, typename Value, typename T, typename U, typename V>
 struct ThreadingTrait<HashMap<Key, Value, T, U, V, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity =
         (ThreadingTrait<Key>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
@@ -80,6 +87,7 @@ struct ThreadingTrait<HashMap<Key, Value, T, U, V, HeapAllocator>> {
 
 template<typename First, typename Second>
 struct ThreadingTrait<WTF::KeyValuePair<First, Second>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity =
         (ThreadingTrait<First>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Second>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
@@ -87,31 +95,37 @@ struct ThreadingTrait<WTF::KeyValuePair<First, Second>> {
 
 template<typename T, typename U, typename V>
 struct ThreadingTrait<HashSet<T, U, V, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, size_t inlineCapacity>
 struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, typename Traits>
 struct ThreadingTrait<HeapVectorBacking<T, Traits>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, size_t inlineCapacity>
 struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T, typename U, typename V>
 struct ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename Table>
 struct ThreadingTrait<HeapHashTableBacking<Table>> {
+    STATIC_ONLY(ThreadingTrait);
     using Key = typename Table::KeyType;
     using Value = typename Table::ValueType;
     static const ThreadAffinity Affinity =
@@ -126,15 +140,25 @@ template<typename T, size_t inlineCapacity> class HeapDeque;
 template<typename T, typename U, typename V> class HeapHashCountedSet;
 
 template<typename T, typename U, typename V, typename W, typename X>
-struct ThreadingTrait<HeapHashMap<T, U, V, W, X>> : public ThreadingTrait<HashMap<T, U, V, W, X, HeapAllocator>> { };
+struct ThreadingTrait<HeapHashMap<T, U, V, W, X>> : public ThreadingTrait<HashMap<T, U, V, W, X, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
+};
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HeapHashSet<T, U, V>> : public ThreadingTrait<HashSet<T, U, V, HeapAllocator>> { };
+struct ThreadingTrait<HeapHashSet<T, U, V>> : public ThreadingTrait<HashSet<T, U, V, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
+};
 template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapVector<T, inlineCapacity>> : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
+struct ThreadingTrait<HeapVector<T, inlineCapacity>> : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
+};
 template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapDeque<T, inlineCapacity>> : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
+struct ThreadingTrait<HeapDeque<T, inlineCapacity>> : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
+};
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HeapHashCountedSet<T, U, V>> : public ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> { };
+struct ThreadingTrait<HeapHashCountedSet<T, U, V>> : public ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> {
+    STATIC_ONLY(ThreadingTrait);
+};
 
 } // namespace blink
 

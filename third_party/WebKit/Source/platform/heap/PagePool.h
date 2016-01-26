@@ -6,6 +6,7 @@
 #define PagePool_h
 
 #include "platform/heap/ThreadState.h"
+#include "wtf/Allocator.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
@@ -15,6 +16,7 @@ class PageMemory;
 
 template<typename DataType>
 class PagePool {
+    USING_FAST_MALLOC(PagePool);
 protected:
     PagePool()
     {
@@ -23,6 +25,7 @@ protected:
     }
 
     class PoolEntry {
+        USING_FAST_MALLOC(PoolEntry);
     public:
         PoolEntry(DataType* data, PoolEntry* next)
             : data(data)

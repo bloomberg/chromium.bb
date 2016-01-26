@@ -6,6 +6,7 @@
 #define PageMemory_h
 
 #include "platform/heap/HeapPage.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PageAllocator.h"
 
@@ -17,6 +18,7 @@
 namespace blink {
 
 class MemoryRegion {
+    USING_FAST_MALLOC(MemoryRegion);
 public:
     MemoryRegion(Address base, size_t size)
         : m_base(base)
@@ -118,6 +120,7 @@ private:
 // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
 // by base addresses.
 class RegionTree {
+    USING_FAST_MALLOC(RegionTree);
 public:
     explicit RegionTree(PageMemoryRegion* region)
         : m_region(region)
@@ -160,6 +163,7 @@ private:
 //
 // Guard pages are created before and after the writable memory.
 class PageMemory {
+    USING_FAST_MALLOC(PageMemory);
 public:
     ~PageMemory()
     {

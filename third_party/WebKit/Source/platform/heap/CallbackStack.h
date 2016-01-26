@@ -6,6 +6,7 @@
 #define CallbackStack_h
 
 #include "platform/heap/ThreadState.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -15,9 +16,11 @@ namespace blink {
 // If more space is needed a new CallbackStack instance is created and chained
 // together with the former instance. I.e. a logical CallbackStack can be made of
 // multiple chained CallbackStack object instances.
-class CallbackStack {
+class CallbackStack final {
+    USING_FAST_MALLOC(CallbackStack);
 public:
     class Item {
+        DISALLOW_NEW();
     public:
         Item() { }
         Item(void* object, VisitorCallback callback)
@@ -54,6 +57,7 @@ private:
     static const size_t blockSize = 8192;
 
     class Block {
+        USING_FAST_MALLOC(Block);
     public:
         explicit Block(Block* next)
             : m_limit(&(m_buffer[blockSize]))

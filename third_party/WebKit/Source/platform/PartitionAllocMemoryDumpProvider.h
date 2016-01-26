@@ -13,6 +13,7 @@
 namespace blink {
 
 class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final : public WebMemoryDumpProvider {
+    USING_FAST_MALLOC(PartitionAllocMemoryDumpProvider);
     WTF_MAKE_NONCOPYABLE(PartitionAllocMemoryDumpProvider);
 public:
     static PartitionAllocMemoryDumpProvider* instance();

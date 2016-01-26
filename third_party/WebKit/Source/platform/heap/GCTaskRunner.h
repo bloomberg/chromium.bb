@@ -51,7 +51,8 @@ public:
     }
 
 private:
-    class GCTask : public WebTaskRunner::Task {
+    class GCTask final : public WebTaskRunner::Task {
+        USING_FAST_MALLOC(GCTask);
     public:
         virtual ~GCTask() { }
 
@@ -69,6 +70,7 @@ private:
 };
 
 class GCTaskObserver final : public WebThread::TaskObserver {
+    USING_FAST_MALLOC(GCTaskObserver);
 public:
     GCTaskObserver() : m_nesting(0) { }
 
@@ -100,6 +102,7 @@ private:
 };
 
 class GCTaskRunner final {
+    USING_FAST_MALLOC(GCTaskRunner);
 public:
     explicit GCTaskRunner(WebThread* thread)
         : m_gcTaskObserver(adoptPtr(new GCTaskObserver))

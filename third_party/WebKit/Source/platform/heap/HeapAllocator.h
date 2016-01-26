@@ -7,6 +7,7 @@
 
 #include "platform/heap/Heap.h"
 #include "platform/heap/TraceTraits.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/Deque.h"
@@ -24,6 +25,7 @@ namespace blink {
 // This is a static-only class used as a trait on collections to make them heap
 // allocated.  However see also HeapListHashSetAllocator.
 class PLATFORM_EXPORT HeapAllocator {
+    STATIC_ONLY(HeapAllocator);
 public:
     using Visitor = blink::Visitor;
     static const bool isGarbageCollected = true;
@@ -200,11 +202,13 @@ static void traceListHashSetValue(VisitorDispatcher visitor, Value& value)
 // objects are instantiated.
 template<typename ValueArg, size_t inlineCapacity>
 class HeapListHashSetAllocator : public HeapAllocator {
+    DISALLOW_NEW();
 public:
     using TableAllocator = HeapAllocator;
     using Node = WTF::ListHashSetNode<ValueArg, HeapListHashSetAllocator>;
 
     class AllocatorProvider {
+        DISALLOW_NEW();
     public:
         // For the heap allocation we don't need an actual allocator object, so
         // we just return null.
@@ -240,6 +244,7 @@ public:
 };
 
 template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking {
+    DISALLOW_NEW();
 public:
     static void finalize(void* pointer);
     void finalizeGarbageCollectedObject() { finalize(this); }
@@ -277,6 +282,7 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
 }
 
 template<typename Table> class HeapHashTableBacking {
+    DISALLOW_NEW();
 public:
     static void finalize(void* pointer);
     void finalizeGarbageCollectedObject() { finalize(this); }
@@ -396,6 +402,7 @@ public:
 namespace WTF {
 
 template <typename T> struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canClearUnusedSlotsWithMemset = true;
@@ -403,6 +410,7 @@ template <typename T> struct VectorTraits<blink::Member<T>> : VectorTraitsBase<b
 };
 
 template <typename T> struct VectorTraits<blink::WeakMember<T>> : VectorTraitsBase<blink::WeakMember<T>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canClearUnusedSlotsWithMemset = true;
@@ -410,6 +418,7 @@ template <typename T> struct VectorTraits<blink::WeakMember<T>> : VectorTraitsBa
 };
 
 template <typename T> struct VectorTraits<blink::UntracedMember<T>> : VectorTraitsBase<blink::UntracedMember<T>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canClearUnusedSlotsWithMemset = true;
@@ -417,6 +426,7 @@ template <typename T> struct VectorTraits<blink::UntracedMember<T>> : VectorTrai
 };
 
 template <typename T> struct VectorTraits<blink::HeapVector<T, 0>> : VectorTraitsBase<blink::HeapVector<T, 0>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canClearUnusedSlotsWithMemset = true;
@@ -424,6 +434,7 @@ template <typename T> struct VectorTraits<blink::HeapVector<T, 0>> : VectorTrait
 };
 
 template <typename T> struct VectorTraits<blink::HeapDeque<T, 0>> : VectorTraitsBase<blink::HeapDeque<T, 0>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canClearUnusedSlotsWithMemset = true;
@@ -431,6 +442,7 @@ template <typename T> struct VectorTraits<blink::HeapDeque<T, 0>> : VectorTraits
 };
 
 template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapVector<T, inlineCapacity>> : VectorTraitsBase<blink::HeapVector<T, inlineCapacity>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = VectorTraits<T>::needsDestruction;
     static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
     static const bool canClearUnusedSlotsWithMemset = VectorTraits<T>::canClearUnusedSlotsWithMemset;
@@ -438,6 +450,7 @@ template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapVect
 };
 
 template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapDeque<T, inlineCapacity>> : VectorTraitsBase<blink::HeapDeque<T, inlineCapacity>> {
+    STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = VectorTraits<T>::needsDestruction;
     static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
     static const bool canClearUnusedSlotsWithMemset = VectorTraits<T>::canClearUnusedSlotsWithMemset;
@@ -445,6 +458,7 @@ template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapDequ
 };
 
 template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
+    STATIC_ONLY(HashTraits);
     // FIXME: The distinction between PeekInType and PassInType is there for
     // the sake of the reference counting handles. When they are gone the two
     // types can be merged into PassInType.
@@ -471,6 +485,7 @@ template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits
 };
 
 template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTraits<blink::WeakMember<T>> {
+    STATIC_ONLY(HashTraits);
     static const bool needsDestruction = false;
     // FIXME: The distinction between PeekInType and PassInType is there for
     // the sake of the reference counting handles. When they are gone the two
@@ -508,6 +523,7 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
 };
 
 template<typename T> struct HashTraits<blink::UntracedMember<T>> : SimpleClassHashTraits<blink::UntracedMember<T>> {
+    STATIC_ONLY(HashTraits);
     static const bool needsDestruction = false;
     // FIXME: The distinction between PeekInType and PassInType is there for
     // the sake of the reference counting handles. When they are gone the two
@@ -535,6 +551,7 @@ template<typename T> struct HashTraits<blink::UntracedMember<T>> : SimpleClassHa
 
 template<typename T, size_t inlineCapacity>
 struct NeedsTracing<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>> *> {
+    STATIC_ONLY(NeedsTracing);
     static_assert(sizeof(T), "T must be fully defined");
     // All heap allocated node pointers need visiting to keep the nodes alive,
     // regardless of whether they contain pointers to other heap allocated

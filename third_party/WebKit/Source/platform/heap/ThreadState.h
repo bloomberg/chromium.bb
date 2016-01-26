@@ -37,6 +37,7 @@
 #include "platform/heap/ThreadingTraits.h"
 #include "public/platform/WebThread.h"
 #include "wtf/AddressSanitizer.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -119,6 +120,7 @@ using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 #endif
 
 class PLATFORM_EXPORT ThreadState {
+    USING_FAST_MALLOC(ThreadState);
     WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
     typedef std::pair<void*, PreFinalizerCallback> PreFinalizer;
@@ -141,6 +143,7 @@ public:
     // The NoAllocationScope class is used in debug mode to catch unwanted
     // allocations. E.g. allocations during GC.
     class NoAllocationScope final {
+        STACK_ALLOCATED();
     public:
         explicit NoAllocationScope(ThreadState* state) : m_state(state)
         {
@@ -155,6 +158,7 @@ public:
     };
 
     class SweepForbiddenScope final {
+        STACK_ALLOCATED();
     public:
         explicit SweepForbiddenScope(ThreadState* state) : m_state(state)
         {
@@ -379,6 +383,7 @@ public:
     void visitPersistents(Visitor*);
 
     struct GCSnapshotInfo {
+        STACK_ALLOCATED();
         GCSnapshotInfo(size_t numObjectTypes);
 
         // Map from gcInfoIndex (vector-index) to count/size.
@@ -678,6 +683,7 @@ private:
 template<ThreadAffinity affinity> class ThreadStateFor;
 
 template<> class ThreadStateFor<MainThreadOnly> {
+    STATIC_ONLY(ThreadStateFor);
 public:
     static ThreadState* state()
     {
@@ -688,6 +694,7 @@ public:
 };
 
 template<> class ThreadStateFor<AnyThread> {
+    STATIC_ONLY(ThreadStateFor);
 public:
     static ThreadState* state() { return ThreadState::current(); }
 };

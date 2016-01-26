@@ -37,6 +37,7 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/AddressSanitizer.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/ContainerAnnotations.h"
@@ -165,6 +166,7 @@ const size_t nonLargeObjectPageSizeMax = 1 << 17;
 static_assert(nonLargeObjectPageSizeMax >= blinkPageSize, "max size supported by HeapObjectHeader must at least be blinkPageSize");
 
 class PLATFORM_EXPORT HeapObjectHeader {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     // If gcInfoIndex is 0, this header is interpreted as a free list header.
     NO_SANITIZE_ADDRESS
@@ -348,6 +350,7 @@ inline bool isPageHeaderAddress(Address address)
 // Note: An object whose size is between |largeObjectSizeThreshold| and
 // |blinkPageSize| can go to either of NormalPage or LargeObjectPage.
 class BasePage {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     BasePage(PageMemory*, BaseHeap*);
     virtual ~BasePage() { }
@@ -574,10 +577,10 @@ private:
 // The HeapDoesNotContainCache is a negative cache, so it must be flushed when
 // memory is added to the heap.
 class HeapDoesNotContainCache {
+    USING_FAST_MALLOC(HeapDoesNotContainCache);
 public:
     HeapDoesNotContainCache()
-        : m_entries(adoptArrayPtr(new Address[HeapDoesNotContainCache::numberOfEntries]))
-        , m_hasEntries(false)
+        : m_hasEntries(false)
     {
         // Start by flushing the cache in a non-empty state to initialize all the cache entries.
         for (int i = 0; i < numberOfEntries; ++i)
@@ -606,11 +609,12 @@ private:
 
     static size_t hash(Address);
 
-    WTF::OwnPtr<Address[]> m_entries;
+    Address m_entries[numberOfEntries];
     bool m_hasEntries;
 };
 
 class FreeList {
+    DISALLOW_NEW();
 public:
     FreeList();
 
@@ -646,6 +650,7 @@ private:
 // NormalPageHeap represents a heap that contains NormalPages
 // and LargeObjectHeap represents a heap that contains LargeObjectPages.
 class PLATFORM_EXPORT BaseHeap {
+    USING_FAST_MALLOC(BaseHeap);
 public:
     BaseHeap(ThreadState*, int);
     virtual ~BaseHeap();

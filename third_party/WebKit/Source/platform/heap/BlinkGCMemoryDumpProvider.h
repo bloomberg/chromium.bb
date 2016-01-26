@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "public/platform/WebMemoryDumpProvider.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -14,6 +15,7 @@ namespace blink {
 class WebMemoryAllocatorDump;
 
 class PLATFORM_EXPORT BlinkGCMemoryDumpProvider final : public WebMemoryDumpProvider {
+    USING_FAST_MALLOC(BlinkGCMemoryDumpProvider);
 public:
     static BlinkGCMemoryDumpProvider* instance();
     ~BlinkGCMemoryDumpProvider() override;

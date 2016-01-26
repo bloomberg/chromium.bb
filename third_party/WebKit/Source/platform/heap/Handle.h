@@ -38,6 +38,7 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/Locker.h"
@@ -72,6 +73,7 @@ enum CrossThreadnessPersistentConfiguration {
 
 template<typename T, WeaknessPersistentConfiguration weaknessConfiguration, CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
 class PersistentBase {
+    USING_FAST_MALLOC(PersistentBase);
     IS_PERSISTENT_REFERENCE_TYPE();
 public:
     PersistentBase() : m_raw(nullptr)
@@ -701,6 +703,7 @@ public:
 // all Member fields of a live object will be traced marked as live as well.
 template<typename T>
 class Member {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     Member() : m_raw(nullptr)
     {
@@ -1198,12 +1201,14 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
 
 template<typename T, bool = IsGarbageCollectedType<T>::value>
 class RawPtrOrMemberTrait {
+    STATIC_ONLY(RawPtrOrMemberTrait)
 public:
     using Type = RawPtr<T>;
 };
 
 template<typename T>
 class RawPtrOrMemberTrait<T, true> {
+    STATIC_ONLY(RawPtrOrMemberTrait)
 public:
     using Type = Member<T>;
 };
@@ -1263,7 +1268,8 @@ private:
 //
 //
 template<typename Self>
-class SelfKeepAlive {
+class SelfKeepAlive final {
+    DISALLOW_NEW();
 public:
     SelfKeepAlive()
     {
@@ -1349,6 +1355,7 @@ public:
 namespace WTF {
 
 template<typename T> struct PtrHash<blink::Member<T>> : PtrHash<T*> {
+    STATIC_ONLY(PtrHash);
     template<typename U>
     static unsigned hash(const U& key) { return PtrHash<T*>::hash(key); }
     static bool equal(T* a, const blink::Member<T>& b) { return a == b; }
@@ -1358,31 +1365,38 @@ template<typename T> struct PtrHash<blink::Member<T>> : PtrHash<T*> {
 };
 
 template<typename T> struct PtrHash<blink::WeakMember<T>> : PtrHash<blink::Member<T>> {
+    STATIC_ONLY(PtrHash);
 };
 
 template<typename T> struct PtrHash<blink::UntracedMember<T>> : PtrHash<blink::Member<T>> {
+    STATIC_ONLY(PtrHash);
 };
 
 // PtrHash is the default hash for hash tables with members.
 template<typename T> struct DefaultHash<blink::Member<T>> {
+    STATIC_ONLY(DefaultHash);
     using Hash = PtrHash<blink::Member<T>>;
 };
 
 template<typename T> struct DefaultHash<blink::WeakMember<T>> {
+    STATIC_ONLY(DefaultHash);
     using Hash = PtrHash<blink::WeakMember<T>>;
 };
 
 template<typename T> struct DefaultHash<blink::UntracedMember<T>> {
+    STATIC_ONLY(DefaultHash);
     using Hash = PtrHash<blink::UntracedMember<T>>;
 };
 
 template<typename T>
 struct NeedsTracing<blink::Member<T>> {
+    STATIC_ONLY(NeedsTracing);
     static const bool value = true;
 };
 
 template<typename T>
 struct IsWeak<blink::WeakMember<T>> {
+    STATIC_ONLY(IsWeak);
     static const bool value = true;
 };
 
@@ -1401,6 +1415,7 @@ template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
 
 template<typename T>
 struct PointerParamStorageTraits<T*, false> {
+    STATIC_ONLY(PointerParamStorageTraits);
     static_assert(sizeof(T), "T must be fully defined");
     using StorageType = T*;
 
@@ -1410,6 +1425,7 @@ struct PointerParamStorageTraits<T*, false> {
 
 template<typename T>
 struct PointerParamStorageTraits<T*, true> {
+    STATIC_ONLY(PointerParamStorageTraits);
     static_assert(sizeof(T), "T must be fully defined");
     using StorageType = blink::CrossThreadPersistent<T>;
 
@@ -1419,16 +1435,19 @@ struct PointerParamStorageTraits<T*, true> {
 
 template<typename T>
 struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
+    STATIC_ONLY(ParamStorageTraits);
     static_assert(sizeof(T), "T must be fully defined");
 };
 
 template<typename T>
 struct ParamStorageTraits<RawPtr<T>> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
+    STATIC_ONLY(ParamStorageTraits);
     static_assert(sizeof(T), "T must be fully defined");
 };
 
 template<typename T>
 struct ParamStorageTraits<blink::CrossThreadWeakPersistentThisPointer<T>> {
+    STATIC_ONLY(ParamStorageTraits);
     static_assert(sizeof(T), "T must be fully defined");
     using StorageType = blink::CrossThreadWeakPersistent<T>;
 

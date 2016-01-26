@@ -6,6 +6,7 @@
 #define StackFrameDepth_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include <cstddef>
 #include <stdint.h>
@@ -16,6 +17,7 @@ namespace blink {
 // Use isSafeToRecurse() to query if there is a room in current
 // call stack for more recursive call.
 class PLATFORM_EXPORT StackFrameDepth final {
+    STATIC_ONLY(StackFrameDepth);
 public:
     inline static bool isSafeToRecurse()
     {
@@ -78,6 +80,8 @@ private:
 };
 
 class StackFrameDepthScope {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(StackFrameDepthScope);
 public:
     StackFrameDepthScope()
     {

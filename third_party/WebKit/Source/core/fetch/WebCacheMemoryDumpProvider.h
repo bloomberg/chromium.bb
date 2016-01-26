@@ -9,6 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebMemoryDumpProvider.h"
+#include "wtf/Allocator.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
@@ -16,6 +17,7 @@ namespace blink {
 // This class is wrapper around MemoryCache to take memory snapshots. It dumps
 // the stats of cache only after the cache is created.
 class CORE_EXPORT WebCacheMemoryDumpProvider final : public WebMemoryDumpProvider {
+    USING_FAST_MALLOC(WebCacheMemoryDumpProvider);
 public:
     // This class is singleton since there is a global MemoryCache object.
     static WebCacheMemoryDumpProvider* instance();

@@ -12,7 +12,7 @@
 namespace blink {
 
 template<typename T>
-class HeapTerminatedArrayBuilder : public TerminatedArrayBuilder<T, HeapTerminatedArray> {
+class HeapTerminatedArrayBuilder final : public TerminatedArrayBuilder<T, HeapTerminatedArray> {
 public:
     explicit HeapTerminatedArrayBuilder(HeapTerminatedArray<T>* array) : TerminatedArrayBuilder<T, HeapTerminatedArray>(array) { }
 };

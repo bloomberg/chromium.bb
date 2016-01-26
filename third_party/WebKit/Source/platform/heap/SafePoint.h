@@ -11,6 +11,7 @@
 namespace blink {
 
 class SafePointScope final {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SafePointScope);
 public:
     explicit SafePointScope(BlinkGC::StackState stackState, ThreadState* state = ThreadState::current())
@@ -38,6 +39,7 @@ private:
 // leaveSafePoint method cannot complete without blocking, see
 // SafePointBarrier::checkAndPark.
 class SafePointAwareMutexLocker final {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SafePointAwareMutexLocker);
 public:
     explicit SafePointAwareMutexLocker(MutexBase& mutex, BlinkGC::StackState stackState = BlinkGC::HeapPointersOnStack)
@@ -88,6 +90,7 @@ private:
 };
 
 class SafePointBarrier final {
+    USING_FAST_MALLOC(SafePointBarrier);
     WTF_MAKE_NONCOPYABLE(SafePointBarrier);
 public:
     SafePointBarrier();

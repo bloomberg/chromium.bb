@@ -1030,8 +1030,7 @@ enum DeleteResult {
     DeleteUnknownProperty
 };
 
-class V8IsolateInterruptor : public BlinkGCInterruptor {
-    USING_FAST_MALLOC(V8IsolateInterruptor);
+class V8IsolateInterruptor final : public BlinkGCInterruptor {
 public:
     explicit V8IsolateInterruptor(v8::Isolate* isolate)
         : m_isolate(isolate)

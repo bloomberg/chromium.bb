@@ -7,10 +7,12 @@
 
 #include "platform/PlatformExport.h"
 #include "public/platform/WebMemoryDumpProvider.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT FontCacheMemoryDumpProvider final : public WebMemoryDumpProvider {
+    USING_FAST_MALLOC(FontCacheMemoryDumpProvider);
 public:
     static FontCacheMemoryDumpProvider* instance();
     ~FontCacheMemoryDumpProvider() override { }

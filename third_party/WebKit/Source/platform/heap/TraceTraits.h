@@ -9,6 +9,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/Visitor.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
 #include "wtf/HashCountedSet.h"
@@ -33,6 +34,7 @@ template<typename T, bool = NeedsAdjustAndMark<T>::value> class AdjustAndMarkTra
 
 template<typename T>
 class AdjustAndMarkTrait<T, false> {
+    STATIC_ONLY(AdjustAndMarkTrait);
 public:
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)
@@ -74,6 +76,7 @@ public:
 
 template<typename T>
 class AdjustAndMarkTrait<T, true> {
+    STATIC_ONLY(AdjustAndMarkTrait);
 public:
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* self)
@@ -98,6 +101,7 @@ struct TraceIfEnabled;
 
 template<typename T>
 struct TraceIfEnabled<T, false>  {
+    STATIC_ONLY(TraceIfEnabled);
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher, T&)
     {
@@ -107,6 +111,7 @@ struct TraceIfEnabled<T, false>  {
 
 template<typename T>
 struct TraceIfEnabled<T, true> {
+    STATIC_ONLY(TraceIfEnabled);
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, T& t)
     {
@@ -119,6 +124,7 @@ template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldW
 
 template<WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceCollectionIfEnabled<false, WTF::NoWeakHandlingInCollections, strongify, T, Traits> {
+    STATIC_ONLY(TraceCollectionIfEnabled);
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher, T&)
     {
@@ -129,6 +135,7 @@ struct TraceCollectionIfEnabled<false, WTF::NoWeakHandlingInCollections, strongi
 
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceCollectionIfEnabled {
+    STATIC_ONLY(TraceCollectionIfEnabled);
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, T& t)
     {
@@ -150,6 +157,7 @@ struct TraceCollectionIfEnabled {
 // that case the pointer has to be adjusted before marking.
 template<typename T>
 class TraceTrait {
+    STATIC_ONLY(TraceTrait);
 public:
     static void trace(Visitor*, void* self);
     static void trace(InlinedGlobalMarkingVisitor, void* self);
@@ -184,6 +192,7 @@ void TraceTrait<T>::trace(InlinedGlobalMarkingVisitor visitor, void* self)
 
 template<typename T, typename Traits>
 struct TraceTrait<HeapVectorBacking<T, Traits>> {
+    STATIC_ONLY(TraceTrait);
     using Backing = HeapVectorBacking<T, Traits>;
 
     template<typename VisitorDispatcher>
@@ -209,6 +218,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
 // processing.
 template<typename Table>
 struct TraceTrait<HeapHashTableBacking<Table>> {
+    STATIC_ONLY(TraceTrait);
     using Backing = HeapHashTableBacking<Table>;
     using Traits = typename Table::ValueTraits;
 
@@ -231,6 +241,7 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 // entries from the collection that contain nulled weak members.
 template<typename T, typename U>
 class TraceTrait<std::pair<T, U>> {
+    STATIC_ONLY(TraceTrait);
 public:
     static const bool firstNeedsTracing = WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value;
     static const bool secondNeedsTracing = WTF::NeedsTracing<U>::value || WTF::IsWeak<U>::value;
@@ -266,6 +277,7 @@ public:
 //
 template<typename T>
 class TraceEagerlyTrait {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = true;
 };
@@ -274,42 +286,49 @@ public:
 #define WILL_NOT_BE_EAGERLY_TRACED_CLASS(TYPE)   \
 template<>                                       \
 class TraceEagerlyTrait<TYPE> {                  \
+    STATIC_ONLY(TraceEagerlyTrait);              \
 public:                                          \
     static const bool value = false;             \
 }
 
 template<typename T>
 class TraceEagerlyTrait<Member<T>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
 
 template<typename T>
 class TraceEagerlyTrait<WeakMember<T>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
 
 template<typename T>
 class TraceEagerlyTrait<Persistent<T>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
 
 template<typename T>
 class TraceEagerlyTrait<WeakPersistent<T>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
 
 template<typename T>
 class TraceEagerlyTrait<CrossThreadPersistent<T>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
 
 template<typename T>
 class TraceEagerlyTrait<CrossThreadWeakPersistent<T>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };
@@ -317,11 +336,13 @@ public:
 template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 template<typename T, size_t inlineCapacity>
 class TraceEagerlyTrait<WTF::ListHashSetNode<T, HeapListHashSetAllocator<T, inlineCapacity>>> {
+    STATIC_ONLY(TraceEagerlyTrait);
 public:
     static const bool value = false;
 };
 
 template <typename T> struct RemoveHeapPointerWrapperTypes {
+    STATIC_ONLY(RemoveHeapPointerWrapperTypes);
     using Type = typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<T, Member>::Type, WeakMember>::Type, RawPtr>::Type;
 };
 
@@ -330,7 +351,9 @@ template <typename T> struct RemoveHeapPointerWrapperTypes {
 // raw pointer types. To remove these tests, we may need support for
 // instantiating a template with a RawPtrOrMember'ish template.
 template<typename T>
-struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename std::remove_pointer<T>::type>::Type>::value> { };
+struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename std::remove_pointer<T>::type>::Type>::value> {
+    STATIC_ONLY(TraceIfNeeded);
+};
 
 } // namespace blink
 

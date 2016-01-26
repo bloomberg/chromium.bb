@@ -35,6 +35,7 @@
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/Deque.h"
@@ -60,6 +61,7 @@ class Visitor;
 // in header files where we have only forward declarations of classes.
 template<typename T, void (T::*method)(Visitor*)>
 struct TraceMethodDelegate {
+    STATIC_ONLY(TraceMethodDelegate);
     static void trampoline(Visitor* visitor, void* self)
     {
         (reinterpret_cast<T*>(self)->*method)(visitor);
@@ -388,6 +390,7 @@ private:
 #if ENABLE(DETAILED_MEMORY_INFRA)
 template<typename T>
 struct TypenameStringTrait {
+    STATIC_ONLY(TypenameStringTrait);
     static const String get()
     {
         return WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>());

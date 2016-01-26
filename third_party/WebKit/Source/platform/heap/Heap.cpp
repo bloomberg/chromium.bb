@@ -51,6 +51,7 @@
 namespace blink {
 
 class GCForbiddenScope final {
+    DISALLOW_NEW();
 public:
     explicit GCForbiddenScope(ThreadState* state)
         : m_state(state)
@@ -69,6 +70,7 @@ private:
 };
 
 class GCScope final {
+    STACK_ALLOCATED();
 public:
     GCScope(ThreadState* state, BlinkGC::StackState stackState, BlinkGC::GCType gcType)
         : m_state(state)
@@ -127,7 +129,8 @@ private:
     OwnPtr<Visitor> m_visitor;
 };
 
-class ResumeThreadScope {
+class ResumeThreadScope final {
+    STACK_ALLOCATED();
 public:
     explicit ResumeThreadScope(BlinkGC::GCType gcType)
         : m_resumeThreads(gcType != BlinkGC::ThreadTerminationGC)

@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/ThreadState.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -16,6 +17,7 @@ namespace blink {
 class CrossThreadPersistentRegion;
 
 class PersistentNode final {
+    DISALLOW_NEW();
 public:
     PersistentNode()
         : m_self(nullptr)
@@ -96,6 +98,7 @@ private:
 };
 
 struct PersistentNodeSlots final {
+    USING_FAST_MALLOC(PersistentNodeSlots);
 private:
     static const int slotCount = 256;
     PersistentNodeSlots* m_next;
@@ -109,6 +112,7 @@ private:
 // a predefined number of PersistentNodes. You can call allocatePersistentNode/
 // freePersistentNode to allocate/free a PersistentNode on the region.
 class PLATFORM_EXPORT PersistentRegion final {
+    USING_FAST_MALLOC(PersistentRegion);
 public:
     PersistentRegion()
         : m_freeListHead(nullptr)
@@ -159,6 +163,7 @@ private:
 };
 
 class CrossThreadPersistentRegion final {
+    USING_FAST_MALLOC(CrossThreadPersistentRegion);
 public:
     CrossThreadPersistentRegion() : m_persistentRegion(adoptPtr(new PersistentRegion)) { }
 

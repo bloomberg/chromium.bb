@@ -38,6 +38,7 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/AddressSanitizer.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/Forward.h"
@@ -53,6 +54,7 @@ template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait
 
 template<typename T>
 class ObjectAliveTrait<T, false> {
+    STATIC_ONLY(ObjectAliveTrait);
 public:
     static bool isHeapObjectAlive(T* object)
     {
@@ -63,6 +65,7 @@ public:
 
 template<typename T>
 class ObjectAliveTrait<T, true> {
+    STATIC_ONLY(ObjectAliveTrait);
 public:
     static bool isHeapObjectAlive(T* object)
     {
@@ -72,6 +75,7 @@ public:
 };
 
 class PLATFORM_EXPORT Heap {
+    STATIC_ONLY(Heap);
 public:
     static void init();
     static void shutdown();
@@ -302,6 +306,7 @@ private:
 
 template<typename T>
 struct IsEagerlyFinalizedType {
+    STATIC_ONLY(IsEagerlyFinalizedType);
 private:
     typedef char YesType;
     struct NoType {
@@ -406,6 +411,7 @@ public:                                           \
 #define IS_EAGERLY_FINALIZED() (pageFromObject(this)->heap()->heapIndex() == BlinkGC::EagerSweepHeapIndex)
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
 class VerifyEagerFinalization {
+    DISALLOW_NEW();
 public:
     ~VerifyEagerFinalization()
     {
