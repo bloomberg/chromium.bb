@@ -17,30 +17,28 @@
 
 @implementation UpdatePendingPasswordViewController
 
-- (UpdatePendingPasswordViewController*)
-initWithModel:(ManagePasswordsBubbleModel*)model
-     delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
-  self = [super initWithModel:model delegate:delegate];
-  return self;
-}
-
 - (NSButton*)defaultButton {
   return updateButton_;
 }
 
 - (void)onUpdateClicked:(id)sender {
-  if (passwordWithUsernameSelectionItem_) {
-    // Multi account case.
-    self.model->OnUpdateClicked(
-        *[passwordWithUsernameSelectionItem_ getSelectedCredentials]);
-  } else {
-    self.model->OnUpdateClicked(self.model->pending_password());
+  ManagePasswordsBubbleModel* model = [self model];
+  if (model) {
+    if (passwordWithUsernameSelectionItem_) {
+      // Multi account case.
+      model->OnUpdateClicked(
+          *[passwordWithUsernameSelectionItem_ getSelectedCredentials]);
+    } else {
+      model->OnUpdateClicked(model->pending_password());
+    }
   }
   [delegate_ viewShouldDismiss];
 }
 
 - (void)onNopeClicked:(id)sender {
-  self.model->OnNopeUpdateClicked();
+  ManagePasswordsBubbleModel* model = [self model];
+  if (model)
+    model->OnNopeUpdateClicked();
   [delegate_ viewShouldDismiss];
 }
 

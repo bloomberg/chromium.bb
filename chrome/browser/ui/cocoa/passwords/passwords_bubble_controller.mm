@@ -52,6 +52,8 @@
 
 - (void)close {
   [currentController_ bubbleWillDisappear];
+  // The bubble is about to be closed. It destroys the model.
+  model_ = nil;
   [super close];
 }
 
@@ -60,13 +62,11 @@
   currentController_.reset();
   if (model_->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     currentController_.reset([[SavePendingPasswordViewController alloc]
-        initWithModel:model_
-             delegate:self]);
+        initWithDelegate:self]);
   } else if (model_->state() ==
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     currentController_.reset([[UpdatePendingPasswordViewController alloc]
-        initWithModel:model_
-             delegate:self]);
+        initWithDelegate:self]);
   } else if (model_->state() == password_manager::ui::CONFIRMATION_STATE) {
     currentController_.reset(
         [[ManagePasswordsBubbleConfirmationViewController alloc]
@@ -146,6 +146,10 @@
 
 - (void)viewShouldDismiss {
   [self close];
+}
+
+- (ManagePasswordsBubbleModel*)model {
+  return model_;
 }
 
 @end

@@ -110,6 +110,7 @@ ManagePasswordsControllerTest::GetDisplayReason() const {
 
 @implementation ContentViewDelegateMock
 
+@synthesize model = _model;
 @synthesize dismissed = _dismissed;
 
 - (void)viewShouldDismiss {

@@ -16,25 +16,21 @@
 
 @implementation SavePendingPasswordViewController
 
-- (SavePendingPasswordViewController*)
-initWithModel:(ManagePasswordsBubbleModel*)model
-     delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
-  self = [super initWithModel:model
-                     delegate:delegate];
-  return self;
-}
-
 - (NSButton*)defaultButton {
   return saveButton_;
 }
 
 - (void)onSaveClicked:(id)sender {
-  self.model->OnSaveClicked();
+  ManagePasswordsBubbleModel* model = self.model;
+  if (model)
+    model->OnSaveClicked();
   [delegate_ viewShouldDismiss];
 }
 
 - (void)onNeverForThisSiteClicked:(id)sender {
-  self.model->OnNeverForThisSiteClicked();
+  ManagePasswordsBubbleModel* model = self.model;
+  if (model)
+    model->OnNeverForThisSiteClicked();
   [delegate_ viewShouldDismiss];
 }
 

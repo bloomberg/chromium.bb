@@ -22,18 +22,12 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
 @implementation PendingPasswordViewController
 
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
-  if (([super initWithDelegate:delegate])) {
-    model_ = model;
-  }
-  return self;
-}
-
 - (BOOL)textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  model_->OnBrandLinkClicked();
+  ManagePasswordsBubbleModel* model = [self model];
+  if (model)
+    model->OnBrandLinkClicked();
   [delegate_ viewShouldDismiss];
   return YES;
 }
@@ -90,8 +84,9 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   [view addSubview:closeButton_];
 
   // Title.
+  ManagePasswordsBubbleModel* model = [self model];
   HyperlinkTextView* titleView = TitleLabelWithLink(
-      model_->title(), model_->title_brand_link_range(), self);
+      model->title(), model->title_brand_link_range(), self);
 
   // Force the text to wrap to fit in the bubble size.
   int titleRightPadding =
@@ -177,7 +172,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 }
 
 - (ManagePasswordsBubbleModel*)model {
-  return model_;
+  return [delegate_ model];
 }
 
 @end

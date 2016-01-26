@@ -18,9 +18,7 @@ class ManagePasswordsBubbleModel;
   base::scoped_nsobject<NSButton> neverButton_;
   base::scoped_nsobject<PasswordsListViewController> passwordItem_;
 }
-- (SavePendingPasswordViewController*)
-initWithModel:(ManagePasswordsBubbleModel*)model
-     delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
+
 - (NSView*)createPasswordView;
 - (NSArray*)createButtonsAndAddThemToView:(NSView*)view;
 @end

@@ -10,18 +10,14 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 
-class ManagePasswordsBubbleModel;
 @class PasswordsListViewController;
 
 // Base class for the views that offer to save/update the user's password.
 @interface PendingPasswordViewController
     : ManagePasswordsBubbleContentViewController<NSTextViewDelegate> {
  @private
-  ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<NSButton> closeButton_;
 }
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
 
 // Creates a controller for showing username/password and returns its view.
 - (NSView*)createPasswordView;

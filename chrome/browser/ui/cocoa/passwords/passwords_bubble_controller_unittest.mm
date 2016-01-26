@@ -81,4 +81,11 @@ TEST_F(ManagePasswordsBubbleControllerTest,
             [[controller() currentController] class]);
 }
 
+TEST_F(ManagePasswordsBubbleControllerTest, ClearModelOnClose) {
+  SetUpUpdatePendingState(false);
+  EXPECT_TRUE(controller().model);
+  [controller() close];
+  EXPECT_FALSE(controller().model);
+}
+
 }  // namespace

@@ -7,11 +7,16 @@
 
 #import <Cocoa/Cocoa.h>
 
+class ManagePasswordsBubbleModel;
+
 // Handles user interaction with the content view.
 @protocol ManagePasswordsBubbleContentViewDelegate<NSObject>
 
 // The user performed an action that should dismiss the bubble.
 - (void)viewShouldDismiss;
+
+// Returns the model object.
+@property(nonatomic, readonly) ManagePasswordsBubbleModel* model;
 
 @end
 

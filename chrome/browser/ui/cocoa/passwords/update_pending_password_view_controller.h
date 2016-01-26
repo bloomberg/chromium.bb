@@ -21,9 +21,7 @@ class ManagePasswordsBubbleModel;
   base::scoped_nsobject<CredentialsSelectionView>
       passwordWithUsernameSelectionItem_;
 }
-- (UpdatePendingPasswordViewController*)
-initWithModel:(ManagePasswordsBubbleModel*)model
-     delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
+
 - (NSView*)createPasswordView;
 - (NSArray*)createButtonsAndAddThemToView:(NSView*)view;
 @end

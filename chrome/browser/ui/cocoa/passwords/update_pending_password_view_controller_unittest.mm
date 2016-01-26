@@ -36,10 +36,10 @@ class UpdatePendingPasswordViewControllerTest
 
   UpdatePendingPasswordViewController* controller() {
     if (!controller_) {
+      [delegate() setModel:GetModelAndCreateIfNull()];
       controller_.reset([[UpdatePendingPasswordViewController alloc]
-          initWithModel:GetModelAndCreateIfNull()
-               delegate:delegate()]);
-      [controller_ loadView];
+          initWithDelegate:delegate()]);
+      [controller_ view];
     }
     return controller_.get();
   }
@@ -90,6 +90,18 @@ TEST_F(UpdatePendingPasswordViewControllerTest,
   SetUpUpdatePendingState(true);
   EXPECT_EQ([CredentialsSelectionView class],
             [[controller() createPasswordView] class]);
+}
+
+TEST_F(UpdatePendingPasswordViewControllerTest, CloseBubbleAndHandleClick) {
+  // A user may press mouse down, some navigation closes the bubble, mouse up
+  // still sends the action.
+  SetUpUpdatePendingState(false);
+  EXPECT_CALL(*ui_controller(), UpdatePassword(_)).Times(0);
+  EXPECT_CALL(*ui_controller(), OnNopeUpdateClicked()).Times(0);
+  [controller() bubbleWillDisappear];
+  [delegate() setModel:nil];
+  [controller().updateButton performClick:nil];
+  [controller().noButton performClick:nil];
 }
 
 }  // namespace
