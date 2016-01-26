@@ -298,7 +298,7 @@ TEST_F('CursorsTest', 'WrappingCursors', function() {
     var para = root.firstChild;
     var cursor = new cursors.WrappingCursor(para, -1);
     cursor = cursor.move(DOM_NODE, DIRECTIONAL, BACKWARD);
-    assertEquals(root.lastChild.firstChild, cursor.node);
+    assertEquals(root.lastChild.firstChild.firstChild, cursor.node);
     cursor = cursor.move(DOM_NODE, DIRECTIONAL, FORWARD);
     assertEquals(root.firstChild.firstChild, cursor.node);
   });

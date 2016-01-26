@@ -238,7 +238,7 @@ cursors.Cursor.prototype = {
         switch (movement) {
           case Movement.BOUND:
             newNode = AutomationUtil.findNodeUntil(newNode, dir,
-                AutomationPredicate.linebreak, {before: true});
+                AutomationPredicate.linebreak, true);
             newNode = newNode || this.node_;
             newIndex =
                 dir == Dir.FORWARD ? this.getText(newNode).length : 0;
@@ -290,10 +290,17 @@ cursors.WrappingCursor.prototype = {
     if (movement == Movement.DIRECTIONAL && result.equals(this)) {
       var pred = unit == Unit.DOM_NODE ?
           AutomationPredicate.leafDomNode : AutomationPredicate.leaf;
-      var root = this.node;
-      while (!AutomationUtil.isTraversalRoot(root) && root.parent)
-        root = root.parent;
-      var wrappedNode = AutomationUtil.findNodePre(root, dir, pred);
+      var endpoint = this.node;
+      while (!AutomationUtil.isTraversalRoot(endpoint) && endpoint.parent)
+        endpoint = endpoint.parent;
+      if (dir == Dir.BACKWARD) {
+        while (endpoint.lastChild)
+          endpoint = endpoint.lastChild;
+      }
+      var wrappedNode = endpoint;
+      if (!pred(wrappedNode))
+        wrappedNode = AutomationUtil.findNextNode(endpoint, dir, pred);
+
       if (wrappedNode) {
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
         return new cursors.WrappingCursor(wrappedNode, cursors.NODE_INDEX);

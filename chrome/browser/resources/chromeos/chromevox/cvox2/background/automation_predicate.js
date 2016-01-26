@@ -143,6 +143,7 @@ AutomationPredicate.leaf = function(node) {
       node.role == RoleType.popUpButton ||
       node.role == RoleType.slider ||
       node.role == RoleType.textField ||
+      node.state.invisible ||
       node.children.every(function(n) {
         return n.state.invisible;
       });
