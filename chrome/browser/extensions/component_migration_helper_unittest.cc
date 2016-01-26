@@ -191,4 +191,22 @@ TEST_F(ComponentMigrationHelperTest, InstallUnregisteredExtension) {
       registry()->enabled_extensions().Contains(unregistered_extension_->id()));
 }
 
+TEST_F(ComponentMigrationHelperTest, RemoveComponentAction) {
+  mock_helper_->SetTestComponentActionPref(true);
+
+  EXPECT_CALL(mock_delegate_, HasComponentAction(kTestActionId))
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_delegate_, AddComponentAction(kTestActionId));
+
+  mock_helper_->OnFeatureEnabled(kTestActionId);
+  EXPECT_TRUE(IsTestComponentActionEnabled());
+
+  EXPECT_CALL(mock_delegate_, HasComponentAction(kTestActionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_delegate_, RemoveComponentAction(kTestActionId));
+
+  mock_helper_->OnActionRemoved(kTestActionId);
+  EXPECT_FALSE(IsTestComponentActionEnabled());
+}
+
 }  // namespace extensions

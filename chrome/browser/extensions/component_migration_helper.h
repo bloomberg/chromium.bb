@@ -100,6 +100,9 @@ class ComponentMigrationHelper : public ExtensionRegistryObserver {
   // extension loading.
   void OnFeatureDisabled(const std::string& component_action_id);
 
+  // Call when the user manually removes the component action from the toolbar.
+  void OnActionRemoved(const std::string& component_action_id);
+
   // extensions::ExtensionRegistryObserver:
   void OnExtensionReady(content::BrowserContext* browser_context,
                         const Extension* extension) override;

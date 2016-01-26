@@ -5,12 +5,16 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,6 +30,8 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
                                   IDS_MEDIA_ROUTER_LEARN_MORE);
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
                                   IDS_MEDIA_ROUTER_HELP);
+  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION,
+                                  IDS_EXTENSIONS_UNINSTALL);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
                                   IDS_MEDIA_ROUTER_REPORT_ISSUE);
@@ -46,30 +52,6 @@ bool MediaRouterContextualMenu::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) {
   return false;
-}
-
-base::string16 MediaRouterContextualMenu::GetLabelForCommandId(
-    int command_id) const {
-  int string_id;
-  switch (command_id) {
-    case IDC_MEDIA_ROUTER_ABOUT:
-      string_id = IDS_MEDIA_ROUTER_ABOUT;
-      break;
-    case IDC_MEDIA_ROUTER_HELP:
-      string_id = IDS_MEDIA_ROUTER_HELP;
-      break;
-    case IDC_MEDIA_ROUTER_LEARN_MORE:
-      string_id = IDS_MEDIA_ROUTER_LEARN_MORE;
-      break;
-    case IDC_MEDIA_ROUTER_REPORT_ISSUE:
-      string_id = IDS_MEDIA_ROUTER_REPORT_ISSUE;
-      break;
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-
-  return l10n_util::GetStringUTF16(string_id);
 }
 
 void MediaRouterContextualMenu::ExecuteCommand(int command_id,
@@ -93,6 +75,9 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
     case IDC_MEDIA_ROUTER_LEARN_MORE:
       chrome::ShowSingletonTab(browser_, GURL(kCastLearnMorePageUrl));
       break;
+    case IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION:
+      RemoveMediaRouterComponentAction();
+      break;
     case IDC_MEDIA_ROUTER_REPORT_ISSUE:
       ReportIssue();
       break;
@@ -115,4 +100,9 @@ void MediaRouterContextualMenu::ReportIssue() {
                            media_router->media_route_provider_extension_id() +
                            "/feedback.html");
   chrome::ShowSingletonTab(browser_, GURL(feedback_url));
+}
+
+void MediaRouterContextualMenu::RemoveMediaRouterComponentAction() {
+  ToolbarActionsModel::Get(browser_->profile())->component_migration_helper()
+      ->OnActionRemoved(ComponentToolbarActionsFactory::kMediaRouterActionId);
 }

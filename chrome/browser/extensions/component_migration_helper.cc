@@ -113,6 +113,16 @@ void ComponentMigrationHelper::OnFeatureDisabled(
     delegate_->RemoveComponentAction(component_action_id);
 }
 
+void ComponentMigrationHelper::OnActionRemoved(
+    const std::string& component_action_id) {
+  // Record preference for the future.
+  SetComponentActionPref(component_action_id, false);
+
+  // Remove the action.
+  if (delegate_->HasComponentAction(component_action_id))
+    delegate_->RemoveComponentAction(component_action_id);
+}
+
 void ComponentMigrationHelper::OnExtensionReady(
     content::BrowserContext* browser_context,
     const Extension* extension) {

@@ -165,6 +165,10 @@ class ToolbarActionsModel
     return is_highlighting() ? highlighted_items_ : toolbar_items_;
   }
 
+  extensions::ComponentMigrationHelper* component_migration_helper() {
+    return component_migration_helper_.get();
+  }
+
   bool is_highlighting() const { return highlight_type_ != HIGHLIGHT_NONE; }
   HighlightType highlight_type() const { return highlight_type_; }
   bool highlighting_for_toolbar_redesign() const {

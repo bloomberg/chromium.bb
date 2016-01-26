@@ -25,10 +25,10 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   bool IsCommandIdEnabled(int command_id) const override;
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) override;
-  base::string16 GetLabelForCommandId(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
   void ReportIssue();
+  void RemoveMediaRouterComponentAction();
 
   Browser* browser_;
   ui::SimpleMenuModel menu_model_;
