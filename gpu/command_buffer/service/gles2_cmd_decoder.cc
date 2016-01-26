@@ -3202,47 +3202,49 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.FragmentPrecisionHigh =
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
-  if (feature_info_->IsWebGLContext()) {
-    resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
-    resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
-    resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
-    if (!draw_buffers_explicitly_enabled_)
-      resources.MaxDrawBuffers = 1;
-    resources.EXT_shader_texture_lod = shader_texture_lod_explicitly_enabled_;
-    resources.NV_draw_buffers =
-        draw_buffers_explicitly_enabled_ && features().nv_draw_buffers;
-  } else {
-    resources.OES_standard_derivatives =
-        features().oes_standard_derivatives ? 1 : 0;
-    resources.ARB_texture_rectangle =
-        features().arb_texture_rectangle ? 1 : 0;
-    resources.OES_EGL_image_external =
-        features().oes_egl_image_external ? 1 : 0;
-    resources.EXT_draw_buffers =
-        features().ext_draw_buffers ? 1 : 0;
-    resources.EXT_frag_depth =
-        features().ext_frag_depth ? 1 : 0;
-    resources.EXT_shader_texture_lod =
-        features().ext_shader_texture_lod ? 1 : 0;
-    resources.NV_draw_buffers =
-        features().nv_draw_buffers ? 1 : 0;
-    resources.EXT_blend_func_extended =
-        features().ext_blend_func_extended ? 1 : 0;
-  }
-
   ShShaderSpec shader_spec;
   switch (feature_info_->context_type()) {
     case CONTEXT_TYPE_WEBGL1:
       shader_spec = SH_WEBGL_SPEC;
+      resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
+      resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
+      resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
+      if (!draw_buffers_explicitly_enabled_)
+        resources.MaxDrawBuffers = 1;
+      resources.EXT_shader_texture_lod = shader_texture_lod_explicitly_enabled_;
+      resources.NV_draw_buffers =
+          draw_buffers_explicitly_enabled_ && features().nv_draw_buffers;
       break;
     case CONTEXT_TYPE_WEBGL2:
       shader_spec = SH_WEBGL2_SPEC;
       break;
     case CONTEXT_TYPE_OPENGLES2:
       shader_spec = SH_GLES2_SPEC;
+      resources.OES_standard_derivatives =
+          features().oes_standard_derivatives ? 1 : 0;
+      resources.ARB_texture_rectangle =
+          features().arb_texture_rectangle ? 1 : 0;
+      resources.OES_EGL_image_external =
+          features().oes_egl_image_external ? 1 : 0;
+      resources.EXT_draw_buffers =
+          features().ext_draw_buffers ? 1 : 0;
+      resources.EXT_frag_depth =
+          features().ext_frag_depth ? 1 : 0;
+      resources.EXT_shader_texture_lod =
+          features().ext_shader_texture_lod ? 1 : 0;
+      resources.NV_draw_buffers =
+          features().nv_draw_buffers ? 1 : 0;
+      resources.EXT_blend_func_extended =
+          features().ext_blend_func_extended ? 1 : 0;
       break;
     case CONTEXT_TYPE_OPENGLES3:
       shader_spec = SH_GLES3_SPEC;
+      resources.ARB_texture_rectangle =
+          features().arb_texture_rectangle ? 1 : 0;
+      resources.OES_EGL_image_external =
+          features().oes_egl_image_external ? 1 : 0;
+      resources.EXT_blend_func_extended =
+          features().ext_blend_func_extended ? 1 : 0;
       break;
     default:
       NOTREACHED();
@@ -9985,8 +9987,8 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
       break;
     case GL_EXTENSIONS:
       {
-        // For WebGL contexts, strip out the OES derivatives and
-        // EXT frag depth extensions if they have not been enabled.
+        // For WebGL contexts, strip out shader extensions if they have not
+        // been enabled on WebGL1 or no longer exist (become core) in WebGL2.
         if (feature_info_->IsWebGLContext()) {
           extensions = feature_info_->extensions();
           if (!derivatives_explicitly_enabled_) {
@@ -12330,7 +12332,7 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_frag_depth = false;
   bool desire_draw_buffers = false;
   bool desire_shader_texture_lod = false;
-  if (feature_info_->IsWebGLContext()) {
+  if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives") != std::string::npos;
     desire_frag_depth =
