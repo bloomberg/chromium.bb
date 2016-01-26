@@ -9,6 +9,7 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_sync_unit_tests',
+      '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '../base/base.isolate',
