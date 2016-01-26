@@ -31,6 +31,9 @@ typedef base::Callback<void(
 // Chromium style codes (en-US not en_US). See spellchecker.cc for a full list.
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages);
 
+// Returns the language used for spellchecking on the platform.
+std::string GetSpellCheckerLanguage();
+
 // Returns true if there is a platform-specific spellchecker that can be used.
 bool SpellCheckerAvailable();
 

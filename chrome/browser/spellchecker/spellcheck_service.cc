@@ -48,14 +48,26 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   StringListPrefMember dictionaries_pref;
   dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);
   std::string first_of_dictionaries;
-  if (!dictionaries_pref.GetValue().empty())
-    first_of_dictionaries = dictionaries_pref.GetValue().front();
 
-  // For preference migration, set the new preference kSpellCheckDictionaries
-  // to be the same as the old kSpellCheckDictionary.
+#if defined(USE_BROWSER_SPELLCHECKER)
+  // Ensure that the renderer always knows the platform spellchecking language.
+  // This language is used for initialization of the text iterator. If the
+  // iterator is not initialized, then the context menu does not show spellcheck
+  // suggestions.
+  //
+  // No migration is necessary, because the spellcheck language preference is
+  // not user visible or modifiable in Chrome on Mac.
+  dictionaries_pref.SetValue(std::vector<std::string>(
+      1, spellcheck_platform::GetSpellCheckerLanguage()));
+  first_of_dictionaries = dictionaries_pref.GetValue().front();
+#else
+  // Migrate preferences from single-language to multi-language schema.
   StringPrefMember single_dictionary_pref;
   single_dictionary_pref.Init(prefs::kSpellCheckDictionary, prefs);
   std::string single_dictionary = single_dictionary_pref.GetValue();
+
+  if (!dictionaries_pref.GetValue().empty())
+    first_of_dictionaries = dictionaries_pref.GetValue().front();
 
   if (first_of_dictionaries.empty() && !single_dictionary.empty()) {
     first_of_dictionaries = single_dictionary;
@@ -67,6 +79,8 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
 
   // If a user goes from single language to multi-language spellchecking with
   // spellchecking disabled the dictionaries preference should be blanked.
+  // TODO(krb): Remove this block of code when allowing to disable multi-lingual
+  // spellcheck.
   if (!prefs->GetBoolean(prefs::kEnableContinuousSpellcheck) &&
       chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
     dictionaries_pref.SetValue(std::vector<std::string>());
@@ -75,11 +89,14 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
 
   // If a user goes back to single language spellchecking make sure there is
   // only one language in the dictionaries preference.
+  // TODO(krb): Remove this block of code when disabling single-language
+  // spellcheck.
   if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled() &&
       dictionaries_pref.GetValue().size() > 1) {
     dictionaries_pref.SetValue(
         std::vector<std::string>(1, first_of_dictionaries));
   }
+#endif  // defined(USE_BROWSER_SPELLCHECKER)
 
   std::string language_code;
   std::string country_code;

@@ -109,6 +109,10 @@ void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   }
 }
 
+std::string GetSpellCheckerLanguage() {
+  return ConvertLanguageCodeFromMac([SharedSpellChecker() language]);
+}
+
 bool SpellCheckerAvailable() {
   // If this file was compiled, then we know that we are on OS X 10.5 at least
   // and can safely return true here.

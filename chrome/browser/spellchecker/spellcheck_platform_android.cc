@@ -13,6 +13,10 @@ namespace spellcheck_platform {
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
 }
 
+std::string GetSpellCheckerLanguage() {
+  return std::string();
+}
+
 bool SpellCheckerAvailable() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAndroidSpellChecker);
