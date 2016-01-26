@@ -81,6 +81,31 @@ class RectangleLayerDelegate : public BasePaintedLayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(RectangleLayerDelegate);
 };
 
+// A BasePaintedLayerDelegate that paints a rounded rectangle of a specified
+// color, size and corner radius.
+class RoundedRectangleLayerDelegate : public BasePaintedLayerDelegate {
+ public:
+  RoundedRectangleLayerDelegate(SkColor color,
+                                gfx::Size size,
+                                int corner_radius);
+  ~RoundedRectangleLayerDelegate() override;
+
+  const gfx::Size& size() const { return size_; }
+
+  // ui::LayerDelegate:
+  gfx::PointF GetCenterPoint() const override;
+  void OnPaintLayer(const ui::PaintContext& context) override;
+
+ private:
+  // The size of the rectangle.
+  gfx::Size size_;
+
+  // The radius of the corners.
+  int corner_radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedRectangleLayerDelegate);
+};
+
 }  // namespace views
 
 #endif  // UI_VIEWS_ANIMATION_INK_DROP_PAINTED_LAYER_DELEGATES_H_

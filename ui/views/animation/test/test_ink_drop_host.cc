@@ -6,7 +6,8 @@
 
 namespace views {
 
-TestInkDropHost::TestInkDropHost() : num_ink_drop_layers_(0) {}
+TestInkDropHost::TestInkDropHost()
+    : num_ink_drop_layers_(0), should_show_hover_(false) {}
 
 TestInkDropHost::~TestInkDropHost() {}
 
@@ -20,6 +21,10 @@ void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 gfx::Point TestInkDropHost::CalculateInkDropCenter() const {
   return gfx::Point();
+}
+
+bool TestInkDropHost::ShouldShowInkDropHover() const {
+  return should_show_hover_;
 }
 
 }  // namespace views

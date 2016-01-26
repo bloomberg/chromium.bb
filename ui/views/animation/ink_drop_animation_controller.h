@@ -21,8 +21,8 @@ class Layer;
 
 namespace views {
 
-// Pure virtual base class that manages an ink drop animation's lifetime and
-// state.
+// Pure virtual base class that manages the lifetime and state of an ink drop
+// animation as well as visual hover state feedback.
 class VIEWS_EXPORT InkDropAnimationController {
  public:
   virtual ~InkDropAnimationController() {}
@@ -32,6 +32,12 @@ class VIEWS_EXPORT InkDropAnimationController {
 
   // Animates from the current InkDropState to |ink_drop_state|.
   virtual void AnimateToState(InkDropState ink_drop_state) = 0;
+
+  // Enables or disables the hover state.
+  virtual void SetHovered(bool is_hovered) = 0;
+
+  // Returns true if the hover state is enabled.
+  virtual bool IsHovered() const = 0;
 
   virtual gfx::Size GetInkDropLargeSize() const = 0;
 

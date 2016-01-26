@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"

@@ -123,6 +123,8 @@ class TestInkDropDelegate : public InkDropDelegate {
     }
   }
 
+  void SetHovered(bool is_hovered) override {}
+
  private:
   InkDropHost* ink_drop_host_;
   bool* ink_shown_;

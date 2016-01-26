@@ -43,8 +43,23 @@ void ButtonInkDropDelegate::OnAction(InkDropState state) {
   ink_drop_animation_controller_->AnimateToState(state);
 }
 
+void ButtonInkDropDelegate::SetHovered(bool is_hovered) {
+  ink_drop_animation_controller_->SetHovered(is_hovered);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler:
+
+void ButtonInkDropDelegate::OnMouseEvent(ui::MouseEvent* event) {
+  switch (event->type()) {
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+      SetHovered(ink_drop_host_->ShouldShowInkDropHover());
+      break;
+    default:
+      return;
+  }
+}
 
 void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
   InkDropState current_ink_drop_state =

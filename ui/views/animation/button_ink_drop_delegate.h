@@ -35,8 +35,10 @@ class VIEWS_EXPORT ButtonInkDropDelegate : public InkDropDelegate,
                       int small_corner_radius) override;
   void OnLayout() override;
   void OnAction(InkDropState state) override;
+  void SetHovered(bool is_hovered) override;
 
   // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:

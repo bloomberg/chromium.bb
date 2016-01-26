@@ -19,13 +19,20 @@ class TestInkDropHost : public InkDropHost {
 
   int num_ink_drop_layers() const { return num_ink_drop_layers_; }
 
+  void set_should_show_hover(bool should_show_hover) {
+    should_show_hover_ = should_show_hover;
+  }
+
   // TestInkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   gfx::Point CalculateInkDropCenter() const override;
+  bool ShouldShowInkDropHover() const override;
 
  private:
   int num_ink_drop_layers_;
+
+  bool should_show_hover_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropHost);
 };

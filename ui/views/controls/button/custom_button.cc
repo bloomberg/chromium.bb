@@ -123,6 +123,8 @@ void CustomButton::Layout() {
 }
 
 void CustomButton::OnEnabledChanged() {
+  // TODO(bruthig): Is there any reason we are not calling
+  // Button::OnEnabledChanged() here?
   if (enabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
     return;
 
@@ -130,6 +132,7 @@ void CustomButton::OnEnabledChanged() {
     SetState(ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
   else
     SetState(STATE_DISABLED);
+  UpdateInkDropHoverState();
 }
 
 const char* CustomButton::GetClassName() const {
@@ -352,6 +355,10 @@ gfx::Point CustomButton::CalculateInkDropCenter() const {
   return GetLocalBounds().CenterPoint();
 }
 
+bool CustomButton::ShouldShowInkDropHover() const {
+  return enabled() && IsMouseHovered() && !InDrag();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, protected:
 
@@ -406,6 +413,11 @@ bool CustomButton::ShouldEnterHoveredState() {
 #endif
 
   return check_mouse_position && IsMouseHovered();
+}
+
+void CustomButton::UpdateInkDropHoverState() {
+  if (ink_drop_delegate_)
+    ink_drop_delegate_->SetHovered(ShouldShowInkDropHover());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

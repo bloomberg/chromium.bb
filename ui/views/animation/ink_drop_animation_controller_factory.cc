@@ -27,6 +27,8 @@ class InkDropAnimationControllerStub
   // InkDropAnimationController:
   InkDropState GetInkDropState() const override;
   void AnimateToState(InkDropState state) override;
+  void SetHovered(bool is_hovered) override;
+  bool IsHovered() const override;
   gfx::Size GetInkDropLargeSize() const override;
   void SetInkDropSize(const gfx::Size& large_size,
                       int large_corner_radius,
@@ -35,10 +37,15 @@ class InkDropAnimationControllerStub
   void SetInkDropCenter(const gfx::Point& center_point) override;
 
  private:
+  // Tracks whether the ink drop is hovered or not. This is used to ensure that
+  // this behaves like all other InkDropAnimationController implementations.
+  bool is_hovered_;
+
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerStub);
 };
 
-InkDropAnimationControllerStub::InkDropAnimationControllerStub() {}
+InkDropAnimationControllerStub::InkDropAnimationControllerStub()
+    : is_hovered_(false) {}
 
 InkDropAnimationControllerStub::~InkDropAnimationControllerStub() {}
 
@@ -46,7 +53,17 @@ InkDropState InkDropAnimationControllerStub::GetInkDropState() const {
   return InkDropState::HIDDEN;
 }
 
-void InkDropAnimationControllerStub::AnimateToState(InkDropState state) {}
+void InkDropAnimationControllerStub::AnimateToState(InkDropState state) {
+  SetHovered(false);
+}
+
+void InkDropAnimationControllerStub::SetHovered(bool is_hovered) {
+  is_hovered_ = is_hovered;
+}
+
+bool InkDropAnimationControllerStub::IsHovered() const {
+  return is_hovered_;
+}
 
 gfx::Size InkDropAnimationControllerStub::GetInkDropLargeSize() const {
   return gfx::Size();

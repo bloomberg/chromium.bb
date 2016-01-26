@@ -34,8 +34,10 @@ class VIEWS_EXPORT InkDropHost {
   virtual void RemoveInkDropLayer(ui::Layer* ink_drop_layer) = 0;
 
   // Returns the Point where the ink drop should be centered.
-  // TODO(varkha): This should be moved to InkDropConsumer.
   virtual gfx::Point CalculateInkDropCenter() const = 0;
+
+  // Returns true if the InkDropHover should be shown.
+  virtual bool ShouldShowInkDropHover() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropHost);
