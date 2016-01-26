@@ -49402,13 +49402,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Sync.PageRevisitBookmarksMatchTransition"
     enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
-  <summary>Transition type to a page that didn't match a bookmark.</summary>
+  <summary>Transition type to a page that matched a bookmark.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitBookmarksMissTransition"
     enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
-  <summary>Transition type to a page that matched a bookmark.</summary>
+  <summary>Transition type to a page that didn't match a bookmark.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitNavigationMatchAge" units="minutes">
@@ -49487,13 +49487,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Sync.PageRevisitTypedUrlMatchTransition"
     enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
-  <summary>Transition type that didn't match a typed URL.</summary>
+  <summary>Transition type that matched a typed URL.</summary>
 </histogram>
 
 <histogram name="Sync.PageRevisitTypedUrlMissTransition"
     enum="PageVisitTransitionType">
   <owner>skym@chromium.org</owner>
-  <summary>Transition type that matched a typed URL.</summary>
+  <summary>Transition type that didn't match a typed URL.</summary>
 </histogram>
 
 <histogram name="Sync.PartiallySyncedTypes">
