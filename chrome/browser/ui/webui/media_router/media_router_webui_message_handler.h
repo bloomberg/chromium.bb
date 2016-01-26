@@ -38,7 +38,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void UpdateCastModes(const CastModeSet& cast_modes,
                        const std::string& source_host);
   void OnCreateRouteResponseReceived(const MediaSink::Id& sink_id,
-                                     const MediaRoute* route);
+                                     const MediaRoute::Id& route_id);
 
   // Does not take ownership of |issue|. Note that |issue| can be nullptr, when
   // there are no more issues.
@@ -68,6 +68,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnReportInitialAction(const base::ListValue* args);
   void OnReportInitialState(const base::ListValue* args);
   void OnReportNavigateToView(const base::ListValue* args);
+  void OnReportRouteCreation(const base::ListValue* args);
   void OnReportSelectedCastMode(const base::ListValue* args);
   void OnReportSinkCount(const base::ListValue* args);
   void OnReportTimeToClickSink(const base::ListValue* args);

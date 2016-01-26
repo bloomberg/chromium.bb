@@ -214,6 +214,17 @@ Polymer({
     },
 
     /**
+     * The ID of the route that is currently being created. This is set when
+     * route creation is resolved but not ready for its controls to be
+     * displayed.
+     * @private {string}
+     */
+    pendingCreatedRouteId_: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The time the sink list was shown and populated with at least one sink.
      * This is reset whenever the user switches views or there are no sinks
      * available for display.
@@ -885,26 +896,21 @@ Polymer({
    *
    * @param {string} sinkId The ID of the sink to which the Media Route was
    *     creating a route.
-   * @param {?media_router.Route} route The newly created route to the sink
-   *     if succeeded; null otherwise.
+   * @param {string} routeId The ID of the newly created route for the sink if
+   *     succeeded; empty otherwise.
    */
-  onCreateRouteResponseReceived: function(sinkId, route) {
-    this.currentLaunchingSinkId_ = '';
+  onCreateRouteResponseReceived: function(sinkId, routeId) {
+    // Check that |sinkId| exists and corresponds to |currentLaunchingSinkId_|.
+    if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId)
+      return;
+
     // The provider will handle sending an issue for a failed route request.
-    if (!route)
+    if (this.isEmptyOrWhitespace_(routeId)) {
+      this.resetRouteCreationProperties_(false);
       return;
+    }
 
-    // Check that |sinkId| exists.
-    if (!this.sinkMap_[sinkId])
-      return;
-
-    // If there is an existing route associated with the same sink, its
-    // |sinkToRouteMap_| entry will be overwritten with that of the new route,
-    // which results in the correct sink to route mapping.
-    this.routeList.push(route);
-    this.showRouteDetails_(route);
-
-    this.startTapTimer_();
+    this.pendingCreatedRouteId_ = routeId;
   },
 
   /**
@@ -926,12 +932,10 @@ Polymer({
   },
 
   /**
-   * Handles timeout of previous create route attempt. Clearing
-   * |currentLaunchingSinkId_| hides the spinner indicating there is a route
-   * creation in progress and show the device icon instead.
+   * Handles timeout of previous create route attempt.
    */
   onNotifyRouteCreationTimeout: function() {
-    this.currentLaunchingSinkId_ = '';
+    this.resetRouteCreationProperties_(false);
   },
 
   /**
@@ -963,6 +967,19 @@ Polymer({
       this.routeMap_[route.id] = route;
       tempSinkToRouteMap[route.sinkId] = route;
     }, this);
+
+    // If there is route creation in progress, check if any of the route ids
+    // correspond to |pendingCreatedRouteId_|. If so, the newly created route
+    // is ready to be displayed; switch to route details view.
+    if (this.currentLaunchingSinkId_ != '' &&
+        this.pendingCreatedRouteId_ != '') {
+      var route = tempSinkToRouteMap[this.currentLaunchingSinkId_];
+      if (route && this.pendingCreatedRouteId_ == route.id) {
+        this.showRouteDetails_(route);
+        this.startTapTimer_();
+        this.resetRouteCreationProperties_(true);
+      }
+    }
 
     // If |currentRoute_| is no longer active, clear |currentRoute_|. Also
     // switch back to the SINK_PICKER view if the user is currently in the
@@ -1027,6 +1044,21 @@ Polymer({
     }, this);
 
     this.rebuildSinksToShow_();
+  },
+
+  /**
+   * Resets the properties relevant to creating a new route. Fires an event
+   * indicating whether or not route creation was successful.
+   * Clearing |currentLaunchingSinkId_| hides the spinner indicating there is
+   * a route creation in progress and show the device icon instead.
+   *
+   * @private
+   */
+  resetRouteCreationProperties_: function(creationSuccess) {
+    this.currentLaunchingSinkId_ = '';
+    this.pendingCreatedRouteId_ = '';
+
+    this.fire('report-route-creation', {success: creationSuccess});
   },
 
   /**

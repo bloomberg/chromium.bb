@@ -41,6 +41,7 @@ const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
 const char kReportInitialAction[] = "reportInitialAction";
 const char kReportInitialState[] = "reportInitialState";
 const char kReportNavigateToView[] = "reportNavigateToView";
+const char kReportRouteCreation[] = "reportRouteCreation";
 const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
 const char kReportTimeToClickSink[] = "reportTimeToClickSink";
@@ -222,22 +223,11 @@ void MediaRouterWebUIMessageHandler::UpdateCastModes(
 
 void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
     const MediaSink::Id& sink_id,
-    const MediaRoute* route) {
+    const MediaRoute::Id& route_id) {
   DVLOG(2) << "OnCreateRouteResponseReceived";
-  if (route) {
-    scoped_ptr<base::DictionaryValue> route_value(RouteToValue(*route, false,
-        media_router_ui_->GetRouteProviderExtensionId()));
-    web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
-                                     base::StringValue(sink_id), *route_value);
-    UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
-                          true);
-  } else {
-    web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
-                                     base::StringValue(sink_id),
-                                     *base::Value::CreateNullValue());
-    UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
-                          false);
-  }
+  web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
+                                   base::StringValue(sink_id),
+                                   base::StringValue(route_id));
 }
 
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
@@ -297,6 +287,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kReportInitialAction,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportInitialAction,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReportRouteCreation,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportRouteCreation,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportSelectedCastMode,
@@ -565,6 +559,19 @@ void MediaRouterWebUIMessageHandler::OnReportNavigateToView(
     base::RecordAction(base::UserMetricsAction(
         "MediaRouter_Ui_Navigate_RouteDetailsToSinkList"));
   }
+}
+
+void MediaRouterWebUIMessageHandler::OnReportRouteCreation(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportRouteCreation";
+  bool route_created_successfully;
+  if (!args->GetBoolean(0, &route_created_successfully)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
+                        route_created_successfully);
 }
 
 void MediaRouterWebUIMessageHandler::OnReportSelectedCastMode(

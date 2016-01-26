@@ -22,11 +22,11 @@ cr.define('media_router.ui', function() {
    *
    * @param {string} sinkId The ID of the sink to which the Media Route was
    *     creating a route.
-   * @param {?media_router.Route} route The newly create route to the sink
-   *     if route creation succeeded; null otherwise
+   * @param {string} routeId The ID of the newly created route that corresponds
+   *     to the sink if route creation succeeded; empty otherwise.
    */
-  function onCreateRouteResponseReceived(sinkId, route) {
-    container.onCreateRouteResponseReceived(sinkId, route);
+  function onCreateRouteResponseReceived(sinkId, routeId) {
+    container.onCreateRouteResponseReceived(sinkId, routeId);
   }
 
   /**
@@ -215,6 +215,15 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports whether or not a route was created successfully.
+   *
+   * @param {boolean} success
+   */
+  function reportRouteCreation(success) {
+    chrome.send('reportRouteCreation', [success]);
+  }
+
+  /**
    * Reports the cast mode that the user selected.
    *
    * @param {number} castModeType
@@ -284,6 +293,7 @@ cr.define('media_router.browserApi', function() {
     reportInitialState: reportInitialState,
     reportNavigateToView: reportNavigateToView,
     reportSelectedCastMode: reportSelectedCastMode,
+    reportRouteCreation: reportRouteCreation,
     reportSinkCount: reportSinkCount,
     reportTimeToClickSink: reportTimeToClickSink,
     reportTimeToInitialActionClose: reportTimeToInitialActionClose,

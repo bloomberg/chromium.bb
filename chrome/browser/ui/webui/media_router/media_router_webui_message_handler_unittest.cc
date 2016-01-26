@@ -174,9 +174,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   MediaRoute route(route_id, MediaSource("mediaSource"), sink_id, description,
                    is_local, "", true);
 
-  EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
-      ReturnRef(provider_extension_id()));
-  handler_->OnCreateRouteResponseReceived(sink_id, &route);
+  handler_->OnCreateRouteResponseReceived(sink_id, route.media_route_id());
   EXPECT_EQ(1u, web_ui_->call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.onCreateRouteResponseReceived",
@@ -187,20 +185,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   EXPECT_EQ(sink_id, sink_id_value->GetString());
 
   const base::Value* arg2 = call_data.arg2();
-  const base::DictionaryValue* route_value = nullptr;
-  ASSERT_TRUE(arg2->GetAsDictionary(&route_value));
-
-  std::string value;
-  EXPECT_TRUE(route_value->GetString("id", &value));
-  EXPECT_EQ(route_id, value);
-  EXPECT_TRUE(route_value->GetString("sinkId", &value));
-  EXPECT_EQ(sink_id, value);
-  EXPECT_TRUE(route_value->GetString("description", &value));
-  EXPECT_EQ(description, value);
-
-  bool actual_is_local = false;
-  EXPECT_TRUE(route_value->GetBoolean("isLocal", &actual_is_local));
-  EXPECT_EQ(is_local, actual_is_local);
+  const base::StringValue* route_id_value = nullptr;
+  ASSERT_TRUE(arg2->GetAsString(&route_id_value));
+  EXPECT_EQ(route_id, route_id_value->GetString());
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {

@@ -465,7 +465,8 @@ void MediaRouterUI::OnRouteResponseReceived(const int route_request_id,
     DVLOG(0) << "MediaRouteResponse returned error: " << error;
   }
 
-  handler_->OnCreateRouteResponseReceived(sink_id, route);
+  std::string route_id = route ? route->media_route_id() : std::string();
+  handler_->OnCreateRouteResponseReceived(sink_id, route_id);
   current_route_request_id_ = -1;
   route_creation_timer_.Stop();
 }
