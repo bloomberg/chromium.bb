@@ -30,8 +30,13 @@
 }
 
 #close-button-container {
+  -webkit-margin-start: auto;
   -webkit-padding-end: 16px;
   -webkit-padding-start: 24px;
+}
+
+#header-and-arrow-container {
+  display: flex;
 }
 
 #header-text {

@@ -81,13 +81,60 @@ cr.define('media_router_header', function() {
         MockInteractions.tap(header.$['back-button']);
       });
 
-      // Tests for 'arrow-drop-click' event firing when the arrow drop button
-      // is clicked.
+      // Tests for 'header-or-arrow-click' event firing when the arrow drop
+      // button is clicked on the CAST_MODE_LIST view.
       test('arrow drop icon click', function(done) {
-        header.addEventListener('arrow-drop-click', function() {
+        header.view = media_router.MediaRouterView.CAST_MODE_LIST;
+        header.addEventListener('header-or-arrow-click', function() {
           done();
         });
         MockInteractions.tap(header.$['arrow-drop-icon']);
+      });
+
+      // Tests for 'header-or-arrow-click' event firing when the arrow drop
+      // button is clicked on the SINK_LIST view.
+      test('arrow drop icon click', function(done) {
+        header.view = media_router.MediaRouterView.SINK_LIST;
+        header.addEventListener('header-or-arrow-click', function() {
+          done();
+        });
+        MockInteractions.tap(header.$['arrow-drop-icon']);
+      });
+
+      // Tests for 'header-or-arrow-click' event firing when the header text is
+      // clicked on the CAST_MODE_LIST view.
+      test('header text click on cast mode list view', function(done) {
+        header.view = media_router.MediaRouterView.CAST_MODE_LIST;
+        header.addEventListener('header-or-arrow-click', function() {
+          done();
+        });
+        MockInteractions.tap(header.$['header-text']);
+      });
+
+      // Tests for 'header-or-arrow-click' event firing when the header text is
+      // clicked on the SINK_LIST view.
+      test('header text click on sink list view', function(done) {
+        header.view = media_router.MediaRouterView.SINK_LIST;
+        header.addEventListener('header-or-arrow-click', function() {
+          done();
+        });
+        MockInteractions.tap(header.$['header-text']);
+      });
+
+      // Tests for no event firing when the header text is clicked on certain
+      // views.
+      test('header text click without event firing', function(done) {
+        header.addEventListener('header-or-arrow-click', function() {
+          assertNotReached();
+        });
+
+        header.view = media_router.MediaRouterView.FILTER;
+        MockInteractions.tap(header.$['header-text']);
+        header.view = media_router.MediaRouterView.ISSUE;
+        MockInteractions.tap(header.$['header-text']);
+        header.view = media_router.MediaRouterView.ROUTE_DETAILS;
+        MockInteractions.tap(header.$['header-text']);
+        done();
       });
 
       // Tests the |computeArrowDropIcon_| function.

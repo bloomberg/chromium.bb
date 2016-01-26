@@ -12,13 +12,15 @@
             hidden$="[[computeBackButtonHidden_(view)]]">
         </paper-icon-button>
       </div>
-      <span id="header-text" title="[[tooltip]]">[[headingText]]</span>
-      <div id="arrow-drop-container">
-        <paper-icon-button icon="[[computeArrowDropIcon_(view)]]"
-            id="arrow-drop-icon" on-click="onArrowDropClick_"
-            disabled$="[[arrowDropIconDisabled]]"
-            hidden$="[[computeArrowDropIconHidden_(view)]]">
-        </paper-icon-button>
+      <div id="header-and-arrow-container" on-click="onHeaderOrArrowClick_">
+        <span id="header-text" title="[[tooltip]]">
+            [[headingText]]</span>
+        <div id="arrow-drop-container">
+          <paper-icon-button icon="[[computeArrowDropIcon_(view)]]"
+              id="arrow-drop-icon" disabled$="[[arrowDropIconDisabled]]"
+              hidden$="[[computeArrowDropIconHidden_(view)]]">
+          </paper-icon-button>
+        </div>
       </div>
       <div id="close-button-container">
         <paper-icon-button icon="close" id="close-button"

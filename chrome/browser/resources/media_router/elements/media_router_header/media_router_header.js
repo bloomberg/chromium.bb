@@ -42,6 +42,7 @@ Polymer({
     view: {
       type: String,
       value: null,
+      observer: 'updateHeaderCursorStyle_',
     },
 
     /**
@@ -94,8 +95,11 @@ Polymer({
    *
    * @private
    */
-  onArrowDropClick_: function() {
-    this.fire('arrow-drop-click');
+  onHeaderOrArrowClick_: function() {
+    if (this.view == media_router.MediaRouterView.SINK_LIST ||
+        this.view == media_router.MediaRouterView.CAST_MODE_LIST) {
+      this.fire('header-or-arrow-click');
+    }
   },
 
   /**
@@ -114,5 +118,19 @@ Polymer({
    */
   onCloseButtonClick_: function() {
     this.fire('close-button-click');
+  },
+
+  /**
+   * Updates the cursor style for the header text when the view changes. When
+   * the drop arrow is also shown, the header text is also clickable.
+   *
+   * @param {?media_router.MediaRouterView} view The current view.
+   * @private
+   */
+  updateHeaderCursorStyle_: function(view) {
+    this.$$('#header-text').style.cursor =
+        view == media_router.MediaRouterView.SINK_LIST ||
+        view == media_router.MediaRouterView.CAST_MODE_LIST ?
+            'pointer' : 'auto';
   },
 });

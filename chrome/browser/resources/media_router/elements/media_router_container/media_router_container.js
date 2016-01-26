@@ -351,7 +351,7 @@ Polymer({
   },
 
   listeners: {
-    'arrow-drop-click': 'toggleCastModeHidden_',
+    'header-or-arrow-click': 'toggleCastModeHidden_',
     'mouseleave': 'onMouseLeave_',
     'mouseenter': 'onMouseEnter_',
   },
@@ -1160,7 +1160,7 @@ Polymer({
   toggleCastModeHidden_: function() {
     if (this.currentView_ == media_router.MediaRouterView.CAST_MODE_LIST) {
       this.showSinkList_();
-    } else {
+    } else if (this.currentView_ == media_router.MediaRouterView.SINK_LIST) {
       this.showCastModeList_();
       this.fire('navigate-to-cast-mode-list');
     }
