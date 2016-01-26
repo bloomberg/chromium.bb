@@ -59,7 +59,6 @@
 #define IDC_SHARE_PAGE                                 40929
 #define IDC_BACK_FORWARD_IN_TAB_HISTORY                40930
 #define IDC_SHOW_GOOGLE_APPS_SETTINGS                  40931
-#define IDC_SHOW_SIGN_IN_WITH_PRINT_ON_COMPLETION      40933
 #define IDC_SHOW_PRIVACY_SETTINGS                      40934
 #define IDC_HIDE_SETTINGS_AND_SHOW_PRIVACY_SETTINGS    40935
 #define IDC_REPORT_AN_ISSUE                            40936
