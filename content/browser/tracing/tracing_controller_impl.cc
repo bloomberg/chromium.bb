@@ -12,6 +12,7 @@
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/tracing/process_metrics_memory_dump_provider.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/power_tracing_agent.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -557,6 +558,13 @@ void TracingControllerImpl::AddTraceMessageFilter(
     return;
   }
 
+#if defined(OS_LINUX)
+  // On Linux the browser process dumps process metrics for child process due to
+  // sandbox.
+  tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
+      trace_message_filter->peer_pid());
+#endif
+
   trace_message_filters_.insert(trace_message_filter);
   if (can_cancel_watch_event()) {
     trace_message_filter->SendSetWatchEvent(watch_category_name_,
@@ -584,6 +592,11 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
                    make_scoped_refptr(trace_message_filter)));
     return;
   }
+
+#if defined(OS_LINUX)
+  tracing::ProcessMetricsMemoryDumpProvider::UnregisterForProcess(
+      trace_message_filter->peer_pid());
+#endif
 
   // If a filter is removed while a response from that filter is pending then
   // simulate the response. Otherwise the response count will be wrong and the

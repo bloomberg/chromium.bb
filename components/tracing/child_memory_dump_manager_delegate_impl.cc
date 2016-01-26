@@ -5,7 +5,9 @@
 #include "components/tracing/child_memory_dump_manager_delegate_impl.h"
 
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "components/tracing/child_trace_message_filter.h"
+#include "components/tracing/process_metrics_memory_dump_provider.h"
 
 namespace tracing {
 
@@ -49,6 +51,13 @@ void ChildMemoryDumpManagerDelegateImpl::SetChildTraceMessageFilter(
   if (ctmf) {
     base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
       this /* delegate */, false /* is_coordinator */);
+
+#if !defined(OS_LINUX) && !defined(OS_NACL)
+    // On linux the browser process takes care of dumping process metrics.
+    // The child process is not allowed to do so due to BPF sandbox.
+    tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
+        base::kNullProcessId);
+#endif
   }
 }
 

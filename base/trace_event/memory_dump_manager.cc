@@ -23,14 +23,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 
-#if !defined(OS_NACL)
-#include "base/trace_event/process_memory_totals_dump_provider.h"
-#endif
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "base/trace_event/process_memory_maps_dump_provider.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "base/trace_event/java_heap_dump_provider_android.h"
 #endif
@@ -166,18 +158,8 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
   }
 
 // Enable the core dump providers.
-#if !defined(OS_NACL)
-  RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance(),
-                       "ProcessMemoryTotals", nullptr);
-#endif
-
 #if defined(MALLOC_MEMORY_TRACING_SUPPORTED)
   RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
-#endif
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance(),
-                       "ProcessMemoryMaps", nullptr);
 #endif
 
 #if defined(OS_ANDROID)

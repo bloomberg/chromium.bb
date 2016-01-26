@@ -758,6 +758,7 @@
     ],
     'tracing_unittest_sources': [
       'tracing/graphics_memory_dump_provider_android_unittest.cc',
+      'tracing/process_metrics_memory_dump_provider_unittest.cc',
       'tracing/trace_config_file_unittest.cc',
     ],
     'translate_unittest_sources': [

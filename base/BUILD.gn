@@ -849,11 +849,8 @@ component("base") {
     "trace_event/process_memory_dump.h",
     "trace_event/process_memory_maps.cc",
     "trace_event/process_memory_maps.h",
-    "trace_event/process_memory_maps_dump_provider.h",
     "trace_event/process_memory_totals.cc",
     "trace_event/process_memory_totals.h",
-    "trace_event/process_memory_totals_dump_provider.cc",
-    "trace_event/process_memory_totals_dump_provider.h",
     "trace_event/trace_buffer.cc",
     "trace_event/trace_buffer.h",
     "trace_event/trace_config.cc",
@@ -994,7 +991,6 @@ component("base") {
       "sys_info_linux.cc",
       "trace_event/malloc_dump_provider.cc",
       "trace_event/malloc_dump_provider.h",
-      "trace_event/process_memory_maps_dump_provider.cc",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -1061,7 +1057,6 @@ component("base") {
       "sync_socket_posix.cc",
       "sys_info.cc",
       "sys_info_posix.cc",
-      "trace_event/process_memory_totals_dump_provider.cc",
       "trace_event/trace_event_system_stats_monitor.cc",
     ]
 
@@ -1190,7 +1185,6 @@ component("base") {
     sources += [
       "trace_event/malloc_dump_provider.cc",
       "trace_event/malloc_dump_provider.h",
-      "trace_event/process_memory_maps_dump_provider.cc",
     ]
 
     if (is_asan || is_lsan || is_msan || is_tsan) {
@@ -1828,7 +1822,6 @@ test("base_unittests") {
     "trace_event/memory_allocator_dump_unittest.cc",
     "trace_event/memory_dump_manager_unittest.cc",
     "trace_event/process_memory_dump_unittest.cc",
-    "trace_event/process_memory_totals_dump_provider_unittest.cc",
     "trace_event/trace_config_memory_test_util.h",
     "trace_event/trace_config_unittest.cc",
     "trace_event/trace_event_argument_unittest.cc",
@@ -1943,10 +1936,6 @@ test("base_unittests") {
       # Set rpath to find libmalloc_wrapper.so even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
-  }
-
-  if (is_linux || is_android) {
-    sources += [ "trace_event/process_memory_maps_dump_provider_unittest.cc" ]
   }
 
   if (!is_linux || use_ozone) {
