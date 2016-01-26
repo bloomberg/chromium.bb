@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -41,9 +42,6 @@ const int kIconLeftSpacing = 2;
 
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
-
-// Space between the edge of the avatar and the tabstrip.
-const int kAvatarInnerSpacing = 4;
 
 // How far the new avatar button is from the closest caption button.
 const int kNewAvatarButtonOffset = 5;
@@ -118,12 +116,8 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
     int available_width) const {
   int x = leading_button_start_ + GetLayoutInsets(AVATAR_ICON).right();
   available_width -= x + NewTabCaptionSpacing() + trailing_button_start_;
-  gfx::Rect bounds(x, GetTabStripInsetsTop(false), std::max(0, available_width),
+  return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
                    tabstrip_preferred_size.height());
-
-  if (delegate_->ShouldShowAvatar() && !ShouldIncognitoIconBeOnRight())
-    bounds.Inset(kAvatarInnerSpacing, 0, 0, 0);
-  return bounds;
 }
 
 gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
@@ -386,6 +380,19 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
 void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   const int old_button_size = leading_button_start_ + trailing_button_start_;
 
+  // Any buttons/icon/title were laid out based on the frame border thickness,
+  // but the tabstrip bounds need to be based on the non-client border thickness
+  // on any side where there aren't other buttons forcing a larger inset.
+  const bool md = ui::MaterialDesignController::IsModeMaterial();
+  int min_button_width = NonClientBorderThickness();
+  // In non-MD, the toolbar has a rounded corner that we don't want the tabstrip
+  // to overlap.
+  if (!md && !avatar_button_)
+    min_button_width += delegate_->GetToolbarLeadingCornerClientWidth();
+  leading_button_start_ = std::max(leading_button_start_, min_button_width);
+  // The trailing corner is a mirror of the leading one.
+  trailing_button_start_ = std::max(trailing_button_start_, min_button_width);
+
   if (avatar_button_) {
     const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
     const gfx::Size size(delegate_->GetOTRAvatarIcon().size());
@@ -400,8 +407,8 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
     }
     const int bottom = GetTabStripInsetsTop(false) +
         delegate_->GetTabStripHeight() - insets.bottom();
-    int y = IsTitleBarCondensed() ?
-        FrameBorderThickness(false) : (bottom - size.height());
+    const int y = (md || !IsTitleBarCondensed()) ?
+        (bottom - size.height()) : FrameBorderThickness(false);
     avatar_button_->SetBounds(x, y, size.width(), bottom - y);
   }
 
@@ -606,15 +613,9 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   LayoutWindowControls(host);
   LayoutTitleBar(host);
 
-  // We now add a single pixel to the leading spacing. We do this because the
-  // avatar and tab strip start one pixel inward compared to where things start
-  // on the trailing side.
-  leading_button_start_++;
-
   if (delegate_->IsRegularOrGuestSession())
     LayoutNewStyleAvatar(host);
-  else
-    LayoutIncognitoIcon(host);
+  LayoutIncognitoIcon(host);
 
   client_view_bounds_ = CalculateClientAreaBounds(
       host->width(), host->height());

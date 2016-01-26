@@ -431,6 +431,12 @@ gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
   return s;
 }
 
+int OpaqueBrowserFrameView::GetToolbarLeadingCornerClientWidth() const {
+  return browser_view()->GetToolbarBounds().x() - kContentEdgeShadowThickness +
+      GetThemeProvider()->GetImageSkiaNamed(
+          IDR_CONTENT_TOP_LEFT_CORNER)->width();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, protected:
 

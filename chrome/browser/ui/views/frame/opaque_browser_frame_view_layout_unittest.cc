@@ -115,6 +115,10 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size(0, 0);
   }
 
+  int GetToolbarLeadingCornerClientWidth() const override {
+    return 0;
+  }
+
  private:
   base::string16 window_title_;
   bool show_avatar_;
@@ -261,7 +265,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindowMaximized) {
   EXPECT_EQ("429,0 25x18", restore_button_->bounds().ToString());
   EXPECT_EQ("454,0 46x18", close_button_->bounds().ToString());
 
-  EXPECT_EQ("-5,-3 392x29",
+  EXPECT_EQ("-6,-3 393x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("262x61", layout_manager_->GetMinimumSize(kWidth).ToString());
@@ -287,7 +291,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithYOffset) {
   EXPECT_EQ("429,0 25x20", restore_button_->bounds().ToString());
   EXPECT_EQ("454,0 46x20", close_button_->bounds().ToString());
 
-  EXPECT_EQ("-5,-3 392x29",
+  EXPECT_EQ("-6,-3 393x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("262x61", layout_manager_->GetMinimumSize(kWidth).ToString());
@@ -312,7 +316,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
   EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
   EXPECT_EQ("4,1 43x18", close_button_->bounds().ToString());
 
-  EXPECT_EQ("93,13 398x29",
+  EXPECT_EQ("92,13 398x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
@@ -333,7 +337,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
   EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
   EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
 
-  EXPECT_EQ("-5,-3 500x29",
+  EXPECT_EQ("-6,-3 501x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
@@ -355,7 +359,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithoutCaptionButtons) {
   EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
   EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
 
-  EXPECT_EQ("-5,-3 500x29",
+  EXPECT_EQ("-6,-3 501x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());

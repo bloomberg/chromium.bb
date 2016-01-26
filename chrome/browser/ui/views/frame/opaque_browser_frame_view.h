@@ -86,6 +86,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
   gfx::Size GetTabstripPreferredSize() const override;
+  int GetToolbarLeadingCornerClientWidth() const override;
 
  protected:
   views::ImageButton* minimize_button() const { return minimize_button_; }

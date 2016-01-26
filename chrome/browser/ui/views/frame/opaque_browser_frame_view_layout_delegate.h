@@ -54,6 +54,11 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // it.
   virtual gfx::Size GetTabstripPreferredSize() const = 0;
 
+  // Returns the width of the portion of the toolbar's leading-edge rounded
+  // corner that is within the client area.  This is only necessary pre-Material
+  // Design.
+  virtual int GetToolbarLeadingCornerClientWidth() const = 0;
+
  protected:
   virtual ~OpaqueBrowserFrameViewLayoutDelegate() {}
 };
