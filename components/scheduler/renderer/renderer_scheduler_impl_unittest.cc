@@ -2282,7 +2282,7 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest,
-       ExpensiveTimerTaskNotBlocked_IfBeginMainFrameNotExpectedSoon) {
+       ExpensiveTimerTaskBlocked_EvenIfBeginMainFrameNotExpectedSoon) {
   std::vector<std::string> run_order;
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -2297,10 +2297,9 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_EQ(UseCase::NONE, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_TRUE(HaveSeenABeginMainframe());
   EXPECT_FALSE(LoadingTasksSeemExpensive());
-  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TimerTasksSeemExpensive());
   EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("D1")));
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
 }
 
 TEST_F(RendererSchedulerImplTest,

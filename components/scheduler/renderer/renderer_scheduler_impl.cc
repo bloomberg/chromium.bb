@@ -632,16 +632,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   bool loading_tasks_seem_expensive = false;
   bool timer_tasks_seem_expensive = false;
-  // Only deem tasks to be exensive (which may cause them to be preemptively
-  // blocked) if we are expecting frames.
-  if (!MainThreadOnly().begin_frame_not_expected_soon) {
-    loading_tasks_seem_expensive =
-        MainThreadOnly().loading_task_cost_estimator.expected_task_duration() >
-        longest_jank_free_task_duration;
-    timer_tasks_seem_expensive =
-        MainThreadOnly().timer_task_cost_estimator.expected_task_duration() >
-        longest_jank_free_task_duration;
-  }
+  loading_tasks_seem_expensive =
+      MainThreadOnly().loading_task_cost_estimator.expected_task_duration() >
+      longest_jank_free_task_duration;
+  timer_tasks_seem_expensive =
+      MainThreadOnly().timer_task_cost_estimator.expected_task_duration() >
+      longest_jank_free_task_duration;
   MainThreadOnly().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
   MainThreadOnly().loading_tasks_seem_expensive = loading_tasks_seem_expensive;
 
