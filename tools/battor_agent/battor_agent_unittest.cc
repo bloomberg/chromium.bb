@@ -472,9 +472,8 @@ TEST_F(BattOrAgentTest, StopTracing) {
 
   // Send an empty last frame to indicate that we're done.
   BattOrFrameHeader frame_header3{0, 0 * sizeof(RawBattOrSample)};
-  RawBattOrSample frame3[] = {};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
-                            CreateFrame(frame_header3, frame3, 0));
+                            CreateFrame(frame_header3, nullptr, 0));
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
@@ -523,9 +522,8 @@ TEST_F(BattOrAgentTest, StopTracingRetriesEEPROMRead) {
   GetTaskRunner()->RunUntilIdle();
 
   BattOrFrameHeader frame_header{0, 0};
-  RawBattOrSample frame[] = {};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
-                            CreateFrame(frame_header, frame, 0));
+                            CreateFrame(frame_header, nullptr, 0));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());
@@ -577,9 +575,8 @@ TEST_F(BattOrAgentTest, StopTracingSucceedsWithOneCalibrationFrameReadFailure) {
   GetTaskRunner()->RunUntilIdle();
 
   BattOrFrameHeader frame_header{0, 0};
-  RawBattOrSample frame[] = {};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
-                            CreateFrame(frame_header, frame, 0));
+                            CreateFrame(frame_header, nullptr, 0));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());
@@ -607,9 +604,8 @@ TEST_F(BattOrAgentTest, StopTracingSucceedsWithOneDataFrameReadFailure) {
   GetTaskRunner()->RunUntilIdle();
 
   BattOrFrameHeader frame_header{0, 0};
-  RawBattOrSample frame[] = {};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
-                            CreateFrame(frame_header, frame, 0));
+                            CreateFrame(frame_header, nullptr, 0));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());
@@ -651,9 +647,8 @@ TEST_F(BattOrAgentTest, StopTracingRetriesResetEachFrame) {
   }
 
   BattOrFrameHeader frame_header2{0, 0};
-  RawBattOrSample frame2[] = {};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
-                            CreateFrame(frame_header2, frame2, 0));
+                            CreateFrame(frame_header2, nullptr, 0));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());

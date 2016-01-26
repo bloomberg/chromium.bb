@@ -15,12 +15,12 @@ namespace battor {
 
 TEST(BattOrSampleConverterTest, ToSampleSimple) {
   BattOrEEPROM eeprom;
-  eeprom.r1 = 1;
-  eeprom.r2 = 1;
-  eeprom.r3 = 1;
-  eeprom.low_gain = 1;
-  eeprom.low_gain_correction_offset = 0;
-  eeprom.low_gain_correction_factor = 1;
+  eeprom.r1 = 1.0f;
+  eeprom.r2 = 1.0f;
+  eeprom.r3 = 1.0f;
+  eeprom.low_gain = 1.0f;
+  eeprom.low_gain_correction_offset = 0.0f;
+  eeprom.low_gain_correction_factor = 1.0f;
   eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
@@ -39,12 +39,12 @@ TEST(BattOrSampleConverterTest, ToSampleSimple) {
 
 TEST(BattOrSampleConverterTest, ToSampleNonZeroBaseline) {
   BattOrEEPROM eeprom;
-  eeprom.r1 = 1;
-  eeprom.r2 = 1;
-  eeprom.r3 = 1;
-  eeprom.low_gain = 1;
-  eeprom.low_gain_correction_offset = 0;
-  eeprom.low_gain_correction_factor = 1;
+  eeprom.r1 = 1.0f;
+  eeprom.r2 = 1.0f;
+  eeprom.r3 = 1.0f;
+  eeprom.low_gain = 1.0f;
+  eeprom.low_gain_correction_offset = 0.0f;
+  eeprom.low_gain_correction_factor = 1.0f;
   eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
@@ -63,12 +63,12 @@ TEST(BattOrSampleConverterTest, ToSampleNonZeroBaseline) {
 
 TEST(BattOrSampleConverterTest, ToSampleNonZeroMultiSampleBaseline) {
   BattOrEEPROM eeprom;
-  eeprom.r1 = 1;
-  eeprom.r2 = 1;
-  eeprom.r3 = 1;
-  eeprom.low_gain = 1;
-  eeprom.low_gain_correction_offset = 0;
-  eeprom.low_gain_correction_factor = 1;
+  eeprom.r1 = 1.0f;
+  eeprom.r2 = 1.0f;
+  eeprom.r3 = 1.0f;
+  eeprom.low_gain = 1.0f;
+  eeprom.low_gain_correction_offset = 0.0f;
+  eeprom.low_gain_correction_factor = 1.0f;
   eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
@@ -88,12 +88,12 @@ TEST(BattOrSampleConverterTest, ToSampleNonZeroMultiSampleBaseline) {
 
 TEST(BattOrSampleConverterTest, ToSampleRealValues) {
   BattOrEEPROM eeprom;
-  eeprom.r1 = 10;
-  eeprom.r2 = 14;
-  eeprom.r3 = 17;
+  eeprom.r1 = 10.0f;
+  eeprom.r2 = 14.0f;
+  eeprom.r3 = 17.0f;
   eeprom.low_gain = 1.5;
-  eeprom.low_gain_correction_offset = 0.03;
-  eeprom.low_gain_correction_factor = 4;
+  eeprom.low_gain_correction_offset = 0.03f;
+  eeprom.low_gain_correction_factor = 4.0f;
   eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
@@ -113,12 +113,12 @@ TEST(BattOrSampleConverterTest, ToSampleRealValues) {
 
 TEST(BattOrSampleConverterTest, ToSampleRealNegativeValues) {
   BattOrEEPROM eeprom;
-  eeprom.r1 = 10;
-  eeprom.r2 = 14;
-  eeprom.r3 = 17;
+  eeprom.r1 = 10.0f;
+  eeprom.r2 = 14.0f;
+  eeprom.r3 = 17.0f;
   eeprom.low_gain = 1.5;
-  eeprom.low_gain_correction_offset = 0.03;
-  eeprom.low_gain_correction_factor = 4;
+  eeprom.low_gain_correction_offset = 0.03f;
+  eeprom.low_gain_correction_factor = 4.0f;
   eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
@@ -137,12 +137,12 @@ TEST(BattOrSampleConverterTest, ToSampleRealNegativeValues) {
 
 TEST(BattOrSampleConverterTest, ToSampleMultipleSamples) {
   BattOrEEPROM eeprom;
-  eeprom.r1 = 1;
-  eeprom.r2 = 1;
-  eeprom.r3 = 1;
-  eeprom.low_gain = 1;
-  eeprom.low_gain_correction_offset = 0;
-  eeprom.low_gain_correction_factor = 1;
+  eeprom.r1 = 1.0f;
+  eeprom.r2 = 1.0f;
+  eeprom.r3 = 1.0f;
+  eeprom.low_gain = 1.0f;
+  eeprom.low_gain_correction_offset = 0.0f;
+  eeprom.low_gain_correction_factor = 1.0f;
   eeprom.sd_sample_rate = 50;
 
   std::vector<RawBattOrSample> calibration_frame;
