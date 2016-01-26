@@ -6,6 +6,6 @@ layer at (0,0) size 800x600
       LayoutTextControl {INPUT} at (0,0) size 173x10 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (10,11) size 169x4 scrollHeight 16
-  LayoutBlockFlow {DIV} at (2,3) size 169x4
+layer at (10,5) size 169x16
+  LayoutBlockFlow {DIV} at (2,-3) size 169x16
 caret: position 0 of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body
