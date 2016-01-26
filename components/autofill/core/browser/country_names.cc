@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/country_names.h"
 
 #include <stdint.h>
-#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -142,13 +141,13 @@ CountryNames* CountryNames::GetInstance() {
 }
 
 // static
-void CountryNames::SetLocaleString(std::string locale) {
+void CountryNames::SetLocaleString(const std::string& locale) {
   DCHECK(!locale.empty());
   // Application locale should never be empty. The empty value of
   // |g_application_locale| means that it has not been initialized yet.
   std::string* storage = g_application_locale.Pointer();
   if (storage->empty()) {
-    *storage = std::move(locale);
+    *storage = locale;
   }
   // TODO(crbug.com/579971) CountryNames currently cannot adapt to changed
   // locale without Chrome's restart.

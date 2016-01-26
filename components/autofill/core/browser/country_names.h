@@ -33,7 +33,7 @@ class CountryNames {
   // Tells CountryNames, what is the application locale. Only the first supplied
   // value is used, further calls result in no changes.  Call this on the UI
   // thread, before first using CountryNames. |locale| must not be empty.
-  static void SetLocaleString(std::string locale);
+  static void SetLocaleString(const std::string& locale);
 
   // Returns the country code corresponding to |country|, which should be a
   // country code or country name localized to |locale_name|.
