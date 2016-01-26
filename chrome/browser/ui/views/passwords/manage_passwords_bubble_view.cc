@@ -427,7 +427,15 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   // If we have a list of passwords to store for the current site, display
   // them to the user for management. Otherwise, render a "No passwords for
   // this site" message.
-  if (!parent_->model()->local_credentials().empty()) {
+
+  bool only_PSL_matches =
+      find_if(parent_->model()->local_credentials().begin(),
+              parent_->model()->local_credentials().end(),
+              [](const autofill::PasswordForm* form) {
+                return !form->is_public_suffix_match;
+              }) == parent_->model()->local_credentials().end();
+
+  if (!only_PSL_matches) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
         parent_->model(), parent_->model()->local_credentials().get());
     layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,

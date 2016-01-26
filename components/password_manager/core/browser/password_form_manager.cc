@@ -418,108 +418,50 @@ void PasswordFormManager::OnRequestDone(
     }
   }
   logins_result.erase(begin_blacklisted, logins_result.end());
+  if (logins_result.empty())
+    return;
 
   // Now compute scores for the remaining credentials in |login_result|.
   std::vector<uint32_t> credential_scores;
   credential_scores.reserve(logins_result.size());
   uint32_t best_score = 0;
+  std::map<base::string16, uint32_t> best_scores;
   for (const PasswordForm* login : logins_result) {
     uint32_t current_score = ScoreResult(*login);
-    if (current_score > best_score)
-      best_score = current_score;
+    best_score = std::max(best_score, current_score);
+    best_scores[login->username_value] =
+        std::max(best_scores[login->username_value], current_score);
     credential_scores.push_back(current_score);
   }
 
-  if (best_score == 0) {
-    if (logger) {
-      logger->LogNumber(Logger::STRING_BEST_SCORE,
-                        static_cast<size_t>(best_score));
-    }
-    return;
-  }
-
-  // Start the |best_matches_| with the best-scoring normal credentials and save
-  // the worse-scoring "protected" ones for later.
-  ScopedVector<PasswordForm> protected_credentials;
+  // Fill |best_matches_| with the best-scoring credentials for each username.
   for (size_t i = 0; i < logins_result.size(); ++i) {
     // Take ownership of the PasswordForm from the ScopedVector.
     scoped_ptr<PasswordForm> login(logins_result[i]);
     logins_result[i] = nullptr;
     DCHECK(!login->blacklisted_by_user);
+    const base::string16& username = login->username_value;
 
-    if (credential_scores[i] < best_score) {
-      // Empty path matches are most commonly imports from Firefox, and
-      // generally useful to autofill. Blacklisted entries are only meaningful
-      // in the absence of non-blacklisted entries, in which case they need no
-      // protection to become |best_matches_|. TODO(timsteele): Bug 1269400. We
-      // probably should do something more elegant for any shorter-path match
-      // instead of explicitly handling empty path matches.
-      bool is_credential_protected =
-          observed_form_.scheme == PasswordForm::SCHEME_HTML &&
-          base::StartsWith("/", login->origin.path(),
-                           base::CompareCase::SENSITIVE) &&
-          credential_scores[i] > 0;
-      // Passwords generated on a signup form must show on a login form even if
-      // there are better-matching saved credentials. TODO(gcasto): We don't
-      // want to cut credentials that were saved on signup forms even if they
-      // weren't generated, but currently it's hard to distinguish between those
-      // forms and two different login forms on the same domain. Filed
-      // http://crbug.com/294468 to look into this.
-      is_credential_protected |= login->type == PasswordForm::TYPE_GENERATED;
-
-      // Websites that participate in affiliation-based matching will normally
-      // have a single authentication system per domain, therefore affiliation
-      // based matches are desired to be offered on any login form on the site.
-      // However, for Android credentials, most meta-data attributes are empty,
-      // so they will have a very low score, hence need to be protected against
-      // the high-scoring logins saved from the website.
-      is_credential_protected |= IsValidAndroidFacetURI(login->signon_realm);
-
-      if (is_credential_protected)
-        protected_credentials.push_back(std::move(login));
-      else
-        not_best_matches_.push_back(std::move(login));
+    if (credential_scores[i] < best_scores[username]) {
+      not_best_matches_.push_back(std::move(login));
       continue;
     }
 
+    if (!preferred_match_ && credential_scores[i] == best_score)
+      preferred_match_ = login.get();
+
     // If there is another best-score match for the same username then leave it
     // and add the current form to |not_best_matches_|.
-    const base::string16& username = login->username_value;
     auto best_match_username = best_matches_.find(username);
     if (best_match_username == best_matches_.end()) {
-      if (login->preferred)
-        preferred_match_ = login.get();
       best_matches_.insert(std::make_pair(username, std::move(login)));
     } else {
       not_best_matches_.push_back(std::move(login));
     }
   }
 
-  // Add the protected results if we don't already have a result with the same
-  // username.
-  for (ScopedVector<PasswordForm>::iterator it = protected_credentials.begin();
-       it != protected_credentials.end(); ++it) {
-    // Take ownership of the PasswordForm from the ScopedVector.
-    scoped_ptr<PasswordForm> protege(*it);
-    *it = nullptr;
-    const base::string16& username = protege->username_value;
-    if (best_matches_.find(username) == best_matches_.end())
-      best_matches_.insert(std::make_pair(username, std::move(protege)));
-    else
-      not_best_matches_.push_back(std::move(protege));
-  }
-
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
                        logins_result_size - best_matches_.size());
-
-  if (!best_matches_.empty()) {
-    // It is possible we have at least one match but have no preferred_match_,
-    // because a user may have chosen to 'Forget' the preferred match. So we
-    // just pick the first one and whichever the user selects for submit will
-    // be saved as preferred.
-    if (!preferred_match_)
-      preferred_match_ = best_matches_.begin()->second.get();
-  }
 }
 
 void PasswordFormManager::ProcessFrame(
@@ -686,7 +628,7 @@ void PasswordFormManager::UpdatePreferredLoginState(
   PasswordFormMap::const_iterator iter;
   for (iter = best_matches_.begin(); iter != best_matches_.end(); iter++) {
     if (iter->second->username_value != pending_credentials_.username_value &&
-        iter->second->preferred) {
+        iter->second->preferred && !iter->second->is_public_suffix_match) {
       // This wasn't the selected login but it used to be preferred.
       iter->second->preferred = false;
       if (user_action_ == kUserActionNone)
@@ -1146,8 +1088,12 @@ uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
 
   uint32_t score = 0u;
   if (!candidate.is_public_suffix_match) {
-    score += 1u << 7;
+    score += 1u << 8;
   }
+
+  if (candidate.preferred)
+    score += 1u << 7;
+
   if (candidate.origin == observed_form_.origin) {
     // This check is here for the most common case which
     // is we have a single match in the db for the given host,

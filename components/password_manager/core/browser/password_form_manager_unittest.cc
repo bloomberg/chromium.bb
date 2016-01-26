@@ -1116,18 +1116,32 @@ TEST_F(PasswordFormManagerTest,
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
 }
 
-TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords_Match) {
-  // Simulate having two matches for this origin, one of which was from a form
-  // with different HTML tags for elements. Because of scoring differences,
-  // only the first form will be sent to Autofill().
-  EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
-
+TEST_F(PasswordFormManagerTest, TestBestCredentialsByEachUsernameAreIncluded) {
+  // Simulate having several matches, with 3 different usernames. Some of the
+  // matches are PSL matches. One match for each username should be chosen.
   ScopedVector<PasswordForm> simulated_results;
-  simulated_results.push_back(CreateSavedMatch(false));
-  simulated_results.push_back(CreateSavedMatch(false));
-  simulated_results[1]->username_value = ASCIIToUTF16("other@gmail.com");
+  // Add a best scoring match. It should be in |best_matches| and chosen as a
+  // prefferred match.
+  simulated_results.push_back(new PasswordForm(*saved_match()));
+  // Add a match saved on another form, it has lower score. It should not be in
+  // |best_matches|.
+  simulated_results.push_back(new PasswordForm(*saved_match()));
   simulated_results[1]->password_element = ASCIIToUTF16("signup_password");
   simulated_results[1]->username_element = ASCIIToUTF16("signup_username");
+  // Add a match saved on another form with a different username. It should be
+  // in |best_matches|.
+  simulated_results.push_back(new PasswordForm(*saved_match()));
+  auto username1 = simulated_results[0]->username_value + ASCIIToUTF16("1");
+  simulated_results[2]->username_value = username1;
+  simulated_results[2]->password_element = ASCIIToUTF16("signup_password");
+  simulated_results[2]->username_element = ASCIIToUTF16("signup_username");
+  // Add a PSL match, it should not be in |best_matches|.
+  simulated_results.push_back(new PasswordForm(*psl_saved_match()));
+  // Add a PSL match with a different username. It should be in |best_matches|.
+  simulated_results.push_back(new PasswordForm(*psl_saved_match()));
+  auto username2 = simulated_results[0]->username_value + ASCIIToUTF16("2");
+  simulated_results[4]->username_value = username2;
+
   form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
 
   autofill::PasswordFormFillData fill_data;
@@ -1135,8 +1149,18 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords_Match) {
       .WillOnce(SaveArg<0>(&fill_data));
 
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
-  EXPECT_TRUE(fill_data.additional_logins.empty());
+  const autofill::PasswordFormMap& best_matches =
+      form_manager()->best_matches();
+  EXPECT_EQ(3u, best_matches.size());
+  EXPECT_NE(best_matches.end(),
+            best_matches.find(saved_match()->username_value));
+  EXPECT_EQ(*saved_match(),
+            *best_matches.find(saved_match()->username_value)->second);
+  EXPECT_NE(best_matches.end(), best_matches.find(username1));
+  EXPECT_NE(best_matches.end(), best_matches.find(username2));
+
+  EXPECT_EQ(*saved_match(), *form_manager()->preferred_match());
+  EXPECT_EQ(2u, fill_data.additional_logins.size());
 }
 
 TEST_F(PasswordFormManagerTest,

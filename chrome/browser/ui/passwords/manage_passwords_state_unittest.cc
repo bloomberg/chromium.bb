@@ -364,6 +364,31 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   TestAllUpdates();
 }
 
+TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
+  autofill::PasswordFormMap password_form_map;
+  password_form_map.insert(std::make_pair(
+      test_local_form().username_value,
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
+  autofill::PasswordForm psl_matched_test_form = test_local_form();
+  psl_matched_test_form.is_public_suffix_match = true;
+  password_form_map.insert(std::make_pair(
+      psl_matched_test_form.username_value,
+      make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form))));
+  GURL origin("https://example.com");
+  passwords_data().OnPasswordAutofilled(password_form_map, origin);
+
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+
+  // |passwords_data| should hold a separate copy of test_local_form().
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              Not(Contains(&test_local_form())));
+  TestAllUpdates();
+}
+
 TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   autofill::PasswordForm psl_matched_test_form = test_local_form();
   psl_matched_test_form.is_public_suffix_match = true;
