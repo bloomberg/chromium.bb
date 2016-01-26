@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://reillyeon.github.io/webusb/#idl-def-usbtransferstatus
+// http://wicg.github.io/webusb/#idl-def-usbtransferstatus
 
 enum USBTransferStatus {
     "ok",
@@ -10,7 +10,7 @@ enum USBTransferStatus {
     "babble"
 };
 
-// http://reillyeon.github.io/webusb/#device-usage
+// http://wicg.github.io/webusb/#device-usage
 
 [
     GarbageCollected,

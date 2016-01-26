@@ -21,7 +21,7 @@ const uint8_t kDeviceCapabilityDescriptorType = 0x10;
 const uint8_t kPlatformDevCapabilityType = 0x05;
 
 // These constants are defined by the WebUSB specification:
-// http://reillyeon.github.io/webusb/
+// http://wicg.github.io/webusb/
 const uint8_t kWebUsbCapabilityUUID[16] = {
     // Little-endian encoding of {3408b638-09a9-47a0-8bfd-a0768815b665}.
     0x38, 0xB6, 0x08, 0x34, 0xA9, 0x09, 0xA0, 0x47,
