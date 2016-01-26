@@ -6,7 +6,6 @@
 
 #include "core/InspectorTypeBuilder.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorState.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 
@@ -74,8 +73,8 @@ void ScreenOrientationInspectorAgent::setScreenOrientationOverride(ErrorString* 
         return;
     }
     m_state->setBoolean(ScreenOrientationInspectorAgentState::overrideEnabled, true);
-    m_state->setLong(ScreenOrientationInspectorAgentState::angle, angle);
-    m_state->setLong(ScreenOrientationInspectorAgentState::type, type);
+    m_state->setNumber(ScreenOrientationInspectorAgentState::angle, angle);
+    m_state->setNumber(ScreenOrientationInspectorAgentState::type, type);
     controller->setOverride(type, angle);
 }
 
@@ -99,9 +98,12 @@ void ScreenOrientationInspectorAgent::disable(ErrorString*)
 
 void ScreenOrientationInspectorAgent::restore()
 {
-    if (m_state->getBoolean(ScreenOrientationInspectorAgentState::overrideEnabled)) {
-        WebScreenOrientationType type = static_cast<WebScreenOrientationType>(m_state->getLong(ScreenOrientationInspectorAgentState::type));
-        int angle = m_state->getLong(ScreenOrientationInspectorAgentState::angle);
+    if (m_state->booleanProperty(ScreenOrientationInspectorAgentState::overrideEnabled, false)) {
+        long longType = static_cast<long>(WebScreenOrientationUndefined);
+        m_state->getNumber(ScreenOrientationInspectorAgentState::type, &longType);
+        WebScreenOrientationType type = static_cast<WebScreenOrientationType>(longType);
+        int angle = 0;
+        m_state->getNumber(ScreenOrientationInspectorAgentState::angle, &angle);
         if (ScreenOrientationController* controller = ScreenOrientationController::from(*m_frame))
             controller->setOverride(type, angle);
     }

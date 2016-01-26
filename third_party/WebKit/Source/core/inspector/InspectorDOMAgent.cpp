@@ -70,7 +70,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/layout/HitTestResult.h"
@@ -529,7 +528,7 @@ void InspectorDOMAgent::enable(ErrorString*)
 
 bool InspectorDOMAgent::enabled() const
 {
-    return m_state->getBoolean(DOMAgentState::domAgentEnabled);
+    return m_state->booleanProperty(DOMAgentState::domAgentEnabled, false);
 }
 
 void InspectorDOMAgent::disable(ErrorString* errorString)

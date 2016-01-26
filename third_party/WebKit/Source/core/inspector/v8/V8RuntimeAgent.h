@@ -16,6 +16,7 @@ namespace blink {
 class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
+class JSONObject;
 class ScriptState;
 class V8Debugger;
 
@@ -27,7 +28,7 @@ public:
     virtual ~V8RuntimeAgent() { }
 
     // State management methods.
-    virtual void setInspectorState(InspectorState*) = 0;
+    virtual void setInspectorState(PassRefPtr<JSONObject>) = 0;
     virtual void setFrontend(InspectorFrontend::Runtime*) = 0;
     virtual void clearFrontend() = 0;
     virtual void restore() = 0;

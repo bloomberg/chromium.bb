@@ -21,7 +21,7 @@ public:
     explicit V8ProfilerAgentImpl(v8::Isolate*);
     ~V8ProfilerAgentImpl() override;
 
-    void setInspectorState(InspectorState* state) override { m_state = state; }
+    void setInspectorState(PassRefPtr<JSONObject> state) override { m_state = state; }
     void setFrontend(InspectorFrontend::Profiler* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -48,7 +48,7 @@ private:
     bool isRecording() const;
 
     v8::Isolate* m_isolate;
-    InspectorState* m_state;
+    RefPtr<JSONObject> m_state;
     InspectorFrontend::Profiler* m_frontend;
     bool m_enabled;
     bool m_recordingCPUProfile;

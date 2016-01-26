@@ -45,7 +45,6 @@
 #include "core/html/VoidCallback.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorState.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
@@ -731,7 +730,7 @@ void InspectorFileSystemAgent::deleteEntry(ErrorString* error, const String& url
 
 void InspectorFileSystemAgent::restore()
 {
-    m_enabled = m_state->getBoolean(FileSystemAgentState::fileSystemAgentEnabled);
+    m_enabled = m_state->booleanProperty(FileSystemAgentState::fileSystemAgentEnabled, false);
 }
 
 InspectorFileSystemAgent::InspectorFileSystemAgent(InspectedFrames* inspectedFrames)

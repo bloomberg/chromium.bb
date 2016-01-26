@@ -31,7 +31,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/VoidCallback.h"
-#include "core/inspector/InspectorState.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
@@ -272,7 +271,7 @@ void InspectorDatabaseAgent::disable(ErrorString*)
 
 void InspectorDatabaseAgent::restore()
 {
-    m_enabled = m_state->getBoolean(DatabaseAgentState::databaseAgentEnabled);
+    m_enabled = m_state->booleanProperty(DatabaseAgentState::databaseAgentEnabled, false);
 }
 
 void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, RefPtr<TypeBuilder::Array<String>>& names)

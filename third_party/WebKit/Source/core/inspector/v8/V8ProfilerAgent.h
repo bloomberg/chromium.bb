@@ -17,7 +17,7 @@ class Isolate;
 
 namespace blink {
 
-class InspectorState;
+class JSONObject;
 
 typedef String ErrorString;
 
@@ -27,7 +27,7 @@ public:
     virtual ~V8ProfilerAgent() { }
 
     // State management methods.
-    virtual void setInspectorState(InspectorState*) = 0;
+    virtual void setInspectorState(PassRefPtr<JSONObject>) = 0;
     virtual void setFrontend(InspectorFrontend::Profiler*) = 0;
     virtual void clearFrontend() = 0;
     virtual void restore() = 0;

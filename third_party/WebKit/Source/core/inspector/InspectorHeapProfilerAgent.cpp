@@ -35,7 +35,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "platform/Timer.h"
 #include "wtf/CurrentTime.h"
@@ -203,10 +202,10 @@ InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
 
 void InspectorHeapProfilerAgent::restore()
 {
-    if (m_state->getBoolean(HeapProfilerAgentState::heapProfilerEnabled))
+    if (m_state->booleanProperty(HeapProfilerAgentState::heapProfilerEnabled, false))
         frontend()->resetProfiles();
-    if (m_state->getBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled))
-        startTrackingHeapObjectsInternal(m_state->getBoolean(HeapProfilerAgentState::allocationTrackingEnabled));
+    if (m_state->booleanProperty(HeapProfilerAgentState::heapObjectsTrackingEnabled, false))
+        startTrackingHeapObjectsInternal(m_state->booleanProperty(HeapProfilerAgentState::allocationTrackingEnabled, false));
 }
 
 void InspectorHeapProfilerAgent::collectGarbage(ErrorString*)

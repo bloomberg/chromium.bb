@@ -39,7 +39,6 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"

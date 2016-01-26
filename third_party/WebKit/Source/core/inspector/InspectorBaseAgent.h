@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
@@ -42,8 +43,6 @@
 namespace blink {
 
 class InspectorFrontend;
-class InspectorCompositeState;
-class InspectorState;
 class InstrumentingAgents;
 class LocalFrame;
 
@@ -63,13 +62,14 @@ public:
     virtual void discardAgent() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
+    virtual void setState(PassRefPtr<JSONObject>);
 
     String name() const { return m_name; }
-    void appended(InstrumentingAgents*, InspectorState*);
+    void appended(InstrumentingAgents*);
 
 protected:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    InspectorState* m_state;
+    RefPtr<JSONObject> m_state;
 
 private:
     String m_name;
@@ -79,22 +79,23 @@ class CORE_EXPORT InspectorAgentRegistry final {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(InspectorAgentRegistry);
 public:
-    InspectorAgentRegistry(InstrumentingAgents*, InspectorCompositeState*);
+    explicit InspectorAgentRegistry(InstrumentingAgents*);
     void append(PassOwnPtrWillBeRawPtr<InspectorAgent>);
 
     void setFrontend(InspectorFrontend*);
     void clearFrontend();
-    void restore();
+    void restore(const String& savedState);
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
     void flushPendingProtocolNotifications();
     void didCommitLoadForLocalFrame(LocalFrame*);
+    String state();
 
     DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    InspectorCompositeState* m_inspectorState;
+    RefPtr<JSONObject> m_state;
     WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent> > m_agents;
 };
 

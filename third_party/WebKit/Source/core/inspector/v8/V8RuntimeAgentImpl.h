@@ -56,7 +56,7 @@ public:
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
-    void setInspectorState(InspectorState*) override;
+    void setInspectorState(PassRefPtr<JSONObject>) override;
     void setFrontend(InspectorFrontend::Runtime*) override;
     void clearFrontend() override;
     void restore() override;
@@ -96,7 +96,7 @@ private:
     void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
     void reportExecutionContextDestroyed(ScriptState*) override;
 
-    InspectorState* m_state;
+    RefPtr<JSONObject> m_state;
     InspectorFrontend::Runtime* m_frontend;
     InjectedScriptManager* m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;

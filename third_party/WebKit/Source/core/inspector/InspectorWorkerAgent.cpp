@@ -32,7 +32,6 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
 #include "platform/weborigin/KURL.h"
@@ -72,7 +71,7 @@ void InspectorWorkerAgent::init()
 
 void InspectorWorkerAgent::restore()
 {
-    if (m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
+    if (m_state->booleanProperty(WorkerAgentState::workerInspectionEnabled, false))
         createWorkerAgentClientsForExistingWorkers();
 }
 
@@ -132,14 +131,14 @@ void InspectorWorkerAgent::setTracingSessionId(const String& sessionId)
 
 bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
 {
-    return m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
+    return m_state->booleanProperty(WorkerAgentState::autoconnectToWorkers, false);
 }
 
 void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorProxy, const KURL& url)
 {
     String id = "dedicated:" + IdentifiersFactory::createIdentifier();
     m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.string(), id));
-    if (frontend() && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
+    if (frontend() && m_state->booleanProperty(WorkerAgentState::workerInspectionEnabled, false))
         createWorkerAgentClient(workerInspectorProxy, url.string(), id);
     if (!m_tracingSessionId.isEmpty())
         workerInspectorProxy->writeTimelineStartedEvent(m_tracingSessionId, id);
@@ -178,7 +177,7 @@ void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerI
     m_idToClient.set(id, client.release());
 
     ASSERT(frontend());
-    bool autoconnectToWorkers = m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
+    bool autoconnectToWorkers = m_state->booleanProperty(WorkerAgentState::autoconnectToWorkers, false);
     if (autoconnectToWorkers)
         rawClient->connectToWorker();
     frontend()->workerCreated(id, url, autoconnectToWorkers);

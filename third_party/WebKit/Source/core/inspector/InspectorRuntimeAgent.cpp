@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/MuteConsoleScope.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
@@ -62,8 +61,9 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorRuntimeAgent::init()
+void InspectorRuntimeAgent::setState(PassRefPtr<JSONObject> state)
 {
+    InspectorBaseAgent::setState(state);
     m_v8RuntimeAgent->setInspectorState(m_state);
 }
 
@@ -81,7 +81,7 @@ void InspectorRuntimeAgent::clearFrontend()
 
 void InspectorRuntimeAgent::restore()
 {
-    if (!m_state->getBoolean(InspectorRuntimeAgentState::runtimeEnabled))
+    if (!m_state->booleanProperty(InspectorRuntimeAgentState::runtimeEnabled, false))
         return;
     m_v8RuntimeAgent->restore();
     ErrorString errorString;

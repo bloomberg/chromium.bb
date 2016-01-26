@@ -62,7 +62,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // InspectorBaseAgent overrides.
-    void init() override;
+    void setState(PassRefPtr<JSONObject>) override;
     void setFrontend(InspectorFrontend*) override;
     void clearFrontend() override;
     void restore() override;

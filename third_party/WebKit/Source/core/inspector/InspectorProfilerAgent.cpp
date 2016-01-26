@@ -32,7 +32,6 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/V8ProfilerAgent.h"
@@ -60,8 +59,9 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 }
 
 // InspectorBaseAgent overrides.
-void InspectorProfilerAgent::init()
+void InspectorProfilerAgent::setState(PassRefPtr<JSONObject> state)
 {
+    InspectorBaseAgent::setState(state);
     m_v8ProfilerAgent->setInspectorState(m_state);
 }
 
@@ -79,7 +79,7 @@ void InspectorProfilerAgent::clearFrontend()
 
 void InspectorProfilerAgent::restore()
 {
-    if (!m_state->getBoolean(ProfilerAgentState::profilerEnabled))
+    if (!m_state->booleanProperty(ProfilerAgentState::profilerEnabled, false))
         return;
     m_v8ProfilerAgent->restore();
     ErrorString errorString;

@@ -59,7 +59,7 @@ public:
     ~V8DebuggerAgentImpl() override;
     DECLARE_TRACE();
 
-    void setInspectorState(InspectorState*) override;
+    void setInspectorState(PassRefPtr<JSONObject>) override;
     void setFrontend(InspectorFrontend::Debugger* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -205,7 +205,7 @@ private:
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     bool m_enabled;
-    InspectorState* m_state;
+    RefPtr<JSONObject> m_state;
     InspectorFrontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;

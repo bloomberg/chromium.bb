@@ -30,7 +30,6 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
@@ -94,7 +93,7 @@ void InspectorConsoleAgent::disable(ErrorString*)
 
 void InspectorConsoleAgent::restore()
 {
-    if (m_state->getBoolean(ConsoleAgentState::consoleMessagesEnabled)) {
+    if (m_state->booleanProperty(ConsoleAgentState::consoleMessagesEnabled, false)) {
         frontend()->messagesCleared();
         ErrorString error;
         enable(&error);

@@ -46,7 +46,6 @@ class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorFrontend;
 class InspectorFrontendChannel;
-class InspectorStateClient;
 class InstrumentingAgents;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
@@ -85,8 +84,6 @@ private:
     InspectorFrontendChannel* frontendChannel() const;
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
-    OwnPtr<InspectorStateClient> m_stateClient;
-    OwnPtr<InspectorCompositeState> m_state;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     OwnPtr<WorkerThreadDebugger> m_workerThreadDebugger;

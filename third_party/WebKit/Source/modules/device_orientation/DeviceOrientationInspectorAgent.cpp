@@ -5,7 +5,6 @@
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 
 #include "modules/device_orientation/DeviceOrientationController.h"
@@ -51,9 +50,9 @@ DeviceOrientationController& DeviceOrientationInspectorAgent::controller()
 void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)
 {
     m_state->setBoolean(DeviceOrientationInspectorAgentState::overrideEnabled, true);
-    m_state->setDouble(DeviceOrientationInspectorAgentState::alpha, alpha);
-    m_state->setDouble(DeviceOrientationInspectorAgentState::beta, beta);
-    m_state->setDouble(DeviceOrientationInspectorAgentState::gamma, gamma);
+    m_state->setNumber(DeviceOrientationInspectorAgentState::alpha, alpha);
+    m_state->setNumber(DeviceOrientationInspectorAgentState::beta, beta);
+    m_state->setNumber(DeviceOrientationInspectorAgentState::gamma, gamma);
     controller().setOverride(DeviceOrientationData::create(alpha, beta, gamma));
 }
 
@@ -71,10 +70,13 @@ void DeviceOrientationInspectorAgent::disable(ErrorString*)
 
 void DeviceOrientationInspectorAgent::restore()
 {
-    if (m_state->getBoolean(DeviceOrientationInspectorAgentState::overrideEnabled)) {
-        double alpha = m_state->getDouble(DeviceOrientationInspectorAgentState::alpha);
-        double beta = m_state->getDouble(DeviceOrientationInspectorAgentState::beta);
-        double gamma = m_state->getDouble(DeviceOrientationInspectorAgentState::gamma);
+    if (m_state->booleanProperty(DeviceOrientationInspectorAgentState::overrideEnabled, false)) {
+        double alpha = 0;
+        m_state->getNumber(DeviceOrientationInspectorAgentState::alpha, &alpha);
+        double beta = 0;
+        m_state->getNumber(DeviceOrientationInspectorAgentState::beta, &beta);
+        double gamma = 0;
+        m_state->getNumber(DeviceOrientationInspectorAgentState::gamma, &gamma);
         controller().setOverride(DeviceOrientationData::create(alpha, beta, gamma));
     }
 }

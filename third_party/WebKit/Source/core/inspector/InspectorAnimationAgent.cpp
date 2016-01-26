@@ -24,7 +24,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
@@ -49,10 +48,11 @@ InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrame
 
 void InspectorAnimationAgent::restore()
 {
-    if (m_state->getBoolean(AnimationAgentState::animationAgentEnabled)) {
+    if (m_state->booleanProperty(AnimationAgentState::animationAgentEnabled, false)) {
         ErrorString error;
         enable(&error);
-        double playbackRate = m_state->getDouble(AnimationAgentState::animationAgentPlaybackRate, 1);
+        double playbackRate = 1;
+        m_state->getNumber(AnimationAgentState::animationAgentPlaybackRate, &playbackRate);
         setPlaybackRate(nullptr, playbackRate);
     }
 }
@@ -84,7 +84,8 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
         m_idToAnimationClone.clear();
         m_clearedAnimations.clear();
     }
-    double playbackRate = m_state->getDouble(AnimationAgentState::animationAgentPlaybackRate, 1);
+    double playbackRate = 1;
+    m_state->getNumber(AnimationAgentState::animationAgentPlaybackRate, &playbackRate);
     setPlaybackRate(nullptr, playbackRate);
 }
 
@@ -204,7 +205,7 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 {
     for (LocalFrame* frame : *m_inspectedFrames)
         frame->document()->timeline().setPlaybackRate(playbackRate);
-    m_state->setDouble(AnimationAgentState::animationAgentPlaybackRate, playbackRate);
+    m_state->setNumber(AnimationAgentState::animationAgentPlaybackRate, playbackRate);
 }
 
 void InspectorAnimationAgent::getCurrentTime(ErrorString* errorString, const String& id, double* currentTime)
@@ -477,7 +478,7 @@ void InspectorAnimationAgent::animationPlayStateChanged(Animation* animation, An
 
 void InspectorAnimationAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
-    if (!m_state->getBoolean(AnimationAgentState::animationAgentEnabled))
+    if (!m_state->booleanProperty(AnimationAgentState::animationAgentEnabled, false))
         return;
     ASSERT(frame->document());
     frame->document()->timeline().setPlaybackRate(referenceTimeline().playbackRate());

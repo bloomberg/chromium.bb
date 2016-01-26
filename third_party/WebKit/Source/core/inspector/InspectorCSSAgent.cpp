@@ -63,7 +63,6 @@
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
@@ -614,7 +613,7 @@ void InspectorCSSAgent::discardAgent()
 
 void InspectorCSSAgent::restore()
 {
-    if (m_state->getBoolean(CSSAgentState::cssAgentEnabled))
+    if (m_state->booleanProperty(CSSAgentState::cssAgentEnabled, false))
         wasEnabled();
 }
 
@@ -665,7 +664,7 @@ void InspectorCSSAgent::resourceContentLoaded(PassRefPtrWillBeRawPtr<EnableCallb
 
 void InspectorCSSAgent::wasEnabled()
 {
-    if (!m_state->getBoolean(CSSAgentState::cssAgentEnabled)) {
+    if (!m_state->booleanProperty(CSSAgentState::cssAgentEnabled, false)) {
         // We were disabled while fetching resources.
         return;
     }

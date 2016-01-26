@@ -7,7 +7,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
 #include "web/DevToolsEmulator.h"
@@ -47,9 +46,11 @@ WebViewImpl* InspectorEmulationAgent::webViewImpl()
 void InspectorEmulationAgent::restore()
 {
     ErrorString error;
-    setScriptExecutionDisabled(&error, m_state->getBoolean(EmulationAgentState::scriptExecutionDisabled));
-    setTouchEmulationEnabled(&error, m_state->getBoolean(EmulationAgentState::touchEventEmulationEnabled), nullptr);
-    setEmulatedMedia(&error, m_state->getString(EmulationAgentState::emulatedMedia));
+    setScriptExecutionDisabled(&error, m_state->booleanProperty(EmulationAgentState::scriptExecutionDisabled, false));
+    setTouchEmulationEnabled(&error, m_state->booleanProperty(EmulationAgentState::touchEventEmulationEnabled, false), nullptr);
+    String emulatedMedia;
+    m_state->getString(EmulationAgentState::emulatedMedia, &emulatedMedia);
+    setEmulatedMedia(&error, emulatedMedia);
 }
 
 void InspectorEmulationAgent::disable(ErrorString*)

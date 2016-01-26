@@ -40,7 +40,6 @@
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorState.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
@@ -622,7 +621,7 @@ InspectorIndexedDBAgent::~InspectorIndexedDBAgent()
 
 void InspectorIndexedDBAgent::restore()
 {
-    if (m_state->getBoolean(IndexedDBAgentState::indexedDBAgentEnabled)) {
+    if (m_state->booleanProperty(IndexedDBAgentState::indexedDBAgentEnabled, false)) {
         ErrorString error;
         enable(&error);
     }

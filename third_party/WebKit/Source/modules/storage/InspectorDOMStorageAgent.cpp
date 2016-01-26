@@ -37,7 +37,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "modules/storage/Storage.h"
 #include "modules/storage/StorageNamespace.h"
@@ -85,7 +84,7 @@ DEFINE_TRACE(InspectorDOMStorageAgent)
 
 void InspectorDOMStorageAgent::restore()
 {
-    if (m_state->getBoolean(DOMStorageAgentState::domStorageAgentEnabled))
+    if (m_state->booleanProperty(DOMStorageAgentState::domStorageAgentEnabled, false))
         enable(0);
 }
 

@@ -15,7 +15,6 @@
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JSONParser.h"
 #include "core/inspector/RemoteObjectId.h"
@@ -222,10 +221,10 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
         return;
 
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
-    m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
+    m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     m_state->setString(DebuggerAgentState::skipStackPattern, "");
     m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
-    m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
+    m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
 
@@ -281,7 +280,7 @@ void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
     m_v8AsyncCallTracker->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
-void V8DebuggerAgentImpl::setInspectorState(InspectorState* state)
+void V8DebuggerAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)
 {
     m_state = state;
 }
@@ -299,15 +298,25 @@ void V8DebuggerAgentImpl::restore()
     ASSERT(!m_enabled);
     m_frontend->globalObjectCleared();
     enable();
-    long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     String error;
+
+    long pauseState = V8DebuggerImpl::DontPauseOnExceptions;
+    m_state->getNumber(DebuggerAgentState::pauseOnExceptionsState, &pauseState);
     setPauseOnExceptionsImpl(&error, pauseState);
-    m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));
+
+    String skipStackPattern;
+    m_state->getString(DebuggerAgentState::skipStackPattern, &skipStackPattern);
+    m_cachedSkipStackRegExp = compileSkipCallFramePattern(skipStackPattern);
     increaseCachedSkipStackGeneration();
-    m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
-    m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
-    internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
-    m_promiseTracker->setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
+
+    m_skipContentScripts = m_state->booleanProperty(DebuggerAgentState::skipContentScripts, false);
+    m_skipAllPauses = m_state->booleanProperty(DebuggerAgentState::skipAllPauses, false);
+
+    int asyncCallStackDepth = 0;
+    m_state->getNumber(DebuggerAgentState::asyncCallStackDepth, &asyncCallStackDepth);
+    internalSetAsyncCallStackDepth(asyncCallStackDepth);
+
+    m_promiseTracker->setEnabled(m_state->booleanProperty(DebuggerAgentState::promiseTrackerEnabled, false), m_state->booleanProperty(DebuggerAgentState::promiseTrackerCaptureStacks, false));
 }
 
 void V8DebuggerAgentImpl::setBreakpointsActive(ErrorString* errorString, bool active)
@@ -370,6 +379,10 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString, int lineN
 
     String breakpointId = (isRegex ? "/" + url + "/" : url) + ':' + String::number(lineNumber) + ':' + String::number(columnNumber);
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    if (!breakpointsCookie) {
+        breakpointsCookie = JSONObject::create();
+        m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
+    }
     if (breakpointsCookie->find(breakpointId) != breakpointsCookie->end()) {
         *errorString = "Breakpoint at specified location already exists.";
         return;
@@ -431,8 +444,8 @@ void V8DebuggerAgentImpl::removeBreakpoint(ErrorString* errorString, const Strin
     if (!checkEnabled(errorString))
         return;
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
-    breakpointsCookie->remove(breakpointId);
-    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
+    if (breakpointsCookie)
+        breakpointsCookie->remove(breakpointId);
     removeBreakpoint(breakpointId);
 }
 
@@ -909,7 +922,7 @@ void V8DebuggerAgentImpl::setPauseOnExceptionsImpl(ErrorString* errorString, int
     if (debugger().pauseOnExceptionsState() != pauseState)
         *errorString = "Internal error. Could not change pause on exceptions state";
     else
-        m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, pauseState);
+        m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, pauseState);
 }
 
 bool V8DebuggerAgentImpl::callStackForId(ErrorString* errorString, const RemoteCallFrameId& callFrameId, v8::Local<v8::Object>* callStack, bool* isAsync)
@@ -1105,7 +1118,7 @@ void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int d
 {
     if (!checkEnabled(errorString))
         return;
-    m_state->setLong(DebuggerAgentState::asyncCallStackDepth, depth);
+    m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, depth);
     internalSetAsyncCallStackDepth(depth);
 }
 
@@ -1525,6 +1538,9 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         return;
 
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    if (!breakpointsCookie)
+        return;
+
     for (auto& cookie : *breakpointsCookie) {
         RefPtr<JSONObject> breakpointObject = cookie.value->asObject();
         bool isRegex;

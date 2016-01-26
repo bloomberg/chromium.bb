@@ -372,6 +372,13 @@ PassRefPtr<JSONValue> JSONObjectBase::get(const String& name) const
     return it->value;
 }
 
+bool JSONObjectBase::booleanProperty(const String& name, bool defaultValue) const
+{
+    bool result = defaultValue;
+    getBoolean(name, &result);
+    return result;
+}
+
 void JSONObjectBase::remove(const String& name)
 {
     m_data.remove(name);

@@ -28,7 +28,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -49,7 +48,7 @@ InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(InspectedFrames* 
 
 void InspectorApplicationCacheAgent::restore()
 {
-    if (m_state->getBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled)) {
+    if (m_state->booleanProperty(ApplicationCacheAgentState::applicationCacheAgentEnabled, false)) {
         ErrorString error;
         enable(&error);
     }

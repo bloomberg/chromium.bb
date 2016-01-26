@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/Atomics.h"
 #include <v8-profiler.h>
@@ -199,7 +198,7 @@ void V8ProfilerAgentImpl::setSamplingInterval(ErrorString* error, int interval)
         *error = "Cannot change sampling interval when profiling.";
         return;
     }
-    m_state->setLong(ProfilerAgentState::samplingInterval, interval);
+    m_state->setNumber(ProfilerAgentState::samplingInterval, interval);
     m_isolate->GetCpuProfiler()->SetSamplingInterval(interval);
 }
 
@@ -214,9 +213,11 @@ void V8ProfilerAgentImpl::clearFrontend()
 void V8ProfilerAgentImpl::restore()
 {
     m_enabled = true;
-    if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, 0))
+    long interval = 0;
+    m_state->getNumber(ProfilerAgentState::samplingInterval, &interval);
+    if (interval)
         m_isolate->GetCpuProfiler()->SetSamplingInterval(interval);
-    if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling)) {
+    if (m_state->booleanProperty(ProfilerAgentState::userInitiatedProfiling, false)) {
         ErrorString error;
         start(&error);
     }

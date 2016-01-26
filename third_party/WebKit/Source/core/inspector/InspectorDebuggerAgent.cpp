@@ -31,7 +31,6 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/AsyncCallTracker.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/MuteConsoleScope.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/v8/V8Debugger.h"
@@ -289,9 +288,14 @@ void InspectorDebuggerAgent::didExecuteScript()
 }
 
 // InspectorBaseAgent overrides.
+void InspectorDebuggerAgent::setState(PassRefPtr<JSONObject> state)
+{
+    InspectorBaseAgent::setState(state);
+    m_v8DebuggerAgent->setInspectorState(m_state);
+}
+
 void InspectorDebuggerAgent::init()
 {
-    m_v8DebuggerAgent->setInspectorState(m_state);
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(m_v8DebuggerAgent.get(), m_instrumentingAgents.get()));
 }
 
@@ -309,7 +313,7 @@ void InspectorDebuggerAgent::clearFrontend()
 
 void InspectorDebuggerAgent::restore()
 {
-    if (!m_state->getBoolean(DebuggerAgentState::debuggerEnabled))
+    if (!m_state->booleanProperty(DebuggerAgentState::debuggerEnabled, false))
         return;
     m_v8DebuggerAgent->restore();
     ErrorString errorString;

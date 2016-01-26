@@ -6,7 +6,6 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -39,10 +38,10 @@ WebViewImpl* InspectorRenderingAgent::webViewImpl()
 void InspectorRenderingAgent::restore()
 {
     ErrorString error;
-    setShowDebugBorders(&error, m_state->getBoolean(RenderingAgentState::showDebugBorders));
-    setShowFPSCounter(&error, m_state->getBoolean(RenderingAgentState::showFPSCounter));
-    setShowPaintRects(&error, m_state->getBoolean(RenderingAgentState::showPaintRects));
-    setShowScrollBottleneckRects(&error, m_state->getBoolean(RenderingAgentState::showScrollBottleneckRects));
+    setShowDebugBorders(&error, m_state->booleanProperty(RenderingAgentState::showDebugBorders, false));
+    setShowFPSCounter(&error, m_state->booleanProperty(RenderingAgentState::showFPSCounter, false));
+    setShowPaintRects(&error, m_state->booleanProperty(RenderingAgentState::showPaintRects, false));
+    setShowScrollBottleneckRects(&error, m_state->booleanProperty(RenderingAgentState::showScrollBottleneckRects, false));
 }
 
 void InspectorRenderingAgent::disable(ErrorString*)

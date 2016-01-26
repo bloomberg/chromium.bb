@@ -50,7 +50,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
@@ -248,7 +247,7 @@ TypeBuilder::Network::BlockedReason::Enum buildBlockedReason(ResourceRequestBloc
 
 void InspectorResourceAgent::restore()
 {
-    if (m_state->getBoolean(ResourceAgentState::resourceAgentEnabled))
+    if (m_state->booleanProperty(ResourceAgentState::resourceAgentEnabled, false))
         enable();
 }
 
@@ -401,7 +400,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 InspectorResourceAgent::~InspectorResourceAgent()
 {
 #if !ENABLE(OILPAN)
-    if (m_state->getBoolean(ResourceAgentState::resourceAgentEnabled)) {
+    if (m_state->booleanProperty(ResourceAgentState::resourceAgentEnabled, false)) {
         ErrorString error;
         disable(&error);
     }
@@ -421,8 +420,10 @@ DEFINE_TRACE(InspectorResourceAgent)
 
 bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
 {
-    String url = request.url().string();
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    if (!blockedURLs)
+        return false;
+    String url = request.url().string();
     for (const auto& entry : *blockedURLs) {
         if (matches(url, entry.key))
             return true;
@@ -483,7 +484,6 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
         return;
 
     RefPtr<JSONObject> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
-
     if (headers) {
         for (const auto& header : *headers) {
             String value;
@@ -494,7 +494,7 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
 
     request.setReportRawHeaders(true);
 
-    if (m_state->getBoolean(ResourceAgentState::cacheDisabled)) {
+    if (m_state->booleanProperty(ResourceAgentState::cacheDisabled, false)) {
         request.setCachePolicy(ReloadBypassingCache);
         request.setShouldResetAppCache(true);
     }
@@ -677,7 +677,7 @@ void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XML
     if (it == m_knownRequestIdMap.end())
         return;
 
-    if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
+    if (m_state->booleanProperty(ResourceAgentState::monitoringXHR, false)) {
         String message = (success ? "XHR finished loading: " : "XHR failed loading: ") + method + " \"" + url + "\".";
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(it->value);
@@ -704,7 +704,7 @@ void InspectorResourceAgent::didFinishFetch(ExecutionContext* context, Threadabl
     if (it == m_knownRequestIdMap.end())
         return;
 
-    if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
+    if (m_state->booleanProperty(ResourceAgentState::monitoringXHR, false)) {
         String message = "Fetch complete: " + method + " \"" + url + "\".";
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(it->value);
@@ -748,7 +748,8 @@ void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
 
 void InspectorResourceAgent::applyUserAgentOverride(String* userAgent)
 {
-    String userAgentOverride = m_state->getString(ResourceAgentState::userAgentOverride);
+    String userAgentOverride;
+    m_state->getString(ResourceAgentState::userAgentOverride, &userAgentOverride);
     if (!userAgentOverride.isEmpty())
         *userAgent = userAgentOverride;
 }
@@ -964,15 +965,18 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
 void InspectorResourceAgent::addBlockedURL(ErrorString*, const String& url)
 {
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    if (!blockedURLs) {
+        blockedURLs = JSONObject::create();
+        m_state->setObject(ResourceAgentState::blockedURLs, blockedURLs);
+    }
     blockedURLs->setBoolean(url, true);
-    m_state->setObject(ResourceAgentState::blockedURLs, blockedURLs.release());
 }
 
 void InspectorResourceAgent::removeBlockedURL(ErrorString*, const String& url)
 {
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
-    blockedURLs->remove(url);
-    m_state->setObject(ResourceAgentState::blockedURLs, blockedURLs.release());
+    if (blockedURLs)
+        blockedURLs->remove(url);
 }
 
 void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
@@ -1039,7 +1043,7 @@ void InspectorResourceAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* lo
     if (loader->frame() != m_inspectedFrames->root())
         return;
 
-    if (m_state->getBoolean(ResourceAgentState::cacheDisabled))
+    if (m_state->booleanProperty(ResourceAgentState::cacheDisabled, false))
         memoryCache()->evictResources();
 
     m_resourcesData->clear(IdentifiersFactory::loaderId(loader));
@@ -1098,7 +1102,7 @@ InspectorResourceAgent::InspectorResourceAgent(InspectedFrames* inspectedFrames)
 
 bool InspectorResourceAgent::shouldForceCORSPreflight()
 {
-    return m_state->getBoolean(ResourceAgentState::cacheDisabled);
+    return m_state->booleanProperty(ResourceAgentState::cacheDisabled, false);
 }
 
 } // namespace blink

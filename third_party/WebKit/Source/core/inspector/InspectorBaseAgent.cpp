@@ -30,7 +30,7 @@
 
 #include "core/inspector/InspectorBaseAgent.h"
 
-#include "core/inspector/InspectorState.h"
+#include "core/inspector/JSONParser.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -49,22 +49,30 @@ DEFINE_TRACE(InspectorAgent)
     visitor->trace(m_instrumentingAgents);
 }
 
-void InspectorAgent::appended(InstrumentingAgents* instrumentingAgents, InspectorState* inspectorState)
+void InspectorAgent::appended(InstrumentingAgents* instrumentingAgents)
 {
     m_instrumentingAgents = instrumentingAgents;
-    m_state = inspectorState;
     init();
 }
 
-InspectorAgentRegistry::InspectorAgentRegistry(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState)
+void InspectorAgent::setState(PassRefPtr<JSONObject> state)
+{
+    m_state = state;
+}
+
+InspectorAgentRegistry::InspectorAgentRegistry(InstrumentingAgents* instrumentingAgents)
     : m_instrumentingAgents(instrumentingAgents)
-    , m_inspectorState(inspectorState)
+    , m_state(JSONObject::create())
 {
 }
 
 void InspectorAgentRegistry::append(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
 {
-    agent->appended(m_instrumentingAgents, m_inspectorState->createAgentState(agent->name()));
+    ASSERT(m_state->find(agent->name()) == m_state->end());
+    RefPtr<JSONObject> agentState = JSONObject::create();
+    m_state->setObject(agent->name(), agentState);
+    agent->setState(agentState);
+    agent->appended(m_instrumentingAgents);
     m_agents.append(agent);
 }
 
@@ -80,10 +88,30 @@ void InspectorAgentRegistry::clearFrontend()
         m_agents[i]->clearFrontend();
 }
 
-void InspectorAgentRegistry::restore()
+void InspectorAgentRegistry::restore(const String& savedState)
 {
+    RefPtr<JSONValue> state = parseJSON(savedState);
+    if (state)
+        m_state = state->asObject();
+    if (!m_state)
+        m_state = JSONObject::create();
+
+    for (size_t i = 0; i < m_agents.size(); i++) {
+        RefPtr<JSONObject> agentState = m_state->getObject(m_agents[i]->name());
+        if (!agentState) {
+            agentState = JSONObject::create();
+            m_state->setObject(m_agents[i]->name(), agentState);
+        }
+        m_agents[i]->setState(agentState);
+    }
+
     for (size_t i = 0; i < m_agents.size(); i++)
         m_agents[i]->restore();
+}
+
+String InspectorAgentRegistry::state()
+{
+    return m_state->toJSONString();
 }
 
 void InspectorAgentRegistry::registerInDispatcher(InspectorBackendDispatcher* dispatcher)

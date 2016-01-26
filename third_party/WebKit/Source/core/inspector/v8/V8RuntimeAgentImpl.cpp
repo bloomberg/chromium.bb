@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/V8Debugger.h"
@@ -171,7 +170,7 @@ void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enab
     injectedScriptManager()->setCustomObjectFormatterEnabled(enabled);
 }
 
-void V8RuntimeAgentImpl::setInspectorState(InspectorState* state)
+void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)
 {
     m_state = state;
 }
@@ -194,7 +193,7 @@ void V8RuntimeAgentImpl::restore()
     m_frontend->executionContextsCleared();
     String error;
     enable(&error);
-    if (m_state->getBoolean(V8RuntimeAgentImplState::customObjectFormatterEnabled))
+    if (m_state->booleanProperty(V8RuntimeAgentImplState::customObjectFormatterEnabled, false))
         injectedScriptManager()->setCustomObjectFormatterEnabled(true);
 }
 

@@ -14,7 +14,6 @@ namespace blink {
 
 class InjectedScript;
 class InjectedScriptManager;
-class InspectorState;
 class JSONObject;
 class RemoteCallFrameId;
 class ScriptAsyncCallStack;
@@ -77,7 +76,7 @@ public:
     virtual void removeAsyncOperationBreakpoint(ErrorString*, int in_operationId) = 0;
 
     // State management methods.
-    virtual void setInspectorState(InspectorState*) = 0;
+    virtual void setInspectorState(PassRefPtr<JSONObject>) = 0;
     virtual void setFrontend(InspectorFrontend::Debugger*) = 0;
     virtual void clearFrontend() = 0;
     virtual void restore() = 0;

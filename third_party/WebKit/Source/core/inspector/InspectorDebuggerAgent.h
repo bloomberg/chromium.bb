@@ -90,6 +90,7 @@ public:
     void didExecuteScript();
 
     // InspectorBaseAgent overrides.
+    void setState(PassRefPtr<JSONObject>) override;
     void init() override;
     void setFrontend(InspectorFrontend*) override;
     void clearFrontend() override;

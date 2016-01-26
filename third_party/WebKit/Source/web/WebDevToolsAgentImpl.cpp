@@ -58,7 +58,6 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
-#include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -319,7 +318,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
-    , m_state(adoptPtr(new InspectorCompositeState(this)))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
     , m_inspectorAgent(nullptr)
@@ -330,9 +328,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_tracingAgent(nullptr)
     , m_pageRuntimeAgent(nullptr)
     , m_pageConsoleAgent(nullptr)
-    , m_agents(m_instrumentingAgents.get(), m_state.get())
+    , m_agents(m_instrumentingAgents.get())
     , m_deferredAgentsInitialized(false)
     , m_sessionId(0)
+    , m_stateMuted(false)
 {
     ASSERT(isMainThread());
     ASSERT(m_webLocalFrameImpl->frame());
@@ -512,7 +511,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
 
     m_inspectorFrontend = adoptPtr(new InspectorFrontend(this));
     // We can reconnect to existing front-end -> unmute state.
-    m_state->unmute();
+    m_stateMuted = false;
     m_agents.setFrontend(m_inspectorFrontend.get());
 
     InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
@@ -530,8 +529,7 @@ void WebDevToolsAgentImpl::reattach(const WebString& hostId, int sessionId, cons
         return;
 
     attach(hostId, sessionId);
-    m_state->loadFromCookie(savedState);
-    m_agents.restore();
+    m_agents.restore(savedState);
 }
 
 void WebDevToolsAgentImpl::detach()
@@ -546,7 +544,7 @@ void WebDevToolsAgentImpl::detach()
 
     // Destroying agents would change the state, but we don't want that.
     // Pre-disconnect state will be used to restore inspector agents.
-    m_state->mute();
+    m_stateMuted = true;
     m_agents.clearFrontend();
     m_inspectorFrontend.clear();
 
@@ -645,8 +643,15 @@ void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassR
     if (!m_attached)
         return;
     flushPendingProtocolNotifications();
-    m_client->sendProtocolMessage(sessionId, callId, message->toJSONString(), m_stateCookie);
-    m_stateCookie = String();
+    String stateToSend;
+    if (!m_stateMuted) {
+        stateToSend = m_agents.state();
+        if (stateToSend == m_stateCookie)
+            stateToSend = String();
+        else
+            m_stateCookie = stateToSend;
+    }
+    m_client->sendProtocolMessage(sessionId, callId, message->toJSONString(), stateToSend);
 }
 
 void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<JSONObject> message)
@@ -659,11 +664,6 @@ void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<JSONObject> messa
 void WebDevToolsAgentImpl::flush()
 {
     flushPendingProtocolNotifications();
-}
-
-void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
-{
-    m_stateCookie = state;
 }
 
 void WebDevToolsAgentImpl::resumeStartup()

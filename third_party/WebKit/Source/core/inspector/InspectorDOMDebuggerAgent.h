@@ -110,6 +110,9 @@ private:
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
+    PassRefPtr<JSONObject> eventListenerBreakpoints();
+    PassRefPtr<JSONObject> xhrBreakpoints();
+
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
     bool hasBreakpoint(Node*, int type);
