@@ -22,7 +22,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
-#include "wtf/HashSet.h"
+#include "wtf/HashMap.h"
 
 namespace blink {
 
@@ -47,7 +47,18 @@ private:
     bool isValid() const;
     void setCheckedButton(HTMLInputElement*);
 
-    WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement>> m_members;
+    // The map records the 'required' state of each (button) element.
+    using Members = WillBeHeapHashMap<RawPtrWillBeMember<HTMLInputElement>, bool>;
+
+#if ENABLE(OILPAN)
+    using MemberKeyValue = WTF::KeyValuePair<Member<HTMLInputElement>, bool>;
+#else
+    using MemberKeyValue = WTF::KeyValuePair<HTMLInputElement*, bool>;
+#endif
+
+    void updateRequiredButton(MemberKeyValue&, bool isRequired);
+
+    Members m_members;
     RawPtrWillBeMember<HTMLInputElement> m_checkedButton;
     size_t m_requiredCount;
 };
@@ -78,14 +89,28 @@ void RadioButtonGroup::setCheckedButton(HTMLInputElement* button)
         oldCheckedButton->setChecked(false);
 }
 
+void RadioButtonGroup::updateRequiredButton(MemberKeyValue& it, bool isRequired)
+{
+    if (it.value == isRequired)
+        return;
+
+    it.value = isRequired;
+    if (isRequired) {
+        m_requiredCount++;
+    } else {
+        ASSERT(m_requiredCount);
+        m_requiredCount--;
+    }
+}
+
 void RadioButtonGroup::add(HTMLInputElement* button)
 {
     ASSERT(button->type() == InputTypeNames::radio);
-    if (!m_members.add(button).isNewEntry)
+    auto addResult = m_members.add(button, false);
+    if (!addResult.isNewEntry)
         return;
     bool groupWasValid = isValid();
-    if (button->isRequired())
-        ++m_requiredCount;
+    updateRequiredButton(*addResult.storedValue, button->isRequired());
     if (button->checked())
         setCheckedButton(button);
 
@@ -112,7 +137,8 @@ void RadioButtonGroup::updateCheckedState(HTMLInputElement* button)
     }
     if (wasValid != isValid())
         setNeedsValidityCheckForAllButtons();
-    for (HTMLInputElement* const inputElement : m_members) {
+    for (auto& member : m_members) {
+        HTMLInputElement* const inputElement = member.key;
         inputElement->pseudoStateChanged(CSSSelector::PseudoIndeterminate);
     }
 }
@@ -120,14 +146,12 @@ void RadioButtonGroup::updateCheckedState(HTMLInputElement* button)
 void RadioButtonGroup::requiredAttributeChanged(HTMLInputElement* button)
 {
     ASSERT(button->type() == InputTypeNames::radio);
-    ASSERT(m_members.contains(button));
+    auto it = m_members.find(button);
+    ASSERT(it != m_members.end());
     bool wasValid = isValid();
-    if (button->isRequired()) {
-        ++m_requiredCount;
-    } else {
-        ASSERT(m_requiredCount);
-        --m_requiredCount;
-    }
+    // Synchronize the 'required' flag for the button, along with
+    // updating the overall count.
+    updateRequiredButton(*it, button->isRequired());
     if (wasValid != isValid())
         setNeedsValidityCheckForAllButtons();
 }
@@ -135,15 +159,13 @@ void RadioButtonGroup::requiredAttributeChanged(HTMLInputElement* button)
 void RadioButtonGroup::remove(HTMLInputElement* button)
 {
     ASSERT(button->type() == InputTypeNames::radio);
-    WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement>>::iterator it = m_members.find(button);
+    auto it = m_members.find(button);
     if (it == m_members.end())
         return;
     bool wasValid = isValid();
+    ASSERT(it->value == button->isRequired());
+    updateRequiredButton(*it, false);
     m_members.remove(it);
-    if (button->isRequired()) {
-        ASSERT(m_requiredCount);
-        --m_requiredCount;
-    }
     if (m_checkedButton == button)
         m_checkedButton = nullptr;
 
@@ -162,7 +184,8 @@ void RadioButtonGroup::remove(HTMLInputElement* button)
 
 void RadioButtonGroup::setNeedsValidityCheckForAllButtons()
 {
-    for (HTMLInputElement* const button : m_members) {
+    for (auto& element : m_members) {
+        HTMLInputElement* const button = element.key;
         ASSERT(button->type() == InputTypeNames::radio);
         button->setNeedsValidityCheck();
     }
