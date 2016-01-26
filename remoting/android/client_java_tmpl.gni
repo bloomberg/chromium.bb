@@ -10,7 +10,7 @@ template("remoting_android_client_java_tmpl") {
     DEPRECATED_java_in_dir = "//remoting/android/java/src"
     java_files = []
 
-    if (enable_cast) {
+    if (remoting_enable_cast) {
       java_files += [ "//remoting/android/cast/src/org/chromium/chromoting/CastExtensionHandler.java" ]
     }
 
