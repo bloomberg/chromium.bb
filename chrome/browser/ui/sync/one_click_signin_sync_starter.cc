@@ -420,8 +420,10 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     content::RecordAction(
         base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
     ProfileSyncService* profile_sync_service = GetProfileSyncService();
-    if (profile_sync_service)
+    if (profile_sync_service) {
       profile_sync_service->SetFirstSetupComplete();
+      profile_sync_service->RequestStart();
+    }
     FinishProfileSyncServiceSetup();
   }
 

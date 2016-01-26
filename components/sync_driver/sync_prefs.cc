@@ -129,7 +129,6 @@ bool SyncPrefs::IsFirstSetupComplete() const {
 void SyncPrefs::SetFirstSetupComplete() {
   DCHECK(CalledOnValidThread());
   pref_service_->SetBoolean(prefs::kSyncFirstSetupComplete, true);
-  SetSyncRequested(true);
 }
 
 bool SyncPrefs::SyncHasAuthError() const {
