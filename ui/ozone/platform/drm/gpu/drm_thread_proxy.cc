@@ -39,4 +39,13 @@ scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(
   return buffer;
 }
 
+void DrmThreadProxy::GetScanoutFormats(
+    gfx::AcceleratedWidget widget,
+    std::vector<gfx::BufferFormat>* scanout_formats) {
+  PostSyncTask(
+      drm_thread_.task_runner(),
+      base::Bind(&DrmThread::GetScanoutFormats, base::Unretained(&drm_thread_),
+                 widget, scanout_formats));
+}
+
 }  // namespace ui

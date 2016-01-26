@@ -31,6 +31,8 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
   // SurfaceFactoryOzone:
   intptr_t GetNativeDisplay() override;
   const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list) override;
+  std::vector<gfx::BufferFormat> GetScanoutFormats(
+      gfx::AcceleratedWidget widget) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;

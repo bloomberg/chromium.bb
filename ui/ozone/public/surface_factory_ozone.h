@@ -100,6 +100,11 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // caller. desired_list contains list of desired EGL properties and values.
   virtual const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list);
 
+  // Returns all scanout formats for |widget| representing a particular display
+  // controller or default display controller for kNullAcceleratedWidget.
+  virtual std::vector<gfx::BufferFormat> GetScanoutFormats(
+      gfx::AcceleratedWidget widget);
+
   // Create a single native buffer to be used for overlay planes or zero copy
   // for |widget| representing a particular display controller or default
   // display controller for kNullAcceleratedWidget.

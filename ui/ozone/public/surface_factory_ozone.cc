@@ -44,6 +44,11 @@ const int32_t* SurfaceFactoryOzone::GetEGLSurfaceProperties(
   return desired_attributes;
 }
 
+std::vector<gfx::BufferFormat> SurfaceFactoryOzone::GetScanoutFormats(
+    gfx::AcceleratedWidget widget) {
+  return std::vector<gfx::BufferFormat>();
+}
+
 scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,

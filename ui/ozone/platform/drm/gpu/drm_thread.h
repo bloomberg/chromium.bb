@@ -59,6 +59,8 @@ class DrmThread : public base::Thread {
                     gfx::BufferUsage usage,
                     scoped_refptr<GbmBuffer>* buffer);
 
+  void GetScanoutFormats(gfx::AcceleratedWidget widget,
+                         std::vector<gfx::BufferFormat>* scanout_formats);
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
                         const std::vector<OverlayPlane>& planes,
                         const SwapCompletionCallback& callback);

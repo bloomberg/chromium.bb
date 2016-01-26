@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
@@ -101,6 +102,13 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
   DCHECK(thread_checker_.CalledOnValidThread());
   return make_scoped_ptr(
       new GbmSurfaceless(drm_thread_->CreateDrmWindowProxy(widget), this));
+}
+
+std::vector<gfx::BufferFormat> GbmSurfaceFactory::GetScanoutFormats(
+    gfx::AcceleratedWidget widget) {
+  std::vector<gfx::BufferFormat> scanout_formats;
+  drm_thread_->GetScanoutFormats(widget, &scanout_formats);
+  return scanout_formats;
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(

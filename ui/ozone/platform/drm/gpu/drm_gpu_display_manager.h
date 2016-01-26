@@ -29,6 +29,11 @@ class DrmGpuDisplayManager {
   // displays is refreshed.
   std::vector<DisplaySnapshot_Params> GetDisplays();
 
+  // Returns all scanout formats for |widget| representing a particular display
+  // controller or default display controller for kNullAcceleratedWidget.
+  void GetScanoutFormats(gfx::AcceleratedWidget widget,
+                         std::vector<gfx::BufferFormat>* scanout_formats);
+
   // Takes/releases the control of the DRM devices.
   bool TakeDisplayControl();
   void RelinquishDisplayControl();

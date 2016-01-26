@@ -106,6 +106,12 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   *buffer = GbmBuffer::CreateBuffer(gbm, format, size, usage);
 }
 
+void DrmThread::GetScanoutFormats(
+    gfx::AcceleratedWidget widget,
+    std::vector<gfx::BufferFormat>* scanout_formats) {
+  display_manager_->GetScanoutFormats(widget, scanout_formats);
+}
+
 void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
                                  const std::vector<OverlayPlane>& planes,
                                  const SwapCompletionCallback& callback) {

@@ -33,6 +33,9 @@ class DrmThreadProxy {
                                         gfx::BufferFormat format,
                                         gfx::BufferUsage usage);
 
+  void GetScanoutFormats(gfx::AcceleratedWidget widget,
+                         std::vector<gfx::BufferFormat>* scanout_formats);
+
  private:
   DrmThread drm_thread_;
 
