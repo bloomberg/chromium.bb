@@ -198,7 +198,7 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
   // Only accept the default value for range checking.
   RANGE_CHECK(cfg, ss_number_layers, 1, 1);
   RANGE_CHECK(cfg, ts_number_layers, 1, 1);
-  // VP9 does not support a lower bound on the keyframe interval in
+  // VP10 does not support a lower bound on the keyframe interval in
   // automatic keyframe placement mode.
   if (cfg->kf_mode != VPX_KF_DISABLED &&
       cfg->kf_min_dist != cfg->kf_max_dist &&
@@ -220,9 +220,9 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, content,
               VPX_CONTENT_DEFAULT, VPX_CONTENT_INVALID - 1);
 
-  // TODO(yaowu): remove this when ssim tuning is implemented for vp9
+  // TODO(yaowu): remove this when ssim tuning is implemented for vp10
   if (extra_cfg->tuning == VPX_TUNE_SSIM)
-      ERROR("Option --tune=ssim is not currently supported in VP9.");
+      ERROR("Option --tune=ssim is not currently supported in VP10.");
 
   if (cfg->g_pass == VPX_RC_LAST_PASS) {
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
@@ -429,7 +429,7 @@ static vpx_codec_err_t set_encoder_config(
   oxcf->frame_periodic_boost =  extra_cfg->frame_periodic_boost;
 
   /*
-  printf("Current VP9 Settings: \n");
+  printf("Current VP10 Settings: \n");
   printf("target_bandwidth: %d\n", oxcf->target_bandwidth);
   printf("noise_sensitivity: %d\n", oxcf->noise_sensitivity);
   printf("sharpness: %d\n",    oxcf->sharpness);
@@ -854,7 +854,7 @@ static int write_superframe_index(vpx_codec_alg_priv_t *ctx) {
   return index_sz;
 }
 
-// vp9 uses 10,000,000 ticks/second as time stamp
+// vp10 uses 10,000,000 ticks/second as time stamp
 #define TICKS_PER_SEC 10000000LL
 
 static int64_t timebase_units_to_ticks(const vpx_rational_t *timebase,
@@ -1143,7 +1143,7 @@ static vpx_codec_err_t ctrl_set_roi_map(vpx_codec_alg_priv_t *ctx,
   (void)ctx;
   (void)args;
 
-  // TODO(yaowu): Need to re-implement and test for VP9.
+  // TODO(yaowu): Need to re-implement and test for VP10.
   return VPX_CODEC_INVALID_PARAM;
 }
 
