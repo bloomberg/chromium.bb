@@ -195,7 +195,47 @@ class RequestTrackTestCase(unittest.TestCase):
     self.assertEquals(1, len(self.request_track.GetEvents()))
     redirect_request = self.request_track.GetEvents()[0]
     self.assertTrue(redirect_request.request_id.endswith(
-        RequestTrack.REDIRECT_SUFFIX))
+        RequestTrack._REDIRECT_SUFFIX + '.1'))
+    request = self.request_track._requests_in_flight.values()[0][0]
+    self.assertEquals('redirect', request.initiator['type'])
+    self.assertEquals(
+        redirect_request.request_id,
+        request.initiator[Request.INITIATING_REQUEST])
+    self.assertEquals(0, self.request_track.inconsistent_initiators_count)
+
+  def testMultipleRedirects(self):
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REQUEST_WILL_BE_SENT)
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REDIRECT)
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REDIRECT)
+    self.assertEquals(1, len(self.request_track._requests_in_flight))
+    self.assertEquals(2, len(self.request_track.GetEvents()))
+    first_redirect_request = self.request_track.GetEvents()[0]
+    self.assertTrue(first_redirect_request.request_id.endswith(
+        RequestTrack._REDIRECT_SUFFIX + '.1'))
+    second_redirect_request = self.request_track.GetEvents()[1]
+    self.assertTrue(second_redirect_request.request_id.endswith(
+        RequestTrack._REDIRECT_SUFFIX + '.2'))
+    self.assertEquals('redirect', second_redirect_request.initiator['type'])
+    self.assertEquals(
+        first_redirect_request.request_id,
+        second_redirect_request.initiator[Request.INITIATING_REQUEST])
+    request = self.request_track._requests_in_flight.values()[0][0]
+    self.assertEquals('redirect', request.initiator['type'])
+    self.assertEquals(
+        second_redirect_request.request_id,
+        request.initiator[Request.INITIATING_REQUEST])
+    self.assertEquals(0, self.request_track.inconsistent_initiators_count)
+
+  def testInconsistentInitiators(self):
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REQUEST_WILL_BE_SENT)
+    request = copy.deepcopy(RequestTrackTestCase._REDIRECT)
+    request['params']['initiator']['type'] = 'script'
+    self.request_track.Handle('Network.requestWillBeSent', request)
+    self.assertEquals(1, self.request_track.inconsistent_initiators_count)
 
   def testRejectDuplicates(self):
     msg = RequestTrackTestCase._REQUEST_WILL_BE_SENT
@@ -281,6 +321,7 @@ class RequestTrackTestCase(unittest.TestCase):
   def testCanDeserialize(self):
     self._ValidSequence(self.request_track)
     self.request_track.duplicates_count = 142
+    self.request_track.inconsistent_initiators_count = 123
     json_dict = self.request_track.ToJsonDict()
     request_track = RequestTrack.FromJsonDict(json_dict)
     self.assertEquals(self.request_track, request_track)

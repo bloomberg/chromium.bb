@@ -13,9 +13,17 @@ import test_utils
 
 class RequestDependencyLensTestCase(unittest.TestCase):
   _REDIRECT_REQUEST = Request.FromJsonDict(
-      {'url': 'http://bla.com', 'request_id': '1234.1.redirect',
+      {'url': 'http://bla.com', 'request_id': '1234.redirect.1',
        'initiator': {'type': 'other'},
        'timestamp': 1, 'timing': TimingFromDict({})})
+  _REDIRECTED_REQUEST = Request.FromJsonDict({
+      'url': 'http://bla.com',
+      'request_id': '1234.1',
+      'frame_id': '123.1',
+      'initiator': {'type': 'redirect',
+                    'initiating_request': '1234.redirect.1'},
+      'timestamp': 2,
+      'timing': TimingFromDict({})})
   _REQUEST = Request.FromJsonDict({'url': 'http://bla.com',
                                    'request_id': '1234.1',
                                    'frame_id': '123.1',
@@ -55,7 +63,7 @@ class RequestDependencyLensTestCase(unittest.TestCase):
 
   def testRedirectDependency(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._REDIRECT_REQUEST, self._REQUEST])
+        [self._REDIRECT_REQUEST, self._REDIRECTED_REQUEST])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
@@ -86,7 +94,7 @@ class RequestDependencyLensTestCase(unittest.TestCase):
 
   def testSeveralDependencies(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._REDIRECT_REQUEST, self._REQUEST, self._JS_REQUEST,
+        [self._REDIRECT_REQUEST, self._REDIRECTED_REQUEST, self._JS_REQUEST,
          self._JS_REQUEST_2])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()

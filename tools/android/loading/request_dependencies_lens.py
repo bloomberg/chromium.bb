@@ -64,8 +64,7 @@ class RequestDependencyLens(object):
     """
     reason = request.initiator['type']
     assert reason in request_track.Request.INITIATORS
-    # Redirect suffixes are added in RequestTrack.
-    if request.request_id.endswith(request_track.RequestTrack.REDIRECT_SUFFIX):
+    if reason == 'redirect':
       return self._GetInitiatingRequestRedirect(request)
     elif reason == 'parser':
       return self._GetInitiatingRequestParser(request)
@@ -76,14 +75,11 @@ class RequestDependencyLens(object):
       return self._GetInitiatingRequestOther(request)
 
   def _GetInitiatingRequestRedirect(self, request):
-    request_id = request.request_id[:request.request_id.index(
-        request_track.RequestTrack.REDIRECT_SUFFIX)]
-    assert request_id in self._requests_by_id
-    dependent_request = self._requests_by_id[request_id]
-    assert request.timing.request_time < \
-        dependent_request.timing.request_time, '.\n'.join(
-            [str(request), str(dependent_request)])
-    return (request, dependent_request, 'redirect')
+    assert request_track.Request.INITIATING_REQUEST in request.initiator
+    initiating_request_id = request.initiator[
+        request_track.Request.INITIATING_REQUEST]
+    assert initiating_request_id in self._requests_by_id
+    return (self._requests_by_id[initiating_request_id], request, 'redirect')
 
   def _GetInitiatingRequestParser(self, request):
     url = request.initiator['url']

@@ -72,7 +72,9 @@ class LoadingModelTestCase(unittest.TestCase):
                        self.MakeParserRequest(1, 0, 102, 103).ToJsonDict(),
                        self.MakeParserRequest(2, 0, 102, 103).ToJsonDict(),
                        self.MakeParserRequest(3, 2, 104, 105).ToJsonDict()],
-            'metadata': { 'duplicates_count' : 0 }},
+            'metadata': {
+                request_track.RequestTrack._DUPLICATES_KEY: 0,
+                request_track.RequestTrack._INCONSISTENT_INITIATORS_KEY: 0}},
          'url': 'foo.com',
          'tracing_track': {'events': []},
          'page_track': {'events': []},

@@ -247,7 +247,9 @@ class ResourceGraph(object):
       for s in n.Successors():
         style = 'color = orange'
         annotations = self._EdgeAnnotation(n, s)
-        if 'parser' in annotations:
+        if 'redirect' in annotations:
+          style = 'color = black'
+        elif 'parser' in annotations:
           style = 'color = red'
         elif 'stack' in annotations:
           style = 'color = blue'

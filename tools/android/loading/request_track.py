@@ -46,7 +46,7 @@ class Request(object):
   third_party/WebKit/Source/devtools/protocol.json.
 
   Fields:
-    request_id: (str) unique request ID. Postfixed with REDIRECT_SUFFIX for
+    request_id: (str) unique request ID. Postfixed with _REDIRECT_SUFFIX for
                 redirects.
     frame_id: (str) unique frame identifier.
     loader_id: (str) unique frame identifier.
@@ -77,7 +77,9 @@ class Request(object):
   RESOURCE_TYPES = ('Document', 'Stylesheet', 'Image', 'Media', 'Font',
                     'Script', 'TextTrack', 'XHR', 'Fetch', 'EventSource',
                     'WebSocket', 'Manifest', 'Other')
-  INITIATORS = ('parser', 'script', 'other')
+  INITIATORS = ('parser', 'script', 'other', 'redirect')
+  INITIATING_REQUEST = 'initiating_request'
+  ORIGINAL_INITIATOR = 'original_initiator'
   def __init__(self):
     self.request_id = None
     self.frame_id = None
@@ -172,7 +174,7 @@ class Request(object):
 
 class RequestTrack(devtools_monitor.Track):
   """Aggregates request data."""
-  REDIRECT_SUFFIX = '.redirect'
+  _REDIRECT_SUFFIX = '.redirect'
   # Request status
   _STATUS_SENT = 0
   _STATUS_RESPONSE = 1
@@ -183,12 +185,14 @@ class RequestTrack(devtools_monitor.Track):
   _EVENTS_KEY = 'events'
   _METADATA_KEY = 'metadata'
   _DUPLICATES_KEY = 'duplicates_count'
+  _INCONSISTENT_INITIATORS_KEY = 'inconsistent_initiators'
   def __init__(self, connection):
     super(RequestTrack, self).__init__(connection)
     self._connection = connection
     self._requests = []
     self._requests_in_flight = {}  # requestId -> (request, status)
     self._completed_requests_by_id = {}
+    self._redirects_count_by_id = collections.defaultdict(int)
     if connection:  # Optional for testing.
       for method in RequestTrack._METHOD_TO_HANDLER:
         self._connection.RegisterListener(method, self)
@@ -196,6 +200,7 @@ class RequestTrack(devtools_monitor.Track):
     # detect this.
     self._request_id_to_response_received = {}
     self.duplicates_count = 0
+    self.inconsistent_initiators_count = 0
 
   def Handle(self, method, msg):
     assert method in RequestTrack._METHOD_TO_HANDLER
@@ -214,7 +219,10 @@ class RequestTrack(devtools_monitor.Track):
       logging.warning('Requests in flight, will be ignored in the dump')
     return {self._EVENTS_KEY: [
         request.ToJsonDict() for request in self._requests],
-            self._METADATA_KEY: {self._DUPLICATES_KEY: self.duplicates_count}}
+            self._METADATA_KEY: {
+                self._DUPLICATES_KEY: self.duplicates_count,
+                self._INCONSISTENT_INITIATORS_KEY:
+                self.inconsistent_initiators_count}}
 
   @classmethod
   def FromJsonDict(cls, json_dict):
@@ -224,14 +232,18 @@ class RequestTrack(devtools_monitor.Track):
     requests = [Request.FromJsonDict(request)
                 for request in json_dict[cls._EVENTS_KEY]]
     result._requests = requests
-    result.duplicates_count = json_dict[cls._METADATA_KEY][cls._DUPLICATES_KEY]
+    metadata = json_dict[cls._METADATA_KEY]
+    result.duplicates_count = metadata.get(cls._DUPLICATES_KEY, 0)
+    result.inconsistent_initiators_count = metadata.get(
+        cls._INCONSISTENT_INITIATORS_KEY, 0)
     return result
 
   def _RequestWillBeSent(self, request_id, params):
     # Several "requestWillBeSent" events can be dispatched in a row in the case
     # of redirects.
+    redirect_initiator = None
     if request_id in self._requests_in_flight:
-      self._HandleRedirect(request_id, params)
+      redirect_initiator = self._HandleRedirect(request_id, params)
     assert (request_id not in self._requests_in_flight
             and request_id not in self._completed_requests_by_id)
     r = Request()
@@ -247,6 +259,16 @@ class RequestTrack(devtools_monitor.Track):
                      ('headers', 'headers'),
                      ('initialPriority', 'initial_priority')))
     r.resource_type = params.get('type', 'Other')
+    if redirect_initiator:
+      original_initiator = r.initiator
+      r.initiator = redirect_initiator
+      r.initiator[Request.ORIGINAL_INITIATOR] = original_initiator
+      initiating_request = self._completed_requests_by_id[
+          redirect_initiator[Request.INITIATING_REQUEST]]
+      initiating_initiator = initiating_request.initiator.get(
+          Request.ORIGINAL_INITIATOR, initiating_request.initiator)
+      if initiating_initiator != original_initiator:
+        self.inconsistent_initiators_count += 1
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_SENT)
 
   def _HandleRedirect(self, request_id, params):
@@ -256,15 +278,23 @@ class RequestTrack(devtools_monitor.Track):
     # one. Finalize the first request.
     assert 'redirectResponse' in params
     redirect_response = params['redirectResponse']
+
     _CopyFromDictToObject(redirect_response, r,
                           (('headers', 'response_headers'),
                            ('encodedDataLength', 'encoded_data_length'),
                            ('fromDiskCache', 'from_disk_cache')))
     r.timing = TimingFromDict(redirect_response['timing'])
-    r.request_id = request_id + self.REDIRECT_SUFFIX
+
+    redirect_index = self._redirects_count_by_id[request_id]
+    self._redirects_count_by_id[request_id] += 1
+    r.request_id = '%s%s.%d' % (request_id, self._REDIRECT_SUFFIX,
+                                 redirect_index + 1)
+    initiator = {
+        'type': 'redirect', Request.INITIATING_REQUEST: r.request_id}
     self._requests_in_flight[r.request_id] = (r, RequestTrack._STATUS_FINISHED)
     del self._requests_in_flight[request_id]
     self._FinalizeRequest(r.request_id)
+    return initiator
 
   def _RequestServedFromCache(self, request_id, _):
     assert request_id in self._requests_in_flight
