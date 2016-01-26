@@ -159,13 +159,7 @@ class CertificateProviderApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-// See crbug.com/576364 for details
-#if defined(OS_CHROMEOS)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
   // Start an HTTPS test server that requests a client certificate.
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -196,6 +190,9 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, MAYBE_Basic) {
 
   content::WebContents* const https_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+
+  VLOG(1) << "Wait for the extension to respond to the certificates request.";
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   VLOG(1) << "Wait for the extension to receive the sign request.";
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
