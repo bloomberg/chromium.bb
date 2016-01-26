@@ -148,6 +148,7 @@ group("both_gn_and_gyp") {
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/codesighs",
       "//third_party/pdfium/samples:pdfium_test",
+      "//tools/battor_agent",
       "//tools/gn",
       "//tools/gn:gn_unittests",
       "//tools/perf/clear_system_cache",
@@ -220,10 +221,6 @@ group("both_gn_and_gyp") {
         "//ios/public/provider/chrome/browser",
       ]
     }
-  }
-
-  if (is_mac || is_win || is_linux) {
-    deps += [ "//tools/battor_agent" ]
   }
 
   deps += root_extra_deps
