@@ -180,4 +180,10 @@ test("cast_shell_browser_test") {
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:cast_shell_internal" ]
   }
+
+  if (chromecast_branding == "public") {
+    # Link default libcast_media_1.0 statically not to link dummy one
+    # dynamically for public unittests.
+    deps += [ "//chromecast/media/base:libcast_media_1.0_default_core" ]
+  }
 }
