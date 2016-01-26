@@ -836,20 +836,19 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
       layer->UpdateCanUseLCDTextAfterCommit();
   }
 
-  {
+  // Resourceless draw do not need tiles and should not affect existing tile
+  // priorities.
+  if (layer_tree_host_impl_->GetDrawMode() != DRAW_MODE_RESOURCELESS_SOFTWARE) {
     TRACE_EVENT_BEGIN2("cc", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
                        "IsActive", IsActiveTree(), "SourceFrameNumber",
                        source_frame_number_);
-    const bool resourceless_software_draw =
-        (layer_tree_host_impl_->GetDrawMode() ==
-         DRAW_MODE_RESOURCELESS_SOFTWARE);
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
       if (!layer->IsDrawnRenderSurfaceLayerListMember())
         continue;
       ++layers_updated_count;
-      tile_priorities_updated |= layer->UpdateTiles(resourceless_software_draw);
+      tile_priorities_updated |= layer->UpdateTiles();
     }
 
     if (tile_priorities_updated)

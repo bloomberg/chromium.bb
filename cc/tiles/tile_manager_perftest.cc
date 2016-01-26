@@ -187,9 +187,8 @@ class TileManagerPerfTest : public testing::Test {
     int priority_count = 0;
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
-    bool resourceless_software_draw = false;
     for (const auto& layer : layers)
-      layer->UpdateTiles(resourceless_software_draw);
+      layer->UpdateTiles();
 
     timer_.Reset();
     do {
@@ -215,9 +214,8 @@ class TileManagerPerfTest : public testing::Test {
                                  NEW_CONTENT_TAKES_PRIORITY};
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 100);
-    bool resourceless_software_draw = false;
     for (const auto& layer : layers)
-      layer->UpdateTiles(resourceless_software_draw);
+      layer->UpdateTiles();
 
     int priority_count = 0;
     timer_.Reset();
@@ -251,9 +249,8 @@ class TileManagerPerfTest : public testing::Test {
     int priority_count = 0;
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
-    bool resourceless_software_draw = false;
     for (const auto& layer : layers) {
-      layer->UpdateTiles(resourceless_software_draw);
+      layer->UpdateTiles();
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->tilings()->tiling_at(i)->AllTilesForTesting());
@@ -286,9 +283,8 @@ class TileManagerPerfTest : public testing::Test {
 
     std::vector<FakePictureLayerImpl*> layers =
         CreateLayers(layer_count, tile_count);
-    bool resourceless_software_draw = false;
     for (const auto& layer : layers) {
-      layer->UpdateTiles(resourceless_software_draw);
+      layer->UpdateTiles();
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->tilings()->tiling_at(i)->AllTilesForTesting());
@@ -396,11 +392,10 @@ class TileManagerPerfTest : public testing::Test {
         CreateLayers(layer_count, approximate_tile_count_per_layer);
 
     timer_.Reset();
-    bool resourceless_software_draw = false;
     do {
       host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
       for (const auto& layer : layers)
-        layer->UpdateTiles(resourceless_software_draw);
+        layer->UpdateTiles();
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->PrepareTiles(global_state);

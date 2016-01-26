@@ -9146,6 +9146,45 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
+TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
+       ResourcelessSoftwareDrawSkipsUpdateTiles) {
+  const gfx::Size viewport_size(100, 100);
+  host_impl_->SetViewportSize(viewport_size);
+
+  host_impl_->CreatePendingTree();
+  scoped_refptr<FakeDisplayListRasterSource> raster_source(
+      FakeDisplayListRasterSource::CreateFilled(viewport_size));
+  scoped_ptr<FakePictureLayerImpl> layer(
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                   11, raster_source));
+  layer->SetBounds(viewport_size);
+  layer->SetDrawsContent(true);
+  host_impl_->pending_tree()->SetRootLayer(std::move(layer));
+
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->ActivateSyncTree();
+
+  const gfx::Transform draw_transform;
+  const gfx::Rect draw_viewport(viewport_size);
+  const gfx::Rect clip(viewport_size);
+  bool resourceless_software_draw = false;
+
+  // Regular draw causes UpdateTiles.
+  did_request_prepare_tiles_ = false;
+  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
+                     resourceless_software_draw);
+  EXPECT_TRUE(did_request_prepare_tiles_);
+  host_impl_->PrepareTiles();
+
+  // Resourceless draw skips UpdateTiles.
+  const gfx::Rect new_draw_viewport(50, 50);
+  resourceless_software_draw = true;
+  did_request_prepare_tiles_ = false;
+  host_impl_->OnDraw(draw_transform, new_draw_viewport, clip,
+                     resourceless_software_draw);
+  EXPECT_FALSE(did_request_prepare_tiles_);
+}
+
 TEST_F(LayerTreeHostImplTest, ExternalViewportAffectsVisibleRects) {
   const gfx::Size layer_size(100, 100);
   SetupScrollAndContentsLayers(layer_size);

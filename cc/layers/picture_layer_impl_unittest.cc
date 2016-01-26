@@ -267,14 +267,13 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
-  void SetupDrawPropertiesAndUpdateTiles(
-      FakePictureLayerImpl* layer,
-      float ideal_contents_scale,
-      float device_scale_factor,
-      float page_scale_factor,
-      float maximum_animation_contents_scale,
-      float starting_animation_contents_scale,
-      bool animating_transform_to_screen) {
+  void SetupDrawProperties(FakePictureLayerImpl* layer,
+                           float ideal_contents_scale,
+                           float device_scale_factor,
+                           float page_scale_factor,
+                           float maximum_animation_contents_scale,
+                           float starting_animation_contents_scale,
+                           bool animating_transform_to_screen) {
     layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
     host_impl_.active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
@@ -288,9 +287,23 @@ class PictureLayerImplTest : public testing::Test {
         starting_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
-    bool resourceless_software_draw = false;
-    layer->UpdateTiles(resourceless_software_draw);
   }
+
+  void SetupDrawPropertiesAndUpdateTiles(
+      FakePictureLayerImpl* layer,
+      float ideal_contents_scale,
+      float device_scale_factor,
+      float page_scale_factor,
+      float maximum_animation_contents_scale,
+      float starting_animation_contents_scale,
+      bool animating_transform_to_screen) {
+    SetupDrawProperties(layer, ideal_contents_scale, device_scale_factor,
+                        page_scale_factor, maximum_animation_contents_scale,
+                        starting_animation_contents_scale,
+                        animating_transform_to_screen);
+    layer->UpdateTiles();
+  }
+
   static void VerifyAllPrioritizedTilesExistAndHaveRasterSource(
       const PictureLayerTiling* tiling,
       DisplayListRasterSource* raster_source) {
@@ -544,89 +557,6 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
         gfx::ScaleToEnclosingRect(viewport_rect_for_tile_priority_in_view_space,
                                   tiling->contents_scale()));
   }
-}
-
-TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
-  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  gfx::Size layer_bounds(400, 400);
-  SetupDefaultTrees(layer_bounds);
-
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
-                                    false);
-
-  // UpdateTiles with valid viewport. Should update tile viewport.
-  // Note viewport is considered invalid if and only if in resourceless
-  // software draw.
-  bool resourceless_software_draw = false;
-  gfx::Rect viewport = gfx::Rect(layer_bounds);
-  gfx::Transform draw_transform;
-  gfx::Transform tile_priority_transform;
-  host_impl_.SetExternalTilePriorityConstraints(viewport,
-                                                tile_priority_transform);
-  active_layer_->draw_properties().visible_layer_rect = viewport;
-  active_layer_->draw_properties().screen_space_transform = draw_transform;
-  active_layer_->UpdateTiles(resourceless_software_draw);
-
-  gfx::Rect visible_rect_for_tile_priority =
-      active_layer_->visible_rect_for_tile_priority();
-  EXPECT_FALSE(visible_rect_for_tile_priority.IsEmpty());
-  gfx::Transform screen_space_transform_for_tile_priority =
-      active_layer_->draw_properties().screen_space_transform;
-
-  // Expand viewport and set it as invalid for prioritizing tiles.
-  // Should update viewport and transform, but not update visible rect.
-  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
-  resourceless_software_draw = true;
-  viewport = gfx::ScaleToEnclosingRect(viewport, 2);
-  tile_priority_transform.Translate(1.f, 0.f);
-  draw_transform.Translate(0.f, 1.f);
-  active_layer_->draw_properties().visible_layer_rect = viewport;
-  active_layer_->draw_properties().screen_space_transform = draw_transform;
-  host_impl_.SetExternalTilePriorityConstraints(viewport,
-                                                tile_priority_transform);
-  active_layer_->UpdateTiles(resourceless_software_draw);
-
-  // Transform for tile priority is not updated.
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      screen_space_transform_for_tile_priority,
-      active_layer_->screen_space_transform_for_tile_priority());
-  // Visible rect for tile priority retains old value.
-  EXPECT_EQ(visible_rect_for_tile_priority,
-            active_layer_->visible_rect_for_tile_priority());
-  ASSERT_GT(active_layer_->picture_layer_tiling_set()->num_tilings(), 0u);
-  EXPECT_EQ(active_layer_->viewport_rect_for_tile_priority_in_content_space(),
-            active_layer_->picture_layer_tiling_set()
-                ->tiling_at(0)
-                ->GetCurrentVisibleRectForTesting());
-
-  // Keep expanded viewport but mark it valid. Should update tile viewport.
-  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
-  resourceless_software_draw = false;
-  host_impl_.SetExternalTilePriorityConstraints(viewport,
-                                                tile_priority_transform);
-  active_layer_->UpdateTiles(resourceless_software_draw);
-
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      draw_transform,
-      active_layer_->screen_space_transform_for_tile_priority());
-  EXPECT_EQ(viewport, active_layer_->visible_rect_for_tile_priority());
-
-  gfx::RectF visible_rect_in_content_space(viewport);
-  gfx::Transform inverse_draw_transform;
-  gfx::Transform inverse_tile_priority_transform;
-  EXPECT_TRUE(draw_transform.GetInverse(&inverse_draw_transform));
-  EXPECT_TRUE(
-      tile_priority_transform.GetInverse(&inverse_tile_priority_transform));
-  visible_rect_in_content_space = MathUtil::ProjectClippedRect(
-      inverse_tile_priority_transform, visible_rect_in_content_space);
-  visible_rect_in_content_space = MathUtil::ProjectClippedRect(
-      inverse_draw_transform, visible_rect_in_content_space);
-
-  ASSERT_GT(active_layer_->picture_layer_tiling_set()->num_tilings(), 0u);
-  EXPECT_EQ(gfx::ToEnclosingRect(visible_rect_in_content_space),
-            active_layer_->picture_layer_tiling_set()
-                ->tiling_at(0)
-                ->GetCurrentVisibleRectForTesting());
 }
 
 TEST_F(PictureLayerImplTest, ViewportRectForTilePriorityIsCached) {
@@ -1811,7 +1741,6 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   gfx::Size layer_bounds(200, 200);
 
   gfx::Transform transform;
-  bool resourceless_software_draw = false;
   gfx::Rect viewport(0, 0, 100, 200);
   host_impl_.SetExternalTilePriorityConstraints(viewport, transform);
 
@@ -1826,7 +1755,7 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
 
   base::TimeTicks time_ticks;
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  pending_layer_->UpdateTiles(resourceless_software_draw);
+  pending_layer_->UpdateTiles();
 
   int num_visible = 0;
   int num_offscreen = 0;
@@ -1867,7 +1796,6 @@ TEST_F(NoLowResPictureLayerImplTest,
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   gfx::Transform transform;
   gfx::Transform transform_for_tile_priority;
-  bool resourceless_software_draw = false;
   host_impl_.SetExternalTilePriorityConstraints(
       external_viewport_for_tile_priority, transform_for_tile_priority);
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
@@ -1878,7 +1806,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   // external_viewport_for_tile_priority.
   pending_layer_->draw_properties().visible_layer_rect = visible_layer_rect;
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
-  pending_layer_->UpdateTiles(resourceless_software_draw);
+  pending_layer_->UpdateTiles();
 
   // Intersect the two rects. Any tile outside should not be required for
   // activation.
@@ -3107,8 +3035,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   pending_layer_->draw_properties().visible_layer_rect =
       gfx::Rect(1100, 1100, 500, 500);
-  bool resourceless_software_draw = false;
-  pending_layer_->UpdateTiles(resourceless_software_draw);
+  pending_layer_->UpdateTiles();
 
   unique_tiles.clear();
   high_res_tile_count = 0u;
@@ -3137,7 +3064,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   pending_layer_->draw_properties().visible_layer_rect =
       gfx::Rect(0, 0, 500, 500);
-  pending_layer_->UpdateTiles(resourceless_software_draw);
+  pending_layer_->UpdateTiles();
 
   std::vector<Tile*> high_res_tiles =
       pending_layer_->HighResTiling()->AllTilesForTesting();
@@ -3667,60 +3594,6 @@ TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   AssertNoTilesRequired(pending_layer_->HighResTiling());
   if (host_impl_.settings().create_low_res_tiling)
     AssertNoTilesRequired(pending_layer_->LowResTiling());
-}
-
-TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
-  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  gfx::Size layer_bounds(400, 400);
-  SetupDefaultTrees(layer_bounds);
-
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
-                                    false);
-
-  // UpdateTiles with valid viewport. Should update tile viewport.
-  // Note viewport is considered invalid if and only if in resourceless
-  // software draw.
-  bool resourceless_software_draw = false;
-  gfx::Rect viewport = gfx::Rect(layer_bounds);
-  gfx::Transform transform;
-  host_impl_.SetExternalTilePriorityConstraints(viewport, transform);
-  active_layer_->draw_properties().visible_layer_rect = viewport;
-  active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(resourceless_software_draw);
-
-  gfx::Rect visible_rect_for_tile_priority =
-      active_layer_->visible_rect_for_tile_priority();
-  EXPECT_FALSE(visible_rect_for_tile_priority.IsEmpty());
-  gfx::Transform screen_space_transform_for_tile_priority =
-      active_layer_->draw_properties().screen_space_transform;
-
-  // Expand viewport and set it as invalid for prioritizing tiles.
-  // Should update viewport and transform, but not update visible rect.
-  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
-  resourceless_software_draw = true;
-  viewport = gfx::ScaleToEnclosingRect(viewport, 2);
-  transform.Translate(1.f, 1.f);
-  active_layer_->draw_properties().visible_layer_rect = viewport;
-  active_layer_->draw_properties().screen_space_transform = transform;
-  host_impl_.SetExternalTilePriorityConstraints(viewport, transform);
-  active_layer_->UpdateTiles(resourceless_software_draw);
-
-  // Transform for tile priority is updated.
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      transform, active_layer_->draw_properties().screen_space_transform);
-  // Visible rect for tile priority retains old value.
-  EXPECT_EQ(visible_rect_for_tile_priority,
-            active_layer_->visible_rect_for_tile_priority());
-
-  // Keep expanded viewport but mark it valid. Should update tile viewport.
-  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
-  resourceless_software_draw = false;
-  host_impl_.SetExternalTilePriorityConstraints(viewport, transform);
-  active_layer_->UpdateTiles(resourceless_software_draw);
-
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      transform, active_layer_->draw_properties().screen_space_transform);
-  EXPECT_EQ(viewport, active_layer_->visible_rect_for_tile_priority());
 }
 
 TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
