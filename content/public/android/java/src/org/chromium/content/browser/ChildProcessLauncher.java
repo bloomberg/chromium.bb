@@ -825,8 +825,8 @@ public class ChildProcessLauncher {
      * Queue up a spawn requests for testing.
      */
     @VisibleForTesting
-    static void enqueuePendingSpawnForTesting(Context context) {
-        sPendingSpawnQueue.enqueue(new PendingSpawnData(context, new String[0], 1,
+    static void enqueuePendingSpawnForTesting(Context context, String[] commandLine) {
+        sPendingSpawnQueue.enqueue(new PendingSpawnData(context, commandLine, 1,
                 new FileDescriptorInfo[0], 0, CALLBACK_FOR_RENDERER_PROCESS, true));
     }
 
