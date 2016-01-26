@@ -25,6 +25,19 @@ class C {
 
   // Not a constant even though it has static storage duration.
   static const char* current_event_;
+
+  static int Function();
+
+  static void FunctionWithConstant() {
+    const int kFunctionConstant = 4;
+    const int kFunctionConstantFromExpression = 4 + 6;
+    const int kFunctionConstantFromOtherConsts =
+        kFunctionConstant + kFunctionConstantFromExpression;
+    const int kShouldBeRenamedToAConst = 9 - 2;
+    const int kShouldAlsoBeRenamedToAConst =
+        kFunctionConstant + kFunctionConstantFromOtherConsts;
+    const int not_compile_time_const = kFunctionConstant + Function();
+  }
 };
 
 void F() {

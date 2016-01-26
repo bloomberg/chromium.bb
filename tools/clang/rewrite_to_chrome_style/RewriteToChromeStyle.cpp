@@ -49,7 +49,9 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
 constexpr char kBlinkFieldPrefix[] = "m_";
 constexpr char kBlinkStaticMemberPrefix[] = "s_";
 
-bool GetNameForDecl(const clang::FunctionDecl& decl, std::string& name) {
+bool GetNameForDecl(const clang::FunctionDecl& decl,
+                    const clang::ASTContext& context,
+                    std::string& name) {
   name = decl.getNameAsString();
   name[0] = clang::toUppercase(name[0]);
   return true;
@@ -89,7 +91,9 @@ std::string CamelCaseToUnderscoreCase(StringRef input) {
   return output;
 }
 
-bool GetNameForDecl(const clang::FieldDecl& decl, std::string& name) {
+bool GetNameForDecl(const clang::FieldDecl& decl,
+                    const clang::ASTContext& context,
+                    std::string& name) {
   StringRef original_name = decl.getName();
   // Blink style field names are prefixed with `m_`. If this prefix isn't
   // present, assume it's already been converted to Google style.
@@ -105,7 +109,8 @@ bool GetNameForDecl(const clang::FieldDecl& decl, std::string& name) {
   return true;
 }
 
-bool IsProbablyConst(const clang::VarDecl& decl) {
+bool IsProbablyConst(const clang::VarDecl& decl,
+                     const clang::ASTContext& context) {
   clang::QualType type = decl.getType();
   if (!type.isConstQualified())
     return false;
@@ -118,30 +123,18 @@ bool IsProbablyConst(const clang::VarDecl& decl) {
   if (decl.getStorageDuration() == clang::SD_Static)
     return true;
 
-  // Otherwise, use a simple heuristic: if it's initialized with a literal of
-  // some sort, also use kConstantStyle naming.
   const clang::Expr* initializer = decl.getInit();
   if (!initializer)
     return false;
 
-  // Ignore implicit casts, so the literal check below still matches on
-  // array-to-pointer decay, e.g.
-  //   const char* const kConst = "...";
-  if (const clang::ImplicitCastExpr* cast_expr =
-          clang::dyn_cast<clang::ImplicitCastExpr>(initializer))
-    initializer = cast_expr->getSubExprAsWritten();
-
-  return clang::isa<clang::CharacterLiteral>(initializer) ||
-         clang::isa<clang::CompoundLiteralExpr>(initializer) ||
-         clang::isa<clang::CXXBoolLiteralExpr>(initializer) ||
-         clang::isa<clang::CXXNullPtrLiteralExpr>(initializer) ||
-         clang::isa<clang::FloatingLiteral>(initializer) ||
-         clang::isa<clang::IntegerLiteral>(initializer) ||
-         clang::isa<clang::StringLiteral>(initializer) ||
-         clang::isa<clang::UserDefinedLiteral>(initializer);
+  // If the expression can be evaluated at compile time, then it should have a
+  // kFoo style name. Otherwise, not.
+  return initializer->isEvaluatable(context);
 }
 
-bool GetNameForDecl(const clang::VarDecl& decl, std::string& name) {
+bool GetNameForDecl(const clang::VarDecl& decl,
+                    const clang::ASTContext& context,
+                    std::string& name) {
   StringRef original_name = decl.getName();
 
   // Nothing to do for unnamed parameters.
@@ -156,7 +149,7 @@ bool GetNameForDecl(const clang::VarDecl& decl, std::string& name) {
   else if (original_name.startswith(kBlinkFieldPrefix))
     original_name = original_name.substr(strlen(kBlinkFieldPrefix));
 
-  if (IsProbablyConst(decl)) {
+  if (IsProbablyConst(decl, context)) {
     // Don't try to rename constants that already conform to Chrome style.
     if (original_name.size() >= 2 && original_name[0] == 'k' &&
         clang::isUppercase(original_name[1]))
@@ -224,7 +217,8 @@ class RewriterBase : public MatchFinder::MatchCallback {
   void run(const MatchFinder::MatchResult& result) override {
     std::string name;
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
-    if (!GetNameForDecl(*decl, name))
+    clang::ASTContext* context = result.Context;
+    if (!GetNameForDecl(*decl, *context, name))
       return;
     auto r = replacements_->emplace(
         *result.SourceManager, TargetNodeTraits<TargetNode>::GetRange(
