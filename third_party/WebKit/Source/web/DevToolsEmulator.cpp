@@ -157,6 +157,17 @@ bool DevToolsEmulator::doubleTapToZoomEnabled() const
     return m_touchEventEmulationEnabled ? true : m_doubleTapToZoomEnabled;
 }
 
+void DevToolsEmulator::setMainFrameResizesAreOrientationChanges(bool enabled)
+{
+    m_mainFrameResizesAreOrientationChanges = enabled;
+}
+
+bool DevToolsEmulator::mainFrameResizesAreOrientationChanges() const
+{
+    bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
+    return emulateMobileEnabled ? true : m_mainFrameResizesAreOrientationChanges;
+}
+
 void DevToolsEmulator::setAvailablePointerTypes(int types)
 {
     m_embedderAvailablePointerTypes = types;

@@ -40,6 +40,8 @@ public:
     void setPrimaryPointerType(PointerType);
     void setAvailableHoverTypes(int);
     void setPrimaryHoverType(HoverType);
+    void setMainFrameResizesAreOrientationChanges(bool);
+    bool mainFrameResizesAreOrientationChanges() const;
 
     // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
@@ -78,6 +80,7 @@ private:
 
     bool m_touchEventEmulationEnabled;
     bool m_doubleTapToZoomEnabled;
+    bool m_mainFrameResizesAreOrientationChanges;
     bool m_originalTouchEnabled;
     bool m_originalDeviceSupportsMouse;
     bool m_originalDeviceSupportsTouch;

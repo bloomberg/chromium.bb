@@ -72,9 +72,9 @@ void InspectorEmulationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
         viewportChanged();
 }
 
-void InspectorEmulationAgent::resetScrollAndPageScaleFactor(ErrorString*)
+void InspectorEmulationAgent::resetPageScaleFactor(ErrorString*)
 {
-    webViewImpl()->resetScrollAndScaleStateImmediately();
+    webViewImpl()->resetScaleStateImmediately();
 }
 
 void InspectorEmulationAgent::setPageScaleFactor(ErrorString*, double pageScaleFactor)

@@ -31,7 +31,7 @@ public:
     void viewportChanged();
 
     // InspectorBackendDispatcher::EmulationCommandHandler implementation.
-    void resetScrollAndPageScaleFactor(ErrorString*) override;
+    void resetPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
     void setScriptExecutionDisabled(ErrorString*, bool) override;
     void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;

@@ -3491,17 +3491,13 @@ float WebViewImpl::maximumPageScaleFactor() const
     return pageScaleConstraintsSet().finalConstraints().maximumScale;
 }
 
+void WebViewImpl::resetScaleStateImmediately()
+{
+    page()->frameHost().visualViewport().setScale(1);
+    pageScaleConstraintsSet().setNeedsReset(true);
+}
+
 void WebViewImpl::resetScrollAndScaleState()
-{
-    resetScrollAndScaleState(false);
-}
-
-void WebViewImpl::resetScrollAndScaleStateImmediately()
-{
-    resetScrollAndScaleState(true);
-}
-
-void WebViewImpl::resetScrollAndScaleState(bool immediately)
 {
     page()->frameHost().visualViewport().reset();
 
@@ -3516,8 +3512,6 @@ void WebViewImpl::resetScrollAndScaleState(bool immediately)
     }
 
     pageScaleConstraintsSet().setNeedsReset(true);
-    if (immediately)
-        refreshPageScaleFactorAfterLayout();
 }
 
 void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,

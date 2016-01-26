@@ -52,7 +52,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsE
     , m_viewportMetaLayoutSizeQuirk(false)
     , m_viewportMetaNonUserScalableQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
-    , m_mainFrameResizesAreOrientationChanges(false)
 {
     ASSERT(settings);
 }
@@ -695,7 +694,7 @@ bool WebSettingsImpl::mockGestureTapHighlightsEnabled() const
 
 bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
 {
-    return m_mainFrameResizesAreOrientationChanges;
+    return m_devToolsEmulator->mainFrameResizesAreOrientationChanges();
 }
 
 bool WebSettingsImpl::shrinksViewportContentToFit() const
@@ -781,7 +780,7 @@ void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
 
 void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)
 {
-    m_mainFrameResizesAreOrientationChanges = enabled;
+    m_devToolsEmulator->setMainFrameResizesAreOrientationChanges(enabled);
 }
 
 void WebSettingsImpl::setV8CacheOptions(V8CacheOptions options)

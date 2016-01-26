@@ -228,7 +228,6 @@ private:
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/313754.
     bool m_clobberUserAgentInitialScaleQuirk;
-    bool m_mainFrameResizesAreOrientationChanges;
 };
 
 } // namespace blink
