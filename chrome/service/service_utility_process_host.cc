@@ -67,9 +67,10 @@ class ServiceSandboxedProcessLauncherDelegate
   ServiceSandboxedProcessLauncherDelegate() {}
 
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    // Service process may run as windows service and it fails to create a
-    // window station.
-    return policy->SetAlternateDesktop(false) == sandbox::SBOX_ALL_OK;
+    // Ignore result of SetAlternateDesktop. Service process may run as windows
+    // service and it fails to create a window station.
+    base::IgnoreResult(policy->SetAlternateDesktop(false));
+    return true;
   }
 
  private:
