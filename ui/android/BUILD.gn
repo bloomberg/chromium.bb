@@ -150,6 +150,17 @@ android_library("ui_javatests") {
   ]
 }
 
+# GYP: //ui/android/ui_android.gyp:ui_junit_tests
+junit_binary("ui_junit_tests") {
+  java_files =
+      [ "junit/src/org/chromium/ui/picker/DateDialogNormalizerTest.java" ]
+  deps = [
+    "//base:base_java",
+    "//base:base_junit_test_support",
+    "//ui/android:ui_java",
+  ]
+}
+
 test("ui_android_unittests") {
   sources = [
     "overscroll_refresh_unittest.cc",

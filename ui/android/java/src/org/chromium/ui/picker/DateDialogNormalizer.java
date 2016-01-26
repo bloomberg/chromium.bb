@@ -4,92 +4,125 @@
 
 package org.chromium.ui.picker;
 
+import android.os.Build;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 
-import org.chromium.base.VisibleForTesting;
-
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
- * Normalize a date dialog so that it respect min and max.
+ * Sets the current, min, and max values on the given DatePicker.
  */
 public class DateDialogNormalizer {
-    @VisibleForTesting
-    static void setLimits(DatePicker picker, long minMillis, long maxMillis) {
-        // DatePicker intervals are non inclusive, the DatePicker will throw an
-        // exception when setting the min/max attribute to the current date
-        // so make sure this never happens
-        if (maxMillis <= minMillis) {
-            return;
+
+    /**
+     * Stores a date (year-month-day) and the number of milliseconds corresponding to that date
+     * according to the DatePicker's calendar.
+     */
+    private static class DateAndMillis {
+        /**
+         * Number of milliseconds from the epoch (1970-01-01) to the beginning of year-month-day
+         * in the default time zone (TimeZone.getDefault()) using the Julian/Gregorian split
+         * calendar. This value is interopable with {@link DatePicker#getMinDate} and
+         * {@link DatePicker#setMinDate}.
+         */
+        public final long millisForPicker;
+
+        public final int year;
+        public final int month;  // 0-based
+        public final int day;
+
+        DateAndMillis(long millisForPicker, int year, int month, int day) {
+            this.millisForPicker = millisForPicker;
+            this.year = year;
+            this.month = month;
+            this.day = day;
         }
-        Calendar minCal = trimToDate(minMillis);
-        Calendar maxCal = trimToDate(maxMillis);
-        int currentYear = picker.getYear();
-        int currentMonth = picker.getMonth();
-        int currentDayOfMonth = picker.getDayOfMonth();
-        TimeZone timeZone = TimeZone.getDefault();
 
-        picker.updateDate(maxCal.get(Calendar.YEAR),
-                maxCal.get(Calendar.MONTH),
-                maxCal.get(Calendar.DAY_OF_MONTH));
-        // setMinDate() requires milliseconds since 1970-01-01 00:00 in the
-        // default time zone, and minCal.getTimeInMillis() represents
-        // millisecnods since 1970-01-01 00:00 UTC.  We need to adjust it.
-        picker.setMinDate(minCal.getTimeInMillis() - timeZone.getOffset(minCal.getTimeInMillis()));
-        picker.updateDate(minCal.get(Calendar.YEAR),
-                minCal.get(Calendar.MONTH),
-                minCal.get(Calendar.DAY_OF_MONTH));
-        // setMaxDate() requires milliseconds since 1970-01-01 00:00 in the
-        // default time zone, and maxCal.getTimeInMillis() represents
-        // millisecnods since 1970-01-01 00:00 UTC.  We need to adjust it.
-        picker.setMaxDate(maxCal.getTimeInMillis() - timeZone.getOffset(maxCal.getTimeInMillis()));
+        static DateAndMillis create(long millisUtc) {
+            // millisUtc uses the Gregorian calendar only, so disable the Julian changeover date.
+            GregorianCalendar utcCal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            utcCal.setGregorianChange(new Date(Long.MIN_VALUE));
+            utcCal.setTimeInMillis(millisUtc);
+            int year = utcCal.get(Calendar.YEAR);
+            int month = utcCal.get(Calendar.MONTH);
+            int day = utcCal.get(Calendar.DAY_OF_MONTH);
+            return create(year, month, day);
+        }
 
-        // Restore the current date, only if within the accepted range
-        // This will keep the min/max settings
-        // previously set into account.
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        cal.clear();
-        cal.set(currentYear, currentMonth, currentDayOfMonth);
-        if (cal.getTimeInMillis() > minCal.getTimeInMillis()
-                && cal.getTimeInMillis() < maxCal.getTimeInMillis()) {
-            picker.updateDate(currentYear, currentMonth, currentDayOfMonth);
+        static DateAndMillis create(int year, int month, int day) {
+            // By contrast, millisForPicker uses the default Gregorian/Julian changeover date.
+            Calendar defaultTimeZoneCal = Calendar.getInstance(TimeZone.getDefault());
+            defaultTimeZoneCal.clear();
+            defaultTimeZoneCal.set(year, month, day);
+            long millisForPicker = defaultTimeZoneCal.getTimeInMillis();
+            return new DateAndMillis(millisForPicker, year, month, day);
         }
     }
 
-    @VisibleForTesting
-    static Calendar trimToDate(long time) {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        cal.clear();
-        cal.setTimeInMillis(time);
-        Calendar result = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        result.clear();
-        result.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
-                0, 0, 0);
-        return result;
+    private static void setLimits(DatePicker picker, long currentMillisForPicker,
+            long minMillisForPicker, long maxMillisForPicker) {
+        // On Lollipop only (not KitKat or Marshmallow), DatePicker has terrible performance for
+        // large date ranges. This causes problems when the min or max date isn't set in HTML, in
+        // which case these values default to the min and max possible values for the JavaScript
+        // Date object (1CE and 275760CE). As a workaround, limit the date range to 5000 years
+        // before and after the current date. In practice, this doesn't limit users since scrolling
+        // through 5000 years in the DatePicker is highly impractical anyway. See
+        // http://crbug.com/441060
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
+            final long maxRangeMillis = 5000L * 365 * 24 * 60 * 60 * 1000;
+            minMillisForPicker = Math.max(minMillisForPicker,
+                    currentMillisForPicker - maxRangeMillis);
+            maxMillisForPicker = Math.min(maxMillisForPicker,
+                    currentMillisForPicker + maxRangeMillis);
+        }
+
+        // On KitKat and earlier, DatePicker requires the minDate is always less than maxDate, even
+        // during the process of setting those values (eek), so set them in an order that preserves
+        // this invariant throughout.
+        if (minMillisForPicker > picker.getMaxDate()) {
+            picker.setMaxDate(maxMillisForPicker);
+            picker.setMinDate(minMillisForPicker);
+        } else {
+            picker.setMinDate(minMillisForPicker);
+            picker.setMaxDate(maxMillisForPicker);
+        }
     }
 
     /**
-     * Normalizes an existing DateDialogPicker changing the default date if
-     * needed to comply with the {@code min} and {@code max} attributes.
+     * Sets the current, min, and max values on the given DatePicker and ensures that
+     * min <= current <= max, adjusting current and max if needed.
+     *
+     * @param year The current year to set.
+     * @param month The current month to set. 0-based.
+     * @param day The current day to set.
+     * @param minMillisUtc The minimum allowed date, in milliseconds from the epoch according to a
+     *                     proleptic Gregorian calendar (no Julian switch).
+     * @param maxMillisUtc The maximum allowed date, in milliseconds from the epoch according to a
+     *                     proleptic Gregorian calendar (no Julian switch).
      */
-    public static void normalize(DatePicker picker, OnDateChangedListener listener,
-            int year, int month, int day, int hour, int minute, long minMillis, long maxMillis) {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        calendar.clear();
-        calendar.set(year, month, day, hour, minute, 0);
-        if (calendar.getTimeInMillis() < minMillis) {
-            calendar.clear();
-            calendar.setTimeInMillis(minMillis);
-        } else if (calendar.getTimeInMillis() > maxMillis) {
-            calendar.clear();
-            calendar.setTimeInMillis(maxMillis);
-        }
-        picker.init(
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH), listener);
+    public static void normalize(DatePicker picker, final OnDateChangedListener listener,
+            int year, int month, int day, long minMillisUtc, long maxMillisUtc) {
+        DateAndMillis currentDate = DateAndMillis.create(year, month, day);
+        DateAndMillis minDate = DateAndMillis.create(minMillisUtc);
+        DateAndMillis maxDate = DateAndMillis.create(maxMillisUtc);
 
-        setLimits(picker, minMillis, maxMillis);
+        // Ensure min <= current <= max, adjusting current and max if needed.
+        if (maxDate.millisForPicker < minDate.millisForPicker) {
+            maxDate = minDate;
+        }
+        if (currentDate.millisForPicker < minDate.millisForPicker) {
+            currentDate = minDate;
+        } else if (currentDate.millisForPicker > maxDate.millisForPicker) {
+            currentDate = maxDate;
+        }
+
+        setLimits(picker, currentDate.millisForPicker, minDate.millisForPicker,
+                maxDate.millisForPicker);
+        picker.init(currentDate.year, currentDate.month, currentDate.day, listener);
     }
 }

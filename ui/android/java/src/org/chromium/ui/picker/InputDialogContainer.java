@@ -205,7 +205,6 @@ public class InputDialogContainer {
                     year, month, monthDay);
             DateDialogNormalizer.normalize(dialog.getDatePicker(), dialog,
                     year, month, monthDay,
-                    0, 0,
                     (long) min, (long) max);
 
             dialog.setTitle(mContext.getText(R.string.date_picker_dialog_title));

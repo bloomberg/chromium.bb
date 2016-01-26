@@ -290,6 +290,7 @@ group("both_gn_and_gyp") {
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/cygprofile:cygprofile_unittests",
       "//tools/imagediff($host_toolchain)",
+      "//ui/android:ui_junit_tests",
     ]
     deps -= [
       "//net:net_perftests",

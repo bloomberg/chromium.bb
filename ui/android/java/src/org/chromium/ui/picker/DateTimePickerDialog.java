@@ -88,7 +88,7 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
         setView(view);
         mDatePicker = (DatePicker) view.findViewById(R.id.date_picker);
         DateDialogNormalizer.normalize(mDatePicker, this,
-                year, monthOfYear, dayOfMonth, hourOfDay, minute, mMinTimeMillis, mMaxTimeMillis);
+                year, monthOfYear, dayOfMonth, mMinTimeMillis, mMaxTimeMillis);
 
         mTimePicker = (TimePicker) view.findViewById(R.id.time_picker);
         mTimePicker.setIs24HourView(is24HourView);
