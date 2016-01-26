@@ -123,8 +123,8 @@ private:
     void didRemoveBreakpoint();
     void setEnabled(bool);
 
-    void eventListeners(InjectedScript&, v8::Local<v8::Value>, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray);
-    PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(InjectedScript&, const EventListenerInfo&, const String& objectGroupId);
+    void eventListeners(InjectedScript*, v8::Local<v8::Value>, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray);
+    PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(InjectedScript*, const EventListenerInfo&, const String& objectGroupId);
 
     InjectedScriptManager* m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

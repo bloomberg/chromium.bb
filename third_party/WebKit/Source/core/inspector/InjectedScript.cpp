@@ -334,7 +334,6 @@ void InjectedScript::releaseObject(const String& objectId)
 
 PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames, int asyncOrdinal)
 {
-    ASSERT(!isEmpty());
     ScriptFunctionCall function(injectedScriptObject(), "wrapCallFrames");
     function.appendArgument(callFrames);
     function.appendArgument(asyncOrdinal);
@@ -349,7 +348,6 @@ PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const ScriptValue& value, const String& groupName, bool generatePreview) const
 {
-    ASSERT(!isEmpty());
     ScriptFunctionCall wrapFunction(injectedScriptObject(), "wrapObject");
     wrapFunction.appendArgument(value);
     wrapFunction.appendArgument(groupName);
@@ -365,7 +363,6 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const 
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const ScriptValue& table, const ScriptValue& columns) const
 {
-    ASSERT(!isEmpty());
     ScriptFunctionCall wrapFunction(injectedScriptObject(), "wrapTable");
     wrapFunction.appendArgument(canAccessInspectedWindow());
     wrapFunction.appendArgument(table);
@@ -383,7 +380,6 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const S
 
 v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const
 {
-    ASSERT(!isEmpty());
     return m_native->objectForId(objectId.id());
 }
 
@@ -403,7 +399,6 @@ String InjectedScript::objectIdToObjectGroupName(const String& objectId) const
 
 void InjectedScript::releaseObjectGroup(const String& objectGroup)
 {
-    ASSERT(!isEmpty());
     m_native->releaseObjectGroup(objectGroup);
     if (objectGroup == "console") {
         ScriptFunctionCall releaseFunction(injectedScriptObject(), "clearLastEvaluationResult");
@@ -415,7 +410,6 @@ void InjectedScript::releaseObjectGroup(const String& objectGroup)
 
 void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
 {
-    ASSERT(!isEmpty());
     ScriptFunctionCall function(injectedScriptObject(), "setCustomObjectFormatterEnabled");
     function.appendArgument(enabled);
     RefPtr<JSONValue> result;
@@ -430,7 +424,6 @@ void InjectedScript::initialize(ScriptValue injectedScriptObject, InspectedState
 
 bool InjectedScript::canAccessInspectedWindow() const
 {
-    ASSERT(!isEmpty());
     return m_inspectedStateAccessCheck(m_injectedScriptObject.scriptState());
 }
 
@@ -441,8 +434,6 @@ const ScriptValue& InjectedScript::injectedScriptObject() const
 
 ScriptValue InjectedScript::callFunctionWithEvalEnabled(ScriptFunctionCall& function, bool& hadException) const
 {
-    ASSERT(!isEmpty());
-
     ScriptState* scriptState = m_injectedScriptObject.scriptState();
     ScriptState::Scope scope(scriptState);
     bool evalIsDisabled = !scriptState->evalEnabled();
@@ -461,7 +452,7 @@ ScriptValue InjectedScript::callFunctionWithEvalEnabled(ScriptFunctionCall& func
 
 void InjectedScript::makeCall(ScriptFunctionCall& function, RefPtr<JSONValue>* result)
 {
-    if (isEmpty() || !canAccessInspectedWindow()) {
+    if (!canAccessInspectedWindow()) {
         *result = JSONValue::null();
         return;
     }

@@ -90,7 +90,14 @@ void InspectorRuntimeAgent::restore()
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* optExecutionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
-    int executionContextId = optExecutionContextId ? *optExecutionContextId : m_injectedScriptManager->injectedScriptFor(defaultScriptState()).contextId();
+    int executionContextId;
+    if (optExecutionContextId) {
+        executionContextId = *optExecutionContextId;
+    } else {
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(defaultScriptState());
+        ASSERT(injectedScript);
+        executionContextId = injectedScript->contextId();
+    }
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         muteScope.enter(this);

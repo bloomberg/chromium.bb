@@ -333,12 +333,12 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
         *error = "Object is not available";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(heapObject.scriptState());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(heapObject.scriptState());
+    if (!injectedScript) {
         *error = "Object is not available. Inspected context is gone";
         return;
     }
-    result = injectedScript.wrapObject(heapObject, objectGroup ? *objectGroup : "");
+    result = injectedScript->wrapObject(heapObject, objectGroup ? *objectGroup : "");
     if (!result)
         *error = "Failed to wrap object";
 }
@@ -361,13 +361,13 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
         *errorString = "Invalid object id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected context has gone";
         return;
     }
-    ScriptState::Scope scope(injectedScript.scriptState());
-    v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
+    ScriptState::Scope scope(injectedScript->scriptState());
+    v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
     if (value.IsEmpty() || value->IsUndefined()) {
         *errorString = "Object with given id not found";
         return;

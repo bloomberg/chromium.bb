@@ -8,6 +8,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/v8/V8Debugger.h"
 
 namespace blink {
 
@@ -125,6 +126,12 @@ LocalDOMWindow* ScriptState::domWindow() const
 {
     v8::HandleScope scope(m_isolate);
     return toLocalDOMWindow(toDOMWindow(context()));
+}
+
+int ScriptState::contextIdInDebugger()
+{
+    v8::HandleScope scope(m_isolate);
+    return V8Debugger::contextId(m_context.newLocal(m_isolate));
 }
 
 ScriptState* ScriptState::forMainWorld(LocalFrame* frame)

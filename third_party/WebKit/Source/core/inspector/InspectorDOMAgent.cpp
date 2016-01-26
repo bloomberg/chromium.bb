@@ -1216,18 +1216,18 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
         *errorString = "Invalid remote object id";
         return nullptr;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Cannot find context for specified object id";
         return nullptr;
     }
-    ScriptState::Scope scope(injectedScript.scriptState());
-    v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
+    ScriptState::Scope scope(injectedScript->scriptState());
+    v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
     if (value.IsEmpty()) {
         *errorString = "Node for given objectId not found";
         return nullptr;
     }
-    v8::Isolate* isolate = injectedScript.scriptState()->isolate();
+    v8::Isolate* isolate = injectedScript->scriptState()->isolate();
     if (!V8Node::hasInstance(value, isolate)) {
         *errorString = "Object id doesn't reference a Node";
         return nullptr;
@@ -2120,12 +2120,12 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState)
         return nullptr;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
-    if (injectedScript.isEmpty())
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
+    if (!injectedScript)
         return nullptr;
 
     ScriptValue scriptValue = nodeAsScriptValue(scriptState, node);
-    return injectedScript.wrapObject(scriptValue, objectGroup);
+    return injectedScript->wrapObject(scriptValue, objectGroup);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

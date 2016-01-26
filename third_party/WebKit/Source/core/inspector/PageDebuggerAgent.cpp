@@ -132,12 +132,12 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
 void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
-    ExecutionContext* executionContext = injectedScript.scriptState()->executionContext();
+    ExecutionContext* executionContext = injectedScript->scriptState()->executionContext();
     RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
     InspectorDebuggerAgent::compileScript(errorString, expression, sourceURL, persistScript, executionContextId, scriptId, exceptionDetails);
     if (!scriptId->isAssigned())
@@ -150,12 +150,12 @@ void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& ex
 
 void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
-    ExecutionContext* executionContext = injectedScript.scriptState()->executionContext();
+    ExecutionContext* executionContext = injectedScript->scriptState()->executionContext();
 
     String sourceURL = m_compiledScriptURLs.take(scriptId);
     LocalFrame* frame = toDocument(executionContext)->frame();

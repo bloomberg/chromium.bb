@@ -48,17 +48,14 @@ class ScriptFunctionCall;
 typedef String ErrorString;
 PassRefPtr<JSONValue> toJSONValue(const ScriptValue&);
 
-
 class InjectedScript final {
-    DISALLOW_NEW();
+    USING_FAST_MALLOC(InjectedScript);
 public:
     InjectedScript();
     ~InjectedScript();
 
-    bool isEmpty() const { return m_injectedScriptObject.isEmpty(); }
     ScriptState* scriptState() const
     {
-        ASSERT(!isEmpty());
         return m_injectedScriptObject.scriptState();
     }
 
@@ -117,7 +114,7 @@ public:
     int contextId() { return m_contextId; }
 
 private:
-    friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
+    friend InjectedScript* InjectedScriptManager::injectedScriptFor(ScriptState*);
     using InspectedStateAccessCheck = bool (*)(ScriptState*);
     InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>, int contextId);
 

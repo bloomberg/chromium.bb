@@ -362,27 +362,27 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
         *errorString = "Invalid object id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
-    ScriptState* state = injectedScript.scriptState();
+    ScriptState* state = injectedScript->scriptState();
     ScriptState::Scope scope(state);
-    v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
+    v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
     if (value.IsEmpty()) {
         *errorString = "No object with passed objectId";
         return;
     }
 
-    String objectGroup = injectedScript.objectIdToObjectGroupName(objectId);
+    String objectGroup = injectedScript->objectIdToObjectGroupName(objectId);
     listenersArray = TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>::create();
     eventListeners(injectedScript, value, objectGroup, listenersArray);
 }
 
-void InspectorDOMDebuggerAgent::eventListeners(InjectedScript& injectedScript, v8::Local<v8::Value> object, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
+void InspectorDOMDebuggerAgent::eventListeners(InjectedScript* injectedScript, v8::Local<v8::Value> object, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
 {
-    ScriptState* state = injectedScript.scriptState();
+    ScriptState* state = injectedScript->scriptState();
     EventListenerInfoMap eventInformation;
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(state->isolate(), object, eventInformation);
     for (const auto& it : eventInformation) {
@@ -403,12 +403,12 @@ void InspectorDOMDebuggerAgent::eventListeners(InjectedScript& injectedScript, v
     }
 }
 
-PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(InjectedScript& injectedScript, const EventListenerInfo& info, const String& objectGroupId)
+PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(InjectedScript* injectedScript, const EventListenerInfo& info, const String& objectGroupId)
 {
     if (info.handler.IsEmpty())
         return nullptr;
 
-    ScriptState* scriptState = injectedScript.scriptState();
+    ScriptState* scriptState = injectedScript->scriptState();
     v8::Isolate* isolate = scriptState->isolate();
     v8::Local<v8::Function> function = eventListenerEffectiveFunction(isolate, info.handler);
     if (function.IsEmpty())
@@ -428,8 +428,8 @@ PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::b
         .setUseCapture(info.useCapture)
         .setLocation(location);
     if (!objectGroupId.isEmpty()) {
-        value->setHandler(injectedScript.wrapObject(ScriptValue(scriptState, function), objectGroupId));
-        value->setOriginalHandler(injectedScript.wrapObject(ScriptValue(scriptState, info.handler), objectGroupId));
+        value->setHandler(injectedScript->wrapObject(ScriptValue(scriptState, function), objectGroupId));
+        value->setOriginalHandler(injectedScript->wrapObject(ScriptValue(scriptState, info.handler), objectGroupId));
     }
     return value.release();
 }

@@ -57,9 +57,9 @@ public:
 
     InjectedScriptHost* injectedScriptHost();
 
-    InjectedScript injectedScriptFor(ScriptState*);
-    InjectedScript findInjectedScript(int) const;
-    InjectedScript findInjectedScript(RemoteObjectIdBase*) const;
+    InjectedScript* injectedScriptFor(ScriptState*);
+    InjectedScript* findInjectedScript(int) const;
+    InjectedScript* findInjectedScript(RemoteObjectIdBase*) const;
     void discardInjectedScripts();
     int discardInjectedScriptFor(ScriptState*);
     void releaseObjectGroup(const String& objectGroup);
@@ -78,7 +78,7 @@ private:
     static bool canAccessInspectedWindow(ScriptState*);
     static bool canAccessInspectedWorkerGlobalScope(ScriptState*);
 
-    typedef HashMap<int, InjectedScript> IdToInjectedScriptMap;
+    typedef HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
     RefPtr<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;

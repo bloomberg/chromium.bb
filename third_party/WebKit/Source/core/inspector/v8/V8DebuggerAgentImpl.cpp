@@ -496,15 +496,15 @@ void V8DebuggerAgentImpl::getStepInPositions(ErrorString* errorString, const Str
         *errorString = "Invalid call frame id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
-    injectedScript.getStepInPositions(errorString, callStack, callFrameId, positions);
+    injectedScript->getStepInPositions(errorString, callStack, callFrameId, positions);
 }
 
 void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, RefPtr<Array<CallFrame>>& callFrames, RefPtr<StackTrace>& asyncStackTrace)
@@ -688,15 +688,15 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString, const String& c
         *errorString = "Invalid call frame id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
-    injectedScript.restartFrame(errorString, callStack, callFrameId);
+    injectedScript->restartFrame(errorString, callStack, callFrameId);
     m_currentCallStack.Reset(m_isolate, debugger().currentCallFrames());
     newCallFrames = currentCallFrames();
     asyncStackTrace = currentAsyncStackTrace();
@@ -723,12 +723,12 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
         *errorString = "Invalid object id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Function object id is obsolete";
         return;
     }
-    injectedScript.getFunctionDetails(errorString, functionId, &details);
+    injectedScript->getFunctionDetails(errorString, functionId, &details);
 }
 
 void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, RefPtr<GeneratorObjectDetails>& details)
@@ -740,12 +740,12 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
         *errorString = "Invalid object id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
-    injectedScript.getGeneratorObjectDetails(errorString, objectId, &details);
+    injectedScript->getGeneratorObjectDetails(errorString, objectId, &details);
 }
 
 void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<TypeBuilder::Array<CollectionEntry>>& entries)
@@ -757,12 +757,12 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
         *errorString = "Invalid object id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
-    injectedScript.getCollectionEntries(errorString, objectId, &entries);
+    injectedScript->getCollectionEntries(errorString, objectId, &entries);
 }
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
@@ -954,8 +954,8 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const St
         *errorString = "Invalid call frame id";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
@@ -971,20 +971,20 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const St
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         ignoreExceptionsScope.emplace(m_debugger);
 
-    injectedScript.evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
+    injectedScript->evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
 }
 
 void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (injectedScript.isEmpty() || !injectedScript.scriptState()->contextIsValid()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript || !injectedScript->scriptState()->contextIsValid()) {
         *errorString = "Inspected frame has gone";
         return;
     }
 
-    ScriptState::Scope scope(injectedScript.scriptState());
+    ScriptState::Scope scope(injectedScript->scriptState());
     v8::Local<v8::String> source = v8String(m_isolate, expression);
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Script> script;
@@ -1009,8 +1009,8 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
@@ -1024,7 +1024,7 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
         return;
     }
 
-    ScriptState* scriptState = injectedScript.scriptState();
+    ScriptState* scriptState = injectedScript->scriptState();
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Script> script = v8::Local<v8::Script>::New(m_isolate, m_compiledScripts.Remove(scriptId));
 
@@ -1049,14 +1049,14 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
         return;
     }
 
-    result = injectedScript.wrapObject(scriptValue, objectGroup ? *objectGroup : "");
+    result = injectedScript->wrapObject(scriptValue, objectGroup ? *objectGroup : "");
 }
 
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript;
+    InjectedScript* injectedScript = nullptr;
     if (callFrameId) {
         if (!isPaused() || m_currentCallStack.IsEmpty()) {
             *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -1068,7 +1068,7 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
             return;
         }
         injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-        if (injectedScript.isEmpty()) {
+        if (!injectedScript) {
             *errorString = "Inspected frame has gone";
             return;
         }
@@ -1079,7 +1079,7 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
             return;
         }
         injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-        if (injectedScript.isEmpty()) {
+        if (!injectedScript) {
             *errorString = "Function object id cannot be resolved";
             return;
         }
@@ -1091,7 +1091,7 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
-    injectedScript.setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
+    injectedScript->setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
 }
 
 void V8DebuggerAgentImpl::skipStackFrames(ErrorString* errorString, const String* pattern, const bool* skipContentScripts)
@@ -1152,8 +1152,8 @@ void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId
         *errorString = "Promise with specified ID not found.";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(value.scriptState());
-    promise = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value.scriptState());
+    promise = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
 }
 
 void V8DebuggerAgentImpl::didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum eventType, PassRefPtr<TypeBuilder::Debugger::PromiseDetails> promise)
@@ -1433,15 +1433,15 @@ PassRefPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
 {
     if (!m_pausedScriptState || m_currentCallStack.IsEmpty())
         return Array<CallFrame>::create();
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState.get());
-    if (injectedScript.isEmpty()) {
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState.get());
+    if (!injectedScript) {
         ASSERT_NOT_REACHED();
         return Array<CallFrame>::create();
     }
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
-    return injectedScript.wrapCallFrames(currentCallStack, 0);
+    return injectedScript->wrapCallFrames(currentCallStack, 0);
 }
 
 PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
@@ -1460,13 +1460,13 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
         v8::HandleScope scope(m_isolate);
         v8::Local<v8::Object> callFrames = (*it)->callFrames(m_isolate);
         ScriptState* scriptState =  ScriptState::from(callFrames->CreationContext());
-        InjectedScript injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState) : InjectedScript();
-        if (injectedScript.isEmpty()) {
+        InjectedScript* injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState) : nullptr;
+        if (!injectedScript) {
             result.clear();
             continue;
         }
         RefPtr<StackTrace> next = StackTrace::create()
-            .setCallFrames(injectedScript.wrapCallFrames(callFrames, asyncOrdinal))
+            .setCallFrames(injectedScript->wrapCallFrames(callFrames, asyncOrdinal))
             .release();
         next->setDescription((*it)->description());
         if (result)
@@ -1596,10 +1596,10 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     m_currentCallStack.Reset(m_isolate, callFrames);
 
     if (!exception.isEmpty()) {
-        InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
-        if (!injectedScript.isEmpty()) {
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
+        if (injectedScript) {
             m_breakReason = isPromiseRejection ? InspectorFrontend::Debugger::Reason::PromiseRejection : InspectorFrontend::Debugger::Reason::Exception;
-            m_breakAuxData = injectedScript.wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup)->openAccessors();
+            m_breakAuxData = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup)->openAccessors();
             // m_breakAuxData might be null after this.
         }
     } else if (m_pausingOnAsyncOperation) {

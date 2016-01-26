@@ -74,19 +74,17 @@ InjectedScriptHost* InjectedScriptManager::injectedScriptHost()
     return m_injectedScriptHost.get();
 }
 
-InjectedScript InjectedScriptManager::findInjectedScript(int id) const
+InjectedScript* InjectedScriptManager::findInjectedScript(int id) const
 {
     IdToInjectedScriptMap::const_iterator it = m_idToInjectedScript.find(id);
     if (it != m_idToInjectedScript.end())
-        return it->value;
-    return InjectedScript();
+        return it->value.get();
+    return nullptr;
 }
 
-InjectedScript InjectedScriptManager::findInjectedScript(RemoteObjectIdBase* objectId) const
+InjectedScript* InjectedScriptManager::findInjectedScript(RemoteObjectIdBase* objectId) const
 {
-    if (!objectId)
-        return InjectedScript();
-    return m_idToInjectedScript.get(objectId->contextId());
+    return objectId ? findInjectedScript(objectId->contextId()) : nullptr;
 }
 
 void InjectedScriptManager::discardInjectedScripts()
@@ -114,7 +112,7 @@ void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
     for (auto& key : keys) {
         IdToInjectedScriptMap::iterator s = m_idToInjectedScript.find(key);
         if (s != m_idToInjectedScript.end())
-            s->value.releaseObjectGroup(objectGroup); // m_idToInjectedScript may change here.
+            s->value->releaseObjectGroup(objectGroup); // m_idToInjectedScript may change here.
     }
 }
 
@@ -123,8 +121,7 @@ void InjectedScriptManager::setCustomObjectFormatterEnabled(bool enabled)
     m_customObjectFormatterEnabled = enabled;
     IdToInjectedScriptMap::iterator end = m_idToInjectedScript.end();
     for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != end; ++it) {
-        if (!it->value.isEmpty())
-            it->value.setCustomObjectFormatterEnabled(enabled);
+        it->value->setCustomObjectFormatterEnabled(enabled);
     }
 }
 
@@ -134,25 +131,26 @@ String InjectedScriptManager::injectedScriptSource()
     return String(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
 }
 
-InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* scriptState)
+InjectedScript* InjectedScriptManager::injectedScriptFor(ScriptState* scriptState)
 {
     ScriptState::Scope scope(scriptState);
     int contextId = V8Debugger::contextId(scriptState->context());
 
     IdToInjectedScriptMap::iterator it = m_idToInjectedScript.find(contextId);
     if (it != m_idToInjectedScript.end())
-        return it->value;
+        return it->value.get();
 
     if (!m_inspectedStateAccessCheck(scriptState))
-        return InjectedScript();
+        return nullptr;
 
     RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(scriptState->isolate()));
     ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), scriptState, contextId, injectedScriptNative.get());
-    InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck, injectedScriptNative.release(), contextId);
+    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(injectedScriptValue, m_inspectedStateAccessCheck, injectedScriptNative.release(), contextId));
+    InjectedScript* resultPtr = result.get();
     if (m_customObjectFormatterEnabled)
-        result.setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
-    m_idToInjectedScript.set(contextId, result);
-    return result;
+        result->setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
+    m_idToInjectedScript.set(contextId, result.release());
+    return resultPtr;
 }
 
 } // namespace blink

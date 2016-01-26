@@ -191,18 +191,18 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     jsonObj->setUrl(consoleMessage->url());
     ScriptState* scriptState = consoleMessage->scriptState();
     if (scriptState)
-        jsonObj->setExecutionContextId(m_injectedScriptManager->injectedScriptFor(scriptState).contextId());
+        jsonObj->setExecutionContextId(scriptState->contextIdInDebugger());
     if (consoleMessage->source() == NetworkMessageSource && consoleMessage->requestIdentifier())
         jsonObj->setNetworkRequestId(IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
     RefPtrWillBeRawPtr<ScriptArguments> arguments = consoleMessage->scriptArguments();
     if (arguments && arguments->argumentCount()) {
-        InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(arguments->scriptState());
-        if (!injectedScript.isEmpty()) {
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(arguments->scriptState());
+        if (injectedScript) {
             RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject> > jsonArgs = TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>::create();
             if (consoleMessage->type() == TableMessageType && generatePreview && arguments->argumentCount()) {
                 ScriptValue table = arguments->argumentAt(0);
                 ScriptValue columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1) : ScriptValue();
-                RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript.wrapTable(table, columns);
+                RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapTable(table, columns);
                 if (!inspectorValue) {
                     ASSERT_NOT_REACHED();
                     return;
@@ -210,7 +210,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
                 jsonArgs->addItem(inspectorValue);
             } else {
                 for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
-                    RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript.wrapObject(arguments->argumentAt(i), "console", generatePreview);
+                    RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapObject(arguments->argumentAt(i), "console", generatePreview);
                     if (!inspectorValue) {
                         ASSERT_NOT_REACHED();
                         return;
