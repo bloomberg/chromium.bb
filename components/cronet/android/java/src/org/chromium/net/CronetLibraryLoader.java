@@ -32,7 +32,7 @@ class CronetLibraryLoader {
             if (sInitTaskPosted) {
                 return;
             }
-            System.loadLibrary(builder.libraryName());
+            builder.loadLibrary();
             if (!Version.CRONET_VERSION.equals(nativeGetCronetVersion())) {
                 throw new RuntimeException(String.format(
                       "Expected Cronet version number %s, "
@@ -74,7 +74,7 @@ class CronetLibraryLoader {
         nativeCronetInitOnMainThread();
     }
 
-    // Native methods are implemented in cronet_loader.cc.
+    // Native methods are implemented in cronet_library_loader.cc.
     private static native void nativeCronetInitOnMainThread();
     private static native String nativeGetCronetVersion();
 }
