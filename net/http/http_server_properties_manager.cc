@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -72,23 +71,21 @@ const char kSrttKey[] = "srtt";
 ////////////////////////////////////////////////////////////////////////////////
 //  HttpServerPropertiesManager
 
+HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() {}
+
 HttpServerPropertiesManager::HttpServerPropertiesManager(
-    PrefService* pref_service,
-    const char* pref_path,
+    PrefDelegate* pref_delegate,
     scoped_refptr<base::SequencedTaskRunner> network_task_runner)
     : pref_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      pref_service_(pref_service),
+      pref_delegate_(pref_delegate),
       setting_prefs_(false),
-      path_(pref_path),
       network_task_runner_(network_task_runner) {
-  DCHECK(pref_service);
+  DCHECK(pref_delegate_);
   pref_weak_ptr_factory_.reset(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   pref_weak_ptr_ = pref_weak_ptr_factory_->GetWeakPtr();
   pref_cache_update_timer_.reset(new base::OneShotTimer);
-  pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(
-      path_,
+  pref_delegate_->StartListeningForUpdates(
       base::Bind(&HttpServerPropertiesManager::OnHttpServerPropertiesChanged,
                  base::Unretained(this)));
 }
@@ -117,7 +114,7 @@ void HttpServerPropertiesManager::ShutdownOnPrefThread() {
   // Cancel any pending updates, and stop listening for pref change updates.
   pref_cache_update_timer_->Stop();
   pref_weak_ptr_factory_.reset();
-  pref_change_registrar_.RemoveAll();
+  pref_delegate_->StopListeningForUpdates();
 }
 
 // static
@@ -445,12 +442,12 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   // The preferences can only be read on the pref thread.
   DCHECK(pref_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!pref_service_->HasPrefPath(path_))
+  if (!pref_delegate_->HasServerProperties())
     return;
 
   bool detected_corrupted_prefs = false;
   const base::DictionaryValue& http_server_properties_dict =
-      *pref_service_->GetDictionary(path_);
+      pref_delegate_->GetServerProperties();
 
   int version = kMissingVersion;
   if (!http_server_properties_dict.GetIntegerWithoutPathExpansion(kVersionKey,
@@ -1117,7 +1114,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     }
   }
 
-  // Persist properties to the |path_| in the MRU order.
+  // Persist properties to the prefs in the MRU order.
   base::DictionaryValue http_server_properties_dict;
   base::ListValue* servers_list = new base::ListValue;
   for (ServerPrefMap::const_reverse_iterator map_it = server_pref_map.rbegin();
@@ -1152,7 +1149,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
                                      &http_server_properties_dict);
 
   setting_prefs_ = true;
-  pref_service_->Set(path_, http_server_properties_dict);
+  pref_delegate_->SetServerProperties(http_server_properties_dict);
   setting_prefs_ = false;
 
   // Note that |completion| will be fired after we have written everything to

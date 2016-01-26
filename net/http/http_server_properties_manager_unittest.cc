@@ -8,8 +8,6 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,15 +30,52 @@ using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
-const char kTestHttpServerProperties[] = "TestHttpServerProperties";
+class MockPrefDelegate : public net::HttpServerPropertiesManager::PrefDelegate {
+ public:
+  MockPrefDelegate() {}
+  ~MockPrefDelegate() override {}
+
+  // HttpServerPropertiesManager::PrefDelegate implementation.
+  bool HasServerProperties() override { return true; }
+  const base::DictionaryValue& GetServerProperties() const override {
+    return prefs_;
+  }
+  void SetServerProperties(const base::DictionaryValue& value) override {
+    prefs_.Clear();
+    prefs_.MergeDictionary(&value);
+    if (!prefs_changed_callback_.is_null())
+      prefs_changed_callback_.Run();
+  }
+  void StartListeningForUpdates(const base::Closure& callback) override {
+    CHECK(prefs_changed_callback_.is_null());
+    prefs_changed_callback_ = callback;
+  }
+  void StopListeningForUpdates() override {
+    CHECK(!prefs_changed_callback_.is_null());
+    prefs_changed_callback_ = base::Closure();
+  }
+
+  void SetPrefs(const base::DictionaryValue& value) {
+    // prefs_ = value;
+    prefs_.Clear();
+    prefs_.MergeDictionary(&value);
+    if (!prefs_changed_callback_.is_null())
+      prefs_changed_callback_.Run();
+  }
+
+ private:
+  base::DictionaryValue prefs_;
+  base::Closure prefs_changed_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPrefDelegate);
+};
 
 class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
  public:
   TestingHttpServerPropertiesManager(
-      PrefService* pref_service,
-      const char* pref_path,
+      HttpServerPropertiesManager::PrefDelegate* pref_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : HttpServerPropertiesManager(pref_service, pref_path, io_task_runner) {
+      : HttpServerPropertiesManager(pref_delegate, io_task_runner) {
     InitializeOnNetworkThread();
   }
 
@@ -116,11 +151,10 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);
-    pref_service_.registry()->RegisterDictionaryPref(kTestHttpServerProperties);
+    pref_delegate_ = new MockPrefDelegate;
     http_server_props_manager_.reset(
         new StrictMock<TestingHttpServerPropertiesManager>(
-            &pref_service_, kTestHttpServerProperties,
-            base::ThreadTaskRunnerHandle::Get()));
+            pref_delegate_, base::ThreadTaskRunnerHandle::Get()));
     ExpectCacheUpdate();
     base::RunLoop().RunUntilIdle();
   }
@@ -178,8 +212,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
     return !alternative_service_vector.empty();
   }
 
-  //base::RunLoop loop_;
-  TestingPrefServiceSimple pref_service_;
+  MockPrefDelegate* pref_delegate_;  // Owned by HttpServerPropertiesManager.
   scoped_ptr<TestingHttpServerPropertiesManager> http_server_props_manager_;
   base::Time one_day_from_now_;
 
@@ -256,25 +289,24 @@ TEST_P(HttpServerPropertiesManagerTest,
   // Set the server preference for mail.google.com:80.
   servers_dict->SetWithoutPathExpansion("mail.google.com:80",
                                         server_pref_dict1);
-  base::DictionaryValue* http_server_properties_dict =
-      new base::DictionaryValue;
+  base::DictionaryValue http_server_properties_dict;
   if (GetParam() == 4) {
     // |servers_list| takes ownership of |servers_dict|.
     servers_list->AppendIfNotPresent(servers_dict);
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_list);
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_list);
   } else {
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict,
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
                                             GetParam());
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_dict);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_dict);
   }
   base::DictionaryValue* supports_quic = new base::DictionaryValue;
   supports_quic->SetBoolean("used_quic", true);
   supports_quic->SetString("address", "127.0.0.1");
-  http_server_properties_dict->SetWithoutPathExpansion("supports_quic",
-                                                       supports_quic);
+  http_server_properties_dict.SetWithoutPathExpansion("supports_quic",
+                                                      supports_quic);
 
   // Set quic_server_info for www.google.com:80, mail.google.com:80 and
   // play.google.com:80 and verify the MRU.
@@ -304,16 +336,12 @@ TEST_P(HttpServerPropertiesManagerTest,
   QuicServerId play_quic_server_id("play.google.com", 80);
   quic_servers_dict->SetWithoutPathExpansion(play_quic_server_id.ToString(),
                                              quic_server_pref_dict3);
-  http_server_properties_dict->SetWithoutPathExpansion("quic_servers",
-                                                       quic_servers_dict);
+  http_server_properties_dict.SetWithoutPathExpansion("quic_servers",
+                                                      quic_servers_dict);
 
   // Set the same value for kHttpServerProperties multiple times.
-  pref_service_.SetManagedPref(kTestHttpServerProperties,
-                               http_server_properties_dict);
-  base::DictionaryValue* http_server_properties_dict2 =
-      http_server_properties_dict->DeepCopy();
-  pref_service_.SetManagedPref(kTestHttpServerProperties,
-                               http_server_properties_dict2);
+  pref_delegate_->SetPrefs(http_server_properties_dict);
+  pref_delegate_->SetPrefs(http_server_properties_dict);
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -427,20 +455,19 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
   servers_dict->SetWithoutPathExpansion("www.google.com:65536",
                                         server_pref_dict);
-  base::DictionaryValue* http_server_properties_dict =
-      new base::DictionaryValue;
+  base::DictionaryValue http_server_properties_dict;
   if (GetParam() == 4) {
     base::ListValue* servers_list = new base::ListValue;
     // |servers_list| takes ownership of |servers_dict|.
     servers_list->AppendIfNotPresent(servers_dict);
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_list);
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_list);
   } else {
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict,
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
                                             GetParam());
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_dict);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_dict);
   }
 
   // Set quic_server_info for www.google.com:65536.
@@ -451,12 +478,11 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   quic_servers_dict->SetWithoutPathExpansion("http://mail.google.com:65536",
                                              quic_server_pref_dict1);
 
-  http_server_properties_dict->SetWithoutPathExpansion("quic_servers",
-                                                       quic_servers_dict);
+  http_server_properties_dict.SetWithoutPathExpansion("quic_servers",
+                                                      quic_servers_dict);
 
   // Set up the pref.
-  pref_service_.SetManagedPref(kTestHttpServerProperties,
-                               http_server_properties_dict);
+  pref_delegate_->SetPrefs(http_server_properties_dict);
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -496,25 +522,23 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   // Set the server preference for www.google.com:80.
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
   servers_dict->SetWithoutPathExpansion("www.google.com:80", server_pref_dict);
-  base::DictionaryValue* http_server_properties_dict =
-      new base::DictionaryValue;
+  base::DictionaryValue http_server_properties_dict;
   if (GetParam() == 4) {
     base::ListValue* servers_list = new base::ListValue;
     // |servers_list| takes ownership of |servers_dict|.
     servers_list->AppendIfNotPresent(servers_dict);
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_list);
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_list);
   } else {
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict,
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
                                             GetParam());
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_dict);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_dict);
   }
 
   // Set up the pref.
-  pref_service_.SetManagedPref(kTestHttpServerProperties,
-                               http_server_properties_dict);
+  pref_delegate_->SetPrefs(http_server_properties_dict);
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -970,31 +994,29 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   // Set the server preference for mail.google.com:80.
   servers_dict->SetWithoutPathExpansion("mail.google.com:80",
                                         server_pref_dict1);
-  base::DictionaryValue* http_server_properties_dict =
-      new base::DictionaryValue;
+  base::DictionaryValue http_server_properties_dict;
   if (GetParam() == 4) {
     // |servers_list| takes ownership of |servers_dict|.
     servers_list->AppendIfNotPresent(servers_dict);
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_list);
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_list);
   } else {
-    HttpServerPropertiesManager::SetVersion(http_server_properties_dict,
+    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
                                             GetParam());
-    http_server_properties_dict->SetWithoutPathExpansion("servers",
-                                                         servers_dict);
+    http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                        servers_dict);
   }
 
   // Set up SupportsQuic for 127.0.0.1
   base::DictionaryValue* supports_quic = new base::DictionaryValue;
   supports_quic->SetBoolean("used_quic", true);
   supports_quic->SetString("address", "127.0.0.1");
-  http_server_properties_dict->SetWithoutPathExpansion("supports_quic",
-                                                       supports_quic);
+  http_server_properties_dict.SetWithoutPathExpansion("supports_quic",
+                                                      supports_quic);
 
   // Set up the pref.
-  pref_service_.SetManagedPref(kTestHttpServerProperties,
-                               http_server_properties_dict);
+  pref_delegate_->SetPrefs(http_server_properties_dict);
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -1085,8 +1107,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "\"version\":4}";
 
   const base::Value* http_server_properties =
-      pref_service_.GetUserPref(kTestHttpServerProperties);
-  ASSERT_NE(nullptr, http_server_properties);
+      &pref_delegate_->GetServerProperties();
   std::string preferences_json;
   EXPECT_TRUE(
       base::JSONWriter::Write(*http_server_properties, &preferences_json));
@@ -1185,15 +1206,11 @@ TEST_P(HttpServerPropertiesManagerTest,
   http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
   base::RunLoop().RunUntilIdle();
 
-  const base::Value* pref_value =
-      pref_service_.GetUserPref(kTestHttpServerProperties);
-  ASSERT_NE(nullptr, pref_value);
-
-  const base::DictionaryValue* pref_dict;
-  ASSERT_TRUE(pref_value->GetAsDictionary(&pref_dict));
+  const base::DictionaryValue& pref_dict =
+      pref_delegate_->GetServerProperties();
 
   const base::ListValue* servers_list = nullptr;
-  ASSERT_TRUE(pref_dict->GetListWithoutPathExpansion("servers", &servers_list));
+  ASSERT_TRUE(pref_dict.GetListWithoutPathExpansion("servers", &servers_list));
   base::ListValue::const_iterator it = servers_list->begin();
   const base::DictionaryValue* server_pref_dict;
   ASSERT_TRUE((*it)->GetAsDictionary(&server_pref_dict));

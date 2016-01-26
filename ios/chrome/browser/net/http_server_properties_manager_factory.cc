@@ -4,16 +4,59 @@
 
 #include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
 
+#include "base/prefs/pref_change_registrar.h"
+#include "base/prefs/pref_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_thread.h"
 #include "net/http/http_server_properties_manager.h"
 
+namespace {
+
+class PrefServiceAdapter
+    : public net::HttpServerPropertiesManager::PrefDelegate {
+ public:
+  explicit PrefServiceAdapter(PrefService* pref_service)
+      : pref_service_(pref_service), path_(prefs::kHttpServerProperties) {
+    pref_change_registrar_.Init(pref_service_);
+  }
+
+  ~PrefServiceAdapter() override {}
+
+  // PrefDelegate implementation.
+  bool HasServerProperties() override {
+    return pref_service_->HasPrefPath(path_);
+  }
+  const base::DictionaryValue& GetServerProperties() const override {
+    // Guaranteed not to return null when the pref is registered
+    // (RegisterProfilePrefs was called).
+    return *pref_service_->GetDictionary(path_);
+  }
+  void SetServerProperties(const base::DictionaryValue& value) override {
+    return pref_service_->Set(path_, value);
+  }
+  void StartListeningForUpdates(const base::Closure& callback) override {
+    pref_change_registrar_.Add(path_, callback);
+  }
+  void StopListeningForUpdates() override {
+    pref_change_registrar_.RemoveAll();
+  }
+
+ private:
+  PrefService* pref_service_;
+  const std::string path_;
+  PrefChangeRegistrar pref_change_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
+};
+
+}  // namespace
+
 // static
 net::HttpServerPropertiesManager*
 HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
   return new net::HttpServerPropertiesManager(
-      pref_service, prefs::kHttpServerProperties,
+      new PrefServiceAdapter(pref_service),  // Transfers ownership.
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
 }
 

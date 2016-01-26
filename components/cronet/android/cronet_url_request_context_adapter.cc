@@ -21,6 +21,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_filter.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -54,6 +55,44 @@
 namespace {
 
 const char kHttpServerProperties[] = "net.http_server_properties";
+
+// Connects the HttpServerPropertiesManager's storage to the prefs.
+class PrefServiceAdapter
+    : public net::HttpServerPropertiesManager::PrefDelegate {
+ public:
+  explicit PrefServiceAdapter(PrefService* pref_service)
+      : pref_service_(pref_service), path_(kHttpServerProperties) {
+    pref_change_registrar_.Init(pref_service_);
+  }
+
+  ~PrefServiceAdapter() override {}
+
+  // PrefDelegate implementation.
+  bool HasServerProperties() override {
+    return pref_service_->HasPrefPath(path_);
+  }
+  const base::DictionaryValue& GetServerProperties() const override {
+    // Guaranteed not to return null when the pref is registered
+    // (RegisterProfilePrefs was called).
+    return *pref_service_->GetDictionary(path_);
+  }
+  void SetServerProperties(const base::DictionaryValue& value) override {
+    return pref_service_->Set(path_, value);
+  }
+  void StartListeningForUpdates(const base::Closure& callback) override {
+    pref_change_registrar_.Add(path_, callback);
+  }
+  void StopListeningForUpdates() override {
+    pref_change_registrar_.RemoveAll();
+  }
+
+ private:
+  PrefService* pref_service_;
+  std::string path_;
+  PrefChangeRegistrar pref_change_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
+};
 
 class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  public:
@@ -313,9 +352,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     pref_service_ = factory.Create(registry.get());
 
     scoped_ptr<net::HttpServerPropertiesManager> http_server_properties_manager(
-        new net::HttpServerPropertiesManager(pref_service_.get(),
-                                             kHttpServerProperties,
-                                             GetNetworkTaskRunner()));
+        new net::HttpServerPropertiesManager(
+            new PrefServiceAdapter(pref_service_.get()),
+            GetNetworkTaskRunner()));
     http_server_properties_manager->InitializeOnNetworkThread();
     http_server_properties_manager_ = http_server_properties_manager.get();
     context_builder.SetHttpServerProperties(
