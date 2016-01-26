@@ -428,6 +428,7 @@ void FilesystemJsonPrefStore::OnPreferencesFileRead(
       read_only_ = true;
       break;
     }
+    case FileError::FAILED:
     case FileError::NOT_FOUND: {
       // If the file just doesn't exist, maybe this is the first run. Just
       // don't pass a value.
