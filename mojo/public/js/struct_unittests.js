@@ -79,7 +79,6 @@ define([
   function testScopedConstants() {
     expect(testStructs.ScopedConstants.TEN).toEqual(10);
     expect(testStructs.ScopedConstants.ALSO_TEN).toEqual(10);
-    expect(testStructs.ScopedConstants.TEN_TOO).toEqual(10);
 
     expect(testStructs.ScopedConstants.EType.E0).toEqual(0);
     expect(testStructs.ScopedConstants.EType.E1).toEqual(1);
