@@ -602,6 +602,20 @@ class SitePerProcessHighDPIBrowserTest : public SitePerProcessBrowserTest {
   }
 };
 
+// SitePerProcessIgnoreCertErrorsBrowserTest
+
+class SitePerProcessIgnoreCertErrorsBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessIgnoreCertErrorsBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+};
+
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
@@ -4982,6 +4996,106 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "domAutomationController.send(document.origin)",
       &popup_origin));
   EXPECT_EQ(b_url.GetOrigin().spec(), popup_origin + "/");
+}
+
+// Tests that the WebContents is notified when passive mixed content is
+// displayed in an OOPIF. The test ignores cert errors so that an HTTPS
+// iframe can be loaded from a site other than localhost (the
+// EmbeddedTestServer serves a certificate that is valid for localhost).
+IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+                       PassiveMixedContentInIframe) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(https_server.Start());
+  SetupCrossSiteRedirector(&https_server);
+
+  GURL iframe_url(
+      https_server.GetURL("/mixed-content/basic-passive-in-iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), iframe_url));
+  EXPECT_TRUE(shell()->web_contents()->DisplayedInsecureContent());
+
+  // When the subframe navigates, the WebContents should still be marked
+  // as having displayed insecure content.
+  GURL navigate_url(https_server.GetURL("/title1.html"));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  NavigateFrameToURL(root->child_at(0), navigate_url);
+  EXPECT_TRUE(shell()->web_contents()->DisplayedInsecureContent());
+
+  // When the main frame navigates, it should no longer be marked as
+  // displaying insecure content.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
+  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+}
+
+// Tests that, when a parent frame is set to strictly block mixed
+// content via Content Security Policy, child OOPIFs cannot display
+// mixed content.
+IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+                       PassiveMixedContentInIframeWithStrictBlocking) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(https_server.Start());
+  SetupCrossSiteRedirector(&https_server);
+
+  GURL iframe_url_with_strict_blocking(https_server.GetURL(
+      "/mixed-content/basic-passive-in-iframe-with-strict-blocking.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_strict_blocking));
+  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_TRUE(root->current_replication_state()
+                  .should_enforce_strict_mixed_content_checking);
+  EXPECT_TRUE(root->child_at(0)
+                  ->current_replication_state()
+                  .should_enforce_strict_mixed_content_checking);
+
+  // When the subframe navigates, it should still be marked as enforcing
+  // strict mixed content.
+  GURL navigate_url(https_server.GetURL("/title1.html"));
+  NavigateFrameToURL(root->child_at(0), navigate_url);
+  EXPECT_TRUE(root->current_replication_state()
+                  .should_enforce_strict_mixed_content_checking);
+  EXPECT_TRUE(root->child_at(0)
+                  ->current_replication_state()
+                  .should_enforce_strict_mixed_content_checking);
+
+  // When the main frame navigates, it should no longer be marked as
+  // enforcing strict mixed content.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
+  EXPECT_FALSE(root->current_replication_state()
+                   .should_enforce_strict_mixed_content_checking);
+}
+
+// Tests that active mixed content is blocked in an OOPIF. The test
+// ignores cert errors so that an HTTPS iframe can be loaded from a site
+// other than localhost (the EmbeddedTestServer serves a certificate
+// that is valid for localhost).
+IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+                       ActiveMixedContentInIframe) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(https_server.Start());
+  SetupCrossSiteRedirector(&https_server);
+
+  GURL iframe_url(
+      https_server.GetURL("/mixed-content/basic-active-in-iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), iframe_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* mixed_child = root->child_at(0)->child_at(0);
+  ASSERT_TRUE(mixed_child);
+  // The child iframe attempted to create a mixed iframe; this should
+  // have been blocked, so the mixed iframe should not have committed a
+  // load.
+  EXPECT_FALSE(mixed_child->has_committed_real_load());
 }
 
 }  // namespace content

@@ -203,8 +203,6 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     String sourceOrigin = sourceDocument->securityOrigin()->toString();
     String sourceSuborigin = sourceDocument->securityOrigin()->suboriginName();
 
-    // FIXME: MixedContentChecker needs to be refactored for OOPIF.  For now,
-    // create the url using replicated origins for remote frames.
     KURL targetUrl = isLocalDOMWindow() ? document()->url() : KURL(KURL(), frame()->securityContext()->securityOrigin()->toString());
     if (MixedContentChecker::isMixedContent(sourceDocument->securityOrigin(), targetUrl))
         UseCounter::count(frame(), UseCounter::PostMessageFromSecureToInsecure);

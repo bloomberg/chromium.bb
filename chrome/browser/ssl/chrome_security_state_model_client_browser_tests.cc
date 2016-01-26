@@ -368,6 +368,33 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       false /* expect cert status error */);
 }
 
+// Tests that the Content Security Policy block-all-mixed-content
+// directive stops mixed content from running.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       MixedContentStrictBlocking) {
+  ASSERT_TRUE(https_server_.Start());
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  // Navigate to an HTTPS page that tries to run mixed content in an
+  // iframe, with strict mixed content blocking.
+  std::string replacement_path;
+  net::HostPortPair host_port_pair =
+      net::HostPortPair::FromURL(https_server_.GetURL("/"));
+  host_port_pair.set_host("different-host.test");
+  host_resolver()->AddRule("different-host.test",
+                           https_server_.GetURL("/").host());
+  GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_runs_insecure_content_in_iframe_with_strict_blocking.html",
+      host_port_pair, &replacement_path);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::NO_MIXED_CONTENT,
+      false /* expect cert status error */);
+}
+
 IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
