@@ -20,6 +20,7 @@ LIBVPX_TEST_DATA-$(CONFIG_ENCODERS) += park_joy_90p_8_440.yuv
 
 LIBVPX_TEST_DATA-$(CONFIG_VP10_ENCODER) += niklas_1280_720_30.y4m
 LIBVPX_TEST_DATA-$(CONFIG_VP10_ENCODER) += rush_hour_444.y4m
+LIBVPX_TEST_DATA-$(CONFIG_VP10_ENCODER) += screendata.y4m
 
 # sort and remove duplicates
 LIBVPX_TEST_DATA-yes := $(sort $(LIBVPX_TEST_DATA-yes))
