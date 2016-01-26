@@ -3058,7 +3058,7 @@ translateString ()
   srcIncremented = 1;
 	pre_src = 0;
   memset (passVariables, 0, sizeof(int) * NUMVAR);
-  if (typebuf && table->capitalSign)
+  if (typebuf && table->singleLetterCaps)
     for (k = 0; k < srcmax; k++)
       if (checkAttr (currentInput[k], CTC_UpperCase, 0))
         typebuf[k] |= capsemph;
@@ -3195,7 +3195,7 @@ translateString ()
               (mode & (compbrlAtCursor | compbrlLeftCursor) && src >=
                compbrlStart
                && src <= compbrlEnd) && (transRule->dotslen == 1
-        				 && table->capitalSign))
+        				 && table->singleLetterCaps))
             {
               putCharacter (curCharDef->lowercase);
               src++;

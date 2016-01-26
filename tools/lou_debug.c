@@ -318,9 +318,10 @@ print_phraseLength (TranslationTableOffset offset, char *opcode)
 static int
 show_brailleIndicators (void)
 {
-  print_brailleIndicator (table->capitalSign, "capsign");
-  print_brailleIndicator (table->beginCapitalSign, "begcaps");
-  print_brailleIndicator (table->endCapitalSign, "endcaps");
+  // FIXME: update to include all UEB opcodes.
+  print_brailleIndicator (table->singleLetterCaps, "capsletter");
+  print_brailleIndicator (table->firstLetterCaps, "begcaps");
+  print_brailleIndicator (table->lastLetterCaps, "endcaps");
   print_brailleIndicator (table->firstWordCaps, "firstwordcaps");
   print_brailleIndicator (table->lastWordCapsAfter, "lastwordcapsafter");
   print_phraseLength (table->lenCapsPhrase, "lencapsphrase");

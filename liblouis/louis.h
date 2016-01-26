@@ -213,8 +213,7 @@ extern "C"
     CTO_FirstLetterCaps,
     CTO_LastLetterCaps,
     CTO_FirstWordCaps,
-    CTO_LastWordCapsBefore,
-    CTO_LastWordCapsAfter,
+    CTO_LastWordCaps,
     CTO_LenCapsPhrase,
     CTO_LetterSign,
     CTO_NoLetsignBefore,
@@ -425,11 +424,11 @@ extern "C"
     CTO_LenTrans5Phrase,         // lenemphphrase {emph_10}
     
     /* More internal opcodes */
-    CTO_CapitalRule,
+    CTO_SingleLetterCapsRule,
     CTO_CapsWordRule,
     CTO_CapsWordStopRule,
-    CTO_BeginCapitalRule,
-    CTO_EndCapitalRule,
+    CTO_FirstLetterCapsRule,
+    CTO_LastLetterCapsRule,
     CTO_FirstWordCapsRule,
     CTO_LastWordCapsBeforeRule,
     CTO_LastWordCapsAfterRule,
@@ -616,9 +615,9 @@ extern "C"
     TranslationTableOffset firstWordCaps;
     TranslationTableOffset lastWordCapsBefore;
     TranslationTableOffset lastWordCapsAfter;
-    TranslationTableOffset beginCapitalSign;
-    TranslationTableOffset endCapitalSign;	/*end capitals sign */
-    TranslationTableOffset capitalSign;
+    TranslationTableOffset firstLetterCaps;
+    TranslationTableOffset lastLetterCaps;
+    TranslationTableOffset singleLetterCaps;
     TranslationTableOffset capsWord;
     TranslationTableOffset capsWordStop;
     TranslationTableOffset lenCapsPhrase;

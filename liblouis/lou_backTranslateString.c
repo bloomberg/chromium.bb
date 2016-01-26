@@ -495,7 +495,7 @@ handleMultind ()
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
     case CTO_SingleLetterCaps: // FIXME: make sure this works
-      found = findBrailleIndicatorRule (table->capitalSign);
+      found = findBrailleIndicatorRule (table->singleLetterCaps);
       break;
     // NOTE:  following fixme is based on the names at the time of
     //        commit f22f91eb510cb4eef33dfb4950a297235dd2f9f1.
@@ -506,10 +506,10 @@ handleMultind ()
     //        These are actually compiled with firstlettercaps/lastlettercaps.
     //        Which to use here?
     case CTO_FirstLetterCaps:
-      found = findBrailleIndicatorRule (table->beginCapitalSign);
+      found = findBrailleIndicatorRule (table->firstLetterCaps);
       break;
     case CTO_LastLetterCaps:
-      found = findBrailleIndicatorRule (table->endCapitalSign);
+      found = findBrailleIndicatorRule (table->lastLetterCaps);
       break;
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);
@@ -670,9 +670,9 @@ back_selectRule ()
 		      if (itsANumber)
 			return;
 		      break;
-		    case CTO_CapitalRule:
-		    case CTO_BeginCapitalRule:
-		    case CTO_EndCapitalRule:
+		    case CTO_SingleLetterCapsRule:
+		    case CTO_FirstLetterCapsRule:
+		    case CTO_LastLetterCapsRule:
 		    case CTO_FirstLetterItalRule:
 		    case CTO_LastLetterItalRule:
 		    case CTO_FirstLetterBoldRule:
@@ -1082,7 +1082,7 @@ backTranslateString ()
 	    if (!insertSpace ())
 	      goto failure;
 	  break;
-	case CTO_CapitalRule:
+	case CTO_SingleLetterCapsRule:
 	  nextUpper = 1;
 	  src += currentDotslen;
 	  continue;
@@ -1092,12 +1092,12 @@ backTranslateString ()
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_BeginCapitalRule:
+	case CTO_FirstLetterCapsRule:
 	  allUpperPhrase = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_EndCapitalRule:
+	case CTO_LastLetterCapsRule:
 	  allUpperPhrase = 0;
 	  src += currentDotslen;
 	  continue;
