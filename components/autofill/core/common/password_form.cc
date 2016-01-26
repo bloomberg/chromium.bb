@@ -83,13 +83,10 @@ PasswordForm::PasswordForm()
       skip_zero_click(false),
       layout(Layout::LAYOUT_OTHER),
       was_parsed_using_autofill_predictions(false),
-      is_alive(true),
       is_public_suffix_match(false),
       is_affiliation_based_match(false) {}
 
 PasswordForm::~PasswordForm() {
-  CHECK(is_alive);
-  is_alive = false;
 }
 
 bool PasswordForm::IsPossibleChangePasswordForm() const {
