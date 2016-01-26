@@ -5,10 +5,11 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
@@ -30,12 +31,8 @@ public class ViewportTest extends ContentShellTestBase {
         return Integer.parseInt(evaluateStringValue(expression));
     }
 
-    /*
     @MediumTest
     @Feature({"Viewport", "InitialViewportSize"})
-    https://bugs.webkit.org/show_bug.cgi?id=107424
-    */
-    @DisabledTest
     public void testDefaultViewportSize() throws Throwable {
         launchContentShellWithUrl("about:blank");
         waitForActiveShellToBeDoneLoading();
