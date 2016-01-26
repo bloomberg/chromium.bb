@@ -156,6 +156,7 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
             for (int i = 1; i < numPoints; ++i)
                 path.addLineTo(FloatPoint(clampCoordinate(m_coords[i * 2]), clampCoordinate(m_coords[i * 2 + 1])));
             path.closeSubpath();
+            path.setWindRule(RULE_EVENODD);
         }
         break;
     case Circle:
