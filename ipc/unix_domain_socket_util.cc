@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -65,6 +64,11 @@ int MakeUnixAddrForPath(const std::string& socket_name,
   *unix_addr_len =
       offsetof(struct sockaddr_un, sun_path) + socket_name.length();
   return fd.release();
+}
+
+bool IsRecoverableError() {
+  return errno == ECONNABORTED || errno == EMFILE || errno == ENFILE ||
+         errno == ENOMEM || errno == ENOBUFS;
 }
 
 }  // namespace
@@ -172,18 +176,13 @@ bool IsPeerAuthorized(int peer_fd) {
   return true;
 }
 
-bool IsRecoverableError(int err) {
-  return errno == ECONNABORTED || errno == EMFILE || errno == ENFILE ||
-         errno == ENOMEM || errno == ENOBUFS;
-}
-
 bool ServerAcceptConnection(int server_listen_fd, int* server_socket) {
   DCHECK(server_socket);
   *server_socket = -1;
 
   base::ScopedFD accept_fd(HANDLE_EINTR(accept(server_listen_fd, NULL, 0)));
   if (!accept_fd.is_valid())
-    return IsRecoverableError(errno);
+    return IsRecoverableError();
   if (!base::SetNonBlocking(accept_fd.get())) {
     PLOG(ERROR) << "base::SetNonBlocking() failed " << accept_fd.get();
     // It's safe to keep listening on |server_listen_fd| even if the attempt to
