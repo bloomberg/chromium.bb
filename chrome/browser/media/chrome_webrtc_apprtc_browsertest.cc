@@ -229,7 +229,9 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   base::Process collider_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+// Broken because of dependency updates: http://crbug.com/581283.
+IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
+                       DISABLED_MANUAL_WorksOnApprtc) {
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost("9999"));
   ASSERT_TRUE(LaunchColliderOnLocalHost("http://localhost:9999", "8089"));
@@ -269,10 +271,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   chrome::CloseWebContents(browser(), right_tab, false);
 }
 
-#if defined(OS_LINUX)
+#if 0
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest MANUAL_FirefoxApprtcInteropTest
 #else
 // Not implemented yet on Windows and Mac.
+// Broken because of dependency updates: http://crbug.com/581283.
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
 #endif
 
