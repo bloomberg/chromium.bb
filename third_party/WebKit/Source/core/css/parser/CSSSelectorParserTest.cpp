@@ -271,4 +271,37 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix)
     }
 }
 
+TEST(CSSSelectorParserTest, SerializedUniversal)
+{
+    const char* testCases[][2] = {
+        { "*::-webkit-volume-slider", "::-webkit-volume-slider" },
+        { "*::cue(i)", "::cue(i)" },
+        { "*::shadow", "::shadow" },
+        { "*:host-context(.x)", "*:host-context(.x)" },
+        { "*:host", "*:host" },
+        { "|*::-webkit-volume-slider", "|*::-webkit-volume-slider" },
+        { "|*::cue(i)", "|*::cue(i)" },
+        { "|*::shadow", "|*::shadow" },
+        { "*|*::-webkit-volume-slider", "::-webkit-volume-slider" },
+        { "*|*::cue(i)", "::cue(i)" },
+        { "*|*::shadow", "::shadow" },
+        { "ns|*::-webkit-volume-slider", "ns|*::-webkit-volume-slider" },
+        { "ns|*::cue(i)", "ns|*::cue(i)" },
+        { "ns|*::shadow", "ns|*::shadow" }
+    };
+
+    CSSParserContext context(HTMLStandardMode, nullptr);
+    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
+    sheet->parserAddNamespace("ns", "http://ns.org");
+
+    for (auto testCase : testCases) {
+        SCOPED_TRACE(testCase[0]);
+        CSSTokenizer::Scope scope(testCase[0]);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, context, sheet.get());
+        EXPECT_TRUE(list.isValid());
+        EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
+    }
+}
+
 } // namespace blink

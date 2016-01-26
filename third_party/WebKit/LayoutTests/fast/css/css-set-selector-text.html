@@ -60,9 +60,9 @@ testSelectorRoundTrip('[a*="b"]');
 
 debug('');
 
-testSelectorRoundTrip('*|a');
+shouldBe("setThenReadSelectorText('*|a')", "'a'");
 testSelectorRoundTrip('n|a');
-testSelectorRoundTrip('*|*');
+shouldBe("setThenReadSelectorText('*|*')", "'*'");
 testSelectorRoundTrip('n|*');
 testSelectorRoundTrip('[*|a]');
 testSelectorRoundTrip('[n|a]');

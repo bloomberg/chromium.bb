@@ -308,6 +308,8 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
             m_failedParsing = true;
             return nullptr;
         }
+        if (namespaceURI == defaultNamespace())
+            namespacePrefix = nullAtom;
         return CSSParserSelector::create(QualifiedName(namespacePrefix, elementName, namespaceURI));
     }
     prependTypeSelectorIfNeeded(namespacePrefix, elementName, compoundSelector.get());
@@ -725,7 +727,10 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
         m_failedParsing = true;
         return;
     }
-    QualifiedName tag = QualifiedName(namespacePrefix, determinedElementName, namespaceURI);
+    AtomicString determinedPrefix = namespacePrefix;
+    if (namespaceURI == defaultNamespace())
+        determinedPrefix = nullAtom;
+    QualifiedName tag = QualifiedName(determinedPrefix, determinedElementName, namespaceURI);
 
     // *:host/*:host-context never matches, so we can't discard the *,
     // otherwise we can't tell the difference between *:host and just :host.
@@ -735,8 +740,9 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
     // ::cue, ::shadow), we need a universal selector to set the combinator
     // (relation) on in the cases where there are no simple selectors preceding
     // the pseudo element.
-    if (tag != anyQName() || compoundSelector->isHostPseudoSelector() || compoundSelector->needsImplicitShadowCombinatorForMatching())
-        compoundSelector->prependTagSelector(tag, elementName.isNull());
+    bool explicitForHost = compoundSelector->isHostPseudoSelector() && !elementName.isNull();
+    if (tag != anyQName() || explicitForHost || compoundSelector->needsImplicitShadowCombinatorForMatching())
+        compoundSelector->prependTagSelector(tag, determinedPrefix == nullAtom && determinedElementName == starAtom && !explicitForHost);
 }
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector)

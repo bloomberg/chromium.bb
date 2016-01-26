@@ -44,9 +44,9 @@ testSelectorRoundTrip('[a*="b"]');
 
 debug('');
 
-testSelectorRoundTrip('*|a');
+shouldBe("parseThenSerializeRule('*|a { }')", "'a { }'");
 testSelectorRoundTrip('n|a');
-testSelectorRoundTrip('*|*');
+shouldBe("parseThenSerializeRule('*|* { }')", "'* { }'");
 testSelectorRoundTrip('n|*');
 testSelectorRoundTrip('[*|a]');
 testSelectorRoundTrip('[n|a]');
