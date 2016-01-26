@@ -46,6 +46,7 @@ public class AccountChooserDialog
     private final String mTitle;
     private final int mTitleLinkStart;
     private final int mTitleLinkEnd;
+    private final String mOrigin;
     private ArrayAdapter<Credential> mAdapter;
 
     /**
@@ -56,7 +57,8 @@ public class AccountChooserDialog
     private AlertDialog mDialog;
 
     private AccountChooserDialog(Context context, long nativeAccountChooserDialog,
-            Credential[] credentials, String title, int titleLinkStart, int titleLinkEnd) {
+            Credential[] credentials, String title, int titleLinkStart, int titleLinkEnd,
+            String origin) {
         mNativeAccountChooserDialog = nativeAccountChooserDialog;
         mContext = context;
         mCredentials = credentials.clone();
@@ -64,6 +66,7 @@ public class AccountChooserDialog
         mTitle = title;
         mTitleLinkStart = titleLinkStart;
         mTitleLinkEnd = titleLinkEnd;
+        mOrigin = origin;
     }
 
     /**
@@ -72,15 +75,17 @@ public class AccountChooserDialog
      *  @param title Title message for the dialog, which can contain Smart Lock branding.
      *  @param titleLinkStart Start of a link in case title contains Smart Lock branding.
      *  @param titleLinkEnd End of a link in case title contains Smart Lock branding.
+     *  @param origin Address of the web page, where dialog was triggered.
      */
     @CalledByNative
     private static AccountChooserDialog createAccountChooser(WindowAndroid windowAndroid,
             long nativeAccountChooserDialog, Credential[] credentials, String title,
-            int titleLinkStart, int titleLinkEnd) {
+            int titleLinkStart, int titleLinkEnd, String origin) {
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) return null;
-        AccountChooserDialog chooser = new AccountChooserDialog(activity,
-                nativeAccountChooserDialog, credentials, title, titleLinkStart, titleLinkEnd);
+        AccountChooserDialog chooser =
+                new AccountChooserDialog(activity, nativeAccountChooserDialog, credentials, title,
+                        titleLinkStart, titleLinkEnd, origin);
         chooser.show(activity.getFragmentManager(), null);
         return chooser;
     }
@@ -129,8 +134,9 @@ public class AccountChooserDialog
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View titleView =
                 LayoutInflater.from(mContext).inflate(R.layout.account_chooser_dialog_title, null);
+        TextView origin = (TextView) titleView.findViewById(R.id.origin);
+        origin.setText(mOrigin);
         TextView titleMessageText = (TextView) titleView.findViewById(R.id.title);
-        // TODO(melandory): add support for showing site origin in the title.
         if (mTitleLinkStart != 0 && mTitleLinkEnd != 0) {
             SpannableString spanableTitle = new SpannableString(mTitle);
             spanableTitle.setSpan(new ClickableSpan() {

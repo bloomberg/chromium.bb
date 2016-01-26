@@ -38,6 +38,7 @@ TEST(GetShownOriginTest, RemovePrefixes) {
               GetShownOrigin(password_form, "", &is_android_uri))
         << "for input " << test_case.input;
     EXPECT_FALSE(is_android_uri) << "for input " << test_case.input;
+    EXPECT_EQ(test_case.output, GetShownOrigin(password_form.origin, ""));
   }
 }
 

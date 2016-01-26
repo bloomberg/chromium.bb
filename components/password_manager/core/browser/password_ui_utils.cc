@@ -33,9 +33,12 @@ std::string GetShownOrigin(const autofill::PasswordForm& password_form,
   if (*is_android_uri)
     return GetHumanReadableOriginForAndroidUri(facet_uri);
 
-  std::string original =
-      base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-          password_form.origin, languages));
+  return GetShownOrigin(password_form.origin, languages);
+}
+
+std::string GetShownOrigin(const GURL& origin, const std::string& languages) {
+  std::string original = base::UTF16ToUTF8(
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin, languages));
   base::StringPiece result = original;
   for (base::StringPiece prefix : kRemovedPrefixes) {
     if (base::StartsWith(result, prefix,

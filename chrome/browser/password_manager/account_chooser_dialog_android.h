@@ -63,6 +63,7 @@ class AccountChooserDialogAndroid {
 
   content::WebContents* web_contents_;
   ManagePasswordsState passwords_data_;
+  GURL origin_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogAndroid);
 };

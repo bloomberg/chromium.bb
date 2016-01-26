@@ -27,6 +27,11 @@ std::string GetShownOrigin(const autofill::PasswordForm& password_form,
                            const std::string& languages,
                            bool* is_android_uri);
 
+// Returns a string suitable for security display to the user (just like
+// |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|
+// and |languages|) and without prefixes "m.", "mobile." or "www.".
+std::string GetShownOrigin(const GURL& origin, const std::string& languages);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_UI_UTILS_H_

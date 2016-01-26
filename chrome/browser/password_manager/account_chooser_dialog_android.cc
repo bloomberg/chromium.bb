@@ -20,6 +20,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserDialog_jni.h"
 #include "ui/android/window_android.h"
@@ -109,7 +110,7 @@ AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     ScopedVector<autofill::PasswordForm> federated_credentials,
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents), origin_(origin) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents_));
   passwords_data_.OnRequestCredentials(
@@ -146,7 +147,10 @@ void AccountChooserDialogAndroid::ShowDialog() {
       env, native_window->GetJavaObject().obj(),
       reinterpret_cast<intptr_t>(this), java_credentials_array.obj(),
       base::android::ConvertUTF16ToJavaString(env, title).obj(),
-      title_link_range.start(), title_link_range.end()));
+      title_link_range.start(), title_link_range.end(),
+      base::android::ConvertUTF8ToJavaString(
+          env, password_manager::GetShownOrigin(origin_, std::string()))
+          .obj()));
   base::android::ScopedJavaLocalRef<jobject> java_dialog(java_dialog_global);
   net::URLRequestContextGetter* request_context =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext())
