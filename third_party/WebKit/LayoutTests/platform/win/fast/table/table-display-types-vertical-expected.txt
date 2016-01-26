@@ -1,149 +1,137 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1240
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1224
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1240 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1240
-    LayoutBlockFlow {BODY} at (8,10) size 769x1222
-      LayoutTable {TABLE} at (10,0) size 92x120 [border: (1px solid #000000)]
-        LayoutTableSection {THEAD} at (1,1) size 24x118
-          LayoutTableRow {TR} at (0,2) size 20x118
-            LayoutTableCell {TD} at (2,2) size 20x56 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x46
-                text run at (1,1) width 46: "Head 1"
-            LayoutTableCell {TD} at (2,60) size 20x56 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x46
-                text run at (1,1) width 46: "Head 2"
-        LayoutTableSection {TFOOT} at (69,1) size 22x118
-          LayoutTableRow {TR} at (0,0) size 20x118
-            LayoutTableCell {TD} at (0,2) size 20x56 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x54
-                text run at (1,1) width 54: "Footer 1"
-            LayoutTableCell {TD} at (0,60) size 20x56 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x54
-                text run at (1,1) width 54: "Footer 2"
-        LayoutTableSection {TBODY} at (25,1) size 44x118
-          LayoutTableRow {TR} at (0,0) size 20x118
-            LayoutTableCell {TD} at (0,2) size 20x56 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x39
-                text run at (1,1) width 39: "Cell 1"
-            LayoutTableCell {TD} at (0,60) size 20x56 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x39
-                text run at (1,1) width 39: "Cell 2"
-          LayoutTableRow {TR} at (0,22) size 20x118
-            LayoutTableCell {TD} at (22,2) size 20x56 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x39
-                text run at (1,1) width 39: "Cell 3"
-            LayoutTableCell {TD} at (22,60) size 20x56 [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 17x39
-                text run at (1,1) width 39: "Cell 4"
+layer at (0,0) size 785x1224 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1224
+    LayoutBlockFlow {BODY} at (8,10) size 769x1206
+      LayoutBlockFlow {TABLE} at (10,0) size 92x120 [border: (1px solid #000000)]
+        LayoutTable (anonymous) at (1,1) size 90x118
+          LayoutTableSection {THEAD} at (0,0) size 24x118
+            LayoutTableRow {TR} at (0,2) size 20x118
+              LayoutTableCell {TD} at (2,2) size 20x56 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x46
+                  text run at (1,1) width 46: "Head 1"
+              LayoutTableCell {TD} at (2,60) size 20x56 [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x46
+                  text run at (1,1) width 46: "Head 2"
+          LayoutTableSection {TFOOT} at (68,0) size 22x118
+            LayoutTableRow {TR} at (0,0) size 20x118
+              LayoutTableCell {TD} at (0,2) size 20x56 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x54
+                  text run at (1,1) width 54: "Footer 1"
+              LayoutTableCell {TD} at (0,60) size 20x56 [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x54
+                  text run at (1,1) width 54: "Footer 2"
+          LayoutTableSection {TBODY} at (24,0) size 44x118
+            LayoutTableRow {TR} at (0,0) size 20x118
+              LayoutTableCell {TD} at (0,2) size 20x56 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x39
+                  text run at (1,1) width 39: "Cell 1"
+              LayoutTableCell {TD} at (0,60) size 20x56 [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x39
+                  text run at (1,1) width 39: "Cell 2"
+            LayoutTableRow {TR} at (0,22) size 20x118
+              LayoutTableCell {TD} at (22,2) size 20x56 [r=1 c=0 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x39
+                  text run at (1,1) width 39: "Cell 3"
+              LayoutTableCell {TD} at (22,60) size 20x56 [r=1 c=1 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 17x39
+                  text run at (1,1) width 39: "Cell 4"
       LayoutBlockFlow {P} at (0,136) size 769x18
         LayoutText {#text} at (0,0) size 227x17
           text run at (0,0) width 227: "Row groups have display:table-cell"
-      LayoutTable {TABLE} at (10,170) size 60x236 [border: (1px solid #000000)]
-        LayoutTableSection (anonymous) at (1,1) size 32x234
-          LayoutTableRow (anonymous) at (0,2) size 28x234
-            LayoutTableCell {THEAD} at (2,2) size 28x106 [r=0 c=0 rs=1 cs=1]
-              LayoutTable (anonymous) at (0,0) size 28x106
-                LayoutTableSection (anonymous) at (0,0) size 28x106
-                  LayoutTableRow (anonymous) at (0,2) size 24x106
-                    LayoutTableCell {TR} at (2,2) size 24x102 [r=0 c=0 rs=1 cs=1]
-                      LayoutTable (anonymous) at (0,0) size 24x102
-                        LayoutTableSection (anonymous) at (0,0) size 24x102
-                          LayoutTableRow (anonymous) at (0,2) size 20x102
-                            LayoutTableCell {TD} at (2,2) size 20x48 [r=0 c=0 rs=1 cs=1]
-                              LayoutText {#text} at (1,1) size 17x46
-                                text run at (1,1) width 46: "Head 1"
-                            LayoutTableCell {TD} at (2,52) size 20x48 [r=0 c=1 rs=1 cs=1]
-                              LayoutText {#text} at (1,1) size 17x46
-                                text run at (1,1) width 46: "Head 2"
-            LayoutTableCell {TFOOT} at (2,110) size 28x122 [r=0 c=1 rs=1 cs=1]
-              LayoutTable (anonymous) at (0,0) size 28x122
-                LayoutTableSection (anonymous) at (0,0) size 28x122
-                  LayoutTableRow (anonymous) at (0,2) size 24x122
-                    LayoutTableCell {TR} at (2,2) size 24x118 [r=0 c=0 rs=1 cs=1]
-                      LayoutTable (anonymous) at (0,0) size 24x118
-                        LayoutTableSection (anonymous) at (0,0) size 24x118
-                          LayoutTableRow (anonymous) at (0,2) size 20x118
-                            LayoutTableCell {TD} at (2,2) size 20x56 [r=0 c=0 rs=1 cs=1]
-                              LayoutText {#text} at (1,1) size 17x54
-                                text run at (1,1) width 54: "Footer 1"
-                            LayoutTableCell {TD} at (2,60) size 20x56 [r=0 c=1 rs=1 cs=1]
-                              LayoutText {#text} at (1,1) size 17x54
-                                text run at (1,1) width 54: "Footer 2"
-        LayoutTableSection {TBODY} at (33,1) size 26x234
-          LayoutTableRow (anonymous) at (0,0) size 24x234
-            LayoutTableCell {TR} at (0,2) size 24x106 [r=0 c=0 rs=1 cs=1]
-              LayoutTable (anonymous) at (0,0) size 24x88
-                LayoutTableSection (anonymous) at (0,0) size 24x88
-                  LayoutTableRow (anonymous) at (0,2) size 20x88
-                    LayoutTableCell {TD} at (2,2) size 20x41 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 17x39
-                        text run at (1,1) width 39: "Cell 1"
-                    LayoutTableCell {TD} at (2,45) size 20x41 [r=0 c=1 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 17x39
-                        text run at (1,1) width 39: "Cell 2"
-            LayoutTableCell {TR} at (0,110) size 24x122 [r=0 c=1 rs=1 cs=1]
-              LayoutTable (anonymous) at (0,0) size 24x88
-                LayoutTableSection (anonymous) at (0,0) size 24x88
-                  LayoutTableRow (anonymous) at (0,2) size 20x88
-                    LayoutTableCell {TD} at (2,2) size 20x41 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 17x39
-                        text run at (1,1) width 39: "Cell 3"
-                    LayoutTableCell {TD} at (2,45) size 20x41 [r=0 c=1 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 17x39
-                        text run at (1,1) width 39: "Cell 4"
-      LayoutBlockFlow {P} at (0,422) size 769x18
+      LayoutBlockFlow {TABLE} at (10,170) size 48x224 [border: (1px solid #000000)]
+        LayoutTable (anonymous) at (1,1) size 46x222
+          LayoutTableSection (anonymous) at (0,0) size 26x222
+            LayoutTableRow (anonymous) at (0,2) size 22x222
+              LayoutTableCell {THEAD} at (2,2) size 22x100 [r=0 c=0 rs=1 cs=1]
+                LayoutTable (anonymous) at (0,0) size 22x100
+                  LayoutTableSection (anonymous) at (0,0) size 22x100
+                    LayoutTableRow (anonymous) at (0,2) size 18x100
+                      LayoutTableCell {TR} at (2,2) size 18x96 [r=0 c=0 rs=1 cs=1]
+                        LayoutInline {TD} at (0,0) size 19x48
+                          LayoutText {#text} at (0,1) size 17x46
+                            text run at (0,1) width 46: "Head 1"
+                        LayoutInline {TD} at (0,0) size 19x49
+                          LayoutText {#text} at (0,48) size 17x47
+                            text run at (0,48) width 46: "Head 2"
+              LayoutTableCell {TFOOT} at (2,104) size 22x116 [r=0 c=1 rs=1 cs=1]
+                LayoutTable (anonymous) at (0,0) size 22x116
+                  LayoutTableSection (anonymous) at (0,0) size 22x116
+                    LayoutTableRow (anonymous) at (0,2) size 18x116
+                      LayoutTableCell {TR} at (2,2) size 18x112 [r=0 c=0 rs=1 cs=1]
+                        LayoutInline {TD} at (0,0) size 19x56
+                          LayoutText {#text} at (0,1) size 17x54
+                            text run at (0,1) width 54: "Footer 1"
+                        LayoutInline {TD} at (0,0) size 19x57
+                          LayoutText {#text} at (0,56) size 17x55
+                            text run at (0,56) width 54: "Footer 2"
+          LayoutTableSection {TBODY} at (26,0) size 20x222
+            LayoutTableRow (anonymous) at (0,0) size 18x222
+              LayoutTableCell {TR} at (0,2) size 18x100 [r=0 c=0 rs=1 cs=1]
+                LayoutInline {TD} at (0,0) size 19x41
+                  LayoutText {#text} at (0,1) size 17x39
+                    text run at (0,1) width 39: "Cell 1"
+                LayoutInline {TD} at (0,0) size 19x42
+                  LayoutText {#text} at (0,41) size 17x40
+                    text run at (0,41) width 39: "Cell 2"
+              LayoutTableCell {TR} at (0,104) size 18x116 [r=0 c=1 rs=1 cs=1]
+                LayoutInline {TD} at (0,0) size 19x41
+                  LayoutText {#text} at (0,1) size 17x39
+                    text run at (0,1) width 39: "Cell 3"
+                LayoutInline {TD} at (0,0) size 19x42
+                  LayoutText {#text} at (0,41) size 17x40
+                    text run at (0,41) width 39: "Cell 4"
+      LayoutBlockFlow {P} at (0,410) size 769x18
         LayoutText {#text} at (0,0) size 203x17
           text run at (0,0) width 203: "Row groups have display:block"
-      LayoutTable {TABLE} at (10,456) size 104x124 [border: (1px solid #000000)]
-        LayoutTableSection (anonymous) at (1,1) size 52x122
-          LayoutTableRow (anonymous) at (0,2) size 48x122
-            LayoutTableCell (anonymous) at (2,2) size 48x118 [r=0 c=0 rs=1 cs=1]
-              LayoutBlockFlow {THEAD} at (0,0) size 24x118
-                LayoutBlockFlow {TR} at (0,0) size 24x118
-                  LayoutTable (anonymous) at (0,0) size 24x102
-                    LayoutTableSection (anonymous) at (0,0) size 24x102
-                      LayoutTableRow (anonymous) at (0,2) size 20x102
-                        LayoutTableCell {TD} at (2,2) size 20x48 [r=0 c=0 rs=1 cs=1]
-                          LayoutText {#text} at (1,1) size 17x46
-                            text run at (1,1) width 46: "Head 1"
-                        LayoutTableCell {TD} at (2,52) size 20x48 [r=0 c=1 rs=1 cs=1]
-                          LayoutText {#text} at (1,1) size 17x46
-                            text run at (1,1) width 46: "Head 2"
-              LayoutBlockFlow {TFOOT} at (24,0) size 24x118
-                LayoutBlockFlow {TR} at (0,0) size 24x118
-                  LayoutTable (anonymous) at (0,0) size 24x118
-                    LayoutTableSection (anonymous) at (0,0) size 24x118
-                      LayoutTableRow (anonymous) at (0,2) size 20x118
-                        LayoutTableCell {TD} at (2,2) size 20x56 [r=0 c=0 rs=1 cs=1]
-                          LayoutText {#text} at (1,1) size 17x54
-                            text run at (1,1) width 54: "Footer 1"
-                        LayoutTableCell {TD} at (2,60) size 20x56 [r=0 c=1 rs=1 cs=1]
-                          LayoutText {#text} at (1,1) size 17x54
-                            text run at (1,1) width 54: "Footer 2"
-        LayoutTableSection {TBODY} at (53,1) size 50x122
-          LayoutTableRow (anonymous) at (0,0) size 48x122
-            LayoutTableCell (anonymous) at (0,2) size 48x118 [r=0 c=0 rs=1 cs=1]
-              LayoutBlockFlow {TR} at (0,0) size 24x118
-                LayoutTable (anonymous) at (0,0) size 24x88
-                  LayoutTableSection (anonymous) at (0,0) size 24x88
-                    LayoutTableRow (anonymous) at (0,2) size 20x88
-                      LayoutTableCell {TD} at (2,2) size 20x41 [r=0 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (1,1) size 17x39
-                          text run at (1,1) width 39: "Cell 1"
-                      LayoutTableCell {TD} at (2,45) size 20x41 [r=0 c=1 rs=1 cs=1]
-                        LayoutText {#text} at (1,1) size 17x39
-                          text run at (1,1) width 39: "Cell 2"
-              LayoutBlockFlow {TR} at (24,0) size 24x118
-                LayoutTable (anonymous) at (0,0) size 24x88
-                  LayoutTableSection (anonymous) at (0,0) size 24x88
-                    LayoutTableRow (anonymous) at (0,2) size 20x88
-                      LayoutTableCell {TD} at (2,2) size 20x41 [r=0 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (1,1) size 17x39
-                          text run at (1,1) width 39: "Cell 3"
-                      LayoutTableCell {TD} at (2,45) size 20x41 [r=0 c=1 rs=1 cs=1]
-                        LayoutText {#text} at (1,1) size 17x39
-                          text run at (1,1) width 39: "Cell 4"
-      LayoutTable (anonymous) at (0,590) size 102x632
+      LayoutBlockFlow {TABLE} at (10,444) size 102x120 [border: (1px solid #000000)]
+        LayoutBlockFlow {THEAD} at (1,1) size 24x118
+          LayoutBlockFlow {TR} at (0,0) size 24x118
+            LayoutTable (anonymous) at (0,0) size 24x102
+              LayoutTableSection (anonymous) at (0,0) size 24x102
+                LayoutTableRow (anonymous) at (0,2) size 20x102
+                  LayoutTableCell {TD} at (2,2) size 20x48 [r=0 c=0 rs=1 cs=1]
+                    LayoutText {#text} at (1,1) size 17x46
+                      text run at (1,1) width 46: "Head 1"
+                  LayoutTableCell {TD} at (2,52) size 20x48 [r=0 c=1 rs=1 cs=1]
+                    LayoutText {#text} at (1,1) size 17x46
+                      text run at (1,1) width 46: "Head 2"
+        LayoutBlockFlow {TFOOT} at (25,1) size 24x118
+          LayoutBlockFlow {TR} at (0,0) size 24x118
+            LayoutTable (anonymous) at (0,0) size 24x118
+              LayoutTableSection (anonymous) at (0,0) size 24x118
+                LayoutTableRow (anonymous) at (0,2) size 20x118
+                  LayoutTableCell {TD} at (2,2) size 20x56 [r=0 c=0 rs=1 cs=1]
+                    LayoutText {#text} at (1,1) size 17x54
+                      text run at (1,1) width 54: "Footer 1"
+                  LayoutTableCell {TD} at (2,60) size 20x56 [r=0 c=1 rs=1 cs=1]
+                    LayoutText {#text} at (1,1) size 17x54
+                      text run at (1,1) width 54: "Footer 2"
+        LayoutTable (anonymous) at (49,1) size 52x92
+          LayoutTableSection {TBODY} at (0,0) size 52x92
+            LayoutTableRow (anonymous) at (0,2) size 48x92
+              LayoutTableCell (anonymous) at (2,2) size 48x88 [r=0 c=0 rs=1 cs=1]
+                LayoutBlockFlow {TR} at (0,0) size 24x88
+                  LayoutTable (anonymous) at (0,0) size 24x88
+                    LayoutTableSection (anonymous) at (0,0) size 24x88
+                      LayoutTableRow (anonymous) at (0,2) size 20x88
+                        LayoutTableCell {TD} at (2,2) size 20x41 [r=0 c=0 rs=1 cs=1]
+                          LayoutText {#text} at (1,1) size 17x39
+                            text run at (1,1) width 39: "Cell 1"
+                        LayoutTableCell {TD} at (2,45) size 20x41 [r=0 c=1 rs=1 cs=1]
+                          LayoutText {#text} at (1,1) size 17x39
+                            text run at (1,1) width 39: "Cell 2"
+                LayoutBlockFlow {TR} at (24,0) size 24x88
+                  LayoutTable (anonymous) at (0,0) size 24x88
+                    LayoutTableSection (anonymous) at (0,0) size 24x88
+                      LayoutTableRow (anonymous) at (0,2) size 20x88
+                        LayoutTableCell {TD} at (2,2) size 20x41 [r=0 c=0 rs=1 cs=1]
+                          LayoutText {#text} at (1,1) size 17x39
+                            text run at (1,1) width 39: "Cell 3"
+                        LayoutTableCell {TD} at (2,45) size 20x41 [r=0 c=1 rs=1 cs=1]
+                          LayoutText {#text} at (1,1) size 17x39
+                            text run at (1,1) width 39: "Cell 4"
+      LayoutTable (anonymous) at (0,574) size 102x632
         LayoutTableSection (anonymous) at (0,0) size 102x632
           LayoutTableRow (anonymous) at (0,0) size 102x632
             LayoutTableCell {P} at (0,0) size 102x632 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]

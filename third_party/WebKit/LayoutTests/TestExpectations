@@ -1036,8 +1036,8 @@ crbug.com/471066 [ Mac10.6 ] fast/text/fake-italic.html [ Failure ]
 
 crbug.com/478109 [ Mac10.6 ] fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
 
-crbug.com/369979 fast/table/table-display-types-vertical.html [ NeedsRebaseline ]
-crbug.com/369979 fast/table/table-display-types.html [ NeedsRebaseline ]
+crbug.com/369979 [ XP ] fast/table/table-display-types-vertical.html [ NeedsRebaseline ]
+crbug.com/369979 [ XP ] fast/table/table-display-types.html [ NeedsRebaseline ]
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Pass Failure ]
