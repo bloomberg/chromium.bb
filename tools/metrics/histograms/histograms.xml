@@ -68848,6 +68848,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="GetMediaDevices"/>
   <int value="5" label="MediaStreamRecorder"/>
   <int value="6" label="CanvasCaptureStream"/>
+  <int value="7" label="VideoCaptureStream"/>
 </enum>
 
 <enum name="KeyboardControlEvent" type="int">
