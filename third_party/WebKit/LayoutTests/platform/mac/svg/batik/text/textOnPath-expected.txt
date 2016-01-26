@@ -22,7 +22,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 5 at (48.36,19.09) startOffset 4 endOffset 5 width 5.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 29x29
               LayoutSVGInlineText {#text} at (29,0) size 29x29
-                chunk 1 text run 1 at (55.17,15.95) startOffset 0 endOffset 1 width 10.00: "o"
+                chunk 1 text run 1 at (55.17,15.94) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 text run 2 at (64.84,13.36) startOffset 1 endOffset 2 width 10.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 63x43
               LayoutSVGInlineText {#text} at (57,9) size 63x43
@@ -52,11 +52,11 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (0,0) size 56x53
                 chunk 1 (middle anchor) text run 1 at (30.38,44.49) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (middle anchor) text run 2 at (32.03,37.79) startOffset 1 endOffset 2 width 8.88: "a"
-                chunk 1 (middle anchor) text run 3 at (35.02,31.58) startOffset 2 endOffset 3 width 5.00: " "
-                chunk 1 (middle anchor) text run 4 at (40.05,25.31) startOffset 3 endOffset 4 width 11.12: "P"
+                chunk 1 (middle anchor) text run 3 at (35.02,31.57) startOffset 2 endOffset 3 width 5.00: " "
+                chunk 1 (middle anchor) text run 4 at (40.05,25.30) startOffset 3 endOffset 4 width 11.12: "P"
                 chunk 1 (middle anchor) text run 5 at (48.01,19.29) startOffset 4 endOffset 5 width 8.88: "a"
                 chunk 1 (middle anchor) text run 6 at (54.52,16.19) startOffset 5 endOffset 6 width 5.56: "t"
-                chunk 1 (middle anchor) text run 7 at (61.97,13.93) startOffset 6 endOffset 7 width 10.00: "h"
+                chunk 1 (middle anchor) text run 7 at (61.98,13.93) startOffset 6 endOffset 7 width 10.00: "h"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (35,50) size 70x13 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 70x13
@@ -76,12 +76,12 @@ layer at (0,0) size 450x500
             LayoutSVGTSpan {tspan} at (0,0) size 62x47
               LayoutSVGInlineText {#text} at (12,0) size 61x47
                 chunk 1 (end anchor) text run 1 at (32.44,36.70) startOffset 0 endOffset 1 width 5.00: " "
-                chunk 1 (end anchor) text run 2 at (35.65,30.60) startOffset 1 endOffset 2 width 8.88: "a"
-                chunk 1 (end anchor) text run 3 at (40.07,25.28) startOffset 2 endOffset 3 width 5.00: " "
+                chunk 1 (end anchor) text run 2 at (35.65,30.59) startOffset 1 endOffset 2 width 8.88: "a"
+                chunk 1 (end anchor) text run 3 at (40.08,25.28) startOffset 2 endOffset 3 width 5.00: " "
                 chunk 1 (end anchor) text run 4 at (46.38,20.28) startOffset 3 endOffset 4 width 11.12: "P"
                 chunk 1 (end anchor) text run 5 at (55.35,15.88) startOffset 4 endOffset 5 width 8.88: "a"
                 chunk 1 (end anchor) text run 6 at (62.29,13.86) startOffset 5 endOffset 6 width 5.56: "t"
-                chunk 1 (end anchor) text run 7 at (69.99,12.71) startOffset 6 endOffset 7 width 10.00: "h"
+                chunk 1 (end anchor) text run 7 at (70.00,12.71) startOffset 6 endOffset 7 width 10.00: "h"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (35,50) size 75x13 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 75x13
@@ -97,11 +97,11 @@ layer at (0,0) size 450x500
             LayoutSVGInlineText {#text} at (0,0) size 50x37
               chunk 1 text run 1 at (81.11,12.81) startOffset 0 endOffset 1 width 12.22: "T"
               chunk 1 text run 2 at (90.78,14.63) startOffset 1 endOffset 2 width 7.48: "e"
-              chunk 1 text run 3 at (98.96,17.69) startOffset 2 endOffset 3 width 10.00: "x"
+              chunk 1 text run 3 at (98.96,17.70) startOffset 2 endOffset 3 width 10.00: "x"
               chunk 1 text run 4 at (105.65,21.67) startOffset 3 endOffset 4 width 5.56: "t"
               chunk 1 text run 5 at (109.71,25.06) startOffset 4 endOffset 5 width 5.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 32x33
-              LayoutSVGInlineText {#text} at (41,16) size 31x33
+              LayoutSVGInlineText {#text} at (41,16) size 32x33
                 chunk 1 text run 1 at (114.49,30.81) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 text run 2 at (118.64,39.87) startOffset 1 endOffset 2 width 10.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 24x7
@@ -121,13 +121,13 @@ layer at (0,0) size 450x500
           LayoutSVGTextPath {textPath} at (0,0) size 123x60
             LayoutSVGInlineText {#text} at (0,13) size 47x46
               chunk 1 (middle anchor) text run 1 at (32.70,36.06) startOffset 0 endOffset 1 width 12.22: "T"
-              chunk 1 (middle anchor) text run 2 at (37.82,27.72) startOffset 1 endOffset 2 width 7.48: "e"
+              chunk 1 (middle anchor) text run 2 at (37.82,27.71) startOffset 1 endOffset 2 width 7.48: "e"
               chunk 1 (middle anchor) text run 3 at (44.21,21.77) startOffset 2 endOffset 3 width 10.00: "x"
               chunk 1 (middle anchor) text run 4 at (50.88,17.77) startOffset 3 endOffset 4 width 5.56: "t"
-              chunk 1 (middle anchor) text run 5 at (55.73,15.74) startOffset 4 endOffset 5 width 5.00: " "
+              chunk 1 (middle anchor) text run 5 at (55.74,15.74) startOffset 4 endOffset 5 width 5.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 26x26
               LayoutSVGInlineText {#text} at (38,0) size 26x26
-                chunk 1 (middle anchor) text run 1 at (62.96,13.72) startOffset 0 endOffset 1 width 10.00: "o"
+                chunk 1 (middle anchor) text run 1 at (62.97,13.72) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (middle anchor) text run 2 at (72.90,12.54) startOffset 1 endOffset 2 width 10.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 60x50
               LayoutSVGInlineText {#text} at (63,10) size 59x49
@@ -152,18 +152,18 @@ layer at (0,0) size 450x500
           LayoutSVGTextPath {textPath} at (0,0) size 120x67
             LayoutSVGInlineText {#text} at (0,11) size 49x42
               chunk 1 (end anchor) text run 1 at (36.73,29.08) startOffset 0 endOffset 1 width 12.22: "T"
-              chunk 1 (end anchor) text run 2 at (43.69,22.15) startOffset 1 endOffset 2 width 7.48: "e"
+              chunk 1 (end anchor) text run 2 at (43.70,22.15) startOffset 1 endOffset 2 width 7.48: "e"
               chunk 1 (end anchor) text run 3 at (51.17,17.63) startOffset 2 endOffset 3 width 10.00: "x"
               chunk 1 (end anchor) text run 4 at (58.44,14.85) startOffset 3 endOffset 4 width 5.56: "t"
-              chunk 1 (end anchor) text run 5 at (63.55,13.60) startOffset 4 endOffset 5 width 5.00: " "
+              chunk 1 (end anchor) text run 5 at (63.56,13.60) startOffset 4 endOffset 5 width 5.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 26x24
               LayoutSVGInlineText {#text} at (45,0) size 25x24
-                chunk 1 (end anchor) text run 1 at (71.00,12.63) startOffset 0 endOffset 1 width 10.00: "o"
+                chunk 1 (end anchor) text run 1 at (71.01,12.63) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (end anchor) text run 2 at (81.01,12.80) startOffset 1 endOffset 2 width 10.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 54x56
               LayoutSVGInlineText {#text} at (66,11) size 54x55
                 chunk 1 (end anchor) text run 1 at (88.42,14.02) startOffset 0 endOffset 1 width 5.00: " "
-                chunk 1 (end anchor) text run 2 at (95.07,16.03) startOffset 1 endOffset 2 width 8.88: "a"
+                chunk 1 (end anchor) text run 2 at (95.07,16.04) startOffset 1 endOffset 2 width 8.88: "a"
                 chunk 1 (end anchor) text run 3 at (101.37,18.94) startOffset 2 endOffset 3 width 5.00: " "
                 chunk 1 (end anchor) text run 4 at (108.00,23.51) startOffset 3 endOffset 4 width 11.12: "P"
                 chunk 1 (end anchor) text run 5 at (114.60,30.97) startOffset 4 endOffset 5 width 8.88: "a"
@@ -185,7 +185,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 1 at (51.36,17.54) startOffset 0 endOffset 1 width 12.22: "T"
               chunk 1 text run 2 at (60.63,14.25) startOffset 1 endOffset 2 width 7.48: "e"
               chunk 1 text run 3 at (69.25,12.77) startOffset 2 endOffset 3 width 10.00: "x"
-              chunk 1 text run 4 at (77.03,12.53) startOffset 3 endOffset 4 width 5.56: "t"
+              chunk 1 text run 4 at (77.04,12.53) startOffset 3 endOffset 4 width 5.56: "t"
               chunk 1 text run 5 at (82.30,12.94) startOffset 4 endOffset 5 width 5.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 31x30
               LayoutSVGInlineText {#text} at (47,0) size 30x30
@@ -212,20 +212,20 @@ layer at (0,0) size 450x500
           LayoutSVGTextPath {textPath} at (0,0) size 97x59
             LayoutSVGInlineText {#text} at (0,30) size 27x28
               chunk 1 (middle anchor) text run 1 at (30.07,47.55) startOffset 2 endOffset 3 width 10.00: "x"
-              chunk 1 (middle anchor) text run 2 at (31.34,39.93) startOffset 3 endOffset 4 width 5.56: "t"
-              chunk 1 (middle anchor) text run 3 at (33.18,34.98) startOffset 4 endOffset 5 width 5.00: " "
+              chunk 1 (middle anchor) text run 2 at (31.35,39.93) startOffset 3 endOffset 4 width 5.56: "t"
+              chunk 1 (middle anchor) text run 3 at (33.18,34.97) startOffset 4 endOffset 5 width 5.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 34x35
               LayoutSVGInlineText {#text} at (0,1) size 34x34
-                chunk 1 (middle anchor) text run 1 at (37.10,28.61) startOffset 0 endOffset 1 width 10.00: "o"
+                chunk 1 (middle anchor) text run 1 at (37.10,28.60) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (middle anchor) text run 2 at (44.30,21.70) startOffset 1 endOffset 2 width 10.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 69x30
               LayoutSVGInlineText {#text} at (28,0) size 68x30
                 chunk 1 (middle anchor) text run 1 at (50.73,17.84) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (middle anchor) text run 2 at (57.16,15.25) startOffset 1 endOffset 2 width 8.88: "a"
                 chunk 1 (middle anchor) text run 3 at (63.88,13.54) startOffset 2 endOffset 3 width 5.00: " "
-                chunk 1 (middle anchor) text run 4 at (71.89,12.58) startOffset 3 endOffset 4 width 11.12: "P"
+                chunk 1 (middle anchor) text run 4 at (71.90,12.58) startOffset 3 endOffset 4 width 11.12: "P"
                 chunk 1 (middle anchor) text run 5 at (81.90,12.89) startOffset 4 endOffset 5 width 8.88: "a"
-                chunk 1 (middle anchor) text run 6 at (89.01,14.17) startOffset 5 endOffset 6 width 5.56: "t"
+                chunk 1 (middle anchor) text run 6 at (89.02,14.17) startOffset 5 endOffset 6 width 5.56: "t"
                 chunk 1 (middle anchor) text run 7 at (96.42,16.57) startOffset 6 endOffset 7 width 10.00: "h"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (35,50) size 66x13 contains 1 chunk(s)
@@ -244,7 +244,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (-11,-6) size 0x0
             LayoutSVGTSpan {tspan} at (0,0) size 38x45
               LayoutSVGInlineText {#text} at (0,0) size 38x45
-                chunk 1 (end anchor) text run 1 at (30.33,44.89) startOffset 3 endOffset 4 width 11.12: "P"
+                chunk 1 (end anchor) text run 1 at (30.33,44.88) startOffset 3 endOffset 4 width 11.12: "P"
                 chunk 1 (end anchor) text run 2 at (33.02,35.34) startOffset 4 endOffset 5 width 8.88: "a"
                 chunk 1 (end anchor) text run 3 at (36.68,29.15) startOffset 5 endOffset 6 width 5.56: "t"
                 chunk 1 (end anchor) text run 4 at (42.00,23.51) startOffset 6 endOffset 7 width 10.00: "h"
@@ -265,7 +265,7 @@ layer at (0,0) size 450x500
                 chunk 1 text run 1 at (17.11,27.90) startOffset 0 endOffset 1 width 5.84: "s"
                 chunk 1 text run 2 at (21.92,23.19) startOffset 1 endOffset 2 width 7.50: "u"
                 chunk 1 text run 3 at (27.42,18.21) startOffset 2 endOffset 3 width 7.50: "p"
-                chunk 1 text run 4 at (33.04,13.89) startOffset 3 endOffset 4 width 6.66: "e"
+                chunk 1 text run 4 at (33.05,13.89) startOffset 3 endOffset 4 width 6.66: "e"
                 chunk 1 text run 5 at (38.06,10.98) startOffset 4 endOffset 5 width 5.00: "r"
             LayoutSVGInlineText {#text} at (37,5) size 38x28
               chunk 1 text run 1 at (42.17,9.43) startOffset 0 endOffset 1 width 3.75: " "
@@ -276,10 +276,10 @@ layer at (0,0) size 450x500
             LayoutSVGTSpan {tspan} at (0,0) size 28x28
               LayoutSVGInlineText {#text} at (57,26) size 28x27
                 chunk 1 text run 1 at (67.63,22.49) startOffset 0 endOffset 1 width 5.84: "s"
-                chunk 1 text run 2 at (72.54,26.89) startOffset 1 endOffset 2 width 7.50: "u"
+                chunk 1 text run 2 at (72.55,26.90) startOffset 1 endOffset 2 width 7.50: "u"
                 chunk 1 text run 3 at (78.54,31.44) startOffset 2 endOffset 3 width 7.50: "b"
             LayoutSVGInlineText {#text} at (80,20) size 38x30
-              chunk 1 text run 1 at (84.39,34.61) startOffset 0 endOffset 1 width 5.84: "s"
+              chunk 1 text run 1 at (84.39,34.62) startOffset 0 endOffset 1 width 5.84: "s"
               chunk 1 text run 2 at (90.40,36.15) startOffset 1 endOffset 2 width 6.66: "c"
               chunk 1 text run 3 at (96.10,35.61) startOffset 2 endOffset 3 width 5.00: "r"
               chunk 1 text run 4 at (100.28,33.76) startOffset 3 endOffset 4 width 4.17: "i"
@@ -312,7 +312,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 1 at (56.32,11.91) startOffset 0 endOffset 1 width 3.75: " "
               chunk 1 text run 2 at (60.42,15.42) startOffset 1 endOffset 2 width 6.66: "a"
               chunk 1 text run 3 at (65.53,20.48) startOffset 2 endOffset 3 width 7.50: "n"
-              chunk 1 text run 4 at (70.95,25.51) startOffset 3 endOffset 4 width 7.50: "d"
+              chunk 1 text run 4 at (70.95,25.52) startOffset 3 endOffset 4 width 7.50: "d"
               chunk 1 text run 5 at (75.31,29.13) startOffset 4 endOffset 5 width 3.75: " "
             LayoutSVGTSpan {tspan} at (0,0) size 52x34
               LayoutSVGInlineText {#text} at (69,17) size 52x34
@@ -338,7 +338,7 @@ layer at (0,0) size 450x500
             LayoutSVGTextPath {textPath} at (0,0) size 114x56
               LayoutSVGInlineText {#text} at (0,32) size 114x55
                 chunk 1 text run 1 at (35.73,30.48) startOffset 0 endOffset 1 width 15.00: "o"
-                chunk 1 text run 2 at (46.50,20.21) startOffset 1 endOffset 2 width 15.00: "n"
+                chunk 1 text run 2 at (46.50,20.20) startOffset 1 endOffset 2 width 15.00: "n"
                 chunk 1 text run 3 at (56.67,15.41) startOffset 2 endOffset 3 width 7.50: " "
                 chunk 1 text run 4 at (67.65,12.95) startOffset 3 endOffset 4 width 15.00: "p"
                 chunk 1 text run 5 at (81.80,12.88) startOffset 4 endOffset 5 width 13.32: "a"

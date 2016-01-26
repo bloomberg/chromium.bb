@@ -257,14 +257,14 @@ layer at (0,0) size 450x500
               chunk 1 (vertical) text run 14 at (183.26,36.15) startOffset 13 endOffset 14 height 15.00: " "
               chunk 1 (vertical) text run 15 at (196.10,28.90) startOffset 14 endOffset 15 height 15.00: "o"
               chunk 1 (vertical) text run 16 at (206.99,18.58) startOffset 15 endOffset 16 height 15.00: "n"
-              chunk 1 (vertical) text run 17 at (219.50,10.34) startOffset 16 endOffset 17 height 15.00: " "
+              chunk 1 (vertical) text run 17 at (219.51,10.34) startOffset 16 endOffset 17 height 15.00: " "
               chunk 1 (vertical) text run 18 at (234.00,10.53) startOffset 17 endOffset 18 height 15.00: "a"
               chunk 1 (vertical) text run 19 at (245.44,20.39) startOffset 18 endOffset 19 height 15.00: " "
-              chunk 1 (vertical) text run 20 at (256.67,30.15) startOffset 19 endOffset 20 height 15.00: "P"
+              chunk 1 (vertical) text run 20 at (256.68,30.15) startOffset 19 endOffset 20 height 15.00: "P"
               chunk 1 (vertical) text run 21 at (270.28,36.14) startOffset 20 endOffset 21 height 15.00: "a"
               chunk 1 (vertical) text run 22 at (283.84,31.10) startOffset 21 endOffset 22 height 15.00: "t"
               chunk 1 (vertical) text run 23 at (294.78,20.53) startOffset 22 endOffset 23 height 15.00: "h"
-              chunk 1 (vertical) text run 24 at (306.77,11.62) startOffset 23 endOffset 24 height 15.00: "\x{753B}"
+              chunk 1 (vertical) text run 24 at (306.78,11.62) startOffset 23 endOffset 24 height 15.00: "\x{753B}"
               chunk 1 (vertical) text run 25 at (321.16,9.40) startOffset 24 endOffset 25 height 15.00: "\x{50CF}"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
     LayoutSVGContainer {use} at (0,0) size 448x498

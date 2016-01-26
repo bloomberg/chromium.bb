@@ -1,0 +1,61 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+SVG 1.1 dynamic animation tests
+
+
+A copy of the corresponding W3C-SVG-1.1 test, which dumps the animation at certain times
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getTransformToElement(rootSVGElement, path1).a is 0
+PASS getTransformToElement(rootSVGElement, path1).b is 1
+PASS getTransformToElement(rootSVGElement, path1).c is -1
+PASS getTransformToElement(rootSVGElement, path1).d is 0
+PASS getTransformToElement(rootSVGElement, path1).e is 224.9
+FAIL getTransformToElement(rootSVGElement, path1).f should be close to -25.9. Was -25.000000000000014.
+PASS getTransformToElement(rootSVGElement, path2).a is 0
+PASS getTransformToElement(rootSVGElement, path2).b is -1
+PASS getTransformToElement(rootSVGElement, path2).c is 1
+PASS getTransformToElement(rootSVGElement, path2).d is 0
+FAIL getTransformToElement(rootSVGElement, path2).e should be close to -223.9. Was -225.
+FAIL getTransformToElement(rootSVGElement, path2).f should be close to 275.9. Was 275.
+PASS getTransformToElement(rootSVGElement, path1).a is 1
+PASS getTransformToElement(rootSVGElement, path1).b is 0.1
+PASS getTransformToElement(rootSVGElement, path1).c is -0.1
+PASS getTransformToElement(rootSVGElement, path1).d is 1
+FAIL getTransformToElement(rootSVGElement, path1).e should be close to -70.3. Was -70.88506886404467.
+FAIL getTransformToElement(rootSVGElement, path1).f should be close to -182.8. Was -182.5994545194139.
+PASS getTransformToElement(rootSVGElement, path2).a is -1
+PASS getTransformToElement(rootSVGElement, path2).b is -0.1
+PASS getTransformToElement(rootSVGElement, path2).c is 0.1
+PASS getTransformToElement(rootSVGElement, path2).d is -1
+FAIL getTransformToElement(rootSVGElement, path2).e should be close to 318.6. Was 319.3057494247923.
+FAIL getTransformToElement(rootSVGElement, path2).f should be close to 211.6. Was 210.65582089693936.
+PASS getTransformToElement(rootSVGElement, path1).a is 0.7
+PASS getTransformToElement(rootSVGElement, path1).b is -0.7
+PASS getTransformToElement(rootSVGElement, path1).c is 0.7
+PASS getTransformToElement(rootSVGElement, path1).d is 0.7
+PASS getTransformToElement(rootSVGElement, path1).e is -265.1
+FAIL getTransformToElement(rootSVGElement, path1).f should be close to -18.9. Was -17.677669529663703.
+PASS getTransformToElement(rootSVGElement, path2).a is -0.7
+PASS getTransformToElement(rootSVGElement, path2).b is 0.7
+PASS getTransformToElement(rootSVGElement, path2).c is -0.7
+PASS getTransformToElement(rootSVGElement, path2).d is -0.7
+FAIL getTransformToElement(rootSVGElement, path2).e should be close to 442.7. Was 441.94173824159213.
+FAIL getTransformToElement(rootSVGElement, path2).f should be close to -156.9. Was -159.09902576697306.
+PASS getTransformToElement(rootSVGElement, path1).a is 0.7
+PASS getTransformToElement(rootSVGElement, path1).b is -0.7
+PASS getTransformToElement(rootSVGElement, path1).c is 0.7
+PASS getTransformToElement(rootSVGElement, path1).d is 0.7
+PASS getTransformToElement(rootSVGElement, path1).e is -265.1
+FAIL getTransformToElement(rootSVGElement, path1).f should be close to -18.9. Was -17.677669529663703.
+PASS getTransformToElement(rootSVGElement, path2).a is -0.7
+PASS getTransformToElement(rootSVGElement, path2).b is 0.7
+PASS getTransformToElement(rootSVGElement, path2).c is -0.7
+PASS getTransformToElement(rootSVGElement, path2).d is -0.7
+FAIL getTransformToElement(rootSVGElement, path2).e should be close to 442.7. Was 441.94173824159213.
+FAIL getTransformToElement(rootSVGElement, path2).f should be close to -156.9. Was -159.09902576697306.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

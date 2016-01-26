@@ -13,7 +13,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (168,-7) size 205x121 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 205x120
             LayoutSVGInlineText {#text} at (0,0) size 205x120
-              chunk 1 text run 1 at (203.03,79.11) startOffset 0 endOffset 1 width 22.00: "T"
+              chunk 1 text run 1 at (203.03,79.10) startOffset 0 endOffset 1 width 22.00: "T"
               chunk 1 text run 2 at (212.08,61.90) startOffset 1 endOffset 2 width 17.00: "e"
               chunk 1 text run 3 at (222.25,47.53) startOffset 2 endOffset 3 width 18.00: "x"
               chunk 1 text run 4 at (232.81,36.82) startOffset 3 endOffset 4 width 12.00: "t"
@@ -36,7 +36,7 @@ layer at (0,0) size 480x360
             LayoutSVGTSpan {tspan} at (0,0) size 56x58
               LayoutSVGInlineText {#text} at (0,37) size 56x57
                 chunk 1 text run 1 at (37.49,135.59) startOffset 0 endOffset 1 width 22.00: "T"
-                chunk 1 text run 2 at (46.52,118.38) startOffset 1 endOffset 2 width 17.00: "e"
+                chunk 1 text run 2 at (46.52,118.37) startOffset 1 endOffset 2 width 17.00: "e"
             LayoutSVGTSpan {tspan} at (0,0) size 44x41
               LayoutSVGInlineText {#text} at (33,26) size 44x41
                 chunk 1 text run 1 at (56.69,104.00) startOffset 0 endOffset 1 width 18.00: "x"
@@ -63,7 +63,7 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (113,212) size 300x80
         LayoutSVGContainer {use} at (113,231) size 300x4
           LayoutSVGPath {path} at (113,231) size 300x4 [stroke={[type=SOLID] [color=#0000FF] [stroke width=4.00]}] [data="M 113 233 L 413 233"]
-        LayoutSVGText {text} at (211,212) size 181x27 contains 1 chunk(s)
+        LayoutSVGText {text} at (212,212) size 180x27 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 180x27
             LayoutSVGInlineText {#text} at (0,0) size 180x27
               chunk 1 text run 1 at (219.00,233.00) startOffset 0 endOffset 1 width 14.00: "T"

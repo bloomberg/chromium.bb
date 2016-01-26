@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
         LayoutSVGContainer {g} at (445,81) size 102x102
           LayoutSVGEllipse {circle} at (445,81) size 102x102 [transform={m=((1.00,0.00)(0.00,1.00)) t=(600.00,200.00)}] [fill={[type=SOLID] [color=#FF0000]}] [cx=0.00] [cy=0.00] [r=70.00]
           LayoutSVGEllipse {circle} at (445,81) size 102x102 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(600.00,200.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=21.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=0.00] [cy=0.00] [r=60.00]
-          LayoutSVGEllipse {circle} at (459,95) size 74x74 [transform={m=((-0.00,1.00)(-1.00,-0.00)) t=(600.00,200.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=21.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=0.00] [cy=0.00] [r=40.00]
+          LayoutSVGEllipse {circle} at (459,95) size 74x74 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(600.00,200.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=21.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=0.00] [cy=0.00] [r=40.00]
           LayoutSVGEllipse {circle} at (474,110) size 44x44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(600.00,200.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=21.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=0.00] [cy=0.00] [r=20.00]
         LayoutSVGContainer {g} at (344,124) size 160x152
           LayoutSVGPath {path} at (344,124) size 160x152 [stroke={[type=SOLID] [color=#888888] [stroke width=20.00] [line cap=ROUND] [line join=ROUND]}] [data="M 400 200 c 0 200 200 200 200 0"]

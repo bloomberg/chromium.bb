@@ -70,11 +70,11 @@ layer at (0,0) size 450x500
           LayoutSVGTextPath {textPath} at (0,0) size 120x46
             LayoutSVGInlineText {#text} at (0,0) size 120x46
               chunk 1 text run 1 at (17.81,27.20) startOffset 0 endOffset 1 width 7.78: "s"
-              chunk 1 text run 2 at (34.70,12.82) startOffset 1 endOffset 2 width 8.88: "a"
+              chunk 1 text run 2 at (34.70,12.81) startOffset 1 endOffset 2 width 8.88: "a"
               chunk 1 text run 3 at (58.59,13.68) startOffset 2 endOffset 3 width 15.56: "m"
               chunk 1 text run 4 at (78.67,31.53) startOffset 3 endOffset 4 width 10.00: "p"
               chunk 1 text run 5 at (99.04,34.45) startOffset 4 endOffset 5 width 5.56: "l"
-              chunk 1 text run 6 at (115.72,21.50) startOffset 5 endOffset 6 width 8.88: "e"
+              chunk 1 text run 6 at (115.73,21.50) startOffset 5 endOffset 6 width 8.88: "e"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (35,50) size 73x13 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 73x13
@@ -90,7 +90,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 3 at (37.07,11.47) startOffset 2 endOffset 3 width 15.56: "m"
               chunk 1 text run 4 at (51.49,9.50) startOffset 3 endOffset 4 width 10.00: "p"
               chunk 1 text run 5 at (59.92,14.92) startOffset 4 endOffset 5 width 5.56: "l"
-              chunk 1 text run 6 at (66.75,21.64) startOffset 5 endOffset 6 width 8.88: "e"
+              chunk 1 text run 6 at (66.75,21.65) startOffset 5 endOffset 6 width 8.88: "e"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (35,50) size 68x13 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 68x13
@@ -105,7 +105,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 2 at (38.26,10.88) startOffset 1 endOffset 2 width 8.88: "a"
               chunk 1 text run 3 at (64.62,19.59) startOffset 2 endOffset 3 width 15.56: "m"
               chunk 1 text run 4 at (90.72,36.18) startOffset 3 endOffset 4 width 10.00: "p"
-              chunk 1 text run 5 at (107.41,27.71) startOffset 4 endOffset 5 width 5.56: "l"
+              chunk 1 text run 5 at (107.42,27.71) startOffset 4 endOffset 5 width 5.56: "l"
               chunk 1 text run 6 at (122.33,18.12) startOffset 5 endOffset 6 width 8.88: "e"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (35,50) size 73x13 contains 1 chunk(s)
@@ -145,10 +145,10 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (2,-2) size 36x36 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 36x36
             LayoutSVGInlineText {#text} at (0,0) size 36x36
-              chunk 1 text run 1 at (16.73,28.28) startOffset 0 endOffset 1 width 4.78: "s"
+              chunk 1 text run 1 at (16.73,28.27) startOffset 0 endOffset 1 width 4.78: "s"
               chunk 1 text run 2 at (18.41,26.60) startOffset 1 endOffset 2 width 5.88: "a"
-              chunk 1 text run 3 at (22.90,22.27) startOffset 2 endOffset 3 width 12.56: "m"
-              chunk 1 text run 4 at (27.91,17.79) startOffset 3 endOffset 4 width 7.00: "p"
+              chunk 1 text run 3 at (22.90,22.26) startOffset 2 endOffset 3 width 12.56: "m"
+              chunk 1 text run 4 at (27.92,17.79) startOffset 3 endOffset 4 width 7.00: "p"
               chunk 1 text run 5 at (29.30,16.66) startOffset 4 endOffset 5 width 2.56: "l"
               chunk 1 text run 6 at (30.25,15.92) startOffset 5 endOffset 6 width 5.88: "e"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -164,7 +164,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 1 at (17.81,27.20) startOffset 0 endOffset 1 width 7.78: "s"
               chunk 1 text run 2 at (20.59,24.47) startOffset 1 endOffset 2 width 8.88: "a"
               chunk 1 text run 3 at (26.17,19.29) startOffset 2 endOffset 3 width 15.56: "m"
-              chunk 1 text run 4 at (32.70,14.13) startOffset 3 endOffset 4 width 10.00: "p"
+              chunk 1 text run 4 at (32.70,14.12) startOffset 3 endOffset 4 width 10.00: "p"
               chunk 1 text run 5 at (35.51,12.33) startOffset 4 endOffset 5 width 5.56: "l"
               chunk 1 text run 6 at (37.87,11.07) startOffset 5 endOffset 6 width 8.88: "e"
               chunk 1 text run 7 at (58.61,13.69) startOffset 6 endOffset 7 width 45.00: " "
@@ -194,7 +194,7 @@ layer at (0,0) size 450x500
               chunk 1 text run 5 at (63.01,18.00) startOffset 4 endOffset 5 width 5.56: "l"
               chunk 1 text run 6 at (69.75,24.44) startOffset 5 endOffset 6 width 8.88: "e"
               chunk 1 text run 7 at (74.10,28.18) startOffset 6 endOffset 7 width 0.00: " "
-              chunk 1 text run 8 at (72.98,27.26) startOffset 7 endOffset 8 width 7.78: "s"
+              chunk 1 text run 8 at (72.99,27.26) startOffset 7 endOffset 8 width 7.78: "s"
               chunk 1 text run 9 at (81.80,33.39) startOffset 8 endOffset 9 width 8.88: "a"
               chunk 1 text run 10 at (96.94,35.35) startOffset 9 endOffset 10 width 15.56: "m"
               chunk 1 text run 11 at (110.17,25.39) startOffset 10 endOffset 11 width 10.00: "p"

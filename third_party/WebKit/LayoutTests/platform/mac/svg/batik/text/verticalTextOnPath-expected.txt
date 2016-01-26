@@ -76,11 +76,11 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (6,0) size 66x35 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 35x66
             LayoutSVGInlineText {#text} at (4,19) size 15x15
-              chunk 1 (end anchor, vertical) text run 1 at (17.82,27.18) startOffset 4 endOffset 5 height 17.00: " "
+              chunk 1 (end anchor, vertical) text run 1 at (17.83,27.18) startOffset 4 endOffset 5 height 17.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 23x24
               LayoutSVGInlineText {#text} at (0,1) size 23x23
                 chunk 1 (end anchor, vertical) text run 1 at (21.89,23.22) startOffset 0 endOffset 1 height 17.00: "o"
-                chunk 1 (end anchor, vertical) text run 2 at (27.38,18.24) startOffset 1 endOffset 2 height 17.00: "n"
+                chunk 1 (end anchor, vertical) text run 2 at (27.39,18.24) startOffset 1 endOffset 2 height 17.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 28x47
               LayoutSVGInlineText {#text} at (18,0) size 47x27
                 chunk 1 (end anchor, vertical) text run 1 at (31.77,14.78) startOffset 0 endOffset 1 height 17.00: " "
@@ -174,7 +174,7 @@ layer at (0,0) size 450x500
             LayoutSVGTSpan {tspan} at (0,0) size 22x18
               LayoutSVGInlineText {#text} at (28,11) size 18x21
                 chunk 1 (end anchor, vertical) text run 1 at (80.17,32.47) startOffset 0 endOffset 1 height 17.00: "o"
-                chunk 1 (end anchor, vertical) text run 2 at (86.97,35.51) startOffset 1 endOffset 2 height 17.00: "n"
+                chunk 1 (end anchor, vertical) text run 2 at (86.98,35.51) startOffset 1 endOffset 2 height 17.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 37x40
               LayoutSVGInlineText {#text} at (41,5) size 39x36
                 chunk 1 (end anchor, vertical) text run 1 at (92.52,36.20) startOffset 0 endOffset 1 height 17.00: " "
@@ -236,14 +236,14 @@ layer at (0,0) size 450x500
             LayoutSVGInlineText {#text} at (0,18) size 23x23
               chunk 1 (middle anchor, vertical) text run 1 at (19.16,25.86) startOffset 2 endOffset 3 height 17.00: "x"
               chunk 1 (middle anchor, vertical) text run 2 at (23.37,21.82) startOffset 3 endOffset 4 height 17.00: "t"
-              chunk 1 (middle anchor, vertical) text run 3 at (26.23,19.24) startOffset 4 endOffset 5 height 17.00: " "
+              chunk 1 (middle anchor, vertical) text run 3 at (26.23,19.23) startOffset 4 endOffset 5 height 17.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 25x24
               LayoutSVGInlineText {#text} at (5,0) size 24x24
                 chunk 1 (middle anchor, vertical) text run 1 at (30.62,15.64) startOffset 0 endOffset 1 height 17.00: "o"
                 chunk 1 (middle anchor, vertical) text run 2 at (36.89,11.56) startOffset 1 endOffset 2 height 17.00: "n"
             LayoutSVGTSpan {tspan} at (0,0) size 35x43
               LayoutSVGInlineText {#text} at (27,6) size 42x35
-                chunk 1 (middle anchor, vertical) text run 1 at (42.11,9.45) startOffset 0 endOffset 1 height 17.00: " "
+                chunk 1 (middle anchor, vertical) text run 1 at (42.12,9.45) startOffset 0 endOffset 1 height 17.00: " "
                 chunk 1 (middle anchor, vertical) text run 2 at (47.25,8.79) startOffset 1 endOffset 2 height 17.00: "a"
                 chunk 1 (middle anchor, vertical) text run 3 at (52.27,9.77) startOffset 2 endOffset 3 height 17.00: " "
                 chunk 1 (middle anchor, vertical) text run 4 at (57.43,12.72) startOffset 3 endOffset 4 height 17.00: "P"
@@ -291,14 +291,14 @@ layer at (0,0) size 450x500
                 chunk 1 (vertical) text run 1 at (30.11,46.97) startOffset 0 endOffset 1 height 17.00: "s"
                 chunk 1 (vertical) text run 2 at (31.20,40.47) startOffset 1 endOffset 2 height 17.00: "u"
                 chunk 1 (vertical) text run 3 at (33.92,33.50) startOffset 2 endOffset 3 height 17.00: "p"
-                chunk 1 (vertical) text run 4 at (37.89,27.64) startOffset 3 endOffset 4 height 17.00: "e"
+                chunk 1 (vertical) text run 4 at (37.89,27.63) startOffset 3 endOffset 4 height 17.00: "e"
                 chunk 1 (vertical) text run 5 at (42.00,23.52) startOffset 4 endOffset 5 height 17.00: "r"
             LayoutSVGInlineText {#text} at (26,0) size 33x25
               chunk 1 (vertical) text run 1 at (45.48,20.87) startOffset 0 endOffset 1 height 17.00: " "
               chunk 1 (vertical) text run 2 at (49.97,18.22) startOffset 1 endOffset 2 height 17.00: "a"
               chunk 1 (vertical) text run 3 at (56.49,15.48) startOffset 2 endOffset 3 height 17.00: "n"
               chunk 1 (vertical) text run 4 at (63.74,13.56) startOffset 3 endOffset 4 height 17.00: "d"
-              chunk 1 (vertical) text run 5 at (69.32,12.77) startOffset 4 endOffset 5 height 17.00: " "
+              chunk 1 (vertical) text run 5 at (69.33,12.77) startOffset 4 endOffset 5 height 17.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 20x21
               LayoutSVGInlineText {#text} at (58,8) size 21x19
                 chunk 1 (vertical) text run 1 at (74.12,12.51) startOffset 0 endOffset 1 height 17.00: "s"
@@ -306,10 +306,10 @@ layer at (0,0) size 450x500
                 chunk 1 (vertical) text run 3 at (88.21,13.97) startOffset 2 endOffset 3 height 17.00: "b"
             LayoutSVGInlineText {#text} at (76,2) size 39x37
               chunk 1 (vertical) text run 1 at (94.61,15.86) startOffset 0 endOffset 1 height 17.00: "s"
-              chunk 1 (vertical) text run 2 at (100.32,18.38) startOffset 1 endOffset 2 height 17.00: "c"
+              chunk 1 (vertical) text run 2 at (100.33,18.38) startOffset 1 endOffset 2 height 17.00: "c"
               chunk 1 (vertical) text run 3 at (105.30,21.41) startOffset 2 endOffset 3 height 17.00: "r"
-              chunk 1 (vertical) text run 4 at (108.87,24.28) startOffset 3 endOffset 4 height 17.00: "i"
-              chunk 1 (vertical) text run 5 at (112.85,28.53) startOffset 4 endOffset 5 height 17.00: "p"
+              chunk 1 (vertical) text run 4 at (108.88,24.28) startOffset 3 endOffset 4 height 17.00: "i"
+              chunk 1 (vertical) text run 5 at (112.85,28.54) startOffset 4 endOffset 5 height 17.00: "p"
               chunk 1 (vertical) text run 6 at (116.05,33.43) startOffset 5 endOffset 6 height 17.00: "t"
               chunk 1 (vertical) text run 7 at (118.03,37.97) startOffset 6 endOffset 7 height 17.00: "s"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -334,22 +334,22 @@ layer at (0,0) size 450x500
                 chunk 1 (vertical) text run 3 at (34.32,32.76) startOffset 2 endOffset 3 height 17.00: "s"
                 chunk 1 (vertical) text run 4 at (37.10,28.60) startOffset 3 endOffset 4 height 17.00: "i"
                 chunk 1 (vertical) text run 5 at (39.86,25.49) startOffset 4 endOffset 5 height 17.00: "t"
-                chunk 1 (vertical) text run 6 at (42.97,22.71) startOffset 5 endOffset 6 height 17.00: "i"
+                chunk 1 (vertical) text run 6 at (42.98,22.71) startOffset 5 endOffset 6 height 17.00: "i"
                 chunk 1 (vertical) text run 7 at (47.78,19.42) startOffset 6 endOffset 7 height 17.00: "v"
                 chunk 1 (vertical) text run 8 at (54.15,16.33) startOffset 7 endOffset 8 height 17.00: "e"
             LayoutSVGInlineText {#text} at (36,0) size 33x20
               chunk 1 (vertical) text run 1 at (59.10,14.66) startOffset 0 endOffset 1 height 17.00: " "
               chunk 1 (vertical) text run 2 at (64.17,13.48) startOffset 1 endOffset 2 height 17.00: "a"
               chunk 1 (vertical) text run 3 at (71.20,12.62) startOffset 2 endOffset 3 height 17.00: "n"
-              chunk 1 (vertical) text run 4 at (78.71,12.61) startOffset 3 endOffset 4 height 17.00: "d"
+              chunk 1 (vertical) text run 4 at (78.72,12.61) startOffset 3 endOffset 4 height 17.00: "d"
               chunk 1 (vertical) text run 5 at (84.31,13.22) startOffset 4 endOffset 5 height 17.00: " "
             LayoutSVGTSpan {tspan} at (0,0) size 42x43
               LayoutSVGInlineText {#text} at (64,4) size 43x41
                 chunk 1 (vertical) text run 1 at (89.83,14.37) startOffset 0 endOffset 1 height 17.00: "n"
                 chunk 1 (vertical) text run 2 at (96.55,16.62) startOffset 1 endOffset 2 height 17.00: "e"
                 chunk 1 (vertical) text run 3 at (102.87,19.81) startOffset 2 endOffset 3 height 17.00: "g"
-                chunk 1 (vertical) text run 4 at (108.56,24.00) startOffset 3 endOffset 4 height 17.00: "a"
-                chunk 1 (vertical) text run 5 at (112.32,27.88) startOffset 4 endOffset 5 height 17.00: "t"
+                chunk 1 (vertical) text run 4 at (108.56,24.01) startOffset 3 endOffset 4 height 17.00: "a"
+                chunk 1 (vertical) text run 5 at (112.32,27.89) startOffset 4 endOffset 5 height 17.00: "t"
                 chunk 1 (vertical) text run 6 at (114.77,31.25) startOffset 5 endOffset 6 height 17.00: "i"
                 chunk 1 (vertical) text run 7 at (117.44,36.40) startOffset 6 endOffset 7 height 17.00: "v"
                 chunk 1 (vertical) text run 8 at (119.40,43.18) startOffset 7 endOffset 8 height 17.00: "e"
@@ -380,12 +380,12 @@ layer at (0,0) size 450x500
               chunk 1 (vertical) text run 12 at (3.50,70.51) startOffset 11 endOffset 12 height 22.67: " "
             LayoutSVGTextPath {textPath} at (0,0) size 42x61
               LayoutSVGInlineText {#text} at (24,21) size 60x42
-                chunk 1 (vertical) text run 1 at (34.40,32.61) startOffset 0 endOffset 1 height 22.67: "o"
+                chunk 1 (vertical) text run 1 at (34.41,32.61) startOffset 0 endOffset 1 height 22.67: "o"
                 chunk 1 (vertical) text run 2 at (40.58,24.79) startOffset 1 endOffset 2 height 22.67: "n"
-                chunk 1 (vertical) text run 3 at (46.50,20.21) startOffset 2 endOffset 3 height 22.67: " "
-                chunk 1 (vertical) text run 4 at (53.15,16.74) startOffset 3 endOffset 4 height 22.67: "p"
+                chunk 1 (vertical) text run 3 at (46.50,20.20) startOffset 2 endOffset 3 height 22.67: " "
+                chunk 1 (vertical) text run 4 at (53.16,16.74) startOffset 3 endOffset 4 height 22.67: "p"
                 chunk 1 (vertical) text run 5 at (62.15,13.89) startOffset 4 endOffset 5 height 22.67: "a"
-                chunk 1 (vertical) text run 6 at (69.29,12.77) startOffset 5 endOffset 6 height 22.67: "t"
+                chunk 1 (vertical) text run 6 at (69.30,12.77) startOffset 5 endOffset 6 height 22.67: "t"
                 chunk 1 (vertical) text run 7 at (77.08,12.54) startOffset 6 endOffset 7 height 22.67: "h"
             LayoutSVGInlineText {#text} at (67,42) size 23x77
               chunk 1 (vertical) text run 1 at (70.58,22.54) startOffset 0 endOffset 1 height 22.67: "a"

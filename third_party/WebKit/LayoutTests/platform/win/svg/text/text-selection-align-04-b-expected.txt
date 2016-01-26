@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
               chunk 1 (end anchor) text run 4 at (46.54,260.00) startOffset 15 endOffset 16 width 16.68: "d"
               chunk 1 (end anchor) text run 5 at (59.05,260.00) startOffset 16 endOffset 17 width 8.33: " "
               chunk 1 (end anchor) text run 6 at (67.39,260.00) startOffset 17 endOffset 18 width 8.33: "t"
-              chunk 1 (end anchor) text run 7 at (79.89,260.00) startOffset 18 endOffset 19 width 16.68: "e"
+              chunk 1 (end anchor) text run 7 at (79.90,260.00) startOffset 18 endOffset 19 width 16.68: "e"
               chunk 1 (end anchor) text run 8 at (95.74,260.00) startOffset 19 endOffset 20 width 15.00: "x"
               chunk 1 (end anchor) text run 9 at (107.40,260.00) startOffset 20 endOffset 21 width 8.33: "t"
               chunk 1 (end anchor) text run 10 at (115.74,260.00) startOffset 21 endOffset 22 width 8.33: " "
