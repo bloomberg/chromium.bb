@@ -351,6 +351,10 @@ gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane)
 	return bo->handles[plane];
 }
 
+#ifndef DRM_RDWR
+#define DRM_RDWR O_RDWR
+#endif
+
 PUBLIC int
 gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
 {
@@ -360,7 +364,7 @@ gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
 	if (drmPrimeHandleToFD(
 			gbm_device_get_fd(bo->gbm),
 			gbm_bo_get_plane_handle(bo, plane).u32,
-			DRM_CLOEXEC,
+			DRM_CLOEXEC | DRM_RDWR,
 			&fd))
 		return -1;
 	else
