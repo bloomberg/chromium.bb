@@ -131,7 +131,7 @@ scoped_refptr<base::SequencedTaskRunner>
 ChromeConfigurator::GetSequencedTaskRunner() const {
   return content::BrowserThread::GetBlockingPool()
       ->GetSequencedTaskRunnerWithShutdownBehavior(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
+          base::SequencedWorkerPool::GetSequenceToken(),
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 

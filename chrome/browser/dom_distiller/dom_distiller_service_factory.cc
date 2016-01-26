@@ -55,7 +55,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+          base::SequencedWorkerPool::GetSequenceToken());
 
   scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry> > db(
       new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(

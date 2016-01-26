@@ -14,7 +14,7 @@ scoped_refptr<base::SequencedTaskRunner>
 UpdateClientConfig::GetSequencedTaskRunner() const {
   return content::BrowserThread::GetBlockingPool()
       ->GetSequencedTaskRunnerWithShutdownBehavior(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
+          base::SequencedWorkerPool::GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 

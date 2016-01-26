@@ -508,7 +508,7 @@ void ProfileImplIOData::InitializeInternal(
         new QuotaPolicyChannelIDStore(
             lazy_params_->channel_id_path,
             BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-                BrowserThread::GetBlockingPool()->GetSequenceToken()),
+                base::SequencedWorkerPool::GetSequenceToken()),
             lazy_params_->special_storage_policy.get());
     channel_id_service = new net::ChannelIDService(
         new net::DefaultChannelIDStore(channel_id_db.get()),

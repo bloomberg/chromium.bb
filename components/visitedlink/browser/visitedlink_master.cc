@@ -282,7 +282,7 @@ void VisitedLinkMaster::InitMembers() {
   used_items_ = 0;
   table_size_override_ = 0;
   suppress_rebuild_ = false;
-  sequence_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
+  sequence_token_ = base::SequencedWorkerPool::GetSequenceToken();
 }
 
 bool VisitedLinkMaster::Init() {

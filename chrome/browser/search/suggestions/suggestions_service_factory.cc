@@ -57,7 +57,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          BrowserThread::GetBlockingPool()->GetSequenceToken());
+          base::SequencedWorkerPool::GetSequenceToken());
 
   Profile* the_profile = static_cast<Profile*>(profile);
 
