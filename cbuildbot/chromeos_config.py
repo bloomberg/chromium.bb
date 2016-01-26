@@ -384,6 +384,7 @@ _arm_external_boards = frozenset([
 ])
 
 _x86_internal_release_boards = frozenset([
+    'amd64-generic-goofy',
     'auron',
     'auron_paine',
     'auron_yuna',
@@ -588,6 +589,7 @@ _waterfall_config_map = {
         'storm-release-group',
 
         # Experimental Canaries
+        'amd64-generic-goofy-release',
         'kayle-release',
         'kunimitsu-release-group',
         'lakitu_next-release',
@@ -2224,6 +2226,12 @@ def GetConfig():
       # Hw Lab can't test storm, yet.
       paygen_skip_testing=True,
       signer_tests=False,
+  )
+
+  site_config.Add(
+      'amd64-generic-goofy-release', _release,
+      _base_configs['amd64-generic-goofy'],
+      important=False,
   )
 
   moblab_release = site_config.AddTemplate(
