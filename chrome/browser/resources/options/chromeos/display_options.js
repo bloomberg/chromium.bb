@@ -1043,10 +1043,14 @@ cr.define('options', function() {
       };
 
       // Layout the display rectangles. First layout the primary display and
-      // then layout the secondary which is attached to the primary.
+      // then layout any secondary displays.
+      this.createDisplayLayoutDiv_(
+          this.displayLayoutMap_[this.primaryDisplayId_], layoutType, offset);
       for (var i = 0; i < this.displays_.length; i++) {
-        this.createDisplayLayoutDiv_(
-            this.displayLayoutMap_[this.displays_[i].id], layoutType, offset);
+        if (!this.displays_[i].isPrimary) {
+          this.createDisplayLayoutDiv_(
+              this.displayLayoutMap_[this.displays_[i].id], layoutType, offset);
+        }
       }
     },
 
