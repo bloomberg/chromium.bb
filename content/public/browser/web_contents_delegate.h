@@ -60,6 +60,10 @@ class Rect;
 class Size;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace blink {
 class WebGestureEvent;
 }
@@ -354,7 +358,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual scoped_ptr<BluetoothChooser> RunBluetoothChooser(
       WebContents* web_contents,
       const BluetoothChooser::EventHandler& event_handler,
-      const GURL& origin);
+      const url::Origin& origin);
 
   // Returns true if the delegate will embed a WebContents-owned fullscreen
   // render widget.  In this case, the delegate may access the widget by calling

@@ -156,7 +156,7 @@ JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager(
 scoped_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
     WebContents* web_contents,
     const BluetoothChooser::EventHandler& event_handler,
-    const GURL& origin) {
+    const url::Origin& origin) {
   return nullptr;
 }
 

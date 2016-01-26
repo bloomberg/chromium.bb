@@ -378,7 +378,7 @@ bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
 scoped_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
     WebContents* web_contents,
     const BluetoothChooser::EventHandler& event_handler,
-    const GURL& origin) {
+    const url::Origin& origin) {
   if (bluetooth_chooser_factory_) {
     return bluetooth_chooser_factory_->RunBluetoothChooser(
         web_contents, event_handler, origin);

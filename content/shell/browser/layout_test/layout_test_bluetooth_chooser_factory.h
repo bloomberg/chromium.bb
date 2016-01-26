@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/bluetooth_chooser.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace content {
 
@@ -27,7 +29,7 @@ class LayoutTestBluetoothChooserFactory {
   scoped_ptr<BluetoothChooser> RunBluetoothChooser(
       WebContents* web_contents,
       const BluetoothChooser::EventHandler& event_handler,
-      const GURL& origin);
+      const url::Origin& origin);
 
   std::vector<std::string> GetAndResetEvents();
 

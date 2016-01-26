@@ -9,13 +9,17 @@
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/web_contents.h"
 
+namespace url {
+class Origin;
+}
+
 // Represents a way to ask the user to select a Bluetooth device from a list of
 // options.
 class BluetoothChooserAndroid : public content::BluetoothChooser {
  public:
   BluetoothChooserAndroid(content::WebContents* web_contents,
                           const EventHandler& event_handler,
-                          const GURL& origin);
+                          const url::Origin& origin);
   ~BluetoothChooserAndroid() override;
 
   // content::BluetoothChooser:

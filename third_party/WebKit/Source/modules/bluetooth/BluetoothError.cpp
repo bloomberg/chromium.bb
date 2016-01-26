@@ -61,6 +61,7 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
 
         // SecurityErrors:
         MAP_ERROR(GATTNotAuthorized, SecurityError, "GATT operation not authorized.");
+        MAP_ERROR(RequestDeviceWithUniqueOrigin, SecurityError, "requestDevice() called from sandboxed or otherwise unique origin.");
         MAP_ERROR(RequestDeviceWithoutFrame, SecurityError, "No window to show the requestDevice() dialog.");
 
 #undef MAP_ERROR

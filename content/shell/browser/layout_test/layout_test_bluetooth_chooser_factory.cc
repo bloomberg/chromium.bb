@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -102,9 +102,10 @@ scoped_ptr<BluetoothChooser>
 LayoutTestBluetoothChooserFactory::RunBluetoothChooser(
     WebContents* web_contents,
     const BluetoothChooser::EventHandler& event_handler,
-    const GURL& origin) {
+    const url::Origin& origin) {
+  DCHECK(!origin.unique());
   std::string event = "chooser-opened(";
-  event += origin.spec();
+  event += origin.Serialize();
   event += ")";
   events_.push_back(event);
   return make_scoped_ptr(new Chooser(weak_this_.GetWeakPtr(), event_handler));

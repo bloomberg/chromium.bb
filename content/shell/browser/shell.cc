@@ -382,7 +382,7 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
 scoped_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     WebContents* web_contents,
     const BluetoothChooser::EventHandler& event_handler,
-    const GURL& origin) {
+    const url::Origin& origin) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRunLayoutTest)) {

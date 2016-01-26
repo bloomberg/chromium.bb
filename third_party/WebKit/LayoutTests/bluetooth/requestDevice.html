@@ -17,7 +17,7 @@ promise_test(() => {
   return getBluetoothManualChooserEvents(3)
     .then(events => {
       assert_array_equals(events,
-                          ['chooser-opened(file:///)',
+                          ['chooser-opened(file://)',
                            'discovering',
                            'discovery-failed-to-start'],
                           events);
@@ -46,7 +46,7 @@ promise_test(() => {
   return getBluetoothManualChooserEvents(2)
     .then(events => {
       assert_array_equals(events,
-                          ['chooser-opened(file:///)',
+                          ['chooser-opened(file://)',
                            'adapter-disabled'],
                           events);
       testRunner.sendBluetoothManualChooserEvent('cancelled', '');
@@ -139,7 +139,7 @@ promise_test(() => {
   return getBluetoothManualChooserEvents(5)
     .then(events => {
       assert_equals(events.length, 5, events);
-      assert_equals(events[0], 'chooser-opened(file:///)', 'events[0]');
+      assert_equals(events[0], 'chooser-opened(file://)', 'events[0]');
       let idsByName = new AddDeviceEventSet();
       for (let addedDevice of [events[1], events[2]]) {
         idsByName.assert_add_device_event(addedDevice);
@@ -197,7 +197,7 @@ promise_test(() => {
   // The adapter finds nothing, so we just see discovery start and stop.
   return getBluetoothManualChooserEvents(3).then(events => {
     assert_array_equals(events,
-                        ['chooser-opened(file:///)',
+                        ['chooser-opened(file://)',
                          'discovering',
                          'discovery-idle',
                         ]);

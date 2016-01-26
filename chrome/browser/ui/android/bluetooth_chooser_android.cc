@@ -12,6 +12,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/BluetoothChooserDialog_jni.h"
 #include "ui/android/window_android.h"
+#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -21,8 +22,9 @@ using base::android::ScopedJavaLocalRef;
 BluetoothChooserAndroid::BluetoothChooserAndroid(
     content::WebContents* web_contents,
     const EventHandler& event_handler,
-    const GURL& origin)
+    const url::Origin& origin)
     : event_handler_(event_handler) {
+  DCHECK(!origin.unique());
   base::android::ScopedJavaLocalRef<jobject> window_android =
       content::ContentViewCore::FromWebContents(
           web_contents)->GetWindowAndroid()->GetJavaObject();
@@ -34,7 +36,7 @@ BluetoothChooserAndroid::BluetoothChooserAndroid(
   // Create (and show) the BluetoothChooser dialog.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> origin_string =
-      ConvertUTF8ToJavaString(env, origin.spec());
+      ConvertUTF8ToJavaString(env, origin.Serialize());
   java_dialog_.Reset(Java_BluetoothChooserDialog_create(
       env, window_android.obj(), origin_string.obj(),
       security_model_client->GetSecurityInfo().security_level,

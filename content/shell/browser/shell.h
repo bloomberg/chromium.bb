@@ -138,7 +138,7 @@ class Shell : public WebContentsDelegate,
   scoped_ptr<BluetoothChooser> RunBluetoothChooser(
       WebContents* web_contents,
       const BluetoothChooser::EventHandler& event_handler,
-      const GURL& origin) override;
+      const url::Origin& origin) override;
 #if defined(OS_MACOSX)
   void HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;

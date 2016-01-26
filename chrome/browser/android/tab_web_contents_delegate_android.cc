@@ -122,11 +122,10 @@ void TabWebContentsDelegateAndroid::RunFileChooser(
   FileSelectHelper::RunFileChooser(web_contents, params);
 }
 
-scoped_ptr<BluetoothChooser>
-TabWebContentsDelegateAndroid::RunBluetoothChooser(
+scoped_ptr<BluetoothChooser> TabWebContentsDelegateAndroid::RunBluetoothChooser(
     content::WebContents* web_contents,
     const BluetoothChooser::EventHandler& event_handler,
-    const GURL& origin) {
+    const url::Origin& origin) {
   return make_scoped_ptr(
       new BluetoothChooserAndroid(web_contents, event_handler, origin));
 }

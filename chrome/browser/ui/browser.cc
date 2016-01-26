@@ -1427,7 +1427,7 @@ void Browser::ShowCertificateViewerInDevTools(
 scoped_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
     content::WebContents* web_contents,
     const content::BluetoothChooser::EventHandler& event_handler,
-    const GURL& origin) {
+    const url::Origin& origin) {
   scoped_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
       new BluetoothChooserDesktop(event_handler));
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);

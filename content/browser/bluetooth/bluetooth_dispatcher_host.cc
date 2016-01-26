@@ -634,6 +634,14 @@ void BluetoothDispatcherHost::OnRequestDevice(
     return;
   }
 
+  if (render_frame_host->GetLastCommittedOrigin().unique()) {
+    VLOG(1) << "Request device with unique origin.";
+    Send(new BluetoothMsg_RequestDeviceError(
+        thread_id, request_id,
+        WebBluetoothError::RequestDeviceWithUniqueOrigin));
+    return;
+  }
+
   if (!adapter_) {
     VLOG(1) << "No BluetoothAdapter. Can't serve requestDevice.";
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_BLUETOOTH_ADAPTER);
@@ -673,9 +681,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
       session->chooser = delegate->RunBluetoothChooser(
           web_contents, chooser_event_handler,
-          // TODO(ortuno): Replace with GetLastCommittedOrigin.
-          // http://crbug.com/577451
-          render_frame_host->GetLastCommittedURL().GetOrigin());
+          render_frame_host->GetLastCommittedOrigin());
     }
   }
   if (!session->chooser) {

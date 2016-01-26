@@ -30,6 +30,10 @@
 
 class SkBitmap;
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class LayoutTestBluetoothChooserFactory;
@@ -131,7 +135,7 @@ class BlinkTestController : public base::NonThreadSafe,
   scoped_ptr<BluetoothChooser> RunBluetoothChooser(
       WebContents* web_contents,
       const BluetoothChooser::EventHandler& event_handler,
-      const GURL& origin);
+      const url::Origin& origin);
 
   BlinkTestResultPrinter* printer() { return printer_.get(); }
   void set_printer(BlinkTestResultPrinter* printer) { printer_.reset(printer); }
