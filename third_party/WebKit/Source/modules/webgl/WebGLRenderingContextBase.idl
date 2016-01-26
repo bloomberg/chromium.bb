@@ -631,7 +631,7 @@ typedef unrestricted float GLclampf;
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement video);
-    [RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] void texImage2D(
+    [RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, ImageBitmap bitmap);
 
@@ -651,7 +651,7 @@ typedef unrestricted float GLclampf;
     [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement video);
-    [RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] void texSubImage2D(
+    [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, ImageBitmap bitmap);
 
