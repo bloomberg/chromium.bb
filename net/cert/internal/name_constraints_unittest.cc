@@ -193,11 +193,11 @@ TEST_P(ParseNameConstraints, DNSNamesExcludeOnly) {
       NameConstraints::CreateFromDer(der::Input(&a), is_critical()));
   ASSERT_TRUE(name_constraints);
 
-  // Only "excluded.permitted.example.com" is excluded, but since no dNSNames
-  // are permitted, everything is excluded.
-  EXPECT_FALSE(name_constraints->IsPermittedDNSName(""));
-  EXPECT_FALSE(name_constraints->IsPermittedDNSName("foo.com"));
-  EXPECT_FALSE(name_constraints->IsPermittedDNSName("permitted.example.com"));
+  // Only "excluded.permitted.example.com" is excluded, and since permitted is
+  // empty, any dNSName outside that is allowed.
+  EXPECT_TRUE(name_constraints->IsPermittedDNSName(""));
+  EXPECT_TRUE(name_constraints->IsPermittedDNSName("foo.com"));
+  EXPECT_TRUE(name_constraints->IsPermittedDNSName("permitted.example.com"));
   EXPECT_FALSE(
       name_constraints->IsPermittedDNSName("excluded.permitted.example.com"));
   EXPECT_FALSE(
@@ -349,11 +349,11 @@ TEST_P(ParseNameConstraints, DirectoryNamesExcludeOnly) {
   ASSERT_TRUE(LoadTestName("name-us-california-mountain_view.pem",
                            &name_us_ca_mountain_view));
 
-  // Only "C=US,ST=California" is excluded, but since no directoryNames are
-  // permitted, everything is excluded.
-  EXPECT_FALSE(name_constraints->IsPermittedDirectoryName(
+  // Only "C=US,ST=California" is excluded, and since permitted is empty,
+  // any directoryName outside that is allowed.
+  EXPECT_TRUE(name_constraints->IsPermittedDirectoryName(
       SequenceValueFromString(&name_empty)));
-  EXPECT_FALSE(name_constraints->IsPermittedDirectoryName(
+  EXPECT_TRUE(name_constraints->IsPermittedDirectoryName(
       SequenceValueFromString(&name_us)));
   EXPECT_FALSE(name_constraints->IsPermittedDirectoryName(
       SequenceValueFromString(&name_us_ca)));
@@ -364,7 +364,7 @@ TEST_P(ParseNameConstraints, DirectoryNamesExcludeOnly) {
 TEST_P(ParseNameConstraints, DirectoryNamesExcludeAll) {
   std::string constraints_der;
   ASSERT_TRUE(
-      LoadTestNameConstraint("directoryname-excluded.pem", &constraints_der));
+      LoadTestNameConstraint("directoryname-excludeall.pem", &constraints_der));
   scoped_ptr<NameConstraints> name_constraints(NameConstraints::CreateFromDer(
       der::Input(&constraints_der), is_critical()));
   ASSERT_TRUE(name_constraints);
@@ -567,11 +567,11 @@ TEST_P(ParseNameConstraints, IPAdressesExcludeOnly) {
       NameConstraints::CreateFromDer(der::Input(&a), is_critical()));
   ASSERT_TRUE(name_constraints);
 
-  // Only 192.168.5.0/255.255.255.0 is excluded, but since no iPAddresses
-  // are permitted, everything is excluded.
+  // Only 192.168.5.0/255.255.255.0 is excluded, and since permitted is empty,
+  // any iPAddress outside that is allowed.
   {
     const uint8_t ip4[] = {192, 168, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
+    EXPECT_TRUE(name_constraints->IsPermittedIP(
         IPAddressNumber(ip4, ip4 + arraysize(ip4))));
   }
   {
@@ -581,7 +581,7 @@ TEST_P(ParseNameConstraints, IPAdressesExcludeOnly) {
   }
   {
     const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
+    EXPECT_TRUE(name_constraints->IsPermittedIP(
         IPAddressNumber(ip6, ip6 + arraysize(ip6))));
   }
 }

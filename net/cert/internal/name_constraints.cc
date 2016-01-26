@@ -496,10 +496,6 @@ bool NameConstraints::IsPermittedCert(
 }
 
 bool NameConstraints::IsPermittedDNSName(const std::string& name) const {
-  // If there are no name constraints for DNS names, all names are accepted.
-  if (!(ConstrainedNameTypes() & GENERAL_NAME_DNS_NAME))
-    return true;
-
   for (const std::string& excluded_name : excluded_subtrees_.dns_names) {
     // When matching wildcard hosts against excluded subtrees, consider it a
     // match if the constraint would match any expansion of the wildcard. Eg,
@@ -507,6 +503,12 @@ bool NameConstraints::IsPermittedDNSName(const std::string& name) const {
     if (DNSNameMatches(name, excluded_name, WILDCARD_PARTIAL_MATCH))
       return false;
   }
+
+  // If permitted subtrees are not constrained, any name that is not excluded is
+  // allowed.
+  if (!(permitted_subtrees_.present_name_types & GENERAL_NAME_DNS_NAME))
+    return true;
+
   for (const std::string& permitted_name : permitted_subtrees_.dns_names) {
     // When matching wildcard hosts against permitted subtrees, consider it a
     // match only if the constraint would match all expansions of the wildcard.
@@ -520,11 +522,6 @@ bool NameConstraints::IsPermittedDNSName(const std::string& name) const {
 
 bool NameConstraints::IsPermittedDirectoryName(
     const der::Input& name_rdn_sequence) const {
-  // If there are no name constraints for directory names, all names are
-  // accepted.
-  if (!(ConstrainedNameTypes() & GENERAL_NAME_DIRECTORY_NAME))
-    return true;
-
   for (const auto& excluded_name : excluded_subtrees_.directory_names) {
     if (VerifyNameInSubtree(
             name_rdn_sequence,
@@ -532,6 +529,12 @@ bool NameConstraints::IsPermittedDirectoryName(
       return false;
     }
   }
+
+  // If permitted subtrees are not constrained, any name that is not excluded is
+  // allowed.
+  if (!(permitted_subtrees_.present_name_types & GENERAL_NAME_DIRECTORY_NAME))
+    return true;
+
   for (const auto& permitted_name : permitted_subtrees_.directory_names) {
     if (VerifyNameInSubtree(
             name_rdn_sequence,
@@ -544,15 +547,16 @@ bool NameConstraints::IsPermittedDirectoryName(
 }
 
 bool NameConstraints::IsPermittedIP(const IPAddressNumber& ip) const {
-  // If there are no name constraints for IP Address names, all names are
-  // accepted.
-  if (!(ConstrainedNameTypes() & GENERAL_NAME_IP_ADDRESS))
-    return true;
-
   for (const auto& excluded_ip : excluded_subtrees_.ip_address_ranges) {
     if (IPNumberMatchesPrefix(ip, excluded_ip.first, excluded_ip.second))
       return false;
   }
+
+  // If permitted subtrees are not constrained, any name that is not excluded is
+  // allowed.
+  if (!(permitted_subtrees_.present_name_types & GENERAL_NAME_IP_ADDRESS))
+    return true;
+
   for (const auto& permitted_ip : permitted_subtrees_.ip_address_ranges) {
     if (IPNumberMatchesPrefix(ip, permitted_ip.first, permitted_ip.second))
       return true;
