@@ -225,7 +225,7 @@ const PasswordForm* BestKeychainFormForForm(
 }
 
 // Iterates over all elements in |forms|, passes the pointed to objects to
-// |move_form|, and clears |forms| efficiently. FormMover needs to be a callable
+// |mover|, and clears |forms| efficiently. FormMover needs to be a callable
 // entity, accepting scoped_ptr<autofill::PasswordForm> as its sole argument.
 template <typename FormMover>
 inline void MoveAllFormsOut(ScopedVector<autofill::PasswordForm>* forms,
