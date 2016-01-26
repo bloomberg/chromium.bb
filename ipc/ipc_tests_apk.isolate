@@ -8,6 +8,7 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_ipc_tests',
+      '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '<(PRODUCT_DIR)/bin/run_ipc_tests',
