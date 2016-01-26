@@ -13,15 +13,6 @@
         ['OS=="linux"', {
           'targets': [
             {
-              'target_name': 'app_remoting_integration_tests_run',
-              'includes': [
-                './dependencies.gypi',
-              ],
-              'sources': [
-                'app_remoting_integration_tests.isolate',
-              ],
-            },  # target_name: 'app_remoting_integration_tests_run'
-            {
               'target_name': 'chromoting_integration_tests_run',
               'includes': [
                 './dependencies.gypi',
