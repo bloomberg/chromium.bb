@@ -211,7 +211,7 @@ TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
     frameElement->contentDocument()->documentElement()->setAttribute(styleAttr, "background: green");
     EXPECT_FALSE(compositor().needsAnimate());
 
-    // Moving the frame back on screen to unthrottle it.
+    // Move the frame back on screen to unthrottle it.
     frameElement->setAttribute(styleAttr, "");
     EXPECT_TRUE(compositor().needsAnimate());
 
@@ -249,6 +249,65 @@ TEST_F(FrameThrottlingTest, SynchronousLayoutInThrottledFrame)
     // Querying the width of the div should do a synchronous layout update even
     // though the frame is being throttled.
     EXPECT_EQ(50, divElement->clientWidth());
+}
+
+TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaint)
+{
+    // Create a hidden frame which is throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("<style> html { background: green; } </style>");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->shouldThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->shouldThrottleRendering());
+
+    // Scroll down to unthrottle the frame. The first frame we composite after
+    // scrolling won't contain the frame yet, but will schedule another repaint.
+    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    auto displayItems = compositeFrame();
+    EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
+
+    // Now the frame contents should be visible again.
+    auto displayItems2 = compositeFrame();
+    EXPECT_TRUE(displayItems2.contains(SimCanvas::Rect, "green"));
+}
+
+TEST_F(FrameThrottlingTest, ChangeStyleInThrottledFrame)
+{
+    // Create a hidden frame which is throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("<style> html { background: red; } </style>");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->shouldThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->shouldThrottleRendering());
+
+    // Change the background color of the frame's contents from red to green.
+    frameElement->contentDocument()->body()->setAttribute(styleAttr, "background: green");
+
+    // Scroll down to unthrottle the frame.
+    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    auto displayItems = compositeFrame();
+    EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "red"));
+    EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
+
+    // Make sure the new style shows up instead of the old one.
+    auto displayItems2 = compositeFrame();
+    EXPECT_TRUE(displayItems2.contains(SimCanvas::Rect, "green"));
 }
 
 TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)

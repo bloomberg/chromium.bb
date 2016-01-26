@@ -3727,16 +3727,11 @@ void FrameView::paint(GraphicsContext& context, const CullRect& cullRect) const
 
 void FrameView::paint(GraphicsContext& context, const GlobalPaintFlags globalPaintFlags, const CullRect& cullRect) const
 {
-    // TODO(skyostil): Remove this early-out in favor of painting cached scrollbars.
-    if (shouldThrottleRendering())
-        return;
     FramePainter(*this).paint(context, globalPaintFlags, cullRect);
 }
 
 void FrameView::paintContents(GraphicsContext& context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect) const
 {
-    if (shouldThrottleRendering())
-        return;
     FramePainter(*this).paintContents(context, globalPaintFlags, damageRect);
 }
 
@@ -4032,8 +4027,15 @@ void FrameView::notifyRenderThrottlingObservers()
     }
 
     bool becameUnthrottled = wasThrottled && !canThrottleRendering();
-    if (becameUnthrottled)
+    if (becameUnthrottled) {
+        // Start ticking animation frames again if necessary.
         page()->animator().scheduleVisualUpdate(m_frame.get());
+        // Force a full repaint of this frame to ensure we are not left with a
+        // partially painted version of this frame's contents if we skipped
+        // painting them while the frame was throttled.
+        if (LayoutView* layoutView = this->layoutView())
+            layoutView->setShouldDoFullPaintInvalidation(PaintInvalidationBecameVisible);
+    }
 }
 
 bool FrameView::shouldThrottleRendering() const

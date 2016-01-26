@@ -111,8 +111,10 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
         return;
     }
 
-    RELEASE_ASSERT(!frameView().needsLayout());
-    ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    if (!frameView().shouldThrottleRendering()) {
+        RELEASE_ASSERT(!frameView().needsLayout());
+        ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    }
 
     TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));
 
@@ -133,7 +135,8 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     PaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
-    layoutView->assertSubtreeIsLaidOut();
+    if (!frameView().shouldThrottleRendering())
+        layoutView->assertSubtreeIsLaidOut();
     LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->layoutObject());
 #endif
 
