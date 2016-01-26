@@ -1,3 +1,4 @@
+
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -43,7 +44,7 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultBlinkToMojoConversion) {
   ASSERT_EQ(content::BackgroundSyncNetworkState::ONLINE, out->network_state);
 }
 
-TEST(BackgroundSyncTypeConverterTest, TestFullOneShotBlinkToMojoConversion) {
+TEST(BackgroundSyncTypeConverterTest, TestFullBlinkToMojoConversion) {
   blink::WebSyncRegistration in(
       7, "BlinkToMojo", blink::WebSyncRegistration::NetworkStateAvoidCellular);
   content::SyncRegistrationPtr out =
@@ -66,7 +67,7 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultMojoToBlinkConversion) {
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateOnline, out->networkState);
 }
 
-TEST(BackgroundSyncTypeConverterTest, TestFullOneShotMojoToBlinkConversion) {
+TEST(BackgroundSyncTypeConverterTest, TestFullMojoToBlinkConversion) {
   content::SyncRegistrationPtr in(
       content::SyncRegistration::New());
   in->handle_id = 41;

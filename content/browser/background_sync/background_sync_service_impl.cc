@@ -162,7 +162,7 @@ void BackgroundSyncServiceImpl::GetPermissionStatus(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(iclelland): Implement a real policy. This is a stub implementation.
-  // OneShot: crbug.com/482091
+  // See https://crbug.com/482091.
   callback.Run(BackgroundSyncError::NONE, PermissionStatus::GRANTED);
 }
 

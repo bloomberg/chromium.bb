@@ -7,7 +7,7 @@
 // passed through to the document unchanged.
 //
 // "delay" - Delays finishing the sync event with event.waitUntil.
-//           Send a postMessage of "completeDelayedOneShot" to finish the
+//           Send a postMessage of "completeDelayedRegistration" to finish the
 //           event.
 
 'use strict';
@@ -16,7 +16,7 @@ var resolveCallback = null;
 var rejectCallback = null;
 
 this.onmessage = function(event) {
-  if (event.data['action'] === 'completeDelayedOneShot') {
+  if (event.data['action'] === 'completeDelayedSyncEvent') {
     if (resolveCallback === null) {
       sendMessageToClients('sync', 'error - resolveCallback is null');
       return;
@@ -27,7 +27,7 @@ this.onmessage = function(event) {
     return;
   }
 
-  if (event.data['action'] === 'rejectDelayedOneShot') {
+  if (event.data['action'] === 'rejectDelayedSyncEvent') {
     if (rejectCallback === null) {
       sendMessageToClients('sync', 'error - rejectCallback is null');
       return;
@@ -37,7 +37,7 @@ this.onmessage = function(event) {
     sendMessageToClients('sync', 'ok - delay rejected');
   }
 
-  if (event.data['action'] === 'registerOneShot') {
+  if (event.data['action'] === 'register') {
     var tag = event.data['tag'];
     registration.sync.register(tag)
       .then(function () {
@@ -46,9 +46,9 @@ this.onmessage = function(event) {
       .catch(sendSyncErrorToClients);
   }
 
-  if (event.data['action'] === 'getRegistrationOneShot') {
+  if (event.data['action'] === 'hasTag') {
     var tag = event.data['tag'];
-    registration.sync.getTags(tag)
+    registration.sync.getTags()
       .then(function(tags) {
         if (tags.indexOf(tag) >= 0) {
           sendMessageToClients('register', 'ok - ' + tag + ' found');
@@ -60,7 +60,7 @@ this.onmessage = function(event) {
       .catch(sendSyncErrorToClients);
   }
 
-  if (event.data['action'] === 'getRegistrationsOneShot') {
+  if (event.data['action'] === 'getTags') {
     registration.sync.getTags()
       .then(function(tags) {
         sendMessageToClients('register', 'ok - ' + tags.toString());

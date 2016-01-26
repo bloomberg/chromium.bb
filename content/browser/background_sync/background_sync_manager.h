@@ -140,7 +140,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::string& backend_key,
       const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
           callback);
-  virtual void FireOneShotSync(
+  virtual void DispatchSyncEvent(
       BackgroundSyncRegistrationHandle::HandleId handle_id,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
       BackgroundSyncEventLastChance last_chance,

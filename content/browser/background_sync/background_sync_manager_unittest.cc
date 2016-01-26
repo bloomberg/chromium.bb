@@ -67,7 +67,7 @@ void UnregisterServiceWorkerCallback(bool* called,
   *called = true;
 }
 
-void OneShotSuccessfulCallback(
+void DispatchSyncSuccessfulCallback(
     int* count,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
     const ServiceWorkerVersion::StatusCallback& callback) {
@@ -75,7 +75,7 @@ void OneShotSuccessfulCallback(
   callback.Run(SERVICE_WORKER_OK);
 }
 
-void OneShotFailedCallback(
+void DispatchSyncFailedCallback(
     int* count,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
     const ServiceWorkerVersion::StatusCallback& callback) {
@@ -83,7 +83,7 @@ void OneShotFailedCallback(
   callback.Run(SERVICE_WORKER_ERROR_FAILED);
 }
 
-void OneShotDelayedCallback(
+void DispatchSyncDelayedCallback(
     int* count,
     ServiceWorkerVersion::StatusCallback* out_callback,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
@@ -148,7 +148,7 @@ class TestBackgroundSyncController : public BackgroundSyncController {
 // storage and service worker onsync events.
 class TestBackgroundSyncManager : public BackgroundSyncManager {
  public:
-  using OneShotCallback =
+  using DispatchSyncCallback =
       base::Callback<void(const scoped_refptr<ServiceWorkerVersion>&,
                           const ServiceWorkerVersion::StatusCallback&)>;
 
@@ -188,8 +188,8 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     corrupt_backend_ = corrupt_backend;
   }
   void set_delay_backend(bool delay_backend) { delay_backend_ = delay_backend; }
-  void set_one_shot_callback(const OneShotCallback& callback) {
-    one_shot_callback_ = callback;
+  void set_dispatch_sync_callback(const DispatchSyncCallback& callback) {
+    dispatch_sync_callback_ = callback;
   }
 
   base::Closure delayed_task() const { return delayed_task_; }
@@ -249,14 +249,14 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     Continue();
   }
 
-  void FireOneShotSync(
+  void DispatchSyncEvent(
       BackgroundSyncRegistrationHandle::HandleId handle_id,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
       BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback) override {
-    ASSERT_FALSE(one_shot_callback_.is_null());
+    ASSERT_FALSE(dispatch_sync_callback_.is_null());
     last_chance_ = last_chance;
-    one_shot_callback_.Run(active_version, callback);
+    dispatch_sync_callback_.Run(active_version, callback);
   }
 
   void ScheduleDelayedTask(const base::Closure& callback,
@@ -277,7 +277,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   BackgroundSyncEventLastChance last_chance_ =
       BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
   base::Closure continuation_;
-  OneShotCallback one_shot_callback_;
+  DispatchSyncCallback dispatch_sync_callback_;
   base::Closure delayed_task_;
   base::TimeDelta delayed_task_delta_;
 };
@@ -583,23 +583,24 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   void SetupForSyncEvent(
-      const TestBackgroundSyncManager::OneShotCallback& callback) {
-    test_background_sync_manager_->set_one_shot_callback(callback);
+      const TestBackgroundSyncManager::DispatchSyncCallback& callback) {
+    test_background_sync_manager_->set_dispatch_sync_callback(callback);
     SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
   }
 
   void InitSyncEventTest() {
     SetupForSyncEvent(
-        base::Bind(OneShotSuccessfulCallback, &sync_events_called_));
+        base::Bind(DispatchSyncSuccessfulCallback, &sync_events_called_));
   }
 
   void InitFailedSyncEventTest() {
-    SetupForSyncEvent(base::Bind(OneShotFailedCallback, &sync_events_called_));
+    SetupForSyncEvent(
+        base::Bind(DispatchSyncFailedCallback, &sync_events_called_));
   }
 
   void InitDelayedSyncEventTest() {
-    SetupForSyncEvent(base::Bind(OneShotDelayedCallback, &sync_events_called_,
-                                 &sync_fired_callback_));
+    SetupForSyncEvent(base::Bind(DispatchSyncDelayedCallback,
+                                 &sync_events_called_, &sync_fired_callback_));
   }
 
   void RegisterAndVerifySyncEventDelayed(
@@ -1034,7 +1035,7 @@ TEST_F(BackgroundSyncManagerTest, EmptyTagSupported) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, OneShotFiresOnRegistration) {
+TEST_F(BackgroundSyncManagerTest, FiresOnRegistration) {
   InitSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
@@ -1359,7 +1360,7 @@ TEST_F(BackgroundSyncManagerTest, DisableWhileFiringNotifiesFinished) {
   EXPECT_EQ(BackgroundSyncState::SUCCESS, FinishedState());
 }
 
-TEST_F(BackgroundSyncManagerTest, OneShotFiresOnNetworkChange) {
+TEST_F(BackgroundSyncManagerTest, FiresOnNetworkChange) {
   InitSyncEventTest();
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
@@ -1373,7 +1374,7 @@ TEST_F(BackgroundSyncManagerTest, OneShotFiresOnNetworkChange) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, MultipleOneShotsFireOnNetworkChange) {
+TEST_F(BackgroundSyncManagerTest, MultipleRegistrationsFireOnNetworkChange) {
   InitSyncEventTest();
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
@@ -1390,7 +1391,7 @@ TEST_F(BackgroundSyncManagerTest, MultipleOneShotsFireOnNetworkChange) {
   EXPECT_FALSE(GetRegistration(sync_options_2_));
 }
 
-TEST_F(BackgroundSyncManagerTest, OneShotFiresOnManagerRestart) {
+TEST_F(BackgroundSyncManagerTest, FiresOnManagerRestart) {
   InitSyncEventTest();
 
   // Initially the event won't run because there is no network.
@@ -1412,7 +1413,7 @@ TEST_F(BackgroundSyncManagerTest, OneShotFiresOnManagerRestart) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, FailedOneShotShouldBeRemoved) {
+TEST_F(BackgroundSyncManagerTest, FailedRegistrationShouldBeRemoved) {
   InitFailedSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
@@ -1420,7 +1421,7 @@ TEST_F(BackgroundSyncManagerTest, FailedOneShotShouldBeRemoved) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, FailedOneShotReregisteredAndFires) {
+TEST_F(BackgroundSyncManagerTest, FailedRegistrationReregisteredAndFires) {
   InitFailedSyncEventTest();
 
   // The initial sync event fails.
@@ -1437,7 +1438,7 @@ TEST_F(BackgroundSyncManagerTest, FailedOneShotReregisteredAndFires) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, DelayOneShotMidSync) {
+TEST_F(BackgroundSyncManagerTest, DelayMidSync) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
@@ -1458,8 +1459,8 @@ TEST_F(BackgroundSyncManagerTest, OverwriteRegistrationMidSync) {
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
   // Don't delay the next sync.
-  test_background_sync_manager_->set_one_shot_callback(
-      base::Bind(OneShotSuccessfulCallback, &sync_events_called_));
+  test_background_sync_manager_->set_dispatch_sync_callback(
+      base::Bind(DispatchSyncSuccessfulCallback, &sync_events_called_));
 
   // Register a different sync event with the same tag, overwriting the first.
   sync_options_1_.network_state = NETWORK_STATE_ONLINE;
@@ -1481,7 +1482,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteRegistrationMidSync) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, UnregisterOneShotMidSync) {
+TEST_F(BackgroundSyncManagerTest, UnregisterMidSync) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);

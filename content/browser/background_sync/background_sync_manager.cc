@@ -765,7 +765,7 @@ void BackgroundSyncManager::GetDataFromBackend(
                                                           callback);
 }
 
-void BackgroundSyncManager::FireOneShotSync(
+void BackgroundSyncManager::DispatchSyncEvent(
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
     BackgroundSyncEventLastChance last_chance,
@@ -775,7 +775,7 @@ void BackgroundSyncManager::FireOneShotSync(
 
   if (active_version->running_status() != ServiceWorkerVersion::RUNNING) {
     active_version->RunAfterStartWorker(
-        base::Bind(&BackgroundSyncManager::FireOneShotSync,
+        base::Bind(&BackgroundSyncManager::DispatchSyncEvent,
                    weak_ptr_factory_.GetWeakPtr(), handle_id, active_version,
                    last_chance, callback),
         callback);
@@ -1228,7 +1228,7 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
       service_worker_registration->pattern().GetOrigin(),
       base::Bind(&BackgroundSyncMetrics::RecordEventStarted));
 
-  FireOneShotSync(
+  DispatchSyncEvent(
       handle_id, service_worker_registration->active_version(), last_chance,
       base::Bind(&BackgroundSyncManager::EventComplete,
                  weak_ptr_factory_.GetWeakPtr(), service_worker_registration,
