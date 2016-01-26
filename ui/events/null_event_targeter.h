@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_EVENTS_NULL_EVENT_TARGETER_H_
+#define UI_EVENTS_NULL_EVENT_TARGETER_H_
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/events/event_targeter.h"
@@ -26,3 +29,5 @@ class EVENTS_EXPORT NullEventTargeter : public EventTargeter {
 };
 
 }  // namespace ui
+
+#endif  // UI_EVENTS_NULL_EVENT_TARGETER_H_
