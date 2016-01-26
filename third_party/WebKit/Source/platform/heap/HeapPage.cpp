@@ -1510,16 +1510,17 @@ void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex, ThreadStat
     size_t deadCount = 0;
     HeapObjectHeader* header = heapObjectHeader();
     size_t gcInfoIndex = header->gcInfoIndex();
+    size_t payloadSize = header->payloadSize();
     if (header->isMarked()) {
         liveCount = 1;
-        liveSize += header->payloadSize();
+        liveSize += payloadSize;
         info.liveCount[gcInfoIndex]++;
-        info.liveSize[gcInfoIndex] += header->size();
+        info.liveSize[gcInfoIndex] += payloadSize;
     } else {
         deadCount = 1;
-        deadSize += header->payloadSize();
+        deadSize += payloadSize;
         info.deadCount[gcInfoIndex]++;
-        info.deadSize[gcInfoIndex] += header->size();
+        info.deadSize[gcInfoIndex] += payloadSize;
     }
 
     pageDump->addScalar("live_count", "objects", liveCount);
