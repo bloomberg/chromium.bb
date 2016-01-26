@@ -99,6 +99,12 @@ NOTES:
         'the chroot already. Or Google Storage Bucket in the form of '
         'gs://<bucket-name>/')
     parser.add_argument(
+        '--board', dest='board', default=None,
+        help='The board name, defaults to value extracted from image path.')
+    parser.add_argument(
+        '--staged_image_name', dest='staged_image_name', default=None,
+        help='Name for the staged image. Default: <board>-custom/<build>')
+    parser.add_argument(
         '--boto_file', dest='boto_file', default=None,
         help='Path to boto file to use when uploading to Google Storage. If '
         'none the default chroot boto file is used.')
@@ -106,16 +112,21 @@ NOTES:
   def __init__(self, options):
     """Initializes cros stage."""
     super(StageCommand, self).__init__(options)
-    self.board = None
+    self.board = self.options.board
+    self.staged_image_name = self.options.staged_image_name
     # Determine if we are staging a local custom image or an official image.
     if self.options.image.startswith('gs://'):
       self._remote_image = True
-      self.staged_image_name = self._GenerateImageNameFromGSUrl(
-          self.options.image)
+      if not self.staged_image_name:
+        self.staged_image_name = self._GenerateImageNameFromGSUrl(
+            self.options.image)
     else:
       self._remote_image = False
-      self.staged_image_name = self._GenerateImageNameFromLocalPath(
-          self.options.image)
+      if not self.staged_image_name:
+        self.staged_image_name = self._GenerateImageNameFromLocalPath(
+            self.options.image)
+    if not self.board:
+      raise CustomImageStagingException('Please specify the "board" argument')
     self.stage_directory = os.path.join(MOBLAB_TMP_DIR, self.staged_image_name)
 
     # Determine if the staging destination is a Moblab or Google Storage.
@@ -126,6 +137,9 @@ NOTES:
 
   def _GenerateImageNameFromLocalPath(self, image):
     """Generate the name as which |image| will be staged onto Moblab.
+
+    If the board name has not been specified, set the board name based on
+    the image path.
 
     Args:
       image: Path to image we want to stage. It should be in the format of
@@ -148,11 +162,15 @@ NOTES:
     if build_name.endswith('-a1'):
       build_name = build_name[:-len('-a1')]
 
-    self.board = os.path.basename(os.path.dirname(os.path.dirname(realpath)))
+    if not self.board:
+      self.board = os.path.basename(os.path.dirname(os.path.dirname(realpath)))
     return CUSTOM_BUILD_NAME % dict(board=self.board, build=build_name)
 
   def _GenerateImageNameFromGSUrl(self, image):
     """Generate the name as which |image| will be staged onto Moblab.
+
+    If the board name has not been specified, set the board name based on
+    the image path.
 
     Args:
       image: GS Url to the image we want to stage. It should be in the format
@@ -168,7 +186,8 @@ NOTES:
     if not match:
       raise CustomImageStagingException(
           'Image URL: %s is improperly defined!' % image)
-    self.board = match.group('board')
+    if not self.board:
+      self.board = match.group('board')
     return CUSTOM_BUILD_NAME % dict(board=self.board,
                                     build=match.group('build_name'))
 
