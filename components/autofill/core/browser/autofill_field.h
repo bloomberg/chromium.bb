@@ -53,8 +53,8 @@ class AutofillField : public FormFieldData {
   void set_previously_autofilled(bool previously_autofilled) {
     previously_autofilled_ = previously_autofilled;
   }
-  void set_parseable_name(base::string16 parseable_name) {
-    parseable_name_ = std::move(parseable_name);
+  void set_parseable_name(const base::string16& parseable_name) {
+    parseable_name_ = parseable_name;
   }
 
   // This function automatically chooses between server and heuristic autofill
