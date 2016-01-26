@@ -675,7 +675,7 @@ back_selectRule ()
 		    case CTO_EndCapitalRule:
 		    case CTO_FirstLetterItalRule:
 		    case CTO_LastLetterItalRule:
-		    case CTO_LastWordBoldBeforeRule:
+		    case CTO_FirstLetterBoldRule:
 		    case CTO_LastLetterBoldRule:
 		    case CTO_FirstLetterUnderRule:
 		    case CTO_LastLetterUnderRule:
