@@ -76,8 +76,6 @@ strip bin/clang-format
 -DCMAKE_C_COMPILER=$PWD/../chrome/src/third_party/llvm-build/Release+Asserts/bin/clang -DCMAKE_CXX_COMPILER=$PWD/../chrome/src/third_party/llvm-build/Release+Asserts/bin/clang++
 ```
 
-TODO: these ^^ instructions looks odd. Are they correct???
-
 Platform specific notes:
 
 *   Windows: Visual Studio 2013 only.
