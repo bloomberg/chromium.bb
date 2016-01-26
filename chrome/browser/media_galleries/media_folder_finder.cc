@@ -61,9 +61,6 @@ const int kPrunedPaths[] = {
 #if defined(OS_WIN) || defined(OS_LINUX)
   base::DIR_TEMP,
 #endif
-#if defined(OS_ANDROID)
-  base::DIR_ANDROID_APP_DATA,
-#endif
 };
 
 bool IsValidScanPath(const base::FilePath& path) {

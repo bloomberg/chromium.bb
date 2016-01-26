@@ -9,7 +9,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #endif
@@ -20,7 +20,7 @@ using content::WebContents;
 
 namespace chrome {
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 namespace {
 
 HostDesktopType GetHostDesktop(Browser* browser) {
@@ -53,9 +53,7 @@ NavigateParams::NavigateParams(WebContents* a_target_contents)
       should_replace_current_entry(false),
       created_with_opener(false) {
 }
-#endif  // defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#else
 NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
                                ui::PageTransition a_transition)
@@ -103,7 +101,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       should_replace_current_entry(false),
       created_with_opener(false) {
 }
-#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
+#endif  // !defined(OS_ANDROID)
 
 NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
@@ -123,7 +121,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       user_gesture(true),
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
       browser(NULL),
 #endif
       initiating_profile(a_profile),
