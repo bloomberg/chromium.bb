@@ -318,8 +318,12 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
                           decoded_info.minRowBytes());
 
   // Now scale the pixels into the destination size.
-  SkImageInfo scaled_info = SkImageInfo::MakeN32Premul(
-      key.target_size().width(), key.target_size().height());
+  // TODO(vmpstr): Once we support skipping images altogether, we can remove
+  // this and skip drawing images that are empty in size. crbug.com/581163
+  const gfx::Size& target_size =
+      key.target_size().IsEmpty() ? gfx::Size(1, 1) : key.target_size();
+  SkImageInfo scaled_info =
+      SkImageInfo::MakeN32Premul(target_size.width(), target_size.height());
   scoped_ptr<base::DiscardableMemory> scaled_pixels;
   {
     TRACE_EVENT0(
