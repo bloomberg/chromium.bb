@@ -624,7 +624,11 @@ by a child template that "extends" this file.
             android:process=":sandboxed_process{{ i }}"
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
             android:isolatedProcess="true"
-            android:exported="false" />
+            android:exported="{{sandboxed_service_exported|default(false)}}"
+            {% if (sandboxed_service_exported|default(false)) == 'true' %}
+            tools:ignore="ExportedService"
+            {% endif %}
+            {{sandboxed_service_extra_flags|default('')}} />
         {% endfor %}
 
         {% set num_privileged_services = 3 %}
