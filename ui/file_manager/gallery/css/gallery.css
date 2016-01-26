@@ -16,24 +16,52 @@ button:focus {
   outline: 1px solid rgb(77, 144, 254);
 }
 
-input[type='checkbox'] {
-  width: 15px;
-  height: 15px;
-  background: -webkit-image-set(
-      url(../../file_manager/foreground/images/common/checkbox_white_unchecked.png) 1x,
-      url(../../file_manager/foreground/images/common/2x/checkbox_white_unchecked.png) 2x)
-      -1px -1px;
-  -webkit-appearance: none;
-  display: inline-block;
-  margin: 1px 6px 1px 1px;
-  vertical-align: text-bottom;
+/* TODO(fukino): This style for the bubble is old. Apply new design and remove
+ * these styles. */
+.bubble {
+  background: #FFF;
+  border-radius: 2px;
+  cursor: default;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 16px;
 }
 
-input[type='checkbox']:checked {
+.bubble .pointer {
   background: -webkit-image-set(
-      url(../../file_manager/foreground/images/common/checkbox_white_checked.png) 1x,
-      url(../../file_manager/foreground/images/common/2x/checkbox_white_checked.png) 2x)
-      -1px -1px;
+    url(../../file_manager/foreground/images/common/bubble_point_white.png) 1x,
+    url(../../file_manager/foreground/images/common/2x/bubble_point_white.png) 2x);
+  display: block;
+  height: 11px;
+  left: 24px;
+  margin: 0 0 0 -5px;
+  outline: none;
+  position: absolute;
+  width: 17px;
+}
+
+.bubble .pointer:not(.bottom) {
+  top: -11px;
+}
+
+.bubble .pointer.bottom {
+  -webkit-transform: rotate(180deg);
+  bottom: -11px;
+}
+
+.bubble .close-x {
+  background: -webkit-image-set(
+    url(../../file_manager/foreground/images/common/close_x_gray.png) 1x,
+    url(../../file_manager/foreground/images/common/2x/close_x_gray.png) 2x);
+  height: 21px;
+  opacity: 0.3;
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 21px;
+}
+
+.bubble .close-x:hover {
+  opacity: 0.7;
 }
 
 paper-ripple,
