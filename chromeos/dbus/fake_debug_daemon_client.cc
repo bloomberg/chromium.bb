@@ -57,9 +57,12 @@ std::string FakeDebugDaemonClient::GetTraceEventLabel() {
   return kCrOSTraceLabel;
 }
 
-bool FakeDebugDaemonClient::StartAgentTracing(
-    const base::trace_event::TraceConfig& trace_config) {
-  return true;
+void FakeDebugDaemonClient::StartAgentTracing(
+    const base::trace_event::TraceConfig& trace_config,
+    const StartAgentTracingCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, GetTracingAgentName(), true /* success */));
 }
 
 void FakeDebugDaemonClient::StopAgentTracing(

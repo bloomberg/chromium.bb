@@ -65,8 +65,8 @@ class TracingControllerImpl
   // base::trace_event::TracingAgent implementation.
   std::string GetTracingAgentName() override;
   std::string GetTraceEventLabel() override;
-  bool StartAgentTracing(
-      const base::trace_event::TraceConfig& trace_config) override;
+  void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
+                         const StartAgentTracingCallback& callback) override;
   void StopAgentTracing(const StopAgentTracingCallback& callback) override;
   bool SupportsExplicitClockSync() override;
   void RecordClockSyncMarker(
@@ -136,6 +136,12 @@ class TracingControllerImpl
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
+  // Adds the tracing agent with the specified agent name to the list of
+  // additional tracing agents.
+  void AddTracingAgent(const std::string& agent_name);
+
+  void OnStartAgentTracingAcked(const std::string& agent_name, bool success);
+
   void OnStopTracingAcked(
       TraceMessageFilter* trace_message_filter,
       const std::vector<std::string>& known_category_groups);
@@ -166,8 +172,7 @@ class TracingControllerImpl
       int mode,
       const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
-  void OnStartAgentTracingDone(
-      const base::trace_event::TraceConfig& trace_config);
+  void OnAllTracingAgentsStarted();
   void StopTracingAfterClockSync();
   void OnStopTracingDone();
   void OnStartMonitoringDone(
@@ -187,6 +192,12 @@ class TracingControllerImpl
 
   typedef std::set<scoped_refptr<TraceMessageFilter>> TraceMessageFilterSet;
   TraceMessageFilterSet trace_message_filters_;
+
+  // Pending acks for StartTracing.
+  int pending_start_tracing_ack_count_;
+  base::OneShotTimer start_tracing_timer_;
+  StartTracingDoneCallback start_tracing_done_callback_;
+  scoped_ptr<base::trace_event::TraceConfig> start_tracing_trace_config_;
 
   // Pending acks for StopTracing.
   int pending_stop_tracing_ack_count_;
@@ -209,7 +220,6 @@ class TracingControllerImpl
   uint64_t pending_memory_dump_guid_;
   base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
 
-  StartTracingDoneCallback start_tracing_done_callback_;
   std::vector<base::trace_event::TracingAgent*> additional_tracing_agents_;
   int clock_sync_id_;
   int pending_clock_sync_ack_count_;

@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,11 +50,16 @@ std::string EtwSystemEventConsumer::GetTraceEventLabel() {
   return kETWTraceLabel;
 }
 
-bool EtwSystemEventConsumer::StartAgentTracing(
-    const base::trace_event::TraceConfig& trace_config) {
+void EtwSystemEventConsumer::StartAgentTracing(
+    const base::trace_event::TraceConfig& trace_config,
+    const StartAgentTracingCallback& callback) {
   // Activate kernel tracing.
-  if (!StartKernelSessionTracing())
-    return false;
+  if (!StartKernelSessionTracing()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, GetTracingAgentName(), false /* success */));
+    return;
+  }
 
   // Start the consumer thread and start consuming events.
   thread_.Start();
@@ -62,7 +68,9 @@ bool EtwSystemEventConsumer::StartAgentTracing(
       base::Bind(&EtwSystemEventConsumer::TraceAndConsumeOnThread,
                  base::Unretained(this)));
 
-  return true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, GetTracingAgentName(), true /* success */));
 }
 
 void EtwSystemEventConsumer::StopAgentTracing(

@@ -20,6 +20,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -206,8 +207,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   std::string GetTraceEventLabel() override { return kCrOSTraceLabel; }
 
-  bool StartAgentTracing(
-      const base::trace_event::TraceConfig& trace_config) override {
+  void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
+                         const StartAgentTracingCallback& callback) override {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
         debugd::kSystraceStart);
@@ -220,7 +221,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&DebugDaemonClientImpl::OnStartMethod,
                    weak_ptr_factory_.GetWeakPtr()));
-    return true;
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, GetTracingAgentName(), true /* success */));
   }
 
   void StopAgentTracing(const StopAgentTracingCallback& callback) override {

@@ -28,8 +28,8 @@ class PowerTracingAgent : public base::trace_event::TracingAgent {
   std::string GetTracingAgentName() override;
   std::string GetTraceEventLabel() override;
 
-  bool StartAgentTracing(
-      const base::trace_event::TraceConfig& trace_config) override;
+  void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
+                         const StartAgentTracingCallback& callback) override;
   void StopAgentTracing(const StopAgentTracingCallback& callback) override;
 
   bool SupportsExplicitClockSync() override;

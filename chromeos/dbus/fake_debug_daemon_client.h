@@ -31,8 +31,8 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
                     const SetDebugModeCallback& callback) override;
   std::string GetTracingAgentName() override;
   std::string GetTraceEventLabel() override;
-  bool StartAgentTracing(
-      const base::trace_event::TraceConfig& trace_config) override;
+  void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
+                         const StartAgentTracingCallback& callback) override;
   void StopAgentTracing(const StopAgentTracingCallback& callback) override;
   void SetStopAgentTracingTaskRunner(
       scoped_refptr<base::TaskRunner> task_runner) override;
