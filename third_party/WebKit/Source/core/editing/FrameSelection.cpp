@@ -331,7 +331,8 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     if (!(options & DoNotUpdateAppearance)) {
         // Hits in compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html
         DisableCompositingQueryAsserts disabler;
-        updateAppearance(ResetCaretBlink);
+        stopCaretBlinkTimer();
+        updateAppearance();
     }
 
     // Always clear the x position used for vertical arrow navigation.
@@ -980,7 +981,7 @@ void FrameSelection::commitAppearanceIfNeeded(LayoutView& layoutView)
     return m_pendingSelection->commit(layoutView);
 }
 
-void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
+void FrameSelection::updateAppearance()
 {
     // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
     // the FrameSelection will paint a blinking caret as usual).
@@ -990,12 +991,8 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
 
     // If the caret moved, stop the blink timer so we can restart with a
     // black caret in the new location.
-    if (option == ResetCaretBlink || !shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame)) {
-        m_caretBlinkTimer.stop();
-
-        m_shouldPaintCaret = false;
-        setCaretRectNeedsUpdate();
-    }
+    if (!shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame))
+        stopCaretBlinkTimer();
 
     // Start blinking with a black caret. Be sure not to restart if we're
     // already blinking in the right location.
@@ -1049,6 +1046,13 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
     if (isCaretBlinkingSuspended() && m_shouldPaintCaret)
         return;
     m_shouldPaintCaret = !m_shouldPaintCaret;
+    setCaretRectNeedsUpdate();
+}
+
+void FrameSelection::stopCaretBlinkTimer()
+{
+    m_caretBlinkTimer.stop();
+    m_shouldPaintCaret = false;
     setCaretRectNeedsUpdate();
 }
 

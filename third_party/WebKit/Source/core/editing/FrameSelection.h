@@ -91,11 +91,6 @@ public:
         return static_cast<EUserTriggered>(options & UserTriggered);
     }
 
-    enum ResetCaretBlinkOption {
-        None,
-        ResetCaretBlink
-    };
-
     LocalFrame* frame() const { return m_frame; }
     Element* rootEditableElement() const { return selection().rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
@@ -186,7 +181,7 @@ public:
 
     bool isAppearanceDirty() const;
     void commitAppearanceIfNeeded(LayoutView&);
-    void updateAppearance(ResetCaretBlinkOption = None);
+    void updateAppearance();
     void setCaretVisible(bool caretIsVisible) { setCaretVisibility(caretIsVisible ? Visible : Hidden); }
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
     void setCaretRectNeedsUpdate();
@@ -281,6 +276,7 @@ private:
     void focusedOrActiveStateChanged();
 
     void caretBlinkTimerFired(Timer<FrameSelection>*);
+    void stopCaretBlinkTimer();
 
     void setUseSecureKeyboardEntry(bool);
 
