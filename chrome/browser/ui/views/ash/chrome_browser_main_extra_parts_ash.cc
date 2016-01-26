@@ -28,15 +28,6 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "ui/shell_dialogs/select_file_dialog.h"
-#include "ui/shell_dialogs/shell_dialogs_delegate.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
 class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
  public:
   ScreenTypeDelegateWin() {}
