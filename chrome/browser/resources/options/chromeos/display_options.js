@@ -89,6 +89,7 @@ options.DisplayInfo;
  *   div: ?HTMLElement,
  *   id: string,
  *   isPrimary: boolean,
+ *   layoutType: options.DisplayLayoutType,
  *   name: string,
  *   originalPosition: !options.DisplayPosition
  * }}
@@ -106,7 +107,7 @@ cr.define('options', function() {
   /** @const */ var MIN_OFFSET_OVERLAP = 5;
 
   /**
-   * Gets the position of |point| to |rect|, left, right, top, or bottom.
+   * Gets the layout type of |point| relative to |rect|.
    * @param {!options.DisplayBounds} rect The base rectangle.
    * @param {!options.DisplayPosition} point The point to check the position.
    * @return {options.DisplayLayoutType} The position of the calculated point.
@@ -129,6 +130,33 @@ cr.define('options', function() {
       else
         return options.DisplayLayoutType.TOP;
     }
+  }
+
+  /**
+   * Snaps the region [point, width] to [basePoint, baseWidth] if
+   * the [point, width] is close enough to the base's edge.
+   * @param {number} point The starting point of the region.
+   * @param {number} width The width of the region.
+   * @param {number} basePoint The starting point of the base region.
+   * @param {number} baseWidth The width of the base region.
+   * @return {number} The moved point. Returns the point itself if it doesn't
+   *     need to snap to the edge.
+   * @private
+   */
+  function snapToEdge(point, width, basePoint, baseWidth) {
+    // If the edge of the region is smaller than this, it will snap to the
+    // base's edge.
+    /** @const */ var SNAP_DISTANCE_PX = 16;
+
+    var startDiff = Math.abs(point - basePoint);
+    var endDiff = Math.abs(point + width - (basePoint + baseWidth));
+    // Prefer the closer one if both edges are close enough.
+    if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
+      return basePoint;
+    else if (endDiff < SNAP_DISTANCE_PX)
+      return basePoint + baseWidth - width;
+
+    return point;
   }
 
   /**
@@ -167,13 +195,6 @@ cr.define('options', function() {
      * @private
      */
     showUnifiedDesktopOption_: false,
-
-    /**
-     * The current secondary display layout.
-     * @type {options.DisplayLayoutType}
-     * @private
-     */
-    layoutType_: options.DisplayLayoutType.RIGHT,
 
     /**
      * The array of current output displays.  It also contains the display
@@ -425,43 +446,16 @@ cr.define('options', function() {
       // Offset is calculated from top or left edge.
       var primary = this.displayLayoutMap_[this.primaryDisplayId_];
       var secondary = this.displayLayoutMap_[this.secondaryDisplayId_];
+      var layoutType = secondary.layoutType;
       var offset;
-      if (this.layoutType_ == options.DisplayLayoutType.LEFT ||
-          this.layoutType_ == options.DisplayLayoutType.RIGHT) {
+      if (layoutType == options.DisplayLayoutType.LEFT ||
+          layoutType == options.DisplayLayoutType.RIGHT) {
         offset = secondary.div.offsetTop - primary.div.offsetTop;
       } else {
         offset = secondary.div.offsetLeft - primary.div.offsetLeft;
       }
       offset = Math.floor(offset / this.visualScale_);
-      chrome.send(
-          'setDisplayLayout', [secondary.id, this.layoutType_, offset]);
-    },
-
-    /**
-     * Snaps the region [point, width] to [basePoint, baseWidth] if
-     * the [point, width] is close enough to the base's edge.
-     * @param {number} point The starting point of the region.
-     * @param {number} width The width of the region.
-     * @param {number} basePoint The starting point of the base region.
-     * @param {number} baseWidth The width of the base region.
-     * @return {number} The moved point.  Returns point itself if it doesn't
-     *     need to snap to the edge.
-     * @private
-     */
-    snapToEdge_: function(point, width, basePoint, baseWidth) {
-      // If the edge of the regions is smaller than this, it will snap to the
-      // base's edge.
-      /** @const */ var SNAP_DISTANCE_PX = 16;
-
-      var startDiff = Math.abs(point - basePoint);
-      var endDiff = Math.abs(point + width - (basePoint + baseWidth));
-      // Prefer the closer one if both edges are close enough.
-      if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
-        return basePoint;
-      else if (endDiff < SNAP_DISTANCE_PX)
-        return basePoint + baseWidth - width;
-
-      return point;
+      chrome.send('setDisplayLayout', [secondary.id, layoutType, offset]);
     },
 
     /**
@@ -481,7 +475,6 @@ cr.define('options', function() {
       // if there are >=3 displays.  This is our assumption for M21.
       // TODO(mukai): Fix the code to allow >=3 displays.
       var dragInfo = this.dragInfo_;
-      var dragLayout = this.displayLayoutMap_[dragInfo.displayId];
       /** @type {options.DisplayPosition} */ var newPosition = {
         x: dragInfo.originalLocation.x +
             (eventLocation.x - dragInfo.eventLocation.x),
@@ -489,15 +482,20 @@ cr.define('options', function() {
             (eventLocation.y - dragInfo.eventLocation.y)
       };
 
-      var baseDisplayId = dragLayout.isPrimary ? this.secondaryDisplayId_ :
-                                                 this.primaryDisplayId_;
-      var baseDiv = this.displayLayoutMap_[baseDisplayId].div;
+      var dragLayout = this.displayLayoutMap_[dragInfo.displayId];
       var draggingDiv = dragLayout.div;
 
-      newPosition.x = this.snapToEdge_(newPosition.x, draggingDiv.offsetWidth,
-                                       baseDiv.offsetLeft, baseDiv.offsetWidth);
-      newPosition.y = this.snapToEdge_(newPosition.y, draggingDiv.offsetHeight,
-                                       baseDiv.offsetTop, baseDiv.offsetHeight);
+      var baseDisplayId = dragLayout.isPrimary ? this.secondaryDisplayId_ :
+                                                 this.primaryDisplayId_;
+      var baseLayout = this.displayLayoutMap_[baseDisplayId];
+      var baseDiv = baseLayout.div;
+
+      newPosition.x = snapToEdge(
+          newPosition.x, draggingDiv.offsetWidth, baseDiv.offsetLeft,
+          baseDiv.offsetWidth);
+      newPosition.y = snapToEdge(
+          newPosition.y, draggingDiv.offsetHeight, baseDiv.offsetTop,
+          baseDiv.offsetHeight);
 
       /** @type {!options.DisplayPosition} */ var newCenter = {
         x: newPosition.x + draggingDiv.offsetWidth / 2,
@@ -512,7 +510,9 @@ cr.define('options', function() {
       };
 
       var isPrimary = dragLayout.isPrimary;
-      var layoutType = this.layoutType_;
+      // layoutType is always stored in the secondary layout.
+      var layoutType =
+          isPrimary ? baseLayout.layoutType : dragLayout.layoutType;
 
       switch (getPositionToRectangle(baseBounds, newCenter)) {
         case options.DisplayLayoutType.RIGHT:
@@ -550,12 +550,12 @@ cr.define('options', function() {
                                    options.DisplayLayoutType.LEFT;
       }
 
-      this.layoutType_ = layoutType;
-
       var layoutToBase;
       if (!isPrimary) {
+        dragLayout.layoutType = layoutType;
         layoutToBase = layoutType;
       } else {
+        baseLayout.layoutType = layoutType;
         switch (layoutType) {
           case options.DisplayLayoutType.RIGHT:
             layoutToBase = options.DisplayLayoutType.LEFT;
@@ -660,10 +660,17 @@ cr.define('options', function() {
       var dragLayout = this.displayLayoutMap_[this.dragInfo_.displayId];
       var baseDisplayId = dragLayout.isPrimary ? this.secondaryDisplayId_ :
                                                  this.primaryDisplayId_;
-      var baseDiv = this.displayLayoutMap_[baseDisplayId].div;
+
+      var baseLayout = this.displayLayoutMap_[baseDisplayId];
+      var baseDiv = baseLayout.div;
       var draggingDiv = dragLayout.div;
-      if (this.layoutType_ == options.DisplayLayoutType.LEFT ||
-          this.layoutType_ == options.DisplayLayoutType.RIGHT) {
+
+      // layoutType is always stored in the secondary layout.
+      var layoutType =
+          dragLayout.isPrimary ? baseLayout.layoutType : dragLayout.layoutType;
+
+      if (layoutType == options.DisplayLayoutType.LEFT ||
+          layoutType == options.DisplayLayoutType.RIGHT) {
         var top = Math.max(
             draggingDiv.offsetTop,
             baseDiv.offsetTop - draggingDiv.offsetHeight + MIN_OFFSET_OVERLAP);
@@ -890,28 +897,26 @@ cr.define('options', function() {
         if (i != numDisplays - 1)
           div.classList.add('display-mirrored');
         this.displaysView_.appendChild(div);
-
-        // Not currently used but set for consistency / debugging.
-        this.displayLayoutMap_[this.displays_[i].id].div = div;
       }
     },
 
     /**
      * Creates a DisplayLayout object representing the display.
      * @param {!options.DisplayInfo} display
+     * @param {!options.DisplayLayoutType} layoutType
      * @return {!options.DisplayLayout}
      * @private
      */
-    createDisplayLayout_: function(display) {
-      /** @type {options.DisplayLayout} */ var displayLayout = {
+    createDisplayLayout_: function(display, layoutType) {
+      return {
         bounds: display.bounds,
         div: null,
         id: display.id,
         isPrimary: display.isPrimary,
+        layoutType: layoutType,
         name: display.name,
         originalPosition: {x: 0, y: 0}
       };
-      return displayLayout;
     },
 
     /**
@@ -1071,7 +1076,8 @@ cr.define('options', function() {
       this.displayLayoutMap_ = {};
       for (var i = 0; i < displays.length; i++) {
         var display = displays[i];
-        this.displayLayoutMap_[display.id] = this.createDisplayLayout_(display);
+        this.displayLayoutMap_[display.id] =
+            this.createDisplayLayout_(display, layoutType);
       }
 
       var mirroring = mode == options.MultiDisplayMode.MIRRORING;
