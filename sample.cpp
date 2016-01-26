@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  const std::auto_ptr<seg_t> pSegment(pSegment_);
+  const std::unique_ptr<seg_t> pSegment(pSegment_);
 
   ret = pSegment->Load();
   if (ret < 0) {
