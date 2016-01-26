@@ -97,7 +97,7 @@ void ContentWatcher::NotifyBrowserOfChange(
   std::set<base::StringPiece> transitive_selectors;
   for (blink::WebFrame* frame = top_frame; frame;
        frame = frame->traverseNext(/*wrap=*/false)) {
-    if (top_origin.canAccess(frame->document().securityOrigin())) {
+    if (top_origin.canAccess(frame->securityOrigin())) {
       std::map<blink::WebFrame*, std::set<std::string> >::const_iterator
           frame_selectors = matching_selectors_.find(frame);
       if (frame_selectors != matching_selectors_.end()) {
