@@ -212,6 +212,8 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(ScriptState* scriptState,
     if (!m_enabled)
         return;
     InjectedScript* injectedScript = injectedScriptManager()->injectedScriptFor(scriptState);
+    if (!injectedScript)
+        return;
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
         .setId(injectedScript->contextId())
         .setName(humanReadableName)
