@@ -6,6 +6,7 @@ import fnmatch
 import functools
 import logging
 
+from devil import base_error
 from devil.android import device_errors
 from pylib import valgrind_tools
 from pylib.base import base_test_result
@@ -38,12 +39,13 @@ def handle_shard_failures_with(on_failure):
     def wrapper(dev, *args, **kwargs):
       try:
         return f(dev, *args, **kwargs)
-      except device_errors.CommandFailedError:
-        logging.exception('Shard failed: %s(%s)', f.__name__, str(dev))
       except device_errors.CommandTimeoutError:
         logging.exception('Shard timed out: %s(%s)', f.__name__, str(dev))
       except device_errors.DeviceUnreachableError:
         logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
+      except base_error.BaseError:
+        logging.exception('Shard failed: %s(%s)', f.__name__,
+                          str(dev))
       if on_failure:
         on_failure(dev, f.__name__)
       return None
