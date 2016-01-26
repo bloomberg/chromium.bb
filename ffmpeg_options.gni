@@ -4,6 +4,7 @@
 
 import("//build/config/arm.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 if (is_chrome_branded) {
@@ -14,6 +15,11 @@ if (is_chrome_branded) {
 
 if (is_chromeos) {
   _default_ffmpeg_branding = _default_ffmpeg_branding + "OS"
+}
+if (is_chromecast && !is_android) {
+  # TODO(alokp): What audio codecs does Chromecast want here?  Sort
+  # out and add configs if necessary.  http://crbug.com/570754
+  _default_ffmpeg_branding = "ChromeOS"
 }
 
 declare_args() {
