@@ -73,6 +73,16 @@
   z-index: 1;
 }
 
+#first-run-flow-cloud-pref {
+  color: white;
+  display: flex;
+}
+
+#first-run-flow-cloud-pref a {
+  color: white;
+  text-decoration: none;
+}
+
 #first-run-learn-more {
   font-weight: bold;
   text-transform: uppercase;

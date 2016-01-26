@@ -50,12 +50,15 @@ cr.define('media_router.ui', function() {
   /**
    * Populates the WebUI with data obtained from Media Router.
    *
-   * @param {{deviceMissingUrl: string,
+   * @param {{firstRunFlowCloudPrefLearnMoreUrl: string,
+   *          deviceMissingUrl: string,
    *          sinks: !Array<!media_router.Sink>,
    *          routes: !Array<!media_router.Route>,
    *          castModes: !Array<!media_router.CastMode>,
    *          wasFirstRunFlowAcknowledged: boolean}} data
    * Parameters in data:
+   *   firstRunFlowCloudPrefLearnMoreUrl - url to open when the cloud services
+   *       pref learn more link is clicked.
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
    *   sinks - list of sinks to be displayed.
    *   routes - list of routes that are associated with the sinks.
@@ -64,6 +67,8 @@ cr.define('media_router.ui', function() {
    *       acknowledged by user.
    */
   function setInitialData(data) {
+    container.firstRunFlowCloudPrefLearnMoreUrl =
+        data['firstRunFlowCloudPrefLearnMoreUrl'];
     container.deviceMissingUrl = data['deviceMissingUrl'];
     container.castModeList = data['castModes'];
     container.allSinks = data['sinks'];

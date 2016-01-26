@@ -22,12 +22,18 @@
         <div id="first-run-text">[[firstRunFlowText_]]</div>
         <template is="dom-if" if="[[showFirstRunFlowCloudPref]]">
           <div id="first-run-flow-cloud-pref">
-            <paper-checkbox checked id="first-run-cloud-checkbox">
+            <div>
+              <paper-checkbox checked id="first-run-cloud-checkbox">
+              </paper-checkbox>
+            </div>
+            <div>
               <span>[[firstRunFlowCloudPrefText_]]</span>
-              <span id="first-run-learn-more">
-                [[firstRunFlowCloudLearnMore_]]
-              </span>
-            </paper-checkbox>
+              <a href="[[firstRunFlowCloudPrefLearnMoreUrl]]">
+                <span id="first-run-learn-more">
+                  [[firstRunFlowCloudLearnMore_]]
+                </span>
+              </a>
+            </div>
           </div>
         </template>
         <div id="first-run-button-container">

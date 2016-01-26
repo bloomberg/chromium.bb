@@ -119,6 +119,15 @@ Polymer({
     },
 
     /**
+     * The URL to open when the cloud services pref learn more link is clicked.
+     * @type {string}
+     */
+    firstRunFlowCloudPrefLearnMoreUrl: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The text for the cloud services preference description in the first run
      * flow.
      * @private {string}

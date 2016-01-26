@@ -325,6 +325,11 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   media_router_ui_->OnUIInitiallyLoaded();
   base::DictionaryValue initial_data;
 
+#if defined(GOOGLE_CHROME_BUILD)
+  // "Casting to a Hangout from Chrome" Chromecast help center page.
+  initial_data.SetString("firstRunFlowCloudPrefLearnMoreUrl",
+      base::StringPrintf(kHelpPageUrlPrefix, 6320939));
+#endif  // defined(GOOGLE_CHROME_BUILD)
   // "No Cast devices found?" Chromecast help center page.
   initial_data.SetString("deviceMissingUrl",
       base::StringPrintf(kHelpPageUrlPrefix, 3249268));
