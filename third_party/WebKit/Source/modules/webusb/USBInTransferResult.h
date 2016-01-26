@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMDataView.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBTransferInfo.h"
 #include "wtf/text/WTFString.h"
@@ -25,20 +26,20 @@ public:
 
     USBInTransferResult(const String& status, const WebVector<uint8_t> data)
         : m_status(status)
-        , m_data(DOMArrayBuffer::create(data.data(), data.size()))
+        , m_data(DOMDataView::create(DOMArrayBuffer::create(data.data(), data.size()), 0, data.size()))
     {
     }
 
     virtual ~USBInTransferResult() { }
 
     String status() const { return m_status; }
-    PassRefPtr<DOMArrayBuffer> data() const { return m_data; }
+    PassRefPtr<DOMDataView> data() const { return m_data; }
 
     DEFINE_INLINE_TRACE() { }
 
 private:
     const String m_status;
-    const RefPtr<DOMArrayBuffer> m_data;
+    const RefPtr<DOMDataView> m_data;
 };
 
 } // namespace blink

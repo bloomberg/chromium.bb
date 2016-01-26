@@ -8,6 +8,6 @@
     GarbageCollected,
     RuntimeEnabled=WebUSB,
 ] interface USBInTransferResult {
-    readonly attribute ArrayBuffer data;
+    readonly attribute DataView data;
     readonly attribute USBTransferStatus status;
 };
