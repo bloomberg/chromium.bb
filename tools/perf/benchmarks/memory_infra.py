@@ -79,7 +79,7 @@ class MemoryHealthPlan(_MemoryInfra):
 
 # TODO(bashi): Workaround for http://crbug.com/532075
 # @benchmark.Enabled('android') shouldn't be needed.
-@benchmark.Enabled('android')
+@benchmark.Disabled('all')  # crbug.com/581119
 class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory consumption on mobile
   sites on which blink's memory consumption is relatively high."""
