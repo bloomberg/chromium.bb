@@ -25,7 +25,10 @@ bool ObsoleteSystem::IsObsoleteNowOrSoon() {
   return true;
 #else
   // Ubuntu 14.04 will be used as the next build platform, and it ships with
-  // glibc 2.19, so check for that as the minimum requirement.
+  // glibc 2.19. However, as of this writing, the binary produced on Ubuntu
+  // 14.04 does not actually require glibc 2.19. Thus this function checks for
+  // glibc 2.17 as the minimum requirement, so Ubuntu 12.04 (glibc 2.15) will
+  // be considered obsolete, but RHEL 7 (glibc 2.17) will not.
   Version version(gnu_get_libc_version());
   if (!version.IsValid() || version.components().size() != 2)
     return false;
@@ -35,7 +38,7 @@ bool ObsoleteSystem::IsObsoleteNowOrSoon() {
   if (glibc_major_version < 2)
     return true;
 
-  return glibc_major_version == 2 && glibc_minor_version < 19;
+  return glibc_major_version == 2 && glibc_minor_version < 17;
 #endif  // defined(ARCH_CPU_32_BITS)
 #else
   return false;
