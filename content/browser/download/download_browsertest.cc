@@ -383,6 +383,8 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
     return true;
   }
 
+  bool GenerateFileHash() override { return true; }
+
   void SetDelayedOpen(bool delay) {
     delay_download_open_ = delay;
   }
@@ -1397,6 +1399,59 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
   download->Resume();
   WaitForCompletion(download);
   EXPECT_EQ(download->GetState(), DownloadItem::COMPLETE);
+}
+
+IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, Resume_Hash) {
+  using InjectedError = TestDownloadRequestHandler::InjectedError;
+  const char kExpectedHash[] =
+      "\xa7\x44\x49\x86\x24\xc6\x84\x6c\x89\xdf\xd8\xec\xa0\xe0\x61\x12\xdc\x80"
+      "\x13\xf2\x83\x49\xa9\x14\x52\x32\xf0\x95\x20\xca\x5b\x30";
+  std::string expected_hash(kExpectedHash);
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+
+  // As a control, let's try GetHash() on an uninterrupted download.
+  request_handler.StartServing(parameters);
+  DownloadItem* uninterrupted_download(StartDownloadAndReturnItem(
+      initiator_shell_for_resumption(), request_handler.url()));
+  WaitForCompletion(uninterrupted_download);
+  EXPECT_EQ(expected_hash, uninterrupted_download->GetHash());
+
+  // Now with interruptions.
+  parameters.injected_errors.push(
+      InjectedError(100, net::ERR_CONNECTION_RESET));
+  parameters.injected_errors.push(
+      InjectedError(211, net::ERR_CONNECTION_RESET));
+  parameters.injected_errors.push(
+      InjectedError(337, net::ERR_CONNECTION_RESET));
+  parameters.injected_errors.push(
+      InjectedError(400, net::ERR_CONNECTION_RESET));
+  parameters.injected_errors.push(
+      InjectedError(512, net::ERR_CONNECTION_RESET));
+  request_handler.StartServing(parameters);
+
+  // Start and watch for interrupt.
+  DownloadItem* download(StartDownloadAndReturnItem(
+      initiator_shell_for_resumption(), request_handler.url()));
+  WaitForInterrupt(download);
+
+  PrepareToResume();
+  download->Resume();
+  WaitForInterrupt(download);
+
+  download->Resume();
+  WaitForInterrupt(download);
+
+  download->Resume();
+  WaitForInterrupt(download);
+
+  download->Resume();
+  WaitForInterrupt(download);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_EQ(expected_hash, download->GetHash());
 }
 
 // An interrupted download should remove the intermediate file when it is

@@ -75,6 +75,11 @@ class CONTENT_EXPORT BaseFile {
   // Indicate that the download has finished. No new data will be received.
   void Finish();
 
+  // Indicate that the download is being aborted due to an error. This is
+  // identical to Finish() with the exception that the hash state will not be
+  // finalized.
+  void FinishWithError();
+
   // Set the client guid which will be used to identify the app to the
   // system AV scanning function. Should be called before
   // AnnotateWithSourceInformation() to take effect.

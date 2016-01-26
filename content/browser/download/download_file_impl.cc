@@ -280,7 +280,10 @@ void DownloadFileImpl::StreamActive() {
               stream_reader_->GetStatus());
           SendUpdate();
           base::TimeTicks close_start(base::TimeTicks::Now());
-          file_.Finish();
+          if (reason == DOWNLOAD_INTERRUPT_REASON_NONE)
+            file_.Finish();
+          else
+            file_.FinishWithError();
           base::TimeTicks now(base::TimeTicks::Now());
           disk_writes_time_ += (now - close_start);
           RecordFileBandwidth(

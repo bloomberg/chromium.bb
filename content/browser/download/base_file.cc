@@ -203,7 +203,11 @@ void BaseFile::Finish() {
 
   if (calculate_hash_)
     secure_hash_->Finish(sha256_hash_, crypto::kSHA256Length);
+  Close();
+}
 
+void BaseFile::FinishWithError() {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   Close();
 }
 
