@@ -51,7 +51,7 @@ const char kChromeTracingAgentName[] = "chrome";
 const char kETWTracingAgentName[] = "etw";
 const char kChromeTraceLabel[] = "traceEvents";
 
-const int kIssueClockSyncTimeout = 30;
+const int kIssueClockSyncTimeoutSeconds = 30;
 
 std::string GetNetworkTypeString() {
   switch (net::NetworkChangeNotifier::GetConnectionType()) {
@@ -981,10 +981,8 @@ void TracingControllerImpl::IssueClockSyncMarker() {
     StopTracingAfterClockSync();
   } else {
     clock_sync_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kIssueClockSyncTimeout),
-        this,
-        &TracingControllerImpl::StopTracingAfterClockSync);
+        FROM_HERE, base::TimeDelta::FromSeconds(kIssueClockSyncTimeoutSeconds),
+        this, &TracingControllerImpl::StopTracingAfterClockSync);
   }
 }
 
