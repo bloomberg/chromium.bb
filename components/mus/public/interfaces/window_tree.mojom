@@ -367,6 +367,7 @@ interface WindowTreeClient {
 //
 // This interface is only used as an associated interface and is associated
 // with WindowTreeClient.
+// TODO(sky): rename this to WindowManager.
 interface WindowManagerInternal {
   // When the WindowManagerInternal completes a request it must call back to
   // WindowManagerInternalClient::WmResponse().
@@ -382,6 +383,7 @@ interface WindowManagerInternal {
 
 // This interface is only used as an associated interface and is associated
 // with WindowTree.
+// TODO(sky): rename this to WindowManagerClient.
 interface WindowManagerInternalClient {
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
@@ -389,6 +391,10 @@ interface WindowManagerInternalClient {
   // Calls WindowTreeClient::RequestClose() on the embedded app at the
   // specified window.
   WmRequestClose(uint32 window_id);
+
+  // Sets the frame decoration constants of the display the window manager is
+  // associated with.
+  WmSetFrameDecorationValues(FrameDecorationValues values);
 
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.

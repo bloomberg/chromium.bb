@@ -319,6 +319,8 @@ class WindowTreeImpl : public mojom::WindowTree,
   // mojom::WindowManagerInternalClient:
   void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
+  void WmSetFrameDecorationValues(
+      mojom::FrameDecorationValuesPtr values) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
 

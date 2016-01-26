@@ -46,9 +46,9 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   void OpenWindow(mus::mojom::WindowTreeClientPtr client,
                   mojo::Map<mojo::String, mojo::Array<uint8_t>>
                       transport_properties) override;
-  void GetConfig(const GetConfigCallback& callback) override;
 
   // WindowManagerDelegate:
+  void SetWindowManagerClient(mus::WindowManagerClient* client) override;
   bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override;
   bool OnWmSetProperty(mus::Window* window,
                        const std::string& name,
@@ -57,6 +57,7 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
 
   WindowManagerApplication* state_;
+  mus::WindowManagerClient* window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };

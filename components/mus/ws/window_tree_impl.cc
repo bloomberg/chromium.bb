@@ -1126,6 +1126,12 @@ void WindowTreeImpl::WmRequestClose(Id transport_window_id) {
   // TODO(sky): think about what else case means.
 }
 
+void WindowTreeImpl::WmSetFrameDecorationValues(
+    mojom::FrameDecorationValuesPtr values) {
+  if (GetHostForWindowManager())
+    GetHostForWindowManager()->SetFrameDecorationValues(std::move(values));
+}
+
 void WindowTreeImpl::OnWmCreatedTopLevelWindow(uint32_t change_id,
                                                Id transport_window_id) {
   if (GetHostForWindowManager()) {

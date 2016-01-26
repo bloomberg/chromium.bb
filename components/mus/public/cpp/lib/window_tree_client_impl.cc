@@ -123,6 +123,8 @@ WindowTreeClientImpl::WindowTreeClientImpl(
   // Allow for a null request in tests.
   if (request.is_pending())
     binding_.Bind(std::move(request));
+  if (window_manager_delegate)
+    window_manager_delegate->SetWindowManagerClient(this);
 }
 
 WindowTreeClientImpl::~WindowTreeClientImpl() {
@@ -860,6 +862,12 @@ void WindowTreeClientImpl::WmCreateTopLevelWindow(
       window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
   window_manager_internal_client_->OnWmCreatedTopLevelWindow(change_id,
                                                              window->id());
+}
+
+void WindowTreeClientImpl::SetFrameDecorationValues(
+    mojom::FrameDecorationValuesPtr values) {
+  window_manager_internal_client_->WmSetFrameDecorationValues(
+      std::move(values));
 }
 
 }  // namespace mus

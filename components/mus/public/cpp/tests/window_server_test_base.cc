@@ -96,6 +96,9 @@ void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
   window_tree_connection_destroyed_ = true;
 }
 
+void WindowServerTestBase::SetWindowManagerClient(WindowManagerClient* client) {
+}
+
 bool WindowServerTestBase::OnWmSetBounds(Window* window, gfx::Rect* bounds) {
   return window_manager_delegate_
              ? window_manager_delegate_->OnWmSetBounds(window, bounds)

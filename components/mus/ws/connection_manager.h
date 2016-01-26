@@ -176,6 +176,7 @@ class ConnectionManager : public ServerWindowDelegate,
   void ProcessWindowDeleted(const ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                int32_t cursor_id);
+  void ProcessFrameDecorationValuesChanged(WindowTreeHostImpl* host);
 
  private:
   friend class Operation;
@@ -225,6 +226,16 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Run in response to events which may cause us to change the native cursor.
   void MaybeUpdateNativeCursor(ServerWindow* window);
+
+  // Calls OnDisplays() on |observer|.
+  void CallOnDisplays(mojom::DisplayManagerObserver* observer);
+
+  // Calls observer->OnDisplaysChanged() with the display for |host|.
+  void CallOnDisplayChanged(mojom::DisplayManagerObserver* observer,
+                            WindowTreeHostImpl* host);
+
+  // Returns the Display for |host|.
+  mojom::DisplayPtr DisplayForHost(WindowTreeHostImpl* host);
 
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
@@ -298,8 +309,12 @@ class ConnectionManager : public ServerWindowDelegate,
   uint32_t next_wm_change_id_;
 
   mojo::WeakBindingSet<mojom::DisplayManager> display_manager_bindings_;
+  // WARNING: only use these once |got_valid_frame_decorations_| is true.
+  // TODO(sky): refactor this out into its own class.
   mojo::WeakInterfacePtrSet<mojom::DisplayManagerObserver>
       display_manager_observers_;
+
+  bool got_valid_frame_decorations_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

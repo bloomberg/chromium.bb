@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/mus/common/types.h"
+#include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
@@ -62,6 +63,11 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   WindowTreeImpl* GetWindowTree();
 
   mojom::WindowTreeHostClient* client() const { return client_.get(); }
+
+  void SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values);
+  const mojom::FrameDecorationValues& frame_decoration_values() const {
+    return *frame_decoration_values_;
+  }
 
   // Returns whether |window| is a descendant of this root but not itself a
   // root window.
@@ -204,6 +210,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;
 
+  const uint32_t id_;
   WindowTreeHostDelegate* delegate_;
   ConnectionManager* const connection_manager_;
   mojom::WindowTreeHostClientPtr client_;
@@ -226,7 +233,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   std::queue<scoped_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
 
-  const uint32_t id_;
+  mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };

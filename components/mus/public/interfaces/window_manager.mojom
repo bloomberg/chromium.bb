@@ -8,16 +8,6 @@ import "components/mus/public/interfaces/window_manager_constants.mojom";
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
-struct WindowManagerConfig {
-  array<Display> displays;
-  mojo.Insets normal_client_area_insets;
-  mojo.Insets maximized_client_area_insets;
-  // Max width needed to display the buttons on the title bar. The buttons are
-  // aligned to the trailing edge of the titlebar.
-  // TODO(sky): this API is very narrow, and assumes a particular config.
-  uint32 max_title_bar_button_width;
-};
-
 // Represents a core interface that should be implemented by any window manager
 // built on top of Mus.
 interface WindowManager {
@@ -38,6 +28,4 @@ interface WindowManager {
   const string kWindowTitle_Property = "prop:window-title";
 
   OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
-
-  GetConfig() => (WindowManagerConfig config);
 };

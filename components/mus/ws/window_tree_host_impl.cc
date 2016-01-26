@@ -92,7 +92,8 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state,
     mojom::WindowManagerPtr window_manager)
-    : delegate_(nullptr),
+    : id_(next_id++),
+      delegate_(nullptr),
       connection_manager_(connection_manager),
       client_(std::move(client)),
       event_dispatcher_(this),
@@ -100,8 +101,12 @@ WindowTreeHostImpl::WindowTreeHostImpl(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
       window_manager_(std::move(window_manager)),
       tree_awaiting_input_ack_(nullptr),
-      last_cursor_(0),
-      id_(next_id) {
+      last_cursor_(0) {
+  frame_decoration_values_ = mojom::FrameDecorationValues::New();
+  frame_decoration_values_->normal_client_area_insets = mojo::Insets::New();
+  frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
+  frame_decoration_values_->max_title_bar_button_width = 0u;
+
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(
@@ -127,6 +132,12 @@ const WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() const {
 
 WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() {
   return delegate_ ? delegate_->GetWindowTree() : nullptr;
+}
+
+void WindowTreeHostImpl::SetFrameDecorationValues(
+    mojom::FrameDecorationValuesPtr values) {
+  frame_decoration_values_ = values.Clone();
+  connection_manager_->ProcessFrameDecorationValuesChanged(this);
 }
 
 bool WindowTreeHostImpl::IsWindowAttachedToRoot(

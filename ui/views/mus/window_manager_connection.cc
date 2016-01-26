@@ -17,7 +17,6 @@
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
-#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {
@@ -29,22 +28,6 @@ using WindowManagerConnectionPtr =
 // Env is thread local so that aura may be used on multiple threads.
 base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
-
-void GetWindowManagerFrameValues(mus::mojom::WindowManagerPtr* window_manager) {
-  // TODO(sky): maybe this should be associated with Display?
-  WindowManagerFrameValues frame_values;
-  (*window_manager)
-      ->GetConfig([&frame_values](mus::mojom::WindowManagerConfigPtr results) {
-        frame_values.normal_insets =
-            results->normal_client_area_insets.To<gfx::Insets>();
-        frame_values.maximized_insets =
-            results->maximized_client_area_insets.To<gfx::Insets>();
-        frame_values.max_title_bar_button_width =
-            results->max_title_bar_button_width;
-      });
-  CHECK(window_manager->WaitForIncomingResponse());
-  WindowManagerFrameValues::SetInstance(frame_values);
-}
 
 }  // namespace
 
@@ -86,9 +69,7 @@ WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
     : app_(app), window_tree_connection_(nullptr) {
   app->ConnectToService("mojo:mus", &window_manager_);
 
-  GetWindowManagerFrameValues(&window_manager_);
-
-  screen_.reset(new ScreenMus);
+  screen_.reset(new ScreenMus(this));
   screen_->Init(app);
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       base::Bind(&WindowManagerConnection::CreateNativeWidget,
@@ -105,6 +86,11 @@ void WindowManagerConnection::OnEmbed(mus::Window* root) {}
 
 void WindowManagerConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {}
+
+void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
+  if (window_tree_connection_)
+    NativeWidgetMus::NotifyFrameChanged(window_tree_connection_.get());
+}
 
 NativeWidget* WindowManagerConnection::CreateNativeWidget(
     const Widget::InitParams& init_params,

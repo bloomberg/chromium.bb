@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -20,11 +21,24 @@ namespace mus {
 
 class Window;
 
+class WindowManagerClient {
+ public:
+  virtual void SetFrameDecorationValues(
+      mojom::FrameDecorationValuesPtr values) = 0;
+
+ protected:
+  virtual ~WindowManagerClient() {}
+};
+
 // Used by clients implementing a window manager.
 // TODO(sky): this should be called WindowManager, but that's rather confusing
 // currently.
 class WindowManagerDelegate {
  public:
+  // Called once to give the delegate access to functions only exposed to
+  // the WindowManager.
+  virtual void SetWindowManagerClient(WindowManagerClient* client) = 0;
+
   // A client requested the bounds of |window| to change to |bounds|. Return
   // true if the bounds are allowed to change. A return value of false
   // indicates the change is not allowed.

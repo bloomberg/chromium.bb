@@ -30,7 +30,6 @@ class ForwardingWindowManager : public mojom::WindowManager {
   void OpenWindow(
       mus::mojom::WindowTreeClientPtr client,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
-  void GetConfig(const GetConfigCallback& callback) override;
 
   ConnectionManager* connection_manager_;
 

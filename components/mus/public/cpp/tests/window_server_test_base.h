@@ -73,6 +73,7 @@ class WindowServerTestBase
   void OnConnectionLost(WindowTreeConnection* connection) override;
 
   // WindowManagerDelegate:
+  void SetWindowManagerClient(WindowManagerClient* client) override;
   bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override;
   bool OnWmSetProperty(Window* window,
                        const std::string& name,

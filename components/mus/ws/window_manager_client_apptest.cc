@@ -387,6 +387,7 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
     ~TestWindowManagerDelegate() override {}
 
     // WindowManagerDelegate:
+    void SetWindowManagerClient(WindowManagerClient* client) override {}
     bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override {
       return false;
     }

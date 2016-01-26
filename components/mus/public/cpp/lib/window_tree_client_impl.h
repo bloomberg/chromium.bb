@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -35,7 +36,8 @@ enum class ChangeType;
 // Manages the connection with the Window Server service.
 class WindowTreeClientImpl : public WindowTreeConnection,
                              public mojom::WindowTreeClient,
-                             public mojom::WindowManagerInternal {
+                             public mojom::WindowManagerInternal,
+                             public WindowManagerClient {
  public:
   WindowTreeClientImpl(WindowTreeDelegate* delegate,
                        WindowManagerDelegate* window_manager_delegate,
@@ -223,6 +225,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void WmCreateTopLevelWindow(uint32_t change_id,
                               mojo::Map<mojo::String, mojo::Array<uint8_t>>
                                   transport_properties) override;
+
+  // Overriden from WindowManagerClient:
+  void SetFrameDecorationValues(
+      mojom::FrameDecorationValuesPtr values) override;
 
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this connection.

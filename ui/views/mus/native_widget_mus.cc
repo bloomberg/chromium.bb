@@ -9,6 +9,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -37,6 +38,8 @@ namespace views {
 namespace {
 
 DEFINE_WINDOW_PROPERTY_KEY(mus::Window*, kMusWindow, nullptr);
+
+MUS_DEFINE_WINDOW_PROPERTY_KEY(NativeWidgetMus*, kNativeWidgetMusKey, nullptr);
 
 // TODO: figure out what this should be.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -185,6 +188,8 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       close_widget_factory_(this) {
   // TODO(fsamuel): Figure out lifetime of |window_|.
   aura::SetMusWindow(content_, window_);
+
+  window->SetLocalProperty(kNativeWidgetMusKey, this);
 }
 
 NativeWidgetMus::~NativeWidgetMus() {
@@ -192,6 +197,20 @@ NativeWidgetMus::~NativeWidgetMus() {
     delete native_widget_delegate_;
   else
     CloseNow();
+}
+
+// static
+void NativeWidgetMus::NotifyFrameChanged(
+    mus::WindowTreeConnection* connection) {
+  for (mus::Window* window : connection->GetRoots()) {
+    NativeWidgetMus* native_widget =
+        window->GetLocalProperty(kNativeWidgetMusKey);
+    if (native_widget && native_widget->GetWidget()->non_client_view()) {
+      native_widget->GetWidget()->non_client_view()->Layout();
+      native_widget->GetWidget()->non_client_view()->SchedulePaint();
+      native_widget->UpdateClientArea();
+    }
+  }
 }
 
 void NativeWidgetMus::OnPlatformWindowClosed() {

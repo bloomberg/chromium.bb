@@ -19,6 +19,16 @@ struct VIEWS_MUS_EXPORT WindowManagerFrameValues {
   static void SetInstance(const WindowManagerFrameValues& values);
   static const WindowManagerFrameValues& instance();
 
+  bool operator==(const WindowManagerFrameValues& other) const {
+    return normal_insets == other.normal_insets &&
+           maximized_insets == other.maximized_insets &&
+           max_title_bar_button_width == other.max_title_bar_button_width;
+  }
+
+  bool operator!=(const WindowManagerFrameValues& other) const {
+    return !(*this == other);
+  }
+
   // Ideal insets the window manager renders non-client frame decorations into.
   gfx::Insets normal_insets;
   gfx::Insets maximized_insets;

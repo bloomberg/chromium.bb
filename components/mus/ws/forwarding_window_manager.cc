@@ -29,9 +29,5 @@ void ForwardingWindowManager::OpenWindow(
                                        std::move(properties));
 }
 
-void ForwardingWindowManager::GetConfig(const GetConfigCallback& callback) {
-  return GetActiveWindowManager()->GetConfig(callback);
-}
-
 }  // namespace ws
 }  // namespace mus

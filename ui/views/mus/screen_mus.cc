@@ -4,11 +4,14 @@
 
 #include "ui/views/mus/screen_mus.h"
 
+// #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/gfx/display_finder.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/views/mus/screen_mus_delegate.h"
+#include "ui/views/mus/window_manager_frame_values.h"
 
 namespace mojo {
 
@@ -47,12 +50,28 @@ struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
   }
 };
 
+template <>
+struct TypeConverter<views::WindowManagerFrameValues,
+                     mus::mojom::FrameDecorationValuesPtr> {
+  static views::WindowManagerFrameValues Convert(
+      const mus::mojom::FrameDecorationValuesPtr& input) {
+    views::WindowManagerFrameValues result;
+    result.normal_insets = input->normal_client_area_insets.To<gfx::Insets>();
+    result.maximized_insets =
+        input->maximized_client_area_insets.To<gfx::Insets>();
+    result.max_title_bar_button_width = input->max_title_bar_button_width;
+    return result;
+  }
+};
+
 }  // namespace mojo
 
 namespace views {
 
-ScreenMus::ScreenMus()
-    : primary_display_index_(0), display_manager_observer_binding_(this) {}
+ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
+    : delegate_(delegate),
+      primary_display_index_(0),
+      display_manager_observer_binding_(this) {}
 
 ScreenMus::~ScreenMus() {}
 
@@ -176,8 +195,13 @@ void ScreenMus::OnDisplays(mojo::Array<mus::mojom::DisplayPtr> displays) {
   DCHECK(displays_.empty());
   displays_ = displays.To<std::vector<gfx::Display>>();
   for (size_t i = 0; i < displays.size(); ++i) {
-    if (displays[i]->is_primary)
+    if (displays[i]->is_primary) {
       primary_display_index_ = static_cast<int>(i);
+      // TODO(sky): Make WindowManagerFrameValues per display.
+      WindowManagerFrameValues frame_values =
+          displays[i]->frame_decoration_values.To<WindowManagerFrameValues>();
+      WindowManagerFrameValues::SetInstance(frame_values);
+    }
   }
 }
 
@@ -186,6 +210,13 @@ void ScreenMus::OnDisplaysChanged(
   for (size_t i = 0; i < transport_displays.size(); ++i) {
     const bool is_primary = transport_displays[i]->is_primary;
     ProcessDisplayChanged(transport_displays[i].To<gfx::Display>(), is_primary);
+    if (is_primary) {
+      WindowManagerFrameValues frame_values =
+          transport_displays[i]
+              ->frame_decoration_values.To<WindowManagerFrameValues>();
+      WindowManagerFrameValues::SetInstance(frame_values);
+      delegate_->OnWindowManagerFrameValuesChanged();
+    }
   }
 }
 

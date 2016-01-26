@@ -25,6 +25,7 @@ component("mus") {
     "platform_window_mus.h",
     "screen_mus.cc",
     "screen_mus.h",
+    "screen_mus_delegate.h",
     "surface_binding.cc",
     "surface_binding.h",
     "surface_context_factory.cc",

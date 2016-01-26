@@ -31,13 +31,21 @@ const int32 kResizeBehaviorCanResize = 1;
 const int32 kResizeBehaviorCanMaximize = 2;
 const int32 kResizeBehaviorCanMinimize = 4;
 
+struct FrameDecorationValues {
+  mojo.Insets normal_client_area_insets;
+  mojo.Insets maximized_client_area_insets;
+  // Max width needed to display the buttons on the title bar. The buttons are
+  // aligned to the trailing edge of the titlebar.
+  // TODO(sky): this API is very narrow, and assumes a particular config.
+  uint32 max_title_bar_button_width;
+};
+
 enum TouchSupport {
   UNKNOWN,
   AVAILABLE,
   UNAVAILABLE,
 };
 
-// TODO(sky): move this to display.mojom
 struct Display {
   int64 id;
   mojo.Rect bounds;
@@ -46,6 +54,7 @@ struct Display {
   Rotation rotation;
   TouchSupport touch_support;
   bool is_primary;
+  FrameDecorationValues frame_decoration_values;
 };
 
 enum WindowType {

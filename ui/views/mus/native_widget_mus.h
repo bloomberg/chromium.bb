@@ -34,6 +34,7 @@ class Shell;
 
 namespace mus {
 class Window;
+class WindowTreeConnection;
 
 namespace mojom {
 class WindowManager;
@@ -71,6 +72,9 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   static void ConfigurePropertiesForNewWindow(
       const Widget::InitParams& init_params,
       std::map<std::string, std::vector<uint8_t>>* properties);
+
+  // Notifies all widgets the frame constants changed in some way.
+  static void NotifyFrameChanged(mus::WindowTreeConnection* connection);
 
   mus::Window* window() { return window_; }
 
