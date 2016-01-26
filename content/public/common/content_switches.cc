@@ -938,6 +938,10 @@ const char kEnableAggressiveDOMStorageFlushing[] =
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
+// Enable audio for desktop share.
+const char kEnableAudioSupportForDesktopShare[] =
+    "enable-audio-support-for-desktop-share";
+
 #if defined(OS_CHROMEOS)
 // Disables panel fitting (used for mirror mode).
 const char kDisablePanelFitting[]           = "disable-panel-fitting";
