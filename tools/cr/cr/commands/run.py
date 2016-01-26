@@ -25,7 +25,7 @@ class RunCommand(cr.Command):
     cr.Builder.AddArguments(self, parser)
     cr.Installer.AddArguments(self, parser)
     cr.Runner.AddArguments(self, parser)
-    cr.Target.AddArguments(self, parser, allow_multiple=True)
+    cr.Target.AddArguments(self, parser, allow_multiple=False)
     self.ConsumeArgs(parser, 'the binary')
     return parser
 
