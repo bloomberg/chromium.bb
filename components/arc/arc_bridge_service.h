@@ -101,6 +101,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnNotificationsInstanceReady() {}
     virtual void OnNotificationsInstanceClosed() {}
 
+    // Called whenever the ARC net interface state changes.
+    virtual void OnNetInstanceReady() {}
+    virtual void OnNetInstanceClosed() {}
+
     // Called whenever the ARC power interface state changes.
     virtual void OnPowerInstanceReady() {}
     virtual void OnPowerInstanceClosed() {}
@@ -154,6 +158,7 @@ class ArcBridgeService : public ArcBridgeHost {
   IntentHelperInstance* intent_helper_instance() {
     return intent_helper_ptr_.get();
   }
+  NetInstance* net_instance() { return net_ptr_.get(); }
   NotificationsInstance* notifications_instance() {
     return notifications_ptr_.get();
   }
@@ -178,6 +183,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnInputInstanceReady(InputInstancePtr input_ptr) override;
   void OnIntentHelperInstanceReady(
       IntentHelperInstancePtr intent_helper_ptr) override;
+  void OnNetInstanceReady(NetInstancePtr net_ptr) override;
   void OnNotificationsInstanceReady(
       NotificationsInstancePtr notifications_ptr) override;
   void OnPowerInstanceReady(PowerInstancePtr power_ptr) override;
@@ -220,6 +226,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseImeChannel();
   void CloseInputChannel();
   void CloseIntentHelperChannel();
+  void CloseNetChannel();
   void CloseNotificationsChannel();
   void ClosePowerChannel();
   void CloseProcessChannel();
@@ -231,6 +238,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnImeVersionReady(int32_t version);
   void OnInputVersionReady(int32_t version);
   void OnIntentHelperVersionReady(int32_t version);
+  void OnNetVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
@@ -242,6 +250,7 @@ class ArcBridgeService : public ArcBridgeHost {
   ImeInstancePtr ime_ptr_;
   InputInstancePtr input_ptr_;
   IntentHelperInstancePtr intent_helper_ptr_;
+  NetInstancePtr net_ptr_;
   NotificationsInstancePtr notifications_ptr_;
   PowerInstancePtr power_ptr_;
   ProcessInstancePtr process_ptr_;
@@ -258,6 +267,7 @@ class ArcBridgeService : public ArcBridgeHost {
   ImeInstancePtr temporary_ime_ptr_;
   InputInstancePtr temporary_input_ptr_;
   IntentHelperInstancePtr temporary_intent_helper_ptr_;
+  NetInstancePtr temporary_net_ptr_;
   NotificationsInstancePtr temporary_notifications_ptr_;
   PowerInstancePtr temporary_power_ptr_;
   ProcessInstancePtr temporary_process_ptr_;

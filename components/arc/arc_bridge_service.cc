@@ -63,6 +63,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnImeInstanceReady();
   if (input_instance())
     observer->OnInputInstanceReady();
+  if (net_instance())
+    observer->OnNetInstanceReady();
   if (notifications_instance())
     observer->OnNotificationsInstanceReady();
   if (power_instance())
@@ -223,6 +225,30 @@ void ArcBridgeService::CloseIntentHelperChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnIntentHelperInstanceClosed());
 }
 
+void ArcBridgeService::OnNetInstanceReady(NetInstancePtr net_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_net_ptr_ = std::move(net_ptr);
+  temporary_net_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnNetVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnNetVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  net_ptr_ = std::move(temporary_net_ptr_);
+  net_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseNetChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnNetInstanceReady());
+}
+
+void ArcBridgeService::CloseNetChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!net_ptr_)
+    return;
+
+  net_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnNetInstanceClosed());
+}
+
 void ArcBridgeService::OnNotificationsInstanceReady(
     NotificationsInstancePtr notifications_ptr) {
   DCHECK(CalledOnValidThread());
@@ -331,6 +357,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseImeChannel();
   CloseInputChannel();
   CloseIntentHelperChannel();
+  CloseNetChannel();
   CloseNotificationsChannel();
   ClosePowerChannel();
   CloseProcessChannel();

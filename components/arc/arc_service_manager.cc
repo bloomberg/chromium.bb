@@ -11,6 +11,7 @@
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "components/arc/input/arc_input_bridge.h"
+#include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
@@ -32,6 +33,7 @@ ArcServiceManager::ArcServiceManager()
   AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcImeBridge(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcInputBridge(arc_bridge_service())));
+  AddService(make_scoped_ptr(new ArcNetHostImpl(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcPowerBridge(arc_bridge_service())));
 }
 

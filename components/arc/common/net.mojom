@@ -1,0 +1,37 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module arc;
+
+enum NetworkResult {
+  SUCCESS = 0,
+  FAILURE = 1,
+};
+
+struct WifiConfiguration {
+  // These correspond to ONC properties returned by
+  // chrome.networkingPrivate.getNetworks().
+  // See components/onc/docs/onc_spec.html
+  string ssid;
+  int32 frequency;
+  int32 signal_strength;
+  string bssid;
+  string security;
+};
+
+struct NetworkData {
+  NetworkResult status;
+  array<WifiConfiguration> networks;
+};
+
+interface NetHost {
+  // Sends a request to get configured or visible WiFi networks based on the
+  // |configured_only| and |visible_only| flags.
+  GetNetworks@0(bool configured_only, bool visible_only) => (NetworkData data);
+};
+
+interface NetInstance {
+  // Establishes full-duplex communication with the host.
+  Init@0(NetHost host_ptr);
+};
