@@ -11,6 +11,7 @@
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/dummy_input_method.h"
 
 namespace arc {
 
@@ -26,6 +27,31 @@ class FakeArcImeIpcHost : public ArcImeIpcHost {
   }
 };
 
+class FakeInputMethod : public ui::DummyInputMethod {
+ public:
+  FakeInputMethod() : client_(nullptr), count_show_ime_if_needed_(0) {}
+
+  void SetFocusedTextInputClient(ui::TextInputClient* client) override {
+    client_ = client;
+  }
+
+  ui::TextInputClient* GetTextInputClient() const override {
+    return client_;
+  }
+
+  void ShowImeIfNeeded() override {
+    count_show_ime_if_needed_++;
+  }
+
+  int count_show_ime_if_needed() const {
+    return count_show_ime_if_needed_;
+  }
+
+ private:
+  ui::TextInputClient* client_;
+  int count_show_ime_if_needed_;
+};
+
 }  // namespace
 
 class ArcImeBridgeTest : public testing::Test {
@@ -34,6 +60,7 @@ class ArcImeBridgeTest : public testing::Test {
 
  protected:
   scoped_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
+  scoped_ptr<FakeInputMethod> fake_input_method_;
   scoped_ptr<ArcImeBridge> instance_;
 
  private:
@@ -41,6 +68,9 @@ class ArcImeBridgeTest : public testing::Test {
     fake_arc_bridge_service_.reset(new FakeArcBridgeService);
     instance_.reset(new ArcImeBridge(fake_arc_bridge_service_.get()));
     instance_->SetIpcHostForTesting(make_scoped_ptr(new FakeArcImeIpcHost));
+
+    fake_input_method_.reset(new FakeInputMethod);
+    instance_->SetInputMethodForTesting(fake_input_method_.get());
   }
 
   void TearDown() override {
@@ -74,6 +104,26 @@ TEST_F(ArcImeBridgeTest, HasCompositionText) {
   EXPECT_TRUE(instance_->HasCompositionText());
   instance_->SetCompositionText(ui::CompositionText());
   EXPECT_FALSE(instance_->HasCompositionText());
+}
+
+TEST_F(ArcImeBridgeTest, ShowImeIfNeeded) {
+  fake_input_method_->SetFocusedTextInputClient(instance_.get());
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
+  ASSERT_EQ(0, fake_input_method_->count_show_ime_if_needed());
+
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(1, fake_input_method_->count_show_ime_if_needed());
+
+  // The type is not changing, hence no call.
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(1, fake_input_method_->count_show_ime_if_needed());
+
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_SEARCH);
+  EXPECT_EQ(2, fake_input_method_->count_show_ime_if_needed());
+
+  // Change to NONE should not trigger the showing event.
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
+  EXPECT_EQ(2, fake_input_method_->count_show_ime_if_needed());
 }
 
 }  // namespace arc

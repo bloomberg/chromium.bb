@@ -45,6 +45,9 @@ class ArcImeBridge : public ArcService,
   // Injects the custom IPC host object for testing purpose only.
   void SetIpcHostForTesting(scoped_ptr<ArcImeIpcHost> test_ipc_host);
 
+  // Injects the custom IME for testing purpose only.
+  void SetInputMethodForTesting(ui::InputMethod* test_input_method);
+
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
 
@@ -103,6 +106,8 @@ class ArcImeBridge : public ArcService,
   aura::WindowTracker observing_root_windows_;
   aura::WindowTracker arc_windows_;
   aura::WindowTracker focused_arc_window_;
+
+  ui::InputMethod* test_input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcImeBridge);
 };

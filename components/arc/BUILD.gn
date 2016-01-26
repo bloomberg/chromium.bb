@@ -108,6 +108,7 @@ source_set("unit_tests") {
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/events",
     "//ui/events:dom_keycode_converter",

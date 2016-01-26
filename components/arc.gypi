@@ -22,6 +22,7 @@
         '../ui/aura/aura.gyp:aura',
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/events/events.gyp:events_base',
       ],
       'sources': [

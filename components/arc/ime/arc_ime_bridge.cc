@@ -35,7 +35,8 @@ ArcImeBridge::ArcImeBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
       ipc_host_(new ArcImeIpcHostImpl(this, bridge_service)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
-      has_composition_text_(false) {
+      has_composition_text_(false),
+      test_input_method_(nullptr) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->AddObserver(this);
@@ -60,7 +61,14 @@ void ArcImeBridge::SetIpcHostForTesting(
   ipc_host_ = std::move(test_ipc_host);
 }
 
+void ArcImeBridge::SetInputMethodForTesting(
+    ui::InputMethod* test_input_method) {
+  test_input_method_ = test_input_method;
+}
+
 ui::InputMethod* ArcImeBridge::GetInputMethod() {
+  if (test_input_method_)
+    return test_input_method_;
   if (!focused_arc_window_.has_windows())
     return nullptr;
   return focused_arc_window_.windows().front()->GetHost()->GetInputMethod();
@@ -114,8 +122,18 @@ void ArcImeBridge::OnTextInputTypeChanged(ui::TextInputType type) {
   ime_type_ = type;
 
   ui::InputMethod* const input_method = GetInputMethod();
-  if (input_method)
+  if (input_method) {
     input_method->OnTextInputTypeChanged(this);
+    if (input_method->GetTextInputClient() == this &&
+        ime_type_ != ui::TEXT_INPUT_TYPE_NONE) {
+      // TODO(kinaba): crbug.com/581282. This is tentative short-term solution.
+      //
+      // For fully correct implementation, rather than to piggyback the "show"
+      // request with the input type change, we need dedicated IPCs to share the
+      // virtual keyboard show/hide states between Chromium and ARC.
+      input_method->ShowImeIfNeeded();
+    }
+  }
 }
 
 void ArcImeBridge::OnCursorRectChanged(const gfx::Rect& rect) {
