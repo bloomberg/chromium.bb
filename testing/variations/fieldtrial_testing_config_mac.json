@@ -81,6 +81,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MacMemoryMechanism": [
+        {
+            "group_name": "Mach"
+        }
+    ],
     "MaterialDesignDownloads": [
         {
             "group_name": "Enabled"
