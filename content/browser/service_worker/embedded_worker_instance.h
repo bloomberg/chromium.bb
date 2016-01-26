@@ -150,6 +150,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void set_devtools_attached(bool attached) { devtools_attached_ = attached; }
   bool devtools_attached() const { return devtools_attached_; }
 
+  bool network_accessed_for_script() const {
+    return network_accessed_for_script_;
+  }
+
   // Called when the script load request accessed the network.
   void OnNetworkAccessedForScriptLoad();
 

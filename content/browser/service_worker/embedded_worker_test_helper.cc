@@ -160,8 +160,8 @@ void EmbeddedWorkerTestHelper::OnStartWorker(int embedded_worker_id,
   SimulateWorkerReadyForInspection(embedded_worker_id);
   SimulateWorkerScriptCached(embedded_worker_id);
   SimulateWorkerScriptLoaded(embedded_worker_id);
-  SimulateWorkerThreadStarted(next_thread_id_++, embedded_worker_id);
-  SimulateWorkerScriptEvaluated(embedded_worker_id);
+  SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+  SimulateWorkerScriptEvaluated(embedded_worker_id, true /* success */);
   SimulateWorkerStarted(embedded_worker_id);
 }
 
@@ -271,11 +271,12 @@ void EmbeddedWorkerTestHelper::SimulateWorkerThreadStarted(
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptEvaluated(
-    int embedded_worker_id) {
+    int embedded_worker_id,
+    bool success) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
-  registry()->OnWorkerScriptEvaluated(
-      worker->process_id(), embedded_worker_id, true /* success */);
+  registry()->OnWorkerScriptEvaluated(worker->process_id(), embedded_worker_id,
+                                      success);
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerStarted(

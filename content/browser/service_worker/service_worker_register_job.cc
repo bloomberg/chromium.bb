@@ -352,6 +352,20 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
 
 void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     ServiceWorkerStatusCode status) {
+  // Bump the last update check time only when the register/update job fetched
+  // the version having bypassed the network cache. We assume that the
+  // BYPASS_CACHE flag evicts an existing cache entry, so even if the install
+  // ultimately failed for whatever reason, we know the version in the HTTP
+  // cache is not stale, so it's OK to bump the update check time.
+  if (new_version()->embedded_worker()->network_accessed_for_script() ||
+      new_version()->force_bypass_cache_for_scripts() ||
+      registration()->last_update_check().is_null()) {
+    registration()->set_last_update_check(base::Time::Now());
+
+    if (registration()->waiting_version() || registration()->active_version())
+      context_->storage()->UpdateLastUpdateCheckTime(registration());
+  }
+
   if (status == SERVICE_WORKER_OK) {
     InstallAndContinue();
     return;
@@ -359,16 +373,6 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
 
   // The updated worker is identical to the incumbent.
   if (status == SERVICE_WORKER_ERROR_EXISTS) {
-    // Only bump the last check time when we've bypassed the browser cache.
-    base::TimeDelta time_since_last_check =
-        base::Time::Now() - registration()->last_update_check();
-    if (time_since_last_check > base::TimeDelta::FromHours(
-                                    kServiceWorkerScriptMaxCacheAgeInHours) ||
-        new_version()->force_bypass_cache_for_scripts()) {
-      registration()->set_last_update_check(base::Time::Now());
-      context_->storage()->UpdateLastUpdateCheckTime(registration());
-    }
-
     ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
     Complete(status, "The updated worker is identical to the incumbent.");
     return;
@@ -433,7 +437,7 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
   }
 
   SetPhase(STORE);
-  registration()->set_last_update_check(base::Time::Now());
+  DCHECK(!registration()->last_update_check().is_null());
   context_->storage()->StoreRegistration(
       registration(),
       new_version(),

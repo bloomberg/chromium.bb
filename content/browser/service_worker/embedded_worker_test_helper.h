@@ -77,9 +77,15 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   ServiceWorkerContextWrapper* context_wrapper() { return wrapper_.get(); }
   void ShutdownContext();
 
+  int GetNextThreadId() { return next_thread_id_++; }
+
   int mock_render_process_id() const { return mock_render_process_id_;}
   MockRenderProcessHost* mock_render_process_host() {
     return render_process_host_.get();
+  }
+
+  std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map() {
+    return embedded_worker_id_service_worker_version_id_map_;
   }
 
   // Only used for tests that force creating a new render process. There is no
@@ -127,7 +133,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void SimulateWorkerScriptCached(int embedded_worker_id);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
   void SimulateWorkerThreadStarted(int thread_id, int embedded_worker_id);
-  void SimulateWorkerScriptEvaluated(int embedded_worker_id);
+  void SimulateWorkerScriptEvaluated(int embedded_worker_id, bool success);
   void SimulateWorkerStarted(int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
   void SimulateSend(IPC::Message* message);

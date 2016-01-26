@@ -341,8 +341,10 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
     version_->SetMainScriptHttpResponseInfo(net_request_->response_info());
   }
 
-  if (net_request_->response_info().network_accessed)
+  if (net_request_->response_info().network_accessed &&
+      !(net_request_->response_info().was_cached)) {
     version_->embedded_worker()->OnNetworkAccessedForScriptLoad();
+  }
 
   http_info_.reset(new net::HttpResponseInfo(net_request_->response_info()));
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =

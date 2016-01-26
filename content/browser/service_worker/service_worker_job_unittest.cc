@@ -788,6 +788,17 @@ class UpdateJobTestHelper
     return context()->job_coordinator();
   }
 
+  bool force_bypass_cache_for_scripts() const {
+    return force_bypass_cache_for_scripts_;
+  }
+  void set_force_bypass_cache_for_scripts(bool force_bypass_cache_for_scripts) {
+    force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
+  }
+
+  void set_force_start_worker_failure(bool force_start_worker_failure) {
+    force_start_worker_failure_ = force_start_worker_failure;
+  }
+
   scoped_refptr<ServiceWorkerRegistration> SetupInitialRegistration(
       const GURL& test_origin) {
     scoped_refptr<ServiceWorkerRegistration> registration;
@@ -823,6 +834,8 @@ class UpdateJobTestHelper
     ASSERT_TRUE(version);
     version->AddListener(this);
 
+    if (force_bypass_cache_for_scripts())
+      version->set_force_bypass_cache_for_scripts(true);
     if (!is_update) {
       // Spoof caching the script for the initial version.
       int64_t resource_id = storage()->NewResourceId();
@@ -844,8 +857,18 @@ class UpdateJobTestHelper
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::URLRequestStatus(), std::string());
     }
-    EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id, version_id,
-                                            scope, script);
+    if (!force_start_worker_failure_) {
+      EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id, version_id,
+                                              scope, script);
+    } else {
+      (embedded_worker_id_service_worker_version_id_map())[embedded_worker_id] =
+          version_id;
+      SimulateWorkerReadyForInspection(embedded_worker_id);
+      SimulateWorkerScriptCached(embedded_worker_id);
+      SimulateWorkerScriptLoaded(embedded_worker_id);
+      SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+      SimulateWorkerScriptEvaluated(embedded_worker_id, false);
+    }
   }
 
   // ServiceWorkerRegistration::Listener overrides
@@ -865,7 +888,6 @@ class UpdateJobTestHelper
   }
 
   void OnUpdateFound(ServiceWorkerRegistration* registration) override {
-    ASSERT_FALSE(update_found_);
     update_found_ = true;
   }
 
@@ -882,6 +904,8 @@ class UpdateJobTestHelper
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;
   bool update_found_ = false;
+  bool force_bypass_cache_for_scripts_ = false;
+  bool force_start_worker_failure_ = false;
 };
 
 // Helper class for update tests that evicts the active version when the update
@@ -965,16 +989,35 @@ TEST_F(ServiceWorkerJobTest, Update_BumpLastUpdateCheckTime) {
   helper_.reset(update_helper);
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper->SetupInitialRegistration(kNoChangeOrigin);
+  ASSERT_TRUE(registration.get());
 
-  // Run an update where the last update check was less than 24 hours ago. The
-  // check time shouldn't change, as we didn't bypass cache.
+  registration->AddListener(update_helper);
+
+  // Run an update that does not bypass the network cache. The check time
+  // should not be updated.
   registration->set_last_update_check(kToday);
   registration->active_version()->StartUpdate();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kToday, registration->last_update_check());
+  registration->RemoveListener(update_helper);
 
-  // Run an update where the last update check was over 24 hours ago. The
-  // check time should change, as the cache was bypassed.
+  registration = update_helper->SetupInitialRegistration(kNewVersionOrigin);
+  ASSERT_TRUE(registration.get());
+
+  registration->AddListener(update_helper);
+
+  // Run an update that bypasses the network cache. The check time should be
+  // updated.
+  update_helper->set_force_bypass_cache_for_scripts(true);
+  registration->set_last_update_check(kYesterday);
+  registration->active_version()->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LT(kYesterday, registration->last_update_check());
+
+  // Run an update to a worker that loads successfully but fails to start up
+  // (script evaluation failure). The check time should be updated.
+  update_helper->set_force_bypass_cache_for_scripts(true);
+  update_helper->set_force_start_worker_failure(true);
   registration->set_last_update_check(kYesterday);
   registration->active_version()->StartUpdate();
   base::RunLoop().RunUntilIdle();
