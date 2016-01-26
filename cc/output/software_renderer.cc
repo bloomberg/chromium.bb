@@ -143,8 +143,7 @@ void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
 
 bool SoftwareRenderer::BindFramebufferToTexture(
     DrawingFrame* frame,
-    const ScopedResource* texture,
-    const gfx::Rect& target_rect) {
+    const ScopedResource* texture) {
   DCHECK(texture->id());
 
   // Explicitly release lock, otherwise we can crash when try to lock

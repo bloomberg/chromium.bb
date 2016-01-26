@@ -547,7 +547,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   }
   DCHECK(texture->id());
 
-  if (BindFramebufferToTexture(frame, texture, render_pass->output_rect)) {
+  if (BindFramebufferToTexture(frame, texture)) {
     InitializeViewport(frame, render_pass->output_rect,
                        gfx::Rect(render_pass->output_rect.size()),
                        render_pass->output_rect.size());

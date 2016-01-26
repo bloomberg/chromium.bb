@@ -2946,16 +2946,6 @@ void GLRenderer::GetFramebufferTexture(unsigned texture_id,
   gl_->BindTexture(GL_TEXTURE_2D, 0);
 }
 
-bool GLRenderer::UseScopedTexture(DrawingFrame* frame,
-                                  const ScopedResource* texture,
-                                  const gfx::Rect& viewport_rect) {
-  DCHECK(texture->id());
-  frame->current_render_pass = NULL;
-  frame->current_texture = texture;
-
-  return BindFramebufferToTexture(frame, texture, viewport_rect);
-}
-
 void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   current_framebuffer_lock_ = nullptr;
   output_surface_->BindFramebuffer();
@@ -2969,8 +2959,7 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
 }
 
 bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
-                                          const ScopedResource* texture,
-                                          const gfx::Rect& target_rect) {
+                                          const ScopedResource* texture) {
   DCHECK(texture->id());
 
   // Explicitly release lock, otherwise we can crash when try to lock

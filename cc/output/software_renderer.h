@@ -43,8 +43,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  protected:
   void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
   bool BindFramebufferToTexture(DrawingFrame* frame,
-                                const ScopedResource* texture,
-                                const gfx::Rect& target_rect) override;
+                                const ScopedResource* texture) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(DrawingFrame* frame,
                              SurfaceInitializationMode initialization_mode,

@@ -115,8 +115,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
-                                        const ScopedResource* resource,
-                                        const gfx::Rect& target_rect) = 0;
+                                        const ScopedResource* resource) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
       DrawingFrame* frame,
