@@ -47,7 +47,8 @@ function Runner(outerContainerId, opt_config) {
   this.activated = false;
   this.crashed = false;
   this.paused = false;
-
+  this.inverted = false;
+  this.invertTimer = 0;
   this.resizeTimerId_ = null;
 
   this.playCount = 0;
@@ -111,6 +112,8 @@ Runner.config = {
   GAP_COEFFICIENT: 0.6,
   GRAVITY: 0.6,
   INITIAL_JUMP_VELOCITY: 12,
+  INVERT_FADE_DURATION: 12000,
+  INVERT_DISTANCE: 700,
   MAX_CLOUDS: 6,
   MAX_OBSTACLE_LENGTH: 3,
   MAX_OBSTACLE_DUPLICATION: 2,
@@ -142,6 +145,7 @@ Runner.classes = {
   CONTAINER: 'runner-container',
   CRASHED: 'crashed',
   ICON: 'icon-offline',
+  INVERTED: 'inverted',
   SNACKBAR: 'snackbar',
   SNACKBAR_SHOW: 'snackbar-show',
   TOUCH_CONTROLLER: 'controller'
@@ -158,20 +162,24 @@ Runner.spriteDefinition = {
     CACTUS_SMALL: {x: 228, y: 2},
     CLOUD: {x: 86, y: 2},
     HORIZON: {x: 2, y: 54},
+    MOON: {x: 484, y: 2},
     PTERODACTYL: {x: 134, y: 2},
     RESTART: {x: 2, y: 2},
-    TEXT_SPRITE: {x: 484, y: 2},
-    TREX: {x: 677, y: 2}
+    TEXT_SPRITE: {x: 655, y: 2},
+    TREX: {x: 848, y: 2},
+    STAR: {x: 645, y: 2}
   },
   HDPI: {
-    CACTUS_LARGE: {x: 652,y: 2},
-    CACTUS_SMALL: {x: 446,y: 2},
-    CLOUD: {x: 166,y: 2},
-    HORIZON: {x: 2,y: 104},
-    PTERODACTYL: {x: 260,y: 2},
-    RESTART: {x: 2,y: 2},
-    TEXT_SPRITE: {x: 954,y: 2},
-    TREX: {x: 1338,y: 2}
+    CACTUS_LARGE: {x: 652, y: 2},
+    CACTUS_SMALL: {x: 446, y: 2},
+    CLOUD: {x: 166, y: 2},
+    HORIZON: {x: 2, y: 104},
+    MOON: {x: 954, y: 2},
+    PTERODACTYL: {x: 260, y: 2},
+    RESTART: {x: 2, y: 2},
+    TEXT_SPRITE: {x: 1294, y: 2},
+    TREX: {x: 1678, y: 2},
+    STAR: {x: 1276, y: 2}
   }
 };
 
@@ -525,7 +533,8 @@ Runner.prototype = {
         this.horizon.update(0, this.currentSpeed, hasObstacles);
       } else {
         deltaTime = !this.started ? 0 : deltaTime;
-        this.horizon.update(deltaTime, this.currentSpeed, hasObstacles);
+        this.horizon.update(deltaTime, this.currentSpeed, hasObstacles,
+            this.inverted);
       }
 
       // Check for collisions.
@@ -542,11 +551,33 @@ Runner.prototype = {
         this.gameOver();
       }
 
-      var playAcheivementSound = this.distanceMeter.update(deltaTime,
+      var playAchievementSound = this.distanceMeter.update(deltaTime,
           Math.ceil(this.distanceRan));
 
-      if (playAcheivementSound) {
+      if (playAchievementSound) {
         this.playSound(this.soundFx.SCORE);
+      }
+
+      // Night mode.
+      if (this.invertTimer > this.config.INVERT_FADE_DURATION) {
+        this.invertTimer = 0;
+        this.invertTrigger = false;
+        this.invert();
+      } else if (this.invertTimer) {
+        this.invertTimer += deltaTime;
+      } else {
+        var actualDistance =
+            this.distanceMeter.getActualDistance(Math.ceil(this.distanceRan));
+
+        if (actualDistance > 0) {
+          this.invertTrigger = !(actualDistance %
+              this.config.INVERT_DISTANCE);
+
+          if (this.invertTrigger && this.invertTimer === 0) {
+            this.invertTimer += deltaTime;
+            this.invert();
+          }
+        }
       }
     }
 
@@ -774,7 +805,6 @@ Runner.prototype = {
       this.crashed = false;
       this.distanceRan = 0;
       this.setSpeed(this.config.SPEED);
-
       this.time = getTimeStamp();
       this.containerEl.classList.remove(Runner.classes.CRASHED);
       this.clearCanvas();
@@ -782,7 +812,7 @@ Runner.prototype = {
       this.horizon.reset();
       this.tRex.reset();
       this.playSound(this.soundFx.BUTTON_PRESS);
-
+      this.invert(true);
       this.update();
     }
   },
@@ -791,7 +821,8 @@ Runner.prototype = {
    * Pause the game if the tab is not in focus.
    */
   onVisibilityChange: function(e) {
-    if (document.hidden || document.webkitHidden || e.type == 'blur') {
+    if (document.hidden || document.webkitHidden || e.type == 'blur' ||
+      document.visibilityState != 'visible') {
       this.stop();
     } else if (!this.crashed) {
       this.tRex.reset();
@@ -809,6 +840,21 @@ Runner.prototype = {
       sourceNode.buffer = soundBuffer;
       sourceNode.connect(this.audioContext.destination);
       sourceNode.start(0);
+    }
+  },
+
+  /**
+   * Inverts the current page / canvas colors.
+   * @param {boolean} Whether to reset colors.
+   */
+  invert: function(reset) {
+    if (reset) {
+      document.body.classList.toggle(Runner.classes.INVERTED, false);
+      this.invertTimer = 0;
+      this.inverted = false;
+    } else {
+      this.inverted = document.body.classList.toggle(Runner.classes.INVERTED,
+          this.invertTrigger);
     }
   }
 };
@@ -1173,9 +1219,10 @@ function CollisionBox(x, y, w, h) {
  * @param {Object} dimensions
  * @param {number} gapCoefficient Mutipler in determining the gap.
  * @param {number} speed
+ * @param {number} opt_xOffset
  */
 function Obstacle(canvasCtx, type, spriteImgPos, dimensions,
-    gapCoefficient, speed) {
+    gapCoefficient, speed, opt_xOffset) {
 
   this.canvasCtx = canvasCtx;
   this.spritePos = spriteImgPos;
@@ -1184,7 +1231,7 @@ function Obstacle(canvasCtx, type, spriteImgPos, dimensions,
   this.size = getRandomNum(1, Obstacle.MAX_OBSTACLE_LENGTH);
   this.dimensions = dimensions;
   this.remove = false;
-  this.xPos = 0;
+  this.xPos = dimensions.WIDTH + (opt_xOffset || 0);
   this.yPos = 0;
   this.width = 0;
   this.collisionBoxes = [];
@@ -1225,7 +1272,6 @@ Obstacle.prototype = {
     }
 
     this.width = this.typeConfig.width * this.size;
-    this.xPos = this.dimensions.WIDTH - this.width;
 
     // Check if obstacle can be positioned at various heights.
     if (Array.isArray(this.typeConfig.yPos))  {
@@ -1806,6 +1852,7 @@ function DistanceMeter(canvas, spritePos, canvasWidth) {
   this.defaultString = '';
   this.flashTimer = 0;
   this.flashIterations = 0;
+  this.invertTrigger = false;
 
   this.config = DistanceMeter.config;
   this.maxScoreUnits = this.config.MAX_DISTANCE_UNITS;
@@ -1949,7 +1996,6 @@ DistanceMeter.prototype = {
 
     if (!this.acheivement) {
       distance = this.getActualDistance(distance);
-
       // Score has gone beyond the initial digit count.
       if (distance > this.maxScore && this.maxScoreUnits ==
         this.config.MAX_DISTANCE_UNITS) {
@@ -2002,7 +2048,6 @@ DistanceMeter.prototype = {
     }
 
     this.drawHighScore();
-
     return playSound;
   },
 
@@ -2134,6 +2179,162 @@ Cloud.prototype = {
   isVisible: function() {
     return this.xPos + Cloud.config.WIDTH > 0;
   }
+};
+
+
+//******************************************************************************
+
+/**
+ * Nightmode shows a moon and stars on the horizon.
+ */
+function NightMode(canvas, spritePos, containerWidth) {
+  this.spritePos = spritePos;
+  this.canvas = canvas;
+  this.canvasCtx = canvas.getContext('2d');
+  this.xPos = containerWidth - 50;
+  this.yPos = 30;
+  this.currentPhase = 0;
+  this.opacity = 0;
+  this.containerWidth = containerWidth;
+  this.stars = [];
+  this.drawStars = false;
+  this.placeStars();
+};
+
+/**
+ * @enum {number}
+ */
+NightMode.config = {
+  FADE_SPEED: 0.035,
+  HEIGHT: 40,
+  MOON_SPEED: 0.25,
+  NUM_STARS: 2,
+  STAR_SIZE: 9,
+  STAR_SPEED: 0.3,
+  STAR_MAX_Y: 70,
+  WIDTH: 20
+};
+
+NightMode.phases = [140, 120, 100, 60, 40, 20, 0];
+
+NightMode.prototype = {
+  /**
+   * Update moving moon, changing phases.
+   * @param {boolean} activated Whether night mode is activated.
+   * @param {number} delta
+   */
+  update: function(activated, delta) {
+    // Moon phase.
+    if (activated && this.opacity == 0) {
+      this.currentPhase++;
+
+      if (this.currentPhase >= NightMode.phases.length) {
+        this.currentPhase = 0;
+      }
+    }
+
+    // Fade in / out.
+    if (activated && (this.opacity < 1 || this.opacity == 0)) {
+      this.opacity += NightMode.config.FADE_SPEED;
+    } else if (this.opacity > 0) {
+      this.opacity -= NightMode.config.FADE_SPEED;
+    }
+
+    // Set moon positioning.
+    if (this.opacity > 0) {
+      this.xPos = this.updateXPos(this.xPos, NightMode.config.MOON_SPEED);
+
+      // Update stars.
+      if (this.drawStars) {
+         for (var i = 0; i < NightMode.config.NUM_STARS; i++) {
+            this.stars[i].x = this.updateXPos(this.stars[i].x,
+                NightMode.config.STAR_SPEED);
+         }
+      }
+      this.draw();
+    } else {
+      this.opacity = 0;
+      this.placeStars();
+    }
+    this.drawStars = true;
+  },
+
+  updateXPos: function(currentPos, speed) {
+    if (currentPos < -NightMode.config.WIDTH) {
+      currentPos = this.containerWidth;
+    } else {
+      currentPos -= speed;
+    }
+    return currentPos;
+  },
+
+  draw: function() {
+    var moonSourceWidth = this.currentPhase == 3 ? NightMode.config.WIDTH * 2 :
+         NightMode.config.WIDTH;
+    var moonSourceHeight = NightMode.config.HEIGHT;
+    var moonSourceX = this.spritePos.x + NightMode.phases[this.currentPhase];
+    var moonOutputWidth = moonSourceWidth;
+    var starSize = NightMode.config.STAR_SIZE;
+    var starSourceX = Runner.spriteDefinition.LDPI.STAR.x;
+
+    if (IS_HIDPI) {
+      moonSourceWidth *= 2;
+      moonSourceHeight *= 2;
+      moonSourceX = this.spritePos.x +
+          (NightMode.phases[this.currentPhase] * 2);
+      starSize *= 2;
+      starSourceX = Runner.spriteDefinition.HDPI.STAR.x;
+    }
+
+    this.canvasCtx.save();
+    this.canvasCtx.globalAlpha = this.opacity;
+
+    // Stars.
+    if (this.drawStars) {
+      for (var i = 0; i < NightMode.config.NUM_STARS; i++) {
+        this.canvasCtx.drawImage(Runner.imageSprite,
+            starSourceX, this.stars[i].sourceY, starSize, starSize,
+            Math.round(this.stars[i].x), this.stars[i].y,
+            NightMode.config.STAR_SIZE, NightMode.config.STAR_SIZE);
+      }
+    }
+
+    // Moon.
+    this.canvasCtx.drawImage(Runner.imageSprite, moonSourceX,
+        this.spritePos.y, moonSourceWidth, moonSourceHeight,
+        Math.round(this.xPos), this.yPos,
+        moonOutputWidth, NightMode.config.HEIGHT);
+
+    this.canvasCtx.globalAlpha = 1;
+    this.canvasCtx.restore();
+  },
+
+  // Do star placement.
+  placeStars: function() {
+    var segmentSize = Math.round(this.containerWidth /
+        NightMode.config.NUM_STARS);
+
+    for (var i = 0; i < NightMode.config.NUM_STARS; i++) {
+      this.stars[i] = {};
+      this.stars[i].x = getRandomNum(segmentSize * i, segmentSize * (i + 1));
+      this.stars[i].y = getRandomNum(0, NightMode.config.STAR_MAX_Y);
+
+      if (IS_HIDPI) {
+        this.stars[i].sourceY = Runner.spriteDefinition.HDPI.STAR.y +
+            NightMode.config.STAR_SIZE * 2 * i;
+      } else {
+        this.stars[i].sourceY = Runner.spriteDefinition.LDPI.STAR.y +
+            NightMode.config.STAR_SIZE * i;
+      }
+    }
+  },
+
+  reset: function() {
+    this.currentPhase = 0;
+    this.opacity = 0;
+    this.update(false);
+  }
+
 };
 
 
@@ -2287,6 +2488,7 @@ function Horizon(canvas, spritePos, dimensions, gapCoefficient) {
   this.horizonOffsets = [0, 0];
   this.cloudFrequency = this.config.CLOUD_FREQUENCY;
   this.spritePos = spritePos;
+  this.nightMode = null;
 
   // Cloud
   this.clouds = [];
@@ -2294,7 +2496,6 @@ function Horizon(canvas, spritePos, dimensions, gapCoefficient) {
 
   // Horizon
   this.horizonLine = null;
-
   this.init();
 };
 
@@ -2319,6 +2520,8 @@ Horizon.prototype = {
   init: function() {
     this.addCloud();
     this.horizonLine = new HorizonLine(this.canvas, this.spritePos.HORIZON);
+    this.nightMode = new NightMode(this.canvas, this.spritePos.MOON,
+        this.dimensions.WIDTH);
   },
 
   /**
@@ -2327,10 +2530,12 @@ Horizon.prototype = {
    * @param {boolean} updateObstacles Used as an override to prevent
    *     the obstacles from being updated / added. This happens in the
    *     ease in section.
+   * @param {boolean} showNightMode Night mode activated.
    */
-  update: function(deltaTime, currentSpeed, updateObstacles) {
+  update: function(deltaTime, currentSpeed, updateObstacles, showNightMode) {
     this.runningTime += deltaTime;
     this.horizonLine.update(deltaTime, currentSpeed);
+    this.nightMode.update(showNightMode);
     this.updateClouds(deltaTime, currentSpeed);
 
     if (updateObstacles) {
@@ -2365,6 +2570,8 @@ Horizon.prototype = {
       this.clouds = this.clouds.filter(function(obj) {
         return !obj.remove;
       });
+    } else {
+      this.addCloud();
     }
   },
 
@@ -2404,6 +2611,10 @@ Horizon.prototype = {
     }
   },
 
+  removeFirstObstacle: function() {
+    this.obstacles.shift();
+  },
+
   /**
    * Add a new obstacle.
    * @param {number} currentSpeed
@@ -2422,7 +2633,7 @@ Horizon.prototype = {
 
       this.obstacles.push(new Obstacle(this.canvasCtx, obstacleType,
           obstacleSpritePos, this.dimensions,
-          this.gapCoefficient, currentSpeed));
+          this.gapCoefficient, currentSpeed, obstacleType.width));
 
       this.obstacleHistory.unshift(obstacleType.type);
 
@@ -2454,6 +2665,7 @@ Horizon.prototype = {
   reset: function() {
     this.obstacles = [];
     this.horizonLine.reset();
+    this.nightMode.reset();
   },
 
   /**
