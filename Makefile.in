@@ -487,9 +487,13 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 src_libbreakpad_a_OBJECTS = $(am_src_libbreakpad_a_OBJECTS)
 src_testing_libtesting_a_AR = $(AR) $(ARFLAGS)
 src_testing_libtesting_a_LIBADD =
-am_src_testing_libtesting_a_OBJECTS = src/testing/gtest/src/src_testing_libtesting_a-gtest-all.$(OBJEXT) \
-	src/testing/gtest/src/src_testing_libtesting_a-gtest_main.$(OBJEXT) \
-	src/testing/src/src_testing_libtesting_a-gmock-all.$(OBJEXT)
+am__src_testing_libtesting_a_SOURCES_DIST =  \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+@SYSTEM_TEST_LIBS_FALSE@am_src_testing_libtesting_a_OBJECTS = src/testing/gtest/src/src_testing_libtesting_a-gtest-all.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/src_testing_libtesting_a-gtest_main.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/src/src_testing_libtesting_a-gmock-all.$(OBJEXT)
 src_testing_libtesting_a_OBJECTS =  \
 	$(am_src_testing_libtesting_a_OBJECTS)
 src_third_party_libdisasm_libdisasm_a_AR = $(AR) $(ARFLAGS)
@@ -584,6 +588,10 @@ PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_src_client_linux_linux_client_unittest_OBJECTS =
 src_client_linux_linux_client_unittest_OBJECTS =  \
 	$(am_src_client_linux_linux_client_unittest_OBJECTS)
+am__DEPENDENCIES_1 =
+@SYSTEM_TEST_LIBS_FALSE@am__DEPENDENCIES_2 = src/testing/libtesting.a
+@SYSTEM_TEST_LIBS_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) \
+@SYSTEM_TEST_LIBS_TRUE@	$(am__DEPENDENCIES_1)
 src_client_linux_linux_client_unittest_LINK = $(CCLD) $(AM_CFLAGS) \
 	$(CFLAGS) $(src_client_linux_linux_client_unittest_LDFLAGS) \
 	$(LDFLAGS) -o $@
@@ -613,9 +621,9 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 	src/common/android/breakpad_getcontext.S \
 	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 	src/common/android/breakpad_getcontext_unittest.cc
-am__objects_2 = src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.$(OBJEXT) \
-	src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT) \
-	src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT)
+@SYSTEM_TEST_LIBS_FALSE@am__objects_2 = src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT)
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_3 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT)
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_4 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.$(OBJEXT)
 @LINUX_HOST_TRUE@am_src_client_linux_linux_client_unittest_shlib_OBJECTS =  \
@@ -647,7 +655,6 @@ am__objects_2 = src/testing/gtest/src/src_client_linux_linux_client_unittest_shl
 @LINUX_HOST_TRUE@	$(am__objects_4)
 src_client_linux_linux_client_unittest_shlib_OBJECTS =  \
 	$(am_src_client_linux_linux_client_unittest_shlib_OBJECTS)
-am__DEPENDENCIES_1 =
 src_client_linux_linux_client_unittest_shlib_LINK = $(CXXLD) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(src_client_linux_linux_client_unittest_shlib_LDFLAGS) \
@@ -746,7 +753,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 src_common_dumper_unittest_OBJECTS =  \
 	$(am_src_common_dumper_unittest_OBJECTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_DEPENDENCIES =  \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(TEST_LIBS) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_2) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
 am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
@@ -788,7 +795,7 @@ am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 src_common_mac_macho_reader_unittest_OBJECTS =  \
 	$(am_src_common_mac_macho_reader_unittest_OBJECTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_mac_macho_reader_unittest_DEPENDENCIES =  \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(TEST_LIBS) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_2) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
 am__src_common_test_assembler_unittest_SOURCES_DIST =  \
@@ -799,7 +806,8 @@ am__src_common_test_assembler_unittest_SOURCES_DIST =  \
 src_common_test_assembler_unittest_OBJECTS =  \
 	$(am_src_common_test_assembler_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_common_test_assembler_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_address_map_unittest_SOURCES_DIST =  \
 	src/processor/address_map_unittest.cc
@@ -818,7 +826,8 @@ src_processor_basic_source_line_resolver_unittest_OBJECTS = $(am_src_processor_b
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_cfi_frame_info_unittest_SOURCES_DIST =  \
@@ -830,7 +839,8 @@ src_processor_cfi_frame_info_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_contained_range_map_unittest_SOURCES_DIST =  \
 	src/processor/contained_range_map_unittest.cc
@@ -848,7 +858,8 @@ src_processor_disassembler_x86_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@src_processor_disassembler_x86_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_exploitability_unittest_SOURCES_DIST =  \
 	src/processor/exploitability_unittest.cc
@@ -889,7 +900,8 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_fast_source_line_resolver_unittest_SOURCES_DIST =  \
 	src/processor/fast_source_line_resolver_unittest.cc
@@ -903,7 +915,8 @@ src_processor_fast_source_line_resolver_unittest_OBJECTS = $(am_src_processor_fa
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_map_serializers_unittest_SOURCES_DIST =  \
@@ -914,7 +927,8 @@ src_processor_map_serializers_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@src_processor_map_serializers_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_microdump_processor_unittest_SOURCES_DIST =  \
 	src/processor/microdump_processor_unittest.cc
@@ -946,7 +960,8 @@ src_processor_microdump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_microdump_stackwalk_SOURCES_DIST =  \
@@ -1035,7 +1050,8 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_minidump_stackwalk_SOURCES_DIST =  \
 	src/processor/minidump_stackwalk.cc
@@ -1094,7 +1110,8 @@ src_processor_minidump_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_pathname_stripper_unittest_SOURCES_DIST =  \
 	src/processor/pathname_stripper_unittest.cc
@@ -1126,7 +1143,8 @@ src_processor_proc_maps_linux_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_range_map_unittest_SOURCES_DIST =  \
 	src/processor/range_map_unittest.cc
@@ -1146,7 +1164,8 @@ am__src_processor_stackwalker_address_list_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_address_list_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_address_list_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_address_list_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST =  \
@@ -1157,7 +1176,8 @@ am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_amd64_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_amd64_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_amd64_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_stackwalker_arm64_unittest_SOURCES_DIST =  \
@@ -1168,7 +1188,8 @@ am__src_processor_stackwalker_arm64_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_arm64_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_arm64_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm64_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_stackwalker_arm_unittest_SOURCES_DIST =  \
@@ -1179,7 +1200,8 @@ am__src_processor_stackwalker_arm_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_arm_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_arm_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_stackwalker_mips_unittest_SOURCES_DIST =  \
@@ -1190,7 +1212,8 @@ am__src_processor_stackwalker_mips_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_mips_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_mips_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_mips_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_stackwalker_selftest_SOURCES_DIST =  \
@@ -1234,7 +1257,8 @@ am__src_processor_stackwalker_x86_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_x86_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_x86_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_x86_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a $(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_static_address_map_unittest_SOURCES_DIST =  \
@@ -1245,7 +1269,8 @@ src_processor_static_address_map_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@src_processor_static_address_map_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_static_contained_range_map_unittest_SOURCES_DIST =  \
 	src/processor/static_contained_range_map_unittest.cc
@@ -1254,7 +1279,8 @@ src_processor_static_contained_range_map_unittest_OBJECTS = $(am_src_processor_s
 @DISABLE_PROCESSOR_FALSE@src_processor_static_contained_range_map_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_static_map_unittest_SOURCES_DIST =  \
 	src/processor/static_map_unittest.cc
@@ -1264,7 +1290,8 @@ src_processor_static_map_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@src_processor_static_map_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_static_range_map_unittest_SOURCES_DIST =  \
 	src/processor/static_range_map_unittest.cc
@@ -1274,7 +1301,8 @@ src_processor_static_range_map_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@src_processor_static_range_map_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_synth_minidump_unittest_SOURCES_DIST =  \
 	src/common/test_assembler.cc src/common/test_assembler.h \
@@ -1286,7 +1314,8 @@ am__src_processor_synth_minidump_unittest_SOURCES_DIST =  \
 src_processor_synth_minidump_unittest_OBJECTS =  \
 	$(am_src_processor_synth_minidump_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_synth_minidump_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_tools_linux_core2md_core2md_SOURCES_DIST =  \
 	src/tools/linux/core2md/core2md.cc
@@ -1344,7 +1373,7 @@ am__src_tools_linux_md2core_minidump_2_core_unittest_SOURCES_DIST =  \
 @LINUX_HOST_TRUE@am_src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS = src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.$(OBJEXT)
 src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS = $(am_src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS)
 @LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_unittest_DEPENDENCIES =  \
-@LINUX_HOST_TRUE@	$(TEST_LIBS) $(am__DEPENDENCIES_1) \
+@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
 @LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
 am__src_tools_linux_symupload_minidump_upload_SOURCES_DIST =  \
 	src/common/linux/http_upload.cc \
@@ -1504,7 +1533,7 @@ SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
 DIST_SOURCES =  \
 	$(am__src_client_linux_libbreakpad_client_a_SOURCES_DIST) \
 	$(am__src_libbreakpad_a_SOURCES_DIST) \
-	$(src_testing_libtesting_a_SOURCES) \
+	$(am__src_testing_libtesting_a_SOURCES_DIST) \
 	$(am__src_third_party_libdisasm_libdisasm_a_SOURCES_DIST) \
 	$(src_client_linux_linux_client_unittest_SOURCES) \
 	$(am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST) \
@@ -1823,7 +1852,13 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+GMOCK_CFLAGS = @GMOCK_CFLAGS@
+GMOCK_CONFIG = @GMOCK_CONFIG@
+GMOCK_LIBS = @GMOCK_LIBS@
 GREP = @GREP@
+GTEST_CFLAGS = @GTEST_CFLAGS@
+GTEST_CONFIG = @GTEST_CONFIG@
+GTEST_LIBS = @GTEST_LIBS@
 HAVE_CXX11 = @HAVE_CXX11@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -1946,24 +1981,26 @@ includepdir = $(includedir)/$(PACKAGE)/processor
 includep_HEADERS = $(top_srcdir)/src/processor/*.h
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(am__append_6) $(am__append_9)
-TEST_CFLAGS = \
-	-I$(top_srcdir)/src/testing/include \
-	-I$(top_srcdir)/src/testing/gtest/include \
-	-I$(top_srcdir)/src/testing/gtest \
-	-I$(top_srcdir)/src/testing
+@SYSTEM_TEST_LIBS_FALSE@TEST_CFLAGS = \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/include \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/gtest \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing
 
-TEST_LIBS = src/testing/libtesting.a
+@SYSTEM_TEST_LIBS_TRUE@TEST_CFLAGS = $(GTEST_CFLAGS) $(GMOCK_CFLAGS)
+@SYSTEM_TEST_LIBS_FALSE@TEST_LIBS = src/testing/libtesting.a
+@SYSTEM_TEST_LIBS_TRUE@TEST_LIBS = $(GTEST_LIBS) -lgtest_main $(GMOCK_LIBS)
 check_LIBRARIES = src/testing/libtesting.a
 noinst_LIBRARIES = $(am__append_7)
 lib_LIBRARIES = $(am__append_5) $(am__append_8)
 CLEANFILES = $(am__append_16)
-src_testing_libtesting_a_SOURCES = \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/gtest/src/gtest_main.cc \
-	src/testing/src/gmock-all.cc
+@SYSTEM_TEST_LIBS_FALSE@src_testing_libtesting_a_SOURCES = \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/gtest-all.cc \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/gtest_main.cc \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/src/gmock-all.cc
 
-src_testing_libtesting_a_CPPFLAGS = \
-	$(AM_CPPFLAGS) $(TEST_CFLAGS)
+@SYSTEM_TEST_LIBS_FALSE@src_testing_libtesting_a_CPPFLAGS = \
+@SYSTEM_TEST_LIBS_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_server.cc \
@@ -2223,7 +2260,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_23)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
-@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
+@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib \
+@LINUX_HOST_TRUE@	$(TEST_LIBS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib

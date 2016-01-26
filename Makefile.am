@@ -113,12 +113,17 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA =
 
 ## Common test logic
+if SYSTEM_TEST_LIBS
+TEST_CFLAGS = $(GTEST_CFLAGS) $(GMOCK_CFLAGS)
+TEST_LIBS = $(GTEST_LIBS) -lgtest_main $(GMOCK_LIBS)
+else
 TEST_CFLAGS = \
 	-I$(top_srcdir)/src/testing/include \
 	-I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 TEST_LIBS = src/testing/libtesting.a
+endif
 
 ## Libraries
 check_LIBRARIES =
@@ -131,12 +136,14 @@ CLEANFILES =
 
 check_LIBRARIES += src/testing/libtesting.a
 
+if !SYSTEM_TEST_LIBS
 src_testing_libtesting_a_SOURCES = \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_testing_libtesting_a_CPPFLAGS = \
 	$(AM_CPPFLAGS) $(TEST_CFLAGS)
+endif
 
 if !DISABLE_PROCESSOR
 lib_LIBRARIES += src/libbreakpad.a
@@ -519,7 +526,8 @@ src_client_linux_linux_client_unittest_LDFLAGS += \
 endif
 
 src_client_linux_linux_client_unittest_LDADD = \
-	src/client/linux/linux_client_unittest_shlib
+	src/client/linux/linux_client_unittest_shlib \
+	$(TEST_LIBS)
 
 src_client_linux_linux_client_unittest_DEPENDENCIES = \
 	src/client/linux/linux_client_unittest_shlib
