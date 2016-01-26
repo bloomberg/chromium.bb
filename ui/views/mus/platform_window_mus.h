@@ -16,6 +16,18 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/views/mus/mus_export.h"
 
+namespace bitmap_uploader {
+class BitmapUploader;
+}
+
+namespace mojo {
+class Shell;
+}
+
+namespace ui {
+class ViewProp;
+}
+
 namespace views {
 
 class VIEWS_MUS_EXPORT PlatformWindowMus
@@ -24,6 +36,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
       public NON_EXPORTED_BASE(mus::InputEventHandler) {
  public:
   PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
+                    mojo::Shell* shell,
                     mus::Window* mus_window);
   ~PlatformWindowMus() override;
 
@@ -82,6 +95,8 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   // True if OnWindowDestroyed() has been received.
   bool mus_window_destroyed_;
 
+  scoped_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
+  scoped_ptr<ui::ViewProp> prop_;
 #ifndef NDEBUG
   scoped_ptr<base::WeakPtrFactory<PlatformWindowMus>> weak_factory_;
 #endif

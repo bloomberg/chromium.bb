@@ -5,10 +5,12 @@
 #include "ui/views/mus/platform_window_mus.h"
 
 #include "build/build_config.h"
+#include "components/bitmap_uploader/bitmap_uploader.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
+#include "ui/base/view_prop.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/window_manager_connection.h"
 
@@ -20,6 +22,7 @@ static uint32_t accelerated_widget_count = 1;
 }  // namespace
 
 PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
+                                     mojo::Shell* shell,
                                      mus::Window* mus_window)
     : delegate_(delegate),
       mus_window_(mus_window),
@@ -36,14 +39,20 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
   // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
   // has this property.
 #if defined(OS_WIN) || defined(OS_ANDROID)
-  delegate_->OnAcceleratedWidgetAvailable(
-      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++),
-      mus_window_->viewport_metrics().device_pixel_ratio);
+  gfx::AcceleratedWidget accelerated_widget =
+      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #else
-  delegate_->OnAcceleratedWidgetAvailable(
-      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++),
-      mus_window_->viewport_metrics().device_pixel_ratio);
+  gfx::AcceleratedWidget accelerated_widget =
+      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
+  delegate_->OnAcceleratedWidgetAvailable(
+      accelerated_widget, mus_window_->viewport_metrics().device_pixel_ratio);
+
+  bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(mus_window_));
+  bitmap_uploader_->Init(shell);
+  prop_.reset(new ui::ViewProp(
+      accelerated_widget, bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
+      bitmap_uploader_.get()));
 }
 
 PlatformWindowMus::~PlatformWindowMus() {
