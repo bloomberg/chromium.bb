@@ -1072,6 +1072,9 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
         continue;
     }
 
+    if (!listener->ipc_sender.get())
+      continue;
+
     // Filter out the optional keys that this listener didn't request.
     scoped_ptr<base::ListValue> args_filtered(new base::ListValue);
     args_filtered->Append(
