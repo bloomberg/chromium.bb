@@ -2679,7 +2679,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidth(ShouldComputePreferred shouldC
 
 LayoutUnit LayoutBox::computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit logicalWidth, ShouldComputePreferred shouldComputePreferred) const
 {
-    LayoutUnit minLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMinWidth().hasPercent()) || style()->logicalMinWidth().isMaxSizeNone() ? logicalWidth : computeReplacedLogicalWidthUsing(MinSize, style()->logicalMinWidth());
+    LayoutUnit minLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMinWidth().hasPercent()) ? logicalWidth : computeReplacedLogicalWidthUsing(MinSize, style()->logicalMinWidth());
     LayoutUnit maxLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMaxWidth().hasPercent()) || style()->logicalMaxWidth().isMaxSizeNone() ? logicalWidth : computeReplacedLogicalWidthUsing(MaxSize, style()->logicalMaxWidth());
     return std::max(minLogicalWidth, std::min(logicalWidth, maxLogicalWidth));
 }
