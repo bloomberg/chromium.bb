@@ -7,7 +7,7 @@ include_rules = [
   "+components/precache/android/java",
   "+components/service_tab_launcher",
   "+components/web_contents_delegate_android",
-  "+components/web_restriction",
+  "+components/web_restrictions",
   "+content/public/android/java",
   "+sync/android/java/src/org/chromium/sync",
 ]

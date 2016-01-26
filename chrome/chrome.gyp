@@ -569,7 +569,7 @@
             '../components/components.gyp:signin_core_browser_java',
             '../components/components.gyp:variations_java',
             '../components/components.gyp:web_contents_delegate_android_java',
-            '../components/components.gyp:web_restriction_java',
+            '../components/components.gyp:web_restrictions_java',
             '../components/components_strings.gyp:components_strings',
             '../content/content.gyp:content_java',
             '../media/media.gyp:media_java',

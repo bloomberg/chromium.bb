@@ -4,7 +4,7 @@ include_rules = [
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/navigation_interception",
   "+components/precache/android/javatests",
-  "+components/web_restriction",
+  "+components/web_restrictions",
   "+content/public/android/java",
   "+sync/android/java/src/org/chromium/sync",
   # We should only depend on the util package of something that lives in

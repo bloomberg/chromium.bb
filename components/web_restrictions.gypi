@@ -7,11 +7,11 @@
     ['OS == "android"', {
       'targets': [
         {
-          # GN: //components/web_restriction:web_restriction_java
-          'target_name': 'web_restriction_java',
+          # GN: //components/web_restrictions:web_restrictions_java
+          'target_name': 'web_restrictions_java',
           'type': 'none',
           'variables': {
-            'java_in_dir': 'web_restriction/java',
+            'java_in_dir': 'web_restrictions/java',
           },
           'dependencies': [
             '../base/base.gyp:base',

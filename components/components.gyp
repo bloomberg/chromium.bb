@@ -99,7 +99,7 @@
     'version_info.gypi',
     'version_ui.gypi',
     'web_resource.gypi',
-    'web_restriction.gypi',
+    'web_restrictions.gypi',
     'webdata.gypi',
     'webdata_services.gypi',
   ],

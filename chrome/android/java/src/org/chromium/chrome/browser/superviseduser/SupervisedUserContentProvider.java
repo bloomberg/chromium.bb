@@ -19,7 +19,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.components.webrestriction.WebRestrictionsContentProvider;
+import org.chromium.components.webrestrictions.WebRestrictionsContentProvider;
 import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.concurrent.CountDownLatch;

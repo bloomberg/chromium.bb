@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.webrestriction.WebRestrictionsContentProvider;
+import org.chromium.components.webrestrictions.WebRestrictionsContentProvider;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
