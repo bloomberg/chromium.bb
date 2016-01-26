@@ -205,7 +205,7 @@ void PaintLayerCompositor::updateIfNeededRecursive()
         // It's possible for trusted Pepper plugins to force hit testing in situations where
         // the frame tree is in an inconsistent state, such as in the middle of frame detach.
         // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
-        if (localFrame->document()->isActive())
+        if (localFrame->document()->isActive() && localFrame->contentLayoutObject())
             localFrame->contentLayoutObject()->compositor()->updateIfNeededRecursive();
     }
 
