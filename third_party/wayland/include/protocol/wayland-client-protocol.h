@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright © 2008-2011 Kristian Høgsberg
  * Copyright © 2010-2011 Intel Corporation
  * Copyright © 2012-2013 Collabora, Ltd.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -10,11 +10,11 @@
  * publish, distribute, sublicense, and/or sell copies of the Software,
  * and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial
  * portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -158,6 +158,9 @@ wl_display_add_listener(struct wl_display *wl_display,
 #define WL_DISPLAY_SYNC	0
 #define WL_DISPLAY_GET_REGISTRY	1
 
+#define WL_DISPLAY_SYNC_SINCE_VERSION	1
+#define WL_DISPLAY_GET_REGISTRY_SINCE_VERSION	1
+
 static inline void
 wl_display_set_user_data(struct wl_display *wl_display, void *user_data)
 {
@@ -168,6 +171,12 @@ static inline void *
 wl_display_get_user_data(struct wl_display *wl_display)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_display);
+}
+
+static inline uint32_t
+wl_display_get_version(struct wl_display *wl_display)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_display);
 }
 
 static inline struct wl_callback *
@@ -262,6 +271,8 @@ wl_registry_add_listener(struct wl_registry *wl_registry,
 
 #define WL_REGISTRY_BIND	0
 
+#define WL_REGISTRY_BIND_SINCE_VERSION	1
+
 static inline void
 wl_registry_set_user_data(struct wl_registry *wl_registry, void *user_data)
 {
@@ -272,6 +283,12 @@ static inline void *
 wl_registry_get_user_data(struct wl_registry *wl_registry)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_registry);
+}
+
+static inline uint32_t
+wl_registry_get_version(struct wl_registry *wl_registry)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_registry);
 }
 
 static inline void
@@ -285,8 +302,8 @@ wl_registry_bind(struct wl_registry *wl_registry, uint32_t name, const struct wl
 {
 	struct wl_proxy *id;
 
-	id = wl_proxy_marshal_constructor((struct wl_proxy *) wl_registry,
-			 WL_REGISTRY_BIND, interface, name, interface->name, version, NULL);
+	id = wl_proxy_marshal_constructor_versioned((struct wl_proxy *) wl_registry,
+			 WL_REGISTRY_BIND, interface, version, name, interface->name, version, NULL);
 
 	return (void *) id;
 }
@@ -318,6 +335,7 @@ wl_callback_add_listener(struct wl_callback *wl_callback,
 				     (void (**)(void)) listener, data);
 }
 
+
 static inline void
 wl_callback_set_user_data(struct wl_callback *wl_callback, void *user_data)
 {
@@ -330,6 +348,12 @@ wl_callback_get_user_data(struct wl_callback *wl_callback)
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_callback);
 }
 
+static inline uint32_t
+wl_callback_get_version(struct wl_callback *wl_callback)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_callback);
+}
+
 static inline void
 wl_callback_destroy(struct wl_callback *wl_callback)
 {
@@ -338,6 +362,9 @@ wl_callback_destroy(struct wl_callback *wl_callback)
 
 #define WL_COMPOSITOR_CREATE_SURFACE	0
 #define WL_COMPOSITOR_CREATE_REGION	1
+
+#define WL_COMPOSITOR_CREATE_SURFACE_SINCE_VERSION	1
+#define WL_COMPOSITOR_CREATE_REGION_SINCE_VERSION	1
 
 static inline void
 wl_compositor_set_user_data(struct wl_compositor *wl_compositor, void *user_data)
@@ -349,6 +376,12 @@ static inline void *
 wl_compositor_get_user_data(struct wl_compositor *wl_compositor)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_compositor);
+}
+
+static inline uint32_t
+wl_compositor_get_version(struct wl_compositor *wl_compositor)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_compositor);
 }
 
 static inline void
@@ -383,6 +416,10 @@ wl_compositor_create_region(struct wl_compositor *wl_compositor)
 #define WL_SHM_POOL_DESTROY	1
 #define WL_SHM_POOL_RESIZE	2
 
+#define WL_SHM_POOL_CREATE_BUFFER_SINCE_VERSION	1
+#define WL_SHM_POOL_DESTROY_SINCE_VERSION	1
+#define WL_SHM_POOL_RESIZE_SINCE_VERSION	1
+
 static inline void
 wl_shm_pool_set_user_data(struct wl_shm_pool *wl_shm_pool, void *user_data)
 {
@@ -393,6 +430,12 @@ static inline void *
 wl_shm_pool_get_user_data(struct wl_shm_pool *wl_shm_pool)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_shm_pool);
+}
+
+static inline uint32_t
+wl_shm_pool_get_version(struct wl_shm_pool *wl_shm_pool)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_shm_pool);
 }
 
 static inline struct wl_buffer *
@@ -605,6 +648,8 @@ wl_shm_add_listener(struct wl_shm *wl_shm,
 
 #define WL_SHM_CREATE_POOL	0
 
+#define WL_SHM_CREATE_POOL_SINCE_VERSION	1
+
 static inline void
 wl_shm_set_user_data(struct wl_shm *wl_shm, void *user_data)
 {
@@ -615,6 +660,12 @@ static inline void *
 wl_shm_get_user_data(struct wl_shm *wl_shm)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_shm);
+}
+
+static inline uint32_t
+wl_shm_get_version(struct wl_shm *wl_shm)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_shm);
 }
 
 static inline void
@@ -675,6 +726,8 @@ wl_buffer_add_listener(struct wl_buffer *wl_buffer,
 
 #define WL_BUFFER_DESTROY	0
 
+#define WL_BUFFER_DESTROY_SINCE_VERSION	1
+
 static inline void
 wl_buffer_set_user_data(struct wl_buffer *wl_buffer, void *user_data)
 {
@@ -687,6 +740,12 @@ wl_buffer_get_user_data(struct wl_buffer *wl_buffer)
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_buffer);
 }
 
+static inline uint32_t
+wl_buffer_get_version(struct wl_buffer *wl_buffer)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_buffer);
+}
+
 static inline void
 wl_buffer_destroy(struct wl_buffer *wl_buffer)
 {
@@ -696,9 +755,21 @@ wl_buffer_destroy(struct wl_buffer *wl_buffer)
 	wl_proxy_destroy((struct wl_proxy *) wl_buffer);
 }
 
+#ifndef WL_DATA_OFFER_ERROR_ENUM
+#define WL_DATA_OFFER_ERROR_ENUM
+enum wl_data_offer_error {
+	WL_DATA_OFFER_ERROR_INVALID_FINISH = 0,
+	WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK = 1,
+	WL_DATA_OFFER_ERROR_INVALID_ACTION = 2,
+	WL_DATA_OFFER_ERROR_INVALID_OFFER = 3,
+};
+#endif /* WL_DATA_OFFER_ERROR_ENUM */
+
 /**
  * wl_data_offer - offer to transfer data
  * @offer: advertise offered mime type
+ * @source_actions: notify the source-side available actions
+ * @action: notify the selected action
  *
  * A wl_data_offer represents a piece of data offered for transfer by
  * another client (the source client). It is used by the copy-and-paste and
@@ -717,6 +788,65 @@ struct wl_data_offer_listener {
 	void (*offer)(void *data,
 		      struct wl_data_offer *wl_data_offer,
 		      const char *mime_type);
+	/**
+	 * source_actions - notify the source-side available actions
+	 * @source_actions: (none)
+	 *
+	 * This event indicates the actions offered by the data source.
+	 * It will be sent right after wl_data_device.enter, or anytime the
+	 * source side changes its offered actions through
+	 * wl_data_source.set_actions.
+	 * @since: 3
+	 */
+	void (*source_actions)(void *data,
+			       struct wl_data_offer *wl_data_offer,
+			       uint32_t source_actions);
+	/**
+	 * action - notify the selected action
+	 * @dnd_action: (none)
+	 *
+	 * This event indicates the action selected by the compositor
+	 * after matching the source/destination side actions. Only one
+	 * action (or none) will be offered here.
+	 *
+	 * This event can be emitted multiple times during the
+	 * drag-and-drop operation in response to destination side action
+	 * changes through wl_data_offer.set_actions.
+	 *
+	 * This event will no longer be emitted after wl_data_device.drop
+	 * happened on the drag-and-drop destination, the client must honor
+	 * the last action received, or the last preferred one set through
+	 * wl_data_offer.set_actions when handling an "ask" action.
+	 *
+	 * Compositors may also change the selected action on the fly,
+	 * mainly in response to keyboard modifier changes during the
+	 * drag-and-drop operation.
+	 *
+	 * The most recent action received is always the valid one. Prior
+	 * to receiving wl_data_device.drop, the chosen action may change
+	 * (e.g. due to keyboard modifiers being pressed). At the time of
+	 * receiving wl_data_device.drop the drag-and-drop destination must
+	 * honor the last action received.
+	 *
+	 * Action changes may still happen after wl_data_device.drop,
+	 * especially on "ask" actions, where the drag-and-drop destination
+	 * may choose another action afterwards. Action changes happening
+	 * at this stage are always the result of inter-client negotiation,
+	 * the compositor shall no longer be able to induce a different
+	 * action.
+	 *
+	 * Upon "ask" actions, it is expected that the drag-and-drop
+	 * destination may potentially choose different a different action
+	 * and/or mime type, based on wl_data_offer.source_actions and
+	 * finally chosen by the user (e.g. popping up a menu with the
+	 * available options). The final wl_data_offer.set_actions and
+	 * wl_data_offer.accept requests must happen before the call to
+	 * wl_data_offer.finish.
+	 * @since: 3
+	 */
+	void (*action)(void *data,
+		       struct wl_data_offer *wl_data_offer,
+		       uint32_t dnd_action);
 };
 
 static inline int
@@ -730,6 +860,14 @@ wl_data_offer_add_listener(struct wl_data_offer *wl_data_offer,
 #define WL_DATA_OFFER_ACCEPT	0
 #define WL_DATA_OFFER_RECEIVE	1
 #define WL_DATA_OFFER_DESTROY	2
+#define WL_DATA_OFFER_FINISH	3
+#define WL_DATA_OFFER_SET_ACTIONS	4
+
+#define WL_DATA_OFFER_ACCEPT_SINCE_VERSION	1
+#define WL_DATA_OFFER_RECEIVE_SINCE_VERSION	1
+#define WL_DATA_OFFER_DESTROY_SINCE_VERSION	1
+#define WL_DATA_OFFER_FINISH_SINCE_VERSION	3
+#define WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION	3
 
 static inline void
 wl_data_offer_set_user_data(struct wl_data_offer *wl_data_offer, void *user_data)
@@ -741,6 +879,12 @@ static inline void *
 wl_data_offer_get_user_data(struct wl_data_offer *wl_data_offer)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_data_offer);
+}
+
+static inline uint32_t
+wl_data_offer_get_version(struct wl_data_offer *wl_data_offer)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_data_offer);
 }
 
 static inline void
@@ -766,11 +910,36 @@ wl_data_offer_destroy(struct wl_data_offer *wl_data_offer)
 	wl_proxy_destroy((struct wl_proxy *) wl_data_offer);
 }
 
+static inline void
+wl_data_offer_finish(struct wl_data_offer *wl_data_offer)
+{
+	wl_proxy_marshal((struct wl_proxy *) wl_data_offer,
+			 WL_DATA_OFFER_FINISH);
+}
+
+static inline void
+wl_data_offer_set_actions(struct wl_data_offer *wl_data_offer, uint32_t dnd_actions, uint32_t preferred_action)
+{
+	wl_proxy_marshal((struct wl_proxy *) wl_data_offer,
+			 WL_DATA_OFFER_SET_ACTIONS, dnd_actions, preferred_action);
+}
+
+#ifndef WL_DATA_SOURCE_ERROR_ENUM
+#define WL_DATA_SOURCE_ERROR_ENUM
+enum wl_data_source_error {
+	WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK = 0,
+	WL_DATA_SOURCE_ERROR_INVALID_SOURCE = 1,
+};
+#endif /* WL_DATA_SOURCE_ERROR_ENUM */
+
 /**
  * wl_data_source - offer to transfer data
  * @target: a target accepts an offered mime type
  * @send: send the data
  * @cancelled: selection was cancelled
+ * @dnd_drop_performed: the drag-and-drop operation physically finished
+ * @dnd_finished: the drag-and-drop operation concluded
+ * @action: notify the selected action
  *
  * The wl_data_source object is the source side of a wl_data_offer. It is
  * created by the source client in a data transfer and provides a way to
@@ -806,11 +975,96 @@ struct wl_data_source_listener {
 	/**
 	 * cancelled - selection was cancelled
 	 *
-	 * This data source has been replaced by another data source. The
-	 * client should clean up and destroy this data source.
+	 * This data source is no longer valid. There are several reasons
+	 * why this could happen:
+	 *
+	 * - The data source has been replaced by another data source. -
+	 * The drag-and-drop operation was performed, but the drop
+	 * destination did not accept any of the mimetypes offered through
+	 * wl_data_source.target. - The drag-and-drop operation was
+	 * performed, but the drop destination did not select any of the
+	 * actions present in the mask offered through
+	 * wl_data_source.action. - The drag-and-drop operation was
+	 * performed but didn't happen over a surface. - The compositor
+	 * cancelled the drag-and-drop operation (e.g. compositor dependent
+	 * timeouts to avoid stale drag-and-drop transfers).
+	 *
+	 * The client should clean up and destroy this data source.
+	 *
+	 * For objects of version 2 or older, wl_data_source.cancelled will
+	 * only be emitted if the data source was replaced by another data
+	 * source.
 	 */
 	void (*cancelled)(void *data,
 			  struct wl_data_source *wl_data_source);
+	/**
+	 * dnd_drop_performed - the drag-and-drop operation physically
+	 *	finished
+	 *
+	 * The user performed the drop action. This event does not
+	 * indicate acceptance, wl_data_source.cancelled may still be
+	 * emitted afterwards if the drop destination does not accept any
+	 * mimetype.
+	 *
+	 * However, this event might however not be received if the
+	 * compositor cancelled the drag-and-drop operation before this
+	 * event could happen.
+	 *
+	 * Note that the data_source may still be used in the future and
+	 * should not be destroyed here.
+	 * @since: 3
+	 */
+	void (*dnd_drop_performed)(void *data,
+				   struct wl_data_source *wl_data_source);
+	/**
+	 * dnd_finished - the drag-and-drop operation concluded
+	 *
+	 * The drop destination finished interoperating with this data
+	 * source, so the client is now free to destroy this data source
+	 * and free all associated data.
+	 *
+	 * If the action used to perform the operation was "move", the
+	 * source can now delete the transferred data.
+	 * @since: 3
+	 */
+	void (*dnd_finished)(void *data,
+			     struct wl_data_source *wl_data_source);
+	/**
+	 * action - notify the selected action
+	 * @dnd_action: (none)
+	 *
+	 * This event indicates the action selected by the compositor
+	 * after matching the source/destination side actions. Only one
+	 * action (or none) will be offered here.
+	 *
+	 * This event can be emitted multiple times during the
+	 * drag-and-drop operation, mainly in response to destination side
+	 * changes through wl_data_offer.set_actions, and as the data
+	 * device enters/leaves surfaces.
+	 *
+	 * It is only possible to receive this event after
+	 * wl_data_source.dnd_drop_performed if the drag-and-drop operation
+	 * ended in an "ask" action, in which case the final
+	 * wl_data_source.action event will happen immediately before
+	 * wl_data_source.dnd_finished.
+	 *
+	 * Compositors may also change the selected action on the fly,
+	 * mainly in response to keyboard modifier changes during the
+	 * drag-and-drop operation.
+	 *
+	 * The most recent action received is always the valid one. The
+	 * chosen action may change alongside negotiation (e.g. an "ask"
+	 * action can turn into a "move" operation), so the effects of the
+	 * final action must always be applied in
+	 * wl_data_offer.dnd_finished.
+	 *
+	 * Clients can trigger cursor surface changes from this point, so
+	 * they reflect the current action.
+	 * @since: 3
+	 */
+	void (*action)(void *data,
+		       struct wl_data_source *wl_data_source,
+		       uint32_t dnd_action);
 };
 
 static inline int
@@ -823,6 +1077,11 @@ wl_data_source_add_listener(struct wl_data_source *wl_data_source,
 
 #define WL_DATA_SOURCE_OFFER	0
 #define WL_DATA_SOURCE_DESTROY	1
+#define WL_DATA_SOURCE_SET_ACTIONS	2
+
+#define WL_DATA_SOURCE_OFFER_SINCE_VERSION	1
+#define WL_DATA_SOURCE_DESTROY_SINCE_VERSION	1
+#define WL_DATA_SOURCE_SET_ACTIONS_SINCE_VERSION	3
 
 static inline void
 wl_data_source_set_user_data(struct wl_data_source *wl_data_source, void *user_data)
@@ -834,6 +1093,12 @@ static inline void *
 wl_data_source_get_user_data(struct wl_data_source *wl_data_source)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_data_source);
+}
+
+static inline uint32_t
+wl_data_source_get_version(struct wl_data_source *wl_data_source)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_data_source);
 }
 
 static inline void
@@ -850,6 +1115,13 @@ wl_data_source_destroy(struct wl_data_source *wl_data_source)
 			 WL_DATA_SOURCE_DESTROY);
 
 	wl_proxy_destroy((struct wl_proxy *) wl_data_source);
+}
+
+static inline void
+wl_data_source_set_actions(struct wl_data_source *wl_data_source, uint32_t dnd_actions)
+{
+	wl_proxy_marshal((struct wl_proxy *) wl_data_source,
+			 WL_DATA_SOURCE_SET_ACTIONS, dnd_actions);
 }
 
 #ifndef WL_DATA_DEVICE_ERROR_ENUM
@@ -940,6 +1212,17 @@ struct wl_data_device_listener {
 	 *
 	 * The event is sent when a drag-and-drop operation is ended
 	 * because the implicit grab is removed.
+	 *
+	 * The drag-and-drop destination is expected to honor the last
+	 * action received through wl_data_offer.action, if the resulting
+	 * action is "copy" or "move", the destination can still perform
+	 * wl_data_offer.receive requests, and is expected to end all
+	 * transfers with a wl_data_offer.finish request.
+	 *
+	 * If the resulting action is "ask", the action will not be
+	 * considered final. The drag-and-drop destination is expected to
+	 * perform one last wl_data_offer.set_actions request, or
+	 * wl_data_offer.destroy in order to cancel the operation.
 	 */
 	void (*drop)(void *data,
 		     struct wl_data_device *wl_data_device);
@@ -975,6 +1258,10 @@ wl_data_device_add_listener(struct wl_data_device *wl_data_device,
 #define WL_DATA_DEVICE_SET_SELECTION	1
 #define WL_DATA_DEVICE_RELEASE	2
 
+#define WL_DATA_DEVICE_START_DRAG_SINCE_VERSION	1
+#define WL_DATA_DEVICE_SET_SELECTION_SINCE_VERSION	1
+#define WL_DATA_DEVICE_RELEASE_SINCE_VERSION	2
+
 static inline void
 wl_data_device_set_user_data(struct wl_data_device *wl_data_device, void *user_data)
 {
@@ -985,6 +1272,12 @@ static inline void *
 wl_data_device_get_user_data(struct wl_data_device *wl_data_device)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_data_device);
+}
+
+static inline uint32_t
+wl_data_device_get_version(struct wl_data_device *wl_data_device)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_data_device);
 }
 
 static inline void
@@ -1016,8 +1309,49 @@ wl_data_device_release(struct wl_data_device *wl_data_device)
 	wl_proxy_destroy((struct wl_proxy *) wl_data_device);
 }
 
+#ifndef WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM
+#define WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM
+/**
+ * wl_data_device_manager_dnd_action - drag and drop actions
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE: (none)
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY: (none)
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE: (none)
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK: (none)
+ *
+ * This is a bitmask of the available/preferred actions in a
+ * drag-and-drop operation.
+ *
+ * In the compositor, the selected action is a result of matching the
+ * actions offered by the source and destination sides. "action" events
+ * with a "none" action will be sent to both source and destination if
+ * there is no match. All further checks will effectively happen on (source
+ * actions ∩ destination actions).
+ *
+ * In addition, compositors may also pick different actions in reaction to
+ * key modifiers being pressed, one common design that is used in major
+ * toolkits (and the behavior recommended for compositors) is:
+ *
+ * - If no modifiers are pressed, the first match (in bit order) will be
+ * used. - Pressing Shift selects "move", if enabled in the mask. -
+ * Pressing Control selects "copy", if enabled in the mask.
+ *
+ * Behavior beyond that is considered implementation-dependent. Compositors
+ * may for example bind other modifiers (like Alt/Meta) or drags initiated
+ * with other buttons than BTN_LEFT to specific actions (e.g. "ask").
+ */
+enum wl_data_device_manager_dnd_action {
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE = 0,
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY = 1,
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE = 2,
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK = 4,
+};
+#endif /* WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM */
+
 #define WL_DATA_DEVICE_MANAGER_CREATE_DATA_SOURCE	0
 #define WL_DATA_DEVICE_MANAGER_GET_DATA_DEVICE	1
+
+#define WL_DATA_DEVICE_MANAGER_CREATE_DATA_SOURCE_SINCE_VERSION	1
+#define WL_DATA_DEVICE_MANAGER_GET_DATA_DEVICE_SINCE_VERSION	1
 
 static inline void
 wl_data_device_manager_set_user_data(struct wl_data_device_manager *wl_data_device_manager, void *user_data)
@@ -1029,6 +1363,12 @@ static inline void *
 wl_data_device_manager_get_user_data(struct wl_data_device_manager *wl_data_device_manager)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_data_device_manager);
+}
+
+static inline uint32_t
+wl_data_device_manager_get_version(struct wl_data_device_manager *wl_data_device_manager)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_data_device_manager);
 }
 
 static inline void
@@ -1068,6 +1408,8 @@ enum wl_shell_error {
 
 #define WL_SHELL_GET_SHELL_SURFACE	0
 
+#define WL_SHELL_GET_SHELL_SURFACE_SINCE_VERSION	1
+
 static inline void
 wl_shell_set_user_data(struct wl_shell *wl_shell, void *user_data)
 {
@@ -1078,6 +1420,12 @@ static inline void *
 wl_shell_get_user_data(struct wl_shell *wl_shell)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_shell);
+}
+
+static inline uint32_t
+wl_shell_get_version(struct wl_shell *wl_shell)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_shell);
 }
 
 static inline void
@@ -1257,6 +1605,17 @@ wl_shell_surface_add_listener(struct wl_shell_surface *wl_shell_surface,
 #define WL_SHELL_SURFACE_SET_TITLE	8
 #define WL_SHELL_SURFACE_SET_CLASS	9
 
+#define WL_SHELL_SURFACE_PONG_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_MOVE_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_RESIZE_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_TOPLEVEL_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_TRANSIENT_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_FULLSCREEN_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_POPUP_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_MAXIMIZED_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_TITLE_SINCE_VERSION	1
+#define WL_SHELL_SURFACE_SET_CLASS_SINCE_VERSION	1
+
 static inline void
 wl_shell_surface_set_user_data(struct wl_shell_surface *wl_shell_surface, void *user_data)
 {
@@ -1267,6 +1626,12 @@ static inline void *
 wl_shell_surface_get_user_data(struct wl_shell_surface *wl_shell_surface)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_shell_surface);
+}
+
+static inline uint32_t
+wl_shell_surface_get_version(struct wl_shell_surface *wl_shell_surface)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_shell_surface);
 }
 
 static inline void
@@ -1446,6 +1811,18 @@ wl_surface_add_listener(struct wl_surface *wl_surface,
 #define WL_SURFACE_COMMIT	6
 #define WL_SURFACE_SET_BUFFER_TRANSFORM	7
 #define WL_SURFACE_SET_BUFFER_SCALE	8
+#define WL_SURFACE_DAMAGE_BUFFER	9
+
+#define WL_SURFACE_DESTROY_SINCE_VERSION	1
+#define WL_SURFACE_ATTACH_SINCE_VERSION	1
+#define WL_SURFACE_DAMAGE_SINCE_VERSION	1
+#define WL_SURFACE_FRAME_SINCE_VERSION	1
+#define WL_SURFACE_SET_OPAQUE_REGION_SINCE_VERSION	1
+#define WL_SURFACE_SET_INPUT_REGION_SINCE_VERSION	1
+#define WL_SURFACE_COMMIT_SINCE_VERSION	1
+#define WL_SURFACE_SET_BUFFER_TRANSFORM_SINCE_VERSION	2
+#define WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION	3
+#define WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION	4
 
 static inline void
 wl_surface_set_user_data(struct wl_surface *wl_surface, void *user_data)
@@ -1457,6 +1834,12 @@ static inline void *
 wl_surface_get_user_data(struct wl_surface *wl_surface)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_surface);
+}
+
+static inline uint32_t
+wl_surface_get_version(struct wl_surface *wl_surface)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_surface);
 }
 
 static inline void
@@ -1528,6 +1911,13 @@ wl_surface_set_buffer_scale(struct wl_surface *wl_surface, int32_t scale)
 			 WL_SURFACE_SET_BUFFER_SCALE, scale);
 }
 
+static inline void
+wl_surface_damage_buffer(struct wl_surface *wl_surface, int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	wl_proxy_marshal((struct wl_proxy *) wl_surface,
+			 WL_SURFACE_DAMAGE_BUFFER, x, y, width, height);
+}
+
 #ifndef WL_SEAT_CAPABILITY_ENUM
 #define WL_SEAT_CAPABILITY_ENUM
 /**
@@ -1564,6 +1954,28 @@ struct wl_seat_listener {
 	 * This is emitted whenever a seat gains or loses the pointer,
 	 * keyboard or touch capabilities. The argument is a capability
 	 * enum containing the complete set of capabilities this seat has.
+	 *
+	 * When the pointer capability is added, a client may create a
+	 * wl_pointer object using the wl_seat.get_pointer request. This
+	 * object will receive pointer events until the capability is
+	 * removed in the future.
+	 *
+	 * When the pointer capability is removed, a client should destroy
+	 * the wl_pointer objects associated with the seat where the
+	 * capability was removed, using the wl_pointer.release request. No
+	 * further pointer events will be received on these objects.
+	 *
+	 * In some compositors, if a seat regains the pointer capability
+	 * and a client has a previously obtained wl_pointer object of
+	 * version 4 or less, that object may start sending pointer events
+	 * again. This behavior is considered a misinterpretation of the
+	 * intended behavior and must not be relied upon by the client.
+	 * wl_pointer objects of version 5 or later must not send events if
+	 * created before the most recent event notifying the client of an
+	 * added pointer capability.
+	 *
+	 * The above behavior also applies to wl_keyboard and wl_touch with
+	 * the keyboard and touch capabilities, respectively.
 	 */
 	void (*capabilities)(void *data,
 			     struct wl_seat *wl_seat,
@@ -1593,6 +2005,12 @@ wl_seat_add_listener(struct wl_seat *wl_seat,
 #define WL_SEAT_GET_POINTER	0
 #define WL_SEAT_GET_KEYBOARD	1
 #define WL_SEAT_GET_TOUCH	2
+#define WL_SEAT_RELEASE	3
+
+#define WL_SEAT_GET_POINTER_SINCE_VERSION	1
+#define WL_SEAT_GET_KEYBOARD_SINCE_VERSION	1
+#define WL_SEAT_GET_TOUCH_SINCE_VERSION	1
+#define WL_SEAT_RELEASE_SINCE_VERSION	5
 
 static inline void
 wl_seat_set_user_data(struct wl_seat *wl_seat, void *user_data)
@@ -1604,6 +2022,12 @@ static inline void *
 wl_seat_get_user_data(struct wl_seat *wl_seat)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_seat);
+}
+
+static inline uint32_t
+wl_seat_get_version(struct wl_seat *wl_seat)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_seat);
 }
 
 static inline void
@@ -1645,6 +2069,15 @@ wl_seat_get_touch(struct wl_seat *wl_seat)
 	return (struct wl_touch *) id;
 }
 
+static inline void
+wl_seat_release(struct wl_seat *wl_seat)
+{
+	wl_proxy_marshal((struct wl_proxy *) wl_seat,
+			 WL_SEAT_RELEASE);
+
+	wl_proxy_destroy((struct wl_proxy *) wl_seat);
+}
+
 #ifndef WL_POINTER_ERROR_ENUM
 #define WL_POINTER_ERROR_ENUM
 enum wl_pointer_error {
@@ -1683,6 +2116,34 @@ enum wl_pointer_axis {
 };
 #endif /* WL_POINTER_AXIS_ENUM */
 
+#ifndef WL_POINTER_AXIS_SOURCE_ENUM
+#define WL_POINTER_AXIS_SOURCE_ENUM
+/**
+ * wl_pointer_axis_source - axis source types
+ * @WL_POINTER_AXIS_SOURCE_WHEEL: A physical wheel
+ * @WL_POINTER_AXIS_SOURCE_FINGER: Finger on a touch surface
+ * @WL_POINTER_AXIS_SOURCE_CONTINUOUS: Continuous coordinate space
+ *
+ * Describes the source types for axis events. This indicates to the
+ * client how an axis event was physically generated; a client may adjust
+ * the user interface accordingly. For example, scroll events from a
+ * "finger" source may be in a smooth coordinate space with kinetic
+ * scrolling whereas a "wheel" source may be in discrete steps of a number
+ * of lines.
+ *
+ * The "continuous" axis source is a device generating events in a
+ * continuous coordinate space, but using something other than a finger.
+ * One example for this source is button-based scrolling where the vertical
+ * motion of a device is converted to scroll events while a button is held
+ * down.
+ */
+enum wl_pointer_axis_source {
+	WL_POINTER_AXIS_SOURCE_WHEEL = 0,
+	WL_POINTER_AXIS_SOURCE_FINGER = 1,
+	WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
+};
+#endif /* WL_POINTER_AXIS_SOURCE_ENUM */
+
 /**
  * wl_pointer - pointer input device
  * @enter: enter event
@@ -1690,6 +2151,10 @@ enum wl_pointer_axis {
  * @motion: pointer motion event
  * @button: pointer button event
  * @axis: axis event
+ * @frame: end of a pointer event sequence
+ * @axis_source: axis source event
+ * @axis_stop: axis stop event
+ * @axis_discrete: axis click event
  *
  * The wl_pointer interface represents one or more input devices, such as
  * mice, which control the pointer location and pointer_focus of a seat.
@@ -1796,6 +2261,143 @@ struct wl_pointer_listener {
 		     uint32_t time,
 		     uint32_t axis,
 		     wl_fixed_t value);
+	/**
+	 * frame - end of a pointer event sequence
+	 *
+	 * Indicates the end of a set of events that logically belong
+	 * together. A client is expected to accumulate the data in all
+	 * events within the frame before proceeding.
+	 *
+	 * All wl_pointer events before a wl_pointer.frame event belong
+	 * logically together. For example, in a diagonal scroll motion the
+	 * compositor will send an optional wl_pointer.axis_source event,
+	 * two wl_pointer.axis events (horizontal and vertical) and finally
+	 * a wl_pointer.frame event. The client may use this information to
+	 * calculate a diagonal vector for scrolling.
+	 *
+	 * When multiple wl_pointer.axis events occur within the same
+	 * frame, the motion vector is the combined motion of all events.
+	 * When a wl_pointer.axis and a wl_pointer.axis_stop event occur
+	 * within the same frame, this indicates that axis movement in one
+	 * axis has stopped but continues in the other axis. When multiple
+	 * wl_pointer.axis_stop events occur within in the same frame, this
+	 * indicates that these axes stopped in the same instance.
+	 *
+	 * A wl_pointer.frame event is sent for every logical event group,
+	 * even if the group only contains a single wl_pointer event.
+	 * Specifically, a client may get a sequence: motion, frame,
+	 * button, frame, axis, frame, axis_stop, frame.
+	 *
+	 * The wl_pointer.enter and wl_pointer.leave events are logical
+	 * events generated by the compositor and not the hardware. These
+	 * events are also grouped by a wl_pointer.frame. When a pointer
+	 * moves from one surface to the another, a compositor should group
+	 * the wl_pointer.leave event within the same wl_pointer.frame.
+	 * However, a client must not rely on wl_pointer.leave and
+	 * wl_pointer.enter being in the same wl_pointer.frame.
+	 * Compositor-specific policies may require the wl_pointer.leave
+	 * and wl_pointer.enter event being split across multiple
+	 * wl_pointer.frame groups.
+	 * @since: 5
+	 */
+	void (*frame)(void *data,
+		      struct wl_pointer *wl_pointer);
+	/**
+	 * axis_source - axis source event
+	 * @axis_source: (none)
+	 *
+	 * Source information for scroll and other axes.
+	 *
+	 * This event does not occur on its own. It is sent before a
+	 * wl_pointer.frame event and carries the source information for
+	 * all events within that frame.
+	 *
+	 * The source specifies how this event was generated. If the source
+	 * is wl_pointer.axis_source.finger, a wl_pointer.axis_stop event
+	 * will be sent when the user lifts the finger off the device.
+	 *
+	 * If the source is wl_pointer axis_source.wheel or
+	 * wl_pointer.axis_source.continuous, a wl_pointer.axis_stop event
+	 * may or may not be sent. Whether a compositor sends a axis_stop
+	 * event for these sources is hardware-specific and
+	 * implementation-dependent; clients must not rely on receiving an
+	 * axis_stop event for these scroll sources and should treat scroll
+	 * sequences from these scroll sources as unterminated by default.
+	 *
+	 * This event is optional. If the source is unknown for a
+	 * particular axis event sequence, no event is sent. Only one
+	 * wl_pointer.axis_source event is permitted per frame.
+	 *
+	 * The order of wl_pointer.axis_discrete and wl_pointer.axis_source
+	 * is not guaranteed.
+	 * @since: 5
+	 */
+	void (*axis_source)(void *data,
+			    struct wl_pointer *wl_pointer,
+			    uint32_t axis_source);
+	/**
+	 * axis_stop - axis stop event
+	 * @time: timestamp with millisecond granularity
+	 * @axis: the axis stopped with this event
+	 *
+	 * Stop notification for scroll and other axes.
+	 *
+	 * For some wl_pointer.axis_source types, a wl_pointer.axis_stop
+	 * event is sent to notify a client that the axis sequence has
+	 * terminated. This enables the client to implement kinetic
+	 * scrolling. See the wl_pointer.axis_source documentation for
+	 * information on when this event may be generated.
+	 *
+	 * Any wl_pointer.axis events with the same axis_source after this
+	 * event should be considered as the start of a new axis motion.
+	 *
+	 * The timestamp is to be interpreted identical to the timestamp in
+	 * the wl_pointer.axis event. The timestamp value may be the same
+	 * as a preceeding wl_pointer.axis event.
+	 * @since: 5
+	 */
+	void (*axis_stop)(void *data,
+			  struct wl_pointer *wl_pointer,
+			  uint32_t time,
+			  uint32_t axis);
+	/**
+	 * axis_discrete - axis click event
+	 * @axis: (none)
+	 * @discrete: (none)
+	 *
+	 * Discrete step information for scroll and other axes.
+	 *
+	 * This event carries the axis value of the wl_pointer.axis event
+	 * in discrete steps (e.g. mouse wheel clicks).
+	 *
+	 * This event does not occur on its own, it is coupled with a
+	 * wl_pointer.axis event that represents this axis value on a
+	 * continuous scale. The protocol guarantees that each
+	 * axis_discrete event is always followed by exactly one axis event
+	 * with the same axis number within the same wl_pointer.frame. Note
+	 * that the protocol allows for other events to occur between the
+	 * axis_discrete and its coupled axis event, including other
+	 * axis_discrete or axis events.
+	 *
+	 * This event is optional; continuous scrolling devices like
+	 * two-finger scrolling on touchpads do not have discrete steps and
+	 * do not generate this event.
+	 *
+	 * The discrete value carries the directional information. e.g. a
+	 * value of -2 is two steps towards the negative direction of this
+	 * axis.
+	 *
+	 * The axis number is identical to the axis number in the associate
+	 * axis event.
+	 *
+	 * The order of wl_pointer.axis_discrete and wl_pointer.axis_source
+	 * is not guaranteed.
+	 * @since: 5
+	 */
+	void (*axis_discrete)(void *data,
+			      struct wl_pointer *wl_pointer,
+			      uint32_t axis,
+			      int32_t discrete);
 };
 
 static inline int
@@ -1809,6 +2411,9 @@ wl_pointer_add_listener(struct wl_pointer *wl_pointer,
 #define WL_POINTER_SET_CURSOR	0
 #define WL_POINTER_RELEASE	1
 
+#define WL_POINTER_SET_CURSOR_SINCE_VERSION	1
+#define WL_POINTER_RELEASE_SINCE_VERSION	3
+
 static inline void
 wl_pointer_set_user_data(struct wl_pointer *wl_pointer, void *user_data)
 {
@@ -1819,6 +2424,12 @@ static inline void *
 wl_pointer_get_user_data(struct wl_pointer *wl_pointer)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_pointer);
+}
+
+static inline uint32_t
+wl_pointer_get_version(struct wl_pointer *wl_pointer)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_pointer);
 }
 
 static inline void
@@ -2003,6 +2614,8 @@ wl_keyboard_add_listener(struct wl_keyboard *wl_keyboard,
 
 #define WL_KEYBOARD_RELEASE	0
 
+#define WL_KEYBOARD_RELEASE_SINCE_VERSION	3
+
 static inline void
 wl_keyboard_set_user_data(struct wl_keyboard *wl_keyboard, void *user_data)
 {
@@ -2013,6 +2626,12 @@ static inline void *
 wl_keyboard_get_user_data(struct wl_keyboard *wl_keyboard)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_keyboard);
+}
+
+static inline uint32_t
+wl_keyboard_get_version(struct wl_keyboard *wl_keyboard)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_keyboard);
 }
 
 static inline void
@@ -2131,6 +2750,8 @@ wl_touch_add_listener(struct wl_touch *wl_touch,
 
 #define WL_TOUCH_RELEASE	0
 
+#define WL_TOUCH_RELEASE_SINCE_VERSION	3
+
 static inline void
 wl_touch_set_user_data(struct wl_touch *wl_touch, void *user_data)
 {
@@ -2141,6 +2762,12 @@ static inline void *
 wl_touch_get_user_data(struct wl_touch *wl_touch)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_touch);
+}
+
+static inline uint32_t
+wl_touch_get_version(struct wl_touch *wl_touch)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_touch);
 }
 
 static inline void
@@ -2347,6 +2974,7 @@ wl_output_add_listener(struct wl_output *wl_output,
 				     (void (**)(void)) listener, data);
 }
 
+
 static inline void
 wl_output_set_user_data(struct wl_output *wl_output, void *user_data)
 {
@@ -2359,6 +2987,12 @@ wl_output_get_user_data(struct wl_output *wl_output)
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_output);
 }
 
+static inline uint32_t
+wl_output_get_version(struct wl_output *wl_output)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_output);
+}
+
 static inline void
 wl_output_destroy(struct wl_output *wl_output)
 {
@@ -2368,6 +3002,10 @@ wl_output_destroy(struct wl_output *wl_output)
 #define WL_REGION_DESTROY	0
 #define WL_REGION_ADD	1
 #define WL_REGION_SUBTRACT	2
+
+#define WL_REGION_DESTROY_SINCE_VERSION	1
+#define WL_REGION_ADD_SINCE_VERSION	1
+#define WL_REGION_SUBTRACT_SINCE_VERSION	1
 
 static inline void
 wl_region_set_user_data(struct wl_region *wl_region, void *user_data)
@@ -2379,6 +3017,12 @@ static inline void *
 wl_region_get_user_data(struct wl_region *wl_region)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_region);
+}
+
+static inline uint32_t
+wl_region_get_version(struct wl_region *wl_region)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_region);
 }
 
 static inline void
@@ -2414,6 +3058,9 @@ enum wl_subcompositor_error {
 #define WL_SUBCOMPOSITOR_DESTROY	0
 #define WL_SUBCOMPOSITOR_GET_SUBSURFACE	1
 
+#define WL_SUBCOMPOSITOR_DESTROY_SINCE_VERSION	1
+#define WL_SUBCOMPOSITOR_GET_SUBSURFACE_SINCE_VERSION	1
+
 static inline void
 wl_subcompositor_set_user_data(struct wl_subcompositor *wl_subcompositor, void *user_data)
 {
@@ -2424,6 +3071,12 @@ static inline void *
 wl_subcompositor_get_user_data(struct wl_subcompositor *wl_subcompositor)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_subcompositor);
+}
+
+static inline uint32_t
+wl_subcompositor_get_version(struct wl_subcompositor *wl_subcompositor)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_subcompositor);
 }
 
 static inline void
@@ -2460,6 +3113,13 @@ enum wl_subsurface_error {
 #define WL_SUBSURFACE_SET_SYNC	4
 #define WL_SUBSURFACE_SET_DESYNC	5
 
+#define WL_SUBSURFACE_DESTROY_SINCE_VERSION	1
+#define WL_SUBSURFACE_SET_POSITION_SINCE_VERSION	1
+#define WL_SUBSURFACE_PLACE_ABOVE_SINCE_VERSION	1
+#define WL_SUBSURFACE_PLACE_BELOW_SINCE_VERSION	1
+#define WL_SUBSURFACE_SET_SYNC_SINCE_VERSION	1
+#define WL_SUBSURFACE_SET_DESYNC_SINCE_VERSION	1
+
 static inline void
 wl_subsurface_set_user_data(struct wl_subsurface *wl_subsurface, void *user_data)
 {
@@ -2470,6 +3130,12 @@ static inline void *
 wl_subsurface_get_user_data(struct wl_subsurface *wl_subsurface)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_subsurface);
+}
+
+static inline uint32_t
+wl_subsurface_get_version(struct wl_subsurface *wl_subsurface)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_subsurface);
 }
 
 static inline void

@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright © 2008-2011 Kristian Høgsberg
  * Copyright © 2010-2011 Intel Corporation
  * Copyright © 2012-2013 Collabora, Ltd.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
@@ -10,11 +10,11 @@
  * publish, distribute, sublicense, and/or sell copies of the Software,
  * and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial
  * portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -539,11 +539,23 @@ wl_buffer_send_release(struct wl_resource *resource_)
 	wl_resource_post_event(resource_, WL_BUFFER_RELEASE);
 }
 
+#ifndef WL_DATA_OFFER_ERROR_ENUM
+#define WL_DATA_OFFER_ERROR_ENUM
+enum wl_data_offer_error {
+	WL_DATA_OFFER_ERROR_INVALID_FINISH = 0,
+	WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK = 1,
+	WL_DATA_OFFER_ERROR_INVALID_ACTION = 2,
+	WL_DATA_OFFER_ERROR_INVALID_OFFER = 3,
+};
+#endif /* WL_DATA_OFFER_ERROR_ENUM */
+
 /**
  * wl_data_offer - offer to transfer data
  * @accept: accept one of the offered mime types
  * @receive: request that the data is transferred
  * @destroy: destroy data offer
+ * @finish: the offer will no longer be used
+ * @set_actions: set the available/preferred drag-and-drop actions
  *
  * A wl_data_offer represents a piece of data offered for transfer by
  * another client (the source client). It is used by the copy-and-paste and
@@ -560,7 +572,17 @@ struct wl_data_offer_interface {
 	 * Indicate that the client can accept the given mime type, or
 	 * NULL for not accepted.
 	 *
-	 * Used for feedback during drag-and-drop.
+	 * For objects of version 2 or older, this request is used by the
+	 * client to give feedback whether the client can receive the given
+	 * mime type, or NULL if none is accepted; the feedback does not
+	 * determine whether the drag-and-drop operation succeeds or not.
+	 *
+	 * For objects of version 3 or newer, this request determines the
+	 * final result of the drag-and-drop operation. If the end result
+	 * is that no mime types were accepted, the drag-and-drop operation
+	 * will be cancelled and the corresponding drag source will receive
+	 * wl_data_source.cancelled. Clients may still use this event in
+	 * conjunction with wl_data_source.action for feedback.
 	 */
 	void (*accept)(struct wl_client *client,
 		       struct wl_resource *resource,
@@ -581,6 +603,11 @@ struct wl_data_offer_interface {
 	 * The receiving client reads from the read end of the pipe until
 	 * EOF and then closes its end, at which point the transfer is
 	 * complete.
+	 *
+	 * This request may happen multiple times for different mimetypes,
+	 * both before and after wl_data_device.drop. Drag-and-drop
+	 * destination clients may preemptively fetch data or examine it
+	 * more closely to determine acceptance.
 	 */
 	void (*receive)(struct wl_client *client,
 			struct wl_resource *resource,
@@ -593,11 +620,77 @@ struct wl_data_offer_interface {
 	 */
 	void (*destroy)(struct wl_client *client,
 			struct wl_resource *resource);
+	/**
+	 * finish - the offer will no longer be used
+	 *
+	 * Notifies the compositor that the drag destination successfully
+	 * finished the drag-and-drop operation.
+	 *
+	 * Upon receiving this request, the compositor will emit
+	 * wl_data_source.dnd_finished on the drag source client.
+	 *
+	 * It is a client error to perform other requests than
+	 * wl_data_offer.destroy after this one. It is also an error to
+	 * perform this request after a NULL mime type has been set in
+	 * wl_data_offer.accept or no action was received through
+	 * wl_data_offer.action.
+	 * @since: 3
+	 */
+	void (*finish)(struct wl_client *client,
+		       struct wl_resource *resource);
+	/**
+	 * set_actions - set the available/preferred drag-and-drop
+	 *	actions
+	 * @dnd_actions: (none)
+	 * @preferred_action: (none)
+	 *
+	 * Sets the actions that the destination side client supports for
+	 * this operation. This request may trigger the emission of
+	 * wl_data_source.action and wl_data_offer.action events if the
+	 * compositor need to change the selected action.
+	 *
+	 * This request can be called multiple times throughout the
+	 * drag-and-drop operation, typically in response to
+	 * wl_data_device.enter or wl_data_device.motion events.
+	 *
+	 * This request determines the final result of the drag-and-drop
+	 * operation. If the end result is that no action is accepted, the
+	 * drag source will receive wl_drag_source.cancelled.
+	 *
+	 * The dnd_actions argument must contain only values expressed in
+	 * the wl_data_device_manager.dnd_actions enum, and the
+	 * preferred_action argument must only contain one of those values
+	 * set, otherwise it will result in a protocol error.
+	 *
+	 * While managing an "ask" action, the destination drag-and-drop
+	 * client may perform further wl_data_offer.receive requests, and
+	 * is expected to perform one last wl_data_offer.set_actions
+	 * request with a preferred action other than "ask" (and optionally
+	 * wl_data_offer.accept) before requesting wl_data_offer.finish, in
+	 * order to convey the action selected by the user. If the
+	 * preferred action is not in the wl_data_offer.source_actions
+	 * mask, an error will be raised.
+	 *
+	 * If the "ask" action is dismissed (e.g. user cancellation), the
+	 * client is expected to perform wl_data_offer.destroy right away.
+	 *
+	 * This request can only be made on drag-and-drop offers, a
+	 * protocol error will be raised otherwise.
+	 * @since: 3
+	 */
+	void (*set_actions)(struct wl_client *client,
+			    struct wl_resource *resource,
+			    uint32_t dnd_actions,
+			    uint32_t preferred_action);
 };
 
 #define WL_DATA_OFFER_OFFER	0
+#define WL_DATA_OFFER_SOURCE_ACTIONS	1
+#define WL_DATA_OFFER_ACTION	2
 
 #define WL_DATA_OFFER_OFFER_SINCE_VERSION	1
+#define WL_DATA_OFFER_SOURCE_ACTIONS_SINCE_VERSION	3
+#define WL_DATA_OFFER_ACTION_SINCE_VERSION	3
 
 static inline void
 wl_data_offer_send_offer(struct wl_resource *resource_, const char *mime_type)
@@ -605,10 +698,31 @@ wl_data_offer_send_offer(struct wl_resource *resource_, const char *mime_type)
 	wl_resource_post_event(resource_, WL_DATA_OFFER_OFFER, mime_type);
 }
 
+static inline void
+wl_data_offer_send_source_actions(struct wl_resource *resource_, uint32_t source_actions)
+{
+	wl_resource_post_event(resource_, WL_DATA_OFFER_SOURCE_ACTIONS, source_actions);
+}
+
+static inline void
+wl_data_offer_send_action(struct wl_resource *resource_, uint32_t dnd_action)
+{
+	wl_resource_post_event(resource_, WL_DATA_OFFER_ACTION, dnd_action);
+}
+
+#ifndef WL_DATA_SOURCE_ERROR_ENUM
+#define WL_DATA_SOURCE_ERROR_ENUM
+enum wl_data_source_error {
+	WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK = 0,
+	WL_DATA_SOURCE_ERROR_INVALID_SOURCE = 1,
+};
+#endif /* WL_DATA_SOURCE_ERROR_ENUM */
+
 /**
  * wl_data_source - offer to transfer data
  * @offer: add an offered mime type
  * @destroy: destroy the data source
+ * @set_actions: set the available drag-and-drop actions
  *
  * The wl_data_source object is the source side of a wl_data_offer. It is
  * created by the source client in a data transfer and provides a way to
@@ -634,15 +748,43 @@ struct wl_data_source_interface {
 	 */
 	void (*destroy)(struct wl_client *client,
 			struct wl_resource *resource);
+	/**
+	 * set_actions - set the available drag-and-drop actions
+	 * @dnd_actions: (none)
+	 *
+	 * Sets the actions that the source side client supports for this
+	 * operation. This request may trigger wl_data_source.action and
+	 * wl_data_offer.action events if the compositor needs to change
+	 * the selected action.
+	 *
+	 * The dnd_actions argument must contain only values expressed in
+	 * the wl_data_device_manager.dnd_actions enum, otherwise it will
+	 * result in a protocol error.
+	 *
+	 * This request must be made once only, and can only be made on
+	 * sources used in drag-and-drop, so it must be performed before
+	 * wl_data_device.start_drag. Attempting to use the source other
+	 * than for drag-and-drop will raise a protocol error.
+	 * @since: 3
+	 */
+	void (*set_actions)(struct wl_client *client,
+			    struct wl_resource *resource,
+			    uint32_t dnd_actions);
 };
 
 #define WL_DATA_SOURCE_TARGET	0
 #define WL_DATA_SOURCE_SEND	1
 #define WL_DATA_SOURCE_CANCELLED	2
+#define WL_DATA_SOURCE_DND_DROP_PERFORMED	3
+#define WL_DATA_SOURCE_DND_FINISHED	4
+#define WL_DATA_SOURCE_ACTION	5
 
 #define WL_DATA_SOURCE_TARGET_SINCE_VERSION	1
 #define WL_DATA_SOURCE_SEND_SINCE_VERSION	1
 #define WL_DATA_SOURCE_CANCELLED_SINCE_VERSION	1
+#define WL_DATA_SOURCE_DND_DROP_PERFORMED_SINCE_VERSION	3
+#define WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION	3
+#define WL_DATA_SOURCE_ACTION_SINCE_VERSION	3
 
 static inline void
 wl_data_source_send_target(struct wl_resource *resource_, const char *mime_type)
@@ -660,6 +802,24 @@ static inline void
 wl_data_source_send_cancelled(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, WL_DATA_SOURCE_CANCELLED);
+}
+
+static inline void
+wl_data_source_send_dnd_drop_performed(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, WL_DATA_SOURCE_DND_DROP_PERFORMED);
+}
+
+static inline void
+wl_data_source_send_dnd_finished(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, WL_DATA_SOURCE_DND_FINISHED);
+}
+
+static inline void
+wl_data_source_send_action(struct wl_resource *resource_, uint32_t dnd_action)
+{
+	wl_resource_post_event(resource_, WL_DATA_SOURCE_ACTION, dnd_action);
 }
 
 #ifndef WL_DATA_DEVICE_ERROR_ENUM
@@ -796,6 +956,44 @@ wl_data_device_send_selection(struct wl_resource *resource_, struct wl_resource 
 {
 	wl_resource_post_event(resource_, WL_DATA_DEVICE_SELECTION, id);
 }
+
+#ifndef WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM
+#define WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM
+/**
+ * wl_data_device_manager_dnd_action - drag and drop actions
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE: (none)
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY: (none)
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE: (none)
+ * @WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK: (none)
+ *
+ * This is a bitmask of the available/preferred actions in a
+ * drag-and-drop operation.
+ *
+ * In the compositor, the selected action is a result of matching the
+ * actions offered by the source and destination sides. "action" events
+ * with a "none" action will be sent to both source and destination if
+ * there is no match. All further checks will effectively happen on (source
+ * actions ∩ destination actions).
+ *
+ * In addition, compositors may also pick different actions in reaction to
+ * key modifiers being pressed, one common design that is used in major
+ * toolkits (and the behavior recommended for compositors) is:
+ *
+ * - If no modifiers are pressed, the first match (in bit order) will be
+ * used. - Pressing Shift selects "move", if enabled in the mask. -
+ * Pressing Control selects "copy", if enabled in the mask.
+ *
+ * Behavior beyond that is considered implementation-dependent. Compositors
+ * may for example bind other modifiers (like Alt/Meta) or drags initiated
+ * with other buttons than BTN_LEFT to specific actions (e.g. "ask").
+ */
+enum wl_data_device_manager_dnd_action {
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE = 0,
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY = 1,
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE = 2,
+	WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK = 4,
+};
+#endif /* WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM */
 
 /**
  * wl_data_device_manager - data transfer interface
@@ -1228,6 +1426,8 @@ enum wl_surface_error {
  * @commit: commit pending surface state
  * @set_buffer_transform: sets the buffer transformation
  * @set_buffer_scale: sets the buffer scaling factor
+ * @damage_buffer: mark part of the surface damaged using buffer
+ *	co-ordinates
  *
  * A surface is a rectangular area that is displayed on the screen. It
  * has a location, size and pixel contents.
@@ -1334,10 +1534,9 @@ struct wl_surface_interface {
 	 *
 	 * This request is used to describe the regions where the pending
 	 * buffer is different from the current surface contents, and where
-	 * the surface therefore needs to be repainted. The pending buffer
-	 * must be set by wl_surface.attach before sending damage. The
-	 * compositor ignores the parts of the damage that fall outside of
-	 * the surface.
+	 * the surface therefore needs to be repainted. The compositor
+	 * ignores the parts of the damage that fall outside of the
+	 * surface.
 	 *
 	 * Damage is double-buffered state, see wl_surface.commit.
 	 *
@@ -1350,6 +1549,11 @@ struct wl_surface_interface {
 	 * wl_surface.commit assigns pending damage as the current damage,
 	 * and clears pending damage. The server will clear the current
 	 * damage as it repaints the surface.
+	 *
+	 * Alternatively, damage can be posted with
+	 * wl_surface.damage_buffer which uses buffer co-ordinates instead
+	 * of surface co-ordinates, and is probably the preferred and
+	 * intuitive way of doing this.
 	 */
 	void (*damage)(struct wl_client *client,
 		       struct wl_resource *resource,
@@ -1561,6 +1765,55 @@ struct wl_surface_interface {
 	void (*set_buffer_scale)(struct wl_client *client,
 				 struct wl_resource *resource,
 				 int32_t scale);
+	/**
+	 * damage_buffer - mark part of the surface damaged using buffer
+	 *	co-ordinates
+	 * @x: (none)
+	 * @y: (none)
+	 * @width: (none)
+	 * @height: (none)
+	 *
+	 * This request is used to describe the regions where the pending
+	 * buffer is different from the current surface contents, and where
+	 * the surface therefore needs to be repainted. The compositor
+	 * ignores the parts of the damage that fall outside of the
+	 * surface.
+	 *
+	 * Damage is double-buffered state, see wl_surface.commit.
+	 *
+	 * The damage rectangle is specified in buffer coordinates.
+	 *
+	 * The initial value for pending damage is empty: no damage.
+	 * wl_surface.damage_buffer adds pending damage: the new pending
+	 * damage is the union of old pending damage and the given
+	 * rectangle.
+	 *
+	 * wl_surface.commit assigns pending damage as the current damage,
+	 * and clears pending damage. The server will clear the current
+	 * damage as it repaints the surface.
+	 *
+	 * This request differs from wl_surface.damage in only one way - it
+	 * takes damage in buffer co-ordinates instead of surface local
+	 * co-ordinates. While this generally is more intuitive than
+	 * surface co-ordinates, it is especially desirable when using
+	 * wp_viewport or when a drawing library (like EGL) is unaware of
+	 * buffer scale and buffer transform.
+	 *
+	 * Note: Because buffer transformation changes and damage requests
+	 * may be interleaved in the protocol stream, It is impossible to
+	 * determine the actual mapping between surface and buffer damage
+	 * until wl_surface.commit time. Therefore, compositors wishing to
+	 * take both kinds of damage into account will have to accumulate
+	 * damage from the two requests separately and only transform from
+	 * one to the other after receiving the wl_surface.commit.
+	 * @since: 4
+	 */
+	void (*damage_buffer)(struct wl_client *client,
+			      struct wl_resource *resource,
+			      int32_t x,
+			      int32_t y,
+			      int32_t width,
+			      int32_t height);
 };
 
 #define WL_SURFACE_ENTER	0
@@ -1604,6 +1857,7 @@ enum wl_seat_capability {
  * @get_pointer: return pointer object
  * @get_keyboard: return keyboard object
  * @get_touch: return touch object
+ * @release: release the seat object
  *
  * A seat is a group of keyboards, pointer and touch devices. This object
  * is published as a global during start up, or when such a device is hot
@@ -1619,7 +1873,9 @@ struct wl_seat_interface {
 	 * interface for this seat.
 	 *
 	 * This request only takes effect if the seat has the pointer
-	 * capability.
+	 * capability, or has had the pointer capability in the past. It is
+	 * a protocol violation to issue this request on a seat that has
+	 * never had the pointer capability.
 	 */
 	void (*get_pointer)(struct wl_client *client,
 			    struct wl_resource *resource,
@@ -1632,7 +1888,9 @@ struct wl_seat_interface {
 	 * interface for this seat.
 	 *
 	 * This request only takes effect if the seat has the keyboard
-	 * capability.
+	 * capability, or has had the keyboard capability in the past. It
+	 * is a protocol violation to issue this request on a seat that has
+	 * never had the keyboard capability.
 	 */
 	void (*get_keyboard)(struct wl_client *client,
 			     struct wl_resource *resource,
@@ -1645,11 +1903,22 @@ struct wl_seat_interface {
 	 * for this seat.
 	 *
 	 * This request only takes effect if the seat has the touch
-	 * capability.
+	 * capability, or has had the touch capability in the past. It is a
+	 * protocol violation to issue this request on a seat that has
+	 * never had the touch capability.
 	 */
 	void (*get_touch)(struct wl_client *client,
 			  struct wl_resource *resource,
 			  uint32_t id);
+	/**
+	 * release - release the seat object
+	 *
+	 * Using this request client can tell the server that it is not
+	 * going to use the seat object anymore.
+	 * @since: 5
+	 */
+	void (*release)(struct wl_client *client,
+			struct wl_resource *resource);
 };
 
 #define WL_SEAT_CAPABILITIES	0
@@ -1707,6 +1976,34 @@ enum wl_pointer_axis {
 	WL_POINTER_AXIS_HORIZONTAL_SCROLL = 1,
 };
 #endif /* WL_POINTER_AXIS_ENUM */
+
+#ifndef WL_POINTER_AXIS_SOURCE_ENUM
+#define WL_POINTER_AXIS_SOURCE_ENUM
+/**
+ * wl_pointer_axis_source - axis source types
+ * @WL_POINTER_AXIS_SOURCE_WHEEL: A physical wheel
+ * @WL_POINTER_AXIS_SOURCE_FINGER: Finger on a touch surface
+ * @WL_POINTER_AXIS_SOURCE_CONTINUOUS: Continuous coordinate space
+ *
+ * Describes the source types for axis events. This indicates to the
+ * client how an axis event was physically generated; a client may adjust
+ * the user interface accordingly. For example, scroll events from a
+ * "finger" source may be in a smooth coordinate space with kinetic
+ * scrolling whereas a "wheel" source may be in discrete steps of a number
+ * of lines.
+ *
+ * The "continuous" axis source is a device generating events in a
+ * continuous coordinate space, but using something other than a finger.
+ * One example for this source is button-based scrolling where the vertical
+ * motion of a device is converted to scroll events while a button is held
+ * down.
+ */
+enum wl_pointer_axis_source {
+	WL_POINTER_AXIS_SOURCE_WHEEL = 0,
+	WL_POINTER_AXIS_SOURCE_FINGER = 1,
+	WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
+};
+#endif /* WL_POINTER_AXIS_SOURCE_ENUM */
 
 /**
  * wl_pointer - pointer input device
@@ -1785,12 +2082,20 @@ struct wl_pointer_interface {
 #define WL_POINTER_MOTION	2
 #define WL_POINTER_BUTTON	3
 #define WL_POINTER_AXIS	4
+#define WL_POINTER_FRAME	5
+#define WL_POINTER_AXIS_SOURCE	6
+#define WL_POINTER_AXIS_STOP	7
+#define WL_POINTER_AXIS_DISCRETE	8
 
 #define WL_POINTER_ENTER_SINCE_VERSION	1
 #define WL_POINTER_LEAVE_SINCE_VERSION	1
 #define WL_POINTER_MOTION_SINCE_VERSION	1
 #define WL_POINTER_BUTTON_SINCE_VERSION	1
 #define WL_POINTER_AXIS_SINCE_VERSION	1
+#define WL_POINTER_FRAME_SINCE_VERSION	5
+#define WL_POINTER_AXIS_SOURCE_SINCE_VERSION	5
+#define WL_POINTER_AXIS_STOP_SINCE_VERSION	5
+#define WL_POINTER_AXIS_DISCRETE_SINCE_VERSION	5
 
 static inline void
 wl_pointer_send_enter(struct wl_resource *resource_, uint32_t serial, struct wl_resource *surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
@@ -1820,6 +2125,30 @@ static inline void
 wl_pointer_send_axis(struct wl_resource *resource_, uint32_t time, uint32_t axis, wl_fixed_t value)
 {
 	wl_resource_post_event(resource_, WL_POINTER_AXIS, time, axis, value);
+}
+
+static inline void
+wl_pointer_send_frame(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, WL_POINTER_FRAME);
+}
+
+static inline void
+wl_pointer_send_axis_source(struct wl_resource *resource_, uint32_t axis_source)
+{
+	wl_resource_post_event(resource_, WL_POINTER_AXIS_SOURCE, axis_source);
+}
+
+static inline void
+wl_pointer_send_axis_stop(struct wl_resource *resource_, uint32_t time, uint32_t axis)
+{
+	wl_resource_post_event(resource_, WL_POINTER_AXIS_STOP, time, axis);
+}
+
+static inline void
+wl_pointer_send_axis_discrete(struct wl_resource *resource_, uint32_t axis, int32_t discrete)
+{
+	wl_resource_post_event(resource_, WL_POINTER_AXIS_DISCRETE, axis, discrete);
 }
 
 #ifndef WL_KEYBOARD_KEYMAP_FORMAT_ENUM

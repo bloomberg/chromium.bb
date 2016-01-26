@@ -418,7 +418,7 @@ deps_os = {
 
     # Display server protocol for Linux.
     'src/third_party/wayland/src':
-     Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + 'b05668f0ad64ad9ba82e124965163daed4172ead',
+     Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '7ed00c1de77afbab23f4908fbd9d60ec070c209b',
 
     # Wayland protocols that add functionality not available in the core protocol.
     'src/third_party/wayland-protocols/src':

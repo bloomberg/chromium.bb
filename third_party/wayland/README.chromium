@@ -1,6 +1,6 @@
 Name: wayland
 URL: http://wayland.freedesktop.org/
-Version: 1.9.0
+Version: 1.9.91
 License: MIT
 License File: src/COPYING
 Security Critical: yes
@@ -13,7 +13,7 @@ Modifications:
 - None
 
 To import a new snapshot of wayland:
-- Checkout the latest release tag: git checkout 1.9.0
+- Checkout the latest release tag: git checkout 1.9.91
 - Change the DEPS entry to the newly checked out commit.
 - Update generated files:
     ./autogen.sh && make
