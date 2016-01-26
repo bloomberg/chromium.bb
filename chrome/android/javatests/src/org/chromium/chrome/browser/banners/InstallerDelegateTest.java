@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.banners;
 
 import android.content.pm.PackageInfo;
 import android.os.HandlerThread;
-import android.test.FlakyTest;
 import android.test.InstrumentationTestCase;
 import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -91,14 +90,6 @@ public class InstallerDelegateTest extends InstrumentationTestCase
     private void startMonitoring() throws InterruptedException {
         mTestDelegate.start();
         mInstallStarted = true;
-
-        // Wait until we know that the Thread is running the InstallerDelegate task.
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mTestDelegate.isRunning();
-            }
-        });
     }
 
     private void checkResults(boolean expectedResult) throws InterruptedException {
@@ -159,8 +150,6 @@ public class InstallerDelegateTest extends InstrumentationTestCase
     /**
      * Makes sure that the runnable isn't called until returning from start().
      */
-    /* Appears to be flaky crbug.com/542627 */
-    @FlakyTest
     @SmallTest
     public void testRunnableRaceCondition() throws InterruptedException {
         mPackageManager.isInstalled = true;
