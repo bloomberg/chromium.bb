@@ -117,6 +117,30 @@ promise_test(() => {
   }, testSpec.testName);
 });
 
+// TODO(ortuno): Allow connections when the tab is in the background.
+// This is a short term solution instead of implementing a tab indicator
+// for bluetooth connections.
+// https://crbug.com/579746
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => {
+      testRunner.setPageVisibility('hidden');
+      return assert_promise_rejects_with_message(
+        device.connectGATT(),
+        new DOMException('Connection is only allowed while the page is visible. ' +
+                         'This is a temporary measure until we are able to ' +
+                         'effectively communicate to the user that a page is ' +
+                         'connected to a device.',
+                         'SecurityError'));
+    })
+    .then(() => testRunner.setPageVisibility('visible'))
+    .catch(error => {
+      testRunner.setPageVisibility('visible');
+      throw error;
+    });
+}, 'Device should not be able to connect in background.');
+
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})

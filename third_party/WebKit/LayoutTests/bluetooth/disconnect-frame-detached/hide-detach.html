@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/bluetooth-helpers.js"></script>
+<body>
+  <script>
+  "use strict";
+  async_test(test => {
+    window.onmessage = messageEvent => test.step(() => {
+      if (messageEvent.data === 'Ready') {
+        let iframe = document.querySelector('iframe');
+        callWithKeyDown(() => {
+          iframe.contentWindow.postMessage('Go', '*');
+        });
+      } else if (messageEvent.data === 'Connected') {
+        // Hide
+        testRunner.setPageVisibility('hidden');
+        // Detach
+        iframe.remove();
+        test.done();
+      } else {
+        assert_unreached('iframe sent invalid data: ' + messageEvent.data);
+      }
+    });
+    testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+    let iframe = document.createElement('iframe');
+    iframe.src = '../resources/connectGATT-iframe.html';
+    document.body.appendChild(iframe);
+  }, 'Hide then detach frame. We shouldn\'t crash.');
+  </script>
+</body>

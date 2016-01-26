@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothGATTService.h"
@@ -18,15 +19,56 @@
 
 namespace blink {
 
-BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
-    : m_webGATT(webGATT)
+BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(ExecutionContext* context, PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
+    : ActiveDOMObject(context)
+    , PageLifecycleObserver(toDocument(context)->page())
+    , m_webGATT(webGATT)
 {
+    // See example in Source/platform/heap/ThreadState.h
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
+BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
 {
     ASSERT(webGATT);
-    return new BluetoothGATTRemoteServer(webGATT);
+    BluetoothGATTRemoteServer* server = new BluetoothGATTRemoteServer(resolver->executionContext(), webGATT);
+    if (!server->page()->isPageVisible()) {
+        server->disconnectIfConnected();
+    }
+    server->suspendIfNeeded();
+    return server;
+}
+
+void BluetoothGATTRemoteServer::dispose()
+{
+    disconnectIfConnected();
+}
+
+void BluetoothGATTRemoteServer::stop()
+{
+    disconnectIfConnected();
+}
+
+void BluetoothGATTRemoteServer::pageVisibilityChanged()
+{
+    if (!page()->isPageVisible()) {
+        disconnectIfConnected();
+    }
+}
+
+void BluetoothGATTRemoteServer::disconnectIfConnected()
+{
+    if (m_webGATT->connected) {
+        m_webGATT->connected = false;
+        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(executionContext());
+        webbluetooth->disconnect(m_webGATT->deviceId);
+    }
+}
+
+DEFINE_TRACE(BluetoothGATTRemoteServer)
+{
+    ActiveDOMObject::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
 }
 
 void BluetoothGATTRemoteServer::disconnect(ScriptState* scriptState)

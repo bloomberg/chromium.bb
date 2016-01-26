@@ -8,7 +8,9 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/page/PageVisibilityState.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothGATTRemoteServer.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
@@ -79,6 +81,13 @@ Vector<String> BluetoothDevice::uuids()
 
 ScriptPromise BluetoothDevice::connectGATT(ScriptState* scriptState)
 {
+    // TODO(ortuno): Allow connections when the tab is in the background.
+    // This is a short term solution instead of implementing a tab indicator
+    // for bluetooth connections.
+    // https://crbug.com/579746
+    if (!toDocument(scriptState->executionContext())->page()->isPageVisible()) {
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that a page is connected to a device."));
+    }
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));

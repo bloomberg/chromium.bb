@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+// TODO(ortuno): Allow connections when the tab is in the background.
+// This is a short term solution instead of implementing a tab indicator
+// for bluetooth connections.
+// https://crbug.com/579746
+promise_test(() => {
+  testRunner.setPageVisibility("visible");
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gatt_server => {
+     assert_true(gatt_server.connected);
+     testRunner.setPageVisibility("hidden");
+     assert_false(gatt_server.connected);
+     testRunner.setPageVisibility("visible");
+     assert_false(gatt_server.connected);
+   });
+}, 'Test device disconnects when tab becomes hidden');
+
+promise_test(() => {
+  testRunner.setPageVisibility('visible');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gatt_server => {})
+   .then(() => runGarbageCollection())
+   .then(() => testRunner.setPageVisibility('hidden'));
+}, 'Test object gets garbage collected before tab becomes hidden. ' +
+   'We shouldn\'t crash.');
+
+promise_test(() => {
+  testRunner.setPageVisibility('visible');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => device.connectGATT())
+   .then(gatt_server => testRunner.setPageVisibility('hidden'))
+   .then(() => runGarbageCollection());
+}, 'Test object gets garbage collected after tab becomes hidden. ' +
+   'We shouldn\'t crash.');
+
+promise_test(() => {
+  testRunner.setPageVisibility('visible');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+   .then(device => {
+     let connect_promise = device.connectGATT();
+     testRunner.setPageVisibility('hidden');
+     return connect_promise;
+   }).then(gatt_server => {
+     assert_false(gatt_server.connected);
+   });
+}, 'Visibility changes during connection. Should disconnect.');
+</script>
