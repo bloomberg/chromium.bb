@@ -65,7 +65,7 @@ enum NotificationPermission {
     readonly attribute DOMString lang;
     readonly attribute DOMString body;
     readonly attribute DOMString tag;
-    readonly attribute DOMString icon;
+    readonly attribute USVString icon;
 
     [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
     readonly attribute boolean silent;

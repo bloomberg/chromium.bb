@@ -15,7 +15,7 @@ dictionary NotificationOptions {
     DOMString lang = "";
     DOMString body = "";
     DOMString tag = "";
-    DOMString icon;
+    USVString icon;
     // TODO(sh919.park): vibrate should be ([Clamp] unsigned long or sequence<unsigned long>)
     (unsigned long or sequence<unsigned long>) vibrate;
     boolean silent = false;
