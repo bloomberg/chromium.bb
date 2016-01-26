@@ -209,13 +209,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     WidgetDelegate* delegate;
     bool child;
     // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
-    // Translucent windows may not always be supported. Use
-    // IsTranslucentWindowOpacitySupported to determine if translucent windows
-    // are supported.
     // If OPAQUE_WINDOW, we can perform optimizations based on the widget being
-    // fully opaque.  Defaults to TRANSLUCENT_WINDOW if
-    // ViewsDelegate::UseTransparentWindows().  Defaults to OPAQUE_WINDOW for
-    // non-window widgets.
+    // fully opaque.
+    // Default is based on ViewsDelegate::GetOpacityForInitParams().  Defaults
+    // to OPAQUE_WINDOW for non-window widgets.
+    // Translucent windows may not always be supported. Use
+    // IsTranslucentWindowOpacitySupported to determine whether they are.
     WindowOpacity opacity;
     bool accept_events;
     Activatable activatable;
