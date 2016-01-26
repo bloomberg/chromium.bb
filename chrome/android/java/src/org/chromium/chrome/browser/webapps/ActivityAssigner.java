@@ -6,18 +6,15 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Manages a rotating LRU buffer of WebappActivities to assign webapps to.
@@ -217,14 +214,7 @@ public class ActivityAssigner {
         // been corrupted somehow, just discard the whole map.
         SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
         try {
-            long time = SystemClock.elapsedRealtime();
             final int numSavedEntries = prefs.getInt(PREF_NUM_SAVED_ENTRIES, 0);
-            try {
-                RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappSharedPrefs",
-                        SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
-            } catch (UnsatisfiedLinkError error) {
-                // Intentionally ignored - it's ok to miss recording the metric occasionally.
-            }
             if (numSavedEntries <= NUM_WEBAPP_ACTIVITIES) {
                 for (int i = 0; i < numSavedEntries; ++i) {
                     String currentActivityIndexPref = PREF_ACTIVITY_INDEX + i;

@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -83,7 +82,6 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RecordHistogram.disableForTests();
         CommandLine.init(null);
         loadNativeLibraryAndInitBrowserProcess();
 

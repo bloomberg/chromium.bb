@@ -312,15 +312,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Android.StrictMode.DocumentModeSharedPrefs" units="ms">
-  <owner>hartmanng@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Measures the amount of time due to a StrictMode violation from fetching the
-    DocumentMode shared preferences file.
-  </summary>
-</histogram>
-
 <histogram name="Android.StrictMode.DocumentTabStateLoad" units="ms">
   <owner>wnwen@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -390,15 +381,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures the amount of time due to a StrictMode violation from reading and
     saving webapp state.
-  </summary>
-</histogram>
-
-<histogram name="Android.StrictMode.WebappSharedPrefs" units="ms">
-  <owner>hartmanng@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Measures the amount of time due to a StrictMode violation from fetching the
-    Webapp shared preferences file.
   </summary>
 </histogram>
 
