@@ -44,6 +44,7 @@ public:
         return adoptRef(new SVGImageForContainer(image, containerSizeWithoutZoom, zoom, url));
     }
 
+    bool isTextureBacked() override;
     IntSize size() const override;
 
     bool usesContainerSize() const override { return m_image->usesContainerSize(); }

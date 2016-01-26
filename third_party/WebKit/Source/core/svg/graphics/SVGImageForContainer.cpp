@@ -27,6 +27,11 @@
 
 namespace blink {
 
+bool SVGImageForContainer::isTextureBacked()
+{
+    return m_image->isTextureBacked();
+}
+
 IntSize SVGImageForContainer::size() const
 {
     FloatSize scaledContainerSize(m_containerSize);
