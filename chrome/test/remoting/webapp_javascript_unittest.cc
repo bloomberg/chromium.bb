@@ -12,8 +12,9 @@
 
 namespace remoting {
 
-// Flakily times out on Win7 Tests (dbg): https://crbug.com/504204.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Flakily times out on Win7 Tests (dbg) and Linux Tests (dbg)(1):
+// https://crbug.com/504204.
+#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(NDEBUG)
 #define MAYBE_Remoting_Webapp_Js_Unittest DISABLED_Remoting_Webapp_Js_Unittest
 #else
 #define MAYBE_Remoting_Webapp_Js_Unittest Remoting_Webapp_Js_Unittest
