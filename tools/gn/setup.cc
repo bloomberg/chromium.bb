@@ -31,6 +31,7 @@
 #include "tools/gn/tokenizer.h"
 #include "tools/gn/trace.h"
 #include "tools/gn/value.h"
+#include "tools/gn/value_extractors.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -655,20 +656,12 @@ bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
   const Value* check_targets_value =
       dotfile_scope_.GetValue("check_targets", true);
   if (check_targets_value) {
-    // Fill the list of targets to check.
-    if (!check_targets_value->VerifyTypeIs(Value::LIST, &err)) {
+    check_patterns_.reset(new std::vector<LabelPattern>);
+    ExtractListOfLabelPatterns(*check_targets_value, current_dir,
+                               check_patterns_.get(), &err);
+    if (err.has_error()) {
       err.PrintToStdout();
       return false;
-    }
-
-    check_patterns_.reset(new std::vector<LabelPattern>);
-    for (const auto& item : check_targets_value->list_value()) {
-      check_patterns_->push_back(
-          LabelPattern::GetPattern(current_dir, item, &err));
-      if (err.has_error()) {
-        err.PrintToStdout();
-        return false;
-      }
     }
   }
 

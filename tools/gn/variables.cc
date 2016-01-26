@@ -391,6 +391,49 @@ const char kArgs_Help[] =
     "\n"
     "  See also \"gn help action\" and \"gn help action_foreach\".\n";
 
+const char kAssertNoDeps[] = "assert_no_deps";
+const char kAssertNoDeps_HelpShort[] =
+    "assert_no_deps: [label pattern list] Ensure no deps on these targets.";
+const char kAssertNoDeps_Help[] =
+    "assert_no_deps: Ensure no deps on these targets.\n"
+    "\n"
+    "  A list of label patterns.\n"
+    "\n"
+    "  This list is a list of patterns that must not match any of the\n"
+    "  transitive dependencies of the target. These include all public,\n"
+    "  private, and data dependencies, and cross shared library boundaries.\n"
+    "  This allows you to express that undesirable code isn't accidentally\n"
+    "  added to downstream dependencies in a way that might otherwise be\n"
+    "  difficult to notice.\n"
+    "\n"
+    "  Checking does not cross executable boundaries. If a target depends on\n"
+    "  an executable, it's assumed that the executable is a tool that is\n"
+    "  producing part of the build rather than something that is linked and\n"
+    "  distributed. This allows assert_no_deps to express what is distributed\n"
+    "  in the final target rather than depend on the internal build steps\n"
+    "  (which may include non-distributable code).\n"
+    "\n"
+    "  See \"gn help label_pattern\" for the format of the entries in the\n"
+    "  list. These patterns allow blacklisting individual targets or whole\n"
+    "  directory hierarchies.\n"
+    "\n"
+    "  Sometimes it is desirable to enforce that many targets have no\n"
+    "  dependencies on a target or set of targets. One efficient way to\n"
+    "  express this is to create a group with the assert_no_deps rule on\n"
+    "  it, and make that group depend on all targets you want to apply that\n"
+    "  assertion to.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  executable(\"doom_melon\") {\n"
+    "    deps = [ \"//foo:bar\" ]\n"
+    "    ...\n"
+    "    assert_no_deps = [\n"
+    "      \"//evil/*\",  # Don't link any code from the evil directory.\n"
+    "      \"//foo:test_support\",  # This target is also disallowed.\n"
+    "    ]\n"
+    "  }\n";
+
 const char kCflags[] = "cflags";
 const char kCflags_HelpShort[] =
     "cflags: [string list] Flags passed to all C compiler variants.";
@@ -1400,6 +1443,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(AllowCircularIncludesFrom)
     INSERT_VARIABLE(Args)
     INSERT_VARIABLE(Asmflags)
+    INSERT_VARIABLE(AssertNoDeps)
     INSERT_VARIABLE(Cflags)
     INSERT_VARIABLE(CflagsC)
     INSERT_VARIABLE(CflagsCC)

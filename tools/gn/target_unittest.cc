@@ -668,3 +668,58 @@ TEST(Target, ResolvePrecompiledHeaders) {
       "  source: //pcs2.cc",
       err.help_text());
 }
+
+TEST(Target, AssertNoDeps) {
+  TestWithScope setup;
+  Err err;
+
+  // A target.
+  TestTarget a(setup, "//a", Target::SHARED_LIBRARY);
+  ASSERT_TRUE(a.OnResolved(&err));
+
+  // B depends on A and has an assert_no_deps for a random dir.
+  TestTarget b(setup, "//b", Target::SHARED_LIBRARY);
+  b.private_deps().push_back(LabelTargetPair(&a));
+  b.assert_no_deps().push_back(LabelPattern(
+      LabelPattern::RECURSIVE_DIRECTORY, SourceDir("//disallowed/"),
+      std::string(), Label()));
+  ASSERT_TRUE(b.OnResolved(&err));
+
+  LabelPattern disallow_a(LabelPattern::RECURSIVE_DIRECTORY, SourceDir("//a/"),
+                          std::string(), Label());
+
+  // C depends on B and disallows depending on A. This should fail.
+  TestTarget c(setup, "//c", Target::EXECUTABLE);
+  c.private_deps().push_back(LabelTargetPair(&b));
+  c.assert_no_deps().push_back(disallow_a);
+  ASSERT_FALSE(c.OnResolved(&err));
+
+  // Validate the error message has the proper path.
+  EXPECT_EQ(
+      "//c:c has an assert_no_deps entry:\n"
+      "  //a/*\n"
+      "which fails for the dependency path:\n"
+      "  //c:c ->\n"
+      "  //b:b ->\n"
+      "  //a:a",
+      err.help_text());
+  err = Err();
+
+  // Add an intermediate executable with: exe -> b -> a
+  TestTarget exe(setup, "//exe", Target::EXECUTABLE);
+  exe.private_deps().push_back(LabelTargetPair(&b));
+  ASSERT_TRUE(exe.OnResolved(&err));
+
+  // D depends on the executable and disallows depending on A. Since there is
+  // an intermediate executable, this should be OK.
+  TestTarget d(setup, "//d", Target::EXECUTABLE);
+  d.private_deps().push_back(LabelTargetPair(&exe));
+  d.assert_no_deps().push_back(disallow_a);
+  ASSERT_TRUE(d.OnResolved(&err));
+
+  // A2 disallows depending on anything in its own directory, but the
+  // assertions should not match the target itself so this should be OK.
+  TestTarget a2(setup, "//a:a2", Target::EXECUTABLE);
+  a2.assert_no_deps().push_back(disallow_a);
+  ASSERT_TRUE(a2.OnResolved(&err));
+}

@@ -144,6 +144,17 @@ template<typename T> struct LabelPtrResolver {
   const Label& current_toolchain;
 };
 
+struct LabelPatternResolver {
+  LabelPatternResolver(const SourceDir& current_dir_in)
+      : current_dir(current_dir_in) {
+  }
+  bool operator()(const Value& v, LabelPattern* out, Err* err) const {
+    *out = LabelPattern::GetPattern(current_dir, v, err);
+    return !err->has_error();
+  }
+  const SourceDir& current_dir;
+};
+
 }  // namespace
 
 bool ExtractListOfStringValues(const Value& value,
@@ -235,4 +246,12 @@ bool ExtractRelativeFile(const BuildSettings* build_settings,
                          Err* err) {
   RelativeFileConverter converter(build_settings, current_dir);
   return converter(value, file, err);
+}
+
+bool ExtractListOfLabelPatterns(const Value& value,
+                                const SourceDir& current_dir,
+                                std::vector<LabelPattern>* patterns,
+                                Err* err) {
+  return ListValueExtractor(value, patterns, err,
+                            LabelPatternResolver(current_dir));
 }

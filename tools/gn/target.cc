@@ -129,6 +129,61 @@ bool EnsureFileIsGeneratedByDependency(const Target* target,
   return false;
 }
 
+// check_this indicates if the given target should be matched against the
+// patterns. It should be set to false for the first call since assert_no_deps
+// shouldn't match the target itself.
+//
+// visited should point to an empty set, this will be used to prevent
+// multiple visits.
+//
+// *failure_path_str will be filled with a string describing the path of the
+// dependency failure, and failure_pattern will indicate the pattern in
+// assert_no that matched the target.
+//
+// Returns true if everything is OK. failure_path_str and failure_pattern_index
+// will be unchanged in this case.
+bool RecursiveCheckAssertNoDeps(const Target* target,
+                                bool check_this,
+                                const std::vector<LabelPattern>& assert_no,
+                                std::set<const Target*>* visited,
+                                std::string* failure_path_str,
+                                const LabelPattern** failure_pattern) {
+  static const char kIndentPath[] = "  ";
+
+  if (visited->find(target) != visited->end())
+    return true;  // Already checked this target.
+  visited->insert(target);
+
+  if (check_this) {
+    // Check this target against the given list of patterns.
+    for (const LabelPattern& pattern : assert_no) {
+      if (pattern.Matches(target->label())) {
+        // Found a match.
+        *failure_pattern = &pattern;
+        *failure_path_str =
+            kIndentPath + target->label().GetUserVisibleName(false);
+        return false;
+      }
+    }
+  }
+
+  // Recursively check dependencies.
+  for (const auto& pair : target->GetDeps(Target::DEPS_ALL)) {
+    if (pair.ptr->output_type() == Target::EXECUTABLE)
+      continue;
+    if (!RecursiveCheckAssertNoDeps(pair.ptr, true, assert_no, visited,
+                                    failure_path_str, failure_pattern)) {
+      // To reconstruct the path, prepend the current target to the error.
+      std::string prepend_path =
+          kIndentPath + target->label().GetUserVisibleName(false) + " ->\n";
+      failure_path_str->insert(0, prepend_path);
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 Target::Target(const Settings* settings, const Label& label)
@@ -233,6 +288,8 @@ bool Target::OnResolved(Err* err) {
     if (!CheckTestonly(err))
       return false;
     if (!CheckNoNestedStaticLibs(err))
+      return false;
+    if (!CheckAssertNoDeps(err))
       return false;
     CheckSourcesGenerated();
   }
@@ -600,6 +657,27 @@ bool Target::CheckNoNestedStaticLibs(Err* err) const {
       *err = MakeStaticLibDepsError(this, lib);
       return false;
     }
+  }
+  return true;
+}
+
+bool Target::CheckAssertNoDeps(Err* err) const {
+  if (assert_no_deps_.empty())
+    return true;
+
+  std::set<const Target*> visited;
+  std::string failure_path_str;
+  const LabelPattern* failure_pattern = nullptr;
+
+  if (!RecursiveCheckAssertNoDeps(this, false, assert_no_deps_, &visited,
+                                  &failure_path_str, &failure_pattern)) {
+    *err = Err(defined_from(), "assert_no_deps failed.",
+        label().GetUserVisibleName(false) +
+        " has an assert_no_deps entry:\n  " +
+        failure_pattern->Describe() +
+        "\nwhich fails for the dependency path:\n" +
+        failure_path_str);
+    return false;
   }
   return true;
 }

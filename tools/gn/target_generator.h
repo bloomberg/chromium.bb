@@ -70,6 +70,7 @@ class TargetGenerator {
   bool FillData();
   bool FillDependencies();  // Includes data dependencies.
   bool FillTestonly();
+  bool FillAssertNoDeps();
 
   // Reads configs/deps from the given var name, and uses the given setting on
   // the target to save them.

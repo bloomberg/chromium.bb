@@ -15,6 +15,7 @@
 class BuildSettings;
 class Err;
 class Label;
+class LabelPattern;
 class SourceDir;
 class SourceFile;
 class Value;
@@ -79,5 +80,10 @@ bool ExtractRelativeFile(const BuildSettings* build_settings,
                          const SourceDir& current_dir,
                          SourceFile* file,
                          Err* err);
+
+bool ExtractListOfLabelPatterns(const Value& value,
+                                const SourceDir& current_dir,
+                                std::vector<LabelPattern>* patterns,
+                                Err* err);
 
 #endif  // TOOLS_GN_VALUE_EXTRACTORS_H_

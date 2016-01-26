@@ -16,6 +16,7 @@
 #include "tools/gn/config_values.h"
 #include "tools/gn/inherited_libraries.h"
 #include "tools/gn/item.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/label_ptr.h"
 #include "tools/gn/lib_file.h"
 #include "tools/gn/ordered_set.h"
@@ -209,6 +210,13 @@ class Target : public Item {
     return recursive_hard_deps_;
   }
 
+  std::vector<LabelPattern>& assert_no_deps() {
+    return assert_no_deps_;
+  }
+  const std::vector<LabelPattern>& assert_no_deps() const {
+    return assert_no_deps_;
+  }
+
   // The toolchain is only known once this target is resolved (all if its
   // dependencies are known). They will be null until then. Generally, this can
   // only be used during target writing.
@@ -284,6 +292,7 @@ class Target : public Item {
   bool CheckVisibility(Err* err) const;
   bool CheckTestonly(Err* err) const;
   bool CheckNoNestedStaticLibs(Err* err) const;
+  bool CheckAssertNoDeps(Err* err) const;
   void CheckSourcesGenerated() const;
   void CheckSourceGenerated(const SourceFile& source) const;
 
@@ -323,6 +332,8 @@ class Target : public Item {
   // All hard deps from this target and all dependencies. Filled in when this
   // target is marked resolved. This will not include the current target.
   std::set<const Target*> recursive_hard_deps_;
+
+  std::vector<LabelPattern> assert_no_deps_;
 
   // Used for all binary targets. The precompiled header values in this struct
   // will be resolved to the ones to use for this target, if precompiled
