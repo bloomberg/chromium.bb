@@ -24,6 +24,8 @@ class MODULES_EXPORT MediaSession final
 public:
     static MediaSession* create(ExecutionContext*, ExceptionState&);
 
+    WebMediaSession* webMediaSession() { return m_webMediaSession.get(); }
+
     ScriptPromise activate(ScriptState*);
     ScriptPromise deactivate(ScriptState*);
 

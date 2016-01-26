@@ -316,7 +316,8 @@ blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
-    const blink::WebString& sink_id) {
+    const blink::WebString& sink_id,
+    blink::WebMediaSession* media_session) {
   return global_state()->media_factory()->CreateMediaPlayer(
       frame, url, client, encrypted_client, initial_cdm, GetApp()->shell());
 }

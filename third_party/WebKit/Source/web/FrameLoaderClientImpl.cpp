@@ -58,6 +58,7 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
+#include "modules/mediasession/HTMLMediaElementMediaSession.h"
 #include "modules/mediasession/MediaSession.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/storage/DOMWindowStorageController.h"
@@ -818,11 +819,15 @@ PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
     if (!webFrame || !webFrame->client())
         return nullptr;
 
+    WebMediaSession* webMediaSession = nullptr;
+    if (MediaSession* mediaSession = HTMLMediaElementMediaSession::session(htmlMediaElement))
+        webMediaSession = mediaSession->webMediaSession();
+
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
     return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, loadType, url,
         client, &encryptedMedia,
-        encryptedMedia.contentDecryptionModule(), sinkId));
+        encryptedMedia.contentDecryptionModule(), sinkId, webMediaSession));
 }
 
 PassOwnPtr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()
