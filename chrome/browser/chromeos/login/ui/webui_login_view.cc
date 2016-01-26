@@ -309,9 +309,9 @@ void WebUILoginView::OnPostponedShow() {
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
   if (ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
     ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+    tray->SetVisible(visible);
     if (visible) {
       // Tray may have been initialized being hidden.
-      tray->SetVisible(visible);
       tray->GetWidget()->Show();
     } else {
       tray->GetWidget()->Hide();
