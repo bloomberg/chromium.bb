@@ -29,13 +29,10 @@ WiFiDisplaySession::WiFiDisplaySession(
           &WiFiDisplaySession::OnConnectionError,
           weak_factory_.GetWeakPtr()));
 
-  WiFiDisplaySessionServiceClientPtr client_ptr;
-  binding_.Bind(GetProxy(&client_ptr));
+  service_->SetClient(binding_.CreateInterfacePtrAndBind());
   binding_.set_connection_error_handler(base::Bind(
           &WiFiDisplaySession::OnConnectionError,
           weak_factory_.GetWeakPtr()));
-  DCHECK(client_ptr);
-  service_->SetClient(std::move(client_ptr));
 }
 
 WiFiDisplaySession::~WiFiDisplaySession() {

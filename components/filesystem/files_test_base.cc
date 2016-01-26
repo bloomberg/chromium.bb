@@ -28,11 +28,9 @@ void FilesTestBase::OnFileSystemShutdown() {
 }
 
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
-  filesystem::FileSystemClientPtr client;
-  binding_.Bind(GetProxy(&client));
-
   FileError error = FileError::FAILED;
-  files()->OpenFileSystem("temp", GetProxy(directory), std::move(client),
+  files()->OpenFileSystem("temp", GetProxy(directory),
+                          binding_.CreateInterfacePtrAndBind(),
                           mojo::Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(FileError::OK, error);

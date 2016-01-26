@@ -80,9 +80,7 @@ ArcImeIpcHostImpl::~ArcImeIpcHostImpl() {
 }
 
 void ArcImeIpcHostImpl::OnImeInstanceReady() {
-  arc::ImeHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  bridge_service_->ime_instance()->Init(std::move(host));
+  bridge_service_->ime_instance()->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcImeIpcHostImpl::SendSetCompositionText(

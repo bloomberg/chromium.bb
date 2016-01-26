@@ -76,9 +76,7 @@ MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
 
-  interfaces::ContentDecryptionModuleClientPtr client_ptr;
-  binding_.Bind(GetProxy(&client_ptr));
-  remote_cdm_->SetClient(std::move(client_ptr));
+  remote_cdm_->SetClient(binding_.CreateInterfacePtrAndBind());
 }
 
 MojoCdm::~MojoCdm() {

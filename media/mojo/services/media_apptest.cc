@@ -101,14 +101,11 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
     interfaces::DemuxerStreamPtr video_stream;
     new MojoDemuxerStreamImpl(&video_demuxer_stream_, GetProxy(&video_stream));
 
-    interfaces::RendererClientPtr client_ptr;
-    renderer_client_binding_.Bind(GetProxy(&client_ptr));
-
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
-    renderer_->Initialize(std::move(client_ptr), nullptr,
-                          std::move(video_stream),
+    renderer_->Initialize(renderer_client_binding_.CreateInterfacePtrAndBind(),
+                          nullptr, std::move(video_stream),
                           base::Bind(&MediaAppTest::OnRendererInitialized,
                                      base::Unretained(this)));
   }

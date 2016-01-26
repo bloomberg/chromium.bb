@@ -421,9 +421,7 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
 
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&presentation_service_));
-  presentation::PresentationServiceClientPtr client_ptr;
-  binding_.Bind(GetProxy(&client_ptr));
-  presentation_service_->SetClient(std::move(client_ptr));
+  presentation_service_->SetClient(binding_.CreateInterfacePtrAndBind());
 }
 
 void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {

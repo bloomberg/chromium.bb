@@ -23,9 +23,7 @@ void DevToolsAgentHost::SetDelegate(Delegate* delegate) {
     if (binding_.is_bound())
       return;
 
-    DevToolsAgentClientPtr client;
-    binding_.Bind(&client);
-    agent_->SetClient(std::move(client));
+    agent_->SetClient(binding_.CreateInterfacePtrAndBind());
   } else {
     if (!binding_.is_bound())
       return;

@@ -88,11 +88,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     mojom::ApplicationManagerPtr application_manager;
     application_impl()->ConnectToService("mojo:shell", &application_manager);
 
-    mojom::ApplicationManagerListenerPtr listener;
-    InterfaceRequest<mojom::ApplicationManagerListener> request =
-        GetProxy(&listener);
-    application_manager->AddListener(std::move(listener));
-    binding_.Bind(std::move(request));
+    application_manager->AddListener(binding_.CreateInterfacePtrAndBind());
     binding_.WaitForIncomingMethodCall();
   }
 

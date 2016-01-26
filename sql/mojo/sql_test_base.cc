@@ -139,12 +139,10 @@ void SQLTestBase::SetUp() {
 
   application_impl()->ConnectToService("mojo:filesystem", &files_);
 
-  filesystem::FileSystemClientPtr client;
-  binding_.Bind(GetProxy(&client));
-
   filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;
-  files()->OpenFileSystem("temp", GetProxy(&directory), std::move(client),
+  files()->OpenFileSystem("temp", GetProxy(&directory),
+                          binding_.CreateInterfacePtrAndBind(),
                           Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(filesystem::FileError::OK, error);

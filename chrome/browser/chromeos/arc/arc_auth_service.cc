@@ -18,9 +18,8 @@ ArcAuthService::~ArcAuthService() {
 }
 
 void ArcAuthService::OnAuthInstanceReady() {
-  arc::AuthHostPtr host;
-  binding_.Bind(GetProxy(&host));
-  arc_bridge_service()->auth_instance()->Init(std::move(host));
+  arc_bridge_service()->auth_instance()->Init(
+      binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {

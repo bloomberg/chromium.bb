@@ -281,9 +281,7 @@ void ArcAppListPrefs::OnAppInstanceReady() {
     return;
   }
 
-  arc::AppHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  app_instance->Init(std::move(host));
+  app_instance->Init(binding_.CreateInterfacePtrAndBind());
   app_instance->RefreshAppList();
 }
 

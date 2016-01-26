@@ -53,10 +53,9 @@ ApplicationInstance::~ApplicationInstance() {
 }
 
 void ApplicationInstance::InitializeApplication() {
-  ShellPtr shell;
-  binding_.Bind(GetProxy(&shell));
+  application_->Initialize(binding_.CreateInterfacePtrAndBind(),
+                           identity_.url().spec());
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
-  application_->Initialize(std::move(shell), identity_.url().spec());
 }
 
 void ApplicationInstance::ConnectToClient(

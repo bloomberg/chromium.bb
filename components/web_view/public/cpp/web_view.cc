@@ -24,14 +24,10 @@ WebView::WebView(mojom::WebViewClient* client) : binding_(client) {}
 WebView::~WebView() {}
 
 void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
-  mojom::WebViewClientPtr client;
-  mojo::InterfaceRequest<mojom::WebViewClient> client_request =
-      GetProxy(&client);
-  binding_.Bind(std::move(client_request));
-
   mojom::WebViewFactoryPtr factory;
   app->ConnectToService("mojo:web_view", &factory);
-  factory->CreateWebView(std::move(client), GetProxy(&web_view_));
+  factory->CreateWebView(binding_.CreateInterfacePtrAndBind(),
+                         GetProxy(&web_view_));
 
   mus::mojom::WindowTreeClientPtr window_tree_client;
   web_view_->GetWindowTreeClient(GetProxy(&window_tree_client));

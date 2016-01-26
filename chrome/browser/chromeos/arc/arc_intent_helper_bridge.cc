@@ -25,9 +25,8 @@ ArcIntentHelperBridge::~ArcIntentHelperBridge() {
 }
 
 void ArcIntentHelperBridge::OnIntentHelperInstanceReady() {
-  IntentHelperHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  arc_bridge_service()->intent_helper_instance()->Init(std::move(host));
+  arc_bridge_service()->intent_helper_instance()->Init(
+      binding_.CreateInterfacePtrAndBind());
   settings_bridge_.reset(new SettingsBridge(this));
 }
 

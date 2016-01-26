@@ -101,9 +101,7 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
   instance_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeServiceImpl::OnChannelClosed, weak_factory_.GetWeakPtr()));
 
-  ArcBridgeHostPtr host;
-  binding_.Bind(GetProxy(&host));
-  instance_ptr_->Init(std::move(host));
+  instance_ptr_->Init(binding_.CreateInterfacePtrAndBind());
 
   SetState(State::READY);
 }

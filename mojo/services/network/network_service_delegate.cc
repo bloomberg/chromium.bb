@@ -98,13 +98,10 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   // apptests are also fairly resistant to being run under gdb on android.
   app_->ConnectToService("mojo:filesystem", &files_);
 
-  filesystem::FileSystemClientPtr client;
-  binding_.Bind(GetProxy(&client));
-
   filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;
-  files_->OpenFileSystem("origin", GetProxy(&directory), std::move(client),
-                         Capture(&error));
+  files_->OpenFileSystem("origin", GetProxy(&directory),
+                         binding_.CreateInterfacePtrAndBind(), Capture(&error));
   files_.WaitForIncomingResponse();
 
   io_worker_thread_.reset(new SQLThread(std::move(directory)));

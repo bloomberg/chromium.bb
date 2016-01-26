@@ -32,9 +32,8 @@ void ArcVideoBridge::OnStateChanged(arc::ArcBridgeService::State state) {
 }
 
 void ArcVideoBridge::OnVideoInstanceReady() {
-  arc::VideoHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  arc_bridge_service()->video_instance()->Init(std::move(host));
+  arc_bridge_service()->video_instance()->Init(
+      binding_.CreateInterfacePtrAndBind());
 }
 
 }  // namespace arc

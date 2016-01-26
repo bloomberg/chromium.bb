@@ -84,11 +84,9 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
       make_scoped_ptr(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
           mojo::GetProxy(&window_manager))));
   user_window_controller_.reset(new UserWindowControllerImpl());
-  mus::mojom::WindowTreeHostClientPtr host_client;
-  host_client_binding_.Bind(GetProxy(&host_client));
-  mus::CreateSingleWindowTreeHost(app, std::move(host_client), this,
-                                  &window_tree_host_, std::move(window_manager),
-                                  window_manager_.get());
+  mus::CreateSingleWindowTreeHost(
+      app, host_client_binding_.CreateInterfacePtrAndBind(), this,
+      &window_tree_host_, std::move(window_manager), window_manager_.get());
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(

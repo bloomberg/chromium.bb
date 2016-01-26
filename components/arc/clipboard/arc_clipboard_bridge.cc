@@ -46,9 +46,7 @@ void ArcClipboardBridge::OnClipboardInstanceReady() {
     return;
   }
 
-  ClipboardHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  clipboard_instance->Init(std::move(host));
+  clipboard_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcClipboardBridge::SetTextContent(const mojo::String& text) {

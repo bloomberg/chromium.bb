@@ -61,9 +61,7 @@ class FrameDevToolsAgent::FrameDevToolsAgentClient
     if (binding_.is_bound())
       binding_.Close();
 
-    DevToolsAgentClientPtr client;
-    binding_.Bind(&client);
-    owner_->forward_agent_->SetClient(std::move(client));
+    owner_->forward_agent_->SetClient(binding_.CreateInterfacePtrAndBind());
   }
 
  private:
@@ -126,9 +124,7 @@ void FrameDevToolsAgent::RegisterAgentIfNecessary() {
   DevToolsRegistryPtr devtools_registry;
   app_->ConnectToService("mojo:devtools_service", &devtools_registry);
 
-  DevToolsAgentPtr agent;
-  binding_.Bind(&agent);
-  devtools_registry->RegisterAgent(id_, std::move(agent));
+  devtools_registry->RegisterAgent(id_, binding_.CreateInterfacePtrAndBind());
 }
 
 void FrameDevToolsAgent::HandlePageNavigateRequest(

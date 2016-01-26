@@ -251,9 +251,7 @@ class WindowAndFrame : public mus::WindowTreeDelegate {
   }
 
   mojom::FrameClientPtr GetFrameClientPtr() {
-    mojom::FrameClientPtr client_ptr;
-    frame_client_binding_.Bind(GetProxy(&client_ptr));
-    return client_ptr;
+    return frame_client_binding_.CreateInterfacePtrAndBind();
   }
 
   void Bind(mojo::InterfaceRequest<mojom::FrameClient> request) {

@@ -55,12 +55,10 @@ class VFSTest : public mojo::test::ApplicationTestBase,
 
     application_impl()->ConnectToService("mojo:filesystem", &files_);
 
-    filesystem::FileSystemClientPtr client;
-    binding_.Bind(GetProxy(&client));
-
     filesystem::FileError error = filesystem::FileError::FAILED;
     filesystem::DirectoryPtr directory;
-    files_->OpenFileSystem("temp", GetProxy(&directory), std::move(client),
+    files_->OpenFileSystem("temp", GetProxy(&directory),
+                           binding_.CreateInterfacePtrAndBind(),
                            mojo::Capture(&error));
     ASSERT_TRUE(files_.WaitForIncomingResponse());
     ASSERT_EQ(filesystem::FileError::OK, error);

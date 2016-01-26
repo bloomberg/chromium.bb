@@ -35,9 +35,7 @@ void ArcPowerBridge::OnPowerInstanceReady() {
     return;
   }
 
-  PowerHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  power_instance->Init(std::move(host));
+  power_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcPowerBridge::OnAcquireDisplayWakeLock(

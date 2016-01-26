@@ -29,9 +29,7 @@ void ArcNotificationManager::OnNotificationsInstanceReady() {
     return;
   }
 
-  NotificationsHostPtr host;
-  binding_.Bind(mojo::GetProxy(&host));
-  notifications_instance->Init(std::move(host));
+  notifications_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
