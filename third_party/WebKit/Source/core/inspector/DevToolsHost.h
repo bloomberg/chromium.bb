@@ -77,10 +77,7 @@ public:
     void clearMenuProvider() { m_menuProvider = nullptr; }
 
 private:
-    friend class FrontendMenuProvider;
-
     DevToolsHost(InspectorFrontendClient*, LocalFrame* frontendFrame);
-    void evaluateScript(const String&);
 
     InspectorFrontendClient* m_client;
     RawPtrWillBeMember<LocalFrame> m_frontendFrame;
