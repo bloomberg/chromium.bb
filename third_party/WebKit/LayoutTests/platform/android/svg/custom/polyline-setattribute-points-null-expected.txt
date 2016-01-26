@@ -1,4 +1,4 @@
-CONSOLE ERROR: Error: <polyline> attribute points: Expected number, "undefined".
+CONSOLE ERROR: Error: Invalid value for <polyline> attribute points="undefined"
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600

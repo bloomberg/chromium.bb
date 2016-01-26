@@ -1,2 +1,2 @@
-CONSOLE ERROR: line 1: Error: Invalid value for <polygon> attribute points="foo"
+CONSOLE ERROR: line 1: Error: <polygon> attribute points: Expected number, "foo".
 This test passes if it doesn't crash.

@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 4: Error: <polyline> attribute points: Expected number, "…100, 100 0, 100 INF INF".
+CONSOLE ERROR: line 4: Error: Invalid value for <polyline> attribute points="0, 0 100,0 100, 100 0, 100 INF INF"
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600

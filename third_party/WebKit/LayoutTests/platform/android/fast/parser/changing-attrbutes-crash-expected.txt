@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 1: Error: Invalid value for <polygon> attribute points="foo"
+This test passes if it doesn't crash.

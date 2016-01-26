@@ -1,5 +1,5 @@
-CONSOLE ERROR: line 5: Error: <polyline> attribute points: Unexpected end of attribute. Expected number, "0".
-CONSOLE ERROR: Error: <polyline> attribute points: Unexpected end of attribute. Expected number, "0".
+CONSOLE ERROR: line 5: Error: Invalid value for <polyline> attribute points="0"
+CONSOLE ERROR: Error: Invalid value for <polyline> attribute points="0"
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
