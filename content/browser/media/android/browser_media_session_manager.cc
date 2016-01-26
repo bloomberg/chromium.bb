@@ -6,6 +6,8 @@
 
 #include "content/common/media/media_session_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/media_metadata.h"
 
 namespace content {
 
@@ -21,6 +23,27 @@ void BrowserMediaSessionManager::OnActivate(int session_id, int request_id) {
 void BrowserMediaSessionManager::OnDeactivate(int session_id, int request_id) {
   NOTIMPLEMENTED();
   Send(new MediaSessionMsg_DidDeactivate(GetRoutingID(), request_id));
+}
+
+void BrowserMediaSessionManager::OnSetMetadata(
+    int session_id,
+    const MediaMetadata& insecure_metadata) {
+  // When receiving a MediaMetadata, the browser process can't trust that it is
+  // coming from a known and secure source. It must be processed accordingly.
+  MediaMetadata metadata;
+  metadata.title =
+      insecure_metadata.title.substr(0, MediaMetadata::kMaxIPCStringLength);
+  metadata.artist =
+      insecure_metadata.artist.substr(0, MediaMetadata::kMaxIPCStringLength);
+  metadata.album =
+      insecure_metadata.album.substr(0, MediaMetadata::kMaxIPCStringLength);
+
+  if (metadata != insecure_metadata) {
+    render_frame_host_->GetProcess()->ShutdownForBadMessage();
+    return;
+  }
+
+  NOTIMPLEMENTED();
 }
 
 int BrowserMediaSessionManager::GetRoutingID() const {

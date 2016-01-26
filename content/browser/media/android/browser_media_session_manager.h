@@ -14,6 +14,7 @@ class Message;
 namespace content {
 
 class RenderFrameHost;
+struct MediaMetadata;
 
 class BrowserMediaSessionManager {
  public:
@@ -22,6 +23,7 @@ class BrowserMediaSessionManager {
   // Message handlers.
   void OnActivate(int session_id, int request_id);
   void OnDeactivate(int session_id, int request_id);
+  void OnSetMetadata(int session_id, const MediaMetadata& metadata);
 
   int GetRoutingID() const;
 

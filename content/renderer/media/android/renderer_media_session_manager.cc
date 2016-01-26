@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/common/media/media_session_messages_android.h"
+#include "content/public/common/media_metadata.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/android/webmediasession_android.h"
 
@@ -57,6 +58,23 @@ void RendererMediaSessionManager::Deactivate(
   int request_id = pending_deactivation_requests_.Add(callback.release());
   Send(
       new MediaSessionHostMsg_Deactivate(routing_id(), session_id, request_id));
+}
+
+void RendererMediaSessionManager::SetMetadata(
+    int session_id,
+    const MediaMetadata& metadata) {
+  // Apply some sanity checks on the MediaMetadata before sending over IPC.
+  MediaMetadata ipc_metadata;
+  ipc_metadata.title =
+      metadata.title.substr(0, MediaMetadata::kMaxIPCStringLength);
+  ipc_metadata.artist =
+      metadata.artist.substr(0, MediaMetadata::kMaxIPCStringLength);
+  ipc_metadata.album =
+      metadata.album.substr(0, MediaMetadata::kMaxIPCStringLength);
+
+  Send(new MediaSessionHostMsg_SetMetadata(routing_id(),
+                                           session_id,
+                                           ipc_metadata));
 }
 
 void RendererMediaSessionManager::OnDidActivate(int request_id, bool success) {

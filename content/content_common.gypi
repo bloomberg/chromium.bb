@@ -87,6 +87,8 @@
       'public/common/main_function_params.h',
       'public/common/manifest.cc',
       'public/common/manifest.h',
+      'public/common/media_metadata.cc',
+      'public/common/media_metadata.h',
       'public/common/media_stream_request.cc',
       'public/common/media_stream_request.h',
       'public/common/menu_item.cc',

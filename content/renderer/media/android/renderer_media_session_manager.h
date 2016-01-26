@@ -16,6 +16,7 @@
 namespace content {
 
 class WebMediaSessionAndroid;
+struct MediaMetadata;
 
 class CONTENT_EXPORT RendererMediaSessionManager : public RenderFrameObserver {
  public:
@@ -33,6 +34,7 @@ class CONTENT_EXPORT RendererMediaSessionManager : public RenderFrameObserver {
   void Deactivate(
       int session_id,
       scoped_ptr<blink::WebMediaSessionDeactivateCallback> callback);
+  void SetMetadata(int session_id, const MediaMetadata& metadata);
 
   void OnDidActivate(int request_id, bool success);
   void OnDidDeactivate(int request_id);

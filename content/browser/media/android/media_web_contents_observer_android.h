@@ -56,6 +56,9 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   bool OnMediaPlayerSetCdmMessageReceived(const IPC::Message& message,
                                           RenderFrameHost* render_frame_host);
 
+  bool OnMediaSessionMessageReceived(const IPC::Message& message,
+                                     RenderFrameHost* render_frame_host);
+
   void OnSetCdm(RenderFrameHost* render_frame_host, int player_id, int cdm_id);
 
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.

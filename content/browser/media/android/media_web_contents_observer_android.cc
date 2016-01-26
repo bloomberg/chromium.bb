@@ -96,7 +96,13 @@ bool MediaWebContentsObserverAndroid::OnMessageReceived(
   if (OnMediaPlayerMessageReceived(msg, render_frame_host))
     return true;
 
-  return OnMediaPlayerSetCdmMessageReceived(msg, render_frame_host);
+  if (OnMediaPlayerSetCdmMessageReceived(msg, render_frame_host))
+    return true;
+
+  if (OnMediaSessionMessageReceived(msg, render_frame_host))
+    return true;
+
+  return false;
 }
 
 bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
@@ -143,12 +149,6 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnNotifyExternalSurface)
 #endif  // defined(VIDEO_HOLE)
-    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Activate,
-                        GetMediaSessionManager(render_frame_host),
-                        BrowserMediaSessionManager::OnActivate)
-    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Deactivate,
-                        GetMediaSessionManager(render_frame_host),
-                        BrowserMediaSessionManager::OnDeactivate)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -163,6 +163,27 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerSetCdmMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetCdm, OnSetCdm)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+bool MediaWebContentsObserverAndroid::OnMediaSessionMessageReceived(
+    const IPC::Message& msg,
+    RenderFrameHost* render_frame_host) {
+  bool handled = true;
+
+  IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserver, msg)
+    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Activate,
+                        GetMediaSessionManager(render_frame_host),
+                        BrowserMediaSessionManager::OnActivate)
+    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Deactivate,
+                        GetMediaSessionManager(render_frame_host),
+                        BrowserMediaSessionManager::OnDeactivate)
+    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_SetMetadata,
+                        GetMediaSessionManager(render_frame_host),
+                        BrowserMediaSessionManager::OnSetMetadata)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 

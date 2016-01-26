@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/common/media_metadata.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
+#include "third_party/WebKit/public/platform/modules/mediasession/WebMediaMetadata.h"
 
 namespace content {
 
@@ -32,8 +34,15 @@ void WebMediaSessionAndroid::deactivate(
 }
 
 void WebMediaSessionAndroid::setMetadata(
-    const blink::WebMediaMetadata* metadata) {
-  NOTIMPLEMENTED();
+    const blink::WebMediaMetadata* web_metadata) {
+  MediaMetadata metadata;
+  if (web_metadata) {
+    metadata.title = web_metadata->title;
+    metadata.artist = web_metadata->artist;
+    metadata.album = web_metadata->album;
+  }
+
+  session_manager_->SetMetadata(session_id_, metadata);
 }
 
 }  // namespace content
