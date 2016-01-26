@@ -9,6 +9,7 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_base_unittests',
+      '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '../build/config/',
