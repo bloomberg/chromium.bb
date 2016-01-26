@@ -75,6 +75,9 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    // Promptly finalize m_loader.
+    EAGERLY_FINALIZE();
+
 protected:
     PingLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
 
