@@ -326,9 +326,6 @@ crbug.com/576589 [ XP ] fast/repaint/change-text-content-and-background-color.ht
 crbug.com/576589 [ XP ] fast/repaint/multi-layout-one-frame.html [ NeedsRebaseline ]
 crbug.com/576589 [ XP ] fast/repaint/subtree-root-skipped.html [ NeedsRebaseline ]
 crbug.com/576589 [ XP ] fast/text/international/mixed-directionality-selection.html [ NeedsRebaseline ]
-crbug.com/576589 [ Mac10.10 ] tables/mozilla/bugs/bug46368-1.html [ NeedsRebaseline ]
-crbug.com/576589 [ Mac10.10 ] tables/mozilla/bugs/bug46368-2.html [ NeedsRebaseline ]
-crbug.com/576589 [ Mac10.10 ] tables/mozilla/dom/tableDom.html [ NeedsRebaseline ]
 crbug.com/579381 fast/forms/text/input-placeholder-paint-order.html [ NeedsRebaseline ]
 
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
@@ -1509,7 +1506,7 @@ crbug.com/568559 [ Android Linux Win ] fast/forms/select-popup/popup-menu-appear
 crbug.com/568559 [ Android Linux Win ] fast/text/emphasis-vertical.html [ NeedsRebaseline ]
 crbug.com/568559 [ Android Linux Win ] fast/html/keygen.html [ NeedsRebaseline ]
 crbug.com/568559 [ Android Linux Win ] fast/replaced/three-selects-break.html [ NeedsRebaseline ]
-crbug.com/568559 [ Android Linux Win ] tables/mozilla/dom/tableDom.html [ NeedsRebaseline ]
+crbug.com/568559 [ XP ] tables/mozilla/dom/tableDom.html [ NeedsRebaseline ]
 crbug.com/568559 [ Android Linux Win ] css3/selectors3/xml/css3-modsel-161.xml [ NeedsRebaseline ]
 crbug.com/568559 [ Android Linux Win ] fast/writing-mode/english-lr-text.html [ NeedsRebaseline ]
 crbug.com/568559 [ Android Linux Win ] tables/mozilla/bugs/bug2479-4.html [ NeedsRebaseline ]
