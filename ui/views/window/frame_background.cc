@@ -51,7 +51,8 @@ void FrameBackground::SetCornerImages(const gfx::ImageSkia* top_left,
   bottom_right_corner_ = bottom_right;
 }
 
-void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
+void FrameBackground::PaintRestored(gfx::Canvas* canvas,
+                                    const View* view) const {
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
   PaintFrameColor(canvas, view);
@@ -119,7 +120,8 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
                        left_edge_->width(), left_edge_height);
 }
 
-void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
+void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
+                                     const View* view) const {
   // We will be painting from -|maximized_top_inset_| to
   // -|maximized_top_inset_| + |theme_image_|->height(). If this is less than
   // |top_area_height_|, we need to paint the frame color to fill in the area
@@ -141,7 +143,8 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
     canvas->DrawImageInt(*theme_overlay_image_, 0, -maximized_top_inset_);
 }
 
-void FrameBackground::PaintFrameColor(gfx::Canvas* canvas, View* view) const {
+void FrameBackground::PaintFrameColor(gfx::Canvas* canvas,
+                                      const View* view) const {
   // Fill the top area.
   canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
                    frame_color_);

@@ -303,7 +303,7 @@ int GlassBrowserFrameView::NonClientBorderThickness(bool restored) const {
   if ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored)
     return 0;
 
-  return (base::win::GetVersion() <= base::win::VERSION_WIN8_1)
+  return (base::win::GetVersion() < base::win::VERSION_WIN10)
              ? kNonClientBorderThicknessPreWin10
              : kNonClientBorderThicknessWin10;
 }
@@ -331,7 +331,7 @@ bool GlassBrowserFrameView::IsToolbarVisible() const {
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
 }
 
-void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
+void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   if (toolbar_bounds.IsEmpty())
     return;
@@ -436,7 +436,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   }
 }
 
-void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
+void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   gfx::Rect client_bounds = CalculateClientAreaBounds();
   int y = client_bounds.y();
   const bool normal_mode = browser_view()->IsTabStripVisible();

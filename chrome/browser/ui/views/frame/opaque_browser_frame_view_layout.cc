@@ -42,14 +42,6 @@ const int kIconLeftSpacing = 2;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
 
-// The avatar ends 2 px above the bottom of the tabstrip (which, given the
-// way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
-// user).
-const int kAvatarBottomSpacing = 2;
-
-// Space between the frame border and the edge of the avatar.
-const int kAvatarOuterSpacing = 2;
-
 // Space between the edge of the avatar and the tabstrip.
 const int kAvatarInnerSpacing = 4;
 
@@ -71,14 +63,6 @@ const int kNewTabCaptionCondensedSpacing = 16;
 // reserve a small 5px gap, regardless of whether the window is maximized. This
 // overrides the two previous constants.
 const int kNewTabNoCaptionButtonsSpacing = 5;
-
-// The top 3 px of the tabstrip is shadow; in maximized mode we push this off
-// the top of the screen so the tabs appear flush against the screen edge.
-const int kTabstripTopShadowThickness = 3;
-
-// How far to indent the tabstrip from the left side of the screen when there
-// is no avatar icon.
-const int kTabStripIndent = -6;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Default extra space between the top of the frame and the top of the window
@@ -132,19 +116,13 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
     const gfx::Size& tabstrip_preferred_size,
     int available_width) const {
-  available_width -= trailing_button_start_;
-  available_width -= leading_button_start_;
-
-  const int caption_spacing = NewTabCaptionSpacing();
-  const int tabstrip_width = available_width - caption_spacing;
-  gfx::Rect bounds(leading_button_start_, GetTabStripInsetsTop(false),
-                   std::max(0, tabstrip_width),
+  int x = leading_button_start_ + GetLayoutInsets(AVATAR_ICON).right();
+  available_width -= x + NewTabCaptionSpacing() + trailing_button_start_;
+  gfx::Rect bounds(x, GetTabStripInsetsTop(false), std::max(0, available_width),
                    tabstrip_preferred_size.height());
 
-  int leading_tabstrip_indent = kTabStripIndent;
-  if (delegate_->ShouldShowAvatar() && !ShouldAvatarBeOnRight())
-    leading_tabstrip_indent += kAvatarInnerSpacing;
-  bounds.Inset(leading_tabstrip_indent, 0, 0, 0);
+  if (delegate_->ShouldShowAvatar() && !ShouldIncognitoIconBeOnRight())
+    bounds.Inset(kAvatarInnerSpacing, 0, 0, 0);
   return bounds;
 }
 
@@ -265,9 +243,9 @@ bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, private:
 
-bool OpaqueBrowserFrameViewLayout::ShouldAvatarBeOnRight() const {
-  // The avatar should be shown either on the end of the left or the beginning
-  // of the right depending on which side has fewer buttons.
+bool OpaqueBrowserFrameViewLayout::ShouldIncognitoIconBeOnRight() const {
+  // The incognito should be shown either on the end of the left or the
+  // beginning of the right, depending on which side has fewer buttons.
   return trailing_buttons_.size() < leading_buttons_.size();
 }
 
@@ -405,41 +383,30 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
                                 kCaptionButtonHeight);
 }
 
-void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
-  // Even though the avatar is used for both incognito and profiles we always
-  // use the incognito icon to layout the avatar button. The profile icon
-  // can be customized so we can't depend on its size to perform layout.
-  gfx::ImageSkia incognito_icon = delegate_->GetOTRAvatarIcon();
+void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
+  const int old_button_size = leading_button_start_ + trailing_button_start_;
 
-  bool avatar_on_right = ShouldAvatarBeOnRight();
-  int avatar_bottom = GetTabStripInsetsTop(false) +
-      delegate_->GetTabStripHeight() - kAvatarBottomSpacing;
-  int avatar_restored_y = avatar_bottom - incognito_icon.height();
-  int avatar_x = avatar_on_right ?
-      host->width() - trailing_button_start_ - kAvatarOuterSpacing -
-          incognito_icon.width() :
-      leading_button_start_ + kAvatarOuterSpacing;
-  int avatar_y = IsTitleBarCondensed() ?
-      (NonClientTopBorderHeight(false) + kTabstripTopShadowThickness) :
-      avatar_restored_y;
-  avatar_bounds_.SetRect(
-      avatar_x,
-      avatar_y,
-      incognito_icon.width(),
-      delegate_->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
   if (avatar_button_) {
-    avatar_button_->SetBoundsRect(avatar_bounds_);
-
-    int edge_offset = kAvatarOuterSpacing + incognito_icon.width();
-    if (avatar_on_right)
-      trailing_button_start_ += edge_offset;
-    else
-      leading_button_start_ += edge_offset;
-
-    // We just add the avatar button size to the minimum size because clicking
-    // the avatar label does the same thing as clicking the avatar button.
-    minimum_size_for_buttons_ += kAvatarOuterSpacing + incognito_icon.width();
+    const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
+    const gfx::Size size(delegate_->GetOTRAvatarIcon().size());
+    const int incognito_width = insets.left() + size.width();
+    int x;
+    if (ShouldIncognitoIconBeOnRight()) {
+      trailing_button_start_ += incognito_width;
+      x = host->width() - trailing_button_start_;
+    } else {
+      x = leading_button_start_ + insets.left();
+      leading_button_start_ += incognito_width;
+    }
+    const int bottom = GetTabStripInsetsTop(false) +
+        delegate_->GetTabStripHeight() - insets.bottom();
+    int y = IsTitleBarCondensed() ?
+        FrameBorderThickness(false) : (bottom - size.height());
+    avatar_button_->SetBounds(x, y, size.width(), bottom - y);
   }
+
+  minimum_size_for_buttons_ +=
+      (leading_button_start_ + trailing_button_start_ - old_button_size);
 }
 
 void OpaqueBrowserFrameViewLayout::ConfigureButton(
@@ -647,7 +614,7 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   if (delegate_->IsRegularOrGuestSession())
     LayoutNewStyleAvatar(host);
   else
-    LayoutAvatar(host);
+    LayoutIncognitoIcon(host);
 
   client_view_bounds_ = CalculateClientAreaBounds(
       host->width(), host->height());

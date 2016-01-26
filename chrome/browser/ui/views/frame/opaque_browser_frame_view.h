@@ -140,10 +140,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
   // and titlebar background are a contiguous component.
-  void PaintRestoredFrameBorder(gfx::Canvas* canvas);
-  void PaintMaximizedFrameBorder(gfx::Canvas* canvas);
-  void PaintToolbarBackground(gfx::Canvas* canvas);
-  void PaintClientEdge(gfx::Canvas* canvas);
+  void PaintRestoredFrameBorder(gfx::Canvas* canvas) const;
+  void PaintMaximizedFrameBorder(gfx::Canvas* canvas) const;
+  void PaintToolbarBackground(gfx::Canvas* canvas) const;
+  void PaintClientEdge(gfx::Canvas* canvas) const;
   void FillClientEdgeRects(int x,
                            int y,
                            int right,

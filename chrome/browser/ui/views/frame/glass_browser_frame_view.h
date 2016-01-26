@@ -75,8 +75,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   bool IsToolbarVisible() const;
 
   // Paint various sub-components of this view.
-  void PaintToolbarBackground(gfx::Canvas* canvas);
-  void PaintClientEdge(gfx::Canvas* canvas);
+  void PaintToolbarBackground(gfx::Canvas* canvas) const;
+  void PaintClientEdge(gfx::Canvas* canvas) const;
   void FillClientEdgeRects(int x,
                            int y,
                            int right,

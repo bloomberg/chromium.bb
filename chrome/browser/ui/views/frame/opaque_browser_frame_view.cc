@@ -574,7 +574,8 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
       IsMaximized());
 }
 
-void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
+void OpaqueBrowserFrameView::PaintRestoredFrameBorder(
+    gfx::Canvas* canvas) const {
   frame_background_->set_frame_color(GetFrameColor());
   frame_background_->set_theme_image(GetFrameImage());
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
@@ -599,7 +600,8 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // all this in PaintRestoredClientEdge().
 }
 
-void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
+void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(
+    gfx::Canvas* canvas) const {
   frame_background_->set_frame_color(GetFrameColor());
   frame_background_->set_theme_image(GetFrameImage());
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
@@ -609,7 +611,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   frame_background_->PaintMaximized(canvas, this);
 }
 
-void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
+void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   if (toolbar_bounds.IsEmpty())
     return;
@@ -714,7 +716,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   }
 }
 
-void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
+void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   gfx::Rect client_bounds =
       layout_->CalculateClientAreaBounds(width(), height());
   const int x = client_bounds.x();

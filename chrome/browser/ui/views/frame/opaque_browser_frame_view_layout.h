@@ -107,9 +107,9 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
     ALIGN_TRAILING
   };
 
-  // Determines whether the avatar should be shown on the right side of the tab
-  // strip (instead of the usual left).
-  bool ShouldAvatarBeOnRight() const;
+  // Determines whether the incognito icon should be shown on the right side of
+  // the tab strip (instead of the usual left).
+  bool ShouldIncognitoIconBeOnRight() const;
 
   // Determines the amount of spacing between the New Tab button and the element
   // to its immediate right.
@@ -118,7 +118,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Layout various sub-components of this view.
   void LayoutWindowControls(views::View* host);
   void LayoutTitleBar(views::View* host);
-  void LayoutAvatar(views::View* host);
+  void LayoutIncognitoIcon(views::View* host);
   void LayoutNewStyleAvatar(views::View* host);
 
   void ConfigureButton(views::View* host,
@@ -145,9 +145,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void ViewRemoved(views::View* host, views::View* view) override;
 
   OpaqueBrowserFrameViewLayoutDelegate* delegate_;
-
-  // The layout rect of the avatar icon, if visible.
-  gfx::Rect avatar_bounds_;
 
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
