@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/win/windows_version.h"
 #include "net/base/address_list.h"
 #include "net/base/connection_type_histograms.h"
 #include "net/base/io_buffer.h"
@@ -580,22 +579,6 @@ int TCPSocketWin::SetDefaultOptionsForServer() {
 }
 
 void TCPSocketWin::SetDefaultOptionsForClient() {
-  // Increase the socket buffer sizes from the default sizes for WinXP.  In
-  // performance testing, there is substantial benefit by increasing from 8KB
-  // to 64KB.
-  // See also:
-  //    http://support.microsoft.com/kb/823764/EN-US
-  // On Vista, if we manually set these sizes, Vista turns off its receive
-  // window auto-tuning feature.
-  //    http://blogs.msdn.com/wndp/archive/2006/05/05/Winhec-blog-tcpip-2.aspx
-  // Since Vista's auto-tune is better than any static value we can could set,
-  // only change these on pre-vista machines.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    const int32_t kSocketBufferSize = 64 * 1024;
-    SetSocketReceiveBufferSize(socket_, kSocketBufferSize);
-    SetSocketSendBufferSize(socket_, kSocketBufferSize);
-  }
-
   DisableNagle(socket_, true);
   SetTCPKeepAlive(socket_, true, kTCPKeepAliveSeconds);
 }
