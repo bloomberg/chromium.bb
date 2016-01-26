@@ -81,9 +81,17 @@ cr.define('media_router', function() {
    * Updates the preference that the user has seen the first run flow.
    * Called when the user clicks on the acknowledgement button on the first run
    * flow.
+   *
+   * @param {!Event} event
+   * Parameters in |event|.detail:
+   *   optedIntoCloudServices - whether or not the user opted into cloud
+   *                            services.
    */
-  function onAcknowledgeFirstRunFlow() {
-    media_router.browserApi.acknowledgeFirstRunFlow();
+  function onAcknowledgeFirstRunFlow(event) {
+    /** @type {{optedIntoCloudServices: boolean}} */
+    var detail = event.detail;
+    media_router.browserApi.acknowledgeFirstRunFlow(
+        detail.optedIntoCloudServices);
   }
 
   /**

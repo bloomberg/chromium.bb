@@ -152,6 +152,16 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)
+#if defined(GOOGLE_CHROME_BUILD)
+  registry->RegisterBooleanPref(
+      prefs::kMediaRouterCloudServicesPrefSet,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kMediaRouterEnableCloudServices,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif  // defined(GOOGLE_CHROME_BUILD)
   registry->RegisterBooleanPref(
       prefs::kMediaRouterFirstRunFlowAcknowledged,
       false,

@@ -406,8 +406,14 @@ Polymer({
    * @private
    */
   acknowledgeFirstRunFlow_: function() {
+    var userOptedIntoCloudServices = this.$$('#first-run-cloud-checkbox') ?
+      this.$$('#first-run-cloud-checkbox').checked : false;
+    this.fire('acknowledge-first-run-flow', {
+      optedIntoCloudServices: userOptedIntoCloudServices,
+    });
+
     this.showFirstRunFlow = false;
-    this.fire('acknowledge-first-run-flow');
+    this.showFirstRunFlowCloudPref = false;
   },
 
   /**

@@ -55,7 +55,8 @@ cr.define('media_router.ui', function() {
    *          sinks: !Array<!media_router.Sink>,
    *          routes: !Array<!media_router.Route>,
    *          castModes: !Array<!media_router.CastMode>,
-   *          wasFirstRunFlowAcknowledged: boolean}} data
+   *          wasFirstRunFlowAcknowledged: boolean,
+   *          showFirstRunFlowCloudPref: boolean}} data
    * Parameters in data:
    *   firstRunFlowCloudPrefLearnMoreUrl - url to open when the cloud services
    *       pref learn more link is clicked.
@@ -65,6 +66,8 @@ cr.define('media_router.ui', function() {
    *   castModes - list of available cast modes.
    *   wasFirstRunFlowAcknowledged - true if first run flow was previously
    *       acknowledged by user.
+   *   showFirstRunFlowCloudPref - true if the cloud pref option should be
+   *       shown.
    */
   function setInitialData(data) {
     container.firstRunFlowCloudPrefLearnMoreUrl =
@@ -74,6 +77,8 @@ cr.define('media_router.ui', function() {
     container.allSinks = data['sinks'];
     container.routeList = data['routes'];
     container.showFirstRunFlow = !data['wasFirstRunFlowAcknowledged'];
+    container.showFirstRunFlowCloudPref =
+        data['showFirstRunFlowCloudPref'];
     container.maybeShowRouteDetailsOnOpen();
     media_router.browserApi.onInitialDataReceived();
   }
@@ -134,9 +139,12 @@ cr.define('media_router.browserApi', function() {
 
   /**
    * Indicates that the user has acknowledged the first run flow.
+   *
+   * @param {boolean} optedIntoCloudServices Whether or not the user opted into
+   *                  cloud services.
    */
-  function acknowledgeFirstRunFlow() {
-    chrome.send('acknowledgeFirstRunFlow');
+  function acknowledgeFirstRunFlow(optedIntoCloudServices) {
+    chrome.send('acknowledgeFirstRunFlow', [optedIntoCloudServices]);
   }
 
   /**

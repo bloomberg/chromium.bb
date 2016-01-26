@@ -173,9 +173,50 @@ cr.define('media_router_container', function() {
         container.showFirstRunFlow = true;
 
         setTimeout(function() {
-          container.addEventListener('acknowledge-first-run-flow', function() {
+          container.addEventListener('acknowledge-first-run-flow',
+              function(data) {
+            assertFalse(data.detail.optedIntoCloudServices);
             done();
           });
+          MockInteractions.tap(container.shadowRoot.getElementById(
+              'first-run-button'));
+        });
+      });
+
+      // Tests for 'acknowledge-first-run-flow' event firing when the
+      // 'first-run-button' button is clicked and the cloud preference checkbox
+      // is also shown.
+      test('first run button with cloud pref click', function(done) {
+        container.showFirstRunFlow = true;
+        container.showFirstRunFlowCloudPref = true;
+
+        setTimeout(function() {
+          container.addEventListener('acknowledge-first-run-flow',
+              function(data) {
+            assertTrue(data.detail.optedIntoCloudServices);
+            done();
+          });
+          MockInteractions.tap(container.shadowRoot.getElementById(
+              'first-run-button'));
+        });
+      });
+
+      // Tests for 'acknowledge-first-run-flow' event firing when the
+      // 'first-run-button' button is clicked after the cloud preference
+      // checkbox is deselected.
+      test('first run button with cloud pref deselected click',
+          function(done) {
+        container.showFirstRunFlow = true;
+        container.showFirstRunFlowCloudPref = true;
+
+        setTimeout(function() {
+          container.addEventListener('acknowledge-first-run-flow',
+              function(data) {
+            assertFalse(data.detail.optedIntoCloudServices);
+            done();
+          });
+          MockInteractions.tap(container.shadowRoot.getElementById(
+              'first-run-cloud-checkbox'));
           MockInteractions.tap(container.shadowRoot.getElementById(
               'first-run-button'));
         });

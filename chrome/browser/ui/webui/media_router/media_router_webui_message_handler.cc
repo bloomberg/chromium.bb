@@ -348,11 +348,24 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
                        media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+
   bool first_run_flow_acknowledged =
-      Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+      profile->GetPrefs()->GetBoolean(
           prefs::kMediaRouterFirstRunFlowAcknowledged);
   initial_data.SetBoolean("wasFirstRunFlowAcknowledged",
                           first_run_flow_acknowledged);
+  bool show_cloud_pref = false;
+#if defined(GOOGLE_CHROME_BUILD)
+  // Cloud services preference is shown if user has sync enabled.
+  // If the user enables sync after acknowledging the first run flow, this is
+  // treated as the user opting into Google services, including cloud services,
+  // if the browser is a Chrome branded build.
+  show_cloud_pref = profile->IsSyncAllowed() &&
+      !profile->GetPrefs()->GetBoolean(
+          prefs::kMediaRouterCloudServicesPrefSet);
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  initial_data.SetBoolean("showFirstRunFlowCloudPref", show_cloud_pref);
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
@@ -414,6 +427,19 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
   DVLOG(1) << "OnAcknowledgeFirstRunFlow";
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kMediaRouterFirstRunFlowAcknowledged, true);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  bool enabled_cloud_services = false;
+  if (!args->GetBoolean(0, &enabled_cloud_services)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
+      prefs::kMediaRouterEnableCloudServices, enabled_cloud_services);
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
+      prefs::kMediaRouterCloudServicesPrefSet, true);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void MediaRouterWebUIMessageHandler::OnActOnIssue(
