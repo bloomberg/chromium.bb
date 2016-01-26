@@ -272,7 +272,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
     @CalledByNative
     public void closeRoute(String routeId) {
         MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
-        assert provider != null;
+        if (provider == null) return;
 
         provider.closeRoute(routeId);
     }
@@ -284,7 +284,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
     @CalledByNative
     public void detachRoute(String routeId) {
         MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
-        assert provider != null;
+        if (provider == null) return;
 
         provider.detachRoute(routeId);
         mRouteIdsToProviders.remove(routeId);
@@ -299,7 +299,10 @@ public class ChromeMediaRouter implements MediaRouteManager {
     @CalledByNative
     public void sendStringMessage(String routeId, String message, int callbackId) {
         MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
-        assert provider != null;
+        if (provider == null) {
+            nativeOnMessageSentResult(mNativeMediaRouterAndroid, false, callbackId);
+            return;
+        }
 
         provider.sendStringMessage(routeId, message, callbackId);
     }
@@ -313,7 +316,10 @@ public class ChromeMediaRouter implements MediaRouteManager {
     @CalledByNative
     public void sendBinaryMessage(String routeId, byte[] data, int callbackId) {
         MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
-        assert provider != null;
+        if (provider == null) {
+            nativeOnMessageSentResult(mNativeMediaRouterAndroid, false, callbackId);
+            return;
+        }
 
         provider.sendBinaryMessage(routeId, data, callbackId);
     }
