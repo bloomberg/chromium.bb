@@ -26,23 +26,32 @@ _JS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'js')
 
 _POLYMER_PATH = os.path.join(
     _SRC_PATH, 'third_party', 'polymer', 'v1_0', 'components-chromium')
-_WEB_ANIMATIONS_PATH = os.path.join(
-    _SRC_PATH, 'third_party', 'web-animations-js', 'sources')
 
 _VULCANIZE_ARGS = [
   '--exclude', 'crisper.js',
+
+  # These files are already combined and minified.
+  '--exclude', 'polymer-extracted.js',
+  '--exclude', 'polymer-micro-extracted.js',
+  '--exclude', 'polymer-mini-extracted.js',
+  '--exclude', 'polymer_config.js',
+  '--exclude', 'web-animations-next-lite.min.js',
+
+  # These files are dynamically created by C++.
   '--exclude', 'load_time_data.js',
   '--exclude', 'strings.js',
   '--exclude', 'text_defaults.css',
+
   '--inline-css',
   '--inline-scripts',
+
   '--redirect', 'chrome://downloads/|%s' % _HERE_PATH,
   '--redirect', 'chrome://resources/cr_elements/|%s' % _CR_ELEMENTS_PATH,
   '--redirect', 'chrome://resources/css/|%s' % _CSS_RESOURCES_PATH,
   '--redirect', 'chrome://resources/html/|%s' % _HTML_RESOURCES_PATH,
   '--redirect', 'chrome://resources/js/|%s' % _JS_RESOURCES_PATH,
-  '--redirect', 'chrome://resources/polymer/v1_0/web-animations-js/|%s' % _WEB_ANIMATIONS_PATH,
   '--redirect', 'chrome://resources/polymer/v1_0/|%s' % _POLYMER_PATH,
+
   '--strip-comments',
 ]
 

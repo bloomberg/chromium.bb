@@ -209,5 +209,4 @@ ui/webui/resources/js/cr/ui/array_data_model.js
 # webkit/.
 components/test_runner/helper/layout_test_helper_mac.mm
 # Bundles of existing code.
-chrome/browser/resources/md_downloads/crisper.js
 chrome/browser/resources/md_downloads/vulcanized.html
