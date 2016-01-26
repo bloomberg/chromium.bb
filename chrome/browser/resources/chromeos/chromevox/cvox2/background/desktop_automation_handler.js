@@ -130,8 +130,8 @@ DesktopAutomationHandler.prototype = {
 
     var node = evt.target;
 
-    // Discard focus events on embeddedObject nodes.
-    if (node.role == RoleType.embeddedObject)
+    // Discard focus events on embeddedObject and client nodes.
+    if (node.role == RoleType.embeddedObject || node.role == RoleType.client)
       return;
 
     // It almost never makes sense to place focus directly on a rootWebArea.
