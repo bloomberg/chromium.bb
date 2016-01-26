@@ -39,7 +39,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 
-#include <iostream>
+#include <ostream>
 
 namespace testing {
 namespace internal {
