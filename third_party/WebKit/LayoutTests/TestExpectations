@@ -147,7 +147,7 @@ crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progr
 
 crbug.com/563650 inspector/elements/css-rule-hover-highlights-selectors.html [ Pass Failure ]
 
-crbug.com/568345 paint/invalidation/invalidate-box-shadow-currentColor.html [ NeedsRebaseline ]
+crbug.com/568345 [ XP ] paint/invalidation/invalidate-box-shadow-currentColor.html [ NeedsRebaseline ]
 
 crbug.com/522641 inspector/elements/styles-4/styles-update-links.html [ Pass Timeout ]
 crbug.com/522645 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure Pass ]
