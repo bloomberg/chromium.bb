@@ -106,7 +106,7 @@ Canvas log:
                 right : 300
                 top : 71
             }
-            softClipEdgeStyle : false
+            softClipEdgeStyle : true
         }
     }
     5 : {
