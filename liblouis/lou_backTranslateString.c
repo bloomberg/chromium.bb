@@ -497,12 +497,14 @@ handleMultind ()
     case CTO_SingleLetterCaps: // FIXME: make sure this works
       found = findBrailleIndicatorRule (table->capitalSign);
       break;
+    // NOTE:  following fixme is based on the names at the time of
+    //        commit f22f91eb510cb4eef33dfb4950a297235dd2f9f1.
     // FIXME: the next two opcodes were begcaps/endcaps,
-    // and they were aliased to capsword/capswordstop.
-    // However, the table attributes they use are
-    // table->beginCapitalSign and table->endCapitalSign.
-    // These are actually compiled with firstlettercaps/lastlettercaps.
-    // Which to use here?
+    //        and they were aliased to opcodes capsword/capswordstop.
+    //        However, the table attributes they use are
+    //        table->beginCapitalSign and table->endCapitalSign.
+    //        These are actually compiled with firstlettercaps/lastlettercaps.
+    //        Which to use here?
     case CTO_FirstLetterCaps:
       found = findBrailleIndicatorRule (table->beginCapitalSign);
       break;

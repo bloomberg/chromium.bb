@@ -24,11 +24,11 @@ include nemethdefs.cti
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
-multind 56-6 letsign singlelettercaps
+multind 56-6 letsign capsletter
 letsign 56
-singlelettercaps 6
-capsword 6-6
-capswordstop 6-3
+capsletter 6
+begcapsword 6-6
+endcapsword 6-3
 emphclass italic
 emphclass underline
 emphclass bold

@@ -149,9 +149,9 @@ sign \x2260 45-2356											not equal to
 #-------------- end defintions ------------------------------------------
 
 
-singlelettercaps 46
+capsletter 46
 # capsword 46-46-136			# uncomment if you don't want capitalization
-capsword 46-46
+begcapsword 46-46
 
 emphclass italic
 emphclass underline

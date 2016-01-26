@@ -103,8 +103,8 @@ sign ¼ 6-16-34-1456			un quart
 sign ½ 6-16-34-126			un demi		
 sign ¾ 6-126-34-1456		trois quarts   
 
-singlelettercaps 46								indicateur de majuscule
-capsword 46-46							succession de majuscules
+capsletter 46								indicateur de majuscule
+begcapsword 46-46							succession de majuscules
 
 numsign 3456							préfixe pour les chiffres
 midnum \s 3								espace entre les chiffres

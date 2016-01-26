@@ -31,7 +31,7 @@
 include en-us-g1.ctb.bak
 
 # Braille indicators specific to Grade 2
-multind 56-6 letsign singlelettercaps
+multind 56-6 letsign capsletter
 
 # Contractions beginning with the letter a
 largesign a 1

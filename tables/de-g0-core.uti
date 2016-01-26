@@ -33,9 +33,9 @@ include countries.cti
 
 # letsign 6
 
-# singlelettercaps 46
-capsword 45
-capswordstop 6
+# capsletter 46
+begcapsword 45
+endcapsword 6
 
 numsign 3456
 

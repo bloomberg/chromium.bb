@@ -222,8 +222,8 @@ endnum # 3456
 
 # Braille indicators
 numsign 6  number sign, just a dots operand
-singlelettercaps 46
-capsword 46-46
+capsletter 46
+begcapsword 46-46
 emphclass italic
 emphclass underline
 emphclass bold

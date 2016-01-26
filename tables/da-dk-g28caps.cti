@@ -21,7 +21,7 @@
 #------------
 #
 # This file contains rules for caps in Danish 8 dots grade 2.
-# It is a work-around for the missing ability to define singlelettercaps properly in 8 dots.
+# It is a work-around for the missing ability to define capsletter properly in 8 dots.
 # Included by da-dk-g28.ctb.
 #
 # Version: Bue Vester-Andersen, 140511

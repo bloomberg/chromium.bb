@@ -145,11 +145,11 @@ context  $d","[]%digitletter         @6
 # §2.12 Hoofdletters [1]
 
 # Capitalisation is implemented using multipass rules because the existing
-# opcodes for capitalisation (singlelettercaps, capsword and capswordstop) are insufficient.
+# opcodes for capitalisation (capsletter, capsword and endcapsword) are insufficient.
 # Certain characters can appear within an uppercase string without cancelling
 # the uppercase "state". These characters are - (HYPHEN MINUS), + (PLUS SIGN), &
 # (AMPERSAND), . (FULL STOP) and ' (APOSTROPHE). When using the existing
-# opcodes, these characters would cause a new singlelettercaps or capsword to be inserted
+# opcodes, these characters would cause a new capsletter or capsword to be inserted
 # after each appearance in a uppercase string.
 
 class    uppersign                   -+&.'     # 2nd class = $x
@@ -189,8 +189,8 @@ pass4    [@12346a]                   @12346
 # ----------------------------------------------------------------------------------------------
 
 numsign  3456
-singlelettercaps  46
-capsword  45
-# capswordstop  6
+capsletter  46
+begcapsword  45
+# endcapsword  6
 
 # ----------------------------------------------------------------------------------------------

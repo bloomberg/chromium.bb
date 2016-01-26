@@ -137,13 +137,13 @@ pass2 @24-5-3456-1245 @24-5-1245       9 7
 pass2 @24-5-3456-125 @24-5-125         9 8
 pass2 @24-5-3456-24 @24-5-24           9 9
 
-singlelettercaps 6
-capsword 6-6
-capswordstop 6-3
+capsletter 6
+begcapsword 6-6
+endcapsword 6-3
 lencapsphrase 3
-firstwordcaps 6-6-6
-firstlettercaps 6-6-6
-lastlettercaps 6-3
+begcapsphrase 6-6-6
+begcaps 6-6-6
+endcaps 6-3
 
 emphclass italic
 emphclass underline

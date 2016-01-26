@@ -35,8 +35,8 @@ include sr-chardefs.cti
 include braille-patterns.cti
 
 numsign 3456								# number sign
-singlelettercaps 46
-capsword 45
+capsletter 46
+begcapsword 45
 
 prepunc `` 236
 # --- Emphasis opcodes ---------------------------------------------------------

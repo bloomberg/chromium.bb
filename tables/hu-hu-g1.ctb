@@ -31,8 +31,8 @@ include braille-patterns.cti
 
 #Braille indicators
 numsign 3456
-singlelettercaps 46
-capsword 46-46
+capsletter 46
+begcapsword 46-46
 emphclass italic
 emphclass underline
 emphclass bold
