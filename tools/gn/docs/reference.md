@@ -1327,7 +1327,8 @@
 ## **forward_variables_from**: Copies variables from a different scope.
 
 ```
-  forward_variables_from(from_scope, variable_list_or_star)
+  forward_variables_from(from_scope, variable_list_or_star,
+                         variable_to_not_forward_list = [])
 
   Copies the given variables from the given scope to the local scope
   if they exist. This is normally used in the context of templates to
@@ -1353,6 +1354,10 @@
   The sources assignment filter (see "gn help set_sources_assignment_filter")
   is never applied by this function. It's assumed than any desired
   filtering was already done when sources was set on the from_scope.
+
+  If variables_to_not_forward_list is non-empty, then it must contains
+  a list of variable names that will not be forwarded. This is mostly
+  useful when variable_list_or_star has a value of "*".
 
 ```
 
@@ -1383,7 +1388,19 @@
     target(my_wrapper_target_type, target_name) {
       forward_variables_from(invoker, "*")
     }
- }
+  }
+
+  # A template that wraps another. It adds behavior based on one
+  # variable, and forwards all others to the nested target.
+  template("my_ios_test_app") {
+    ios_test_app(target_name) {
+      forward_variables_from(invoker, "*", ["test_bundle_name"])
+      if (!defined(extra_substitutions)) {
+        extra_substitutions = []
+      }
+      extra_substitutions += [ "BUNDLE_ID_TEST_NAME=$test_bundle_name" ]
+    }
+  }
 
 
 ```

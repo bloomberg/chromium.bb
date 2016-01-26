@@ -14,6 +14,7 @@ namespace {
 void ForwardAllValues(const FunctionCallNode* function,
                       Scope* source,
                       Scope* dest,
+                      const std::set<std::string>& exclusion_set,
                       Err* err) {
   Scope::MergeOptions options;
   // This function needs to clobber existing for it to be useful. It will be
@@ -23,6 +24,7 @@ void ForwardAllValues(const FunctionCallNode* function,
   options.clobber_existing = true;
   options.skip_private_vars = true;
   options.mark_dest_used = false;
+  options.excluded_values = exclusion_set;
   source->NonRecursiveMergeTo(dest, options, function,
                               "source scope", err);
   source->MarkAllUsed();
@@ -31,10 +33,13 @@ void ForwardAllValues(const FunctionCallNode* function,
 void ForwardValuesFromList(Scope* source,
                            Scope* dest,
                            const std::vector<Value>& list,
+                           const std::set<std::string>& exclusion_set,
                            Err* err) {
   for (const Value& cur : list) {
     if (!cur.VerifyTypeIs(Value::STRING, err))
       return;
+    if (exclusion_set.find(cur.string_value()) != exclusion_set.end())
+      continue;
     const Value* value = source->GetValue(cur.string_value(), true);
     if (value) {
       // Use the storage key for the original value rather than the string in
@@ -66,7 +71,8 @@ const char kForwardVariablesFrom_HelpShort[] =
 const char kForwardVariablesFrom_Help[] =
     "forward_variables_from: Copies variables from a different scope.\n"
     "\n"
-    "  forward_variables_from(from_scope, variable_list_or_star)\n"
+    "  forward_variables_from(from_scope, variable_list_or_star,\n"
+    "                         variable_to_not_forward_list = [])\n"
     "\n"
     "  Copies the given variables from the given scope to the local scope\n"
     "  if they exist. This is normally used in the context of templates to\n"
@@ -93,6 +99,10 @@ const char kForwardVariablesFrom_Help[] =
           "set_sources_assignment_filter\")\n"
     "  is never applied by this function. It's assumed than any desired\n"
     "  filtering was already done when sources was set on the from_scope.\n"
+    "\n"
+    "  If variables_to_not_forward_list is non-empty, then it must contains\n"
+    "  a list of variable names that will not be forwarded. This is mostly\n"
+    "  useful when variable_list_or_star has a value of \"*\".\n"
     "\n"
     "Examples\n"
     "\n"
@@ -121,7 +131,20 @@ const char kForwardVariablesFrom_Help[] =
     "    target(my_wrapper_target_type, target_name) {\n"
     "      forward_variables_from(invoker, \"*\")\n"
     "    }\n"
-    " }\n";
+    "  }\n"
+    "\n"
+    "  # A template that wraps another. It adds behavior based on one \n"
+    "  # variable, and forwards all others to the nested target.\n"
+    "  template(\"my_ios_test_app\") {\n"
+    "    ios_test_app(target_name) {\n"
+    "      forward_variables_from(invoker, \"*\", [\"test_bundle_name\"])\n"
+    "      if (!defined(extra_substitutions)) {\n"
+    "        extra_substitutions = []\n"
+    "      }\n"
+    "      extra_substitutions += [ \"BUNDLE_ID_TEST_NAME=$test_bundle_name\" "
+                                                                          "]\n"
+    "    }\n"
+    "  }\n";
 
 // This function takes a ListNode rather than a resolved vector of values
 // both avoid copying the potentially-large source scope, and so the variables
@@ -131,9 +154,9 @@ Value RunForwardVariablesFrom(Scope* scope,
                               const ListNode* args_list,
                               Err* err) {
   const std::vector<const ParseNode*>& args_vector = args_list->contents();
-  if (args_vector.size() != 2) {
+  if (args_vector.size() != 2 && args_vector.size() != 3) {
     *err = Err(function, "Wrong number of arguments.",
-               "Expecting exactly two.");
+               "Expecting two or three arguments.");
     return Value();
   }
 
@@ -157,18 +180,40 @@ Value RunForwardVariablesFrom(Scope* scope,
     return Value();
   Scope* source = value->scope_value();
 
+  // Extract the exclusion list if defined.
+  std::set<std::string> exclusion_set;
+  if (args_vector.size() == 3) {
+    Value exclusion_value = args_vector[2]->Execute(scope, err);
+    if (err->has_error())
+      return Value();
+
+    if (exclusion_value.type() != Value::LIST) {
+      *err = Err(exclusion_value, "Not a valid list of variables to exclude.",
+                 "Expecting a list of strings.");
+      return Value();
+    }
+
+    for (const Value& cur : exclusion_value.list_value()) {
+      if (!cur.VerifyTypeIs(Value::STRING, err))
+        return Value();
+
+      exclusion_set.insert(cur.string_value());
+    }
+  }
+
   // Extract the list. If all_values is not set, the what_value will be a list.
   Value what_value = args_vector[1]->Execute(scope, err);
   if (err->has_error())
     return Value();
   if (what_value.type() == Value::STRING) {
     if (what_value.string_value() == "*") {
-      ForwardAllValues(function, source, scope, err);
+      ForwardAllValues(function, source, scope, exclusion_set, err);
       return Value();
     }
   } else {
     if (what_value.type() == Value::LIST) {
-      ForwardValuesFromList(source, scope, what_value.list_value(), err);
+      ForwardValuesFromList(source, scope, what_value.list_value(),
+                            exclusion_set, err);
       return Value();
     }
   }
