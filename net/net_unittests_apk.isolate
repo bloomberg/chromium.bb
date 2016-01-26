@@ -10,6 +10,7 @@
   'variables': {
     'command': [
      '<(PRODUCT_DIR)/bin/run_net_unittests',
+     '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '../base/base.isolate',
