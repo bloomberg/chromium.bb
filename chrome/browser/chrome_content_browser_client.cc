@@ -1399,11 +1399,15 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 #elif defined(OS_POSIX)
   if (breakpad::IsCrashReporterEnabled()) {
+    std::string switch_value;
     scoped_ptr<metrics::ClientInfo> client_info =
         GoogleUpdateSettings::LoadMetricsClientInfo();
+    if (client_info)
+      switch_value = client_info->client_id;
+    switch_value.push_back(',');
+    switch_value.append(chrome::GetChannelString());
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    client_info ? client_info->client_id
-                                                : std::string());
+                                    switch_value);
   }
 #endif
 

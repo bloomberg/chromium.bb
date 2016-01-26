@@ -139,6 +139,7 @@
           ],
           'dependencies': [
             'crash_component_lib',
+            'crash_core_common',
             '../base/base.gyp:base',
           ],
           'defines': ['CRASH_IMPLEMENTATION'],

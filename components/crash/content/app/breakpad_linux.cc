@@ -37,6 +37,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/memory.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "breakpad/src/client/linux/crash_generation/crash_generation_client.h"
@@ -223,11 +224,37 @@ size_t LengthWithoutTrailingSpaces(const char* str, size_t len) {
   return len;
 }
 
-void SetClientIdFromCommandLine(const base::CommandLine& command_line) {
-  // Get the guid from the command line switch.
+bool GetEnableCrashReporterSwitchParts(const base::CommandLine& command_line,
+                                       std::vector<std::string>* switch_parts) {
   std::string switch_value =
       command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
-  GetCrashReporterClient()->SetCrashReporterClientIdFromGUID(switch_value);
+  std::vector<std::string> parts = base::SplitString(switch_value,
+                                                     ",",
+                                                     base::KEEP_WHITESPACE,
+                                                     base::SPLIT_WANT_ALL);
+  if (parts.size() != 2)
+    return false;
+
+  *switch_parts = parts;
+  return true;
+}
+
+#if !defined(OS_ANDROID)
+void SetChannelFromCommandLine(const base::CommandLine& command_line) {
+  std::vector<std::string> switch_parts;
+  if (!GetEnableCrashReporterSwitchParts(command_line, &switch_parts))
+    return;
+
+  base::debug::SetCrashKeyValue(crash_keys::kChannel, switch_parts[1]);
+}
+#endif
+
+void SetClientIdFromCommandLine(const base::CommandLine& command_line) {
+  std::vector<std::string> switch_parts;
+  if (!GetEnableCrashReporterSwitchParts(command_line, &switch_parts))
+    return;
+
+  GetCrashReporterClient()->SetCrashReporterClientIdFromGUID(switch_parts[0]);
 }
 
 // MIME substrings.
@@ -1827,7 +1854,9 @@ void InitCrashReporter(const std::string& process_type) {
     // simplicity.
     if (!parsed_command_line.HasSwitch(switches::kEnableCrashReporter))
       return;
+
     InitCrashKeys();
+    SetChannelFromCommandLine(parsed_command_line);
     SetClientIdFromCommandLine(parsed_command_line);
     EnableNonBrowserCrashDumping();
     VLOG(1) << "Non Browser crash dumping enabled for: " << process_type;
