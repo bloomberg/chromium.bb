@@ -150,6 +150,27 @@ class _TextStreamRouter(_Router):
     return True
 
 
+class _LoggingStreamRouter(_Router):
+  def __init__(self, severity=logging.INFO):
+    """Initialize the router.
+
+    Args:
+      severity: severity of the messages for reporting events
+    """
+    _Router.__init__(self)
+    self.severity = severity
+
+  def _send_to_endpoint(self, events):
+    try:
+      for ev in events.log_event:
+        ev_str = str(ChromeInfraEvent.FromString(ev.source_extension))
+        logging.log(self.severity, 'Sending event_mon event:\n%s' % ev_str)
+    except Exception:
+      logging.exception('Unable to log the events')
+      return False
+    return True
+
+
 class _HttpRouter(_Router):
   def __init__(self, cache, endpoint, timeout=10, try_num=3, retry_backoff=2.,
                dry_run=False, _sleep_fn=time.sleep):

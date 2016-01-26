@@ -72,6 +72,9 @@ class PubSubMonitor(Monitor):
     if credentials_file_path == APPENGINE_CREDENTIALS:  # pragma: no cover
       # This import doesn't work outside appengine, so delay it until it's used.
       from oauth2client import appengine
+      from google.appengine.api import app_identity
+      logging.info('Initializing with service account %s',
+                   app_identity.get_service_account_name())
       return appengine.AppAssertionCredentials(self._SCOPES)
 
     with open(credentials_file_path, 'r') as credentials_file:

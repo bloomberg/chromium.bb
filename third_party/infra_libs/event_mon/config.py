@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import socket
 
 import infra_libs
@@ -155,7 +156,13 @@ def setup_monitoring(run_type='dry',
       run_type = 'dry'
 
     if run_type == 'dry':
-      _router = ev_router._TextStreamRouter()
+      # If we are running on AppEngine or devserver, use logging module.
+      server_software = os.environ.get('SERVER_SOFTWARE', '')
+      if (server_software.startswith('Google App Engine') or
+          server_software.startswith('Development')):
+        _router = ev_router._LoggingStreamRouter()
+      else:
+        _router = ev_router._TextStreamRouter()
     elif run_type == 'file':
       _router = ev_router._LocalFileRouter(output_file,
                                            dry_run=dry_run)
