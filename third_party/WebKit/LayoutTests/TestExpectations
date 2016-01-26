@@ -326,7 +326,7 @@ crbug.com/576589 [ XP ] fast/repaint/change-text-content-and-background-color.ht
 crbug.com/576589 [ XP ] fast/repaint/multi-layout-one-frame.html [ NeedsRebaseline ]
 crbug.com/576589 [ XP ] fast/repaint/subtree-root-skipped.html [ NeedsRebaseline ]
 crbug.com/576589 [ XP ] fast/text/international/mixed-directionality-selection.html [ NeedsRebaseline ]
-crbug.com/579381 fast/forms/text/input-placeholder-paint-order.html [ NeedsRebaseline ]
+crbug.com/579381 [ XP ] fast/forms/text/input-placeholder-paint-order.html [ NeedsRebaseline ]
 
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
