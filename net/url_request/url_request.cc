@@ -10,8 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
@@ -705,24 +703,6 @@ void URLRequest::CancelWithSSLError(int error, const SSLInfo& ssl_info) {
 
 void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   DCHECK(error < 0);
-  // ~500,000 ERR_ABORTED < 100ms in Canary channel a day. Sample .01% to get
-  // ~50 reports a day.
-  // TODO(csharrison) Remove this code when crbug.com/557430 is resolved.
-  int64_t request_time =
-      (base::TimeTicks::Now() - creation_time_).InMilliseconds();
-  if (!has_notified_completion_ && error == ERR_ABORTED &&
-      request_time <= 100 && load_flags_ & LOAD_MAIN_FRAME &&
-      base::RandDouble() < .00001) {
-    static int dump_times = 0;
-    if (dump_times < 5) {
-      char url_copy[256] = {0};
-      strncpy(url_copy, url().spec().c_str(), sizeof(url_copy));
-      base::debug::Alias(&url_copy);
-      base::debug::Alias(&request_time);
-      base::debug::DumpWithoutCrashing();
-      dump_times++;
-    }
-  }
   // If cancelled while calling a delegate, clear delegate info.
   if (calling_delegate_) {
     LogUnblocked();
