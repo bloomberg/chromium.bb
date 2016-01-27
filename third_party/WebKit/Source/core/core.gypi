@@ -1399,8 +1399,6 @@
             'editing/PositionWithAffinity.h',
             'editing/RenderedPosition.cpp',
             'editing/RenderedPosition.h',
-            'editing/SelectionAdjuster.cpp',
-            'editing/SelectionAdjuster.h',
             'editing/SelectionController.cpp',
             'editing/SelectionController.h',
             'editing/SelectionEditor.cpp',

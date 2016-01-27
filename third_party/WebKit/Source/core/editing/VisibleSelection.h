@@ -205,6 +205,16 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<Editi
 using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
 using VisibleSelectionInComposedTree = VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
 
+// TODO(yosin): We should move |SelectionAdjuster| to its own file.
+class SelectionAdjuster final {
+    STATIC_ONLY(SelectionAdjuster);
+public:
+    static void adjustSelectionInComposedTree(VisibleSelectionInComposedTree*, const VisibleSelection&);
+    static void adjustSelectionInDOMTree(VisibleSelection*, const VisibleSelectionInComposedTree&);
+    static void adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelection*);
+    static void adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelectionInComposedTree*);
+};
+
 // TODO(yosin): We should use |operator==()| instead of
 // |equalSelectionsInDOMTree()|.
 bool equalSelectionsInDOMTree(const VisibleSelection&, const VisibleSelection&);

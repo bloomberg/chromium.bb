@@ -27,7 +27,6 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
-#include "core/editing/SelectionAdjuster.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -96,6 +95,83 @@ void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& 
     ASSERT(!(options & FrameSelection::DoNotAdjustInComposedTree));
     m_selectionInComposedTree = newSelection;
     SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInComposedTree);
+}
+
+// TODO(yosin): We should move
+// |SelectionAdjuster::adjustSelectionInComposedTree()| to
+// "SelectionAdjuster.cpp"
+// Updates |selectionInComposedTree| to match with |selection|.
+void SelectionAdjuster::adjustSelectionInComposedTree(VisibleSelectionInComposedTree* selectionInComposedTree, const VisibleSelection& selection)
+{
+    if (selection.isNone()) {
+        *selectionInComposedTree = VisibleSelectionInComposedTree();
+        return;
+    }
+
+    const PositionInComposedTree& base = toPositionInComposedTree(selection.base());
+    const PositionInComposedTree& extent = toPositionInComposedTree(selection.extent());
+    const PositionInComposedTree& position1 = toPositionInComposedTree(selection.start());
+    const PositionInComposedTree& position2 = toPositionInComposedTree(selection.end());
+    position1.anchorNode()->updateDistribution();
+    position2.anchorNode()->updateDistribution();
+    selectionInComposedTree->m_base = base;
+    selectionInComposedTree->m_extent = extent;
+    selectionInComposedTree->m_affinity = selection.m_affinity;
+    selectionInComposedTree->m_isDirectional = selection.m_isDirectional;
+    selectionInComposedTree->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
+    if (position1.compareTo(position2) <= 0) {
+        selectionInComposedTree->m_start = position1;
+        selectionInComposedTree->m_end = position2;
+    } else {
+        selectionInComposedTree->m_start = position2;
+        selectionInComposedTree->m_end = position1;
+    }
+    selectionInComposedTree->updateSelectionType();
+}
+
+static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& selection)
+{
+    if (!selection.isRange())
+        return false;
+    TreeScope& treeScope = selection.base().anchorNode()->treeScope();
+    return selection.extent().anchorNode()->treeScope() != treeScope
+        || selection.start().anchorNode()->treeScope() != treeScope
+        || selection.end().anchorNode()->treeScope() != treeScope;
+}
+
+// TODO(yosin): We should move
+// |SelectionAdjuster::adjustSelectionInDOMTree()| to
+// "SelectionAdjuster.cpp"
+void SelectionAdjuster::adjustSelectionInDOMTree(VisibleSelection* selection, const VisibleSelectionInComposedTree& selectionInComposedTree)
+{
+    if (selectionInComposedTree.isNone()) {
+        *selection = VisibleSelection();
+        return;
+    }
+
+    const Position& base = toPositionInDOMTree(selectionInComposedTree.base());
+    const Position& extent = toPositionInDOMTree(selectionInComposedTree.extent());
+
+    if (isCrossingShadowBoundaries(selectionInComposedTree)) {
+        *selection = VisibleSelection(base, extent);
+        return;
+    }
+
+    const Position& position1 = toPositionInDOMTree(selectionInComposedTree.start());
+    const Position& position2 = toPositionInDOMTree(selectionInComposedTree.end());
+    selection->m_base = base;
+    selection->m_extent = extent;
+    selection->m_affinity = selectionInComposedTree.m_affinity;
+    selection->m_isDirectional = selectionInComposedTree.m_isDirectional;
+    selection->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
+    if (position1.compareTo(position2) <= 0) {
+        selection->m_start = position1;
+        selection->m_end = position2;
+    } else {
+        selection->m_start = position2;
+        selection->m_end = position1;
+    }
+    selection->updateSelectionType();
 }
 
 void SelectionEditor::resetXPosForVerticalArrowNavigation()
