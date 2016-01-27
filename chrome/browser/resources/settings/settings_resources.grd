@@ -28,9 +28,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_ADVANCED_PAGE_CSS"
-                 file="advanced_page/advanced_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ANIMATED_PAGES_CSS"
                  file="settings_page/settings_animated_pages.css"
                  type="chrome_html" />
@@ -66,9 +63,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_BASIC_PAGE_CSS"
-                 file="basic_page/basic_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ON_STARTUP_PAGE_HTML"
                  file="on_startup_page/on_startup_page.html"
                  type="chrome_html" />
@@ -132,6 +126,9 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_DIALOG_CSS"
                  file="settings_dialog.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
+                 file="settings_page.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_SHARED_CSS"
                  file="settings_shared.css"

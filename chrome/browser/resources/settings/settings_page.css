@@ -5,5 +5,8 @@
 :host {
   display: block;
   height: 100%;
-  width: 605px;
+  margin: auto;
+  max-width: 960px;
+  min-width: 622px;
+  width: 80%;
 }
