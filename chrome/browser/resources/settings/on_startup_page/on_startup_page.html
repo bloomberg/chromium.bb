@@ -12,27 +12,25 @@
       href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-      <div class="settings-box">
-        <settings-radio-group id="onStartupRadioGroup"
-            pref="{{prefs.session.restore_on_startup}}">
-          <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
-              i18n-content="onStartupOpenNewTab">
-          </paper-radio-button>
-          <paper-radio-button name="[[prefValues_.CONTINUE]]"
-              i18n-content="onStartupContinue">
-          </paper-radio-button>
-          <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]">
-            <span i18n-content="onStartupOpenSpecific"></span>
-          </paper-radio-button>
-        </settings-radio-group>
-        <template is="dom-if"
-            if="[[showStartupUrls_(prefs.session.restore_on_startup.value)]]">
-          <div class="list-frame">
-            <settings-startup-urls-page prefs="{{prefs}}">
-            </settings-startup-urls-page>
-          </div>
-        </template>
-      </div>
-    </template>
+    <div class="settings-box first">
+      <settings-radio-group id="onStartupRadioGroup"
+          pref="{{prefs.session.restore_on_startup}}">
+        <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
+            i18n-content="onStartupOpenNewTab">
+        </paper-radio-button>
+        <paper-radio-button name="[[prefValues_.CONTINUE]]"
+            i18n-content="onStartupContinue">
+        </paper-radio-button>
+        <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]">
+          <span i18n-content="onStartupOpenSpecific"></span>
+        </paper-radio-button>
+      </settings-radio-group>
+      <template is="dom-if"
+          if="[[showStartupUrls_(prefs.session.restore_on_startup.value)]]">
+        <settings-startup-urls-page prefs="{{prefs}}">
+        </settings-startup-urls-page>
+      </template>
+    </div>
+  </template>
   <script src="on_startup_page.js"></script>
 </dom-module>

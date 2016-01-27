@@ -8,26 +8,28 @@
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <template is="dom-repeat" items="[[startupPages_]]">
-      <div class="list-item">
-        <iron-icon class="secondary" icon="image:brightness-1"
-            item-icon></iron-icon>
-        <div class="middle">
-          <div class="text-elide">[[item.title]]</div>
-          <div class="text-elide secondary">[[item.url]]</div>
+    <div class="list-frame vertical-list">
+      <template is="dom-repeat" items="[[startupPages_]]">
+        <div class="list-item">
+          <iron-icon class="secondary" icon="image:brightness-1"
+              item-icon></iron-icon>
+          <div class="middle">
+            <div class="text-elide">[[item.title]]</div>
+            <div class="text-elide secondary">[[item.url]]</div>
+          </div>
+          <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
         </div>
-        <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
+      </template>
+      <div class="list-item">
+        <paper-button class="link-button" on-tap="onAddPageTap_"
+            i18n-content="onStartupAddNewPage">
+        </paper-button>
       </div>
-    </template>
-    <div class="list-item">
-      <paper-button class="link-button" on-tap="onAddPageTap_"
-          i18n-content="onStartupAddNewPage">
-      </paper-button>
-    </div>
-    <div class="list-item">
-      <paper-button class="link-button" on-tap="onUseCurrentPagesTap_"
-          i18n-content="onStartupUseCurrent">
-      </paper-button>
+      <div class="list-item">
+        <paper-button class="link-button" on-tap="onUseCurrentPagesTap_"
+            i18n-content="onStartupUseCurrent">
+        </paper-button>
+      </div>
     </div>
 
     <paper-dialog modal id="addUrlDialog" class="layout vertical">

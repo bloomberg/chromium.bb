@@ -15,7 +15,6 @@ h2 {
   margin-top: 30px;
 }
 
-
 iron-icon {
   color: #969696;
 }
@@ -27,6 +26,10 @@ paper-button {
 
 paper-button[toggles][active] {
   background-color: LightGray;
+}
+
+span ~ a {
+  -webkit-margin-start: 4px;
 }
 
 .text-elide {
@@ -51,15 +54,14 @@ paper-button[toggles][active] {
   padding: 0;
 }
 
-.list-item {
-  @apply(--layout-center);
-  border-top: 1px solid #e0e0e0;
-  display: flex;
-  padding: 0;
+.list-frame select {
+  -webkit-margin-start: 4px;
 }
 
-.list-item:first-of-type {
-  border-top: none;
+.list-item {
+  @apply(--layout-center);
+  display: flex;
+  padding: 0;
 }
 
 .list-item .middle {
@@ -94,12 +96,16 @@ paper-button[toggles][active] {
   padding: 8px 16px;
 }
 
-.settings-box .two-line {
-  min-height: 52px;
+.settings-box.first {
+  border-top: none;
 }
 
-.settings-box:first-of-type {
-  border-top: none;
+.settings-box.row {
+  display: flex;
+}
+
+.settings-box.two-line {
+  min-height: 52px;
 }
 
 .settings-box .secondary {
@@ -117,4 +123,12 @@ paper-button[toggles][active] {
 .settings-box paper-item iron-icon {
   /* Same padding as paper-icon-button. */
   padding: 8px;
+}
+
+.vertical-list > div:first-of-type {
+  border-top: none;
+}
+
+.vertical-list > div {
+  border-top: 1px solid #e0e0e0;
 }

@@ -20,9 +20,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_A11Y_PAGE_CSS"
-                 file="a11y_page/a11y_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ADVANCED_PAGE_JS"
                  file="advanced_page/advanced_page.js"
                  type="chrome_html" />

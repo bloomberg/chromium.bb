@@ -4,9 +4,8 @@
 
 <dom-module id="settings-a11y-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
-  <link rel="import" type="css" href="a11y_page.css">
   <template>
-    <div class="settings-box">
+    <div class="settings-box row first">
       <span i18n-content="a11yExplanation"></span>
       <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
           target="_blank"></a>
@@ -39,22 +38,23 @@
           pref="{{prefs.settings.a11y.autoclick}}">
       </settings-checkbox>
 
-      <div class="autoclick-delay-label"
-          hidden$="[[!prefs.settings.a11y.autoclick]]">
-        <span i18n-content="delayBeforeClickLabel"></span>
-        <select id="autoclickDropdown"
-            value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
-          <option value="200" i18n-content="delayBeforeClickExtremelyShort">
-          </option>
-          <option value="400" i18n-content="delayBeforeClickVeryShort">
-          </option>
-          <option value="600" i18n-content="delayBeforeClickShort">
-          </option>
-          <option value="800" i18n-content="delayBeforeClickLong">
-          </option>
-          <option value="1000" i18n-content="delayBeforeClickVeryLong">
-          </option>
-        </select>
+      <div class="list-frame">
+        <div class="list-item">
+          <div i18n-content="delayBeforeClickLabel"></div>
+          <select
+              value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
+            <option value="200" i18n-content="delayBeforeClickExtremelyShort">
+            </option>
+            <option value="400" i18n-content="delayBeforeClickVeryShort">
+            </option>
+            <option value="600" i18n-content="delayBeforeClickShort">
+            </option>
+            <option value="800" i18n-content="delayBeforeClickLong">
+            </option>
+            <option value="1000" i18n-content="delayBeforeClickVeryLong">
+            </option>
+          </select>
+        </div>
       </div>
 
       <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
