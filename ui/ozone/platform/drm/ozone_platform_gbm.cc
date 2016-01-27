@@ -102,10 +102,10 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    scoped_ptr<DrmWindowHost> platform_window(
-        new DrmWindowHost(delegate, bounds, gpu_platform_support_host_.get(),
-                          event_factory_ozone_.get(), cursor_.get(),
-                          window_manager_.get(), display_manager_.get()));
+    scoped_ptr<DrmWindowHost> platform_window(new DrmWindowHost(
+        delegate, bounds, gpu_platform_support_host_.get(),
+        event_factory_ozone_.get(), cursor_.get(), window_manager_.get(),
+        display_manager_.get(), overlay_manager_.get()));
     platform_window->Initialize();
     return std::move(platform_window);
   }

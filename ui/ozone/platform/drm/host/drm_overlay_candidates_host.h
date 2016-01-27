@@ -10,16 +10,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_candidates_host_core.h"
-#include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {
 
-class DrmGpuPlatformSupportHost;
-class DrmWindowHost;
-class DrmOverlayCandidatesHost;
+class DrmOverlayManagerCore;
 
 // This is an implementation of OverlayCandidatesOzone where the driver is asked
 // about overlay capabilities via IPC. We have no way of querying abstract
@@ -30,59 +25,19 @@ class DrmOverlayCandidatesHost;
 // the result is returned in OzoneHostMsg_OverlayCapabilitiesReceived. Testing
 // is asynchronous, until the reply arrives that configuration will be failed.
 //
-// There is a many:1 relationship between this class and
-// DrmGpuPlatformSupportHost, each compositor will own one of these objects.
-// Each request has a unique request ID, which is assigned from a shared
-// sequence number so that replies can be routed to the correct object.
-// TODO(rjkroege): Consider removing the dependency on
-// GpuPlatformSupportHost.
-class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
-                                 public GpuPlatformSupportHost {
+// All OverlayCandidatesOzone objects share a single cache of tested
+// configurations stored in the overlay manager.
+class DrmOverlayCandidatesHost : public OverlayCandidatesOzone {
  public:
-  DrmOverlayCandidatesHost(DrmGpuPlatformSupportHost* platform_support,
-                           DrmWindowHost* window);
+  DrmOverlayCandidatesHost(DrmOverlayManagerCore* manager_core,
+                           gfx::AcceleratedWidget widget);
   ~DrmOverlayCandidatesHost() override;
 
-  // OverlayCandidatesOzone:
   void CheckOverlaySupport(OverlaySurfaceCandidateList* candidates) override;
 
-  // GpuPlatformSupportHost:
-  void OnChannelEstablished(
-      int host_id,
-      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      const base::Callback<void(IPC::Message*)>& sender) override;
-  void OnChannelDestroyed(int host_id) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
  private:
-  class OverlayCandidatesIPC : public DrmOverlayCandidatesHostProxy {
-   public:
-    OverlayCandidatesIPC(DrmGpuPlatformSupportHost* platform_support,
-                         DrmOverlayCandidatesHost* parent);
-    ~OverlayCandidatesIPC() override;
-    void RegisterHandler() override;
-    bool IsConnected() override;
-    void UnregisterHandler() override;
-    bool CheckOverlayCapabilities(
-        gfx::AcceleratedWidget widget,
-        const std::vector<OverlayCheck_Params>& new_params) override;
-
-   private:
-    DrmGpuPlatformSupportHost* platform_support_;
-    DrmOverlayCandidatesHost* parent_;
-    DISALLOW_COPY_AND_ASSIGN(OverlayCandidatesIPC);
-  };
-
-  // Entry point for incoming IPC.
-  void OnOverlayResult(bool* handled,
-                       gfx::AcceleratedWidget widget,
-                       const std::vector<OverlayCheck_Params>& params);
-
-  // Sends messages to the GPU thread.
-  scoped_ptr<OverlayCandidatesIPC> sender_;
-
-  // Implementation without messaging functionality.
-  scoped_ptr<DrmOverlayCandidatesHostCore> core_;
+  DrmOverlayManagerCore* overlay_manager_;  // Not owned.
+  gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayCandidatesHost);
 };

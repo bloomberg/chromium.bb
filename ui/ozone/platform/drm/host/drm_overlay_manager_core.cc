@@ -2,39 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/host/drm_overlay_candidates_host_core.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager_core.h"
 
 #include <stddef.h>
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
+#include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
+
+typedef OverlayCandidatesOzone::OverlaySurfaceCandidateList
+    OverlaySurfaceCandidateList;
+typedef OverlayCandidatesOzone::OverlaySurfaceCandidate OverlaySurfaceCandidate;
 
 namespace {
 const size_t kMaxCacheSize = 200;
 }  // namespace
 
-DrmOverlayCandidatesHostProxy::~DrmOverlayCandidatesHostProxy() {}
+DrmOverlayManagerProxy::~DrmOverlayManagerProxy() {}
 
-DrmOverlayCandidatesHostCore::DrmOverlayCandidatesHostCore(
-    DrmOverlayCandidatesHostProxy* proxy,
-    DrmWindowHost* window)
-    : proxy_(proxy), window_(window), cache_(kMaxCacheSize) {
+DrmOverlayManagerCore::DrmOverlayManagerCore(
+    DrmOverlayManagerProxy* proxy,
+    DrmWindowHostManager* window_manager)
+    : proxy_(proxy), window_manager_(window_manager), cache_(kMaxCacheSize) {
+  is_supported_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kOzoneTestSingleOverlaySupport);
   proxy_->RegisterHandler();
-  window_->SetOverlayCandidatesHost(this);
 }
 
-DrmOverlayCandidatesHostCore::~DrmOverlayCandidatesHostCore() {
+DrmOverlayManagerCore::~DrmOverlayManagerCore() {
   proxy_->UnregisterHandler();
-  window_->SetOverlayCandidatesHost(nullptr);
 }
 
-void DrmOverlayCandidatesHostCore::CheckOverlaySupport(
-    OverlaySurfaceCandidateList* candidates) {
+scoped_ptr<OverlayCandidatesOzone>
+DrmOverlayManagerCore::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
+  if (!is_supported_)
+    return nullptr;
+  return make_scoped_ptr(new DrmOverlayCandidatesHost(this, w));
+}
+
+void DrmOverlayManagerCore::CheckOverlaySupport(
+    OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
+    gfx::AcceleratedWidget widget) {
   std::vector<OverlayCheck_Params> overlay_params;
   for (auto& candidate : *candidates) {
     // Reject candidates that don't fall on a pixel boundary.
@@ -68,7 +84,7 @@ void DrmOverlayCandidatesHostCore::CheckOverlaySupport(
         continue;
 
       const OverlaySurfaceCandidate& candidate = candidates->at(i);
-      if (!CanHandleCandidate(candidate)) {
+      if (!CanHandleCandidate(candidate, widget)) {
         DCHECK(candidate.plane_z_order != 0);
         overlay_params.at(i).is_overlay_candidate = false;
         continue;
@@ -80,7 +96,7 @@ void DrmOverlayCandidatesHostCore::CheckOverlaySupport(
     cache_.Put(overlay_params, needs_gpu_validation);
 
     if (needs_gpu_validation)
-      SendOverlayValidationRequest(overlay_params);
+      SendOverlayValidationRequest(overlay_params, widget);
   } else {
     const std::vector<OverlayCheck_Params>& validated_params = iter->first;
     DCHECK(size == validated_params.size());
@@ -92,32 +108,29 @@ void DrmOverlayCandidatesHostCore::CheckOverlaySupport(
   }
 }
 
-void DrmOverlayCandidatesHostCore::ResetCache() {
+void DrmOverlayManagerCore::ResetCache() {
   cache_.Clear();
 }
 
-void DrmOverlayCandidatesHostCore::SendOverlayValidationRequest(
-    const std::vector<OverlayCheck_Params>& new_params) const {
+void DrmOverlayManagerCore::SendOverlayValidationRequest(
+    const std::vector<OverlayCheck_Params>& new_params,
+    gfx::AcceleratedWidget widget) const {
   if (!proxy_->IsConnected())
     return;
 
-  proxy_->CheckOverlayCapabilities(window_->GetAcceleratedWidget(), new_params);
+  proxy_->CheckOverlayCapabilities(widget, new_params);
 }
 
 // TODO(rjkroege) Remove the IPC component of OverlayCheck_Params in the future.
-void DrmOverlayCandidatesHostCore::GpuSentOverlayResult(
-    bool* handled,
+void DrmOverlayManagerCore::GpuSentOverlayResult(
     gfx::AcceleratedWidget widget,
     const std::vector<OverlayCheck_Params>& params) {
-  if (widget != window_->GetAcceleratedWidget())
-    return;
-
-  *handled = true;
   cache_.Put(params, false);
 }
 
-bool DrmOverlayCandidatesHostCore::CanHandleCandidate(
-    const OverlaySurfaceCandidate& candidate) const {
+bool DrmOverlayManagerCore::CanHandleCandidate(
+    const OverlaySurfaceCandidate& candidate,
+    gfx::AcceleratedWidget widget) const {
   if (candidate.buffer_size.IsEmpty())
     return false;
 
@@ -130,7 +143,8 @@ bool DrmOverlayCandidatesHostCore::CanHandleCandidate(
     // blocking overlaying or cc clipping it, but in case it wasn't properly
     // clipped (since GL will render this situation fine) just ignore it
     // here. This should be an extremely rare occurrance.
-    if (!window_->GetBounds().Contains(
+    DrmWindowHost* window = window_manager_->GetWindow(widget);
+    if (!window->GetBounds().Contains(
             gfx::ToNearestRect(candidate.display_rect))) {
       return false;
     }
