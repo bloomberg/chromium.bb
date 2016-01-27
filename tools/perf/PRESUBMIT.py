@@ -28,7 +28,8 @@ def _CommonChecks(input_api, output_api):
 def _GetPathsToPrepend(input_api):
   perf_dir = input_api.PresubmitLocalPath()
   chromium_src_dir = input_api.os_path.join(perf_dir, '..', '..')
-  telemetry_dir = input_api.os_path.join(chromium_src_dir, 'tools', 'telemetry')
+  telemetry_dir = input_api.os_path.join(
+      chromium_src_dir, 'third_party', 'catapult', 'telemetry')
   return [
       telemetry_dir,
       input_api.os_path.join(telemetry_dir, 'third_party', 'mock'),
