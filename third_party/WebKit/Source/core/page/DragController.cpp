@@ -42,8 +42,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/commands/MoveSelectionCommand.h"
-#include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"
 #include "core/fetch/ImageResource.h"
@@ -503,16 +501,11 @@ bool DragController::concludeEditDrag(DragData* dragData)
             // but only to smart insert if the selection granularity is word granularity.
             bool smartDelete = innerFrame->editor().smartInsertDeleteEnabled();
             bool smartInsert = smartDelete && innerFrame->selection().granularity() == WordGranularity && dragData->canSmartReplace();
-            MoveSelectionCommand::create(fragment, dragCaret.base(), smartInsert, smartDelete)->apply();
+            innerFrame->editor().moveSelectionAfterDragging(fragment, dragCaret.base(), smartInsert, smartDelete);
         } else {
             if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
-                ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::PreventNesting;
-                if (dragData->canSmartReplace())
-                    options |= ReplaceSelectionCommand::SmartReplace;
-                if (chosePlainText)
-                    options |= ReplaceSelectionCommand::MatchStyle;
                 ASSERT(m_documentUnderMouse);
-                ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), fragment, options, EditActionDrag)->apply();
+                m_documentUnderMouse->frame()->editor().replaceSelectionAfterDragging(fragment, dragData->canSmartReplace(), chosePlainText);
             }
         }
     } else {
@@ -521,8 +514,10 @@ bool DragController::concludeEditDrag(DragData* dragData)
             return false;
 
         if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
+            const bool canSmartReplace = false;
+            const bool chosePlainText = true;
             ASSERT(m_documentUnderMouse);
-            ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), createFragmentFromText(EphemeralRange(range.get()), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting, EditActionDrag)->apply();
+            m_documentUnderMouse->frame()->editor().replaceSelectionAfterDragging(createFragmentFromText(EphemeralRange(range.get()), text), canSmartReplace, chosePlainText);
         }
     }
 

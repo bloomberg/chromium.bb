@@ -49,6 +49,7 @@
 #include "core/editing/commands/DeleteSelectionCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertListCommand.h"
+#include "core/editing/commands/MoveSelectionCommand.h"
 #include "core/editing/commands/RemoveFormatCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/commands/SimplifyMarkupCommand.h"
@@ -522,6 +523,23 @@ void Editor::replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragmen
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)
 {
     replaceSelectionWithFragment(createFragmentFromText(selectedRange(), text), selectReplacement, smartReplace, true);
+}
+
+// TODO(xiaochengh): Merge it with |replaceSelectionWithFragment()|.
+void Editor::replaceSelectionAfterDragging(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, bool smartReplace, bool plainText)
+{
+    ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::PreventNesting;
+    if (smartReplace)
+        options |= ReplaceSelectionCommand::SmartReplace;
+    if (plainText)
+        options |= ReplaceSelectionCommand::MatchStyle;
+    ASSERT(frame().document());
+    ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionDrag)->apply();
+}
+
+void Editor::moveSelectionAfterDragging(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, const Position& pos, bool smartInsert, bool smartDelete)
+{
+    MoveSelectionCommand::create(fragment, pos, smartInsert, smartDelete)->apply();
 }
 
 EphemeralRange Editor::selectedRange()

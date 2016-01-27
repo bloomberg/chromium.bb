@@ -222,6 +222,10 @@ public:
     void replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);
 
+    // TODO(xiaochengh): Replace |bool| parameters by |enum|.
+    void replaceSelectionAfterDragging(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool plainText);
+    void moveSelectionAfterDragging(PassRefPtrWillBeRawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
+
     EditorParagraphSeparator defaultParagraphSeparator() const { return m_defaultParagraphSeparator; }
     void setDefaultParagraphSeparator(EditorParagraphSeparator separator) { m_defaultParagraphSeparator = separator; }
 
