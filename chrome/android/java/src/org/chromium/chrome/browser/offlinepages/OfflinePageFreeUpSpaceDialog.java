@@ -59,7 +59,7 @@ public class OfflinePageFreeUpSpaceDialog
                     public void onDismissNoAction(Object actionData) {}
                     @Override
                     public void onAction(Object actionData) {}
-                });
+                }, Snackbar.TYPE_ACTION);
     }
 
     @Override

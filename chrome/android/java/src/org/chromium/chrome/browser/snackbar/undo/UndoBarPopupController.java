@@ -127,7 +127,7 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
                 mSnackbarManager.isShowing() ? TAB_CLOSE_UNDO_TOAST_SHOWN_WARM
                                              : TAB_CLOSE_UNDO_TOAST_SHOWN_COLD,
                 TAB_CLOSE_UNDO_TOAST_COUNT);
-        mSnackbarManager.showSnackbar(Snackbar.make(content, this)
+        mSnackbarManager.showSnackbar(Snackbar.make(content, this, Snackbar.TYPE_ACTION)
                 .setTemplateText(mContext.getString(R.string.undo_bar_close_message))
                 .setAction(mContext.getString(R.string.undo_bar_button_text), tabId));
     }
@@ -142,7 +142,7 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
      */
     private void showUndoCloseAllBar(List<Integer> closedTabIds) {
         String content = String.format(Locale.getDefault(), "%d", closedTabIds.size());
-        mSnackbarManager.showSnackbar(Snackbar.make(content, this)
+        mSnackbarManager.showSnackbar(Snackbar.make(content, this, Snackbar.TYPE_ACTION)
                 .setTemplateText(mContext.getString(R.string.undo_bar_close_all_message))
                 .setAction(mContext.getString(R.string.undo_bar_button_text), closedTabIds));
 

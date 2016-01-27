@@ -83,12 +83,13 @@ public class EnhancedBookmarkUndoController extends BookmarkModelObserver implem
         if (!isUndoable) return;
 
         if (titles.length == 1) {
-            mSnackbarManager.showSnackbar(Snackbar.make(titles[0], this)
+            mSnackbarManager.showSnackbar(Snackbar.make(titles[0], this, Snackbar.TYPE_ACTION)
                     .setTemplateText(mContext.getString(R.string.undo_bar_delete_message))
                     .setAction(mContext.getString(R.string.undo_bar_button_text), null));
         } else {
             mSnackbarManager.showSnackbar(
-                    Snackbar.make(String.format(Locale.getDefault(), "%d", titles.length), this)
+                    Snackbar.make(String.format(Locale.getDefault(), "%d", titles.length), this,
+                            Snackbar.TYPE_ACTION)
                     .setTemplateText(mContext.getString(R.string.undo_bar_multiple_delete_message))
                     .setAction(mContext.getString(R.string.undo_bar_button_text), null));
         }

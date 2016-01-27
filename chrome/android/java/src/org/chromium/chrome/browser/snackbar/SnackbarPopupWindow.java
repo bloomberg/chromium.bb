@@ -27,6 +27,7 @@ class SnackbarPopupWindow extends PopupWindow {
     private final TextView mActionButtonView;
     private final ImageView mProfileImageView;
     private final int mAnimationDuration;
+    private Snackbar mSnackbar;
 
     /**
      * Creates an instance of the {@link SnackbarPopupWindow}.
@@ -63,12 +64,18 @@ class SnackbarPopupWindow extends PopupWindow {
     }
 
     /**
-     * Updates the view to display data from the given snackbar.
-     *
+     * Updates the view to display data from the given snackbar. No-op if the popup is already
+     * showing the given snackbar.
      * @param snackbar The snackbar to display
-     * @param animate Whether or not to animate the text in or set it immediately
+     * @return Whether update has actually been executed.
      */
-    void update(Snackbar snackbar, boolean animate) {
+    boolean update(Snackbar snackbar) {
+        return update(snackbar, true);
+    }
+
+    private boolean update(Snackbar snackbar, boolean animate) {
+        if (mSnackbar == snackbar) return false;
+        mSnackbar = snackbar;
         mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : Integer.MAX_VALUE);
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
@@ -104,6 +111,7 @@ class SnackbarPopupWindow extends PopupWindow {
         } else {
             ((ViewGroup) view).removeView(mProfileImageView);
         }
+        return true;
     }
 
     private void setViewText(TextView view, CharSequence text, boolean animate) {

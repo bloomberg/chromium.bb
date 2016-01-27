@@ -308,8 +308,9 @@ public class OfflinePageUtils {
                 }
             }
         };
-        Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController)
-                                    .setAction(context.getString(actionTextId), buttonType);
+        Snackbar snackbar = Snackbar
+                .make(context.getString(snackbarTextId), snackbarController, Snackbar.TYPE_ACTION)
+                .setAction(context.getString(actionTextId), buttonType);
         activity.getSnackbarManager().showSnackbar(snackbar);
     }
 }

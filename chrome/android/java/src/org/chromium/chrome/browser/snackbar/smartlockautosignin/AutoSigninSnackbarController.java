@@ -38,7 +38,7 @@ public class AutoSigninSnackbarController
         if (snackbarManager == null) return;
         AutoSigninSnackbarController snackbarController =
                 new AutoSigninSnackbarController(snackbarManager, tab);
-        Snackbar snackbar = Snackbar.make(text, snackbarController);
+        Snackbar snackbar = Snackbar.make(text, snackbarController, Snackbar.TYPE_NOTIFICATION);
         Resources resources = tab.getWindowAndroid().getActivity().get().getResources();
         int backgroundColor = ApiCompatibilityUtils.getColor(resources,
                 R.color.smart_lock_auto_signin_snackbar_background_color);

@@ -18,6 +18,18 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
  *           .setAction("undo", actionData));
  */
 public class Snackbar {
+    /**
+     * Snackbars that are created as an immediate response to user's action. These snackbars are
+     * managed in a stack and will be swiped away altogether after timeout.
+     */
+    public static final int TYPE_ACTION = 0;
+
+    /**
+     * Snackbars that are for notification purposes. These snackbars are stored in a queue and thus
+     * are of lower priority, compared to {@link #TYPE_ACTION}. Notification snackbars are dismissed
+     * one by one.
+     */
+    public static final int TYPE_NOTIFICATION = 1;
 
     private SnackbarController mController;
     private CharSequence mText;
@@ -28,20 +40,23 @@ public class Snackbar {
     private boolean mSingleLine = true;
     private int mDurationMs;
     private Bitmap mProfileImage;
-    private boolean mForceDisplay = false;
+    private int mType;
 
     // Prevent instantiation.
     private Snackbar() {}
 
     /**
      * Creates and returns a snackbar to display the given text.
+     *
      * @param text The text to show on the snackbar.
      * @param controller The SnackbarController to receive callbacks about the snackbar's state.
+     * @param type Type of the snackbar. Either {@link #TYPE_ACTION} or {@link #TYPE_NOTIFICATION}.
      */
-    public static Snackbar make(CharSequence text, SnackbarController controller) {
+    public static Snackbar make(CharSequence text, SnackbarController controller, int type) {
         Snackbar s = new Snackbar();
         s.mText = text;
         s.mController = controller;
+        s.mType = type;
         return s;
     }
 
@@ -102,27 +117,6 @@ public class Snackbar {
         return this;
     }
 
-    /**
-     * Forces this snackbar to be shown when {@link #dismissAllSnackbars(SnackbarManager)} is called
-     * from a timeout. If {@link #showSnackbar(SnackbarManager)} is called while this snackbar is
-     * showing, the new snackbar will be added to the stack and this snackbar will not be
-     * overwritten.
-     */
-    public Snackbar setForceDisplay() {
-        mForceDisplay = true;
-        return this;
-    }
-
-    /**
-     * Returns true if this snackbar should still be shown when @link
-     * #dismissAllSnackbars(SnackbarManager)} is called from a timeout. If
-     * {@link #showSnackbar(SnackbarManager)} is called while this snackbar is showing, the new
-     * snackbar will be added to the stack and this snackbar will not be overwritten.
-     */
-    public boolean getForceDisplay() {
-        return mForceDisplay;
-    }
-
     SnackbarController getController() {
         return mController;
     }
@@ -163,5 +157,12 @@ public class Snackbar {
      */
     Bitmap getProfileImage() {
         return mProfileImage;
+    }
+
+    /**
+     * @return Whether the snackbar is of {@link #TYPE_ACTION}.
+     */
+    boolean isTypeAction() {
+        return mType == TYPE_ACTION;
     }
 }

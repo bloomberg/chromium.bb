@@ -119,9 +119,9 @@ public class EnhancedBookmarkUtils {
                     bookmarkModel, activity, bookmarkId);
             if (getLastUsedParent(activity) == null) {
                 snackbar = Snackbar.make(activity.getString(R.string.enhanced_bookmark_page_saved),
-                        snackbarController);
+                        snackbarController, Snackbar.TYPE_ACTION);
             } else {
-                snackbar = Snackbar.make(folderName, snackbarController)
+                snackbar = Snackbar.make(folderName, snackbarController, Snackbar.TYPE_ACTION)
                         .setTemplateText(activity.getString(
                                 R.string.enhanced_bookmark_page_saved_folder));
             }
@@ -164,7 +164,9 @@ public class EnhancedBookmarkUtils {
                 snackbarController = createSnackbarControllerForEditButton(
                         bookmarkModel, activity, bookmarkId);
             }
-            snackbar = Snackbar.make(activity.getString(messageId, suffix), snackbarController)
+            snackbar = Snackbar
+                    .make(activity.getString(messageId, suffix), snackbarController,
+                            Snackbar.TYPE_ACTION)
                     .setAction(activity.getString(buttonId), null).setSingleLine(false);
         }
 
