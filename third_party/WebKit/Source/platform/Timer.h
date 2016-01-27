@@ -86,8 +86,6 @@ private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual bool canFire() const { return true; }
 
-    virtual double alignedFireTime(double fireTime) const { return fireTime; }
-
     void setNextFireTime(double now, double delay);
 
     void runInternal();
