@@ -1,7 +1,6 @@
 include_rules = [
     "-bindings/core",
     "+bindings/core/v8/ExceptionState.h",
-    "+bindings/core/v8/ScopedPersistent.h",
     "+bindings/core/v8/ScriptCallStackFactory.h",
     "+bindings/core/v8/ScriptRegexp.h",
     "+bindings/core/v8/ScriptState.h",

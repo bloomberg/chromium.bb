@@ -32,7 +32,6 @@
 #define JavaScriptCallFrame_h
 
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -84,8 +83,8 @@ private:
 
     v8::Isolate* m_isolate;
     RefPtr<JavaScriptCallFrame> m_caller;
-    ScopedPersistent<v8::Context> m_debuggerContext;
-    ScopedPersistent<v8::Object> m_callFrame;
+    v8::Global<v8::Context> m_debuggerContext;
+    v8::Global<v8::Object> m_callFrame;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 
