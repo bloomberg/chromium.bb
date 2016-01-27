@@ -55,10 +55,10 @@ void SVGPointListInterpolationType::composite(UnderlyingValue& underlyingValue, 
 {
     size_t startLength = toInterpolableList(underlyingValue->interpolableValue()).length();
     size_t endLength = toInterpolableList(value.interpolableValue()).length();
-    if (startLength != endLength)
+    if (startLength == endLength)
+        InterpolationType::composite(underlyingValue, underlyingFraction, value);
+    else
         underlyingValue.set(&value);
-
-    InterpolationType::composite(underlyingValue, underlyingFraction, value);
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
