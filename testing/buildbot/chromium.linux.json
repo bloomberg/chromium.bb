@@ -542,6 +542,12 @@
         "test": "mojo_common_unittests"
       },
       {
+        "test": "mojo_js_integration_tests"
+      },
+      {
+        "test": "mojo_js_unittests"
+      },
+      {
         "test": "mojo_public_application_unittests"
       },
       {

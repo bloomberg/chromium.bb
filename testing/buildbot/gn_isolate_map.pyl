@@ -273,6 +273,14 @@
     "label": "//mojo/common:mojo_common_unittests",
     "type": "console_test_launcher",
   },
+  "mojo_js_integration_tests": {
+    "label": "//mojo/edk/js/test:js_integration_tests",
+    "type": "console_test_launcher",
+  },
+  "mojo_js_unittests": {
+    "label": "//mojo/edk/js/test:js_unittests",
+    "type": "console_test_launcher",
+  },
   "mojo_public_application_unittests": {
     "label": "//third_party/mojo/src/mojo/edk/test:mojo_public_applicaiton_unittests",
     "type": "unknown",
