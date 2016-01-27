@@ -39,15 +39,15 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> buildIns
     return array.release();
 }
 
-PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(const v8::CpuProfileNode* node)
+PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isolate* isolate, const v8::CpuProfileNode* node)
 {
-    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+    v8::HandleScope handleScope(isolate);
 
     RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::CPUProfileNode>> children = TypeBuilder::Array<TypeBuilder::Profiler::CPUProfileNode>::create();
     const int childrenCount = node->GetChildrenCount();
     for (int i = 0; i < childrenCount; i++) {
         const v8::CpuProfileNode* child = node->GetChild(i);
-        children->addItem(buildInspectorObjectFor(child));
+        children->addItem(buildInspectorObjectFor(isolate, child));
     }
 
     RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
@@ -85,10 +85,10 @@ PassRefPtr<TypeBuilder::Array<double>> buildInspectorObjectForTimestamps(v8::Cpu
     return array.release();
 }
 
-PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::CpuProfile* v8profile)
+PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
 {
     RefPtr<TypeBuilder::Profiler::CPUProfile> profile = TypeBuilder::Profiler::CPUProfile::create()
-        .setHead(buildInspectorObjectFor(v8profile->GetTopDownRoot()))
+        .setHead(buildInspectorObjectFor(isolate, v8profile->GetTopDownRoot()))
         .setStartTime(static_cast<double>(v8profile->GetStartTime()) / 1000000)
         .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000);
     profile->setSamples(buildInspectorObjectForSamples(v8profile));
@@ -279,7 +279,7 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling
         return nullptr;
     RefPtr<TypeBuilder::Profiler::CPUProfile> result;
     if (serialize)
-        result = createCPUProfile(profile);
+        result = createCPUProfile(m_isolate, profile);
     profile->Delete();
     return result.release();
 }
