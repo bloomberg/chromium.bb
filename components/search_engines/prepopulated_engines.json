@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 88
+    "kCurrentDataVersion": 89
   },
 
   // The following engines are included in country lists and are added to the
@@ -576,10 +576,10 @@
     "yandex_by": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.by",
-      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
-      "search_url": "http://yandex.by/{yandex:searchPath}?text={searchTerms}",
+      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "search_url": "https://yandex.by/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.by/suggest/get?part={searchTerms}",
-      "image_url": "http://yandex.by/images/search/?rpt=imageview",
+      "image_url": "https://yandex.by/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "new_tab_url": "https://www.yandex.by/chrome/newtab",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -589,10 +589,10 @@
     "yandex_kz": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.kz",
-      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
-      "search_url": "http://yandex.kz/{yandex:searchPath}?text={searchTerms}",
+      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "search_url": "https://yandex.kz/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.kz/suggest/get?part={searchTerms}",
-      "image_url": "http://yandex.kz/images/search/?rpt=imageview",
+      "image_url": "https://yandex.kz/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "new_tab_url": "https://www.yandex.kz/chrome/newtab",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -602,10 +602,10 @@
     "yandex_ru": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ru",
-      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
-      "search_url": "http://yandex.ru/{yandex:searchPath}?text={searchTerms}",
+      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "search_url": "https://yandex.ru/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.ru/suggest/get?part={searchTerms}",
-      "image_url": "http://yandex.ru/images/search/?rpt=imageview",
+      "image_url": "https://yandex.ru/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "new_tab_url": "https://www.yandex.ru/chrome/newtab",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -615,10 +615,10 @@
     "yandex_tr": {
       "name": "Yandex",
       "keyword": "yandex.com.tr",
-      "favicon_url": "http://yandex.st/lego/_/rBTjd6UOPk5913OSn5ZQVYMTQWQ.ico",
-      "search_url": "http://www.yandex.com.tr/{yandex:searchPath}?text={searchTerms}",
+      "favicon_url": "https://yandex.st/lego/_/rBTjd6UOPk5913OSn5ZQVYMTQWQ.ico",
+      "search_url": "https://www.yandex.com.tr/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.com.tr/suggest/get?part={searchTerms}",
-      "image_url": "http://yandex.com.tr/gorsel/search?rpt=imageview",
+      "image_url": "https://yandex.com.tr/gorsel/search?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "new_tab_url": "https://www.yandex.com.tr/chrome/newtab",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -628,10 +628,10 @@
     "yandex_ua": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ua",
-      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
-      "search_url": "http://yandex.ua/{yandex:searchPath}?text={searchTerms}",
+      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "search_url": "https://yandex.ua/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.ua/suggest/get?part={searchTerms}",
-      "image_url": "http://yandex.ua/images/search/?rpt=imageview",
+      "image_url": "https://yandex.ua/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "new_tab_url": "https://www.yandex.ua/chrome/newtab",
       "type": "SEARCH_ENGINE_YANDEX",
