@@ -37,7 +37,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     private static final String AUTO_JOIN_PRESENTATION_ID = "auto-join";
     private static final String PRESENTATION_ID_SESSION_ID_PREFIX = "cast-session_";
-    private static final String RECEIVER_ACTION_PRESENTATION_ID = "_receiver-action";
 
     private final Context mApplicationContext;
     private final MediaRouter mAndroidMediaRouter;
@@ -90,32 +89,24 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
     }
 
-    public void onRouteCreated(
-            int requestId, MediaRoute route, CastSession session, String origin, int tabId) {
-        mSession = session;
-
-        addRoute(route, origin, tabId);
-        mManager.onRouteCreated(route.id, route.sinkId, requestId, this, true);
-    }
-
     public void onRouteRequestError(String message, int requestId) {
         mManager.onRouteRequestError(message, requestId);
-    }
-
-    public void onClientDisconnected(String clientId) {
-        ClientRecord client = mClientRecords.get(clientId);
-        assert client != null;
-
-        mRoutes.remove(client.routeId);
-        removeClient(client);
-
-        mManager.onRouteClosed(client.routeId);
     }
 
     public void onSessionStopAction() {
         if (mSession == null) return;
 
         for (String routeId : mRoutes.keySet()) closeRoute(routeId);
+    }
+
+    public void onSessionCreated(CastSession session) {
+        mSession = session;
+
+        for (ClientRecord client : mClientRecords.values()) {
+            if (!client.isConnected) continue;
+
+            mSession.onClientConnected(client.clientId);
+        }
     }
 
     public void onSessionClosed() {
@@ -136,7 +127,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         mSession = null;
 
         if (mPendingCreateRouteRequest != null) {
-            mPendingCreateRouteRequest.start(mApplicationContext);
+            launchSession(mPendingCreateRouteRequest);
             mPendingCreateRouteRequest = null;
         } else if (mAndroidMediaRouter != null) {
             mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
@@ -149,11 +140,15 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     public void onMessage(String clientId, String message) {
         ClientRecord clientRecord = mClientRecords.get(clientId);
-        if (clientRecord == null
-                || clientRecord.clientId.endsWith(RECEIVER_ACTION_PRESENTATION_ID)) {
+        if (clientRecord == null) return;
+
+        if (!clientRecord.isConnected) {
+            Log.d(TAG, "Queueing message to client %s: %s", clientId, message);
+            clientRecord.pendingMessages.add(message);
             return;
         }
 
+        Log.d(TAG, "Sending message to client %s: %s", clientId, message);
         mManager.onMessage(clientRecord.routeId, message);
     }
 
@@ -249,16 +244,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             return;
         }
 
-        if (source.getClientId() != null) {
-            String receiverActionClientId = source.getClientId() + RECEIVER_ACTION_PRESENTATION_ID;
-            ClientRecord clientRecord = mClientRecords.get(receiverActionClientId);
-            if (clientRecord != null) {
-                sendReceiverAction(clientRecord.routeId, sink, receiverActionClientId, "cast");
-                detachRoute(clientRecord.routeId);
-                mManager.onRouteClosed(clientRecord.routeId);
-            }
-        }
-
         CreateRouteRequest createRouteRequest = new CreateRouteRequest(
                 source, sink, presentationId, origin, tabId, nativeRequestId, this);
 
@@ -269,7 +254,25 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             return;
         }
 
-        createRouteRequest.start(mApplicationContext);
+        launchSession(createRouteRequest);
+    }
+
+    private void launchSession(CreateRouteRequest request) {
+        MediaSink sink = request.getSink();
+        MediaSource source = request.getSource();
+
+        MediaRoute route = new MediaRoute(
+                sink.getId(), source.getUrn(), request.getPresentationId());
+        addRoute(route, request.getOrigin(), request.getTabId());
+        mManager.onRouteCreated(route.id, route.sinkId, request.getNativeRequestId(), this, true);
+
+        if (source.getClientId() != null) {
+            ClientRecord clientRecord = mClientRecords.get(source.getClientId());
+            if (clientRecord != null) {
+                sendReceiverAction(clientRecord.routeId, sink, source.getClientId(), "cast");
+            }
+        }
+        request.start(mApplicationContext);
     }
 
     @Override
@@ -278,14 +281,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         MediaSource source = MediaSource.from(sourceId);
         if (source == null || source.getClientId() == null) {
             mManager.onRouteRequestError("Unsupported presentation URL", nativeRequestId);
-            return;
-        }
-
-        // For the ReceiverAction presentation id there's no need to have a session or a route.
-        if (RECEIVER_ACTION_PRESENTATION_ID.equals(presentationId)) {
-            MediaRoute route = new MediaRoute("", sourceId, presentationId);
-            addRoute(route, origin, tabId);
-            mManager.onRouteCreated(route.id, route.sinkId, nativeRequestId, this, true);
             return;
         }
 
@@ -333,19 +328,31 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     @Override
     public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
-        ClientRecord clientRecord = getClientRecordByRouteId(routeId);
-        if (clientRecord != null
-                && clientRecord.clientId.endsWith(RECEIVER_ACTION_PRESENTATION_ID)) {
-            mManager.onMessageSentResult(true, nativeCallbackId);
-            return;
-        }
+        Log.d(TAG, "Received message from client: %s", message);
 
-        if (mSession == null || !mRoutes.containsKey(routeId)) {
+        if (!mRoutes.containsKey(routeId)) {
             mManager.onMessageSentResult(false, nativeCallbackId);
             return;
         }
 
-        mSession.sendStringMessage(message, nativeCallbackId);
+        boolean success = false;
+        try {
+            JSONObject jsonMessage = new JSONObject(message);
+
+            String messageType = jsonMessage.getString("type");
+            if ("client_connect".equals(messageType)) {
+                success = handleClientConnectMessage(jsonMessage);
+            } else if ("client_disconnect".equals(messageType)) {
+                success = handleClientDisconnectMessage(jsonMessage);
+            } else if (mSession != null) {
+                success = mSession.handleSessionMessage(jsonMessage, messageType);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "JSONException while handling internal message: " + e);
+            success = false;
+        }
+
+        mManager.onMessageSentResult(success, nativeCallbackId);
     }
 
     @Override
@@ -355,6 +362,41 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         // an app_message within it's own message namespace, using the string version.
         // Sending failure in the result callback for now.
         mManager.onMessageSentResult(false, nativeCallbackId);
+    }
+
+    private boolean handleClientConnectMessage(JSONObject jsonMessage) throws JSONException {
+        String clientId = jsonMessage.getString("clientId");
+        if (clientId == null) return false;
+
+        ClientRecord clientRecord = mClientRecords.get(clientId);
+        if (clientRecord == null) return false;
+
+        clientRecord.isConnected = true;
+        if (mSession != null) mSession.onClientConnected(clientId);
+
+        if (clientRecord.pendingMessages.size() == 0) return true;
+        for (String message : clientRecord.pendingMessages) {
+            Log.d(TAG, "Deqeueing message for client %s: %s", clientId, message);
+            mManager.onMessage(clientRecord.routeId, message);
+        }
+        clientRecord.pendingMessages.clear();
+
+        return true;
+    }
+
+    private boolean handleClientDisconnectMessage(JSONObject jsonMessage) throws JSONException {
+        String clientId = jsonMessage.getString("clientId");
+        if (clientId == null) return false;
+
+        ClientRecord client = mClientRecords.get(clientId);
+        if (client == null) return false;
+
+        mRoutes.remove(client.routeId);
+        removeClient(client);
+
+        mManager.onRouteClosed(client.routeId);
+
+        return true;
     }
 
     private CastMediaRouteProvider(
@@ -455,8 +497,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             json.put("clientId", clientId);
             json.put("message", jsonReceiverAction);
 
-            Log.d(TAG, "Sending receiver action to %s: %s", routeId, json.toString());
-            mManager.onMessage(routeId, json.toString());
+            onMessage(clientId, json.toString());
         } catch (JSONException e) {
             Log.e(TAG, "Failed to send receiver action message", e);
         }

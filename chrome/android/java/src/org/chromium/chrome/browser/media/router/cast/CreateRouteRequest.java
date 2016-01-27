@@ -133,6 +133,30 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         mRouteProvider = routeProvider;
     }
 
+    public MediaSource getSource() {
+        return mSource;
+    }
+
+    public MediaSink getSink() {
+        return mSink;
+    }
+
+    public String getPresentationId() {
+        return mPresentationId;
+    }
+
+    public String getOrigin() {
+        return mOrigin;
+    }
+
+    public int getTabId() {
+        return mTabId;
+    }
+
+    public int getNativeRequestId() {
+        return mRequestId;
+    }
+
     /**
      * Starts the process of launching the application on the Cast device.
      * @param applicationContext application context
@@ -234,7 +258,6 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        MediaRoute route = new MediaRoute(mSink.getId(), mSource.getUrn(), mPresentationId);
         CastSession session = new CastSession(
                 mApiClient,
                 result.getSessionId(),
@@ -246,7 +269,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                 mSource,
                 mRouteProvider);
         mCastListener.setSession(session);
-        mRouteProvider.onRouteCreated(mRequestId, route, session, mOrigin, mTabId);
+        mRouteProvider.onSessionCreated(session);
 
         terminate();
     }

@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.media.router.cast;
 
 import org.chromium.chrome.browser.media.router.MediaRoute;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Contains information about a single client connection to the {@link MediaRoute}.
  */
@@ -39,6 +42,16 @@ public class ClientRecord {
      * The id of the tab that created/joined the route.
      */
     public final int tabId;
+
+    /**
+     * Whether the client is ready to receive messages.
+     */
+    public boolean isConnected = false;
+
+    /**
+     * The pending messages for the client.
+     */
+    public List<String> pendingMessages = new ArrayList<String>();
 
     ClientRecord(
             String routeId,

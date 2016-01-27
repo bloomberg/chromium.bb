@@ -306,19 +306,19 @@ public class CastSession implements MediaNotificationListener {
                 });
     }
 
-    public void sendStringMessage(String message, int callbackId) {
-        if (handleInternalMessage(message, callbackId)) return;
-
-        // TODO(avayvod): figure out what to do with custom namespace messages.
-        mRouteProvider.onMessageSentResult(false, callbackId);
-    }
-
     public String getSourceId() {
         return mSource.getUrn();
     }
 
     public String getSinkId() {
         return mCastDevice.getDeviceId();
+    }
+
+    public void onClientConnected(String clientId) {
+        sendClientMessageTo(
+                clientId, "new_session", buildSessionMessage(), INVALID_SEQUENCE_NUMBER);
+
+        if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -432,55 +432,18 @@ public class CastSession implements MediaNotificationListener {
         }
     }
 
-    private boolean handleInternalMessage(String message, int callbackId) {
-        Log.d(TAG, "Received message from client: %s", message);
-        boolean success = true;
-        try {
-            JSONObject jsonMessage = new JSONObject(message);
-
-            String messageType = jsonMessage.getString("type");
-            if ("client_connect".equals(messageType)) {
-                success = handleClientConnectMessage(jsonMessage);
-            } else if ("client_disconnect".equals(messageType)) {
-                success = handleClientDisconnectMessage(jsonMessage);
-            } else if ("leave_session".equals(messageType)) {
-                success = handleLeaveSessionMessage(jsonMessage);
-            } else if ("v2_message".equals(messageType)) {
-                success = handleCastV2Message(jsonMessage);
-            } else if ("app_message".equals(messageType)) {
-                success = handleAppMessage(jsonMessage);
-            } else {
-                Log.e(TAG, "Unsupported message: %s", message);
-                return false;
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, "JSONException while handling internal message: " + e);
+    public boolean handleSessionMessage(
+            JSONObject message, String messageType) throws JSONException {
+        if ("leave_session".equals(messageType)) {
+            return handleLeaveSessionMessage(message);
+        } else if ("v2_message".equals(messageType)) {
+            return handleCastV2Message(message);
+        } else if ("app_message".equals(messageType)) {
+            return handleAppMessage(message);
+        } else {
+            Log.e(TAG, "Unsupported message: %s", message);
             return false;
         }
-
-        mRouteProvider.onMessageSentResult(success, callbackId);
-        return true;
-    }
-
-    private boolean handleClientConnectMessage(JSONObject jsonMessage) throws JSONException {
-        String clientId = jsonMessage.getString("clientId");
-        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
-
-        sendClientMessageTo(
-                clientId, "new_session", buildSessionMessage(), INVALID_SEQUENCE_NUMBER);
-
-        if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
-
-        return true;
-    }
-
-    private boolean handleClientDisconnectMessage(JSONObject jsonMessage) throws JSONException {
-        String clientId = jsonMessage.getString("clientId");
-        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
-
-        mRouteProvider.onClientDisconnected(clientId);
-
-        return true;
     }
 
     // An example of the leave_session message.
@@ -765,8 +728,6 @@ public class CastSession implements MediaNotificationListener {
         } catch (JSONException e) {
             Log.e(TAG, "Failed to build the reply: " + e);
         }
-
-        Log.d(TAG, "Sending message to client: " + json);
 
         return json.toString();
     }
