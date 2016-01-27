@@ -1290,6 +1290,7 @@ crbug.com/571361 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
 crbug.com/575766 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
+crbug.com/581468 [ Win ] http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
 
 crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout Pass ]
 
