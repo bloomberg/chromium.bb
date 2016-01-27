@@ -21,7 +21,7 @@ group("deps") {
 if (prebuilt_available) {
   group("prebuilt") {
     visibility = [ ":deps" ]
-    public_configs = [ ":prebuilt_link_helper" ]
+    all_dependent_configs = [ ":prebuilt_link_helper" ]
     deps = [
       ":extract_prebuilt_instrumented_libraries",
     ]
