@@ -227,7 +227,7 @@ class _Drover(object):
     This is so the new workdir can be a sparse checkout without affecting
     |self._parent_repo|.
     """
-    parent_git_dir = os.path.abspath(self._run_git_command(
+    parent_git_dir = os.path.join(self._parent_repo, self._run_git_command(
         ['rev-parse', '--git-dir']).strip())
     self._workdir = tempfile.mkdtemp(prefix='drover_%s_' % self._branch)
     logging.debug('Creating checkout in %s', self._workdir)
