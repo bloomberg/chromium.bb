@@ -307,8 +307,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
     }
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   }
-  window_tree_host_.reset(
-      new WindowTreeHostMus(shell_, this, window_, surface_type_));
+  window_tree_host_.reset(new WindowTreeHostMus(shell_, this, window_));
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
   aura::Env::GetInstance()->set_context_factory(default_context_factory);

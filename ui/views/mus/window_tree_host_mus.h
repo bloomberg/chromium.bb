@@ -6,7 +6,6 @@
 #define UI_VIEWS_MUS_WINDOW_TREE_HOST_MUS_H_
 
 #include "base/macros.h"
-#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/views/mus/mus_export.h"
 
@@ -30,8 +29,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
   WindowTreeHostMus(mojo::Shell* shell,
                     NativeWidgetMus* native_widget_,
-                    mus::Window* window,
-                    mus::mojom::SurfaceType surface_type);
+                    mus::Window* window);
   ~WindowTreeHostMus() override;
 
   PlatformWindowMus* platform_window();

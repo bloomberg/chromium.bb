@@ -18,8 +18,7 @@ namespace views {
 
 WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell,
                                      NativeWidgetMus* native_widget,
-                                     mus::Window* window,
-                                     mus::mojom::SurfaceType surface_type)
+                                     mus::Window* window)
     : native_widget_(native_widget),
       show_state_(ui::PLATFORM_WINDOW_STATE_UNKNOWN) {
   SetPlatformWindow(
