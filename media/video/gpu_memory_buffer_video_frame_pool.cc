@@ -49,7 +49,6 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
       : media_task_runner_(media_task_runner),
         worker_task_runner_(worker_task_runner),
         gpu_factories_(gpu_factories),
-        texture_target_(gpu_factories->ImageTextureTarget()),
         output_format_(PIXEL_FORMAT_UNKNOWN) {
     DCHECK(media_task_runner_);
     DCHECK(worker_task_runner_);
@@ -164,7 +163,6 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // Pool of resources.
   std::list<FrameResources*> resources_pool_;
 
-  const unsigned texture_target_;
   // TODO(dcastagna): change the following type from VideoPixelFormat to
   // BufferFormat.
   VideoPixelFormat output_format_;
@@ -555,8 +553,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   // Set up the planes creating the mailboxes needed to refer to the textures.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
+    const gfx::BufferFormat buffer_format =
+        GpuMemoryBufferFormat(output_format_, i);
+    unsigned texture_target = gpu_factories_->ImageTextureTarget(buffer_format);
     // Bind the texture and create or rebind the image.
-    gles2->BindTexture(texture_target_, plane_resource.texture_id);
+    gles2->BindTexture(texture_target, plane_resource.texture_id);
 
     if (plane_resource.gpu_memory_buffer && !plane_resource.image_id) {
       const size_t width =
@@ -567,13 +568,12 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
           plane_resource.gpu_memory_buffer->AsClientBuffer(), width, height,
           ImageInternalFormat(output_format_, i));
     } else if (plane_resource.image_id) {
-      gles2->ReleaseTexImage2DCHROMIUM(texture_target_,
-                                       plane_resource.image_id);
+      gles2->ReleaseTexImage2DCHROMIUM(texture_target, plane_resource.image_id);
     }
     if (plane_resource.image_id)
-      gles2->BindTexImage2DCHROMIUM(texture_target_, plane_resource.image_id);
+      gles2->BindTexImage2DCHROMIUM(texture_target, plane_resource.image_id);
     mailbox_holders[i] = gpu::MailboxHolder(plane_resource.mailbox,
-                                            gpu::SyncToken(), texture_target_);
+                                            gpu::SyncToken(), texture_target);
   }
 
   // Insert a sync_token, this is needed to make sure that the textures the
@@ -693,14 +693,15 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
         plane_resource.size, buffer_format,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
 
+    unsigned texture_target = gpu_factories_->ImageTextureTarget(buffer_format);
     gles2->GenTextures(1, &plane_resource.texture_id);
-    gles2->BindTexture(texture_target_, plane_resource.texture_id);
-    gles2->TexParameteri(texture_target_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gles2->TexParameteri(texture_target_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gles2->TexParameteri(texture_target_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gles2->TexParameteri(texture_target_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gles2->BindTexture(texture_target, plane_resource.texture_id);
+    gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gles2->GenMailboxCHROMIUM(plane_resource.mailbox.name);
-    gles2->ProduceTextureCHROMIUM(texture_target_, plane_resource.mailbox.name);
+    gles2->ProduceTextureCHROMIUM(texture_target, plane_resource.mailbox.name);
   }
   return frame_resources;
 }

@@ -87,7 +87,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
       gfx::BufferUsage usage) = 0;
 
   virtual bool ShouldUseGpuMemoryBuffersForVideoFrames() const = 0;
-  virtual unsigned ImageTextureTarget() = 0;
+  virtual unsigned ImageTextureTarget(gfx::BufferFormat format) = 0;
   // Pixel format of the hardware video frames created when GpuMemoryBuffers
   // video frames are enabled.
   virtual VideoPixelFormat VideoFrameOutputFormat() = 0;

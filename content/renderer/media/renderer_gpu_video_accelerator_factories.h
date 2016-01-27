@@ -52,7 +52,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
-      unsigned image_texture_target,
+      std::vector<unsigned> image_texture_targets,
       bool enable_video_accelerator);
 
   // media::GpuVideoAcceleratorFactories implementation.
@@ -77,7 +77,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       gfx::BufferUsage usage) override;
 
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
-  unsigned ImageTextureTarget() override;
+  unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   media::VideoPixelFormat VideoFrameOutputFormat() override;
   scoped_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
   GetGLContextLock() override;
@@ -101,7 +101,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
-      unsigned image_texture_target,
+      std::vector<unsigned> image_texture_targets,
       bool enable_video_accelerator);
 
   bool CheckContextLost();
@@ -119,7 +119,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   // Whether gpu memory buffers should be used to hold video frames data.
   bool enable_gpu_memory_buffer_video_frames_;
-  const unsigned image_texture_target_;
+  const std::vector<unsigned> image_texture_targets_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
 

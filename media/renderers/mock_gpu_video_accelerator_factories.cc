@@ -128,7 +128,8 @@ bool MockGpuVideoAcceleratorFactories::ShouldUseGpuMemoryBuffersForVideoFrames()
   return false;
 }
 
-unsigned MockGpuVideoAcceleratorFactories::ImageTextureTarget() {
+unsigned MockGpuVideoAcceleratorFactories::ImageTextureTarget(
+    gfx::BufferFormat format) {
   return GL_TEXTURE_2D;
 }
 

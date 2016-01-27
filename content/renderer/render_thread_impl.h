@@ -661,6 +661,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
   std::vector<unsigned> use_image_texture_targets_;
+  std::vector<unsigned> use_video_frame_image_texture_targets_;
   bool are_image_decode_tasks_enabled_;
   bool is_threaded_animation_enabled_;
 

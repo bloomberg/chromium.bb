@@ -1471,16 +1471,16 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 #else
         cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
-    std::string image_texture_target_string =
+    std::vector<unsigned> image_texture_targets;
+    std::string video_frame_image_texture_target_string =
         cmd_line->GetSwitchValueASCII(switches::kVideoImageTextureTarget);
-    unsigned image_texture_target = 0;
-    const bool parsed_image_texture_target =
-        base::StringToUint(image_texture_target_string, &image_texture_target);
-    DCHECK(parsed_image_texture_target);
+    StringToUintVector(video_frame_image_texture_target_string,
+                       &image_texture_targets);
+
     gpu_factories_ = RendererGpuVideoAcceleratorFactories::Create(
         gpu_channel_host.get(), base::ThreadTaskRunnerHandle::Get(),
         media_task_runner, shared_context_provider,
-        enable_gpu_memory_buffer_video_frames, image_texture_target,
+        enable_gpu_memory_buffer_video_frames, image_texture_targets,
         enable_video_accelerator);
   }
   return gpu_factories_.get();

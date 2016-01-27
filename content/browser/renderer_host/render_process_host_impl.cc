@@ -1283,6 +1283,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   // Persistent buffers may come at a performance hit (not all platform specific
   // buffers support it), so only enable them if partial raster is enabled and
   // we are actually going to use them.
+  // TODO(dcastagna): Once GPU_READ_CPU_READ_WRITE_PERSISTENT is removed
+  // kContentImageTextureTarget and kVideoImageTextureTarget can be merged into
+  // one flag.
   gfx::BufferUsage buffer_usage =
       IsPartialRasterEnabled()
           ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
@@ -1298,10 +1301,15 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kContentImageTextureTarget,
                                   UintVectorToString(image_targets));
 
-  command_line->AppendSwitchASCII(
-      switches::kVideoImageTextureTarget,
-      base::UintToString(BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-          gfx::BufferFormat::R_8, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE)));
+  for (size_t format = 0;
+       format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
+    image_targets[format] =
+        BrowserGpuMemoryBufferManager::GetImageTextureTarget(
+            static_cast<gfx::BufferFormat>(format),
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+  }
+  command_line->AppendSwitchASCII(switches::kVideoImageTextureTarget,
+                                  UintVectorToString(image_targets));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

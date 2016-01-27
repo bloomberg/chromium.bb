@@ -32,11 +32,11 @@ RendererGpuVideoAcceleratorFactories::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    unsigned image_texture_target,
+    std::vector<unsigned> image_texture_targets,
     bool enable_video_accelerator) {
   return make_scoped_ptr(new RendererGpuVideoAcceleratorFactories(
       gpu_channel_host, main_thread_task_runner, task_runner, context_provider,
-      enable_gpu_memory_buffer_video_frames, image_texture_target,
+      enable_gpu_memory_buffer_video_frames, image_texture_targets,
       enable_video_accelerator));
 }
 
@@ -46,7 +46,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    unsigned image_texture_target,
+    std::vector<unsigned> image_texture_targets,
     bool enable_video_accelerator)
     : main_thread_task_runner_(main_thread_task_runner),
       task_runner_(task_runner),
@@ -55,7 +55,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
       context_provider_(context_provider.get()),
       enable_gpu_memory_buffer_video_frames_(
           enable_gpu_memory_buffer_video_frames),
-      image_texture_target_(image_texture_target),
+      image_texture_targets_(image_texture_targets),
       video_accelerator_enabled_(enable_video_accelerator),
       gpu_memory_buffer_manager_(ChildThreadImpl::current()
                                      ->gpu_memory_buffer_manager()),
@@ -194,8 +194,9 @@ bool RendererGpuVideoAcceleratorFactories::
   return enable_gpu_memory_buffer_video_frames_;
 }
 
-unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget() {
-  return image_texture_target_;
+unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget(
+    gfx::BufferFormat format) {
+  return image_texture_targets_[static_cast<int>(format)];
 }
 
 media::VideoPixelFormat
