@@ -1972,7 +1972,7 @@ static size_t read_uncompressed_header(VP10Decoder *pbi,
         read_bitdepth_colorspace_sampling(cm, rb);
       } else {
         // NOTE: The intra-only frame header does not include the specification
-        // of either the color format or color sub-sampling in profile 0. VP9
+        // of either the color format or color sub-sampling in profile 0. VP10
         // specifies that the default color format should be YUV 4:2:0 in this
         // case (normative).
         cm->color_space = VPX_CS_BT_601;

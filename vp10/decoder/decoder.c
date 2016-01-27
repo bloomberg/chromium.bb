@@ -158,7 +158,7 @@ vpx_codec_err_t vp10_copy_reference_dec(VP10Decoder *pbi,
   /* TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
    * encoder is using the frame buffers for. This is just a stub to keep the
    * vpxenc --test-decode functionality working, and will be replaced in a
-   * later commit that adds VP9-specific controls for this functionality.
+   * later commit that adds VP10-specific controls for this functionality.
    */
   if (ref_frame_flag == VPX_LAST_FLAG) {
     const YV12_BUFFER_CONFIG *const cfg = get_ref_frame(cm, 0);
@@ -190,7 +190,7 @@ vpx_codec_err_t vp10_set_reference_dec(VP10_COMMON *cm,
   // TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
   // encoder is using the frame buffers for. This is just a stub to keep the
   // vpxenc --test-decode functionality working, and will be replaced in a
-  // later commit that adds VP9-specific controls for this functionality.
+  // later commit that adds VP10-specific controls for this functionality.
   if (ref_frame_flag == VPX_LAST_FLAG) {
     ref_buf = &cm->frame_refs[0];
   } else if (ref_frame_flag == VPX_GOLD_FLAG) {
