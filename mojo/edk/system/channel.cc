@@ -36,6 +36,7 @@ Channel::Message::Message(size_t payload_size, size_t num_handles) {
 
   data_ = static_cast<char*>(base::AlignedAlloc(size_,
                                                 kChannelMessageAlignment));
+  memset(data_, 0, size_);
   header_ = reinterpret_cast<Header*>(data_);
 
   DCHECK_LE(size_, std::numeric_limits<uint32_t>::max());
