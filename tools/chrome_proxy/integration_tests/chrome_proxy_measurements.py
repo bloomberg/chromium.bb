@@ -241,27 +241,6 @@ class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
     self._metrics.AddResultsForHTTPFallback(tab, results)
 
 
-class ChromeProxyClientVersion(ChromeProxyValidation):
-  """Correctness measurement for version directives in Chrome-Proxy header.
-
-  The test verifies that the version information provided in the Chrome-Proxy
-  request header overrides any version, if specified, that is provided in the
-  user agent string.
-  """
-
-  def __init__(self):
-    super(ChromeProxyClientVersion, self).__init__(
-        metrics=metrics.ChromeProxyMetric())
-
-  def CustomizeBrowserOptions(self, options):
-    super(ChromeProxyClientVersion,
-          self).CustomizeBrowserOptions(options)
-    options.AppendExtraBrowserArgs('--user-agent="Chrome/32.0.1700.99"')
-
-  def AddResults(self, tab, results):
-    self._metrics.AddResultsForClientVersion(tab, results)
-
-
 class ChromeProxyClientType(ChromeProxyValidation):
   """Correctness measurement for Chrome-Proxy header client type directives."""
 

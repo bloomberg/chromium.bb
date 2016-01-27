@@ -10,16 +10,6 @@ from telemetry import benchmark
 DESKTOP_PLATFORMS = ['mac', 'linux', 'win', 'chromeos']
 WEBVIEW_PLATFORMS = ['android-webview', 'android-webview-shell']
 
-class ChromeProxyClientVersion(ChromeProxyBenchmark):
-  tag = 'client_version'
-  test = measurements.ChromeProxyClientVersion
-  page_set = pagesets.SyntheticStorySet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.client_version.synthetic'
-
-
 class ChromeProxyClientType(ChromeProxyBenchmark):
   tag = 'client_type'
   test = measurements.ChromeProxyClientType

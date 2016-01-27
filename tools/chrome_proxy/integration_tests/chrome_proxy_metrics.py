@@ -170,25 +170,6 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'extra_via_header', 'count', extra_via_count))
 
-  def AddResultsForClientVersion(self, tab, results):
-    via_count = 0
-    for resp in self.IterResponses(tab):
-      r = resp.response
-      if resp.response.status != 200:
-        raise ChromeProxyMetricException, ('%s: Response is not 200: %d' %
-                                           (r.url, r.status))
-      if not resp.IsValidByViaHeader():
-        raise ChromeProxyMetricException, ('%s: Response missing via header' %
-                                           (r.url))
-      via_count += 1
-
-    if via_count == 0:
-      raise ChromeProxyMetricException, (
-          'Expected at least one response through the proxy, but zero such '
-          'responses were received.')
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'responses_via_proxy', 'count', via_count))
-
   def GetClientTypeFromRequests(self, tab):
     """Get the Chrome-Proxy client type value from requests made in this tab.
 
