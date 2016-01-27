@@ -19,7 +19,7 @@ def LoadSupport(input_api):
           _GetChromiumSrcDir(input_api), 'third_party', 'catapult',
           'catapult_base')
       sys.path = [catapult_base_path] + sys.path
-      from catapult_base import cloud_storage  # pylint: disable=import-error
+      from catapult_base import cloud_storage
       globals()['cloud_storage'] = cloud_storage
     finally:
       sys.path = _old_sys_path

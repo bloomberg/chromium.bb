@@ -9,7 +9,7 @@ import os
 import re
 import tempfile
 
-from catapult_base import cloud_storage  # pylint: disable=import-error
+from catapult_base import cloud_storage
 from telemetry.page import page_test
 from telemetry.util import image_util
 from telemetry.util import rgba_color

@@ -10,7 +10,7 @@ from gpu_tests import cloud_storage_test_base
 from gpu_tests import pixel_expectations
 import page_sets
 
-from catapult_base import cloud_storage  # pylint: disable=import-error
+from catapult_base import cloud_storage
 from telemetry.page import page_test
 from telemetry.util import image_util
 

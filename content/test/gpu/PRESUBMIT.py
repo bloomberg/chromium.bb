@@ -13,7 +13,10 @@ def _GetPathsToPrepend(input_api):
   return [
     input_api.os_path.join(current_dir, 'gpu_tests'),
     input_api.os_path.join(chromium_src_dir, 'tools', 'perf'),
-    input_api.os_path.join(chromium_src_dir, 'tools', 'telemetry'),
+    input_api.os_path.join(chromium_src_dir,
+        'third_party', 'catapult', 'telemetry'),
+    input_api.os_path.join(chromium_src_dir,
+        'third_party', 'catapult', 'catapult_base'),
   ]
 
 def _WebGLTextExpectationsTests(input_api, output_api):
