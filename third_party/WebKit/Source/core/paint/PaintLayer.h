@@ -621,6 +621,11 @@ public:
     PaintLayerPainter::PaintResult previousPaintResult() const { return static_cast<PaintLayerPainter::PaintResult>(m_previousPaintResult); }
     void setPreviousPaintResult(PaintLayerPainter::PaintResult result) { m_previousPaintResult = static_cast<unsigned>(result); ASSERT(m_previousPaintResult == static_cast<unsigned>(result)); }
 
+    // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never had descendant outlines.
+    // Once it's set we never clear it because it's not easy to track if all outlines have been removed.
+    bool needsPaintPhaseDescendantOutlines() const { return m_needsPaintPhaseDescendantOutlines; }
+    void setNeedsPaintPhaseDescendantOutlines() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseDescendantOutlines = true; }
+
     PaintTiming* paintTiming();
 
 private:
@@ -752,6 +757,8 @@ private:
 
     unsigned m_needsRepaint : 1;
     unsigned m_previousPaintResult : 1; // PaintLayerPainter::PaintResult
+
+    unsigned m_needsPaintPhaseDescendantOutlines : 1;
 
     LayoutBoxModelObject* m_layoutObject;
 

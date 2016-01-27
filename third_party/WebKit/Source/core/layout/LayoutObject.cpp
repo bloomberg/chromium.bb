@@ -1406,6 +1406,12 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
 
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
+    if (styleRef().hasOutline()) {
+        PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
+        if (layer.layoutObject() != this)
+            layer.setNeedsPaintPhaseDescendantOutlines();
+    }
+
     LayoutView* v = view();
     if (v->document().printing())
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.

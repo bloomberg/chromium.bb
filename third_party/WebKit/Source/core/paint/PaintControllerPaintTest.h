@@ -83,6 +83,15 @@ protected:
             commit();
     }
 
+    bool displayItemListContains(const DisplayItemList& displayItemList, DisplayItemClient& client, DisplayItem::Type type)
+    {
+        for (auto& item : displayItemList) {
+            if (item.client() == client && item.type() == type)
+                return true;
+        }
+        return false;
+    }
+
 private:
     bool m_originalSlimmingPaintOffsetCachingEnabled;
     bool m_originalSlimmingPaintV2Enabled;

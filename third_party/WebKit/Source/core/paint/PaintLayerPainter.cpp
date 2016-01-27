@@ -673,7 +673,8 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     if (!selectionOnly) {
         paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintFlags, clipState);
         paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintFlags, clipState);
-        paintForegroundForFragmentsWithPhase(PaintPhaseDescendantOutlinesOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
+        if (m_paintLayer.needsPaintPhaseDescendantOutlines())
+            paintForegroundForFragmentsWithPhase(PaintPhaseDescendantOutlinesOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
     }
 }
 

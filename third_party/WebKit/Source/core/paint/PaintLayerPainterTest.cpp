@@ -242,4 +242,46 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 }
 
+TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
+{
+    AtomicString styleWithoutOutline = "width: 50px; height: 50px; background-color: green";
+    AtomicString styleWithOutline = "outline: 1px solid blue; " + styleWithoutOutline;
+    setBodyInnerHTML(
+        "<div id='self-painting-layer' style='position: absolute'>"
+        "  <div id='non-self-painting-layer' style='overflow: hidden'>"
+        "    <div>"
+        "      <div id='outline'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>");
+    LayoutObject& outlineDiv = *document().getElementById("outline")->layoutObject();
+    toHTMLElement(outlineDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithoutOutline);
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock& selfPaintingLayerObject = *toLayoutBlock(document().getElementById("self-painting-layer")->layoutObject());
+    PaintLayer& selfPaintingLayer = *selfPaintingLayerObject.layer();
+    ASSERT_TRUE(selfPaintingLayer.isSelfPaintingLayer());
+    PaintLayer& nonSelfPaintingLayer = *toLayoutBoxModelObject(document().getElementById("non-self-painting-layer")->layoutObject())->layer();
+    ASSERT_FALSE(nonSelfPaintingLayer.isSelfPaintingLayer());
+    ASSERT_TRUE(&nonSelfPaintingLayer == outlineDiv.enclosingLayer());
+
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
+
+    // Outline on the self-painting-layer node itself doesn't affect PaintPhaseDescendantOutlines.
+    toHTMLElement(selfPaintingLayerObject.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; outline: 1px solid green");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), selfPaintingLayerObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
+
+    // needsPaintPhaseDescendantOutlines should be set when any descendant on the same layer has outline.
+    toHTMLElement(outlineDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithOutline);
+    updateLifecyclePhasesBeforePaint();
+    EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
+    paint();
+    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), outlineDiv, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
+}
+
 } // namespace blink
