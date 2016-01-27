@@ -326,7 +326,7 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void startRead() {
-            mUserExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+            mExecutor.execute(errorSetting(State.STARTED, new CheckedRunnable() {
                 @Override
                 public void run() throws Exception {
                     if (mOutputChannel == null) {
@@ -336,7 +336,12 @@ final class JavaUrlRequest implements UrlRequest {
                         mOutputChannel = Channels.newChannel(mUrlConnection.getOutputStream());
                     }
                     mSinkState.set(SinkState.AWAITING_READ_RESULT);
-                    mUploadProvider.read(OutputStreamDataSink.this, mBuffer);
+                    mUserExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+                        @Override
+                        public void run() throws Exception {
+                            mUploadProvider.read(OutputStreamDataSink.this, mBuffer);
+                        }
+                    }));
                 }
             }));
         }

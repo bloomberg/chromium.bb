@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
+import android.os.StrictMode;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -68,8 +69,23 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     private int mBufferPositionBeforeRead;
 
     private class ExecutorThreadFactory implements ThreadFactory {
-        public Thread newThread(Runnable r) {
-            mExecutorThread = new Thread(r);
+        public Thread newThread(final Runnable r) {
+            mExecutorThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    StrictMode.ThreadPolicy threadPolicy = StrictMode.getThreadPolicy();
+                    try {
+                        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                                                           .detectNetwork()
+                                                           .penaltyLog()
+                                                           .penaltyDeath()
+                                                           .build());
+                        r.run();
+                    } finally {
+                        StrictMode.setThreadPolicy(threadPolicy);
+                    }
+                }
+            });
             return mExecutorThread;
         }
     }
