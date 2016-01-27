@@ -155,6 +155,15 @@ class LayerTreeHostSerializationTest : public testing::Test {
               layer_tree_host_dst_->surface_id_namespace_);
     EXPECT_EQ(layer_tree_host_src_->next_surface_sequence_,
               layer_tree_host_dst_->next_surface_sequence_);
+
+    // All layers must have a property tree index that matches PropertyTrees.
+    if (layer_tree_host_dst_->property_trees_.sequence_number) {
+      int seq_num = layer_tree_host_dst_->property_trees_.sequence_number;
+      LayerTreeHostCommon::CallFunctionForSubtree(
+          layer_tree_host_dst_->root_layer_.get(), [seq_num](Layer* layer) {
+            EXPECT_EQ(seq_num, layer->property_tree_sequence_number());
+          });
+    }
   }
 
   void RunAllMembersChangedTest() {

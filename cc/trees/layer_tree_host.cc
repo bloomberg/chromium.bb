@@ -1438,6 +1438,17 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   property_trees_ = PropertyTrees();
   property_trees_.FromProtobuf(proto.property_trees());
 
+  // Forcefully override the sequence number of all layers in the tree to have
+  // a valid sequence number. Changing the sequence number for a layer does not
+  // need a commit, so the value will become out of date for layers that are not
+  // updated for other reasons. All layers that at this point are part of the
+  // layer tree are valid, so it is OK that they have a valid sequence number.
+  int seq_num = property_trees_.sequence_number;
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer(), [seq_num](Layer* layer) {
+        layer->set_property_tree_sequence_number(seq_num);
+      });
+
   surface_id_namespace_ = proto.surface_id_namespace();
   next_surface_sequence_ = proto.next_surface_sequence();
 }
