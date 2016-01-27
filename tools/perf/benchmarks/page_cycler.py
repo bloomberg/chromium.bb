@@ -96,6 +96,16 @@ class PageCyclerIntlJaZh(_PageCycler):
   def Name(cls):
     return 'page_cycler.intl_ja_zh'
 
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    # Filter out vm_private_dirty_final_renderer
+    # crbug.com/551522
+    print '**** %s ***' % value.name
+    filtered_name = (
+        'vm_private_dirty_final_renderer.vm_private_dirty_final_renderer')
+    return (super(PageCyclerIntlJaZh, cls).ValueCanBeAddedPredicate(
+        value, is_first_result) and value.name != filtered_name)
+
 
 @benchmark.Disabled('xp', 'android')  # crbug.com/434366, crbug.com/506903
 class PageCyclerIntlKoThVi(_PageCycler):
