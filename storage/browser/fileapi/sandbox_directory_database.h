@@ -123,6 +123,8 @@ class STORAGE_EXPORT SandboxDirectoryDatabase {
   bool AddFileInfoHelper(
       const FileInfo& info, FileId file_id, leveldb::WriteBatch* batch);
   bool RemoveFileInfoHelper(FileId file_id, leveldb::WriteBatch* batch);
+  // Close the database. Before this, all iterators associated with the database
+  // must be deleted.
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 

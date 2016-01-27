@@ -844,11 +844,15 @@ void SandboxDirectoryDatabase::ReportInitStatus(
 
 bool SandboxDirectoryDatabase::StoreDefaultValues() {
   // Verify that this is a totally new database, and initialize it.
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
-  iter->SeekToFirst();
-  if (iter->Valid()) {  // DB was not empty--we shouldn't have been called.
-    LOG(ERROR) << "File system origin database is corrupt!";
-    return false;
+  {
+    // Scope the iterator to ensure deleted before database is closed.
+    scoped_ptr<leveldb::Iterator> iter(
+        db_->NewIterator(leveldb::ReadOptions()));
+    iter->SeekToFirst();
+    if (iter->Valid()) {  // DB was not empty--we shouldn't have been called.
+      LOG(ERROR) << "File system origin database is corrupt!";
+      return false;
+    }
   }
   // This is always the first write into the database.  If we ever add a
   // version number, it should go in this transaction too.
