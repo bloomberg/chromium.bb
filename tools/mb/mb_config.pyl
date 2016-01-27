@@ -23,8 +23,8 @@
     'android_gyp_debug_static_bot_arm64': ['android', 'gyp', 'debug_static_bot', 'arm64'],
     'android_gyp_release_bot': ['android', 'gyp', 'release_bot'],
     'android_gyp_release_bot_minimal_symbols': ['android', 'gyp', 'release_bot', 'minimal_symbols'],
-    'cast_gyp_release_bot': ['cast', 'gyp', 'release_bot'],
-    'cast_gyp_release_trybot': ['cast', 'gyp', 'release_trybot'],
+    'cast_gn_release_bot': ['cast', 'gn', 'release_bot'],
+    'cast_gn_release_trybot': ['cast', 'gn', 'release_trybot'],
     'chromeos_gn_debug_bot': ['chromeos', 'gn', 'debug_bot'],
     'chromeos_ozone_gn_release_bot': ['chromeos', 'ozone', 'gn', 'release_bot'],
     'chromeos_ozone_gn_release_trybot': ['chromeos', 'ozone', 'gn', 'release_trybot'],
@@ -191,7 +191,7 @@
     },
 
     'cast': {
-      'gn_args': '# TODO: Need the GN equivalents for a Chromecast build.',
+      'gn_args': 'is_chromecast=true',
       'gyp_defines': 'chromecast=1',
     },
 
@@ -468,7 +468,7 @@
       'Linux GN': 'gn_release_bot',
       'Linux GN Clobber': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot',
-      'Cast Linux': 'cast_gyp_release_bot',
+      'Cast Linux': 'cast_gn_release_bot',
       'Android Arm64 Builder (dbg)': 'android_gyp_debug_static_bot_arm64',
       'Android Builder (dbg)': 'android_gyp_debug_static_bot',
       'Android Tests (dbg)': 'android_gyp_debug_static_bot',
@@ -644,7 +644,7 @@
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_clobber_rel_ng': 'gyp_release_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
-      'cast_shell_linux': 'cast_gyp_release_trybot',
+      'cast_shell_linux': 'cast_gn_release_trybot',
       'linux_deterministic': 'swarming_deterministic_gyp_release_bot',
       'linux_ecs_ozone': 'embedded_gyp_debug_bot',
     },
