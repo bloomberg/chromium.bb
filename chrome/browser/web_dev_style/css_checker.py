@@ -1,4 +1,4 @@
-# Copyright 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class CSSChecker(object):
       return re.sub(re.compile(r'--[\d\w-]+: {.*?};', re.DOTALL), '', s)
 
     def _remove_template_expressions(s):
-      return re.sub(re.compile(r'\$i18n{[^}]*}', re.DOTALL), '', s)
+      return re.sub(re.compile(r'\${[^}]*}', re.DOTALL), '', s)
 
     def _remove_grit(s):
       grit_reg = re.compile(r"""
