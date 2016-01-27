@@ -51,6 +51,7 @@ static_assert(WTF::kPageMetadataSize * WTF::kNumPartitionPagesPerSuperPage <= WT
 // Check that some of our zanier calculations worked out as expected.
 static_assert(WTF::kGenericSmallestBucket == 8, "generic smallest bucket");
 static_assert(WTF::kGenericMaxBucketed == 983040, "generic max bucketed");
+static_assert(WTF::kMaxSystemPagesPerSlotSpan < (1 << 8), "System pages per slot span must be less than 128.");
 
 namespace WTF {
 
@@ -62,7 +63,7 @@ void (*PartitionRootBase::gOomHandlingFunction)() = nullptr;
 PartitionAllocHooks::AllocationHook* PartitionAllocHooks::m_allocationHook = nullptr;
 PartitionAllocHooks::FreeHook* PartitionAllocHooks::m_freeHook = nullptr;
 
-static uint16_t partitionBucketNumSystemPages(size_t size)
+static uint8_t partitionBucketNumSystemPages(size_t size)
 {
     // This works out reasonably for the current bucket sizes of the generic
     // allocator, and the current values of partition page size and constants.
@@ -78,7 +79,9 @@ static uint16_t partitionBucketNumSystemPages(size_t size)
     uint16_t bestPages = 0;
     if (size > kMaxSystemPagesPerSlotSpan * kSystemPageSize) {
         ASSERT(!(size % kSystemPageSize));
-        return static_cast<uint16_t>(size / kSystemPageSize);
+        bestPages = static_cast<uint16_t>(size / kSystemPageSize);
+        RELEASE_ASSERT(bestPages < (1 << 8));
+        return static_cast<uint8_t>(bestPages);
     }
     ASSERT(size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize);
     for (uint16_t i = kNumSystemPagesPerPartitionPage - 1; i <= kMaxSystemPagesPerSlotSpan; ++i) {
@@ -97,7 +100,8 @@ static uint16_t partitionBucketNumSystemPages(size_t size)
         }
     }
     ASSERT(bestPages > 0);
-    return bestPages;
+    RELEASE_ASSERT(bestPages <= kMaxSystemPagesPerSlotSpan);
+    return static_cast<uint8_t>(bestPages);
 }
 
 static void partitionAllocBaseInit(PartitionRootBase* root)

@@ -259,8 +259,8 @@ struct PartitionBucket {
     PartitionPage* emptyPagesHead;
     PartitionPage* decommittedPagesHead;
     uint32_t slotSize;
-    uint16_t numSystemPagesPerSlotSpan;
-    uint16_t numFullPages;
+    unsigned numSystemPagesPerSlotSpan : 8;
+    unsigned numFullPages : 24;
 };
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
