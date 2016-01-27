@@ -114,9 +114,11 @@ else, e.g.: `ninja -C out/Release chrome_public_test_apk`
 
 ## Running Tests
 
-All functional tests are run using `build/android/test_runner.py`.
+All functional tests are run using `build/android/test_runner.py`, either
+directly or via a generated wrapper script in `<output directory>/bin/`.
 Tests are sharded across all attached devices. In order to run tests, call:
 `build/android/test_runner.py <test_type> [options]`
+(or `<generated wrapper script> [options]`).
 For a list of valid test types, see `test_runner.py --help`. For
 help on a specific test type, run `test_runner.py <test_type> --help`.
 
@@ -130,7 +132,8 @@ out\_android, then do `export CHROMIUM_OUT_DIR=out_android` before running the
 command below. You have to do this even if your "out" directory is a symlink
 pointing to "out_android". You can also use `--output-directory` to point to the
 path of your output directory, for example,
-`--output-directory=out_android/Debug`.
+`--output-directory=out_android/Debug`. (The generated wrapper scripts handle
+this automatically.)
 
 ## INSTALL\_FAILED\_CONTAINER\_ERROR or INSTALL\_FAILED\_INSUFFICIENT\_STORAGE
 
@@ -205,11 +208,10 @@ build/android/test_runner.py junit -s chrome_junit_tests --release -vvv
 ninja -C out/Release content_unittests_apk
 
 # Run a test suite
-build/android/test_runner.py gtest -s content_unittests --release -vvv
+out/Release/bin/run_content_unittests [-vv]
 
 # Run a subset of tests
-build/android/test_runner.py gtest -s content_unittests --release -vvv \
---gtest-filter ByteStreamTest.*
+out/Release/bin/run_content_unittests [-vv] --gtest-filter ByteStreamTest.*
 ```
 
 ## Instrumentation Tests
@@ -219,8 +221,8 @@ UNLOCKED. Otherwise, the test will timeout trying to launch an intent.
 Optionally you can disable screen lock under Settings -> Security -> Screen Lock
 -> None.
 
-Next, you need to build the app, build your tests, install the application APK,
-and then run your tests (which will install the test APK automatically).
+Next, you need to build the app, build your tests, and then run your tests
+(which will install the APK under test and the test APK automatically).
 
 Examples:
 
@@ -233,12 +235,8 @@ ninja -C out/Release content_shell_apk
 # Build the tests themselves
 ninja -C out/Release content_shell_test_apk
 
-# Install the code under test
-build/android/adb_install_apk.py out/Release/apks/ContentShell.apk
-
-# Run the test (will automagically install the test APK)
-build/android/test_runner.py instrumentation --test-apk=ContentShellTest \
---isolate-file-path content/content_shell_test_apk.isolate --release -vv
+# Run the test (will automagically install the APK under test and the test APK)
+out/Release/bin/run_content_shell_test_apk [-vv]
 ```
 
 ChromePublic tests:
@@ -250,12 +248,8 @@ ninja -C out/Release chrome_public_apk
 # Build the tests themselves
 ninja -C out/Release chrome_public_test_apk
 
-# Install the code under test
-build/android/adb_install_apk.py out/Release/apks/ChromePublic.apk
-
-# Run the test (will automagically install the test APK)
-build/android/test_runner.py instrumentation --test-apk=ChromePublicTest \
---isolate-file-path chrome/chrome_public_test_apk.isolate --release -vv
+# Run the test (will automagically install the APK under test and the test APK)
+out/Release/bin/run_chrome_public_test_apk [-vv]
 ```
 
 AndroidWebView tests:
@@ -263,37 +257,31 @@ AndroidWebView tests:
 ```shell
 ninja -C out/Release android_webview_apk
 ninja -C out/Release android_webview_test_apk
-build/android/adb_install_apk.py out/Release/apks/AndroidWebView.apk \
-build/android/test_runner.py instrumentation --test-apk=AndroidWebViewTest \
---test_data webview:android_webview/test/data/device_files --release -vvv
+out/Release/bin/run_android_webview_test_apk [-vv]
 ```
 
-Use adb\_install\_apk.py to install the app under test, then run the test
-command. In order to run a subset of tests, use -f to filter based on test
+In order to run a subset of tests, use -f to filter based on test
 class/method or -A/-E to filter using annotations.
 
 Filtering examples:
 
 ```shell
 # Run a test suite
-build/android/test_runner.py instrumentation --test-apk=ContentShellTest
+out/Debug/bin/run_content_shell_test_apk
 
 # Run a specific test class
-build/android/test_runner.py instrumentation --test-apk=ContentShellTest -f \
-AddressDetectionTest
+out/Debug/bin/run_content_shell_test_apk -f AddressDetectionTest.*
 
 # Run a specific test method
-build/android/test_runner.py instrumentation --test-apk=ContentShellTest -f \
+out/Debug/bin/run_content_shell_test_apk -f \
 AddressDetectionTest#testAddressLimits
 
 # Run a subset of tests by size (Smoke, SmallTest, MediumTest, LargeTest,
 # EnormousTest)
-build/android/test_runner.py instrumentation --test-apk=ContentShellTest -A \
-Smoke
+out/Debug/bin/run_content_shell_test_apk -A Smoke
 
 # Run a subset of tests by annotation, such as filtering by Feature
-build/android/test_runner.py instrumentation --test-apk=ContentShellTest -A \
-Feature=Navigation
+out/Debug/bin/run_content_shell_test_apk -A Feature=Navigation
 ```
 
 You might want to add stars `*` to each as a regular expression, e.g.
