@@ -1,10 +1,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    'version_py': '<(DEPTH)/build/util/version.py',
-    'version_path': '../../chrome/VERSION',
-    'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
-    'branding_dir': '../app/theme/<(branding_path_component)',
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
     'mini_installer_internal_deps%': 0,

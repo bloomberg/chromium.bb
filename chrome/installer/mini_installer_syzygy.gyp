@@ -3,10 +3,6 @@
 # found in the LICENSE file.
 {
   'variables': {
-    'version_py': '<(DEPTH)/build/util/version.py',
-    'version_path': '<(DEPTH)/chrome/VERSION',
-    'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
-    'branding_dir': '../app/theme/<(branding_path_component)',
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
   },

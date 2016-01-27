@@ -17,6 +17,7 @@
     '../chrome.gyp:default_extensions',
     '../chrome.gyp:setup',
     'installer_tools.gyp:test_installer_sentinel',
+    'mini_installer_version.gyp:mini_installer_version',
   ],
   'include_dirs': [
     '../..',
@@ -25,6 +26,7 @@
   ],
   'sources': [
     '<(INTERMEDIATE_DIR)/packed_files.rc',
+    '<(PRODUCT_DIR)/mini_installer_exe_version.rc',
     'mini_installer/appid.h',
     'mini_installer/chrome.release',
     'mini_installer/chrome_appid.cc',
@@ -135,34 +137,6 @@
     # TODO(yukawa): Enable the common compatibility manifest again.
     'win_exe_compatibility_manifest': '',
   },
-  'rules': [
-    {
-      'rule_name': 'mini_installer_version',
-      'extension': 'version',
-      'variables': {
-        'template_input_path': 'mini_installer/mini_installer_exe_version.rc.version',
-      },
-      'inputs': [
-        '<(template_input_path)',
-        '<(version_path)',
-        '<(lastchange_path)',
-        '<(branding_dir)/BRANDING',
-      ],
-      'outputs': [
-        '<(PRODUCT_DIR)/mini_installer_exe_version.rc',
-      ],
-      'action': [
-        'python', '<(version_py)',
-        '-f', '<(version_path)',
-        '-f', '<(lastchange_path)',
-        '-f', '<(branding_dir)/BRANDING',
-        '<(template_input_path)',
-        '<@(_outputs)',
-      ],
-      'process_outputs_as_sources': 1,
-      'message': 'Generating version information'
-    },
-  ],
   'actions': [
     {
       'action_name': 'installer_archive',
