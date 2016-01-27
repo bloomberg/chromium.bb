@@ -52,12 +52,6 @@ interface Directory {
   // fsync()/FlushFileBuffers().
   Flush() => (FileError error);
 
-  // Reads the contents of an entire file.
-  ReadEntireFile(string path) => (FileError error, array<uint8> data);
-
-  // Writes |data| to |path|, overwriting the file if it already exists.
-  WriteFile(string path, array<uint8> data) => (FileError error);
-
   // TODO(vtl): directory "streaming"?
   // TODO(vtl): "make root" (i.e., prevent cd-ing, etc., to parent); note that
   // this would require a much more complicated implementation (e.g., it needs

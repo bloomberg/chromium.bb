@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "components/filesystem/file_impl.h"
 #include "components/filesystem/util.h"
-#include "mojo/common/common_type_converters.h"
 
 namespace filesystem {
 
@@ -65,7 +64,7 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
 
 #if defined(OS_WIN)
   // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
-  if (base::DirectoryExists(path))
+  if (DirectoryExists(path))
     open_flags |= base::File::FLAG_BACKUP_SEMANTICS;
 #endif  // OS_WIN
 
@@ -211,70 +210,6 @@ void DirectoryImpl::Flush(const FlushCallback& callback) {
   if (!file.Flush()) {
     callback.Run(FileError::FAILED);
     return;
-  }
-
-  callback.Run(FileError::OK);
-}
-
-void DirectoryImpl::ReadEntireFile(const mojo::String& raw_path,
-                                   const ReadEntireFileCallback& callback) {
-  base::FilePath path;
-  FileError error = ValidatePath(raw_path, directory_path_, &path);
-  if (error != FileError::OK) {
-    callback.Run(error, mojo::Array<uint8_t>(0));
-    return;
-  }
-
-  if (base::DirectoryExists(path)) {
-    callback.Run(FileError::NOT_A_FILE, mojo::Array<uint8_t>(0));
-    return;
-  }
-
-  base::File base_file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file), mojo::Array<uint8_t>(0));
-    return;
-  }
-
-  std::string contents;
-  const int kBufferSize = 1 << 16;
-  scoped_ptr<char[]> buf(new char[kBufferSize]);
-  int len;
-  while ((len = base_file.ReadAtCurrentPos(buf.get(), kBufferSize)) > 0)
-    contents.append(buf.get(), len);
-
-  callback.Run(FileError::OK, mojo::Array<uint8_t>::From(contents));
-}
-
-void DirectoryImpl::WriteFile(const mojo::String& raw_path,
-                              mojo::Array<uint8_t> data,
-                              const WriteFileCallback& callback) {
-  base::FilePath path;
-  FileError error = ValidatePath(raw_path, directory_path_, &path);
-  if (error != FileError::OK) {
-    callback.Run(error);
-    return;
-  }
-
-  if (base::DirectoryExists(path)) {
-    callback.Run(FileError::NOT_A_FILE);
-    return;
-  }
-
-  base::File base_file(path,
-                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file));
-    return;
-  }
-
-  // If we're given empty data, we don't write and just truncate the file.
-  if (data.size()) {
-    if (base_file.Write(0, reinterpret_cast<char*>(&data.front()),
-                        data.size()) == -1) {
-      callback.Run(GetError(base_file));
-      return;
-    }
   }
 
   callback.Run(FileError::OK);

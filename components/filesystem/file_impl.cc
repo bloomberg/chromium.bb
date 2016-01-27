@@ -94,6 +94,28 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
   callback.Run(FileError::OK, std::move(bytes_read));
 }
 
+void FileImpl::ReadEntireFile(const ReadEntireFileCallback& callback) {
+  if (!file_.IsValid()) {
+    callback.Run(GetError(file_), mojo::Array<uint8_t>());
+    return;
+  }
+
+  // Seek to the front of the file.
+  if (file_.Seek(base::File::FROM_BEGIN, 0) == -1) {
+    callback.Run(FileError::FAILED, mojo::Array<uint8_t>());
+    return;
+  }
+
+  std::string contents;
+  const int kBufferSize = 1 << 16;
+  scoped_ptr<char[]> buf(new char[kBufferSize]);
+  size_t len;
+  while ((len = file_.ReadAtCurrentPos(buf.get(), kBufferSize)) > 0)
+    contents.append(buf.get(), len);
+
+  callback.Run(FileError::OK, mojo::Array<uint8_t>::From(contents));
+}
+
 // TODO(vtl): Move the implementation to a thread pool.
 void FileImpl::Write(mojo::Array<uint8_t> bytes_to_write,
                      int64_t offset,

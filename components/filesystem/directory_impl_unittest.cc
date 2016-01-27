@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "components/filesystem/files_test_base.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/util/capture_util.h"
 
 using mojo::Capture;
@@ -154,93 +153,6 @@ TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
   }
 }
 
-TEST_F(DirectoryImplTest, WriteFileReadFile) {
-  DirectoryPtr directory;
-  GetTemporaryRoot(&directory);
-  FileError error;
-
-  std::string data("one two three");
-  {
-    directory->WriteFile("data", mojo::Array<uint8_t>::From(data),
-                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::OK, error);
-  }
-
-  {
-    mojo::Array<uint8_t> file_contents;
-    directory->ReadEntireFile("data", Capture(&error, &file_contents));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::OK, error);
-
-    EXPECT_EQ(data, file_contents.To<std::string>());
-  }
-}
-
-TEST_F(DirectoryImplTest, ReadEmptyFileIsNotFoundError) {
-  DirectoryPtr directory;
-  GetTemporaryRoot(&directory);
-  FileError error;
-
-  {
-    mojo::Array<uint8_t> file_contents;
-    directory->ReadEntireFile("doesnt_exist", Capture(&error, &file_contents));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::NOT_FOUND, error);
-  }
-}
-
-TEST_F(DirectoryImplTest, CantReadEntireFileOnADirectory) {
-  DirectoryPtr directory;
-  GetTemporaryRoot(&directory);
-  FileError error;
-
-  // Create a directory
-  {
-    DirectoryPtr my_file_directory;
-    error = FileError::FAILED;
-    directory->OpenDirectory(
-        "my_dir", GetProxy(&my_file_directory),
-        kFlagRead | kFlagWrite | kFlagCreate,
-        Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::OK, error);
-  }
-
-  // Try to read it as a file
-  {
-    mojo::Array<uint8_t> file_contents;
-    directory->ReadEntireFile("my_dir", Capture(&error, &file_contents));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::NOT_A_FILE, error);
-  }
-}
-
-TEST_F(DirectoryImplTest, CantWriteFileOnADirectory) {
-  DirectoryPtr directory;
-  GetTemporaryRoot(&directory);
-  FileError error;
-
-  // Create a directory
-  {
-    DirectoryPtr my_file_directory;
-    error = FileError::FAILED;
-    directory->OpenDirectory(
-        "my_dir", GetProxy(&my_file_directory),
-        kFlagRead | kFlagWrite | kFlagCreate,
-        Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::OK, error);
-  }
-
-  {
-    std::string data("one two three");
-    directory->WriteFile("my_dir", mojo::Array<uint8_t>::From(data),
-                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
-    EXPECT_EQ(FileError::NOT_A_FILE, error);
-  }
-}
 
 // TODO(vtl): Test delete flags.
 
