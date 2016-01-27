@@ -84,7 +84,6 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     ready_ = false;
     state_ = ArcBridgeService::State::STOPPED;
 
-    ipc_support_.reset(new IPC::ScopedIPCSupport(message_loop_.task_runner()));
     instance_.reset(new FakeArcBridgeInstance());
     service_.reset(new ArcBridgeServiceImpl(
         make_scoped_ptr(new FakeArcBridgeBootstrap(instance_.get()))));
@@ -96,14 +95,12 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     service_->RemoveObserver(this);
     instance_.reset();
     service_.reset();
-    ipc_support_.reset();
 
     chromeos::DBusThreadManager::Shutdown();
   }
 
   bool ready_;
   ArcBridgeService::State state_;
-  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   base::MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeTest);
