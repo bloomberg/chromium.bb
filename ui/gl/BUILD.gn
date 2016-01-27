@@ -116,7 +116,7 @@ component("gl") {
   defines = [ "GL_IMPLEMENTATION" ]
 
   include_dirs = [
-    "//third_party/switfshader/include",
+    "//third_party/swiftshader/include",
     "//third_party/mesa/src/include",
   ]
 
