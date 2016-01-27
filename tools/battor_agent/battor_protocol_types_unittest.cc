@@ -16,7 +16,8 @@ namespace battor {
 namespace {
 
 // Prints the character array as hex to a comma-separated list.
-std::string CharArrayToFormattedString(const char* arr, size_t length) {
+std::string CharArrayToFormattedString(const unsigned char* arr,
+                                       size_t length) {
   std::string s;
 
   char num_buff[6];
@@ -36,7 +37,7 @@ const BattOrEEPROM kUnserializedEEPROM{
 };
 
 // The serialized version of the above EEPROM.
-const char kSerializedEEPROM[] = {
+const unsigned char kSerializedEEPROM[] = {
     0x00, 0x00, 0x00, 0x01, 0x02, 0x00, 0x73, 0x65, 0x72, 0x69, 0x61, 0x6c,
     0x6e, 0x6f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x40, 0x00, 0x00,
@@ -54,8 +55,8 @@ TEST(BattOrProtocolTypeTest, EEPROMSerializesCorrectly) {
   // the EEPROM will change in the future and we'll need to update the
   // serialized version when it does, it makes sense to print the bytes as a
   // string that can just be copied and pasted into kSerializedEEPROM.
-  const char* eeprom_bytes =
-      reinterpret_cast<const char*>(&kUnserializedEEPROM);
+  const unsigned char* eeprom_bytes =
+      reinterpret_cast<const unsigned char*>(&kUnserializedEEPROM);
 
   ASSERT_EQ(
       CharArrayToFormattedString(kSerializedEEPROM, sizeof(kSerializedEEPROM)),
