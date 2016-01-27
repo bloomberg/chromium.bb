@@ -22,6 +22,8 @@
 #include "device/bluetooth/test/bluetooth_test_android.h"
 #elif defined(OS_MACOSX)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
+#elif defined(OS_WIN)
+#include "device/bluetooth/test/bluetooth_test_win.h"
 #endif
 
 using device::BluetoothDevice;
@@ -411,7 +413,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothTest, ConstructDefaultAdapter) {
   InitWithDefaultAdapter();
   if (!adapter_->IsPresent()) {
@@ -427,10 +429,10 @@ TEST_F(BluetoothTest, ConstructDefaultAdapter) {
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothTest, ConstructWithoutDefaultAdapter) {
   InitWithoutDefaultAdapter();
   EXPECT_EQ(adapter_->GetAddress(), "");
@@ -440,10 +442,10 @@ TEST_F(BluetoothTest, ConstructWithoutDefaultAdapter) {
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothTest, ConstructFakeAdapter) {
   InitWithFakeAdapter();
   EXPECT_EQ(adapter_->GetAddress(), kTestAdapterAddress);
@@ -453,7 +455,7 @@ TEST_F(BluetoothTest, ConstructFakeAdapter) {
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
 #if defined(OS_ANDROID)

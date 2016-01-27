@@ -76,7 +76,7 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
 };
 
 // Returns true only on Windows platforms supporting Bluetooth Low Energy.
-bool IsBluetoothLowEnergySupported();
+bool DEVICE_BLUETOOTH_EXPORT IsBluetoothLowEnergySupported();
 
 struct BluetoothLowEnergyServiceInfo {
   BluetoothLowEnergyServiceInfo();

@@ -100,6 +100,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
 
  private:
   friend class BluetoothAdapterWinTest;
+  friend class BluetoothTestWin;
 
   enum DiscoveryStatus {
     NOT_DISCOVERING,
