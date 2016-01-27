@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,40 +20,35 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/search_engines/chrome_template_url_service_client.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
+#include "base/test/sequenced_worker_pool_owner.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/url_database.h"
+#include "components/history/core/test/test_history_database.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_utils.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
-
-using content::BrowserThread;
 
 namespace {
 
@@ -183,13 +179,75 @@ class GetURLTask : public history::HistoryDBTask {
   DISALLOW_COPY_AND_ASSIGN(GetURLTask);
 };
 
+class QuitTask : public history::HistoryDBTask {
+ public:
+  QuitTask() {}
+
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
+    return true;
+  }
+
+  void DoneRunOnMainThread() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+ private:
+  ~QuitTask() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(QuitTask);
+};
+
+class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
+ public:
+  FakeAutocompleteProviderClient() {
+    bookmark_model_ = bookmark_client_.CreateModel();
+    set_template_url_service(
+        make_scoped_ptr(new TemplateURLService(nullptr, 0)));
+  }
+
+  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
+    return scheme_classifier_;
+  }
+
+  const SearchTermsData& GetSearchTermsData() const override {
+    return search_terms_data_;
+  }
+
+  history::HistoryService* GetHistoryService() override {
+    return &history_service_;
+  }
+
+  bookmarks::BookmarkModel* GetBookmarkModel() override {
+    return bookmark_model_.get();
+  }
+
+  InMemoryURLIndex* GetInMemoryURLIndex() override {
+    return in_memory_url_index_.get();
+  }
+
+  std::string GetAcceptLanguages() const override { return "en,en-US,ko"; }
+
+  void set_in_memory_url_index(scoped_ptr<InMemoryURLIndex> index) {
+    in_memory_url_index_ = std::move(index);
+  }
+
+ private:
+  bookmarks::TestBookmarkClient bookmark_client_;
+  scoped_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  TestSchemeClassifier scheme_classifier_;
+  SearchTermsData search_terms_data_;
+  scoped_ptr<InMemoryURLIndex> in_memory_url_index_;
+  history::HistoryService history_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
+};
+
 }  // namespace
 
 class HistoryQuickProviderTest : public testing::Test {
  public:
-  HistoryQuickProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
+  HistoryQuickProviderTest() : pool_owner_(3, "Background Pool") {}
 
  protected:
   class SetShouldContain : public std::unary_function<const std::string&,
@@ -204,17 +262,6 @@ class HistoryQuickProviderTest : public testing::Test {
    private:
     std::set<std::string> matches_;
   };
-
-  static scoped_ptr<KeyedService> CreateTemplateURLService(
-      content::BrowserContext* context) {
-    Profile* profile = static_cast<Profile*>(context);
-    return make_scoped_ptr(new TemplateURLService(
-        profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
-        scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
-            HistoryServiceFactory::GetForProfile(
-                profile, ServiceAccessType::EXPLICIT_ACCESS))),
-        NULL, NULL, base::Closure()));
-  }
 
   void SetUp() override;
   void TearDown() override;
@@ -249,20 +296,23 @@ class HistoryQuickProviderTest : public testing::Test {
   // > message_loop().
   // Direct use of this object in tests is almost certainly not thread-safe.
   history::HistoryBackend* history_backend() {
-    return history_service_->history_backend_.get();
+    return client_->GetHistoryService()->history_backend_.get();
   }
 
   // Call history_backend()->GetURL(url, NULL) on the history thread, returning
   // the result.
   bool GetURLProxy(const GURL& url);
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  // Helper functions to initialize the HistoryService.
+  bool InitializeHistoryService();
+  void CreateInMemoryURLIndex();
+  void BlockUntilHistoryProcessesPendingRequests();
+  void BlockUntilHistoryIndexIsRefreshed();
 
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<ChromeAutocompleteProviderClient> client_;
-  history::HistoryService* history_service_;
+  base::MessageLoop message_loop_;
+  base::SequencedWorkerPoolOwner pool_owner_;
+  base::ScopedTempDir history_dir_;
+  scoped_ptr<FakeAutocompleteProviderClient> client_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
@@ -270,31 +320,27 @@ class HistoryQuickProviderTest : public testing::Test {
 };
 
 void HistoryQuickProviderTest::SetUp() {
-  profile_.reset(new TestingProfile());
-  client_.reset(new ChromeAutocompleteProviderClient(profile_.get()));
-  ASSERT_TRUE(profile_->CreateHistoryService(true, false));
-  profile_->CreateBookmarkModel(true);
-  bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(profile_.get()));
-  profile_->BlockUntilHistoryIndexIsRefreshed();
+  client_.reset(new FakeAutocompleteProviderClient());
+  ASSERT_TRUE(InitializeHistoryService());
+  FillData();
+
+  // |FillData()| must be called before |CreateInMemoryURLIndex()|. This will
+  // ensure that the index is properly populated with data from the database.
+  CreateInMemoryURLIndex();
+  BlockUntilHistoryIndexIsRefreshed();
   // History index refresh creates rebuilt tasks to run on history thread.
   // Block here to make sure that all of them are complete.
-  profile_->BlockUntilHistoryProcessesPendingRequests();
-  history_service_ = HistoryServiceFactory::GetForProfile(
-      profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
-  EXPECT_TRUE(history_service_);
+  BlockUntilHistoryProcessesPendingRequests();
+
   provider_ = new HistoryQuickProvider(client_.get());
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
-  FillData();
-  InMemoryURLIndex* index =
-      InMemoryURLIndexFactory::GetForProfile(profile_.get());
-  EXPECT_TRUE(index);
-  index->RebuildFromHistory(history_backend()->db());
 }
 
 void HistoryQuickProviderTest::TearDown() {
   provider_ = NULL;
+  // The InMemoryURLIndex must be explicitly shut down or it will DCHECK() in
+  // its destructor.
+  client_->GetInMemoryURLIndex()->Shutdown();
+  client_->set_in_memory_url_index(nullptr);
   // History index rebuild task is created from main thread during SetUp,
   // performed on DB thread and must be deleted on main thread.
   // Run main loop to process delete task, to prevent leaks.
@@ -391,7 +437,7 @@ void HistoryQuickProviderTest::RunTestWithCursor(
   AutocompleteInput input(text, cursor_position, std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true, false,
-                          ChromeAutocompleteSchemeClassifier(profile_.get()));
+                          TestSchemeClassifier());
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 
@@ -416,6 +462,7 @@ void HistoryQuickProviderTest::RunTestWithCursor(
   if (expected_urls.empty())
     return;
 
+  ASSERT_FALSE(ac_matches_.empty());
   // Verify that we got the results in the order expected.
   int best_score = ac_matches_.begin()->relevance + 1;
   int i = 0;
@@ -441,13 +488,53 @@ void HistoryQuickProviderTest::RunTestWithCursor(
 bool HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
   base::CancelableTaskTracker task_tracker;
   bool result = false;
-  history_service_->ScheduleDBTask(
+  client_->GetHistoryService()->ScheduleDBTask(
       scoped_ptr<history::HistoryDBTask>(new GetURLTask(url, &result)),
       &task_tracker);
   // Run the message loop until GetURLTask::DoneRunOnMainThread stops it.  If
   // the test hangs, DoneRunOnMainThread isn't being invoked correctly.
   base::MessageLoop::current()->Run();
   return result;
+}
+
+bool HistoryQuickProviderTest::InitializeHistoryService() {
+  if (!history_dir_.CreateUniqueTempDir() ||
+      !client_->GetHistoryService()->Init(
+          false, client_->GetAcceptLanguages(),
+          history::TestHistoryDatabaseParamsForPath(history_dir_.path())))
+    return false;
+
+  BlockUntilHistoryProcessesPendingRequests();
+  return true;
+}
+
+void HistoryQuickProviderTest::CreateInMemoryURLIndex() {
+  scoped_ptr<InMemoryURLIndex> in_memory_url_index(new InMemoryURLIndex(
+      client_->GetBookmarkModel(), client_->GetHistoryService(),
+      pool_owner_.pool().get(), history_dir_.path(),
+      client_->GetAcceptLanguages(), SchemeSet()));
+  in_memory_url_index->Init();
+  in_memory_url_index->RebuildFromHistory(history_backend()->db());
+  client_->set_in_memory_url_index(std::move(in_memory_url_index));
+}
+
+void HistoryQuickProviderTest::BlockUntilHistoryProcessesPendingRequests() {
+  base::CancelableTaskTracker tracker;
+  client_->GetHistoryService()->ScheduleDBTask(
+      scoped_ptr<history::HistoryDBTask>(new QuitTask()), &tracker);
+  base::MessageLoop::current()->Run();
+}
+
+void HistoryQuickProviderTest::BlockUntilHistoryIndexIsRefreshed() {
+  InMemoryURLIndex* index = client_->GetInMemoryURLIndex();
+  if (!index || index->restored())
+    return;
+  base::RunLoop run_loop;
+  HistoryIndexRestoreObserver observer(run_loop.QuitClosure());
+  index->set_restore_cache_observer(&observer);
+  run_loop.Run();
+  index->set_restore_cache_observer(nullptr);
+  DCHECK(index->restored());
 }
 
 TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
@@ -681,7 +768,7 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
   // InMemoryURLIndex) will drop any data they might have pertaining to the URL.
   // To ensure that the deletion has been propagated everywhere before we start
   // verifying post-deletion states, first wait until we see the notification.
-  WaitForURLsDeletedNotification(history_service_);
+  WaitForURLsDeletedNotification(client_->GetHistoryService());
   EXPECT_FALSE(GetURLProxy(test_url));
 
   // Just to be on the safe side, explicitly verify that we have deleted enough
@@ -796,8 +883,7 @@ TEST_F(HistoryQuickProviderTest, CullSearchResults) {
   data.SetShortName(ASCIIToUTF16("TestEngine"));
   data.SetKeyword(ASCIIToUTF16("TestEngine"));
   data.SetURL("http://testsearch.com/?q={searchTerms}");
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_.get());
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
   TemplateURL* template_url = new TemplateURL(data);
   template_url_service->Add(template_url);
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
@@ -817,10 +903,10 @@ TEST_F(HistoryQuickProviderTest, CullSearchResults) {
 }
 
 TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
-  AutocompleteInput input(
-      ASCIIToUTF16("popularsite"), base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, true,
-      ChromeAutocompleteSchemeClassifier(profile_.get()));
+  AutocompleteInput input(ASCIIToUTF16("popularsite"), base::string16::npos,
+                          std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC, false,
+                          false, true, true, true, TestSchemeClassifier());
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }
