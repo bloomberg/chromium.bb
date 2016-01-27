@@ -207,8 +207,11 @@ mojo_native_application("media") {
 
 # Note, the following tests must be loaded via mojo_runner as an app, e.g.
 #
-#   out/Debug/mojo_runner mojo:media_apptests
-#   out/Debug/mojo_runner mojo:media_pipeline_integration_apptests
+#   mojo/tools/apptest_runner.py
+#     --apptest-filter mojo:media_apptests out/Debug
+#
+#   mojo/tools/apptest_runner.py
+#     --apptest-filter mojo:media_pipeline_integration_apptests out/Debug
 #
 mojo_native_application("media_apptests") {
   testonly = true

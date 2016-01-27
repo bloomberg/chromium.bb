@@ -614,6 +614,7 @@ group("mojo_apptests") {
     deps += [
       "//mandoline:tests",
       "//mash/wm:tests",
+      "//media/mojo/services:tests",
       "//ui/views/mus:tests",
     ]
   }

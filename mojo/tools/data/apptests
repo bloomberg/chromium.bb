@@ -84,10 +84,12 @@ if config.target_os != config.OS_ANDROID:
       'args': ['--use-x11-test-config',
                '--override-use-gl-with-osmesa-for-tests']
     },
-    # TODO(xhwang): Fix and enable mojo:media_pipeline_integration_apptests.
-    # http://crbug.com/501417
     {
       'test': 'mojo:media_apptests',
+      'type': 'gtest_isolated',
+    },
+    {
+      'test': 'mojo:media_pipeline_integration_apptests',
       'type': 'gtest_isolated',
     },
     # TODO(crbug.com/560626): Fix and enable mus_apptests on Android.
