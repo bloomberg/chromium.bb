@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser;
 
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.Smoke;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -79,16 +81,11 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
     /**
      * Verify Geolocation creates an InfoBar and receives a mock location.
-     *
-     * Fails frequently.
-     * Bug 141518
-     * @Smoke
-     * @MediumTest
-     * @Feature({"Location", "Main"})
-     *
      * @throws Exception
      */
-    @FlakyTest
+    @Smoke
+    @MediumTest
+    @Feature({"Location", "Main"})
     public void testGeolocationPlumbing() throws Exception {
         final String url = TestHttpServerClient.getUrl(
                 "content/test/data/android/geolocation.html");
@@ -108,14 +105,10 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
     /**
      * Verify Geolocation creates an InfoBar and receives multiple locations.
-     *
-     * Bug 141518
-     * @MediumTest
-     * @Feature({"Location"})
-     *
      * @throws Exception
      */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Location"})
     public void testGeolocationWatch() throws Exception {
         final String url = TestHttpServerClient.getUrl(
                 "content/test/data/android/geolocation.html");
