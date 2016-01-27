@@ -16,7 +16,7 @@ source_set("platform_window") {
   deps = [
     "//base",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/ime:text_input_types",
     "//ui/gfx",
   ]
 }

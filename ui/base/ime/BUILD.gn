@@ -5,6 +5,14 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+source_set("text_input_types") {
+  sources = [
+    "text_input_flags.h",
+    "text_input_mode.h",
+    "text_input_type.h",
+  ]
+}
+
 component("ime") {
   output_name = "ui_base_ime"
   sources = [
@@ -83,7 +91,6 @@ component("ime") {
     "mock_input_method.h",
     "text_input_client.cc",
     "text_input_client.h",
-    "text_input_type.h",
     "ui_base_ime_export.h",
     "win/imm32_manager.cc",
     "win/imm32_manager.h",
@@ -107,6 +114,10 @@ component("ime") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
+  ]
+
+  public_deps = [
+    ":text_input_types",
   ]
 
   if (!use_aura || (!is_linux && !use_ozone)) {

@@ -149,6 +149,7 @@ component("ozone") {
         "//ui/gfx",
         "//ui/gfx/geometry",
         "//ui/gfx/ipc",
+        "//ui/platform_window",
 
         # TODO(GYP) the GYP version has a way to add additional dependencies via
         # build flags.

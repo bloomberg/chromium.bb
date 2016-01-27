@@ -7,6 +7,16 @@
     'chromium_code': 1,
   },
   'targets': [
+   {
+      # GN version: //ui/base/ime:text_input_types
+      'target_name': 'text_input_types',
+      'type': 'none',
+      'sources' : [
+        'text_input_flags.h',
+        'text_input_mode.h',
+        'text_input_type.h',
+      ],
+    },
     {
       # GN version: //ui/base/ime
       'target_name': 'ui_base_ime',
@@ -25,6 +35,7 @@
         '../../gfx/gfx.gyp:gfx',
         '../../gfx/gfx.gyp:gfx_geometry',
         '../ui_base.gyp:ui_base',
+        ':text_input_types',
       ],
       'defines': [
         'UI_BASE_IME_IMPLEMENTATION',
@@ -105,7 +116,6 @@
         'mock_input_method.h',
         'text_input_client.cc',
         'text_input_client.h',
-        'text_input_type.h',
         'ui_base_ime_export.h',
         'win/imm32_manager.cc',
         'win/imm32_manager.h',
