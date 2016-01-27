@@ -95,6 +95,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -118,6 +119,7 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/range/range.h"
@@ -499,6 +501,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       has_been_clicked_(false),
       javascript_used_(false),
       full_frame_(false),
+      viewport_to_dip_scale_(1.0f),
       sent_initial_did_change_view_(false),
       bound_graphics_2d_platform_(NULL),
       bound_compositor_(NULL),
@@ -1083,19 +1086,22 @@ bool PepperPluginInstanceImpl::IsPluginAcceptingCompositionEvents() const {
 gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
   if (!text_input_caret_set_) {
     // If it is never set by the plugin, use the bottom left corner.
-    return gfx::Rect(view_data_.rect.point.x,
-                     view_data_.rect.point.y + view_data_.rect.size.height,
-                     0,
-                     0);
+    gfx::Rect rect(view_data_.rect.point.x,
+                   view_data_.rect.point.y + view_data_.rect.size.height,
+                   0, 0);
+    ConvertDIPToViewport(&rect);
+    return rect;
   }
 
-  // TODO(kinaba) Take CSS transformation into accont.
-  // TODO(kinaba) Take bounding_box into account. On some platforms, an
-  // "exclude rectangle" where candidate window must avoid the region can be
-  // passed to IME. Currently, we pass only the caret rectangle because
-  // it is the only information supported uniformly in Chromium.
+  // TODO(kinaba) Take CSS transformation into account.
+  // TODO(kinaba) Take |text_input_caret_bounds_| into account. On
+  // some platforms, an "exclude rectangle" where candidate window
+  // must avoid the region can be passed to IME. Currently, we pass
+  // only the caret rectangle because it is the only information
+  // supported uniformly in Chromium.
   gfx::Rect caret(text_input_caret_);
   caret.Offset(view_data_.rect.point.x, view_data_.rect.point.y);
+  ConvertDIPToViewport(&caret);
   return caret;
 }
 
@@ -1109,6 +1115,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       (event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
     has_been_clicked_ = true;
     blink::WebRect bounds = container()->element().boundsInViewport();
+    render_frame()->GetRenderWidget()->convertViewportToWindow(&bounds);
     RecordFlashClickSizeMetric(bounds.width, bounds.height);
   }
 
@@ -1142,7 +1149,12 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         (input_event_mask_ & event_class)) {
       // Actually send the event.
       std::vector<ppapi::InputEventData> events;
-      CreateInputEventData(event, &events);
+      scoped_ptr<const WebInputEvent> event_in_dip(
+          ui::ScaleWebInputEvent(event, viewport_to_dip_scale_));
+      if (event_in_dip)
+        CreateInputEventData(*event_in_dip.get(), &events);
+      else
+        CreateInputEventData(event, &events);
 
       // Allow the user gesture to be pending after the plugin handles the
       // event. This allows out-of-process plugins to respond to the user
@@ -1259,6 +1271,14 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.device_scale = container_->deviceScaleFactor();
   view_data_.css_scale =
       container_->pageZoomFactor() * container_->pageScaleFactor();
+  blink::WebFloatRect windowToViewportScale(0, 0, 1.0f, 0);
+  render_frame()->GetRenderWidget()->convertWindowToViewport(
+      &windowToViewportScale);
+  viewport_to_dip_scale_ = 1.0f / windowToViewportScale.width;
+  ConvertRectToDIP(&view_data_.rect);
+  ConvertRectToDIP(&view_data_.clip_rect);
+  view_data_.css_scale *= viewport_to_dip_scale_;
+  view_data_.device_scale /= viewport_to_dip_scale_;
 
   gfx::Size scroll_offset =
       container_->element().document().frame()->scrollOffset();
@@ -3301,6 +3321,20 @@ void PepperPluginInstanceImpl::RecordFlashJavaScriptUse() {
     RenderThread::Get()->RecordAction(
         base::UserMetricsAction("Flash.JavaScriptUsed"));
   }
+}
+
+void PepperPluginInstanceImpl::ConvertRectToDIP(PP_Rect* rect) const {
+  rect->point.x *= viewport_to_dip_scale_;
+  rect->point.y *= viewport_to_dip_scale_;
+  rect->size.width *= viewport_to_dip_scale_;
+  rect->size.height *= viewport_to_dip_scale_;
+}
+
+void PepperPluginInstanceImpl::ConvertDIPToViewport(gfx::Rect* rect) const {
+  rect->set_x(rect->x() / viewport_to_dip_scale_);
+  rect->set_y(rect->y() / viewport_to_dip_scale_);
+  rect->set_width(rect->width() / viewport_to_dip_scale_);
+  rect->set_height(rect->height() / viewport_to_dip_scale_);
 }
 
 }  // namespace content

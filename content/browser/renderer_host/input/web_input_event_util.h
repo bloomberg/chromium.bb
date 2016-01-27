@@ -25,10 +25,6 @@ int WebEventModifiersToEventFlags(int modifiers);
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
     ui::DomCode code);
 
-CONTENT_EXPORT scoped_ptr<blink::WebInputEvent> ConvertWebInputEventToViewport(
-    const blink::WebInputEvent& event,
-    float scale);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_

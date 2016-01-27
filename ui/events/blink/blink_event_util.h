@@ -5,12 +5,15 @@
 #ifndef UI_EVENTS_BLINK_BLINK_EVENT_UTIL_H_
 #define UI_EVENTS_BLINK_BLINK_EVENT_UTIL_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace base {
 class TimeDelta;
 }
 
 namespace blink {
 class WebGestureEvent;
+class WebInputEvent;
 class WebTouchEvent;
 }
 
@@ -39,6 +42,10 @@ blink::WebGestureEvent CreateWebGestureEventFromGestureEventData(
 
 int EventFlagsToWebEventModifiers(int flags);
 
-}  // namespace content
+scoped_ptr<blink::WebInputEvent> ScaleWebInputEvent(
+    const blink::WebInputEvent& event,
+    float scale);
+
+}  // namespace ui
 
 #endif  // UI_EVENTS_BLINK_BLINK_EVENT_UTIL_H_

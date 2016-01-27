@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_sender.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -404,8 +404,11 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info) {
+  // This conversion is temporary. WebInputEvent should be generated
+  // directly from ui::Event with the viewport coordinates. See
+  // crbug.com/563730.
   scoped_ptr<blink::WebInputEvent> event_in_viewport =
-      ConvertWebInputEventToViewport(input_event, device_scale_factor_);
+      ui::ScaleWebInputEvent(input_event, device_scale_factor_);
   const WebInputEvent* event_to_send =
       event_in_viewport ? event_in_viewport.get() : &input_event;
 

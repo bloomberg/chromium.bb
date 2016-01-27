@@ -124,6 +124,7 @@
         }],
         ['OS!="ios"', {
           'sources': [
+            'blink/blink_event_util_unittest.cc',
             'blink/input_handler_proxy_unittest.cc',
             'blink/input_scroll_elasticity_controller_unittest.cc',
           ],

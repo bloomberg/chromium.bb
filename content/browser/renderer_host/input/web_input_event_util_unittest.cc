@@ -125,12 +125,4 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
   EXPECT_TRUE(web_event.data.scrollUpdate.previousUpdateInSequencePrevented);
 }
 
-TEST(WebInputEventUtilTest, NoScalingWith1DSF) {
-  auto event =
-      SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::MouseMove,
-                                           10, 10, 0);
-  EXPECT_FALSE(ConvertWebInputEventToViewport(event, 1.f));
-  EXPECT_TRUE(ConvertWebInputEventToViewport(event, 2.f));
-}
-
 }  // namespace content

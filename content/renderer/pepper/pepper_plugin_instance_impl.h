@@ -91,6 +91,7 @@ class TextureLayer;
 
 namespace gfx {
 class Range;
+class Rect;
 }
 
 namespace ppapi {
@@ -695,6 +696,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   void RecordFlashJavaScriptUse();
 
+  // Converts the PP_Rect between DIP and Viewport.
+  void ConvertRectToDIP(PP_Rect* rect) const;
+  void ConvertDIPToViewport(gfx::Rect* rect) const;
+
   RenderFrameImpl* render_frame_;
   base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
@@ -743,6 +748,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   ppapi::ViewData last_sent_view_data_;
   // The current unobscured portion of the plugin.
   gfx::Rect unobscured_rect_;
+  // The viewport coordinates to window coordinates ratio.
+  float viewport_to_dip_scale_;
 
   // Indicates if we've ever sent a didChangeView to the plugin. This ensures we
   // always send an initial notification, even if the position and clip are the
