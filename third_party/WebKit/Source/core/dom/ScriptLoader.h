@@ -86,6 +86,9 @@ public:
 
     // Clears the connection to the PendingScript (and Element and Resource).
     void detach();
+#if !ENABLE(OILPAN)
+    bool isDetached() const { return !m_pendingScript; }
+#endif
 
 protected:
     ScriptLoader(Element*, bool createdByParser, bool isEvaluated);
