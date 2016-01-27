@@ -16,6 +16,7 @@
 #include "content/public/common/message_port_types.h"
 #include "content/public/common/navigator_connect_client.h"
 #include "content/public/common/platform_notification_data.h"
+#include "content/public/common/push_event_payload.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
@@ -131,6 +132,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::NavigatorConnectClient)
   IPC_STRUCT_TRAITS_MEMBER(target_url)
   IPC_STRUCT_TRAITS_MEMBER(origin)
   IPC_STRUCT_TRAITS_MEMBER(message_port_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+  IPC_STRUCT_TRAITS_MEMBER(is_null)
 IPC_STRUCT_TRAITS_END()
 
 //---------------------------------------------------------------------------
@@ -445,7 +451,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_NotificationClickEvent,
                      int /* action_index */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,
-                     std::string /* data */)
+                     content::PushEventPayload /* data */)
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
                      int /* request_id */,
                      blink::WebGeofencingEventType /* event_type */,

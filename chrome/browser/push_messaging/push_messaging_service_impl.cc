@@ -217,14 +217,16 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
       g_browser_process->rappor_service(),
       "PushMessaging.MessageReceived.Origin", app_identifier.origin());
 
-  std::string data;
+  // The payload of a push message can be valid with content, valid with empty
+  // content, or null. Only set the payload data if it is non-null.
+  content::PushEventPayload payload;
   if (AreMessagePayloadsEnabled() && message.decrypted)
-    data = message.raw_data;
+    payload.setData(message.raw_data);
 
   // Dispatch the message to the appropriate Service Worker.
   content::BrowserContext::DeliverPushMessage(
       profile_, app_identifier.origin(),
-      app_identifier.service_worker_registration_id(), data,
+      app_identifier.service_worker_registration_id(), payload,
       base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
                  weak_factory_.GetWeakPtr(), app_identifier.app_id(),
                  app_identifier.origin(),
@@ -235,7 +237,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   if (!message_dispatched_callback_for_testing_.is_null()) {
     message_dispatched_callback_for_testing_.Run(
         app_id, app_identifier.origin(),
-        app_identifier.service_worker_registration_id(), data);
+        app_identifier.service_worker_registration_id(), payload);
   }
 }
 

@@ -30,6 +30,7 @@ class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
 class MessagePortMessageFilter;
 class MockRenderProcessHost;
+struct PushEventPayload;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
@@ -125,7 +126,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                             const ServiceWorkerFetchRequest& request);
   virtual void OnPushEvent(int embedded_worker_id,
                            int request_id,
-                           const std::string& data);
+                           const PushEventPayload& payload);
 
   // These functions simulate sending an EmbeddedHostMsg message to the
   // browser.
@@ -152,7 +153,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnInstallEventStub(int request_id);
   void OnFetchEventStub(int request_id,
                         const ServiceWorkerFetchRequest& request);
-  void OnPushEventStub(int request_id, const std::string& data);
+  void OnPushEventStub(int request_id, const PushEventPayload& payload);
   void OnSetupMojoStub(int thread_id,
                        mojo::InterfaceRequest<mojo::ServiceProvider> services,
                        mojo::ServiceProviderPtr exposed_services);

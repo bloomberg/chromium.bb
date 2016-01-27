@@ -23,6 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
@@ -437,9 +438,12 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   int64_t id = 0;
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
+  PushEventPayload payload;
+  if (data.size() > 0)
+    payload.setData(data);
   BrowserContext::DeliverPushMessage(
       render_frame_host_->GetProcess()->GetBrowserContext(), GURL(origin), id,
-      data, base::Bind(&PushDeliveryNoOp));
+      payload, base::Bind(&PushDeliveryNoOp));
   return Response::OK();
 }
 

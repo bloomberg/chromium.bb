@@ -32,6 +32,7 @@
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -760,10 +761,14 @@ void ServiceWorkerContextClient::OnNotificationClickEvent(
 }
 
 void ServiceWorkerContextClient::OnPushEvent(int request_id,
-                                             const std::string& data) {
+                                             const PushEventPayload& payload) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnPushEvent");
-  proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
+  // Only set data to be a valid string if the payload had decrypted data.
+  blink::WebString data;
+  if (!payload.is_null)
+    data.assign(blink::WebString::fromUTF8(payload.data));
+  proxy_->dispatchPushEvent(request_id, data);
 }
 
 void ServiceWorkerContextClient::OnGeofencingEvent(

@@ -18,6 +18,7 @@
 namespace content {
 
 class BrowserContext;
+struct PushEventPayload;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
@@ -33,7 +34,7 @@ class PushMessagingRouter {
       BrowserContext* browser_context,
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const std::string& data,
+      const PushEventPayload& payload,
       const DeliverMessageCallback& deliver_message_callback);
 
  private:
@@ -42,7 +43,7 @@ class PushMessagingRouter {
   static void FindServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const std::string& data,
+      const PushEventPayload& payload,
       const DeliverMessageCallback& deliver_message_callback,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
@@ -50,7 +51,7 @@ class PushMessagingRouter {
   // |data| on the Service Worker identified by |service_worker_registration|.
   // Must be called on the IO thread.
   static void FindServiceWorkerRegistrationCallback(
-      const std::string& data,
+      const PushEventPayload& payload,
       const DeliverMessageCallback& deliver_message_callback,
       ServiceWorkerStatusCode service_worker_status,
       const scoped_refptr<ServiceWorkerRegistration>&
@@ -62,7 +63,7 @@ class PushMessagingRouter {
       const scoped_refptr<ServiceWorkerVersion>& service_worker,
       const scoped_refptr<ServiceWorkerRegistration>&
           service_worker_registration,
-      const std::string& data,
+      const PushEventPayload& payload,
       const DeliverMessageCallback& deliver_message_callback);
 
   // Gets called asynchronously after the Service Worker has dispatched the push

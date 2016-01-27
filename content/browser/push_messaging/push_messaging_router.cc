@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/push_event_payload.h"
 
 namespace content {
 
@@ -36,7 +37,7 @@ void PushMessagingRouter::DeliverMessage(
     BrowserContext* browser_context,
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const std::string& data,
+    const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StoragePartition* partition =
@@ -47,15 +48,15 @@ void PushMessagingRouter::DeliverMessage(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PushMessagingRouter::FindServiceWorkerRegistration, origin,
-                 service_worker_registration_id, data, deliver_message_callback,
-                 service_worker_context));
+                 service_worker_registration_id, payload,
+                 deliver_message_callback, service_worker_context));
 }
 
 // static
 void PushMessagingRouter::FindServiceWorkerRegistration(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const std::string& data,
+    const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -64,12 +65,12 @@ void PushMessagingRouter::FindServiceWorkerRegistration(
   service_worker_context->FindReadyRegistrationForId(
       service_worker_registration_id, origin,
       base::Bind(&PushMessagingRouter::FindServiceWorkerRegistrationCallback,
-                 data, deliver_message_callback));
+                 payload, deliver_message_callback));
 }
 
 // static
 void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
-    const std::string& data,
+    const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback,
     ServiceWorkerStatusCode service_worker_status,
     const scoped_refptr<ServiceWorkerRegistration>&
@@ -91,8 +92,8 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
   // service worker.
   version->RunAfterStartWorker(
       base::Bind(&PushMessagingRouter::DeliverMessageToWorker,
-                 make_scoped_refptr(version), service_worker_registration, data,
-                 deliver_message_callback),
+                 make_scoped_refptr(version), service_worker_registration,
+                 payload, deliver_message_callback),
       base::Bind(&PushMessagingRouter::DeliverMessageEnd,
                  deliver_message_callback, service_worker_registration));
 }
@@ -101,7 +102,7 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
 void PushMessagingRouter::DeliverMessageToWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
-    const std::string& data,
+    const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
@@ -109,7 +110,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
       base::Bind(&PushMessagingRouter::DeliverMessageEnd,
                  deliver_message_callback, service_worker_registration));
   service_worker->DispatchSimpleEvent<ServiceWorkerHostMsg_PushEventFinished>(
-      request_id, ServiceWorkerMsg_PushEvent(request_id, data));
+      request_id, ServiceWorkerMsg_PushEvent(request_id, payload));
 }
 
 // static

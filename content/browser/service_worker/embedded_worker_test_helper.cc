@@ -20,6 +20,7 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -224,7 +225,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
 
 void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,
                                            int request_id,
-                                           const std::string& data) {
+                                           const PushEventPayload& payload) {
   SimulateSend(new ServiceWorkerHostMsg_PushEventFinished(
       embedded_worker_id, request_id,
       blink::WebServiceWorkerEventResultCompleted));
@@ -372,12 +373,13 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
                  request));
 }
 
-void EmbeddedWorkerTestHelper::OnPushEventStub(int request_id,
-                                               const std::string& data) {
+void EmbeddedWorkerTestHelper::OnPushEventStub(
+    int request_id,
+    const PushEventPayload& payload) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent,
                             weak_factory_.GetWeakPtr(),
-                            current_embedded_worker_id_, request_id, data));
+                            current_embedded_worker_id_, request_id, payload));
 }
 
 void EmbeddedWorkerTestHelper::OnSetupMojoStub(

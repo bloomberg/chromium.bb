@@ -14,6 +14,7 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/zoom_level_delegate.h"
+#include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.h"
 
 class GURL;
@@ -108,7 +109,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context,
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const std::string& data,
+      const PushEventPayload& payload,
       const base::Callback<void(PushDeliveryStatus)>& callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);

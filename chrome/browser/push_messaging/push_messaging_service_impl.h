@@ -24,6 +24,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/permission_status.mojom.h"
+#include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
@@ -213,7 +214,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       base::Callback<void(const std::string& app_id,
                           const GURL& origin,
                           int64_t service_worker_registration_id,
-                          const std::string& message_data)>;
+                          const content::PushEventPayload& payload)>;
 
   void SetMessageDispatchedCallbackForTesting(
       const MessageDispatchedCallback& callback) {

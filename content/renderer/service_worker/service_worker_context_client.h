@@ -53,6 +53,7 @@ namespace content {
 
 struct NavigatorConnectClient;
 struct PlatformNotificationData;
+struct PushEventPayload;
 struct ServiceWorkerClientInfo;
 class ServiceWorkerProviderContext;
 class ServiceWorkerContextClient;
@@ -192,7 +193,7 @@ class ServiceWorkerContextClient
       int64_t persistent_notification_id,
       const PlatformNotificationData& notification_data,
       int action_index);
-  void OnPushEvent(int request_id, const std::string& data);
+  void OnPushEvent(int request_id, const PushEventPayload& payload);
   void OnGeofencingEvent(int request_id,
                          blink::WebGeofencingEventType event_type,
                          const std::string& region_id,
