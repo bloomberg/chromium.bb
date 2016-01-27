@@ -30,6 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/SelectionAdjuster.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -513,56 +514,6 @@ void VisibleSelectionTemplate<Strategy>::updateSelectionType()
         m_affinity = TextAffinity::Downstream;
 }
 
-static Node* enclosingShadowHost(Node* node)
-{
-    for (Node* runner = node; runner; runner = ComposedTreeTraversal::parent(*runner)) {
-        if (isShadowHost(runner))
-            return runner;
-    }
-    return nullptr;
-}
-
-static bool isEnclosedBy(const PositionInComposedTree& position, const Node& node)
-{
-    ASSERT(position.isNotNull());
-    Node* anchorNode = position.anchorNode();
-    if (anchorNode == node)
-        return !position.isAfterAnchor() && !position.isBeforeAnchor();
-
-    return ComposedTreeTraversal::isDescendantOf(*anchorNode, node);
-}
-
-static bool isSelectionBoundary(const Node& node)
-{
-    return isHTMLTextAreaElement(node) || isHTMLInputElement(node) || isHTMLSelectElement(node);
-}
-
-static Node* enclosingShadowHostForStart(const PositionInComposedTree& position)
-{
-    Node* node = position.nodeAsRangeFirstNode();
-    if (!node)
-        return nullptr;
-    Node* shadowHost = enclosingShadowHost(node);
-    if (!shadowHost)
-        return nullptr;
-    if (!isEnclosedBy(position, *shadowHost))
-        return nullptr;
-    return isSelectionBoundary(*shadowHost) ? shadowHost : nullptr;
-}
-
-static Node* enclosingShadowHostForEnd(const PositionInComposedTree& position)
-{
-    Node* node = position.nodeAsRangeLastNode();
-    if (!node)
-        return nullptr;
-    Node* shadowHost = enclosingShadowHost(node);
-    if (!shadowHost)
-        return nullptr;
-    if (!isEnclosedBy(position, *shadowHost))
-        return nullptr;
-    return isSelectionBoundary(*shadowHost) ? shadowHost : nullptr;
-}
-
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validate(TextGranularity granularity)
 {
@@ -643,128 +594,6 @@ void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionTemp
         m_affinity = TextAffinity::Downstream;
     }
     didChange();
-}
-
-static PositionInComposedTree adjustPositionInComposedTreeForStart(const PositionInComposedTree& position, Node* shadowHost)
-{
-    if (isEnclosedBy(position, *shadowHost)) {
-        if (position.isBeforeChildren())
-            return PositionInComposedTree::beforeNode(shadowHost);
-        return PositionInComposedTree::afterNode(shadowHost);
-    }
-
-    // We use |firstChild|'s after instead of beforeAllChildren for backward
-    // compatibility. The positions are same but the anchors would be different,
-    // and selection painting uses anchor nodes.
-    if (Node* firstChild = ComposedTreeTraversal::firstChild(*shadowHost))
-        return PositionInComposedTree::beforeNode(firstChild);
-    return PositionInComposedTree();
-}
-
-static Position adjustPositionForEnd(const Position& currentPosition, Node* startContainerNode)
-{
-    TreeScope& treeScope = startContainerNode->treeScope();
-
-    ASSERT(currentPosition.computeContainerNode()->treeScope() != treeScope);
-
-    if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.computeContainerNode())) {
-        if (ancestor->contains(startContainerNode))
-            return positionAfterNode(ancestor);
-        return positionBeforeNode(ancestor);
-    }
-
-    if (Node* lastChild = treeScope.rootNode().lastChild())
-        return positionAfterNode(lastChild);
-
-    return Position();
-}
-
-static PositionInComposedTree adjustPositionInComposedTreeForEnd(const PositionInComposedTree& position, Node* shadowHost)
-{
-    if (isEnclosedBy(position, *shadowHost)) {
-        if (position.isAfterChildren())
-            return PositionInComposedTree::afterNode(shadowHost);
-        return PositionInComposedTree::beforeNode(shadowHost);
-    }
-
-    // We use |lastChild|'s after instead of afterAllChildren for backward
-    // compatibility. The positions are same but the anchors would be different,
-    // and selection painting uses anchor nodes.
-    if (Node* lastChild = ComposedTreeTraversal::lastChild(*shadowHost))
-        return PositionInComposedTree::afterNode(lastChild);
-    return PositionInComposedTree();
-}
-
-static Position adjustPositionForStart(const Position& currentPosition, Node* endContainerNode)
-{
-    TreeScope& treeScope = endContainerNode->treeScope();
-
-    ASSERT(currentPosition.computeContainerNode()->treeScope() != treeScope);
-
-    if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.computeContainerNode())) {
-        if (ancestor->contains(endContainerNode))
-            return positionBeforeNode(ancestor);
-        return positionAfterNode(ancestor);
-    }
-
-    if (Node* firstChild = treeScope.rootNode().firstChild())
-        return positionBeforeNode(firstChild);
-
-    return Position();
-}
-
-// TODO(yosin): We should move
-// |SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries()| to
-// "SelectionAdjuster.cpp"
-void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelection* selection)
-{
-    // Note: |m_selectionType| isn't computed yet.
-    ASSERT(selection->base().isNotNull());
-    ASSERT(selection->extent().isNotNull());
-    ASSERT(selection->start().isNotNull());
-    ASSERT(selection->end().isNotNull());
-
-    // TODO(hajimehoshi): Checking treeScope is wrong when a node is
-    // distributed, but we leave it as it is for backward compatibility.
-    if (selection->start().anchorNode()->treeScope() == selection->end().anchorNode()->treeScope())
-        return;
-
-    if (selection->isBaseFirst()) {
-        const Position& newEnd = adjustPositionForEnd(selection->end(), selection->start().computeContainerNode());
-        selection->m_extent = newEnd;
-        selection->m_end = newEnd;
-        return;
-    }
-
-    const Position& newStart = adjustPositionForStart(selection->start(), selection->end().computeContainerNode());
-    selection->m_extent = newStart;
-    selection->m_start = newStart;
-}
-
-// TODO(yosin): We should move
-// |SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries()| to
-// "SelectionAdjuster.cpp"
-// This function is called twice. The first is called when |m_start| and |m_end|
-// or |m_extent| are same, and the second when |m_start| and |m_end| are changed
-// after downstream/upstream.
-void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelectionInComposedTree* selection)
-{
-    Node* const shadowHostStart = enclosingShadowHostForStart(selection->start());
-    Node* const shadowHostEnd = enclosingShadowHostForEnd(selection->end());
-    if (shadowHostStart == shadowHostEnd)
-        return;
-
-    if (selection->isBaseFirst()) {
-        Node* const shadowHost = shadowHostStart ? shadowHostStart : shadowHostEnd;
-        const PositionInComposedTree& newEnd = adjustPositionInComposedTreeForEnd(selection->end(), shadowHost);
-        selection->m_extent = newEnd;
-        selection->m_end = newEnd;
-        return;
-    }
-    Node* const shadowHost = shadowHostEnd ? shadowHostEnd : shadowHostStart;
-    const PositionInComposedTree& newStart = adjustPositionInComposedTreeForStart(selection->start(), shadowHost);
-    selection->m_extent = newStart;
-    selection->m_start = newStart;
 }
 
 template <typename Strategy>
