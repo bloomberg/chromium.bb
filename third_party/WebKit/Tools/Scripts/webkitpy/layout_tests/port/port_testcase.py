@@ -291,8 +291,6 @@ class PortTestCase(unittest.TestCase):
             TestConfiguration('mavericks', 'x86', 'release'),
             TestConfiguration('mac10.10', 'x86', 'debug'),
             TestConfiguration('mac10.10', 'x86', 'release'),
-            TestConfiguration('xp', 'x86', 'debug'),
-            TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'debug'),
             TestConfiguration('win7', 'x86', 'release'),
             TestConfiguration('win10', 'x86', 'debug'),

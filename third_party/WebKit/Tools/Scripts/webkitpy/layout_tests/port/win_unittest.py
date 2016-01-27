@@ -39,10 +39,10 @@ from webkitpy.tool.mocktool import MockOptions
 
 class WinPortTest(port_testcase.PortTestCase):
     port_name = 'win'
-    full_port_name = 'win-xp'
+    full_port_name = 'win-win7'
     port_maker = win.WinPort
     os_name = 'win'
-    os_version = 'xp'
+    os_version = 'win7'
 
     def test_setup_environ_for_server(self):
         port = self.make_port()
@@ -72,17 +72,15 @@ class WinPortTest(port_testcase.PortTestCase):
 
     def test_versions(self):
         port = self.make_port()
-        self.assertIn(port.name(), ('win-xp', 'win-win7'))
+        self.assertIn(port.name(), ('win-win7', 'win-win10'))
 
-        self.assert_name(None, 'xp', 'win-xp')
-        self.assert_name('win', 'xp', 'win-xp')
-        self.assert_name('win-xp', 'xp', 'win-xp')
-        self.assert_name('win-xp', '7sp0', 'win-xp')
+        self.assert_name(None, 'win7', 'win-win7')
+        self.assert_name('win', 'win7', 'win-win7')
 
         self.assert_name(None, '10', 'win-win10')
         self.assert_name('win', '10', 'win-win10')
         self.assert_name('win-win10', '10', 'win-win10')
-        self.assert_name('win-win10', 'xp', 'win-win10')
+        self.assert_name('win-win10', 'win7', 'win-win10')
 
         self.assert_name(None, '8', 'win-win10')
         self.assert_name(None, '8.1', 'win-win10')
@@ -98,13 +96,12 @@ class WinPortTest(port_testcase.PortTestCase):
         self.assert_name('win-win7', '7sp1', 'win-win7')
         self.assert_name('win-win7', '7sp0', 'win-win7')
         self.assert_name('win-win7', 'vista', 'win-win7')
-        self.assert_name('win-win7', 'xp', 'win-win7')
 
         self.assert_name(None, 'future', 'win-win10')
         self.assert_name('win', 'future', 'win-win10')
         self.assert_name('win-win10', 'future', 'win-win10')
 
-        self.assertRaises(AssertionError, self.assert_name, None, 'w2k', 'win-xp')
+        self.assertRaises(AssertionError, self.assert_name, None, 'w2k', 'win-win7')
 
     def assert_baseline_paths(self, port_name, *expected_paths):
         port = self.make_port(port_name=port_name)
@@ -114,7 +111,6 @@ class WinPortTest(port_testcase.PortTestCase):
             self.assertTrue(port.baseline_search_path()[i].endswith(path))
 
     def test_baseline_path(self):
-        self.assert_baseline_paths('win-xp', 'win-xp', '/win7', '/win')
         self.assert_baseline_paths('win-win7', 'win7', '/win')
         self.assert_baseline_paths('win-win10', 'win')
 

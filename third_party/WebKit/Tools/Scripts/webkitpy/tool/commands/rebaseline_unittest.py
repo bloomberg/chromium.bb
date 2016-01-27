@@ -247,7 +247,7 @@ class TestRebaselineTest(_BaseTestCase):
 
     def test_rebaseline_updates_expectations_file_noop(self):
         self._zero_out_test_expectations()
-        self._write(self.lion_expectations_path, """Bug(B) [ Mac Linux XP Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass ]
+        self._write(self.lion_expectations_path, """Bug(B) [ Mac Linux Win7 Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass ]
 Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 """)
         self._write("fast/dom/Window/window-postmessage-clone-really-deep-array.html", "Dummy test contents")
@@ -262,7 +262,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
              self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
              self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
         new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, """Bug(B) [ Mac Linux XP Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass ]
+        self.assertMultiLineEqual(new_expectations, """Bug(B) [ Mac Linux Win7 Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass ]
 Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 """)
 
@@ -298,17 +298,17 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 
         # FIXME: it's confusing that this is the test- port, and not the regular win port. Really all of the tests should be using the test ports.
         port = self.tool.port_factory.get('test-win-win7')
-        self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
+        self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-win10/failures/expected/image-expected.txt'), 'original win10 result')
 
         old_exact_matches = builders._exact_matches
         oc = OutputCapture()
         try:
             builders._exact_matches = {
-                "MOCK XP": {"port_name": "test-win-xp"},
                 "MOCK Win7": {"port_name": "test-win-win7"},
+                "MOCK Win10": {"port_name": "test-win-win10"},
             }
 
-            options = MockOptions(optimize=True, builder="MOCK Win7", suffixes="txt",
+            options = MockOptions(optimize=True, builder="MOCK Win10", suffixes="txt",
                 verbose=True, test="failures/expected/image.html", results_directory=None)
 
             oc.capture_output()
@@ -317,9 +317,9 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             out, _, _ = oc.restore_output()
             builders._exact_matches = old_exact_matches
 
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')), 'MOCK Web result, convert 404 to None=True')
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-xp/failures/expected/image-expected.txt')))
-        self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win7"}], "delete": []}\n')
+        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win10/failures/expected/image-expected.txt')), 'MOCK Web result, convert 404 to None=True')
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')))
+        self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win10"}], "delete": []}\n')
 
 
 class TestAbstractParallelRebaselineCommand(_BaseTestCase):
@@ -329,14 +329,14 @@ class TestAbstractParallelRebaselineCommand(_BaseTestCase):
         old_exact_matches = builders._exact_matches
         try:
             builders._exact_matches = {
-                "MOCK XP": {"port_name": "test-win-xp"},
+                "MOCK Win10": {"port_name": "test-win-win10"},
                 "MOCK Win7": {"port_name": "test-win-win7"},
                 "MOCK Win7 (dbg)(1)": {"port_name": "test-win-win7"},
                 "MOCK Win7 (dbg)(2)": {"port_name": "test-win-win7"},
             }
 
-            builders_to_fetch = self.command._builders_to_fetch_from(["MOCK XP", "MOCK Win7 (dbg)(1)", "MOCK Win7 (dbg)(2)", "MOCK Win7"])
-            self.assertEqual(builders_to_fetch, ["MOCK XP", "MOCK Win7"])
+            builders_to_fetch = self.command._builders_to_fetch_from(["MOCK Win10", "MOCK Win7 (dbg)(1)", "MOCK Win7 (dbg)(2)", "MOCK Win7"])
+            self.assertEqual(builders_to_fetch, ["MOCK Win7", "MOCK Win10"])
         finally:
             builders._exact_matches = old_exact_matches
 
@@ -1294,7 +1294,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             ])
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
-Bug(foo) [ Linux Mac XP ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
         finally:
             builders._exact_matches = old_exact_matches
@@ -1356,7 +1356,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             ])
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
-Bug(foo) [ Linux Mac XP ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
         finally:
             builders._exact_matches = old_exact_matches

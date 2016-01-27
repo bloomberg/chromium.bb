@@ -231,7 +231,7 @@ class TestExpectationParser(object):
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.
     _configuration_tokens_list = [
         'Mac', 'Mac10.6', 'Mac10.7', 'Mac10.8', 'Mac10.9', 'Mac10.10', 'Retina',
-        'Win', 'XP', 'Win7', 'Win10',
+        'Win', 'Win7', 'Win10',
         'Linux', 'Linux32', 'Precise', 'Trusty',
         'Android',
         'Release',
@@ -410,6 +410,9 @@ class TestExpectationLine(object):
         self.matching_tests = []
         self.warnings = []
         self.is_skipped_outside_expectations_file = False
+
+    def __str__(self):
+        return "TestExpectationLine{name=%s, matching_configurations=%s, original_string=%s}" % (self.name, self.matching_configurations, self.original_string)
 
     def __eq__(self, other):
         return (self.original_string == other.original_string

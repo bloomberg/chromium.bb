@@ -36,7 +36,7 @@ from webkitpy.tool.mocktool import MockTool, MockOptions
 
 
 class PrintExpectationsTest(unittest.TestCase):
-    def run_test(self, tests, expected_stdout, platform='test-win-xp', **args):
+    def run_test(self, tests, expected_stdout, platform='test-win-win7', **args):
         options = MockOptions(all=False, csv=False, full=False, platform=platform,
                               include_keyword=[], exclude_keyword=[], paths=False).update(**args)
         tool = MockTool()
@@ -54,58 +54,58 @@ class PrintExpectationsTest(unittest.TestCase):
 
     def test_basic(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
-                      ('// For test-win-xp\n'
+                      ('// For test-win-win7\n'
                        'failures/expected/text.html [ Failure ]\n'
                        'failures/expected/timeout.html [ Timeout ]\n'))
 
     def test_multiple(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
-                      ('// For test-win-win7\n'
+                      ('// For test-win-win10\n'
                        'failures/expected/text.html [ Failure ]\n'
                        'failures/expected/timeout.html [ Timeout ]\n'
                        '\n'
-                       '// For test-win-xp\n'
+                       '// For test-win-win7\n'
                        'failures/expected/text.html [ Failure ]\n'
                        'failures/expected/timeout.html [ Timeout ]\n'),
                        platform='test-win-*')
 
     def test_full(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
-                      ('// For test-win-xp\n'
+                      ('// For test-win-win7\n'
                        'Bug(test) failures/expected/text.html [ Failure ]\n'
                        'Bug(test) failures/expected/timeout.html [ Timeout ]\n'),
                       full=True)
 
     def test_exclude(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/crash.html'],
-                      ('// For test-win-xp\n'
+                      ('// For test-win-win7\n'
                        'failures/expected/text.html [ Failure ]\n'),
                       exclude_keyword=['crash'])
 
     def test_include(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/crash.html'],
-                      ('// For test-win-xp\n'
+                      ('// For test-win-win7\n'
                        'failures/expected/crash.html\n'),
                       include_keyword=['crash'])
 
     def test_csv(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
-                      ('test-win-xp,failures/expected/image.html,Bug(test),,FAIL\n'
-                       'test-win-xp,failures/expected/text.html,Bug(test),,FAIL\n'),
+                      ('test-win-win7,failures/expected/image.html,Bug(test),,FAIL\n'
+                       'test-win-win7,failures/expected/text.html,Bug(test),,FAIL\n'),
                       csv=True)
 
     def test_paths(self):
         self.run_test([],
                       ('/mock-checkout/LayoutTests/TestExpectations\n'
                        'LayoutTests/platform/test/TestExpectations\n'
-                       'LayoutTests/platform/test-win-xp/TestExpectations\n'),
+                       'LayoutTests/platform/test-win-win7/TestExpectations\n'),
                       paths=True)
 
 class PrintBaselinesTest(unittest.TestCase):
     def setUp(self):
         self.oc = None
         self.tool = MockTool()
-        self.test_port = self.tool.port_factory.get('test-win-xp')
+        self.test_port = self.tool.port_factory.get('test-win-win7')
         self.tool.port_factory.get = lambda port_name=None: self.test_port
         self.tool.port_factory.all_port_names = lambda: TestPort.ALL_BASELINE_VARIANTS
 
@@ -129,7 +129,7 @@ class PrintBaselinesTest(unittest.TestCase):
         command.execute(MockOptions(all=False, include_virtual_tests=False, csv=False, platform=None), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('// For test-win-xp\n'
+                          ('// For test-win-win7\n'
                            'passes/text-expected.png\n'
                            'passes/text-expected.txt\n'))
 
@@ -140,11 +140,11 @@ class PrintBaselinesTest(unittest.TestCase):
         command.execute(MockOptions(all=False, include_virtual_tests=False, csv=False, platform='test-win-*'), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('// For test-win-win7\n'
+                          ('// For test-win-win10\n'
                            'passes/text-expected.png\n'
                            'passes/text-expected.txt\n'
                            '\n'
-                           '// For test-win-xp\n'
+                           '// For test-win-win7\n'
                            'passes/text-expected.png\n'
                            'passes/text-expected.txt\n'))
 
@@ -152,8 +152,8 @@ class PrintBaselinesTest(unittest.TestCase):
         command = PrintBaselines()
         command.bind_to_tool(self.tool)
         self.capture_output()
-        command.execute(MockOptions(all=False, platform='*xp', csv=True, include_virtual_tests=False), ['passes/text.html'], self.tool)
+        command.execute(MockOptions(all=False, platform='*win7', csv=True, include_virtual_tests=False), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('test-win-xp,passes/text.html,None,png,passes/text-expected.png,None\n'
-                           'test-win-xp,passes/text.html,None,txt,passes/text-expected.txt,None\n'))
+                          ('test-win-win7,passes/text.html,None,png,passes/text-expected.png,None\n'
+                           'test-win-win7,passes/text.html,None,txt,passes/text-expected.txt,None\n'))

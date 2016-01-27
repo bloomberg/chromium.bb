@@ -43,11 +43,11 @@ except ImportError:
 
 class Base(unittest.TestCase):
     # Note that all of these tests are written assuming the configuration
-    # being tested is Windows XP, Release build.
+    # being tested is Windows 7, Release build.
 
     def __init__(self, testFunc):
         host = MockHost()
-        self._port = host.port_factory.get('test-win-xp', None)
+        self._port = host.port_factory.get('test-win-win7', None)
         self._exp = None
         unittest.TestCase.__init__(self, testFunc)
 
@@ -113,7 +113,7 @@ class MiscTests(Base):
         expectations = TestExpectations(port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations('failures/expected/text.html'), set([FAIL]))
 
-        port = host.port_factory.get('test-win-xp', None)
+        port = host.port_factory.get('test-win-win7', None)
         port.expectations_dict = lambda: expectations_dict
         expectations = TestExpectations(port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations('failures/expected/text.html'), set([PASS]))
@@ -322,7 +322,7 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False, expected_results=[WONTFIX, SKIP, FAIL]):
-        port = MockHost().port_factory.get('test-win-xp')
+        port = MockHost().port_factory.get('test-win-win7')
         port._filesystem.write_text_file(port._filesystem.join(port.layout_tests_dir(), 'failures/expected/text.html'), 'foo')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = expectations
@@ -358,7 +358,7 @@ class SkippedTests(Base):
                    skips=['failures/expected'])
 
     def test_skipped_entry_dont_exist(self):
-        port = MockHost().port_factory.get('test-win-xp')
+        port = MockHost().port_factory.get('test-win-win7')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = ''
         port.expectations_dict = lambda: expectations_dict
@@ -529,13 +529,13 @@ Bug(y) failures/expected/text.html [ Failure ]
 
     def test_macro_overrides(self):
         self.assert_bad_expectations("Bug(test) [ Win ] passes/text.html [ Pass ]\n"
-                                     "Bug(test) [ XP ] passes/text.html [ Failure ]\n")
+                                     "Bug(test) [ Win7 ] passes/text.html [ Failure ]\n")
 
 
 class RemoveConfigurationsTest(Base):
     def test_remove(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -547,13 +547,13 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
 
-        self.assertEqual("""Bug(x) [ Linux Win7 Release ] failures/expected/foo.html [ Failure ]
+        self.assertEqual("""Bug(x) [ Linux Win10 Release ] failures/expected/foo.html [ Failure ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
     def test_remove_needs_rebaseline(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -564,13 +564,13 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
 
-        self.assertEqual("""Bug(x) [ XP Debug ] failures/expected/foo.html [ NeedsRebaseline ]
-Bug(x) [ Win7 ] failures/expected/foo.html [ NeedsRebaseline ]
+        self.assertEqual("""Bug(x) [ Win7 Debug ] failures/expected/foo.html [ NeedsRebaseline ]
+Bug(x) [ Win10 ] failures/expected/foo.html [ NeedsRebaseline ]
 """, actual_expectations)
 
     def test_remove_multiple_configurations(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -582,7 +582,7 @@ Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
 
         actual_expectations = expectations.remove_configurations([
             ('failures/expected/foo.html', test_config),
-            ('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration()),
+            ('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration()),
         ])
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -590,7 +590,7 @@ Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
 
     def test_remove_line_with_comments(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -603,14 +603,14 @@ Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
     def test_remove_line_with_comments_at_start(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -624,15 +624,16 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual("""
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
     def test_remove_line_with_comments_at_end_with_no_trailing_newline(self):
+        # TODO(wkorman): Simplify the redundant initialization in every test case.
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -644,13 +645,13 @@ Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]"""}
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]""", actual_expectations)
 
     def test_remove_line_leaves_comments_for_next_line(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -663,7 +664,7 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual("""
  # This comment line should not get stripped.
@@ -672,7 +673,7 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 
     def test_remove_line_no_whitespace_lines(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -686,7 +687,7 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual(""" # This comment line should not get stripped.
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -694,7 +695,7 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 
     def test_remove_first_line(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -706,7 +707,7 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual(""" # This comment line should not get stripped.
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -714,7 +715,7 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 
     def test_remove_flaky_line(self):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
@@ -725,7 +726,7 @@ Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win10', None).test_configuration())])
 
         self.assertEqual("""Bug(x) [ Win Debug ] failures/expected/foo.html [ Failure Timeout ]
 Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]
@@ -745,10 +746,10 @@ class RebaseliningTest(Base):
 class TestExpectationsParserTests(unittest.TestCase):
     def __init__(self, testFunc):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         self._converter = TestConfigurationConverter(test_port.all_test_configurations(), test_port.configuration_specifier_macros())
         unittest.TestCase.__init__(self, testFunc)
-        self._parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], is_lint_mode=False)
+        self._parser = TestExpectationParser(host.port_factory.get('test-win-win7', None), [], is_lint_mode=False)
 
     def test_expectation_line_for_test(self):
         # This is kind of a silly test, but it at least ensures that we don't throw an error.
@@ -769,7 +770,7 @@ class TestExpectationsParserTests(unittest.TestCase):
 class TestExpectationSerializationTests(unittest.TestCase):
     def __init__(self, testFunc):
         host = MockHost()
-        test_port = host.port_factory.get('test-win-xp', None)
+        test_port = host.port_factory.get('test-win-win7', None)
         self._converter = TestConfigurationConverter(test_port.all_test_configurations(), test_port.configuration_specifier_macros())
         unittest.TestCase.__init__(self, testFunc)
 
@@ -784,7 +785,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
 
     def assert_list_round_trip(self, in_string, expected_string=None):
         host = MockHost()
-        parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], is_lint_mode=False)
+        parser = TestExpectationParser(host.port_factory.get('test-win-win7', None), [], is_lint_mode=False)
         expectations = parser.parse('path', in_string)
         if expected_string is None:
             expected_string = in_string
@@ -827,10 +828,10 @@ class TestExpectationSerializationTests(unittest.TestCase):
         expectation_line.name = 'test/name/for/realz.html'
         expectation_line.parsed_expectations = set([IMAGE])
         self.assertEqual(expectation_line.to_string(self._converter), None)
-        expectation_line.matching_configurations = set([TestConfiguration('xp', 'x86', 'release')])
-        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP Release ] test/name/for/realz.html [ Failure ]')
-        expectation_line.matching_configurations = set([TestConfiguration('xp', 'x86', 'release'), TestConfiguration('xp', 'x86', 'debug')])
-        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP ] test/name/for/realz.html [ Failure ]')
+        expectation_line.matching_configurations = set([TestConfiguration('win7', 'x86', 'release')])
+        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ Win7 Release ] test/name/for/realz.html [ Failure ]')
+        expectation_line.matching_configurations = set([TestConfiguration('win7', 'x86', 'release'), TestConfiguration('win7', 'x86', 'debug')])
+        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ Win7 ] test/name/for/realz.html [ Failure ]')
 
     def test_parsed_to_string_mac_legacy_names(self):
         expectation_line = TestExpectationLine()
@@ -914,12 +915,12 @@ class TestExpectationSerializationTests(unittest.TestCase):
             if reconstitute:
                 reconstitute_only_these.append(expectation_line)
 
-        add_line(set([TestConfiguration('xp', 'x86', 'release')]), True)
-        add_line(set([TestConfiguration('xp', 'x86', 'release'), TestConfiguration('xp', 'x86', 'debug')]), False)
+        add_line(set([TestConfiguration('win7', 'x86', 'release')]), True)
+        add_line(set([TestConfiguration('win7', 'x86', 'release'), TestConfiguration('win7', 'x86', 'debug')]), False)
         serialized = TestExpectations.list_to_string(lines, self._converter)
-        self.assertEqual(serialized, "Bug(x) [ XP Release ] Yay [ Failure ]\nBug(x) [ XP ] Yay [ Failure ]")
+        self.assertEqual(serialized, "Bug(x) [ Win7 Release ] Yay [ Failure ]\nBug(x) [ Win7 ] Yay [ Failure ]")
         serialized = TestExpectations.list_to_string(lines, self._converter, reconstitute_only_these=reconstitute_only_these)
-        self.assertEqual(serialized, "Bug(x) [ XP Release ] Yay [ Failure ]\nNay")
+        self.assertEqual(serialized, "Bug(x) [ Win7 Release ] Yay [ Failure ]\nNay")
 
     def disabled_test_string_whitespace_stripping(self):
         # FIXME: Re-enable this test once we rework the code to no longer support the old syntax.

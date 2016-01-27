@@ -44,10 +44,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # <progress> on Mac is always animated. So it's hard to get a reliable pixel result.
 [ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
 
-# This requires usp10.dll version 1.600 or greater on Windows and
-# it isn't installed on XP by default.
-[ XP ] css3/font-feature-settings-rendering.html [ WontFix ]
-
 # These test the CoreAnimation plugin model which we never intend to support on
 # Windows and Linux.
 [ Win Linux ] compositing/plugins/1x1-composited-plugin.html [ WontFix ]
@@ -158,13 +154,12 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ SnowLeopard Debug ] fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 
 
-# Subpixel font scaling requires DirectWrite on windows (which isn't supported
-# on XP) and antialiasing on mac (which isn't enabled tests).
-[ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
-[ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
-[ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
-[ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
-[ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
+# Subpixel font scaling requires antialiasing on mac (which isn't enabled tests).
+[ Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
+[ Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
+[ Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
+[ Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
+[ Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
 [ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
 
 # Mac 10.6 only due to slight changes in text rendering
@@ -173,34 +168,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 # Mac 10.6 debug only, and the tests are very artificial to test orientation of all code points.
 [ SnowLeopard Debug ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ WontFix ]
 [ SnowLeopard Debug ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ WontFix ]
-
-# We don't have the necessary fonts for these tests on XP.
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001a.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001f.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001g.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001h.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-023.xht [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-025.xht [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-027.xht [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-022.xht [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-024.xht [ WontFix ]
-[ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vrl-026.xht [ WontFix ]
-
-# Relies on precise timing which isn't reliable on XP.
-[ XP ] imported/web-platform-tests/user-timing/test_user_timing_mark.html [ WontFix ]
-
-# We don't have full plane2 support on XP.
-[ XP ] fast/text/international/plane2.html [ WontFix ]
 
 # These two printing tests fail with the threaded compositor but they
 # aren't critical to run in this mode.
