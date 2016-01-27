@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -90,12 +91,13 @@ SkPaint* GetBadgeTextPaintSingleton() {
 }
 
 gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
-                                    int target_width,
+                                    int target_width_dp,
                                     float target_scale) {
+  int width_px = target_width_dp * target_scale;
   return gfx::ImageSkiaRep(
       skia::ImageOperations::Resize(rep.sk_bitmap(),
                                     skia::ImageOperations::RESIZE_BEST,
-                                    target_width, target_width),
+                                    width_px, width_px),
       target_scale);
 }
 
@@ -130,14 +132,16 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
   gfx::ImageSkia skia = icon_.AsImageSkia();
   gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
   if (rep.scale() != canvas->image_scale()) {
-    skia.AddRepresentation(
-        ScaleImageSkiaRep(rep, skia.width(), canvas->image_scale()));
+    skia.AddRepresentation(ScaleImageSkiaRep(
+        rep, ExtensionAction::ActionIconSize(), canvas->image_scale()));
   }
   if (grayscale_)
     skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});
 
-  int x_offset = std::floor((size().width() - icon_.Width()) / 2.0);
-  int y_offset = std::floor((size().height() - icon_.Height()) / 2.0);
+  int x_offset =
+      std::floor((size().width() - ExtensionAction::ActionIconSize()) / 2.0);
+  int y_offset =
+      std::floor((size().height() - ExtensionAction::ActionIconSize()) / 2.0);
   canvas->DrawImageInt(skia, x_offset, y_offset);
 
   // Draw a badge on the provided browser action icon's canvas.

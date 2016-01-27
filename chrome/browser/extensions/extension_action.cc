@@ -129,14 +129,6 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     gfx::ImageSkia* icon) {
   for (base::DictionaryValue::Iterator iter(dict); !iter.IsAtEnd();
        iter.Advance()) {
-    int icon_size = 0;
-    // Chrome helpfully scales the provided icon(s), but let's not go overboard.
-    const int kActionIconMaxSize = 10 * extension_misc::EXTENSION_ICON_ACTION;
-    if (!base::StringToInt(iter.key(), &icon_size) || icon_size <= 0 ||
-        icon_size > kActionIconMaxSize) {
-      continue;
-    }
-
     const base::BinaryValue* image_data;
     std::string binary_string64;
     IPC::Message pickle;
@@ -155,8 +147,16 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     if (!IPC::ReadParam(&pickle, &pickle_iter, &bitmap))
       return false;
     CHECK(!bitmap.isNull());
+
+    // Chrome helpfully scales the provided icon(s), but let's not go overboard.
+    const int kActionIconMaxSize = 10 * extension_misc::EXTENSION_ICON_ACTION;
+    if (bitmap.drawsNothing() || bitmap.width() != bitmap.height() ||
+        bitmap.width() > kActionIconMaxSize) {
+      continue;
+    }
+
     float scale =
-        static_cast<float>(icon_size) / ExtensionAction::ActionIconSize();
+        static_cast<float>(bitmap.width()) / ExtensionAction::ActionIconSize();
     icon->AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
   return true;
