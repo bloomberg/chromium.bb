@@ -39,6 +39,7 @@
 namespace blink {
 
 class LayoutPoint;
+class SelectionAdjuster;
 
 const TextAffinity SelDefaultAffinity = TextAffinity::Downstream;
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
@@ -72,8 +73,6 @@ public:
     VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);
 
     explicit VisibleSelectionTemplate(const PositionWithAffinityTemplate<Strategy>&, bool isDirectional = false);
-
-    static VisibleSelectionTemplate<Strategy> createWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextAffinity, bool isDirectional);
 
     VisibleSelectionTemplate(const VisibleSelectionTemplate&);
     VisibleSelectionTemplate& operator=(const VisibleSelectionTemplate&);
@@ -164,7 +163,7 @@ public:
     void setEndRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
 
 private:
-    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextAffinity, bool isDirectional);
+    friend class SelectionAdjuster;
 
     void validate(TextGranularity = CharacterGranularity);
 
@@ -205,6 +204,16 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<Editi
 
 using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
 using VisibleSelectionInComposedTree = VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
+
+// TODO(yosin): We should move |SelectionAdjuster| to its own file.
+class SelectionAdjuster final {
+    STATIC_ONLY(SelectionAdjuster);
+public:
+    static void adjustSelectionInComposedTree(VisibleSelectionInComposedTree*, const VisibleSelection&);
+    static void adjustSelectionInDOMTree(VisibleSelection*, const VisibleSelectionInComposedTree&);
+    static void adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelection*);
+    static void adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelectionInComposedTree*);
+};
 
 // TODO(yosin): We should use |operator==()| instead of
 // |equalSelectionsInDOMTree()|.

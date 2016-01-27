@@ -87,35 +87,46 @@ void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, 
         return;
     }
 
-    adjustVisibleSelectionInComposedTree();
+    SelectionAdjuster::adjustSelectionInComposedTree(&m_selectionInComposedTree, m_selection);
 }
 
 void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& newSelection, FrameSelection::SetSelectionOptions options)
 {
     ASSERT(!(options & FrameSelection::DoNotAdjustInComposedTree));
     m_selectionInComposedTree = newSelection;
-    adjustVisibleSelectionInDOMTree();
+    SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInComposedTree);
 }
 
-// Updates |m_selectionInComposedTree| to match with |m_selection|.
-void SelectionEditor::adjustVisibleSelectionInComposedTree()
+// TODO(yosin): We should move
+// |SelectionAdjuster::adjustSelectionInComposedTree()| to
+// "SelectionAdjuster.cpp"
+// Updates |selectionInComposedTree| to match with |selection|.
+void SelectionAdjuster::adjustSelectionInComposedTree(VisibleSelectionInComposedTree* selectionInComposedTree, const VisibleSelection& selection)
 {
-    if (m_selection.isNone()) {
-        m_selectionInComposedTree = VisibleSelectionInComposedTree();
+    if (selection.isNone()) {
+        *selectionInComposedTree = VisibleSelectionInComposedTree();
         return;
     }
 
-    const PositionInComposedTree base = toPositionInComposedTree(m_selection.base());
-    const PositionInComposedTree extent = toPositionInComposedTree(m_selection.extent());
-    const PositionInComposedTree position1 = toPositionInComposedTree(m_selection.start());
-    const PositionInComposedTree position2 = toPositionInComposedTree(m_selection.end());
+    const PositionInComposedTree& base = toPositionInComposedTree(selection.base());
+    const PositionInComposedTree& extent = toPositionInComposedTree(selection.extent());
+    const PositionInComposedTree& position1 = toPositionInComposedTree(selection.start());
+    const PositionInComposedTree& position2 = toPositionInComposedTree(selection.end());
     position1.anchorNode()->updateDistribution();
     position2.anchorNode()->updateDistribution();
+    selectionInComposedTree->m_base = base;
+    selectionInComposedTree->m_extent = extent;
+    selectionInComposedTree->m_affinity = selection.m_affinity;
+    selectionInComposedTree->m_isDirectional = selection.m_isDirectional;
+    selectionInComposedTree->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
     if (position1.compareTo(position2) <= 0) {
-        m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, extent, position1, position2, m_selection.affinity(), m_selection.isDirectional());
-        return;
+        selectionInComposedTree->m_start = position1;
+        selectionInComposedTree->m_end = position2;
+    } else {
+        selectionInComposedTree->m_start = position2;
+        selectionInComposedTree->m_end = position1;
     }
-    m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, extent, position2, position1, m_selection.affinity(), m_selection.isDirectional());
+    selectionInComposedTree->updateSelectionType();
 }
 
 static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& selection)
@@ -128,30 +139,39 @@ static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& sel
         || selection.end().anchorNode()->treeScope() != treeScope;
 }
 
-void SelectionEditor::adjustVisibleSelectionInDOMTree()
+// TODO(yosin): We should move
+// |SelectionAdjuster::adjustSelectionInDOMTree()| to
+// "SelectionAdjuster.cpp"
+void SelectionAdjuster::adjustSelectionInDOMTree(VisibleSelection* selection, const VisibleSelectionInComposedTree& selectionInComposedTree)
 {
-    if (m_selectionInComposedTree.isNone()) {
-        m_selection = VisibleSelection();
+    if (selectionInComposedTree.isNone()) {
+        *selection = VisibleSelection();
         return;
     }
 
-    const Position base = toPositionInDOMTree(m_selectionInComposedTree.base());
-    const Position extent = toPositionInDOMTree(m_selectionInComposedTree.extent());
+    const Position& base = toPositionInDOMTree(selectionInComposedTree.base());
+    const Position& extent = toPositionInDOMTree(selectionInComposedTree.extent());
 
-    if (isCrossingShadowBoundaries(m_selectionInComposedTree)) {
-        m_selection = VisibleSelection(base, extent);
+    if (isCrossingShadowBoundaries(selectionInComposedTree)) {
+        *selection = VisibleSelection(base, extent);
         return;
     }
 
-    const Position start = toPositionInDOMTree(m_selectionInComposedTree.start());
-    const Position end = toPositionInDOMTree(m_selectionInComposedTree.end());
-    const TextAffinity affinity = m_selectionInComposedTree.affinity();
-    const bool isDirectional = m_selectionInComposedTree.isDirectional();
-    if (start.compareTo(end) <= 0) {
-        m_selection = VisibleSelection::createWithoutValidation(base, extent, start, end, affinity, isDirectional);
-        return;
+    const Position& position1 = toPositionInDOMTree(selectionInComposedTree.start());
+    const Position& position2 = toPositionInDOMTree(selectionInComposedTree.end());
+    selection->m_base = base;
+    selection->m_extent = extent;
+    selection->m_affinity = selectionInComposedTree.m_affinity;
+    selection->m_isDirectional = selectionInComposedTree.m_isDirectional;
+    selection->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
+    if (position1.compareTo(position2) <= 0) {
+        selection->m_start = position1;
+        selection->m_end = position2;
+    } else {
+        selection->m_start = position2;
+        selection->m_end = position1;
     }
-    m_selection = VisibleSelection::createWithoutValidation(base, extent, end, start, affinity, isDirectional);
+    selection->updateSelectionType();
 }
 
 void SelectionEditor::resetXPosForVerticalArrowNavigation()
