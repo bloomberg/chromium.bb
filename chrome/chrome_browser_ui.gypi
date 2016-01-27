@@ -1187,8 +1187,6 @@
       'browser/ui/cocoa/profiles/avatar_button_controller.mm',
       'browser/ui/cocoa/profiles/avatar_icon_controller.h',
       'browser/ui/cocoa/profiles/avatar_icon_controller.mm',
-      'browser/ui/cocoa/profiles/avatar_label_button.h',
-      'browser/ui/cocoa/profiles/avatar_label_button.mm',
       'browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h',
       'browser/ui/cocoa/profiles/avatar_menu_bubble_controller.mm',
       'browser/ui/cocoa/profiles/profile_chooser_controller.h',

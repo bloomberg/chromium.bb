@@ -1306,7 +1306,6 @@
       'browser/ui/cocoa/profiles/avatar_button_controller_unittest.mm',
       'browser/ui/cocoa/profiles/avatar_button_unittest.mm',
       'browser/ui/cocoa/profiles/avatar_icon_controller_unittest.mm',
-      'browser/ui/cocoa/profiles/avatar_label_button_unittest.mm',
       'browser/ui/cocoa/profiles/avatar_menu_bubble_controller_unittest.mm',
       'browser/ui/cocoa/profiles/profile_chooser_controller_unittest.mm',
       'browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm',
