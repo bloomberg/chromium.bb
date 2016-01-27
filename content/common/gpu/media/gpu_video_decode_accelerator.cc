@@ -103,7 +103,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     IPC_BEGIN_MESSAGE_MAP(MessageFilter, msg)
       IPC_MESSAGE_FORWARD(AcceleratedVideoDecoderMsg_Decode, owner_,
                           GpuVideoDecodeAccelerator::OnDecode)
-      IPC_MESSAGE_UNHANDLED(return false;)
+      IPC_MESSAGE_UNHANDLED(return false)
     IPC_END_MESSAGE_MAP()
     return true;
   }

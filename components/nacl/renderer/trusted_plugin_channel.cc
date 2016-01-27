@@ -40,7 +40,7 @@ bool TrustedPluginChannel::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(TrustedPluginChannel, msg)
     IPC_MESSAGE_HANDLER(NaClRendererMsg_ReportExitStatus, OnReportExitStatus);
     IPC_MESSAGE_HANDLER(NaClRendererMsg_ReportLoadStatus, OnReportLoadStatus);
-    IPC_MESSAGE_UNHANDLED(handled = false);
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }

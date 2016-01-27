@@ -44,8 +44,8 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAddValidSsrc)
     IPC_MESSAGE_HANDLER(CastHostMsg_SendRtcpFromRtpReceiver,
                         OnSendRtcpFromRtpReceiver)
-    IPC_MESSAGE_UNHANDLED(handled = false);
-  IPC_END_MESSAGE_MAP();
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

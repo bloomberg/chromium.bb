@@ -55,8 +55,8 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
     IPC_BEGIN_MESSAGE_MAP(RequestPrintPreviewObserver, message)
       IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
                           OnRequestPrintPreview)
-      IPC_MESSAGE_UNHANDLED(break;)
-    IPC_END_MESSAGE_MAP();
+      IPC_MESSAGE_UNHANDLED(break)
+    IPC_END_MESSAGE_MAP()
     return false;  // Report not handled so the real handler receives it.
   }
 

@@ -211,7 +211,7 @@ bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
   IPC_MESSAGE_HANDLER(PpapiHostMsg_LogInterfaceUsage,
                       OnHostMsgLogInterfaceUsage)
   IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
-  IPC_END_MESSAGE_MAP();
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

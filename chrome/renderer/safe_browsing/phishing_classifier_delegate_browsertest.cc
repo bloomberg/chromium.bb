@@ -96,7 +96,7 @@ class InterceptingMessageFilter : public content::BrowserMessageFilter {
     IPC_BEGIN_MESSAGE_MAP(InterceptingMessageFilter, message)
         IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,
                             OnPhishingDetectionDone)
-        IPC_MESSAGE_UNHANDLED(handled = false);
+        IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
   }

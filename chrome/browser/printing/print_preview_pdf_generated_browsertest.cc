@@ -141,7 +141,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     IPC_BEGIN_MESSAGE_MAP(PrintPreviewObserver, message)
       IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
                           OnDidGetPreviewPageCount)
-    IPC_END_MESSAGE_MAP();
+    IPC_END_MESSAGE_MAP()
     return false;
   }
 

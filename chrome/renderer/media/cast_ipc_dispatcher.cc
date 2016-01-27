@@ -54,8 +54,8 @@ bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(CastMsg_Rtt, OnRtt)
     IPC_MESSAGE_HANDLER(CastMsg_RtcpCastMessage, OnRtcpCastMessage)
     IPC_MESSAGE_HANDLER(CastMsg_ReceivedPacket, OnReceivedPacket)
-    IPC_MESSAGE_UNHANDLED(handled = false);
-  IPC_END_MESSAGE_MAP();
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 
