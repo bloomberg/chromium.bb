@@ -45,6 +45,32 @@
             'serial_device_enumerator_linux.h',
           ],
         }],
+        ['OS=="win"', {
+          'link_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  'setupapi.dll',
+                ],
+                'AdditionalDependencies': [
+                  'setupapi.lib',
+                ],
+              },
+            },
+          },
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  'setupapi.dll',
+                ],
+                'AdditionalDependencies': [
+                  'setupapi.lib',
+                ],
+              },
+            },
+          },
+        }],
       ],
       'dependencies': [
         'device_serial_mojo',
