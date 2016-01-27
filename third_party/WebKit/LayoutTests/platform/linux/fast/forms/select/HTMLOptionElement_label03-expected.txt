@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 412x19
         text run at (0,0) width 412: "When the label contains only white space, the containing text is used."
       LayoutBR {BR} at (412,15) size 0x0
-      LayoutMenuList {SELECT} at (0,20) size 359x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 357x18
+      LayoutMenuList {SELECT} at (0,20) size 358x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 356x18
           LayoutText (anonymous) at (4,1) size 334x16
             text run at (4,1) width 334: "white space label should display empty string to match IE"
       LayoutText {#text} at (0,0) size 0x0

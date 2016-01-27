@@ -25,29 +25,29 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,267) size 98x17
         text run at (0,267) width 98: "initial selected:"
       LayoutBR {BR} at (97,281) size 1x0
-      LayoutMenuList {SELECT} at (0,285) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 157x18
+      LayoutMenuList {SELECT} at (0,285) size 158x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 156x18
           LayoutText (anonymous) at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
-      LayoutText {#text} at (159,286) size 4x17
-        text run at (159,286) width 4: " "
-      LayoutBR {BR} at (163,300) size 0x0
+      LayoutText {#text} at (158,286) size 4x17
+        text run at (158,286) width 4: " "
+      LayoutBR {BR} at (162,300) size 0x0
       LayoutText {#text} at (0,305) size 165x17
         text run at (0,305) width 165: "dynamic selected change:"
       LayoutBR {BR} at (164,319) size 1x0
-      LayoutMenuList {SELECT} at (0,323) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 157x18
+      LayoutMenuList {SELECT} at (0,323) size 158x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 156x18
           LayoutText (anonymous) at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
-      LayoutText {#text} at (159,324) size 4x17
-        text run at (159,324) width 4: " "
+      LayoutText {#text} at (158,324) size 4x17
+        text run at (158,324) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
       LayoutBR {BR} at (0,0) size 0x0
       LayoutText {#text} at (0,343) size 217x17
         text run at (0,343) width 217: "dynamic insert of selected option:"
       LayoutBR {BR} at (216,357) size 1x0
-      LayoutMenuList {SELECT} at (0,361) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 157x18
+      LayoutMenuList {SELECT} at (0,361) size 158x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 156x18
           LayoutText (anonymous) at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
       LayoutText {#text} at (0,0) size 0x0

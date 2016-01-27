@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
         text run at (0,0) width 478: "This tests that select elements with a narrow width (1px) are rendered correctly."
       LayoutBR {BR} at (477,15) size 1x0
       LayoutMenuList {SELECT} at (0,20) size 2x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 23x18
+        LayoutBlockFlow (anonymous) at (1,1) size 22x18
           LayoutText (anonymous) at (4,1) size 22x16
             text run at (4,1) width 22: "test"
       LayoutBR {BR} at (2,35) size 0x0
       LayoutMenuList {SELECT} at (0,40) size 2x20 [bgcolor=#0000FF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 23x18
+        LayoutBlockFlow (anonymous) at (1,1) size 22x18
           LayoutText (anonymous) at (4,1) size 22x16
             text run at (4,1) width 22: "test"
       LayoutText {#text} at (0,0) size 0x0

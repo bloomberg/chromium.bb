@@ -13,24 +13,24 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,48) size 600x55
               LayoutTableCell {TD} at (2,55) size 594x40 [bgcolor=#99CCCC] [r=1 c=0 rs=1 cs=3]
-                LayoutInline {FONT} at (0,0) size 134x16
-                  LayoutInline {B} at (0,0) size 134x16
-                    LayoutText {#text} at (36,4) size 134x16
-                      text run at (36,4) width 134: "Search the Web with"
+                LayoutInline {FONT} at (0,0) size 133x16
+                  LayoutInline {B} at (0,0) size 133x16
+                    LayoutText {#text} at (37,4) size 133x16
+                      text run at (37,4) width 133: "Search the Web with"
                 LayoutText {#text} at (169,3) size 5x17
                   text run at (169,3) width 5: " "
-                LayoutMenuList {SELECT} at (173.38,2) size 80x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-                  LayoutBlockFlow (anonymous) at (1,1) size 78x18
+                LayoutMenuList {SELECT} at (173.88,2) size 79x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+                  LayoutBlockFlow (anonymous) at (1,1) size 77x18
                     LayoutText (anonymous) at (4,1) size 55x16
                       text run at (4,1) width 55: "Netscape"
-                LayoutTextControl {INPUT} at (253.38,1) size 243x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                LayoutText {#text} at (496,3) size 5x17
-                  text run at (496,3) width 5: " "
-                LayoutButton {INPUT} at (500.38,1) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutTextControl {INPUT} at (252.88,1) size 243x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutText {#text} at (495,3) size 5x17
+                  text run at (495,3) width 5: " "
+                LayoutButton {INPUT} at (499.88,1) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   LayoutBlockFlow (anonymous) at (8,3) size 41x16
                     LayoutText {#text} at (0,0) size 41x16
                       text run at (0,0) width 41: "Search"
-                LayoutBR {BR} at (557,17) size 1x0
+                LayoutBR {BR} at (556,17) size 1x0
                 LayoutInline {SMALL} at (0,0) size 556x15
                   LayoutInline {A} at (0,0) size 99x15 [color=#0000EE]
                     LayoutText {#text} at (19,23) size 99x15

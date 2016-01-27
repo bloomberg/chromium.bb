@@ -3,26 +3,26 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutMenuList {SELECT} at (0,0) size 61x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 59x18
+      LayoutMenuList {SELECT} at (0,0) size 60x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 58x18
           LayoutText (anonymous) at (4,1) size 35x16
             text run at (4,1) width 35: "PASS"
-      LayoutBR {BR} at (61,15) size 0x0
-      LayoutMenuList {SELECT} at (0,20) size 61x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 59x18
+      LayoutBR {BR} at (60,15) size 0x0
+      LayoutMenuList {SELECT} at (0,20) size 60x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 58x18
           LayoutText (anonymous) at (4,1) size 35x16
             text run at (4,1) width 35: "PASS"
-      LayoutBR {BR} at (61,35) size 0x0
-      LayoutMenuList {SELECT} at (0,40) size 61x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 59x18
+      LayoutBR {BR} at (60,35) size 0x0
+      LayoutMenuList {SELECT} at (0,40) size 60x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 58x18
           LayoutText (anonymous) at (4,1) size 35x16
             text run at (4,1) width 35: "PASS"
-      LayoutBR {BR} at (61,55) size 0x0
-      LayoutMenuList {SELECT} at (0,60) size 61x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 59x18
+      LayoutBR {BR} at (60,55) size 0x0
+      LayoutMenuList {SELECT} at (0,60) size 60x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 58x18
           LayoutText (anonymous) at (4,1) size 35x16
             text run at (4,1) width 35: "PASS"
-      LayoutBR {BR} at (61,75) size 0x0
+      LayoutBR {BR} at (60,75) size 0x0
       LayoutBR {BR} at (56,113) size 1x0
       LayoutBR {BR} at (56,149) size 1x0
       LayoutBR {BR} at (56,185) size 1x0

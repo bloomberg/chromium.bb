@@ -1,106 +1,106 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x457
-  LayoutBlockFlow {HTML} at (0,0) size 800x457
-    LayoutBlockFlow {BODY} at (8,8) size 784x441
-      LayoutMenuList {SELECT} at (4,4) size 42x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 40x18
+layer at (0,0) size 800x485
+  LayoutBlockFlow {HTML} at (0,0) size 800x485
+    LayoutBlockFlow {BODY} at (8,8) size 784x469
+      LayoutMenuList {SELECT} at (4,4) size 41x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (50,4) size 4x19
-        text run at (50,4) width 4: " "
-      LayoutBR {BR} at (54,4) size 0x19
-      LayoutMenuList {SELECT} at (4,32) size 42x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,9) size 40x18
+      LayoutText {#text} at (49,4) size 4x19
+        text run at (49,4) width 4: " "
+      LayoutBR {BR} at (53,4) size 0x19
+      LayoutMenuList {SELECT} at (4,32) size 41x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,9) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (50,40) size 4x19
-        text run at (50,40) width 4: " "
-      LayoutMenuList {SELECT} at (58,40) size 48x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 40x18
+      LayoutText {#text} at (49,40) size 4x19
+        text run at (49,40) width 4: " "
+      LayoutMenuList {SELECT} at (57,40) size 47x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (110,40) size 4x19
-        text run at (110,40) width 4: " "
-      LayoutMenuList {SELECT} at (118,40) size 42x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 40x18
+      LayoutText {#text} at (108,40) size 4x19
+        text run at (108,40) width 4: " "
+      LayoutMenuList {SELECT} at (116,40) size 41x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (164,40) size 4x19
-        text run at (164,40) width 4: " "
-      LayoutMenuList {SELECT} at (172,40) size 48x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (7,1) size 40x18
+      LayoutText {#text} at (161,40) size 4x19
+        text run at (161,40) width 4: " "
+      LayoutMenuList {SELECT} at (169,40) size 47x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (7,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (224,40) size 4x19
-        text run at (224,40) width 4: " "
-      LayoutBR {BR} at (228,40) size 0x19
-      LayoutMenuList {SELECT} at (4,76) size 46x24 [bgcolor=#DDDDDD] [border: (3px solid #00FF00)]
-        LayoutBlockFlow (anonymous) at (3,3) size 40x18
+      LayoutText {#text} at (220,40) size 4x19
+        text run at (220,40) width 4: " "
+      LayoutBR {BR} at (224,40) size 0x19
+      LayoutMenuList {SELECT} at (4,76) size 45x24 [bgcolor=#DDDDDD] [border: (3px solid #00FF00)]
+        LayoutBlockFlow (anonymous) at (3,3) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (54,78) size 4x19
-        text run at (54,78) width 4: " "
-      LayoutMenuList {SELECT} at (62,78) size 42x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 40x18
+      LayoutText {#text} at (53,78) size 4x19
+        text run at (53,78) width 4: " "
+      LayoutMenuList {SELECT} at (61,78) size 41x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (108,78) size 4x19
-        text run at (108,78) width 4: " "
-      LayoutBR {BR} at (112,78) size 0x19
-      LayoutMenuList {SELECT} at (4,115) size 42x20 [color=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 40x18
+      LayoutText {#text} at (106,78) size 4x19
+        text run at (106,78) width 4: " "
+      LayoutBR {BR} at (110,78) size 0x19
+      LayoutMenuList {SELECT} at (4,115) size 41x20 [color=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (50,115) size 4x19
-        text run at (50,115) width 4: " "
-      LayoutBlockFlow {DIV} at (54,104) size 65x42 [bgcolor=#DBB102]
-        LayoutMenuList {SELECT} at (12,12) size 41x18
-          LayoutBlockFlow (anonymous) at (0,0) size 41x18
+      LayoutText {#text} at (49,115) size 4x19
+        text run at (49,115) width 4: " "
+      LayoutBlockFlow {DIV} at (53,104) size 64x42 [bgcolor=#DBB102]
+        LayoutMenuList {SELECT} at (12,12) size 40x18
+          LayoutBlockFlow (anonymous) at (0,0) size 40x18
             LayoutText (anonymous) at (4,1) size 18x16
               text run at (4,1) width 18: "bar"
-      LayoutText {#text} at (119,115) size 4x19
-        text run at (119,115) width 4: " "
-      LayoutBR {BR} at (123,115) size 0x19
-      LayoutMenuList {SELECT} at (4,150) size 42x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 40x18
+      LayoutText {#text} at (117,115) size 4x19
+        text run at (117,115) width 4: " "
+      LayoutBR {BR} at (121,115) size 0x19
+      LayoutMenuList {SELECT} at (4,150) size 41x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
-      LayoutText {#text} at (50,150) size 4x19
-        text run at (50,150) width 4: " "
-      LayoutBR {BR} at (54,150) size 0x19
-      LayoutMenuList {SELECT} at (4,184) size 47x23 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 45x21
+      LayoutText {#text} at (49,150) size 4x19
+        text run at (49,150) width 4: " "
+      LayoutBR {BR} at (53,150) size 0x19
+      LayoutMenuList {SELECT} at (4,184) size 46x23 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 44x21
           LayoutText (anonymous) at (4,1) size 22x18
             text run at (4,1) width 22: "foo"
-      LayoutText {#text} at (55,186) size 4x19
-        text run at (55,186) width 4: " "
-      LayoutMenuList {SELECT} at (63,180) size 53x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 51x26
+      LayoutText {#text} at (54,186) size 4x19
+        text run at (54,186) width 4: " "
+      LayoutMenuList {SELECT} at (62,180) size 52x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 50x26
           LayoutText (anonymous) at (4,1) size 28x23
             text run at (4,1) width 28: "foo"
-      LayoutText {#text} at (120,186) size 4x19
-        text run at (120,186) width 4: " "
-      LayoutMenuList {SELECT} at (128,178) size 58x32 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 56x30
+      LayoutText {#text} at (118,186) size 4x19
+        text run at (118,186) width 4: " "
+      LayoutMenuList {SELECT} at (126,178) size 57x32 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 55x30
           LayoutText (anonymous) at (4,1) size 33x27
             text run at (4,1) width 33: "foo"
-      LayoutText {#text} at (190,186) size 4x19
-        text run at (190,186) width 4: " "
-      LayoutBR {BR} at (194,186) size 0x19
-      LayoutMenuList {SELECT} at (6,231) size 64x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 62x26
+      LayoutText {#text} at (187,186) size 4x19
+        text run at (187,186) width 4: " "
+      LayoutBR {BR} at (191,186) size 0x19
+      LayoutMenuList {SELECT} at (6,231) size 63x28 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 61x26
           LayoutText (anonymous) at (6,1) size 28x23
             text run at (6,1) width 28: "foo"
-      LayoutText {#text} at (76,237) size 4x19
-        text run at (76,237) width 4: " "
-      LayoutMenuList {SELECT} at (88,222) size 87x41 [bgcolor=#DDDDDD] [border: (2px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (2,2) size 83x37
+      LayoutText {#text} at (75,237) size 4x19
+        text run at (75,237) width 4: " "
+      LayoutMenuList {SELECT} at (87,222) size 85x41 [bgcolor=#DDDDDD] [border: (2px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (2,2) size 81x37
           LayoutText (anonymous) at (8,2) size 37x32
             text run at (8,2) width 37: "foo"
-      LayoutText {#text} at (183,237) size 4x19
-        text run at (183,237) width 4: " "
-      LayoutBR {BR} at (187,237) size 0x19
+      LayoutText {#text} at (180,237) size 4x19
+        text run at (180,237) width 4: " "
+      LayoutBR {BR} at (184,237) size 0x19
       LayoutText {#text} at (208,285) size 4x19
         text run at (208,285) width 4: " "
       LayoutBR {BR} at (212,285) size 0x19
@@ -113,6 +113,13 @@ layer at (0,0) size 800x457
       LayoutText {#text} at (208,387) size 4x19
         text run at (208,387) width 4: " "
       LayoutBR {BR} at (212,387) size 0x19
+      LayoutText {#text} at (208,421) size 4x19
+        text run at (208,421) width 4: " "
+      LayoutBR {BR} at (212,421) size 0x19
+      LayoutMenuList {SELECT} at (4,445) size 60x20 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 58x18
+          LayoutText (anonymous) at (4,1) size 36x16
+            text run at (4,1) width 36: "Month"
       LayoutText {#text} at (0,0) size 0x0
 layer at (12,283) size 200x25 clip at (13,284) size 183x23 scrollHeight 51
   LayoutListBox {SELECT} at (4,275) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]

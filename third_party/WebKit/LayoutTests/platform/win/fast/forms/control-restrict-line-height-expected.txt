@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 533x17
         text run at (0,0) width 533: "This tests that we don't honor line-height for controls that have restricted font size. "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutMenuList {SELECT} at (0,18) size 319x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 317x18
+      LayoutMenuList {SELECT} at (0,18) size 318x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 316x18
           LayoutText (anonymous) at (4,1) size 294x16
             text run at (4,1) width 294: "This text should be centered vertically in the button"
-      LayoutText {#text} at (319,19) size 4x17
-        text run at (319,19) width 4: " "
+      LayoutText {#text} at (318,19) size 4x17
+        text run at (318,19) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
       LayoutButton {INPUT} at (0,38) size 310x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (8,3) size 294x16

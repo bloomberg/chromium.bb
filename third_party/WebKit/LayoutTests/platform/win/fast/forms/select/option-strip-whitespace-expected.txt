@@ -17,24 +17,24 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,160) size 0x17
         LayoutText {#text} at (0,179) size 306x17
           text run at (0,179) width 306: "Five Spaces (with leading/trailing whitespace): "
-        LayoutMenuList {SELECT} at (305.25,178) size 96x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 94x18
+        LayoutMenuList {SELECT} at (305.25,178) size 95x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 93x18
             LayoutText (anonymous) at (4,1) size 71x16
               text run at (4,1) width 71: "Five Spaces"
-        LayoutBR {BR} at (401,193) size 1x0
+        LayoutBR {BR} at (400,193) size 1x0
         LayoutBR {BR} at (0,198) size 0x17
         LayoutText {#text} at (0,217) size 291x17
           text run at (0,217) width 291: "Five Tabs (with leading/trailing whitespace): "
-        LayoutMenuList {SELECT} at (290.80,216) size 79x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 77x18
+        LayoutMenuList {SELECT} at (290.80,216) size 78x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 76x18
             LayoutText (anonymous) at (4,1) size 54x16
               text run at (4,1) width 54: "Five Tabs"
-        LayoutBR {BR} at (369,231) size 1x0
+        LayoutBR {BR} at (368,231) size 1x0
         LayoutBR {BR} at (0,236) size 0x17
         LayoutText {#text} at (0,255) size 129x17
           text run at (0,255) width 129: "Mixed Whitespace: "
-        LayoutMenuList {SELECT} at (128.84,254) size 79x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 77x18
+        LayoutMenuList {SELECT} at (128.84,254) size 78x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 76x18
             LayoutText (anonymous) at (4,1) size 54x16
               text run at (4,1) width 54: "Five Tabs"
         LayoutText {#text} at (0,0) size 0x0

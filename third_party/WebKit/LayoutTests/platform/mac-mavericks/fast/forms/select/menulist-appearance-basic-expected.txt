@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x410
-  LayoutBlockFlow {HTML} at (0,0) size 800x410
-    LayoutBlockFlow {BODY} at (8,8) size 784x394
+layer at (0,0) size 800x436
+  LayoutBlockFlow {HTML} at (0,0) size 800x436
+    LayoutBlockFlow {BODY} at (8,8) size 784x420
       LayoutMenuList {SELECT} at (4,4) size 49x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 49x18
           LayoutText (anonymous) at (8,2) size 18x13
@@ -113,6 +113,13 @@ layer at (0,0) size 800x410
       LayoutText {#text} at (208,343) size 4x18
         text run at (208,343) width 4: " "
       LayoutBR {BR} at (212,343) size 0x18
+      LayoutText {#text} at (208,376) size 4x18
+        text run at (208,376) width 4: " "
+      LayoutBR {BR} at (212,376) size 0x18
+      LayoutMenuList {SELECT} at (4,398) size 60x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 60x18
+          LayoutText (anonymous) at (8,2) size 34x13
+            text run at (8,2) width 34: "Month"
       LayoutText {#text} at (0,0) size 0x0
 layer at (12,241) size 200x25 clip at (13,242) size 187x23 scrollHeight 43
   LayoutListBox {SELECT} at (4,233) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]

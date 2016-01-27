@@ -28,12 +28,12 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 36x16
               text run at (0,0) width 36: "button"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutMenuList {SELECT} at (1,187) size 60x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 58x18
+        LayoutMenuList {SELECT} at (1,187) size 59x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 57x18
             LayoutText (anonymous) at (4,1) size 35x16
               text run at (4,1) width 35: "select"
-        LayoutMenuList {SELECT} at (1,207) size 60x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 58x18
+        LayoutMenuList {SELECT} at (1,207) size 59x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 57x18
             LayoutText (anonymous) at (4,1) size 35x16
               text run at (4,1) width 35: "select"
         LayoutText {#text} at (0,0) size 0x0
