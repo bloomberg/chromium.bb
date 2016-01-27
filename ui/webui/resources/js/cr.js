@@ -331,15 +331,12 @@ var cr = function() {
    * supply any number of other arguments that will be included in the response.
    * @param {string} id The unique ID identifying the Promise this response is
    *     tied to.
-   * @param {...*} var_args Variable number of arguments to be included in the
-   *     response.
+   * @param {*} response The response as sent from C++.
    */
-  function webUIResponse(id, var_args) {
+  function webUIResponse(id, response) {
     var resolverFn = chromeSendResolverMap[id];
     delete chromeSendResolverMap[id];
-    // Promise#resolve accepts only one value, therefore wrapping all arguments
-    // passed from C++ to JS in an array.
-    resolverFn(Array.prototype.slice.call(arguments, 1));
+    resolverFn(response);
   }
 
   /**
@@ -355,7 +352,7 @@ var cr = function() {
     return new Promise(function(resolve, reject) {
       var id = methodName + '_' + createUid();
       chromeSendResolverMap[id] = resolve;
-      chrome.send(methodName, ['cr.webUIResponse', id].concat(args));
+      chrome.send(methodName, [id].concat(args));
     });
   }
 

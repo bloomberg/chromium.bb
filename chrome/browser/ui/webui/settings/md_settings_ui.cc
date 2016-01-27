@@ -40,6 +40,12 @@ SettingsPageUIHandler::SettingsPageUIHandler() {
 SettingsPageUIHandler::~SettingsPageUIHandler() {
 }
 
+void SettingsPageUIHandler::CallJavascriptCallback(
+    const base::Value& callback_id, const base::Value& response) {
+  // cr.webUIResponse is a global JS function exposed from cr.js.
+  web_ui()->CallJavascriptFunction("cr.webUIResponse", callback_id, response);
+}
+
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);

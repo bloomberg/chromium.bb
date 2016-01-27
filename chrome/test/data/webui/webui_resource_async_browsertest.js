@@ -56,22 +56,39 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
     setup(function() {
       // Simulate a WebUI handler that echoes back all parameters passed to it.
       whenChromeSendCalled(CHROME_SEND_NAME).then(function(args) {
-        assertEquals('cr.webUIResponse', args[0]);
-        var globalCallbackArgs = args.slice(1);
-        cr.webUIResponse.apply(null, globalCallbackArgs);
+        cr.webUIResponse.apply(null, args);
       });
     });
 
-    test('sendWithPromise_MultipleArgs', function() {
-      return cr.sendWithPromise(CHROME_SEND_NAME, 'foo', 'bar').then(
+    test('sendWithPromise_ResponseObject', function() {
+      var expectedResponse = {'foo': 'bar'};
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
           function(response) {
-            assertEquals(['foo', 'bar'].join(), response.join());
+            assertEquals(
+                JSON.stringify(expectedResponse), JSON.stringify(response));
           });
     });
 
-    test('sendWithPromise_NoArgs', function() {
+    test('sendWithPromise_ResponseArray', function() {
+      var expectedResponse = ['foo', 'bar'];
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
+          function(response) {
+            assertEquals(
+                JSON.stringify(expectedResponse), JSON.stringify(response));
+          });
+    });
+
+    test('sendWithPromise_ResponsePrimitive', function() {
+      var expectedResponse = 1234;
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
+          function(response) {
+            assertEquals(expectedResponse, response);
+          });
+    });
+
+    test('sendWithPromise_ResponseVoid', function() {
       return cr.sendWithPromise(CHROME_SEND_NAME).then(function(response) {
-        assertEquals([].join(), response.join());
+        assertEquals(undefined, response);
       });
     });
   });

@@ -25,6 +25,12 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   void RegisterMessages() override {}
 
+ protected:
+  // Helper method for responding to JS requests initiated with
+  // cr.sendWithPromise().
+  void CallJavascriptCallback(const base::Value& callback_id,
+                              const base::Value& response);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SettingsPageUIHandler);
 };

@@ -71,15 +71,12 @@ base::FundamentalValue AppearanceHandler::QueryResetThemeEnabledState() {
 }
 
 void AppearanceHandler::GetResetThemeEnabled(const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
-
-  std::string callbackFn;
-  CHECK(args->GetString(0, &callbackFn));
-  const base::Value* callbackId;
-  CHECK(args->Get(1, &callbackId));
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
 
   base::FundamentalValue enabled(QueryResetThemeEnabledState());
-  web_ui()->CallJavascriptFunction(callbackFn, *callbackId, enabled);
+  CallJavascriptCallback(*callback_id, enabled);
 }
 
 }  // namespace settings
