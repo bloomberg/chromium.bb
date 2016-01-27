@@ -514,14 +514,6 @@ void Editor::replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragmen
     ASSERT(frame().document());
     ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionPaste)->apply();
     revealSelectionAfterEditingOperation();
-
-    if (frame().selection().isInPasswordField() || !spellChecker().isContinuousSpellCheckingEnabled())
-        return;
-    ASSERT(lastEditCommand()->isReplaceSelectionCommand());
-    const EphemeralRange& insertedRange = toReplaceSelectionCommand(lastEditCommand())->insertedRange();
-    if (insertedRange.isNull())
-        return;
-    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(frame().selection().rootEditableElement(), insertedRange);
 }
 
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)
@@ -675,10 +667,29 @@ static void dispatchEditableContentChangedEvents(PassRefPtrWillBeRawPtr<Element>
         endRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged));
 }
 
+void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
+{
+    // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
+    // created in |Editor::replaceSelectionWithFragment()|.
+    // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
+    if (cmd->editingAction() != EditActionPaste)
+        return;
+    if (frame().selection().isInPasswordField() || !spellChecker().isContinuousSpellCheckingEnabled())
+        return;
+    ASSERT(cmd->isReplaceSelectionCommand());
+    const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
+    if (insertedRange.isNull())
+        return;
+    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(cmd->endingSelection().rootEditableElement(), insertedRange);
+}
+
 void Editor::appliedEditing(PassRefPtrWillBeRawPtr<CompositeEditCommand> cmd)
 {
     EventQueueScope scope;
     frame().document()->updateLayout();
+
+    // Request spell checking after pasting before any further DOM change.
+    requestSpellcheckingAfterApplyingCommand(cmd.get());
 
     EditCommandComposition* composition = cmd->composition();
     ASSERT(composition);

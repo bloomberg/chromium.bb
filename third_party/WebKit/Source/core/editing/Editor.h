@@ -288,6 +288,7 @@ private:
     SpellChecker& spellChecker() const;
 
     bool handleEditingKeyboardEvent(KeyboardEvent*);
+    void requestSpellcheckingAfterApplyingCommand(CompositeEditCommand*);
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)
