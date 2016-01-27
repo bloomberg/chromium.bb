@@ -2060,7 +2060,24 @@ LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(LayoutUnit position, Inden
 {
     ETextAlign textAlign = style()->textAlign();
 
-    if (textAlign == TASTART) // FIXME: Handle TAEND here
+    bool applyIndentText;
+    switch (textAlign) { // FIXME: Handle TAEND here
+    case LEFT:
+    case WEBKIT_LEFT:
+        applyIndentText = style()->isLeftToRightDirection();
+        break;
+    case RIGHT:
+    case WEBKIT_RIGHT:
+        applyIndentText = !style()->isLeftToRightDirection();
+        break;
+    case TASTART:
+        applyIndentText = true;
+        break;
+    default:
+        applyIndentText = false;
+    }
+
+    if (applyIndentText)
         return startOffsetForLine(position, indentText);
 
     // updateLogicalWidthForAlignment() handles the direction of the block so no need to consider it here
