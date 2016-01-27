@@ -16,7 +16,9 @@ struct MainThreadScrollingReason {
   enum : uint32_t { kThreadedScrollingDisabled = 1 << 2 };
   enum : uint32_t { kScrollbarScrolling = 1 << 3 };
   enum : uint32_t { kPageOverlay = 1 << 4 };
-  enum : uint32_t { kMaxNonTransientScrollingReason = kPageOverlay };
+  // The maximum value reachable as a combination of the non-transient scrolling
+  // reasons.
+  enum : uint32_t { kMaxNonTransientScrollingReasons = (1 << 5) - 1 };
 
   // Transient scrolling reasons. These are computed for each scroll begin.
   enum : uint32_t { kNonFastScrollableRegion = 1 << 5 };

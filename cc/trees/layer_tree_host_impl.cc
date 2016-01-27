@@ -2500,10 +2500,10 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     if (status.thread == SCROLL_ON_MAIN_THREAD) {
       if (layer_impl->should_scroll_on_main_thread()) {
         DCHECK_LE(status.main_thread_scrolling_reasons,
-                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
       } else {
         DCHECK_GT(status.main_thread_scrolling_reasons,
-                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
       }
 
       *scroll_on_main_thread = true;
@@ -2522,10 +2522,10 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     if (status.thread == SCROLL_ON_MAIN_THREAD) {
       if (layer_impl->should_scroll_on_main_thread()) {
         DCHECK_LE(status.main_thread_scrolling_reasons,
-                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
       } else {
         DCHECK_GT(status.main_thread_scrolling_reasons,
-                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
       }
 
       *scroll_on_main_thread = true;

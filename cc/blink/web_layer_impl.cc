@@ -344,7 +344,7 @@ void WebLayerImpl::addMainThreadScrollingReasons(
   // TODO(tdresser): This is comparing less than a bit flag but that's not valid
   // if there is more than one reason given in |main_thread_scrolling_reasons|.
   DCHECK_LE(main_thread_scrolling_reasons,
-            cc::MainThreadScrollingReason::kMaxNonTransientScrollingReason);
+            cc::MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
   layer_->AddMainThreadScrollingReasons(main_thread_scrolling_reasons);
 }
 
