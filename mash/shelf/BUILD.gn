@@ -6,11 +6,25 @@ import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
+# TODO(msw): Port unit/app tests: model, view, tooltip_manager, etc.
 mojo_native_application("shelf") {
   sources = [
     "main.cc",
     "shelf_application.cc",
     "shelf_application.h",
+    "shelf_button.cc",
+    "shelf_button.h",
+    "shelf_button_host.h",
+    "shelf_constants.cc",
+    "shelf_constants.h",
+    "shelf_item_types.cc",
+    "shelf_item_types.h",
+    "shelf_model.cc",
+    "shelf_model.h",
+    "shelf_model_observer.h",
+    "shelf_tooltip_manager.cc",
+    "shelf_tooltip_manager.h",
+    "shelf_types.h",
     "shelf_view.cc",
     "shelf_view.h",
   ]
@@ -24,9 +38,12 @@ mojo_native_application("shelf") {
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//skia",
+    "//ui/accessibility",
     "//ui/aura",
+    "//ui/resources",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
+    "//ui/wm",
   ]
 
   resources = [ "$root_out_dir/views_mus_resources.pak" ]

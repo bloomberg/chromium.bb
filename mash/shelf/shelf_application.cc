@@ -27,11 +27,10 @@ void ShelfApplication::Initialize(mojo::ApplicationImpl* app) {
   aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(app);
 
+  // Construct the shelf using a container tagged for positioning by the WM.
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = new ShelfView(app);
-
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[mash::wm::mojom::kWindowContainer_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
@@ -41,6 +40,9 @@ void ShelfApplication::Initialize(mojo::ApplicationImpl* app) {
   params.native_widget = new views::NativeWidgetMus(
       widget, app->shell(), window, mus::mojom::SurfaceType::DEFAULT);
   widget->Init(params);
+  widget->SetContentsView(new ShelfView(app));
+  // Call CenterWindow to mimic Widget::Init's placement with a widget delegate.
+  widget->CenterWindow(widget->GetContentsView()->GetPreferredSize());
   widget->Show();
 }
 
