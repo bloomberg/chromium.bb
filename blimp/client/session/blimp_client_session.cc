@@ -4,14 +4,17 @@
 
 #include "blimp/client/session/blimp_client_session.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "blimp/client/blimp_client_switches.h"
-#include "blimp/client/session/navigation_feature.h"
-#include "blimp/client/session/render_widget_feature.h"
-#include "blimp/client/session/tab_control_feature.h"
+#include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/client/feature/navigation_feature.h"
+#include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"

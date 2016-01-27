@@ -49,7 +49,7 @@ group("blimp_tests") {
 
 test("blimp_unittests") {
   deps = [
-    "//blimp/client:unit_tests",
+    "//blimp/client:feature_unit_tests",
     "//blimp/common:unit_tests",
     "//blimp/net:unit_tests",
   ]
