@@ -2992,6 +2992,9 @@
         }],
         ['enable_app_list==1 and chromeos==1', {
           'sources': [ '<@(chrome_browser_ui_chromeos_arc_sources)' ],
+          'dependencies': [
+            '../components/components.gyp:arc_mojo_bindings',
+          ],
         }],
         ['use_cups==1', {
           'dependencies': [
