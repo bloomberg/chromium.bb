@@ -287,9 +287,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         backingThread().addTaskObserver(m_microtaskRunner.get());
 
         m_isolate = initializeIsolate();
-        if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
-            V8PerIsolateData::enableIdleTasks(m_isolate, adoptPtr(new V8IdleTaskRunner(m_webScheduler)));
-        }
         // Optimize for memory usage instead of latency for the worker isolate.
         m_isolate->IsolateInBackgroundNotification();
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
@@ -487,7 +484,8 @@ v8::Isolate* WorkerThread::initializeIsolate()
     OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
     ThreadState::current()->addInterruptor(interruptor.release());
     ThreadState::current()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
-
+    if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
+        V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(m_webScheduler)));
     return isolate;
 }
 
