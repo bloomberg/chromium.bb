@@ -61,13 +61,6 @@ using content::WebContents;
 
 namespace {
 
-// While resize areas on Windows are normally the same size as the window
-// borders, our top area is shrunk by 1 px to make it easier to move the window
-// around with our thinner top grabbable strip.  (Incidentally, our side and
-// bottom resize areas don't match the frame border thickness either -- they
-// span the whole nonclient area, so there's no "dead zone" for the mouse.)
-const int kTopResizeAdjust = 1;
-
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
@@ -253,9 +246,9 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     LOG(WARNING) << "delegate is null, returning safe default.";
     return HTCAPTION;
   }
-  int window_component = GetHTComponentForFrame(point, TopResizeHeight(),
-      NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
-      delegate->CanResize());
+  int window_component = GetHTComponentForFrame(
+      point, FrameBorderThickness(false), NonClientBorderThickness(),
+      kResizeAreaCornerSize, kResizeAreaCornerSize, delegate->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -553,10 +546,6 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
 
 int OpaqueBrowserFrameView::FrameBorderThickness(bool restored) const {
   return layout_->FrameBorderThickness(restored);
-}
-
-int OpaqueBrowserFrameView::TopResizeHeight() const {
-  return FrameBorderThickness(false) - kTopResizeAdjust;
 }
 
 int OpaqueBrowserFrameView::NonClientBorderThickness() const {

@@ -120,10 +120,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // calculated as if the window was restored, regardless of its current state.
   int FrameBorderThickness(bool restored) const;
 
-  // Returns the height of the top resize area.  This is smaller than the frame
-  // border height in order to increase the window draggable area.
-  int TopResizeHeight() const;
-
   // Returns true if the specified point is within the avatar menu buttons.
   bool IsWithinAvatarMenuButtons(const gfx::Point& point) const;
 
