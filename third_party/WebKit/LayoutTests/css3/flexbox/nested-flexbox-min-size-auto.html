@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<link href="resources/flexbox.css" rel="stylesheet">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
+<body onload="checkLayout('.flexbox')">
+<div id=log></div>
+
+<!-- This isn't "correct" per the spec, but it is an interim fix
+     to avoid bad results.
+     See https://crbug.com/580196
+  -->
+<div class="flexbox column" style="height: 0px;" data-expected-height="0">
+  <div data-expected-height="0" style="display: flex;">Some text</div>
+</div>
