@@ -15,6 +15,7 @@
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mash/wm/accelerator_registrar_impl.h"
 #include "mash/wm/background_layout.h"
+#include "mash/wm/screenlock_layout.h"
 #include "mash/wm/shadow_controller.h"
 #include "mash/wm/shelf_layout.h"
 #include "mash/wm/user_window_controller_impl.h"
@@ -119,8 +120,10 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   CreateContainers();
   background_layout_.reset(new BackgroundLayout(
       GetWindowForContainer(mojom::Container::USER_BACKGROUND)));
-  shelf_layout_.reset(
-      new ShelfLayout(GetWindowForContainer(mojom::Container::USER_SHELF)));
+  screenlock_layout_.reset(new ScreenlockLayout(GetWindowForContainer(
+      mojom::Container::LOGIN_WINDOWS)));
+  shelf_layout_.reset(new ShelfLayout(GetWindowForContainer(
+      mojom::Container::USER_SHELF)));
 
   mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
   window_layout_.reset(

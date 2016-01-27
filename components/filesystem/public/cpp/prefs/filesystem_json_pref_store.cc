@@ -327,8 +327,11 @@ void FilesystemJsonPrefStore::PerformWrite() {
 }
 
 void FilesystemJsonPrefStore::OpenFilesystem(base::Closure callback) {
+  filesystem::FileSystemClientPtr client;
+  binding_.Bind(GetProxy(&client));
+
   filesystem_->OpenFileSystem(
-      "origin", GetProxy(&directory_), binding_.CreateInterfacePtrAndBind(),
+      "origin", GetProxy(&directory_), std::move(client),
       base::Bind(&FilesystemJsonPrefStore::OnOpenFilesystem, AsWeakPtr(),
                  callback));
 }
@@ -425,7 +428,6 @@ void FilesystemJsonPrefStore::OnPreferencesFileRead(
       read_only_ = true;
       break;
     }
-    case FileError::FAILED:
     case FileError::NOT_FOUND: {
       // If the file just doesn't exist, maybe this is the first run. Just
       // don't pass a value.

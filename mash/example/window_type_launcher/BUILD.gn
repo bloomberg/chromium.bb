@@ -23,6 +23,7 @@ executable("window_type_launcher") {
     "//base:base_static",
     "//build/config/sanitizers:deps",
     "//components/mus/public/interfaces",
+    "//mash/shell/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/message_pump",

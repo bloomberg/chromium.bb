@@ -39,6 +39,7 @@ namespace wm {
 
 class AcceleratorRegistrarImpl;
 class BackgroundLayout;
+class ScreenlockLayout;
 class ShadowController;
 class ShelfLayout;
 class UserWindowControllerImpl;
@@ -140,6 +141,7 @@ class WindowManagerApplication
       user_window_controller_requests_;
 
   scoped_ptr<BackgroundLayout> background_layout_;
+  scoped_ptr<ScreenlockLayout> screenlock_layout_;
   scoped_ptr<ShelfLayout> shelf_layout_;
   scoped_ptr<WindowLayout> window_layout_;
 

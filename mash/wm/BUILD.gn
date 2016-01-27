@@ -44,6 +44,8 @@ source_set("lib") {
     "non_client_frame_controller.h",
     "property_util.cc",
     "property_util.h",
+    "screenlock_layout.cc",
+    "screenlock_layout.h",
     "shadow.cc",
     "shadow.h",
     "shadow_controller.cc",

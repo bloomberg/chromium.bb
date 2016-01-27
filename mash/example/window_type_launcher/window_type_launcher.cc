@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_impl.h"
@@ -163,8 +164,9 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                public views::MenuDelegate,
                                public views::ContextMenuController {
  public:
-  WindowTypeLauncherView()
-      : create_button_(new views::LabelButton(
+  explicit WindowTypeLauncherView(mojo::ApplicationImpl* app)
+      : app_(app),
+        create_button_(new views::LabelButton(
             this, base::ASCIIToUTF16("Create Window"))),
         panel_button_(new views::LabelButton(
             this, base::ASCIIToUTF16("Create Panel"))),
@@ -271,7 +273,9 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       NOTIMPLEMENTED();
     }
     else if (sender == lock_button_) {
-      NOTIMPLEMENTED();
+      mash::shell::mojom::ShellPtr shell;
+      app_->ConnectToService("mojo:mash_shell", &shell);
+      shell->LockScreen();
     }
     else if (sender == widgets_button_) {
       NOTIMPLEMENTED();
@@ -327,6 +331,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
   }
 
+  mojo::ApplicationImpl* app_;
   views::LabelButton* create_button_;
   views::LabelButton* panel_button_;
   views::LabelButton* create_nonresizable_button_;
@@ -362,7 +367,7 @@ void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView;
+  params.delegate = new WindowTypeLauncherView(app);
   widget->Init(params);
   widget->Show();
 }

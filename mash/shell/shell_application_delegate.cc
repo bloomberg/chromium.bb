@@ -5,6 +5,7 @@
 #include "mash/shell/shell_application_delegate.h"
 
 #include "base/bind.h"
+#include "mash/screenlock/public/interfaces/screenlock.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 
@@ -26,7 +27,21 @@ void ShellApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
 
 bool ShellApplicationDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  return false;
+  connection->AddService<mash::shell::mojom::Shell>(this);
+  return true;
+}
+
+void ShellApplicationDelegate::LockScreen() {
+  StartScreenlock();
+}
+void ShellApplicationDelegate::UnlockScreen() {
+  StopScreenlock();
+}
+
+void ShellApplicationDelegate::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mash::shell::mojom::Shell> r) {
+  bindings_.AddBinding(this, std::move(r));
 }
 
 void ShellApplicationDelegate::StartWindowManager() {
@@ -60,6 +75,22 @@ void ShellApplicationDelegate::StartQuickLaunch() {
       "mojo:quick_launch",
       base::Bind(&ShellApplicationDelegate::StartQuickLaunch,
                  base::Unretained(this)));
+}
+
+void ShellApplicationDelegate::StartScreenlock() {
+  StartRestartableService(
+      "mojo:screenlock",
+      base::Bind(&ShellApplicationDelegate::StartScreenlock,
+                 base::Unretained(this)));
+}
+
+void ShellApplicationDelegate::StopScreenlock() {
+  auto connection = connections_.find("mojo:screenlock");
+  DCHECK(connections_.end() != connection);
+  mash::screenlock::mojom::ScreenlockPtr screenlock;
+  connection->second->ConnectToService(&screenlock);
+  screenlock->Quit();
+  connections_.erase(connection);
 }
 
 void ShellApplicationDelegate::StartRestartableService(

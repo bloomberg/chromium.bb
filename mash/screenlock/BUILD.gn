@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,30 +7,31 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("shell") {
-  output_name = "mash_shell"
-
+mojo_native_application("screenlock") {
   sources = [
     "main.cc",
-    "shell_application_delegate.cc",
-    "shell_application_delegate.h",
+    "screenlock.cc",
+    "screenlock.h",
   ]
 
   deps = [
     "//base",
+    "//components/mus/public/cpp",
     "//mash/screenlock/public/interfaces",
     "//mash/shell/public/interfaces",
+    "//mash/wm/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
+    "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",
+    "//ui/views",
+    "//ui/views/mus:for_mojo_application",
   ]
 
+  resources = [ "$root_out_dir/views_mus_resources.pak" ]
+
   data_deps = [
-    "//mash/browser_driver",
-    "//mash/quick_launch",
-    "//mash/shelf",
-    "//mash/wallpaper",
-    "//mash/wm",
+    "//components/mus",
   ]
 }

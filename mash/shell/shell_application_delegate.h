@@ -10,7 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mojo/common/weak_binding_set.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
 class ApplicationConnection;
@@ -19,7 +22,10 @@ class ApplicationConnection;
 namespace mash {
 namespace shell {
 
-class ShellApplicationDelegate : public mojo::ApplicationDelegate {
+class ShellApplicationDelegate
+    : public mojo::ApplicationDelegate,
+      public mash::shell::mojom::Shell,
+      public mojo::InterfaceFactory<mash::shell::mojom::Shell> {
  public:
   ShellApplicationDelegate();
   ~ShellApplicationDelegate() override;
@@ -30,11 +36,22 @@ class ShellApplicationDelegate : public mojo::ApplicationDelegate {
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
+  // mash::shell::mojom::Shell:
+  void LockScreen() override;
+  void UnlockScreen() override;
+
+  // mojo::InterfaceFactory<mash::shell::mojom::Shell>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mash::shell::mojom::Shell> r) override;
+
   void StartWindowManager();
   void StartWallpaper();
   void StartShelf();
   void StartBrowserDriver();
   void StartQuickLaunch();
+
+  void StartScreenlock();
+  void StopScreenlock();
 
   // Starts the application at |url|, running |restart_callback| if the
   // connection to the application is closed.
@@ -43,6 +60,7 @@ class ShellApplicationDelegate : public mojo::ApplicationDelegate {
 
   mojo::ApplicationImpl* app_;
   std::map<std::string, scoped_ptr<mojo::ApplicationConnection>> connections_;
+  mojo::WeakBindingSet<mash::shell::mojom::Shell> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellApplicationDelegate);
 };
