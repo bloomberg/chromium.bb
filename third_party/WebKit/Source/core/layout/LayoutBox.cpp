@@ -4374,12 +4374,11 @@ static void markBoxForRelayoutAfterSplit(LayoutBox* box)
 
 LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChild)
 {
-    bool didSplitParentAnonymousBoxes = false;
+    LayoutBox* boxAtTopOfNewBranch = nullptr;
 
     while (beforeChild->parent() != this) {
         LayoutBox* boxToSplit = toLayoutBox(beforeChild->parent());
         if (boxToSplit->slowFirstChild() != beforeChild && boxToSplit->isAnonymous()) {
-            didSplitParentAnonymousBoxes = true;
 
             // We have to split the parent box into two boxes and move children
             // from |beforeChild| to end into the new post box.
@@ -4395,6 +4394,7 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
 
             markBoxForRelayoutAfterSplit(boxToSplit);
             markBoxForRelayoutAfterSplit(postBox);
+            boxAtTopOfNewBranch = postBox;
 
             beforeChild = postBox;
         } else {
@@ -4402,8 +4402,12 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
         }
     }
 
-    if (didSplitParentAnonymousBoxes)
+    // Splitting the box means the left side of the container chain will lose any percent height descendants
+    // below |boxAtTopOfNewBranch| on the right hand side.
+    if (boxAtTopOfNewBranch) {
+        boxAtTopOfNewBranch->clearPercentHeightDescendants();
         markBoxForRelayoutAfterSplit(this);
+    }
 
     ASSERT(beforeChild->parent() == this);
     return beforeChild;
