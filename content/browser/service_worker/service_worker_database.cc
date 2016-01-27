@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_database.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -344,28 +346,28 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
   if (status != STATUS_OK)
     return status;
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(kUniqueOriginKey); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      origins->clear();
-      return status;
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(kUniqueOriginKey); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        origins->clear();
+        break;
+      }
+
+      std::string origin_str;
+      if (!RemovePrefix(itr->key().ToString(), kUniqueOriginKey, &origin_str))
+        break;
+
+      GURL origin(origin_str);
+      if (!origin.is_valid()) {
+        status = STATUS_ERROR_CORRUPTED;
+        origins->clear();
+        break;
+      }
+
+      origins->insert(origin);
     }
-
-    std::string origin_str;
-    if (!RemovePrefix(itr->key().ToString(), kUniqueOriginKey, &origin_str))
-      break;
-
-    GURL origin(origin_str);
-    if (!origin.is_valid()) {
-      status = STATUS_ERROR_CORRUPTED;
-      HandleReadResult(FROM_HERE, status);
-      origins->clear();
-      return status;
-    }
-
-    origins->insert(origin);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -384,29 +386,29 @@ ServiceWorkerDatabase::GetOriginsWithForeignFetchRegistrations(
   if (status != STATUS_OK)
     return status;
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(kForeignFetchOriginKey); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      origins->clear();
-      return status;
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(kForeignFetchOriginKey); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        origins->clear();
+        break;
+      }
+
+      std::string origin_str;
+      if (!RemovePrefix(itr->key().ToString(), kForeignFetchOriginKey,
+                        &origin_str))
+        break;
+
+      GURL origin(origin_str);
+      if (!origin.is_valid()) {
+        status = STATUS_ERROR_CORRUPTED;
+        origins->clear();
+        break;
+      }
+
+      origins->insert(origin);
     }
-
-    std::string origin_str;
-    if (!RemovePrefix(itr->key().ToString(), kForeignFetchOriginKey,
-                      &origin_str))
-      break;
-
-    GURL origin(origin_str);
-    if (!origin.is_valid()) {
-      status = STATUS_ERROR_CORRUPTED;
-      HandleReadResult(FROM_HERE, status);
-      origins->clear();
-      return status;
-    }
-
-    origins->insert(origin);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -427,41 +429,40 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     return status;
 
   std::string prefix = CreateRegistrationKeyPrefix(origin);
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      registrations->clear();
-      if (opt_resources_list)
-        opt_resources_list->clear();
-      return status;
-    }
-
-    if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
-      break;
-
-    RegistrationData registration;
-    status = ParseRegistrationData(itr->value().ToString(), &registration);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      registrations->clear();
-      if (opt_resources_list)
-        opt_resources_list->clear();
-      return status;
-    }
-    registrations->push_back(registration);
-
-    if (opt_resources_list) {
-      std::vector<ResourceRecord> resources;
-      status = ReadResourceRecords(registration.version_id, &resources);
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
-        HandleReadResult(FROM_HERE, status);
         registrations->clear();
-        opt_resources_list->clear();
-        return status;
+        if (opt_resources_list)
+          opt_resources_list->clear();
+        break;
       }
-      opt_resources_list->push_back(resources);
+
+      if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
+        break;
+
+      RegistrationData registration;
+      status = ParseRegistrationData(itr->value().ToString(), &registration);
+      if (status != STATUS_OK) {
+        registrations->clear();
+        if (opt_resources_list)
+          opt_resources_list->clear();
+        break;
+      }
+      registrations->push_back(registration);
+
+      if (opt_resources_list) {
+        std::vector<ResourceRecord> resources;
+        status = ReadResourceRecords(registration.version_id, &resources);
+        if (status != STATUS_OK) {
+          registrations->clear();
+          opt_resources_list->clear();
+          break;
+        }
+        opt_resources_list->push_back(resources);
+      }
     }
   }
 
@@ -480,26 +481,26 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
   if (status != STATUS_OK)
     return status;
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      registrations->clear();
-      return status;
-    }
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        registrations->clear();
+        break;
+      }
 
-    if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, NULL))
-      break;
+      if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, NULL))
+        break;
 
-    RegistrationData registration;
-    status = ParseRegistrationData(itr->value().ToString(), &registration);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      registrations->clear();
-      return status;
+      RegistrationData registration;
+      status = ParseRegistrationData(itr->value().ToString(), &registration);
+      if (status != STATUS_OK) {
+        registrations->clear();
+        break;
+      }
+      registrations->push_back(registration);
     }
-    registrations->push_back(registration);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -875,39 +876,38 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
     return status;
 
   std::string key_prefix = CreateHasUserDataKeyPrefix(user_data_name);
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      user_data->clear();
-      return status;
-    }
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        user_data->clear();
+        break;
+      }
 
-    std::string registration_id_string;
-    if (!RemovePrefix(itr->key().ToString(), key_prefix,
-                      &registration_id_string)) {
-      break;
-    }
+      std::string registration_id_string;
+      if (!RemovePrefix(itr->key().ToString(), key_prefix,
+                        &registration_id_string)) {
+        break;
+      }
 
-    int64_t registration_id;
-    status = ParseId(registration_id_string, &registration_id);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      user_data->clear();
-      return status;
-    }
+      int64_t registration_id;
+      status = ParseId(registration_id_string, &registration_id);
+      if (status != STATUS_OK) {
+        user_data->clear();
+        break;
+      }
 
-    std::string value;
-    status = LevelDBStatusToStatus(
-        db_->Get(leveldb::ReadOptions(),
-                 CreateUserDataKey(registration_id, user_data_name), &value));
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      user_data->clear();
-      return status;
+      std::string value;
+      status = LevelDBStatusToStatus(
+          db_->Get(leveldb::ReadOptions(),
+                   CreateUserDataKey(registration_id, user_data_name), &value));
+      if (status != STATUS_OK) {
+        user_data->clear();
+        break;
+      }
+      user_data->push_back(std::make_pair(registration_id, value));
     }
-    user_data->push_back(std::make_pair(registration_id, value));
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -1240,26 +1240,26 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
   Status status = STATUS_OK;
   const std::string prefix = CreateResourceRecordKeyPrefix(version_id);
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
-    Status status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      resources->clear();
-      return status;
-    }
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      Status status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        resources->clear();
+        break;
+      }
 
-    if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
-      break;
+      if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
+        break;
 
-    ResourceRecord resource;
-    status = ParseResourceRecord(itr->value().ToString(), &resource);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      resources->clear();
-      return status;
+      ResourceRecord resource;
+      status = ParseResourceRecord(itr->value().ToString(), &resource);
+      if (status != STATUS_OK) {
+        resources->clear();
+        break;
+      }
+      resources->push_back(resource);
     }
-    resources->push_back(resource);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -1328,33 +1328,31 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(
   Status status = STATUS_OK;
   const std::string prefix = CreateResourceRecordKeyPrefix(version_id);
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      return status;
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK)
+        break;
+
+      const std::string key = itr->key().ToString();
+      std::string unprefixed;
+      if (!RemovePrefix(key, prefix, &unprefixed))
+        break;
+
+      int64_t resource_id;
+      status = ParseId(unprefixed, &resource_id);
+      if (status != STATUS_OK)
+        break;
+
+      // Remove a resource record.
+      batch->Delete(key);
+
+      // Currently resource sharing across versions and registrations is not
+      // supported, so we can purge this without caring about it.
+      PutPurgeableResourceIdToBatch(resource_id, batch);
+      newly_purgeable_resources->push_back(resource_id);
     }
-
-    const std::string key = itr->key().ToString();
-    std::string unprefixed;
-    if (!RemovePrefix(key, prefix, &unprefixed))
-      break;
-
-    int64_t resource_id;
-    status = ParseId(unprefixed, &resource_id);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      return status;
-    }
-
-    // Remove a resource record.
-    batch->Delete(key);
-
-    // Currently resource sharing across versions and registrations is not
-    // supported, so we can purge this without caring about it.
-    PutPurgeableResourceIdToBatch(resource_id, batch);
-    newly_purgeable_resources->push_back(resource_id);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -1374,27 +1372,27 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
   if (status != STATUS_OK)
     return status;
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(id_key_prefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      ids->clear();
-      return status;
-    }
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(id_key_prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        ids->clear();
+        break;
+      }
 
-    std::string unprefixed;
-    if (!RemovePrefix(itr->key().ToString(), id_key_prefix, &unprefixed))
-      break;
+      std::string unprefixed;
+      if (!RemovePrefix(itr->key().ToString(), id_key_prefix, &unprefixed))
+        break;
 
-    int64_t resource_id;
-    status = ParseId(unprefixed, &resource_id);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      ids->clear();
-      return status;
+      int64_t resource_id;
+      status = ParseId(unprefixed, &resource_id);
+      if (status != STATUS_OK) {
+        ids->clear();
+        break;
+      }
+      ids->insert(resource_id);
     }
-    ids->insert(resource_id);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -1452,21 +1450,23 @@ ServiceWorkerDatabase::DeleteUserDataForRegistration(
   Status status = STATUS_OK;
   const std::string prefix = CreateUserDataKeyPrefix(registration_id);
 
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      return status;
-    }
+  {
+    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK)
+        break;
 
-    const std::string key = itr->key().ToString();
-    std::string user_data_name;
-    if (!RemovePrefix(key, prefix, &user_data_name))
-      break;
-    batch->Delete(key);
-    batch->Delete(CreateHasUserDataKey(registration_id, user_data_name));
+      const std::string key = itr->key().ToString();
+      std::string user_data_name;
+      if (!RemovePrefix(key, prefix, &user_data_name))
+        break;
+      batch->Delete(key);
+      batch->Delete(CreateHasUserDataKey(registration_id, user_data_name));
+    }
   }
+
+  HandleReadResult(FROM_HERE, status);
   return status;
 }
 
