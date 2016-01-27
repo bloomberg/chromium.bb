@@ -1223,6 +1223,9 @@ void RenderWidget::WillBeginCompositorFrame() {
   // is done.
   UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
   UpdateSelectionBounds();
+
+  FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
+                    WillBeginCompositorFrame());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

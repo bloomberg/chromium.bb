@@ -349,7 +349,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
 
   uint32_t GetSurfaceIdNamespace() override;
-  uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
+  uint32_t SurfaceIdNamespaceAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                     const gfx::Point& point,
                                      gfx::Point* transformed_point) override;
   // Returns true when we can do SurfaceHitTesting for the event type.
   bool ShouldRouteEvent(const blink::WebInputEvent& event) const;

@@ -1570,6 +1570,7 @@ uint32_t RenderWidgetHostViewMac::GetSurfaceIdNamespace() {
 }
 
 uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
+    cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   // The surface hittest happens in device pixels, so we need to convert the
@@ -1578,8 +1579,8 @@ uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
                            ->GetDisplayNearestWindow(cocoa_view_)
                            .device_scale_factor();
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
-  cc::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(point_in_pixels,
-                                                             transformed_point);
+  cc::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(
+      delegate, point_in_pixels, transformed_point);
   *transformed_point = gfx::ConvertPointToDIP(scale_factor, *transformed_point);
 
   // It is possible that the renderer has not yet produced a surface, in which

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
+#include "cc/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -23,7 +24,6 @@ class SharedMemory;
 }
 
 namespace cc {
-struct SurfaceId;
 struct SurfaceSequence;
 
 class CompositorFrame;
@@ -78,6 +78,8 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
                     const cc::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();
+
+  cc::SurfaceId surface_id() const { return surface_id_; }
 
   // cc::DelegatedFrameProviderClient implementation.
   void UnusedResourcesAreAvailable() override;
@@ -146,6 +148,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
 
   scoped_ptr<blink::WebLayer> web_layer_;
+  cc::SurfaceId surface_id_;
   blink::WebFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);

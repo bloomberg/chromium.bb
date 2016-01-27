@@ -676,6 +676,7 @@ uint32_t RenderWidgetHostViewBase::GetSurfaceIdNamespace() {
 }
 
 uint32_t RenderWidgetHostViewBase::SurfaceIdNamespaceAtPoint(
+    cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   NOTREACHED();

@@ -504,6 +504,17 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
   IPC_STRUCT_MEMBER(bool, is_last_frame)
 IPC_STRUCT_END()
 
+// This message is used to send hittesting data from the renderer in order
+// to perform hittesting on the browser process.
+IPC_STRUCT_BEGIN(FrameHostMsg_HittestData_Params)
+  // |surface_id| represents the surface used by this remote frame.
+  IPC_STRUCT_MEMBER(cc::SurfaceId, surface_id)
+
+  // If |ignored_for_hittest| then this surface should be ignored during
+  // hittesting.
+  IPC_STRUCT_MEMBER(bool, ignored_for_hittest)
+IPC_STRUCT_END()
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
@@ -1409,6 +1420,9 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_Find_Reply,
                     gfx::Rect /* selection_rect */,
                     int /* active_match_ordinal */,
                     bool /* final_update */)
+
+// Sends hittesting data needed to perform hittesting on the browser process.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 

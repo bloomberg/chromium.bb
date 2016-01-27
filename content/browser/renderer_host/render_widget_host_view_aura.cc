@@ -2208,6 +2208,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
+    cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   DCHECK(device_scale_factor_ != 0.0f);
@@ -2216,8 +2217,8 @@ uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
   // |point| from DIPs to pixels before hittesting.
   gfx::Point point_in_pixels =
       gfx::ConvertPointToPixel(device_scale_factor_, point);
-  cc::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(point_in_pixels,
-                                                             transformed_point);
+  cc::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(
+      delegate, point_in_pixels, transformed_point);
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 

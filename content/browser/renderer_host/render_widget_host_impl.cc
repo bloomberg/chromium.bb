@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_constants_internal.h"
@@ -444,6 +445,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
     IPC_MESSAGE_HANDLER(InputHostMsg_QueueSyntheticGesture,
                         OnQueueSyntheticGesture)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
@@ -1506,6 +1508,12 @@ void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
   } else {
     RendererExited(static_cast<base::TerminationStatus>(status), exit_code);
   }
+}
+
+void RenderWidgetHostImpl::OnHittestData(
+    const FrameHostMsg_HittestData_Params& params) {
+  if (delegate_)
+    delegate_->GetInputEventRouter()->OnHittestData(params);
 }
 
 void RenderWidgetHostImpl::OnClose() {

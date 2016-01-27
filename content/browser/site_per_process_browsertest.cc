@@ -772,6 +772,78 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
+// This test tests that browser process hittesting ignores frames with
+// pointer-events: none.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_SurfaceHitTestPointerEventsNone \
+  DISABLED_SurfaceHitTestPointerEventsNone
+#else
+#define MAYBE_SurfaceHitTestPointerEventsNone SurfaceHitTestPointerEventsNone
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_SurfaceHitTestPointerEventsNone) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // We need to wait for a compositor frame from the child frame, at which
+  // point its surface will be created.
+  while (rwhv_child->RendererFrameNumber() <= 0) {
+    // TODO(lazyboy): Find a better way to avoid sleeping like this. See
+    // http://crbug.com/405282 for details.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(10));
+    run_loop.Run();
+  }
+
+  // Target input event to child frame.
+  blink::WebMouseEvent child_event;
+  child_event.type = blink::WebInputEvent::MouseDown;
+  child_event.button = blink::WebPointerProperties::ButtonLeft;
+  child_event.x = 75;
+  child_event.y = 75;
+  child_event.clickCount = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  router->RouteMouseEvent(root_view, &child_event);
+
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_EQ(75, main_frame_monitor.event().x);
+  EXPECT_EQ(75, main_frame_monitor.event().y);
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+}
+
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
 // OnSwapCompositorFrame message.
 #if defined(OS_ANDROID)
@@ -4408,7 +4480,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
   // updated compositor surfaces from both renderer processes.
   gfx::Point point(75, 75);
   gfx::Point transformed_point;
-  while (root_view->SurfaceIdNamespaceAtPoint(point, &transformed_point) !=
+  while (root_view->SurfaceIdNamespaceAtPoint(nullptr, point,
+                                              &transformed_point) !=
          rwhv_child->GetSurfaceIdNamespace()) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

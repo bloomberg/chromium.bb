@@ -293,6 +293,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
     const gfx::Size& frame_size,
     float scale_factor,
     const cc::SurfaceSequence& sequence) {
+  surface_id_ = surface_id;
   scoped_refptr<ThreadSafeSender> sender(
       RenderThreadImpl::current()->thread_safe_sender());
   cc::SurfaceLayer::SatisfyCallback satisfy_callback =

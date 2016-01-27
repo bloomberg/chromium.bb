@@ -46,6 +46,7 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
+struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -590,6 +591,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
   void OnForwardCompositorProto(const std::vector<uint8_t>& proto);
+  void OnHittestData(const FrameHostMsg_HittestData_Params& params);
 
   // Called (either immediately or asynchronously) after we're done with our
   // BackingStore and can send an ACK to the renderer so it can paint onto it

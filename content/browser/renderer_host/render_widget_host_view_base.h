@@ -51,6 +51,10 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 }
 
+namespace cc {
+class SurfaceHittestDelegate;
+}
+
 namespace ui {
 class LatencyInfo;
 }
@@ -202,8 +206,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // methods are invoked on the RenderWidgetHostView that should be able to
   // properly handle the event (i.e. it has focus for keyboard events, or has
   // been identified by hit testing mouse, touch or gesture events).
-  virtual uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
-                                             gfx::Point* transformed_point);
+  virtual uint32_t SurfaceIdNamespaceAtPoint(
+      cc::SurfaceHittestDelegate* delegate,
+      const gfx::Point& point,
+      gfx::Point* transformed_point);
   virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}

@@ -4,11 +4,28 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include "cc/quads/surface_draw_quad.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/frame_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
+
+RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
+    const std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>&
+        hittest_data)
+    : hittest_data_(hittest_data) {}
+
+bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
+    const cc::SurfaceDrawQuad* surface_quad,
+    const gfx::Point& point_in_quad_space) {
+  auto it = hittest_data_.find(surface_quad->surface_id);
+  if (it != hittest_data_.end() && it->second.ignored_for_hittest)
+    return true;
+  return false;
+}
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
     : active_touches_(0) {}
@@ -28,12 +45,16 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
     return root_view;
   }
 
+  // The hittest delegate is used to reject hittesting quads based on extra
+  // hittesting data send by the renderer.
+  HittestDelegate delegate(hittest_data_);
+
   // The conversion of point to transform_point is done over the course of the
   // hit testing, and reflect transformations that would normally be applied in
   // the renderer process if the event was being routed between frames within a
   // single process with only one RenderWidgetHost.
   uint32_t surface_id_namespace =
-      root_view->SurfaceIdNamespaceAtPoint(point, transformed_point);
+      root_view->SurfaceIdNamespaceAtPoint(&delegate, point, transformed_point);
   const SurfaceIdNamespaceOwnerMap::iterator iter =
       owner_map_.find(surface_id_namespace);
   // If the point hit a Surface whose namspace is no longer in the map, then
@@ -134,6 +155,24 @@ void RenderWidgetHostInputEventRouter::AddSurfaceIdNamespaceOwner(
 void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
     uint32_t id) {
   owner_map_.erase(id);
+
+  for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
+    if (cc::SurfaceIdAllocator::NamespaceForId(it->first) == id)
+      it = hittest_data_.erase(it);
+    else
+      ++it;
+  }
+}
+
+void RenderWidgetHostInputEventRouter::OnHittestData(
+    const FrameHostMsg_HittestData_Params& params) {
+  if (owner_map_.find(cc::SurfaceIdAllocator::NamespaceForId(
+          params.surface_id)) == owner_map_.end()) {
+    return;
+  }
+  HittestData data;
+  data.ignored_for_hittest = params.ignored_for_hittest;
+  hittest_data_[params.surface_id] = data;
 }
 
 }  // namespace content

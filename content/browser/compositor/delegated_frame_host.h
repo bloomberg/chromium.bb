@@ -159,7 +159,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   uint32_t GetSurfaceIdNamespace();
   // Returns a null SurfaceId if this DelegatedFrameHost has not yet created
   // a compositor Surface.
-  cc::SurfaceId SurfaceIdAtPoint(const gfx::Point& point,
+  cc::SurfaceId SurfaceIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                 const gfx::Point& point,
                                  gfx::Point* transformed_point);
 
   // Given the SurfaceID of a Surface that is contained within this class'

@@ -195,6 +195,17 @@ bool RenderFrameProxy::IsMainFrameDetachedFromTree() const {
       render_view_->webview()->mainFrame()->isWebLocalFrame();
 }
 
+void RenderFrameProxy::WillBeginCompositorFrame() {
+  if (compositing_helper_) {
+    FrameHostMsg_HittestData_Params params;
+    params.surface_id = compositing_helper_->surface_id();
+    params.ignored_for_hittest = web_frame_->isIgnoredForHitTest();
+    render_widget_->QueueMessage(
+        new FrameHostMsg_HittestData(render_widget_->routing_id(), params),
+        MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+  }
+}
+
 void RenderFrameProxy::DidCommitCompositorFrame() {
   if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();

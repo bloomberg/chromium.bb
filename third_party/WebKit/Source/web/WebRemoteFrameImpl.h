@@ -192,6 +192,8 @@ public:
     void didStartLoading() override;
     void didStopLoading() override;
 
+    bool isIgnoredForHitTest() const override;
+
 #if ENABLE(OILPAN)
     DECLARE_TRACE();
 #endif

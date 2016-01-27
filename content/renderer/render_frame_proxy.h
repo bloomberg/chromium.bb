@@ -104,6 +104,10 @@ class CONTENT_EXPORT RenderFrameProxy
   bool Send(IPC::Message* msg) override;
 
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
+  // when a compositor frame will begin.
+  void WillBeginCompositorFrame();
+
+  // Out-of-process child frames receive a signal from RenderWidgetCompositor
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();
 

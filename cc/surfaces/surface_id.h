@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <functional>
+
 #include "base/containers/hash_tables.h"
 
 namespace cc {
@@ -32,6 +34,12 @@ inline bool operator!=(const SurfaceId& a, const SurfaceId& b) {
 inline bool operator<(const SurfaceId& a, const SurfaceId& b) {
   return a.id < b.id;
 }
+
+struct SurfaceIdHash {
+  size_t operator()(const SurfaceId& key) const {
+    return std::hash<uint64_t>()(key.id);
+  }
+};
 
 }  // namespace cc
 

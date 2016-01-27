@@ -7,6 +7,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFloatRect.h"
@@ -807,6 +808,12 @@ void WebRemoteFrameImpl::didStopLoading()
             toWebLocalFrameImpl(parent()->toWebLocalFrame());
         parentFrame->frame()->loader().checkCompleted();
     }
+}
+
+bool WebRemoteFrameImpl::isIgnoredForHitTest() const
+{
+    HTMLFrameOwnerElement* owner = frame()->deprecatedLocalOwner();
+    return owner ? owner->layoutObject()->style()->pointerEvents() == PE_NONE : false;
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope, WebRemoteFrameClient* client)

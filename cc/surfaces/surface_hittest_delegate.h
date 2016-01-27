@@ -5,6 +5,10 @@
 #ifndef CC_SURFACES_SURFACE_HITTEST_DELEGATE_H_
 #define CC_SURFACES_SURFACE_HITTEST_DELEGATE_H_
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 namespace cc {
 
 class SurfaceDrawQuad;

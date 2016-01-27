@@ -47,6 +47,9 @@ public:
     virtual void didStartLoading() = 0;
     virtual void didStopLoading() = 0;
 
+    // Returns true if this frame should be ignored during hittesting.
+    virtual bool isIgnoredForHitTest() const = 0;
+
     // Temporary method to allow embedders to get the script context of a
     // remote frame. This should only be used by legacy code that has not yet
     // migrated over to the new OOPI infrastructure.
