@@ -127,7 +127,7 @@ wl_array_add(struct wl_array *array, size_t size)
 			data = malloc(alloc);
 
 		if (data == NULL)
-			return 0;
+			return NULL;
 		array->data = data;
 		array->alloc = alloc;
 	}
