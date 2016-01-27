@@ -73,12 +73,4 @@ void SetNaClInterface(const PPB_NaCl_Private* nacl_interface) {
   g_nacl_interface = nacl_interface;
 }
 
-void CloseFileHandle(PP_FileHandle file_handle) {
-#if NACL_WINDOWS
-  CloseHandle(file_handle);
-#else
-  close(file_handle);
-#endif
-}
-
 }  // namespace plugin

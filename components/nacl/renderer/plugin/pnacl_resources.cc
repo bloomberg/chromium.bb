@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/utility.h"
@@ -35,8 +36,7 @@ PnaclResources::PnaclResources(Plugin* plugin, bool use_subzero)
 
 PnaclResources::~PnaclResources() {
   for (PnaclResourceEntry& entry : resources_) {
-    if (entry.file_info.handle != PP_kInvalidFileHandle)
-      CloseFileHandle(entry.file_info.handle);
+    base::File closer(entry.file_info.handle);
   }
 }
 

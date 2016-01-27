@@ -14,7 +14,6 @@
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_time.h"
-#include "ppapi/c/private/pp_file_handle.h"
 
 #define SRPC_PLUGIN_DEBUG 1
 
@@ -22,8 +21,6 @@ namespace plugin {
 
 const PPB_NaCl_Private* GetNaClInterface();
 void SetNaClInterface(const PPB_NaCl_Private* nacl_interface);
-
-void CloseFileHandle(PP_FileHandle file_handle);
 
 // Debugging print utility
 extern int gNaClPluginDebugPrintEnabled;
