@@ -576,7 +576,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
             // the used value of 'width' is calculated from the constraint equation used for block-level, non-replaced elements in normal flow.
             if (computedHeightIsAuto && !hasIntrinsicWidth && !hasIntrinsicHeight) {
                 if (shouldComputePreferred == ComputePreferred)
-                    return 0;
+                    return computeReplacedLogicalWidthRespectingMinMaxWidth(0, ComputePreferred);
                 // The aforementioned 'constraint equation' used for block-level, non-replaced elements in normal flow:
                 // 'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width' + 'margin-right' = width of containing block
                 LayoutUnit logicalWidth = containingBlock()->availableLogicalWidth();
