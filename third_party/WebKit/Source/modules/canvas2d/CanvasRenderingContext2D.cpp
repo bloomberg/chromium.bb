@@ -2218,11 +2218,9 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
     hitRegionPath.transform(state().transform());
 
     if (state().hasClip()) {
-        // FIXME: The hit regions should take clipping region into account.
-        // However, we have no way to get the region from canvas state stack by now.
-        // See http://crbug.com/387057
-        exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
-        return;
+        hitRegionPath = state().intersectPathWithClip(hitRegionPath.skPath());
+        if (hitRegionPath.isEmpty())
+            exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
     }
 
     if (!m_hitRegionManager)

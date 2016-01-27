@@ -25,6 +25,7 @@ public:
 
     void clipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
     void playback(SkCanvas*) const;
+    SkPath intersectPathWithClip(const SkPath&) const;
 
 private:
 

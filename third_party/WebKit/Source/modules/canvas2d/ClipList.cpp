@@ -6,6 +6,7 @@
 
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {
 
@@ -25,6 +26,15 @@ void ClipList::playback(SkCanvas* canvas) const
     for (const ClipOp* it = m_clipList.begin(); it < m_clipList.end(); it++) {
         canvas->clipPath(it->m_path, SkRegion::kIntersect_Op, it->m_antiAliasingMode == AntiAliased);
     }
+}
+
+SkPath ClipList::intersectPathWithClip(const SkPath& path) const
+{
+    SkPath total = path;
+    for (const ClipOp* it = m_clipList.begin(); it < m_clipList.end(); it++) {
+        Op(total, it->m_path, SkPathOp::kIntersect_SkPathOp, &total);
+    }
+    return total;
 }
 
 ClipList::ClipOp::ClipOp()
