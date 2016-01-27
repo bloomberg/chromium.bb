@@ -457,8 +457,8 @@ void FramebufferTexture2D(PP_Resource context_id,
                           GLint level) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->FramebufferTexture2D(target, attachment, textarget, texture, level);
+    ToGles2Impl(&enter)->FramebufferTexture2D(target, attachment, textarget,
+                                              texture, level);
   }
 }
 
@@ -516,8 +516,8 @@ void GetActiveAttrib(PP_Resource context_id,
                      char* name) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->GetActiveAttrib(program, index, bufsize, length, size, type, name);
+    ToGles2Impl(&enter)->GetActiveAttrib(program, index, bufsize, length, size,
+                                         type, name);
   }
 }
 
@@ -531,8 +531,8 @@ void GetActiveUniform(PP_Resource context_id,
                       char* name) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->GetActiveUniform(program, index, bufsize, length, size, type, name);
+    ToGles2Impl(&enter)->GetActiveUniform(program, index, bufsize, length, size,
+                                          type, name);
   }
 }
 
@@ -669,8 +669,8 @@ void GetShaderPrecisionFormat(PP_Resource context_id,
                               GLint* precision) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
+    ToGles2Impl(&enter)->GetShaderPrecisionFormat(shadertype, precisiontype,
+                                                  range, precision);
   }
 }
 
@@ -901,8 +901,8 @@ void RenderbufferStorage(PP_Resource context_id,
                          GLsizei height) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->RenderbufferStorage(target, internalformat, width, height);
+    ToGles2Impl(&enter)->RenderbufferStorage(target, internalformat, width,
+                                             height);
   }
 }
 
@@ -1357,8 +1357,8 @@ void VertexAttribPointer(PP_Resource context_id,
                          const void* ptr) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
+    ToGles2Impl(&enter)->VertexAttribPointer(indx, size, type, normalized,
+                                             stride, ptr);
   }
 }
 
@@ -1511,8 +1511,8 @@ void* MapBufferSubDataCHROMIUM(PP_Resource context_id,
                                GLenum access) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    return ToGles2Impl(&enter)
-        ->MapBufferSubDataCHROMIUM(target, offset, size, access);
+    return ToGles2Impl(&enter)->MapBufferSubDataCHROMIUM(target, offset, size,
+                                                         access);
   } else {
     return NULL;
   }
@@ -1558,8 +1558,8 @@ void DrawArraysInstancedANGLE(PP_Resource context_id,
                               GLsizei primcount) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->DrawArraysInstancedANGLE(mode, first, count, primcount);
+    ToGles2Impl(&enter)->DrawArraysInstancedANGLE(mode, first, count,
+                                                  primcount);
   }
 }
 
@@ -1571,8 +1571,8 @@ void DrawElementsInstancedANGLE(PP_Resource context_id,
                                 GLsizei primcount) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)
-        ->DrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+    ToGles2Impl(&enter)->DrawElementsInstancedANGLE(mode, count, type, indices,
+                                                    primcount);
   }
 }
 
