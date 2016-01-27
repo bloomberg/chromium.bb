@@ -7,14 +7,14 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [205, 205],
-          "transformOrigin": [175, 175],
-          "bounds": [225, 225],
+          "position": [230, 230],
+          "transformOrigin": [150, 150],
+          "bounds": [200, 200],
           "drawsContent": true,
           "backgroundColor": "#000000"
         },
         {
-          "bounds": [225, 225],
+          "bounds": [200, 200],
           "drawsContent": true,
           "backgroundColor": "#008000"
         }

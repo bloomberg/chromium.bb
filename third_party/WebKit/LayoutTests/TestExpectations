@@ -1276,22 +1276,6 @@ crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failur
 crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Failure ]
 crbug.com/571361 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled-out-and-in.html [ Failure ]
 
-crbug.com/568196 css3/filters/effect-blur-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-brightness-clamping-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-drop-shadow-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/filter-change-repaint-composited.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/filter-change-repaint.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/filter-repaint-composited-fallback-crash.html [ NeedsRebaseline ]
-crbug.com/568196 css3/filters/filter-repaint-composited-fallback.html [ NeedsRebaseline ]
-crbug.com/568196 compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ NeedsRebaseline ]
-crbug.com/568196 compositing/culling/filter-occlusion-blur.html [ NeedsRebaseline ]
-
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
 crbug.com/575766 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
