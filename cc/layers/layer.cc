@@ -100,8 +100,7 @@ Layer::Layer(const LayerSettings& settings)
       replica_layer_(nullptr),
       client_(nullptr),
       num_unclipped_descendants_(0),
-      frame_timing_requests_dirty_(false),
-      is_hidden_from_property_trees_(false) {
+      frame_timing_requests_dirty_(false) {
   if (!settings.use_compositor_animation_timelines) {
     layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
     layer_animation_controller_->AddValueObserver(this);
@@ -537,6 +536,10 @@ void Layer::SetOpacity(float opacity) {
     return;
   opacity_ = opacity;
   SetNeedsCommit();
+}
+
+float Layer::EffectiveOpacity() const {
+  return hide_layer_and_subtree_ ? 0.f : opacity_;
 }
 
 bool Layer::OpacityIsAnimating() const {
@@ -1241,7 +1244,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
   layer->SetElementId(element_id_);
   layer->SetMutableProperties(mutable_properties_);
-  layer->set_is_hidden_from_property_trees(is_hidden_from_property_trees_);
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {

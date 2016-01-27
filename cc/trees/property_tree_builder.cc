@@ -520,7 +520,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
       num_descendants_that_draw_content > 0 &&
       (layer->DrawsContent() || num_descendants_that_draw_content > 1);
 
-  if (layer->opacity() != 1.f && layer->should_flatten_transform() &&
+  if (layer->EffectiveOpacity() != 1.f && layer->should_flatten_transform() &&
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface opacity",
@@ -557,7 +557,7 @@ bool AddEffectNodeIfNeeded(
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
-  const bool has_transparency = layer->opacity() != 1.f;
+  const bool has_transparency = layer->EffectiveOpacity() != 1.f;
   const bool has_animated_opacity = IsAnimatingOpacity(layer);
   const bool should_create_render_surface = ShouldCreateRenderSurface(
       layer, data_from_ancestor.compound_transform_since_render_target,
@@ -580,9 +580,10 @@ bool AddEffectNodeIfNeeded(
 
   EffectNode node;
   node.owner_id = layer->id();
-  node.data.opacity = layer->opacity();
-  node.data.screen_space_opacity = layer->opacity();
+  node.data.opacity = layer->EffectiveOpacity();
   node.data.has_render_surface = should_create_render_surface;
+  node.data.has_copy_request = layer->HasCopyRequest();
+  node.data.has_background_filters = !layer->background_filters().IsEmpty();
 
   if (!is_root) {
     // The effect node's transform id is used only when we create a render
@@ -597,9 +598,9 @@ bool AddEffectNodeIfNeeded(
     }
     node.data.clip_id = data_from_ancestor.clip_tree_parent;
 
-    node.data.screen_space_opacity *=
-        data_from_ancestor.effect_tree->Node(parent_id)
-            ->data.screen_space_opacity;
+    EffectNode* parent = data_from_ancestor.effect_tree->Node(parent_id);
+    node.data.screen_space_opacity_is_animating =
+        parent->data.screen_space_opacity_is_animating || has_animated_opacity;
   } else {
     // Root render surface acts the unbounded and untransformed to draw content
     // into. Transform node created from root layer (includes device scale
@@ -607,6 +608,7 @@ bool AddEffectNodeIfNeeded(
     // to root render surface's content, but not root render surface itself.
     node.data.transform_id = kRootPropertyTreeNodeId;
     node.data.clip_id = kRootPropertyTreeNodeId;
+    node.data.screen_space_opacity_is_animating = has_animated_opacity;
   }
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);
@@ -645,10 +647,6 @@ void BuildPropertyTreesInternal(
       data_from_parent, layer, created_render_surface, &data_for_children);
   AddClipNodeIfNeeded(data_from_parent, layer, created_render_surface,
                       created_transform_node, &data_for_children);
-
-  data_for_children.is_hidden =
-      layer->hide_layer_and_subtree() || data_from_parent.is_hidden;
-  layer->set_is_hidden_from_property_trees(data_for_children.is_hidden);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     if (!layer->child_at(i)->scroll_parent()) {
@@ -768,11 +766,11 @@ void BuildPropertyTreesTopLevelInternal(
   property_trees->needs_rebuild = false;
 
   // The transform tree is kept up-to-date as it is built, but the
-  // combined_clips stored in the clip tree aren't computed during tree
-  // building.
+  // combined_clips stored in the clip tree and the screen_space_opacity and
+  // is_drawn in the effect tree aren't computed during tree building.
   property_trees->transform_tree.set_needs_update(false);
   property_trees->clip_tree.set_needs_update(true);
-  property_trees->effect_tree.set_needs_update(false);
+  property_trees->effect_tree.set_needs_update(true);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(

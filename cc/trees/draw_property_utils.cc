@@ -344,7 +344,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   // The opacity of a layer always applies to its children (either implicitly
   // via a render surface or explicitly if the parent preserves 3D), so the
   // entire subtree can be skipped if this layer is fully transparent.
-  return !layer->opacity();
+  return !layer->EffectiveOpacity();
 }
 
 static inline bool SubtreeShouldBeSkipped(Layer* layer,
@@ -380,7 +380,8 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
   // In particular, it should not cause the subtree to be skipped.
   // Similarly, for layers that might animate opacity using an impl-only
   // animation, their subtree should also not be skipped.
-  return !layer->opacity() && !layer->HasPotentiallyRunningOpacityAnimation() &&
+  return !layer->EffectiveOpacity() &&
+         !layer->HasPotentiallyRunningOpacityAnimation() &&
          !layer->OpacityCanAnimateOnImplThread();
 }
 
@@ -430,18 +431,19 @@ static bool LayerShouldBeSkipped(LayerType* layer,
 template <typename LayerType>
 void FindLayersThatNeedUpdates(
     LayerType* layer,
-    const TransformTree& tree,
-    bool subtree_is_visible_from_ancestor,
+    const TransformTree& transform_tree,
+    const EffectTree& effect_tree,
     typename LayerType::LayerListType* update_layer_list,
     std::vector<LayerType*>* visible_layer_list) {
+  DCHECK_GE(layer->effect_tree_index(), 0);
   bool layer_is_drawn =
-      layer->HasCopyRequest() ||
-      (subtree_is_visible_from_ancestor && !layer->hide_layer_and_subtree());
+      effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
 
-  if (layer->parent() && SubtreeShouldBeSkipped(layer, layer_is_drawn, tree))
+  if (layer->parent() &&
+      SubtreeShouldBeSkipped(layer, layer_is_drawn, transform_tree))
     return;
 
-  if (!LayerShouldBeSkipped(layer, layer_is_drawn, tree)) {
+  if (!LayerShouldBeSkipped(layer, layer_is_drawn, transform_tree)) {
     visible_layer_list->push_back(layer);
     update_layer_list->push_back(layer);
   }
@@ -457,7 +459,7 @@ void FindLayersThatNeedUpdates(
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    FindLayersThatNeedUpdates(layer->child_at(i), tree, layer_is_drawn,
+    FindLayersThatNeedUpdates(layer->child_at(i), transform_tree, effect_tree,
                               update_layer_list, visible_layer_list);
   }
 }
@@ -679,9 +681,8 @@ static void ComputeVisibleRectsUsingPropertyTreesInternal(
                can_render_to_separate_surface);
   ComputeEffects(&property_trees->effect_tree);
 
-  const bool subtree_is_visible_from_ancestor = true;
   FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,
-                            subtree_is_visible_from_ancestor, update_layer_list,
+                            property_trees->effect_tree, update_layer_list,
                             visible_layer_list);
   CalculateVisibleRects<LayerType>(
       *visible_layer_list, property_trees->clip_tree,

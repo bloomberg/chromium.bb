@@ -415,6 +415,10 @@ EffectNodeData::EffectNodeData()
     : opacity(1.f),
       screen_space_opacity(1.f),
       has_render_surface(false),
+      has_copy_request(false),
+      has_background_filters(false),
+      is_drawn(true),
+      screen_space_opacity_is_animating(false),
       num_copy_requests_in_subtree(0),
       transform_id(0),
       clip_id(0) {}
@@ -423,6 +427,11 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
   return opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
          has_render_surface == other.has_render_surface &&
+         has_copy_request == other.has_copy_request &&
+         has_background_filters == other.has_background_filters &&
+         is_drawn == other.is_drawn &&
+         screen_space_opacity_is_animating ==
+             other.screen_space_opacity_is_animating &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id;
 }
@@ -433,6 +442,11 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_opacity(opacity);
   data->set_screen_space_opacity(screen_space_opacity);
   data->set_has_render_surface(has_render_surface);
+  data->set_has_copy_request(has_copy_request);
+  data->set_has_background_filters(has_background_filters);
+  data->set_is_drawn(is_drawn);
+  data->set_screen_space_opacity_is_animating(
+      screen_space_opacity_is_animating);
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
   data->set_transform_id(transform_id);
   data->set_clip_id(clip_id);
@@ -445,6 +459,10 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   opacity = data.opacity();
   screen_space_opacity = data.screen_space_opacity();
   has_render_surface = data.has_render_surface();
+  has_copy_request = data.has_copy_request();
+  has_background_filters = data.has_background_filters();
+  is_drawn = data.is_drawn();
+  screen_space_opacity_is_animating = data.screen_space_opacity_is_animating();
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
   clip_id = data.clip_id();
@@ -1075,16 +1093,54 @@ void EffectTree::UpdateOpacities(EffectNode* node, EffectNode* parent_node) {
     node->data.screen_space_opacity *= parent_node->data.screen_space_opacity;
 }
 
+void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
+  // Nodes that have screen space opacity 0 are hidden. So they are not drawn.
+  // Exceptions:
+  // 1) Nodes that contribute to copy requests, whether hidden or not, must be
+  //    drawn.
+  // 2) Nodes that have a background filter.
+  // 3) Nodes with animating screen space opacity are drawn if their parent is
+  //    drawn irrespective of their opacity.
+  if (node->data.has_copy_request || node->data.has_background_filters)
+    node->data.is_drawn = true;
+  else if (node->data.screen_space_opacity_is_animating)
+    node->data.is_drawn = parent_node ? parent_node->data.is_drawn : true;
+  else if (node->data.opacity == 0.f)
+    node->data.is_drawn = false;
+  else if (parent_node)
+    node->data.is_drawn = parent_node->data.is_drawn;
+  else
+    node->data.is_drawn = true;
+}
+
 void EffectTree::UpdateEffects(int id) {
   EffectNode* node = Node(id);
   EffectNode* parent_node = parent(node);
 
   UpdateOpacities(node, parent_node);
+  UpdateIsDrawn(node, parent_node);
 }
 
 void EffectTree::ClearCopyRequests() {
-  for (auto& node : nodes())
+  for (auto& node : nodes()) {
     node.data.num_copy_requests_in_subtree = 0;
+    node.data.has_copy_request = false;
+  }
+  set_needs_update(true);
+}
+
+bool EffectTree::ContributesToDrawnSurface(int id) {
+  // All drawn nodes contribute to drawn surface.
+  // Exception : Nodes that are hidden and are drawn only for the sake of
+  // copy requests.
+  EffectNode* node = Node(id);
+  EffectNode* parent_node = parent(node);
+  bool contributes_to_drawn_surface =
+      node->data.is_drawn &&
+      (node->data.opacity != 0.f || node->data.has_background_filters);
+  if (parent_node && !parent_node->data.is_drawn)
+    contributes_to_drawn_surface = false;
+  return contributes_to_drawn_surface;
 }
 
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(

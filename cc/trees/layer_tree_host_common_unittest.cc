@@ -150,7 +150,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
                                   grand_child->screen_space_transform());
 }
 
-TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
+TEST_F(LayerTreeHostCommonTest,
+       ScreenSpaceTransformOfSkippedLayersWithHandlers) {
+  // Even for layers that are skipped, we need to compute the correct screen
+  // space transform because it is used during hit testing.
   LayerImpl* parent = root_layer();
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
@@ -163,9 +166,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
   SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
                                gfx::PointF(10, 10), gfx::Size(100, 100), true,
                                false);
-  // This would have previously caused us to skip our subtree, but this would be
-  // wrong; we need up-to-date draw properties to do hit testing on the layers
-  // with handlers.
+  // This will cause the subtree to be skipped.
   child->SetOpacity(0.f);
   SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
                                gfx::PointF(10, 10), gfx::Size(100, 100), true,
@@ -178,10 +179,8 @@ TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
   EXPECT_FALSE(grand_child->has_render_surface());
   // Check that we've computed draw properties for the subtree rooted at
   // |child|.
-  EXPECT_TRUE(child->draw_properties().target_space_transform.IsIdentity());
-  EXPECT_FALSE(child->render_surface()->draw_transform().IsIdentity());
-  EXPECT_FALSE(
-      grand_child->draw_properties().target_space_transform.IsIdentity());
+  EXPECT_FALSE(child->render_surface()->screen_space_transform().IsIdentity());
+  EXPECT_FALSE(grand_child->ScreenSpaceTransform().IsIdentity());
 }
 
 TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
@@ -1341,6 +1340,8 @@ TEST_F(LayerTreeHostCommonTest,
                                gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
   render_surface1->SetOpacity(0.f);
+  render_surface1->SetDrawsContent(true);
+  child->SetDrawsContent(true);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(1.5f));
   render_surface1->SetBackgroundFilters(filters);
@@ -5184,6 +5185,23 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   // layer should be included even though it is transparent.
   ASSERT_EQ(1u, render_surface_layer_list.size());
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+
+  // If the root itself is hidden, the child should not be drawn even if it has
+  // an animating opacity.
+  root->SetOpacity(0.f);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  LayerImplList render_surface_layer_list2;
+  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs2(
+      root.get(), root->bounds(), &render_surface_layer_list2,
+      root->layer_tree_impl()->current_render_surface_list_id());
+  inputs2.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs2);
+
+  LayerImpl* child_ptr = root->layer_tree_impl()->LayerById(2);
+  EffectTree tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = tree.Node(child_ptr->effect_tree_index());
+  EXPECT_FALSE(node->data.is_drawn);
 }
 
 class LayerTreeSettingsForLCDTextTest : public LayerTreeSettings {
@@ -5582,8 +5600,16 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_child->SetDrawsContent(true);
   LayerImpl* copy_child_layer = copy_child.get();
 
-  scoped_ptr<LayerImpl> copy_grand_parent_sibling_before =
+  scoped_ptr<LayerImpl> copy_grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 6);
+  SetLayerPropertiesForTesting(copy_grand_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, false);
+  copy_child->SetDrawsContent(true);
+  LayerImpl* copy_grand_child_layer = copy_grand_child.get();
+
+  scoped_ptr<LayerImpl> copy_grand_parent_sibling_before =
+      LayerImpl::Create(host_impl.pending_tree(), 7);
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_before.get(),
                                identity_matrix, gfx::Point3F(), gfx::PointF(),
                                gfx::Size(40, 40), true, false, false);
@@ -5592,7 +5618,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
       copy_grand_parent_sibling_before.get();
 
   scoped_ptr<LayerImpl> copy_grand_parent_sibling_after =
-      LayerImpl::Create(host_impl.pending_tree(), 7);
+      LayerImpl::Create(host_impl.pending_tree(), 8);
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_after.get(),
                                identity_matrix, gfx::Point3F(), gfx::PointF(),
                                gfx::Size(40, 40), true, false, false);
@@ -5600,6 +5626,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   LayerImpl* copy_grand_parent_sibling_after_layer =
       copy_grand_parent_sibling_after.get();
 
+  copy_child->AddChild(std::move(copy_grand_child));
   copy_request->AddChild(std::move(copy_child));
   copy_parent->AddChild(std::move(copy_request));
   copy_grand_parent->AddChild(std::move(copy_parent));
@@ -5608,10 +5635,12 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   root->AddChild(std::move(copy_grand_parent_sibling_after));
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
-  // hidden subtree on copy_layer.
+  // hidden subtree on copy_layer. Also hide the copy grand child and its
+  // subtree.
   copy_grand_parent_layer->SetHideLayerAndSubtree(true);
   copy_grand_parent_sibling_before_layer->SetHideLayerAndSubtree(true);
   copy_grand_parent_sibling_after_layer->SetHideLayerAndSubtree(true);
+  copy_grand_child_layer->SetHideLayerAndSubtree(true);
 
   std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
@@ -5632,27 +5661,27 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   EXPECT_GT(copy_parent_layer->num_copy_requests_in_target_subtree(), 0);
   EXPECT_GT(copy_layer->num_copy_requests_in_target_subtree(), 0);
 
-  // We should have three render surfaces, one for the root, one for the parent
+  // We should have four render surfaces, one for the root, one for the grand
+  // parent since it has opacity and two drawing descendants, one for the parent
   // since it owns a surface, and one for the copy_layer.
-  ASSERT_EQ(3u, render_surface_layer_list.size());
+  ASSERT_EQ(4u, render_surface_layer_list.size());
   EXPECT_EQ(root->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(copy_parent_layer->id(), render_surface_layer_list.at(1)->id());
-  EXPECT_EQ(copy_layer->id(), render_surface_layer_list.at(2)->id());
+  EXPECT_EQ(copy_grand_parent_layer->id(),
+            render_surface_layer_list.at(1)->id());
+  EXPECT_EQ(copy_parent_layer->id(), render_surface_layer_list.at(2)->id());
+  EXPECT_EQ(copy_layer->id(), render_surface_layer_list.at(3)->id());
 
-  // The root render surface should have 2 contributing layers. The
-  // copy_grand_parent is hidden along with its siblings, but the copy_parent
-  // will appear since something in its subtree needs to be drawn for a copy
-  // request.
+  // The root render surface should have 2 contributing layers.
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
   EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(copy_parent_layer->id(),
+  EXPECT_EQ(copy_grand_parent_layer->id(),
             root->render_surface()->layer_list().at(1)->id());
 
   // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
   ASSERT_EQ(1u, copy_parent_layer->render_surface()->layer_list().size());
   EXPECT_EQ(copy_layer->id(),
-            copy_parent_layer->render_surface()->layer_list().at(0)->id());
+            copy_layer->render_surface()->layer_list().at(0)->id());
 
   // The copy_layer's render surface should have two contributing layers.
   ASSERT_EQ(2u, copy_layer->render_surface()->layer_list().size());
@@ -5660,6 +5689,26 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
             copy_layer->render_surface()->layer_list().at(0)->id());
   EXPECT_EQ(copy_child_layer->id(),
             copy_layer->render_surface()->layer_list().at(1)->id());
+
+  // copy_grand_parent, copy_parent shouldn't be drawn because they are hidden,
+  // but the copy_layer and copy_child should be drawn for the copy request.
+  // copy grand child should not be drawn as its hidden even in the copy
+  // request.
+  EffectTree tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = tree.Node(copy_grand_parent_layer->effect_tree_index());
+  EXPECT_FALSE(node->data.is_drawn);
+  node = tree.Node(copy_parent_layer->effect_tree_index());
+  EXPECT_FALSE(node->data.is_drawn);
+  node = tree.Node(copy_layer->effect_tree_index());
+  EXPECT_TRUE(node->data.is_drawn);
+  node = tree.Node(copy_child_layer->effect_tree_index());
+  EXPECT_TRUE(node->data.is_drawn);
+  node = tree.Node(copy_grand_child_layer->effect_tree_index());
+  EXPECT_FALSE(node->data.is_drawn);
+
+  // Though copy_layer is drawn, it shouldn't contribute to drawn surface as its
+  // actually hidden.
+  EXPECT_FALSE(copy_layer->render_surface()->contributes_to_drawn_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
@@ -8840,11 +8889,11 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  greatgrandchild->RequestCopyOfOutput(
+  grandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
-  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+  greatgrandchild->set_visible_rect_from_property_trees(gfx::Rect());
 
   // Add an opacity animation with a start delay.
   animation_id = 1;
@@ -8892,15 +8941,10 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   SetLayerPropertiesForTesting(grandchild.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  SetLayerPropertiesForTesting(greatgrandchild.get(), identity, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(10, 10), true, false,
-                               true);
 
   LayerImpl* child_ptr = child.get();
   LayerImpl* grandchild_ptr = grandchild.get();
-  LayerImpl* greatgrandchild_ptr = greatgrandchild.get();
 
-  grandchild->AddChild(std::move(greatgrandchild));
   child->AddChild(std::move(grandchild));
   root->AddChild(std::move(child));
 
@@ -8940,7 +8984,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   std::vector<scoped_ptr<CopyOutputRequest>> requests;
   requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
-  greatgrandchild_ptr->PassCopyRequests(&requests);
+  grandchild_ptr->PassCopyRequests(&requests);
   root.get()->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10),
@@ -9532,7 +9576,9 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
   SetLayerPropertiesForTesting(render_surface, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(30, 30), true, false,
                                true);
-  SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
+  gfx::Transform translation;
+  translation.Translate(10, 10);
+  SetLayerPropertiesForTesting(test_layer, translation, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(20, 20), true, false,
                                false);
 
@@ -9542,9 +9588,7 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
   test_layer->SetHaveWheelEventHandlers(true);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(20, 20), test_layer->drawable_content_rect());
-  EXPECT_EQ(gfx::RectF(20, 20),
-            render_surface->render_surface()->DrawableContentRect());
+  EXPECT_EQ(translation, test_layer->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
@@ -9627,12 +9671,12 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
 
   hidden->SetHideLayerAndSubtree(true);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(test->LayerIsHidden());
+  EXPECT_TRUE(test->IsHidden());
 
   hidden->SetHideLayerAndSubtree(false);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
-  EXPECT_FALSE(test->LayerIsHidden());
+  EXPECT_FALSE(test->IsHidden());
 }
 
 TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
