@@ -20,6 +20,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -244,6 +245,11 @@ void WtsSessionProcessDelegate::Core::Send(IPC::Message* message) {
 void WtsSessionProcessDelegate::Core::CloseChannel() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  if (!channel_)
+    return;
+
+  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+      channel_.get());
   channel_.reset();
   pipe_.Close();
 }
@@ -251,10 +257,10 @@ void WtsSessionProcessDelegate::Core::CloseChannel() {
 void WtsSessionProcessDelegate::Core::KillProcess() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  channel_.reset();
+  CloseChannel();
+
   event_handler_ = nullptr;
   launch_pending_ = false;
-  pipe_.Close();
 
   if (launch_elevated_) {
     if (job_.IsValid())
@@ -420,6 +426,9 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   channel_ = std::move(channel);
   pipe_ = std::move(pipe);
 
+  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
+      channel_.get());
+
   // Report success if the worker process is lauched directly. Otherwise, PID of
   // the client connected to the pipe will be used later. See
   // OnChannelConnected().
@@ -487,8 +496,7 @@ void WtsSessionProcessDelegate::Core::OnActiveProcessZero() {
 void WtsSessionProcessDelegate::Core::ReportFatalError() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  channel_.reset();
-  pipe_.Close();
+  CloseChannel();
 
   WorkerProcessLauncher* event_handler = event_handler_;
   event_handler_ = nullptr;

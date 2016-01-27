@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "ipc/attachment_broker_privileged.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/branding.h"
@@ -183,6 +184,12 @@ DaemonProcess::DaemonProcess(
       stopped_callback_(stopped_callback),
       weak_factory_(this) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
+
+  // TODO(sergeyu): On OSX AttachmentBroker depends on base::PortProvider
+  // implementation. Add it here when this code is used on OSX.
+#if !defined(OS_MACOSX)
+  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
+#endif  // !defined(OS_MACOSX)
 }
 
 void DaemonProcess::CreateDesktopSession(int terminal_id,

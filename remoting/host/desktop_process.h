@@ -19,6 +19,7 @@
 #include "remoting/host/desktop_session_agent.h"
 
 namespace IPC {
+class AttachmentBrokerUnprivileged;
 class ChannelProxy;
 }  // namespace IPC
 
@@ -75,6 +76,9 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   // Name of the IPC channel connecting the desktop process with the daemon
   // process.
   std::string daemon_channel_name_;
+
+  // Attachment broker for |daemon_channel_|.
+  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
 
   // IPC channel connecting the desktop process with the daemon process.
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;

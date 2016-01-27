@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -145,6 +146,15 @@ bool DesktopProcess::Start(
   daemon_channel_ =
       IPC::ChannelProxy::Create(daemon_channel_name_, IPC::Channel::MODE_CLIENT,
                                 this, io_task_runner.get());
+
+  // Attachment broker may be already created in tests.
+  if (!IPC::AttachmentBroker::GetGlobal())
+    attachment_broker_ = IPC::AttachmentBrokerUnprivileged::CreateBroker();
+
+  if (attachment_broker_) {
+    attachment_broker_->DesignateBrokerCommunicationChannel(
+        daemon_channel_.get());
+  }
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(
