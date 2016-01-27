@@ -35,6 +35,8 @@
         'battor_connection_impl.cc',
         'battor_connection_impl.h',
         'battor_error.h',
+        'battor_finder.cc',
+        'battor_finder.h',
         'battor_sample_converter.cc',
         'battor_sample_converter.h',
       ],
