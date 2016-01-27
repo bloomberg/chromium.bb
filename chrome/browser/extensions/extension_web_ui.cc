@@ -448,21 +448,25 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
   // internal URL
   // chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/main.html#1 to
   // chrome://bookmarks/#1 for display in the omnibox.
-  for (base::DictionaryValue::Iterator it(*overrides); !it.IsAtEnd();
-       it.Advance()) {
-    const base::ListValue* url_list = NULL;
-    if (!it.value().GetAsList(&url_list))
+  for (base::DictionaryValue::Iterator dict_iter(*overrides);
+       !dict_iter.IsAtEnd(); dict_iter.Advance()) {
+    const base::ListValue* url_list = nullptr;
+    if (!dict_iter.value().GetAsList(&url_list))
       continue;
 
-    for (base::ListValue::const_iterator it2 = url_list->begin();
-         it2 != url_list->end(); ++it2) {
+    for (base::ListValue::const_iterator list_iter = url_list->begin();
+         list_iter != url_list->end(); ++list_iter) {
+      const base::DictionaryValue* dict = nullptr;
+      if (!(*list_iter)->GetAsDictionary(&dict))
+        continue;
       std::string override;
-      if (!(*it2)->GetAsString(&override))
+      if (!dict->GetString(kEntry, &override))
         continue;
       if (base::StartsWith(url->spec(), override,
                            base::CompareCase::SENSITIVE)) {
         GURL original_url(content::kChromeUIScheme + std::string("://") +
-                          it.key() + url->spec().substr(override.length()));
+                          dict_iter.key() +
+                          url->spec().substr(override.length()));
         *url = original_url;
         return true;
       }

@@ -71,12 +71,13 @@ class ExtensionWebUITest : public testing::Test {
 // Test that component extension url overrides have lower priority than
 // non-component extension url overrides.
 TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
+  const char kOverrideResource[] = "1.html";
   // Register a non-component extension.
   DictionaryBuilder manifest;
   manifest.Set(manifest_keys::kName, "ext1")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(std::string(manifest_keys::kChromeURLOverrides),
-           std::move(DictionaryBuilder().Set("bookmarks", "1.html")));
+           std::move(DictionaryBuilder().Set("bookmarks", kOverrideResource)));
   scoped_refptr<Extension> ext_unpacked(
       ExtensionBuilder()
           .SetManifest(std::move(manifest))
@@ -85,18 +86,33 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
           .Build());
   extension_service_->AddExtension(ext_unpacked.get());
 
-  GURL expected_unpacked_override_url(std::string(ext_unpacked->url().spec()) +
-                                      "1.html");
-  GURL url("chrome://bookmarks");
-  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
-  EXPECT_EQ(url, expected_unpacked_override_url);
+  const GURL kExpectedUnpackedOverrideUrl =
+      ext_unpacked->GetResourceURL(kOverrideResource);
+  const GURL kBookmarksUrl("chrome://bookmarks");
+  GURL changed_url = kBookmarksUrl;
+  EXPECT_TRUE(
+      ExtensionWebUI::HandleChromeURLOverride(&changed_url, profile_.get()));
+  EXPECT_EQ(kExpectedUnpackedOverrideUrl, changed_url);
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverrideReverse(&changed_url,
+                                                             profile_.get()));
+  EXPECT_EQ(kBookmarksUrl, changed_url);
+
+  GURL url_plus_fragment = kBookmarksUrl.Resolve("#1");
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url_plus_fragment,
+                                                      profile_.get()));
+  EXPECT_EQ(kExpectedUnpackedOverrideUrl.Resolve("#1"),
+            url_plus_fragment);
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverrideReverse(&url_plus_fragment,
+                                                             profile_.get()));
+  EXPECT_EQ(kBookmarksUrl.Resolve("#1"), url_plus_fragment);
 
   // Register a component extension
+  const char kOverrideResource2[] = "2.html";
   DictionaryBuilder manifest2;
   manifest2.Set(manifest_keys::kName, "ext2")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(std::string(manifest_keys::kChromeURLOverrides),
-           std::move(DictionaryBuilder().Set("bookmarks", "2.html")));
+           std::move(DictionaryBuilder().Set("bookmarks", kOverrideResource2)));
   scoped_refptr<Extension> ext_component(
       ExtensionBuilder()
           .SetManifest(std::move(manifest2))
@@ -107,27 +123,39 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
 
   // Despite being registered more recently, the component extension should
   // not take precedence over the non-component extension.
-  url = GURL("chrome://bookmarks");
-  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
-  EXPECT_EQ(url, expected_unpacked_override_url);
+  changed_url = kBookmarksUrl;
+  EXPECT_TRUE(
+      ExtensionWebUI::HandleChromeURLOverride(&changed_url, profile_.get()));
+  EXPECT_EQ(kExpectedUnpackedOverrideUrl, changed_url);
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverrideReverse(&changed_url,
+                                                             profile_.get()));
+  EXPECT_EQ(kBookmarksUrl, changed_url);
 
-  GURL expected_component_override_url(
-      std::string(ext_component->url().spec()) + "2.html");
+  GURL kExpectedComponentOverrideUrl =
+      ext_component->GetResourceURL(kOverrideResource2);
 
   // Unregister non-component extension. Only component extension remaining.
   ExtensionWebUI::UnregisterChromeURLOverrides(
       profile_.get(), URLOverrides::GetChromeURLOverrides(ext_unpacked.get()));
-  url = GURL("chrome://bookmarks");
-  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
-  EXPECT_EQ(url, expected_component_override_url);
+  changed_url = kBookmarksUrl;
+  EXPECT_TRUE(
+      ExtensionWebUI::HandleChromeURLOverride(&changed_url, profile_.get()));
+  EXPECT_EQ(kExpectedComponentOverrideUrl, changed_url);
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverrideReverse(&changed_url,
+                                                             profile_.get()));
+  EXPECT_EQ(kBookmarksUrl, changed_url);
 
   // This time the non-component extension was registered more recently and
   // should still take precedence.
   ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
       profile_.get(), URLOverrides::GetChromeURLOverrides(ext_unpacked.get()));
-  url = GURL("chrome://bookmarks");
-  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
-  EXPECT_EQ(url, expected_unpacked_override_url);
+  changed_url = kBookmarksUrl;
+  EXPECT_TRUE(
+      ExtensionWebUI::HandleChromeURLOverride(&changed_url, profile_.get()));
+  EXPECT_EQ(kExpectedUnpackedOverrideUrl, changed_url);
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverrideReverse(&changed_url,
+                                                             profile_.get()));
+  EXPECT_EQ(kBookmarksUrl, changed_url);
 }
 
 }  // namespace extensions
