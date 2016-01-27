@@ -721,10 +721,7 @@ void LinkStyle::process()
     if (!m_owner->loadLink(type, as, builder.url()))
         return;
 
-    if (m_disabledState != Disabled && m_owner->relAttribute().isStyleSheet() && shouldLoadResource() && builder.url().isValid()) {
-        if (!styleSheetTypeIsSupported(type))
-            UseCounter::countDeprecation(document(), UseCounter::NonCSSStyleSheetType);
-
+    if (m_disabledState != Disabled && m_owner->relAttribute().isStyleSheet() && styleSheetTypeIsSupported(type) && shouldLoadResource() && builder.url().isValid()) {
         if (resource()) {
             removePendingSheet();
             clearResource();

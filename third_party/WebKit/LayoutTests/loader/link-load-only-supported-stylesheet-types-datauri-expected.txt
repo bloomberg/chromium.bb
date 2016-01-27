@@ -1,4 +1,0 @@
-CONSOLE WARNING: Using stylesheet links with types other than 'text/css' is deprecated and will be removed in M50, around April 2016.
-This text should be blue
-This text should be red and trigger a deprecation warning
-This text should be yellow

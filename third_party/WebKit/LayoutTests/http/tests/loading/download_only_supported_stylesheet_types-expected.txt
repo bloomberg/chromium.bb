@@ -1,0 +1,14 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+main frame - didFinishDocumentLoadForFrame
+CONSOLE MESSAGE: line 18: http://127.0.0.1:8000/resources/testharness.js
+CONSOLE MESSAGE: line 18: http://127.0.0.1:8000/resources/testharnessreport.js
+CONSOLE MESSAGE: line 18: http://127.0.0.1:8000/resources/slow-script.pl?delay=500
+CONSOLE MESSAGE: line 18: http://127.0.0.1:8000/resources/dummy.css?1
+CONSOLE MESSAGE: line 18: http://127.0.0.1:8000/resources/dummy.css?3
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+This is a testharness.js-based test.
+PASS Makes sure that unsupported stylesheet types are neither preloaded nor loaded 
+Harness: the test ran to completion.
+

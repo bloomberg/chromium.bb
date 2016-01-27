@@ -45,6 +45,8 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/loader/LinkLoader.h"
+#include "platform/ContentType.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
@@ -116,6 +118,7 @@ public:
     StartTagScanner(const StringImpl* tagImpl, PassRefPtrWillBeRawPtr<MediaValues> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
+        , m_linkTypeIsMissingOrSupportedStyleSheet(true)
         , m_linkIsPreconnect(false)
         , m_linkIsPreload(false)
         , m_linkIsImport(false)
@@ -280,6 +283,8 @@ private:
             setCrossOrigin(attributeValue);
         } else if (match(attributeName, asAttr)) {
             m_asAttributeValue = attributeValue;
+        } else if (match(attributeName, typeAttr)) {
+            m_linkTypeIsMissingOrSupportedStyleSheet = MIMETypeRegistry::isSupportedStyleSheetMIMEType(ContentType(attributeValue).type());
         }
     }
 
@@ -392,10 +397,13 @@ private:
             return false;
         if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport && !m_linkIsPreload)
             return false;
+        if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet && !m_linkTypeIsMissingOrSupportedStyleSheet)
+            return false;
         if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
         return true;
     }
+
     void setCrossOrigin(const String& corsSetting)
     {
         m_crossOrigin = crossOriginAttributeValue(corsSetting);
@@ -416,6 +424,7 @@ private:
     ImageCandidate m_srcsetImageCandidate;
     String m_charset;
     bool m_linkIsStyleSheet;
+    bool m_linkTypeIsMissingOrSupportedStyleSheet;
     bool m_linkIsPreconnect;
     bool m_linkIsPreload;
     bool m_linkIsImport;

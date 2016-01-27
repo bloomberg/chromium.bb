@@ -972,9 +972,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case ObjectObserve:
         return willBeRemoved("'Object.observe'", 50, "6147094632988672");
 
-    case NonCSSStyleSheetType:
-        return String::format("Using stylesheet links with types other than 'text/css' is deprecated and will be removed in %s.", milestoneString(50));
-
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

@@ -976,7 +976,6 @@ public:
         MediaDevicesEnumerateDevices = 1119,
         NonSecureSharedWorkerAccessedFromSecureContext = 1120,
         SecureSharedWorkerAccessedFromNonSecureContext = 1121,
-        NonCSSStyleSheetType = 1122,
         EventDeepPath = 1123,
         LinkHeaderPreload = 1124,
         MouseWheelEvent = 1125,
