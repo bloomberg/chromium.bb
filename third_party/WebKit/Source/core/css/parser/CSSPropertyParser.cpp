@@ -1484,17 +1484,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnGap(CSSParserTokenRange& ra
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnSpan(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    CSSValueID id = range.peek().id();
-    if (id == CSSValueAll || id == CSSValueNone)
-        return consumeIdent(range);
-    if (range.peek().type() != NumberToken)
-        return nullptr;
-    if (RefPtrWillBeRawPtr<CSSPrimitiveValue> spanValue = consumeInteger(range)) {
-        // 1 (will be dropped in the unprefixed property).
-        if (spanValue->getIntValue() == 1)
-            return spanValue.release();
-    }
-    return nullptr;
+    return consumeIdent<CSSValueAll, CSSValueNone>(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, const CSSParserContext& context)

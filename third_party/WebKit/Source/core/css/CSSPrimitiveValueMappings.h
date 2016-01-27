@@ -184,22 +184,16 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ColumnSpan columnSpan)
 
 template<> inline ColumnSpan CSSPrimitiveValue::convertTo() const
 {
-    // Map 1 to none for compatibility reasons.
-    if (type() == UnitType::Integer && m_value.num == 1)
-        return ColumnSpanNone;
-
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueAll:
         return ColumnSpanAll;
+    default:
+        ASSERT_NOT_REACHED();
+        // fall-through
     case CSSValueNone:
         return ColumnSpanNone;
-    default:
-        break;
     }
-
-    ASSERT_NOT_REACHED();
-    return ColumnSpanNone;
 }
 
 
