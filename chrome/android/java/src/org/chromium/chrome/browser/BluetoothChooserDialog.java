@@ -318,6 +318,16 @@ public class BluetoothChooserDialog
                 checkLocationPermission();
                 break;
             }
+            case DISCOVERY_IDLE: {
+                // If devices have been discovered already, sending an update to the
+                // chooser does nothing. Otherwise, if no devices have been discovered,
+                // sending and update to the chooser results in the "noneFound" label
+                // being shown.
+                List<ItemChooserDialog.ItemChooserRow> devices =
+                        new ArrayList<ItemChooserDialog.ItemChooserRow>();
+                mItemChooserDialog.showList(devices);
+                break;
+            }
             default: {
                 // TODO(jyasskin): Report the new state to the user.
                 break;
