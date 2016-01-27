@@ -6018,11 +6018,11 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
                 (int)format - GL_COMPRESSED_RGBA_ASTC_4x4_KHR : (int)format - GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
 
             const int kBlockSize = 16;
-            const int kBlockWidth = WebGLCompressedTextureASTC::kBlockSizeCompressASTC[index].blockWidth;
-            const int kBlockHeight = WebGLCompressedTextureASTC::kBlockSizeCompressASTC[index].blockHeight;
+            const int blockWidth = WebGLCompressedTextureASTC::kBlockSizeCompressASTC[index].blockWidth;
+            const int blockHeight = WebGLCompressedTextureASTC::kBlockSizeCompressASTC[index].blockHeight;
 
-            CheckedInt<unsigned> numBlocksAcross = (CheckedInt<unsigned>(width) + kBlockWidth - 1) / kBlockWidth;
-            CheckedInt<unsigned> numBlocksDown = (CheckedInt<unsigned>(height) + kBlockHeight - 1) / kBlockHeight;
+            CheckedInt<unsigned> numBlocksAcross = (CheckedInt<unsigned>(width) + blockWidth - 1) / blockWidth;
+            CheckedInt<unsigned> numBlocksDown = (CheckedInt<unsigned>(height) + blockHeight - 1) / blockHeight;
             CheckedInt<unsigned> numBlocks = numBlocksAcross * numBlocksDown;
             bytesRequired = numBlocks * kBlockSize;
         }

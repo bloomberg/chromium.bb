@@ -974,7 +974,7 @@ bool isSimpleDRRect(const FloatRoundedRect& outer, const FloatRoundedRect& inner
     // We also ignore DRRects with a very thick relative stroke (shapes which are mostly filled by
     // the stroke): Skia's stroke outline can diverge significantly from the outer/inner contours
     // in some edge cases, so we fall back to drawDRRect instead.
-    static float kMaxStrokeToSizeRatio = 0.75f;
+    const float kMaxStrokeToSizeRatio = 0.75f;
     if (2 * strokeSize.width() / outer.rect().width() > kMaxStrokeToSizeRatio
         || 2 * strokeSize.height() / outer.rect().height() > kMaxStrokeToSizeRatio)
         return false;

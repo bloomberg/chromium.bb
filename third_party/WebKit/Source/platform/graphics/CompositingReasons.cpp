@@ -206,6 +206,6 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
         "Has an inline transform, which causes subsequent layers to assume overlap" },
 };
 
-size_t kNumberOfCompositingReasons = WTF_ARRAY_LENGTH(kCompositingReasonStringMap);
+const size_t kNumberOfCompositingReasons = WTF_ARRAY_LENGTH(kCompositingReasonStringMap);
 
 } // namespace blink

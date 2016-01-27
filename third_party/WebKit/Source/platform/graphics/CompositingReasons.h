@@ -200,7 +200,7 @@ struct CompositingReasonStringMap {
 };
 
 PLATFORM_EXPORT extern const CompositingReasonStringMap kCompositingReasonStringMap[];
-PLATFORM_EXPORT extern size_t kNumberOfCompositingReasons;
+PLATFORM_EXPORT extern const size_t kNumberOfCompositingReasons;
 
 } // namespace blink
 

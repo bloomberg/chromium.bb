@@ -17,7 +17,7 @@ namespace blink {
 
 namespace {
 
-const char* kExperimentsMetaName = "api-experiments";
+const char kExperimentsMetaName[] = "api-experiments";
 
 String getCurrentOrigin(ExecutionContext* executionContext)
 {

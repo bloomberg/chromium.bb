@@ -98,10 +98,10 @@ private:
 
 class BLINK_PLATFORM_EXPORT DoubleConstraint : public BaseConstraint {
 public:
-// Permit a certain leeway when comparing floats.
-// The offset of 0.00001 is chosen based on observed behavior of
-// doubles formatted with rtc::ToString.
-    static double kConstraintEpsilon;
+    // Permit a certain leeway when comparing floats. The offset of 0.00001
+    // is chosen based on observed behavior of doubles formatted with
+    // rtc::ToString.
+    static const double kConstraintEpsilon;
 
     explicit DoubleConstraint(const char* name);
 

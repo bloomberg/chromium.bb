@@ -37,7 +37,7 @@ namespace blink {
 
 // WebAudioCapturerSource ignores the channel count beyond 8, so we set the
 // block here to avoid anything can cause the crash.
-static unsigned long kMaxChannelCount = 8;
+static const unsigned long kMaxChannelCount = 8;
 
 MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioNode& node, size_t numberOfChannels)
     : AudioBasicInspectorHandler(NodeTypeMediaStreamAudioDestination, node, node.context()->sampleRate(), numberOfChannels)

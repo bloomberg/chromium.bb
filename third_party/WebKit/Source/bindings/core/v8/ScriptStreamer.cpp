@@ -375,7 +375,7 @@ private:
     OwnPtr<WebTaskRunner> m_loadingTaskRunner;
 };
 
-size_t ScriptStreamer::kSmallScriptThreshold = 30 * 1024;
+size_t ScriptStreamer::s_smallScriptThreshold = 30 * 1024;
 
 void ScriptStreamer::startStreaming(PendingScript* script, Type scriptType, Settings* settings, ScriptState* scriptState, WebTaskRunner* loadingTaskRunner)
 {
@@ -470,7 +470,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // enough - wait until the next data chunk comes before deciding whether
         // to start the streaming.
         ASSERT(resource->resourceBuffer());
-        if (resource->resourceBuffer()->size() < kSmallScriptThreshold)
+        if (resource->resourceBuffer()->size() < s_smallScriptThreshold)
             return;
         m_haveEnoughDataForStreaming = true;
 
@@ -480,7 +480,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // addition, check for byte order marks. Note that checking the byte
         // order mark might change the encoding. We cannot decode the full text
         // here, because it might contain incomplete UTF-8 characters. Also note
-        // that have at least kSmallScriptThreshold worth of data, which is more
+        // that have at least s_smallScriptThreshold worth of data, which is more
         // than enough for detecting a BOM.
         const char* data = 0;
         size_t length = resource->resourceBuffer()->getSomeData(data, static_cast<size_t>(0));

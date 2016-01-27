@@ -3746,9 +3746,9 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
     runPendingTasks();
 
     // Note that the 'result 19' in the <select> element is not expected to produce a match.
-    static const char* kFindString = "result";
-    static const int kFindIdentifier = 12345;
-    static const int kNumResults = 19;
+    const char kFindString[] = "result";
+    const int kFindIdentifier = 12345;
+    const int kNumResults = 19;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -3862,9 +3862,9 @@ TEST_P(ParameterizedWebFrameTest, FindInPageSkipsHiddenFrames)
     webViewHelper.resize(WebSize(640, 480));
     runPendingTasks();
 
-    static const char* kFindString = "hello";
-    static const int kFindIdentifier = 12345;
-    static const int kNumResults = 1;
+    const char kFindString[] = "hello";
+    const int kFindIdentifier = 12345;
+    const int kNumResults = 1;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -3892,8 +3892,8 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     webViewHelper.resize(WebSize(640, 480));
     runPendingTasks();
 
-    static const char* kFindString = "result";
-    static const int kFindIdentifier = 12345;
+    const char kFindString[] = "result";
+    const int kFindIdentifier = 12345;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -3930,8 +3930,8 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     webViewHelper.resize(WebSize(640, 480));
     runPendingTasks();
 
-    static const char* kFindString = "result";
-    static const int kFindIdentifier = 12345;
+    const char kFindString[] = "result";
+    const int kFindIdentifier = 12345;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -3968,8 +3968,8 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     webViewHelper.resize(WebSize(640, 480));
     runPendingTasks();
 
-    static const char* kFindString = "result";
-    static const int kFindIdentifier = 12345;
+    const char kFindString[] = "result";
+    const int kFindIdentifier = 12345;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -4005,8 +4005,8 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
     webViewHelper.resize(WebSize(640, 480));
     runPendingTasks();
 
-    static const char* kFindString = "result";
-    static const int kFindIdentifier = 12345;
+    const char kFindString[] = "result";
+    const int kFindIdentifier = 12345;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -4035,8 +4035,8 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
     webViewHelper.resize(WebSize(640, 480));
     runPendingTasks();
 
-    static const char* kFindString = "foo";
-    static const int kFindIdentifier = 12345;
+    const char kFindString[] = "foo";
+    const int kFindIdentifier = 12345;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);

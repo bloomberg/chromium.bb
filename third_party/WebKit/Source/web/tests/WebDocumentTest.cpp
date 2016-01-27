@@ -26,8 +26,8 @@ namespace blink {
 using blink::FrameTestHelpers::WebViewHelper;
 using blink::URLTestHelpers::toKURL;
 
-const char* kDefaultOrigin = "https://example.test/";
-const char* kManifestDummyFilePath = "manifest-dummy.html";
+const char kDefaultOrigin[] = "https://example.test/";
+const char kManifestDummyFilePath[] = "manifest-dummy.html";
 
 class WebDocumentTest : public ::testing::Test {
 protected:

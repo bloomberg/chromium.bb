@@ -17,7 +17,7 @@ namespace blink {
 // FIXME crbug.com/579552:
 // These patterns should move to property group definitions in ICU.
 
-static const char* kEmojiTextPattern =
+static const char kEmojiTextPattern[] =
     R"([[#][*][0-9][\u00A9][\u00AE][\u203C][\u2049][\u2122][\u2139])"
     R"([\u2194-\u2199][\u21A9-\u21AA][\u231A-\u231B][\u2328][\u23CF])"
     R"([\u23E9-\u23F3][\u23F8-\u23FA][\u24C2][\u25AA-\u25AB][\u25B6][\u25C0])"
@@ -48,7 +48,7 @@ static const char* kEmojiTextPattern =
     R"([\U0001F6E9][\U0001F6EB-\U0001F6EC][\U0001F6F0][\U0001F6F3])"
     R"([\U0001F910-\U0001F918][\U0001F980-\U0001F984][\U0001F9C0]])";
 
-static const char* kEmojiEmojiPattern =
+static const char kEmojiEmojiPattern[] =
     R"([[\u231A-\u231B][\u23E9-\u23EC][\u23F0][\u23F3][\u25FD-\u25FE])"
     R"([\u2614-\u2615][\u2648-\u2653][\u267F][\u2693][\u26A1][\u26AA-\u26AB])"
     R"([\u26BD-\u26BE][\u26C4-\u26C5][\u26CE][\u26D4][\u26EA][\u26F2-\u26F3])"
@@ -66,7 +66,7 @@ static const char* kEmojiEmojiPattern =
     R"([\U0001F6CC][\U0001F6D0][\U0001F6EB-\U0001F6EC][\U0001F910-\U0001F918])"
     R"([\U0001F980-\U0001F984][\U0001F9C0]])";
 
-static const char* kEmojiModifierBasePattern =
+static const char kEmojiModifierBasePattern[] =
     R"([[\u261D][\u26F9][\u270A-\u270D][\U0001F385][\U0001F3C3-\U0001F3C4])"
     R"([\U0001F3CA-\U0001F3CB][\U0001F442-\U0001F443][\U0001F446-\U0001F450])"
     R"([\U0001F466-\U0001F469][\U0001F46E][\U0001F470-\U0001F478][\U0001F47C])"

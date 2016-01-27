@@ -158,7 +158,7 @@ namespace double_conversion {
 #if ENABLE(ASSERT)
         validateStaticConstants();
 #endif
-        int kQ = DiyFp::kSignificandSize;
+        const int kQ = DiyFp::kSignificandSize;
         double k = ceil((min_exponent + kQ - 1) * kD_1_LOG2_10);
         int foo = kCachedPowersOffset;
         int index =

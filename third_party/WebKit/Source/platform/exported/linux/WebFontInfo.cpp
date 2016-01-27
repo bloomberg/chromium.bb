@@ -233,14 +233,14 @@ public:
 
     WebFallbackFont fallbackFontForCharInLocale(WebUChar32 c, const char* locale)
     {
-        DEFINE_STATIC_LOCAL(AtomicString, kNoLocale, ("NO_LOCALE_SPECIFIED", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(AtomicString, noLocale, ("NO_LOCALE_SPECIFIED", AtomicString::ConstructFromLiteral));
         AtomicString localeKey;
         if (locale && strlen(locale)) {
             localeKey = AtomicString(locale);
         } else {
             // String hash computation the m_setsByLocale map needs
             // a non-empty string.
-            localeKey = kNoLocale;
+            localeKey = noLocale;
         }
 
         LocaleToCachedFont::iterator itr = m_setsByLocale.find(localeKey);

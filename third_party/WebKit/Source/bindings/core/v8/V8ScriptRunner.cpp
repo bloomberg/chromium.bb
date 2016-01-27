@@ -195,7 +195,7 @@ void setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
 // Check previously stored timestamp.
 bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
 {
-    const double kCacheWithinSeconds = hotHours * 60 * 60;
+    const double cacheWithinSeconds = hotHours * 60 * 60;
     unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
     CachedMetadata* cachedMetadata = cacheHandler->cachedMetadata(tag);
     if (!cachedMetadata)
@@ -204,7 +204,7 @@ bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
     const int size = sizeof(timeStamp);
     ASSERT(cachedMetadata->size() == size);
     memcpy(&timeStamp, cachedMetadata->data(), size);
-    return (WTF::currentTime() - timeStamp) < kCacheWithinSeconds;
+    return (WTF::currentTime() - timeStamp) < cacheWithinSeconds;
 }
 
 // Final compile call for a streamed compilation. Most decisions have already

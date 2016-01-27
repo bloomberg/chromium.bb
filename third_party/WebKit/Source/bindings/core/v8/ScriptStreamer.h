@@ -103,15 +103,15 @@ public:
 
     static void setSmallScriptThresholdForTesting(size_t threshold)
     {
-        kSmallScriptThreshold = threshold;
+        s_smallScriptThreshold = threshold;
     }
 
-    static size_t smallScriptThreshold() { return kSmallScriptThreshold; }
+    static size_t smallScriptThreshold() { return s_smallScriptThreshold; }
 
 private:
     // Scripts whose first data chunk is smaller than this constant won't be
     // streamed. Non-const for testing.
-    static size_t kSmallScriptThreshold;
+    static size_t s_smallScriptThreshold;
 
     ScriptStreamer(ScriptResource*, Type, ScriptState*, v8::ScriptCompiler::CompileOptions, WebTaskRunner*);
 

@@ -125,7 +125,7 @@ protected:
     float m_ykneeThresholdDb;
 
     // Internal parameter for the knee portion of the curve.
-    float m_K;
+    float m_knee;
 };
 
 } // namespace blink

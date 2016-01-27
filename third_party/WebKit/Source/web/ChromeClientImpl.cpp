@@ -849,12 +849,12 @@ DOMWindow* ChromeClientImpl::pagePopupWindowForTesting() const
 
 bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
 {
-    const char* kDialogs[] = {"alert", "confirm", "prompt"};
+    const char* const kDialogs[] = { "alert", "confirm", "prompt" };
     int dialog = static_cast<int>(dialogType);
     ASSERT_WITH_SECURITY_IMPLICATION(0 <= dialog);
     ASSERT_WITH_SECURITY_IMPLICATION(dialog < static_cast<int>(WTF_ARRAY_LENGTH(kDialogs)));
 
-    const char* kDismissals[] = {"beforeunload", "pagehide", "unload"};
+    const char* const kDismissals[] = { "beforeunload", "pagehide", "unload" };
     int dismissal = static_cast<int>(dismissalType) - 1; // Exclude NoDismissal.
     ASSERT_WITH_SECURITY_IMPLICATION(0 <= dismissal);
     ASSERT_WITH_SECURITY_IMPLICATION(dismissal < static_cast<int>(WTF_ARRAY_LENGTH(kDismissals)));

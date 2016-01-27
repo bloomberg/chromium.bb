@@ -186,7 +186,7 @@ bool LongConstraint::isEmpty() const
     return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
 }
 
-double DoubleConstraint::kConstraintEpsilon = 0.00001;
+const double DoubleConstraint::kConstraintEpsilon = 0.00001;
 
 DoubleConstraint::DoubleConstraint(const char* name)
     : BaseConstraint(name)

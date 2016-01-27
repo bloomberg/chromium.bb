@@ -38,7 +38,7 @@
 
 namespace blink {
 
-static double kCurrentTimeBufferedDelta = 1.0;
+static const double kCurrentTimeBufferedDelta = 1.0;
 
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
 static MediaControlImageMap* gMediaControlImageMap = 0;

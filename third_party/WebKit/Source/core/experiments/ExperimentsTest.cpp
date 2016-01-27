@@ -20,13 +20,13 @@
 namespace blink {
 namespace {
 
-const char* kNonExistingAPIName = "This API does not exist";
-const char* kFrobulateAPIName = "Frobulate";
-const char* kFrobulateEnabledOrigin = "https://www.example.com";
-const char* kFrobulateEnabledOriginUnsecure = "http://www.example.com";
+const char kNonExistingAPIName[] = "This API does not exist";
+const char kFrobulateAPIName[] = "Frobulate";
+const char kFrobulateEnabledOrigin[] = "https://www.example.com";
+const char kFrobulateEnabledOriginUnsecure[] = "http://www.example.com";
 
-// API Key which will appear valid
-const char* kGoodAPIKey = "AnySignatureWillDo|https://www.example.com|Frobulate|2000000000";
+// API Key that will appear valid.
+const char kGoodAPIKey[] = "AnySignatureWillDo|https://www.example.com|Frobulate|2000000000";
 
 class MockApiKeyValidator : public WebApiKeyValidator {
 public:

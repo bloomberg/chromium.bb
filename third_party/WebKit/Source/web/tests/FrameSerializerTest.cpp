@@ -134,7 +134,7 @@ protected:
 
     const SerializedResource* getResource(const char* url, const char* mimeType)
     {
-        KURL kURL = KURL(m_baseUrl, url);
+        const KURL kURL = KURL(m_baseUrl, url);
         String mime(mimeType);
         for (size_t i = 0; i < m_resources.size(); ++i) {
             const SerializedResource& resource = m_resources[i];

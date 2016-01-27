@@ -180,7 +180,7 @@ double FFTFrame::extractAverageGroupDelay()
 
     int halfSize = fftSize() / 2;
 
-    const double kSamplePhaseDelay = (twoPiDouble) / double(fftSize());
+    const double samplePhaseDelay = (twoPiDouble) / static_cast<double>(fftSize());
 
     // Calculate weighted average group delay
     for (int i = 0; i < halfSize; i++) {
@@ -203,7 +203,7 @@ double FFTFrame::extractAverageGroupDelay()
 
     // Note how we invert the phase delta wrt frequency since this is how group delay is defined
     double ave = aveSum / weightSum;
-    double aveSampleDelay = -ave / kSamplePhaseDelay;
+    double aveSampleDelay = -ave / samplePhaseDelay;
 
     // Leave 20 sample headroom (for leading edge of impulse)
     if (aveSampleDelay > 20.0)
@@ -225,9 +225,9 @@ void FFTFrame::addConstantGroupDelay(double sampleFrameDelay)
     float* realP = realData();
     float* imagP = imagData();
 
-    const double kSamplePhaseDelay = (twoPiDouble) / double(fftSize());
+    const double samplePhaseDelay = (twoPiDouble) / static_cast<double>(fftSize());
 
-    double phaseAdj = -sampleFrameDelay * kSamplePhaseDelay;
+    double phaseAdj = -sampleFrameDelay * samplePhaseDelay;
 
     // Add constant group delay
     for (int i = 1; i < halfSize; i++) {
