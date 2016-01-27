@@ -28,14 +28,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 
 import java.util.Collection;
-import java.util.HashSet;
 
 /**
  * This activity displays a list of nearby URLs as stored in the {@link UrlManager}.
  * This activity does not and should not rely directly or indirectly on the native library.
  */
-public class ListUrlsActivity extends AppCompatActivity
-        implements AdapterView.OnItemClickListener, SwipeRefreshWidget.OnRefreshListener {
+public class ListUrlsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
+        SwipeRefreshWidget.OnRefreshListener, UrlManager.Listener {
     public static final String REFERER_KEY = "referer";
     public static final int NOTIFICATION_REFERER = 1;
     public static final int OPTIN_REFERER = 2;
@@ -127,6 +126,12 @@ public class ListUrlsActivity extends AppCompatActivity
         startRefresh(true, true);
     }
 
+    @Override
+    protected void onStop() {
+        UrlManager.getInstance(this).removeObserver(this);
+        super.onStop();
+    }
+
     private void resolve(Collection<String> urls) {
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
@@ -136,13 +141,11 @@ public class ListUrlsActivity extends AppCompatActivity
                 PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
 
                 // filter out duplicate site URLs.
-                Collection<String> siteUrls = new HashSet<>();
                 for (PwsResult pwsResult : pwsResults) {
                     String siteUrl = pwsResult.siteUrl;
                     String iconUrl = pwsResult.iconUrl;
 
-                    if (siteUrl != null && !siteUrls.contains(siteUrl)) {
-                        siteUrls.add(siteUrl);
+                    if (siteUrl != null && !mAdapter.hasSiteUrl(siteUrl)) {
                         mAdapter.add(pwsResult);
 
                         if (iconUrl != null && !mAdapter.hasIcon(iconUrl)) {
@@ -170,6 +173,15 @@ public class ListUrlsActivity extends AppCompatActivity
         mContext.startActivity(intent);
     }
 
+    /**
+     * Called when new nearby URLs are found.
+     * @param urls The set of newly-found nearby URLs.
+     */
+    @Override
+    public void onDisplayableUrlsAdded(Collection<String> urls) {
+        resolve(urls);
+    }
+
     private void startRefresh(boolean isUserInitiated, boolean isSwipeInitiated) {
         if (mIsRefreshing) {
             return;
@@ -181,7 +193,10 @@ public class ListUrlsActivity extends AppCompatActivity
         // Clear the list adapter to trigger the empty list display.
         mAdapter.clear();
 
-        Collection<String> urls = UrlManager.getInstance(this).getUrls(true);
+        UrlManager urlManager = UrlManager.getInstance(this);
+        urlManager.addObserver(this);
+
+        Collection<String> urls = urlManager.getUrls(true);
         if (urls.isEmpty()) {
             finishRefresh();
         } else {
@@ -208,6 +223,8 @@ public class ListUrlsActivity extends AppCompatActivity
     }
 
     private void finishRefresh() {
+        UrlManager.getInstance(this).removeObserver(this);
+
         // Hide the busy indicator.
         mSwipeRefreshWidget.setRefreshing(false);
 
