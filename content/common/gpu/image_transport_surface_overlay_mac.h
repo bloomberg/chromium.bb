@@ -8,7 +8,6 @@
 #include <list>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/timer/timer.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"

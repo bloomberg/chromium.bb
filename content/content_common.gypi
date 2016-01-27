@@ -324,6 +324,8 @@
       'common/gpu/client/grcontext_for_webgraphicscontext3d.h',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
+      'common/gpu/ca_layer_partial_damage_tree_mac.h',
+      'common/gpu/ca_layer_partial_damage_tree_mac.mm',
       'common/gpu/ca_layer_tree_mac.h',
       'common/gpu/ca_layer_tree_mac.mm',
       'common/gpu/child_window_surface_win.cc',
