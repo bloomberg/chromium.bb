@@ -736,7 +736,7 @@ NOINLINE pid_t CloneAndLongjmpInChild(unsigned long flags,
   // internal pid cache. The libc interface unfortunately requires
   // specifying a new stack, so we use setjmp/longjmp to emulate
   // fork-like behavior.
-  char stack_buf[PTHREAD_STACK_MIN];
+  char stack_buf[PTHREAD_STACK_MIN] ALIGNAS(16);
 #if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
     defined(ARCH_CPU_MIPS64_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
   // The stack grows downward.
