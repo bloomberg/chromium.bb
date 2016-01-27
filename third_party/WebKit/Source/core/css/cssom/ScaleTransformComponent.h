@@ -32,8 +32,8 @@ public:
     PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
 
 private:
-    ScaleTransformComponent(double x, double y) : TransformComponent(), m_x(x), m_y(y), m_z(1), m_is2D(true) { }
-    ScaleTransformComponent(double x, double y, double z) : TransformComponent(), m_x(x), m_y(y), m_z(z), m_is2D(false) { }
+    ScaleTransformComponent(double x, double y) : m_x(x), m_y(y), m_z(1), m_is2D(true) { }
+    ScaleTransformComponent(double x, double y, double z) : m_x(x), m_y(y), m_z(z), m_is2D(false) { }
 
     double m_x;
     double m_y;

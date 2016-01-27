@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+var values = [
+  {input: new SkewTransformComponent(0, 0), ax: 0, ay: 0, cssString: "skew(0, 0)"},
+  {input: new SkewTransformComponent(1, 2), ax: 1, ay: 2, cssString: "skew(1, 2)"},
+  {input: new SkewTransformComponent(-2, -4), ax: -2, ay: -4, cssString: "skew(-2, -4)"},
+  {input: new SkewTransformComponent(3.4, 2.7), ax: 3.4, ay: 2.7, cssString: "skew(3.4, 2.7)"}
+];
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.ax, values[i].ax);
+    assert_equals(values[i].input.ay, values[i].ay);
+  }
+}, "Test that the (ax, ay) values for SkewTransformComponent are correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_true(values[i].input.is2DComponent());
+  }
+}, "Test that the is2DComponent values for SkewTransformComponent is correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.cssString, values[i].cssString);
+  }
+}, "Test that the cssString for SkewTransformComponent is correct.");
+
+test(function() {
+  assert_throws(null, function() { new SkewTransformComponent(); });
+  assert_throws(null, function() { new SkewTransformComponent(1); });
+}, "Test that invalid number of arguments for SkewTransformComponent throws an exception.");
+
+</script>

@@ -4044,6 +4044,12 @@ interface Response
     method constructor
     method json
     method text
+interface RotationTransformComponent : TransformComponent
+    getter angle
+    getter x
+    getter y
+    getter z
+    method constructor
 interface SVGAElement : SVGGraphicsElement
     getter href
     getter target
@@ -5192,6 +5198,10 @@ interface SimpleLength : LengthValue
     getter value
     method constructor
     setter value
+interface SkewTransformComponent : TransformComponent
+    getter ax
+    getter ay
+    method constructor
 interface SpeechSynthesisEvent : Event
     getter charIndex
     getter elapsedTime

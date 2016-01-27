@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+var values = [
+  {input: new RotationTransformComponent(0), angle: 0, x: 0, y: 0, z: 1,
+    is2DComponent: true, cssString: "rotate(0deg)"},
+  {input: new RotationTransformComponent(10), angle: 10, x: 0, y: 0, z: 1,
+    is2DComponent: true, cssString: "rotate(10deg)"},
+  {input: new RotationTransformComponent(-21), angle: -21, x: 0, y: 0, z: 1,
+    is2DComponent: true, cssString: "rotate(-21deg)"},
+  {input: new RotationTransformComponent(3.2), angle: 3.2, x: 0, y: 0, z: 1,
+    is2DComponent: true, cssString: "rotate(3.2deg)"},
+  {input: new RotationTransformComponent(10, 0, 0, 1), angle: 10, x: 0, y: 0, z: 1,
+    is2DComponent: false, cssString: "rotate3d(0, 0, 1, 10deg)"},
+  {input: new RotationTransformComponent(10, 2, 3, 4), angle: 10, x: 2, y: 3, z: 4,
+    is2DComponent: false, cssString: "rotate3d(2, 3, 4, 10deg)"},
+  {input: new RotationTransformComponent(-1.2, 2, 3.7, -4), angle: -1.2, x: 2, y: 3.7, z: -4,
+    is2DComponent: false, cssString: "rotate3d(2, 3.7, -4, -1.2deg)"}
+];
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.angle, values[i].angle);
+    assert_equals(values[i].input.x, values[i].x);
+    assert_equals(values[i].input.y, values[i].y);
+    assert_equals(values[i].input.z, values[i].z);
+  }
+}, "Test that the (angle, x, y, z) values for RotationTransformComponent are correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
+  }
+}, "Test that the is2DComponent values for RotationTransformComponent is correct.");
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.cssString, values[i].cssString);
+  }
+}, "Test that cssString values for RotationTransformComponent is correct.");
+
+</script>
