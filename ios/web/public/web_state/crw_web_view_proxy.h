@@ -66,6 +66,9 @@
 - (UITextInputAssistantItem*)inputAssistantItem;
 #endif
 
+// Wrapper around the becomeFirstResponder method of the webview.
+- (BOOL)becomeFirstResponder;
+
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_VIEW_PROXY_H_

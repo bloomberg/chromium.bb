@@ -82,6 +82,10 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   }
 }
 
+- (BOOL)becomeFirstResponder {
+  return [_webView becomeFirstResponder];
+}
+
 #pragma mark Accessors
 
 - (UIScrollView*)scrollView {
