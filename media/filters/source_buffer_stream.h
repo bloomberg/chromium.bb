@@ -68,11 +68,11 @@ class MEDIA_EXPORT SourceBufferStream {
 
   ~SourceBufferStream();
 
-  // Signals that the next buffers appended are part of a new coded frame group
-  // starting at |coded_frame_group_start_time|.
+  // Signals that the next buffers appended are part of a new media segment
+  // starting at |media_segment_start_time|.
   // TODO(acolwell/wolenetz): This should be changed to a presentation
   // timestamp. See http://crbug.com/402502
-  void OnStartOfCodedFrameGroup(DecodeTimestamp coded_frame_group_start_time);
+  void OnNewMediaSegment(DecodeTimestamp media_segment_start_time);
 
   // Add the |buffers| to the SourceBufferStream. Buffers within the queue are
   // expected to be in order, but multiple calls to Append() may add buffers out
@@ -397,15 +397,14 @@ class MEDIA_EXPORT SourceBufferStream {
   // emitted buffer emptied |track_buffer_|.
   bool just_exhausted_track_buffer_ = false;
 
-  // The start time of the current coded frame group being appended.
-  DecodeTimestamp coded_frame_group_start_time_;
+  // The start time of the current media segment being appended.
+  DecodeTimestamp media_segment_start_time_;
 
   // Points to the range containing the current media segment being appended.
   RangeList::iterator range_for_next_append_;
 
-  // True when the next call to Append() begins a new coded frame group.
-  // TODO(wolenetz): Simplify by passing this flag into Append().
-  bool new_coded_frame_group_ = false;
+  // True when the next call to Append() begins a new media segment.
+  bool new_media_segment_ = false;
 
   // The timestamp of the last buffer appended to the media segment, set to
   // kNoDecodeTimestamp() if the beginning of the segment.

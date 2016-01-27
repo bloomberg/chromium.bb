@@ -49,6 +49,9 @@ class MEDIA_EXPORT FrameProcessor {
   // |append_window_start| and |append_window_end| correspond to the MSE spec's
   // similarly named source buffer attributes that are used in coded frame
   // processing.
+  // |*new_media_segment| tracks whether the next buffers processed within the
+  // append window represent the start of a new media segment. This method may
+  // both use and update this flag.
   // Uses |*timestamp_offset| according to the coded frame processing algorithm,
   // including updating it as required in 'sequence' mode frame processing.
   bool ProcessFrames(const StreamParser::BufferQueue& audio_buffers,
@@ -56,6 +59,7 @@ class MEDIA_EXPORT FrameProcessor {
                      const StreamParser::TextBufferQueueMap& text_map,
                      base::TimeDelta append_window_start,
                      base::TimeDelta append_window_end,
+                     bool* new_media_segment,
                      base::TimeDelta* timestamp_offset);
 
   // Signals the frame processor to update its group start timestamp to be
@@ -89,17 +93,15 @@ class MEDIA_EXPORT FrameProcessor {
   void OnPossibleAudioConfigUpdate(const AudioDecoderConfig& config);
 
  private:
-  friend class FrameProcessorTest;
-
   typedef std::map<StreamParser::TrackId, MseTrackBuffer*> TrackBufferMap;
 
   // If |track_buffers_| contains |id|, returns a pointer to the associated
   // MseTrackBuffer. Otherwise, returns NULL.
   MseTrackBuffer* FindTrack(StreamParser::TrackId id);
 
-  // Signals all track buffers' streams that a coded frame group is starting
-  // with decode timestamp |start_timestamp|.
-  void NotifyStartOfCodedFrameGroup(DecodeTimestamp start_timestamp);
+  // Signals all track buffers' streams that a new media segment is starting
+  // with decode timestamp |segment_timestamp|.
+  void NotifyNewMediaSegmentStarting(DecodeTimestamp segment_timestamp);
 
   // Helper that signals each track buffer to append any processed, but not yet
   // appended, frames to its stream. Returns true on success, or false if one or
@@ -132,7 +134,8 @@ class MEDIA_EXPORT FrameProcessor {
   bool ProcessFrame(const scoped_refptr<StreamParserBuffer>& frame,
                     base::TimeDelta append_window_start,
                     base::TimeDelta append_window_end,
-                    base::TimeDelta* timestamp_offset);
+                    base::TimeDelta* timestamp_offset,
+                    bool* new_media_segment);
 
   // TrackId-indexed map of each track's stream.
   TrackBufferMap track_buffers_;
@@ -151,12 +154,6 @@ class MEDIA_EXPORT FrameProcessor {
   // Controls how a sequence of media segments are handled. This is initially
   // set to false ("segments").
   bool sequence_mode_ = false;
-
-  // Flag to track whether or not the next processed frame is a continuation of
-  // a coded frame group. This flag resets to false upon detection of
-  // discontinuity, and becomes true once a processed coded frame for the
-  // current coded frame group is sent to its track buffer.
-  bool in_coded_frame_group_ = false;
 
   // Tracks the MSE coded frame processing variable of same name.
   // Initially kNoTimestamp(), meaning "unset".

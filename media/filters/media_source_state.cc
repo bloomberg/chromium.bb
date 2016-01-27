@@ -90,6 +90,7 @@ MediaSourceState::MediaSourceState(
     const scoped_refptr<MediaLog>& media_log)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       timestamp_offset_during_append_(NULL),
+      new_media_segment_(false),
       parsing_media_segment_(false),
       media_segment_contained_audio_frame_(false),
       media_segment_contained_video_frame_(false),
@@ -646,6 +647,7 @@ bool MediaSourceState::OnNewConfigs(
 void MediaSourceState::OnNewMediaSegment() {
   DVLOG(2) << "OnNewMediaSegment()";
   parsing_media_segment_ = true;
+  new_media_segment_ = true;
   media_segment_contained_audio_frame_ = false;
   media_segment_contained_video_frame_ = false;
 }
@@ -653,6 +655,7 @@ void MediaSourceState::OnNewMediaSegment() {
 void MediaSourceState::OnEndOfMediaSegment() {
   DVLOG(2) << "OnEndOfMediaSegment()";
   parsing_media_segment_ = false;
+  new_media_segment_ = false;
 
   const bool missing_audio = audio_ && !media_segment_contained_audio_frame_;
   const bool missing_video = video_ && !media_segment_contained_video_frame_;
@@ -699,10 +702,10 @@ bool MediaSourceState::OnNewBuffers(
     }
   }
 
-  if (!frame_processor_->ProcessFrames(audio_buffers, video_buffers, text_map,
-                                       append_window_start_during_append_,
-                                       append_window_end_during_append_,
-                                       timestamp_offset_during_append_)) {
+  if (!frame_processor_->ProcessFrames(
+          audio_buffers, video_buffers, text_map,
+          append_window_start_during_append_, append_window_end_during_append_,
+          &new_media_segment_, timestamp_offset_during_append_)) {
     return false;
   }
 

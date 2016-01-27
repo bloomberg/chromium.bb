@@ -62,7 +62,6 @@ void MP4StreamParser::Init(
   DCHECK(!config_cb.is_null());
   DCHECK(!new_buffers_cb.is_null());
   DCHECK(!encrypted_media_init_data_cb.is_null());
-  DCHECK(!new_segment_cb.is_null());
   DCHECK(!end_of_segment_cb.is_null());
 
   ChangeState(kParsingBoxes);
@@ -444,7 +443,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
 
   if (!runs_->IsRunValid()) {
     // Flush any buffers we've gotten in this chunk so that buffers don't
-    // cross |new_segment_cb_| calls
+    // cross NewSegment() calls
     *err = !SendAndFlushSamples(audio_buffers, video_buffers);
     if (*err)
       return false;

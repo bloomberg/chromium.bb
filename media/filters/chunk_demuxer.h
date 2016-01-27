@@ -80,8 +80,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   size_t GetBufferedSize() const;
 
   // Signal to the stream that buffers handed in through subsequent calls to
-  // Append() belong to a coded frame group that starts at |start_timestamp|.
-  void OnStartOfCodedFrameGroup(DecodeTimestamp start_timestamp);
+  // Append() belong to a media segment that starts at |start_timestamp|.
+  void OnNewMediaSegment(DecodeTimestamp start_timestamp);
 
   // Called when midstream config updates occur.
   // Returns true if the new config is accepted.

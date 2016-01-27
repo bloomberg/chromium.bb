@@ -171,6 +171,16 @@ class MEDIA_EXPORT MediaSourceState {
   TimeDelta append_window_start_during_append_;
   TimeDelta append_window_end_during_append_;
 
+  // Set to true if the next buffers appended within the append window
+  // represent the start of a new media segment. This flag being set
+  // triggers a call to |new_segment_cb_| when the new buffers are
+  // appended. The flag is set on actual media segment boundaries and
+  // when the "append window" filtering causes discontinuities in the
+  // appended data.
+  // TODO(wolenetz/acolwell): Investigate if we need this, or if coded frame
+  // processing's discontinuity logic is enough. See http://crbug.com/351489.
+  bool new_media_segment_;
+
   // Keeps track of whether a media segment is being parsed.
   bool parsing_media_segment_;
 

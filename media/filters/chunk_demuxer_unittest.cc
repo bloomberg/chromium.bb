@@ -685,8 +685,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     AppendMuxedCluster(msi);
   }
 
-  scoped_ptr<Cluster> GenerateMuxedCluster(
-      const std::vector<MuxedStreamInfo> msi) {
+  void AppendMuxedCluster(const std::vector<MuxedStreamInfo> msi) {
     std::priority_queue<BlockInfo> block_queue;
     for (size_t i = 0; i < msi.size(); ++i) {
       std::vector<BlockInfo> track_blocks;
@@ -702,11 +701,8 @@ class ChunkDemuxerTest : public ::testing::Test {
             msi[i].last_blocks_estimated_duration));
       }
     }
-    return GenerateCluster(block_queue, false);
-  }
 
-  void AppendMuxedCluster(const std::vector<MuxedStreamInfo> msi) {
-    AppendCluster(kSourceId, GenerateMuxedCluster(msi));
+    AppendCluster(kSourceId, GenerateCluster(block_queue, false));
   }
 
   void AppendData(const std::string& source_id,
@@ -4403,214 +4399,6 @@ TEST_F(ChunkDemuxerTest, SegmentMissingAudioVideoFrames) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   EXPECT_MEDIA_LOG(SegmentMissingFrames("audio or video"));
   AppendCluster(GenerateEmptyCluster(0));
-}
-
-TEST_F(ChunkDemuxerTest, RelaxedKeyframe_FirstSegmentMissingKeyframe) {
-  // Append V:[n n n][n n K]
-  // Expect V:           [K]
-  ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(10)).Times(2);
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0 10 20");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "30 40 50K");
-  CheckExpectedRanges("{ [50,60) }");
-  CheckExpectedBuffers(video_stream, "50K");
-}
-
-TEST_F(ChunkDemuxerTest, RelaxedKeyframe_SecondSegmentMissingKeyframe) {
-  // Append V:[K n n][n n n]
-  // Expect V:[K n n][n n n]
-  ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(10)).Times(2);
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 10 20");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "30 40 50");
-  CheckExpectedRanges("{ [0,60) }");
-  CheckExpectedBuffers(video_stream, "0K 10 20 30 40 50");
-}
-
-TEST_F(ChunkDemuxerTest, RelaxedKeyframe_RemoveInterruptsCodedFrameGroup_1) {
-  // Append V:[K n n]
-  // Remove    *****
-  // Append V:       [n n n][n K n]
-  // Expect:                  [K n]
-  ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(10)).Times(3);
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 10 20");
-  demuxer_->Remove(kSourceId, base::TimeDelta(),
-                   base::TimeDelta::FromMilliseconds(30));
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "30 40 50");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "60 70K 80");
-  CheckExpectedRanges("{ [70,90) }");
-  CheckExpectedBuffers(video_stream, "70K 80");
-}
-
-TEST_F(ChunkDemuxerTest, RelaxedKeyframe_RemoveInterruptsCodedFrameGroup_2) {
-  // Append V:[K n n][n n n][n K n]
-  // Remove    *
-  // Expect:                  [K n]
-  ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(10)).Times(3);
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 10 20");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "30 40 50");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "60 70K 80");
-  demuxer_->Remove(kSourceId, base::TimeDelta(),
-                   base::TimeDelta::FromMilliseconds(10));
-  CheckExpectedRanges("{ [70,90) }");
-  CheckExpectedBuffers(video_stream, "70K 80");
-}
-
-TEST_F(ChunkDemuxerTest, RelaxedKeyframe_RemoveInterruptsCodedFrameGroup_3) {
-  // Append V:[K n n][n n n][n K n]
-  // Remove               *
-  // Expect:  [K n n..n n]    [K n]
-  ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(10)).Times(3);
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 10 20");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "30 40 50");
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "60 70K 80");
-  demuxer_->Remove(kSourceId, base::TimeDelta::FromMilliseconds(50),
-                   base::TimeDelta::FromMilliseconds(60));
-  CheckExpectedRanges("{ [0,50) [70,90) }");
-  CheckExpectedBuffers(video_stream, "0K 10 20 30 40");
-  Seek(base::TimeDelta::FromMilliseconds(70));
-  CheckExpectedBuffers(video_stream, "70K 80");
-}
-
-TEST_F(ChunkDemuxerTest,
-       RelaxedKeyframe_RemoveInterruptsMuxedCodedFrameGroup_1) {
-  // Append muxed:
-  //        A:[K K K]
-  //        V:[K n n]
-  // Remove    *****
-  // Append muxed:
-  //        A:       [K K K][K K K]
-  //        V:       [n n n][n K n]
-  // Expect:
-  //        A:       [K K K][K K K]
-  //        V                 [K n]
-  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
-  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "0K 10K 20D10K"),
-                     MuxedStreamInfo(kVideoTrackNum, "0K 10 20", 10));
-  demuxer_->Remove(kSourceId, base::TimeDelta(),
-                   base::TimeDelta::FromMilliseconds(30));
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "30K 40K 50D10K"),
-                     MuxedStreamInfo(kVideoTrackNum, "30 40 50", 10));
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "60K 70K 80D10K"),
-                     MuxedStreamInfo(kVideoTrackNum, "60 70K 80", 10));
-  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [30,90) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [70,90) }");
-  CheckExpectedRanges("{ [70,90) }");
-  CheckExpectedBuffers(audio_stream, "30K 40K 50K 60K 70K 80K");
-  CheckExpectedBuffers(video_stream, "70K 80");
-}
-
-TEST_F(ChunkDemuxerTest,
-       RelaxedKeyframe_RemoveInterruptsMuxedCodedFrameGroup_2) {
-  // Append muxed:
-  //        A:[K K K]
-  //        V:(Nothing, simulating jagged cluster start or a long previous
-  //          video frame)
-  // Remove    *****
-  // Append muxed:
-  //        A:       [K K K][K K K]
-  //        V:       [n n n][n K n]
-  // Expect:
-  //        A:       [K K K][K K K]
-  //        V [................K n] (As would occur if there really were a
-  //        jagged cluster start and not badly muxed clusters as used to
-  //        simulate a jagged start in this test.)
-  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
-  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  EXPECT_MEDIA_LOG(SegmentMissingFrames("video"));
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "0K 10K 20D10K"),
-                     MuxedStreamInfo(kVideoTrackNum, ""));
-  demuxer_->Remove(kSourceId, base::TimeDelta(),
-                   base::TimeDelta::FromMilliseconds(30));
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "30K 40K 50D10K"),
-                     MuxedStreamInfo(kVideoTrackNum, "30 40 50", 10));
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "60K 70K 80D10K"),
-                     MuxedStreamInfo(kVideoTrackNum, "60 70K 80", 10));
-  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [30,90) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,90) }");
-  CheckExpectedRanges("{ [30,90) }");
-  CheckExpectedBuffers(audio_stream, "30K 40K 50K 60K 70K 80K");
-  CheckExpectedBuffers(video_stream, "70K 80");
-}
-
-TEST_F(ChunkDemuxerTest,
-       RelaxedKeyframe_RemoveInterruptsMuxedCodedFrameGroup_3) {
-  // Append muxed:
-  //        A:[K K K
-  //        V:(Nothing yet. This is a jagged start, not simulated.)
-  // Remove    *****
-  // Append muxed:
-  //        A:       K K K K K K]
-  //        V:       n n n n K n]
-  // Expect:
-  //        A:      [K K K K K K]
-  //        V [..............K n]
-  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
-  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
-  std::vector<MuxedStreamInfo> msi(2);
-  msi[0] =
-      MuxedStreamInfo(kAudioTrackNum, "0K 10K 20K 30K 40K 50K 60K 70K 80D10K");
-  msi[1] = MuxedStreamInfo(kVideoTrackNum, "31 41 51 61 71K 81", 10);
-  scoped_ptr<Cluster> cluster = GenerateMuxedCluster(msi);
-
-  // Append the first part of the cluster, up to the beginning of the first
-  // video simpleblock. The result should be just 4 audio blocks and no video
-  // blocks are appended. Since the stream parser does not yet have a duration
-  // for the 4th audio block in this partial cluster append, it is not yet
-  // emitted from the parser, and only the first 3 audio blocks are expected to
-  // be buffered by and available from the demuxer.
-  ASSERT_EQ(kVideoTrackNum, 1);
-  int video_start = 0;
-  bool found = false;
-  while (video_start < cluster->size() - 10) {
-    if (cluster->data()[video_start] == 0xA3 &&
-        cluster->data()[video_start + 9] == 0x81) {
-      found = true;
-      break;
-    }
-    video_start++;
-  }
-
-  ASSERT_TRUE(found);
-  ASSERT_GT(video_start, 0);
-  ASSERT_LT(video_start, cluster->size() - 3);
-
-  AppendData(kSourceId, cluster->data(), video_start);
-  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,30) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO, "{ }");
-
-  demuxer_->Remove(kSourceId, base::TimeDelta(),
-                   base::TimeDelta::FromMilliseconds(30));
-
-  // Append the remainder of the cluster
-  AppendData(kSourceId, cluster->data() + video_start,
-             cluster->size() - video_start);
-
-  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [30,90) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,91) }");
-  CheckExpectedRanges("{ [30,90) }");
-  CheckExpectedBuffers(audio_stream, "30K 40K 50K 60K 70K 80K");
-  CheckExpectedBuffers(video_stream, "71K 81");
 }
 
 }  // namespace media
