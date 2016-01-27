@@ -2557,12 +2557,15 @@ bool HWNDMessageHandler::HandleMouseInputForCaption(unsigned int message,
         // so we need to call it inside a ScopedRedrawLock. This may cause
         // other negative side-effects
         // (ex/ stifling non-client mouse releases).
+        // We may be deleted in the context of DefWindowProc. Don't refer to
+        // any member variables after the DefWindowProc call.
+        left_button_down_on_caption_ = false;
+
         if (delegate_->IsUsingCustomFrame()) {
           DefWindowProcWithRedrawLock(WM_NCLBUTTONDOWN, HTCAPTION, l_param);
         } else {
           DefWindowProc(hwnd(), WM_NCLBUTTONDOWN, HTCAPTION, l_param);
         }
-        left_button_down_on_caption_ = false;
       }
       break;
     }
