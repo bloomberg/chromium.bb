@@ -203,7 +203,8 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
   if (new_cursor_pos > 0)
     new_cursor_pos = text16.length() + new_cursor_pos - 1;
 
-  rwhi->ImeSetComposition(text16, underlines, new_cursor_pos, new_cursor_pos);
+  rwhi->ImeSetComposition(text16, underlines, gfx::Range::InvalidRange(),
+                          new_cursor_pos, new_cursor_pos);
 }
 
 void ImeAdapterAndroid::CommitText(JNIEnv* env,

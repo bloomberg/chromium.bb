@@ -1621,6 +1621,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
   // TODO(suzhe): due to a bug of webkit, we can't use selection range with
   // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
   host_->ImeSetComposition(composition.text, underlines,
+                           gfx::Range::InvalidRange(),
                            composition.selection.end(),
                            composition.selection.end());
 

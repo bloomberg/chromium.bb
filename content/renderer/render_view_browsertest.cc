@@ -1322,6 +1322,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
         view()->OnImeSetComposition(
             base::WideToUTF16(ime_message->ime_string),
             std::vector<blink::WebCompositionUnderline>(),
+            gfx::Range::InvalidRange(),
             ime_message->selection_start,
             ime_message->selection_end);
         break;
@@ -1337,6 +1338,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
         view()->OnImeSetComposition(
             base::string16(),
             std::vector<blink::WebCompositionUnderline>(),
+            gfx::Range::InvalidRange(),
             0, 0);
         break;
     }
@@ -1944,7 +1946,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
-  view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
+  view()->OnImeSetComposition(ascii_composition, empty_underline,
+                              gfx::Range::InvalidRange(), 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(ascii_composition.size(), bounds.size());
 
@@ -1956,7 +1959,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   // Non surrogate pair unicode character.
   const base::string16 unicode_composition = base::UTF8ToUTF16(
       "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
-  view()->OnImeSetComposition(unicode_composition, empty_underline, 0, 0);
+  view()->OnImeSetComposition(unicode_composition, empty_underline,
+                              gfx::Range::InvalidRange(), 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(unicode_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
@@ -1969,6 +1973,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       base::UTF8ToUTF16("\xF0\xA0\xAE\x9F");
   view()->OnImeSetComposition(surrogate_pair_char,
                               empty_underline,
+                              gfx::Range::InvalidRange(),
                               0,
                               0);
   view()->GetCompositionCharacterBounds(&bounds);
@@ -1987,6 +1992,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
     false, true, false, false, true, false, false, true };
   view()->OnImeSetComposition(surrogate_pair_mixed_composition,
                               empty_underline,
+                              gfx::Range::InvalidRange(),
                               0,
                               0);
   view()->GetCompositionCharacterBounds(&bounds);
@@ -2667,7 +2673,8 @@ TEST_F(RenderViewImplScaleFactorTest, GetCompositionCharacterBoundsTest) {
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
-  view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
+  view()->OnImeSetComposition(ascii_composition, empty_underline,
+                              gfx::Range::InvalidRange(), 0, 0);
   view()->GetCompositionCharacterBounds(&bounds_at_1x);
   ASSERT_EQ(ascii_composition.size(), bounds_at_1x.size());
 

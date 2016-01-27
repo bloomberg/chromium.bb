@@ -136,10 +136,11 @@ IPC_MESSAGE_ROUTED2(InputMsg_ExtendSelectionAndDelete,
                     int /* after */)
 
 // This message sends a string being composed with an input method.
-IPC_MESSAGE_ROUTED4(
+IPC_MESSAGE_ROUTED5(
     InputMsg_ImeSetComposition,
     base::string16, /* text */
     std::vector<blink::WebCompositionUnderline>, /* underlines */
+    gfx::Range /* replacement_range */,
     int, /* selectiont_start */
     int /* selection_end */)
 

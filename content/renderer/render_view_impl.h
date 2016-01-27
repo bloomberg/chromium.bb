@@ -479,6 +479,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnImeSetComposition(
       const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
+      const gfx::Range& replacement_range,
       int selection_start,
       int selection_end) override;
   void OnImeConfirmComposition(const base::string16& text,

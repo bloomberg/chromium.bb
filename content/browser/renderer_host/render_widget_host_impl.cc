@@ -1405,10 +1405,12 @@ void RenderWidgetHostImpl::NotifyTextDirection() {
 void RenderWidgetHostImpl::ImeSetComposition(
     const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
   Send(new InputMsg_ImeSetComposition(
-            GetRoutingID(), text, underlines, selection_start, selection_end));
+            GetRoutingID(), text, underlines, replacement_range,
+            selection_start, selection_end));
 }
 
 void RenderWidgetHostImpl::ImeConfirmComposition(
@@ -1421,7 +1423,8 @@ void RenderWidgetHostImpl::ImeConfirmComposition(
 
 void RenderWidgetHostImpl::ImeCancelComposition() {
   Send(new InputMsg_ImeSetComposition(GetRoutingID(), base::string16(),
-            std::vector<blink::WebCompositionUnderline>(), 0, 0));
+            std::vector<blink::WebCompositionUnderline>(),
+            gfx::Range::InvalidRange(), 0, 0));
 }
 
 void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {

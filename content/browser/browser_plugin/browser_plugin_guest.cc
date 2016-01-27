@@ -897,6 +897,7 @@ void BrowserPluginGuest::OnImeSetComposition(
     int selection_end) {
   Send(new InputMsg_ImeSetComposition(routing_id(),
                                       base::UTF8ToUTF16(text), underlines,
+                                      gfx::Range::InvalidRange(),
                                       selection_start, selection_end));
 }
 

@@ -1636,6 +1636,7 @@ WebRect RenderWidget::windowResizerRect() {
 void RenderWidget::OnImeSetComposition(
     const base::string16& text,
     const std::vector<WebCompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
     int selection_start, int selection_end) {
   if (!ShouldHandleImeEvent())
     return;

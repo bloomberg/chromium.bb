@@ -2922,6 +2922,7 @@ void RenderViewImpl::SetFocus(bool enable) {
 void RenderViewImpl::OnImeSetComposition(
     const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
 #if defined(ENABLE_PLUGINS)
@@ -2957,8 +2958,19 @@ void RenderViewImpl::OnImeSetComposition(
   }
 #endif  // OS_WIN
 #endif  // ENABLE_PLUGINS
+  if (replacement_range.IsValid() && webview()) {
+    // Select the text in |replacement_range|, it will then be replaced by
+    // text added by the call to RenderWidget::OnImeSetComposition().
+    if (WebLocalFrame* frame = webview()->focusedFrame()->toWebLocalFrame()) {
+      WebRange webrange = WebRange::fromDocumentRange(
+          frame, replacement_range.start(), replacement_range.length());
+      if (!webrange.isNull())
+        frame->selectRange(webrange);
+    }
+  }
   RenderWidget::OnImeSetComposition(text,
                                     underlines,
+                                    replacement_range,
                                     selection_start,
                                     selection_end);
 }

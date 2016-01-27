@@ -1208,7 +1208,8 @@ void RenderFrameImpl::SimulateImeSetComposition(
     int selection_start,
     int selection_end) {
   render_view_->OnImeSetComposition(
-      text, underlines, selection_start, selection_end);
+      text, underlines, gfx::Range::InvalidRange(),
+      selection_start, selection_end);
 }
 
 void RenderFrameImpl::SimulateImeConfirmComposition(

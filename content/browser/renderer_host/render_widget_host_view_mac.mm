@@ -2151,6 +2151,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   markedText_.clear();
   markedTextSelectedRange_ = NSMakeRange(NSNotFound, 0);
   underlines_.clear();
+  setMarkedTextReplacementRange_ = gfx::Range::InvalidRange();
   unmarkTextCalled_ = NO;
   hasEditCommands_ = NO;
   editCommands_.clear();
@@ -2236,6 +2237,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // When marked text is available, |markedTextSelectedRange_| will be the
     // range being selected inside the marked text.
     widgetHost->ImeSetComposition(markedText_, underlines_,
+                                  setMarkedTextReplacementRange_,
                                   markedTextSelectedRange_.location,
                                   NSMaxRange(markedTextSelectedRange_));
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
@@ -2246,6 +2248,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       widgetHost->ImeCancelComposition();
     }
   }
+
+  // Clear information from |interpretKeyEvents:|
+  setMarkedTextReplacementRange_ = gfx::Range::InvalidRange();
 
   // If the key event was handled by the input method but it also generated some
   // edit commands, then we need to send the real key event and corresponding
@@ -3098,9 +3103,11 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // is empty to update the input method state. (Our input method backend can
   // automatically cancels an ongoing composition when we send an empty text.
   // So, it is OK to send an empty text to the renderer.)
-  if (!handlingKeyDown_) {
+  if (handlingKeyDown_) {
+    setMarkedTextReplacementRange_ = gfx::Range(replacementRange);
+  } else {
     renderWidgetHostView_->render_widget_host_->ImeSetComposition(
-        markedText_, underlines_,
+        markedText_, underlines_, gfx::Range(replacementRange),
         newSelRange.location, NSMaxRange(newSelRange));
   }
 }

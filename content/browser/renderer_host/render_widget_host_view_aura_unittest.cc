@@ -1084,9 +1084,10 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
       EXPECT_EQ(underlines[i].background_color,
                 base::get<1>(params)[i].backgroundColor);
     }
+    EXPECT_EQ(gfx::Range::InvalidRange(), base::get<2>(params));
     // highlighted range
-    EXPECT_EQ(4, base::get<2>(params)) << "Should be the same to the caret pos";
     EXPECT_EQ(4, base::get<3>(params)) << "Should be the same to the caret pos";
+    EXPECT_EQ(4, base::get<4>(params)) << "Should be the same to the caret pos";
   }
 
   view_->ImeCancelComposition();
