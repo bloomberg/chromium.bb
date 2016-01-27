@@ -705,6 +705,65 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyNonDisplayedLoginPair) {
             password_form->password_value);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       VisiblePasswordAndInvisibleUsername) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddNonDisplayedTextField("username", "William");
+  builder.AddPasswordField("password", "secret", NULL);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> password_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(html, &password_form, nullptr));
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       InvisiblePassword_LatestUsernameIsVisible) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddNonDisplayedTextField("search", "query");
+  builder.AddTextField("username", "William", NULL);
+  builder.AddNonDisplayedPasswordField("password", "secret");
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> password_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(html, &password_form, nullptr));
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       InvisiblePassword_LatestUsernameIsInvisible) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddTextField("search", "query", NULL);
+  builder.AddNonDisplayedTextField("username", "William");
+  builder.AddNonDisplayedPasswordField("password", "secret");
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> password_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(html, &password_form, nullptr));
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+}
+
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
   PasswordFormBuilder builder("invalid_target");
   builder.AddTextField("username", "JohnSmith", NULL);

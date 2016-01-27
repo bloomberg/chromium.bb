@@ -313,17 +313,38 @@ base::string16 FieldName(const WebInputElement& input_field,
   return field_name.empty() ? base::ASCIIToUTF16(dummy_name) : field_name;
 }
 
-bool FormContainsVisiblePasswordFields(const SyntheticForm& form) {
+// Helper function that checks the presence of visible password and username
+// fields in |form.control_elements|.
+// Iff a visible password found, then |*found_visible_password| is set to true.
+// Iff a visible password found AND there is a visible username before it, then
+// |*found_visible_username_before_visible_password| is set to true.
+void FoundVisiblePasswordAndVisibleUsernameBeforePassword(
+    const SyntheticForm& form,
+    bool* found_visible_password,
+    bool* found_visible_username_before_visible_password) {
+  DCHECK(found_visible_password);
+  DCHECK(found_visible_username_before_visible_password);
+  *found_visible_password = false;
+  *found_visible_username_before_visible_password = false;
+
+  bool found_visible_username = false;
   for (auto& control_element : form.control_elements) {
     const WebInputElement* input_element = toWebInputElement(&control_element);
-    if (!input_element || !input_element->isEnabled())
+    if (!input_element || !input_element->isEnabled() ||
+        !input_element->isTextField())
       continue;
 
-    if (input_element->isPasswordField() &&
-        form_util::IsWebNodeVisible(*input_element))
-      return true;
+    if (!form_util::IsWebNodeVisible(*input_element))
+      continue;
+
+    if (input_element->isPasswordField()) {
+      *found_visible_password = true;
+      *found_visible_username_before_visible_password = found_visible_username;
+      break;
+    } else {
+      found_visible_username = true;
+    }
   }
-  return false;
 }
 
 // Get information about a login form encapsulated in a PasswordForm struct.
@@ -357,22 +378,36 @@ bool GetPasswordForm(const SyntheticForm& form,
                           &predicted_elements);
   }
 
+  // Check the presence of visible password and username fields.
+  // If there is a visible password field, then ignore invisible password
+  // fields. If there is a visible username before visible password, then ignore
+  // invisible username fields.
+  // If there is no visible password field, don't ignore any elements (i.e. use
+  // the latest username field just before selected password field).
+  bool ignore_invisible_passwords = false;
+  bool ignore_invisible_usernames = false;
+  FoundVisiblePasswordAndVisibleUsernameBeforePassword(
+      form, &ignore_invisible_passwords, &ignore_invisible_usernames);
   std::string layout_sequence;
   layout_sequence.reserve(form.control_elements.size());
-  bool ignore_invisible_fields = FormContainsVisiblePasswordFields(form);
   for (size_t i = 0; i < form.control_elements.size(); ++i) {
     WebFormControlElement control_element = form.control_elements[i];
 
     WebInputElement* input_element = toWebInputElement(&control_element);
     if (!input_element || !input_element->isEnabled())
       continue;
-    if (ignore_invisible_fields && !form_util::IsWebNodeVisible(*input_element))
-      continue;
+
+    bool element_is_invisible = !form_util::IsWebNodeVisible(*input_element);
     if (input_element->isTextField()) {
-      if (input_element->isPasswordField())
+      if (input_element->isPasswordField()) {
+        if (element_is_invisible && ignore_invisible_passwords)
+          continue;
         layout_sequence.push_back('P');
-      else
+      } else {
+        if (element_is_invisible && ignore_invisible_usernames)
+          continue;
         layout_sequence.push_back('N');
+      }
     }
 
     bool password_marked_by_autocomplete_attribute =
