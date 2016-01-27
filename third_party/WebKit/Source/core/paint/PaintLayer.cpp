@@ -436,17 +436,15 @@ TransformationMatrix PaintLayer::renderableTransform(GlobalPaintFlags globalPain
     return *m_transform;
 }
 
-// Convert a bounding box from flow thread coordinates, relative to |layer|, to visual coordinates, relative to |ancestorLayer|.
-// See http://www.chromium.org/developers/design-documents/multi-column-layout for more info on these coordinate types.
-static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const PaintLayer* layer, const PaintLayer* ancestorLayer, LayoutRect& rect)
+void PaintLayer::convertFromFlowThreadToVisualBoundingBoxInAncestor(const PaintLayer* ancestorLayer, LayoutRect& rect) const
 {
-    PaintLayer* paginationLayer = layer->enclosingPaginationLayer();
+    PaintLayer* paginationLayer = enclosingPaginationLayer();
     ASSERT(paginationLayer);
     LayoutFlowThread* flowThread = toLayoutFlowThread(paginationLayer->layoutObject());
 
     // First make the flow thread rectangle relative to the flow thread, not to |layer|.
     LayoutPoint offsetWithinPaginationLayer;
-    layer->convertToLayerCoords(paginationLayer, offsetWithinPaginationLayer);
+    convertToLayerCoords(paginationLayer, offsetWithinPaginationLayer);
     rect.moveBy(offsetWithinPaginationLayer);
 
     // Then make the rectangle visual, relative to the fragmentation context. Split our box up into
@@ -2155,7 +2153,7 @@ LayoutRect PaintLayer::fragmentsBoundingBox(const PaintLayer* ancestorLayer) con
         return physicalBoundingBox(ancestorLayer);
 
     LayoutRect result = flippedLogicalBoundingBox(logicalBoundingBox(), layoutObject());
-    convertFromFlowThreadToVisualBoundingBoxInAncestor(this, ancestorLayer, result);
+    convertFromFlowThreadToVisualBoundingBoxInAncestor(ancestorLayer, result);
     return result;
 }
 
@@ -2255,7 +2253,7 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
         result = transform()->mapRect(result);
 
     if (enclosingPaginationLayer()) {
-        convertFromFlowThreadToVisualBoundingBoxInAncestor(this, ancestorLayer, result);
+        convertFromFlowThreadToVisualBoundingBoxInAncestor(ancestorLayer, result);
         return result;
     }
     LayoutPoint delta;

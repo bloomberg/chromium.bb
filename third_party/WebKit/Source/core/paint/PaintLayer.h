@@ -300,6 +300,11 @@ public:
     // http://www.chromium.org/developers/design-documents/multi-column-layout for more info.
     LayoutPoint visualOffsetFromAncestor(const PaintLayer* ancestorLayer) const;
 
+    // Convert a bounding box from flow thread coordinates, relative to |this|, to visual coordinates, relative to |ancestorLayer|.
+    // See http://www.chromium.org/developers/design-documents/multi-column-layout for more info on these coordinate types.
+    // This method requires this layer to be paginated; i.e. it must have an enclosingPaginationLayer().
+    void convertFromFlowThreadToVisualBoundingBoxInAncestor(const PaintLayer* ancestorLayer, LayoutRect&) const;
+
     // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
     bool hitTest(HitTestResult&);
 
