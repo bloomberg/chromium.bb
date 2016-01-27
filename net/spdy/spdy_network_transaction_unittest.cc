@@ -2539,7 +2539,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushBeforeSynReply) {
@@ -2582,7 +2582,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushBeforeSynReply) {
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
@@ -2625,7 +2625,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushServerAborted) {
@@ -2725,7 +2725,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushDuplicate) {
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
@@ -2779,7 +2779,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
@@ -2832,7 +2832,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {

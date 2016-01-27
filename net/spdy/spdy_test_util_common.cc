@@ -981,7 +981,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_associated_to_stream_id(associated_stream_id);
     syn_stream.SetHeader("hello", "bye");
-    syn_stream.SetHeader(GetStatusKey(), "200 OK");
+    syn_stream.SetHeader(GetStatusKey(), "200");
     syn_stream.SetHeader(GetVersionKey(), "HTTP/1.1");
     AddUrlToHeaderBlock(url, syn_stream.mutable_header_block());
     AppendToHeaderBlock(extra_headers, extra_header_count,
@@ -994,7 +994,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
         CreateFramer(false)->SerializeFrame(push_promise));
 
     SpdyHeadersIR headers(stream_id);
-    headers.SetHeader(GetStatusKey(), "200 OK");
+    headers.SetHeader(GetStatusKey(), "200");
     headers.SetHeader("hello", "bye");
     AppendToHeaderBlock(extra_headers, extra_header_count,
                         headers.mutable_header_block());
@@ -1080,7 +1080,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPushHeaders(
     const char* const extra_headers[],
     int extra_header_count) {
   SpdyHeadersIR headers(stream_id);
-  headers.SetHeader(GetStatusKey(), "200 OK");
+  headers.SetHeader(GetStatusKey(), "200");
   MaybeAddVersionHeader(&headers);
   AppendToHeaderBlock(extra_headers, extra_header_count,
                       headers.mutable_header_block());
