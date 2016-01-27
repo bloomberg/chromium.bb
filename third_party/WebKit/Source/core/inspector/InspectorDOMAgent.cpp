@@ -153,14 +153,13 @@ bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
     return true;
 }
 
-ScriptValue nodeAsScriptValue(ScriptState* scriptState, Node* node)
+v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context> context, Node* node)
 {
-    ScriptState::Scope scope(scriptState);
-    v8::Isolate* isolate = scriptState->isolate();
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAsScriptValue", "InjectedScriptHost", scriptState->context()->Global(), isolate);
+    v8::Isolate* isolate = context->GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeV8Value", "InjectedScriptHost", context->Global(), isolate);
     if (!node || !BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), node, exceptionState))
-        return ScriptValue(scriptState, v8::Null(isolate));
-    return ScriptValue(scriptState, toV8(node, scriptState->context()->Global(), isolate));
+        return v8::Null(isolate);
+    return toV8(node, context->Global(), isolate);
 }
 
 } // namespace
@@ -2067,9 +2066,9 @@ class InspectableNode final : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableNode(Node* node) : m_nodeId(DOMNodeIds::idForNode(node)) { }
 
-    ScriptValue get(ScriptState* state) override
+    v8::Local<v8::Value> get(v8::Local<v8::Context> context) override
     {
-        return nodeAsScriptValue(state, DOMNodeIds::nodeForId(m_nodeId));
+        return nodeV8Value(context, DOMNodeIds::nodeForId(m_nodeId));
     }
 private:
     int m_nodeId;
@@ -2120,12 +2119,12 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState)
         return nullptr;
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
+
+    ScriptState::Scope scope(scriptState);
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState->context());
     if (!injectedScript)
         return nullptr;
-
-    ScriptValue scriptValue = nodeAsScriptValue(scriptState, node);
-    return injectedScript->wrapObject(scriptValue, objectGroup);
+    return injectedScript->wrapObject(nodeV8Value(scriptState->context(), node), objectGroup);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

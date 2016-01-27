@@ -88,10 +88,9 @@ void InjectedScriptManager::discardInjectedScripts()
     m_idToInjectedScript.clear();
 }
 
-int InjectedScriptManager::discardInjectedScriptFor(ScriptState* scriptState)
+int InjectedScriptManager::discardInjectedScriptFor(v8::Local<v8::Context> context)
 {
-    ScriptState::Scope scope(scriptState);
-    int contextId = V8Debugger::contextId(scriptState->context());
+    int contextId = V8Debugger::contextId(context);
     m_idToInjectedScript.remove(contextId);
     return contextId;
 }
@@ -122,20 +121,20 @@ String InjectedScriptManager::injectedScriptSource()
     return String(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
 }
 
-InjectedScript* InjectedScriptManager::injectedScriptFor(ScriptState* scriptState)
+InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> context)
 {
-    ScriptState::Scope scope(scriptState);
-    int contextId = V8Debugger::contextId(scriptState->context());
+    v8::Context::Scope scope(context);
+    int contextId = V8Debugger::contextId(context);
 
     IdToInjectedScriptMap::iterator it = m_idToInjectedScript.find(contextId);
     if (it != m_idToInjectedScript.end())
         return it->value.get();
 
-    if (!m_client->canAccessContext(scriptState->context()))
+    if (!m_client->callingContextCanAccessContext(context))
         return nullptr;
 
-    RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(scriptState->isolate()));
-    ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), scriptState, contextId, injectedScriptNative.get());
+    RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(context->GetIsolate()));
+    v8::Local<v8::Object> injectedScriptValue = createInjectedScript(injectedScriptSource(), context, contextId, injectedScriptNative.get());
     OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(injectedScriptValue, m_client, injectedScriptNative.release(), contextId));
     InjectedScript* resultPtr = result.get();
     if (m_customObjectFormatterEnabled)

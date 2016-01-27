@@ -390,15 +390,12 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
+    ScriptState::Scope scope(scriptState);
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState->context());
     if (!injectedScript)
         return;
-
-    ScriptState::Scope scope(scriptState);
-    v8::Isolate* isolate = scriptState->isolate();
-    ScriptValue scriptValue = ScriptValue(scriptState, toV8(animation, scriptState->context()->Global(), isolate));
     injectedScript->releaseObjectGroup("animation");
-    result = injectedScript->wrapObject(scriptValue, "animation");
+    result = injectedScript->wrapObject(toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
 }
 
 static CSSPropertyID animationProperties[] = {

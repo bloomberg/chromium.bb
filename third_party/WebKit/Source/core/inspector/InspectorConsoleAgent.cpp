@@ -196,12 +196,13 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         jsonObj->setNetworkRequestId(IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
     RefPtrWillBeRawPtr<ScriptArguments> arguments = consoleMessage->scriptArguments();
     if (arguments && arguments->argumentCount()) {
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(arguments->scriptState());
+        ScriptState::Scope scope(arguments->scriptState());
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(arguments->scriptState()->context());
         if (injectedScript) {
             RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject> > jsonArgs = TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>::create();
             if (consoleMessage->type() == TableMessageType && generatePreview && arguments->argumentCount()) {
-                ScriptValue table = arguments->argumentAt(0);
-                ScriptValue columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1) : ScriptValue();
+                v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();
+                v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
                 RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapTable(table, columns);
                 if (!inspectorValue) {
                     ASSERT_NOT_REACHED();
@@ -210,7 +211,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
                 jsonArgs->addItem(inspectorValue);
             } else {
                 for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
-                    RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapObject(arguments->argumentAt(i), "console", generatePreview);
+                    RefPtr<TypeBuilder::Runtime::RemoteObject> inspectorValue = injectedScript->wrapObject(arguments->argumentAt(i).v8Value(), "console", generatePreview);
                     if (!inspectorValue) {
                         ASSERT_NOT_REACHED();
                         return;

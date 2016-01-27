@@ -79,7 +79,7 @@ public:
     class InspectableObject {
         USING_FAST_MALLOC(InspectableObject);
     public:
-        virtual ScriptValue get(ScriptState*);
+        virtual v8::Local<v8::Value> get(v8::Local<v8::Context>);
         virtual ~InspectableObject() { }
     };
     void addInspectedObject(PassOwnPtr<InspectableObject>);

@@ -47,9 +47,10 @@ void V8InjectedScriptHost::inspectedObjectCallback(const v8::FunctionCallbackInf
         return;
     }
 
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
     InjectedScriptHost::InspectableObject* object = host->inspectedObject(info[0].As<v8::Int32>()->Value());
-    v8SetReturnValue(info, object->get(ScriptState::current(info.GetIsolate())).v8Value());
+    v8SetReturnValue(info, object->get(context));
 }
 
 static v8::Local<v8::String> functionDisplayName(v8::Local<v8::Function> function)
@@ -239,7 +240,7 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
     V8DebuggerClient* client = static_cast<V8DebuggerImpl&>(host->debugger()).client();
     EventListenerInfoMap listenerInfo;
-    client->eventListeners(info.GetIsolate(), info[0], listenerInfo);
+    client->eventListeners(info[0], listenerInfo);
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
     Vector<String> types;

@@ -94,7 +94,8 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& exp
     if (optExecutionContextId) {
         executionContextId = *optExecutionContextId;
     } else {
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(defaultScriptState());
+        v8::HandleScope handles(defaultScriptState()->isolate());
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(defaultScriptState()->context());
         ASSERT(injectedScript);
         executionContextId = injectedScript->contextId();
     }
@@ -165,12 +166,14 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
 
 void InspectorRuntimeAgent::reportExecutionContextCreated(ScriptState* scriptState, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
-    m_v8RuntimeAgent->reportExecutionContextCreated(scriptState, type, origin, humanReadableName, frameId);
+    v8::HandleScope handles(scriptState->isolate());
+    m_v8RuntimeAgent->reportExecutionContextCreated(scriptState->context(), type, origin, humanReadableName, frameId);
 }
 
 void InspectorRuntimeAgent::reportExecutionContextDestroyed(ScriptState* scriptState)
 {
-    m_v8RuntimeAgent->reportExecutionContextDestroyed(scriptState);
+    v8::HandleScope handles(scriptState->isolate());
+    m_v8RuntimeAgent->reportExecutionContextDestroyed(scriptState->context());
 }
 
 } // namespace blink

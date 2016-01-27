@@ -11,13 +11,14 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
+#include <v8.h>
+
 namespace blink {
 
 class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
 class JSONObject;
-class ScriptState;
 class V8Debugger;
 
 typedef String ErrorString;
@@ -65,8 +66,8 @@ public:
     virtual void setCustomObjectFormatterEnabled(ErrorString*, bool) = 0;
 
     // Embedder callbacks.
-    virtual void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId) = 0;
-    virtual void reportExecutionContextDestroyed(ScriptState*) = 0;
+    virtual void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) = 0;
+    virtual void reportExecutionContextDestroyed(v8::Local<v8::Context>) = 0;
 };
 
 } // namespace blink

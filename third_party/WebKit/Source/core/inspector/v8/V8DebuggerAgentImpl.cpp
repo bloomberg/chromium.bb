@@ -1035,22 +1035,19 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
     }
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Value> value;
-    ScriptValue scriptValue;
-    if (v8Call(V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext()), value, tryCatch)) {
-        scriptValue = ScriptValue(scriptState, value);
-    } else {
-        scriptValue = ScriptValue(scriptState, tryCatch.Exception());
+    if (!v8Call(V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext()), value, tryCatch)) {
+        value = tryCatch.Exception();
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
             exceptionDetails = createExceptionDetails(m_isolate, message);
     }
 
-    if (scriptValue.isEmpty()) {
+    if (value.IsEmpty()) {
         *errorString = "Script execution failed";
         return;
     }
 
-    result = injectedScript->wrapObject(scriptValue, objectGroup ? *objectGroup : "");
+    result = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
 }
 
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)
@@ -1153,8 +1150,9 @@ void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId
         *errorString = "Promise with specified ID not found.";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value.scriptState());
-    promise = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
+    ScriptState::Scope scope(value.scriptState());
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value.context());
+    promise = injectedScript->wrapObject(value.v8Value(), objectGroup ? *objectGroup : "");
 }
 
 void V8DebuggerAgentImpl::didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum eventType, PassRefPtr<TypeBuilder::Debugger::PromiseDetails> promise)
@@ -1434,13 +1432,13 @@ PassRefPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
 {
     if (!m_pausedScriptState || m_currentCallStack.IsEmpty())
         return Array<CallFrame>::create();
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState.get());
+    v8::HandleScope handles(m_isolate);
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState->context());
     if (!injectedScript) {
         ASSERT_NOT_REACHED();
         return Array<CallFrame>::create();
     }
 
-    v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
     return injectedScript->wrapCallFrames(currentCallStack, 0);
 }
@@ -1461,7 +1459,7 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
         v8::HandleScope scope(m_isolate);
         v8::Local<v8::Object> callFrames = (*it)->callFrames(m_isolate);
         ScriptState* scriptState =  ScriptState::from(callFrames->CreationContext());
-        InjectedScript* injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState) : nullptr;
+        InjectedScript* injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState->context()) : nullptr;
         if (!injectedScript) {
             result.clear();
             continue;
@@ -1560,7 +1558,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     }
 }
 
-V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> v8exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
+V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
 {
     ScriptState* scriptState = ScriptState::from(context);
     if (!scriptState->contextIsValid())
@@ -1569,14 +1567,12 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     if (isMuteBreakpointInstalled())
         return RequestContinue;
 
-    ScriptValue exception(scriptState, v8exception);
-
     V8DebuggerAgentImpl::SkipPauseRequest result;
     if (m_skipAllPauses)
         result = RequestContinue;
     else if (!hitBreakpoints.isEmpty())
         result = RequestNoSkip; // Don't skip explicit breakpoints even if set in frameworks.
-    else if (!exception.isEmpty())
+    else if (!exception.IsEmpty())
         result = shouldSkipExceptionPause();
     else if (m_scheduledDebuggerStep != NoStep || m_javaScriptPauseScheduled || m_pausingOnNativeEvent)
         result = shouldSkipStepPause();
@@ -1595,9 +1591,10 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     ASSERT(!m_pausedScriptState);
     m_pausedScriptState = scriptState;
     m_currentCallStack.Reset(m_isolate, callFrames);
+    v8::HandleScope handles(m_isolate);
 
-    if (!exception.isEmpty()) {
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
+    if (!exception.IsEmpty()) {
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState->context());
         if (injectedScript) {
             m_breakReason = isPromiseRejection ? InspectorFrontend::Debugger::Reason::PromiseRejection : InspectorFrontend::Debugger::Reason::Exception;
             m_breakAuxData = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup)->openAccessors();

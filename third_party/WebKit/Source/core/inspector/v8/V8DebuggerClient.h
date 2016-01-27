@@ -19,8 +19,8 @@ public:
     virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;
     virtual void quitMessageLoopOnPause() = 0;
-    virtual void eventListeners(v8::Isolate*, v8::Local<v8::Value>, EventListenerInfoMap&) = 0;
-    virtual bool canAccessContext(v8::Local<v8::Context>) = 0;
+    virtual void eventListeners(v8::Local<v8::Value>, EventListenerInfoMap&) = 0;
+    virtual bool callingContextCanAccessContext(v8::Local<v8::Context>) = 0;
     virtual v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) = 0;
 };
 

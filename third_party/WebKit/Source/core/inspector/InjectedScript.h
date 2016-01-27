@@ -102,8 +102,8 @@ public:
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>, int asyncOrdinal);
 
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(const ScriptValue&, const String& groupName, bool generatePreview = false) const;
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(const ScriptValue& table, const ScriptValue& columns) const;
+    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) const;
+    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
     v8::Local<v8::Value> findObject(const RemoteObjectId&) const;
 
     String objectIdToObjectGroupName(const String& objectId) const;
@@ -113,8 +113,8 @@ public:
     int contextId() { return m_contextId; }
 
 private:
-    friend InjectedScript* InjectedScriptManager::injectedScriptFor(ScriptState*);
-    InjectedScript(ScriptValue, V8DebuggerClient*, PassRefPtr<InjectedScriptNative>, int contextId);
+    friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
+    InjectedScript(v8::Local<v8::Object>, V8DebuggerClient*, PassRefPtr<InjectedScriptNative>, int contextId);
 
     bool canAccessInspectedWindow() const;
     v8::Local<v8::Context> v8Context() const;

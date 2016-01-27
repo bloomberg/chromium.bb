@@ -124,7 +124,7 @@ void MainThreadDebugger::quitMessageLoopOnPause()
     m_clientMessageLoop->quitNow();
 }
 
-bool MainThreadDebugger::canAccessContext(v8::Local<v8::Context> context)
+bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> context)
 {
     if (context.IsEmpty())
         return false;

@@ -104,13 +104,12 @@ private:
     InspectorFrontend::HeapProfiler* m_frontend;
 };
 
-ScriptValue objectByHeapObjectId(v8::Isolate* isolate, unsigned id)
+v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, unsigned id)
 {
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    v8::HandleScope handleScope(isolate);
     v8::Local<v8::Value> value = profiler->FindObjectById(id);
     if (value.IsEmpty() || !value->IsObject())
-        return ScriptValue();
+        return v8::Local<v8::Object>();
 
     v8::Local<v8::Object> object = value.As<v8::Object>();
 
@@ -119,19 +118,18 @@ ScriptValue objectByHeapObjectId(v8::Isolate* isolate, unsigned id)
         // Skip wrapper boilerplates which are like regular wrappers but don't have
         // native object.
         if (!wrapper.IsEmpty() && wrapper->IsUndefined())
-            return ScriptValue();
+            return v8::Local<v8::Object>();
     }
 
-    ScriptState* scriptState = ScriptState::from(object->CreationContext());
-    return ScriptValue(scriptState, object);
+    return object;
 }
 
 class InspectableHeapObject final : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableHeapObject(unsigned heapObjectId) : m_heapObjectId(heapObjectId) { }
-    ScriptValue get(ScriptState* state) override
+    v8::Local<v8::Value> get(v8::Local<v8::Context> context) override
     {
-        return objectByHeapObjectId(state->isolate(), m_heapObjectId);
+        return objectByHeapObjectId(context->GetIsolate(), m_heapObjectId);
     }
 private:
     unsigned m_heapObjectId;
@@ -328,12 +326,14 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
         *error = "Invalid heap snapshot object id";
         return;
     }
-    ScriptValue heapObject = objectByHeapObjectId(m_isolate, id);
-    if (heapObject.isEmpty()) {
+
+    v8::HandleScope handles(m_isolate);
+    v8::Local<v8::Object> heapObject = objectByHeapObjectId(m_isolate, id);
+    if (heapObject.IsEmpty()) {
         *error = "Object is not available";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(heapObject.scriptState());
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(heapObject->CreationContext());
     if (!injectedScript) {
         *error = "Object is not available. Inspected context is gone";
         return;

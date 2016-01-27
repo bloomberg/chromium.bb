@@ -44,7 +44,6 @@ namespace blink {
 class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
-class ScriptState;
 class V8DebuggerImpl;
 
 typedef String ErrorString;
@@ -93,8 +92,8 @@ public:
 
 private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
-    void reportExecutionContextDestroyed(ScriptState*) override;
+    void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
+    void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
 
     RefPtr<JSONObject> m_state;
     InspectorFrontend::Runtime* m_frontend;

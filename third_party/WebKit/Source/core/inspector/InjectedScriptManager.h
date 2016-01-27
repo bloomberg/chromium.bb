@@ -30,7 +30,6 @@
 #ifndef InjectedScriptManager_h
 #define InjectedScriptManager_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -43,7 +42,6 @@ class InjectedScript;
 class InjectedScriptHost;
 class InjectedScriptNative;
 class RemoteObjectIdBase;
-class ScriptValue;
 class V8DebuggerClient;
 
 class CORE_EXPORT InjectedScriptManager {
@@ -57,22 +55,19 @@ public:
 
     InjectedScriptHost* injectedScriptHost();
 
-    InjectedScript* injectedScriptFor(ScriptState*);
+    InjectedScript* injectedScriptFor(v8::Local<v8::Context>);
     InjectedScript* findInjectedScript(int) const;
     InjectedScript* findInjectedScript(RemoteObjectIdBase*) const;
     void discardInjectedScripts();
-    int discardInjectedScriptFor(ScriptState*);
+    int discardInjectedScriptFor(v8::Local<v8::Context>);
     void releaseObjectGroup(const String& objectGroup);
-
-    typedef bool (*InspectedStateAccessCheck)(ScriptState*);
-
     void setCustomObjectFormatterEnabled(bool);
 
 private:
     explicit InjectedScriptManager(V8DebuggerClient*);
 
     String injectedScriptSource();
-    ScriptValue createInjectedScript(const String& source, ScriptState*, int id, InjectedScriptNative*);
+    v8::Local<v8::Object> createInjectedScript(const String& source, v8::Local<v8::Context>, int id, InjectedScriptNative*);
 
     typedef HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;

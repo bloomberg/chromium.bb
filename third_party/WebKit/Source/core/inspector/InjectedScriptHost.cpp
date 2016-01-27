@@ -81,9 +81,9 @@ void InjectedScriptHost::clearConsoleMessages()
         (*m_clearConsoleCallback)();
 }
 
-ScriptValue InjectedScriptHost::InspectableObject::get(ScriptState*)
+v8::Local<v8::Value> InjectedScriptHost::InspectableObject::get(v8::Local<v8::Context>)
 {
-    return ScriptValue();
+    return v8::Local<v8::Value>();
 };
 
 void InjectedScriptHost::addInspectedObject(PassOwnPtr<InjectedScriptHost::InspectableObject> object)

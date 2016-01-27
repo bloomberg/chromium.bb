@@ -106,9 +106,9 @@ static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(Pa
     return exceptionDetails.release();
 }
 
-InjectedScript::InjectedScript(ScriptValue injectedScriptObject, V8DebuggerClient* client, PassRefPtr<InjectedScriptNative> injectedScriptNative, int contextId)
-    : m_isolate(injectedScriptObject.isolate())
-    , m_injectedScriptObject(injectedScriptObject)
+InjectedScript::InjectedScript(v8::Local<v8::Object> injectedScriptObject, V8DebuggerClient* client, PassRefPtr<InjectedScriptNative> injectedScriptNative, int contextId)
+    : m_isolate(injectedScriptObject->CreationContext()->GetIsolate())
+    , m_injectedScriptObject(ScriptValue(ScriptState::from(injectedScriptObject->CreationContext()), injectedScriptObject))
     , m_client(client)
     , m_native(injectedScriptNative)
     , m_contextId(contextId)
@@ -347,12 +347,12 @@ PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     return Array<CallFrame>::create();
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const ScriptValue& value, const String& groupName, bool generatePreview) const
+PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String& groupName, bool generatePreview) const
 {
     ScriptState::Scope scope(m_injectedScriptObject.scriptState());
     v8::Local<v8::Context> context = v8Context();
     ScriptFunctionCall function(m_client, context, v8Value(), "wrapObject");
-    function.appendArgument(value.v8Value());
+    function.appendArgument(value);
     function.appendArgument(groupName);
     function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(generatePreview);
@@ -364,17 +364,17 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const 
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const ScriptValue& table, const ScriptValue& columns) const
+PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
 {
     ScriptState::Scope scope(m_injectedScriptObject.scriptState());
     v8::Local<v8::Context> context = v8Context();
     ScriptFunctionCall function(m_client, context, v8Value(), "wrapTable");
     function.appendArgument(canAccessInspectedWindow());
-    function.appendArgument(table.v8Value());
-    if (columns.isEmpty())
+    function.appendArgument(table);
+    if (columns.IsEmpty())
         function.appendArgument(false);
     else
-        function.appendArgument(columns.v8Value());
+        function.appendArgument(columns);
     bool hadException = false;
     v8::Local<v8::Value>  r = callFunctionWithEvalEnabled(function, hadException);
     if (hadException)
@@ -426,7 +426,7 @@ void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
 bool InjectedScript::canAccessInspectedWindow() const
 {
     ScriptState* scriptState = m_injectedScriptObject.scriptState();
-    return scriptState && m_client->canAccessContext(scriptState->context());
+    return scriptState && m_client->callingContextCanAccessContext(scriptState->context());
 }
 
 v8::Local<v8::Context> InjectedScript::v8Context() const

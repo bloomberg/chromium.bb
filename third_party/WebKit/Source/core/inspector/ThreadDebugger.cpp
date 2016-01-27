@@ -34,9 +34,9 @@ v8::Local<v8::Object> ThreadDebugger::compileDebuggerScript()
     return value.As<v8::Object>();
 }
 
-void ThreadDebugger::eventListeners(v8::Isolate* isolate, v8::Local<v8::Value> value, EventListenerInfoMap& result)
+void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, EventListenerInfoMap& result)
 {
-    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, value, result);
+    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
 }
 
 v8::MaybeLocal<v8::Value> ThreadDebugger::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])

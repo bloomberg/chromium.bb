@@ -30,7 +30,6 @@
 
 #include "core/inspector/v8/V8RuntimeAgentImpl.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/RemoteObjectId.h"
@@ -207,11 +206,11 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     m_enabled = false;
 }
 
-void V8RuntimeAgentImpl::reportExecutionContextCreated(ScriptState* scriptState, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> context, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
     if (!m_enabled)
         return;
-    InjectedScript* injectedScript = injectedScriptManager()->injectedScriptFor(scriptState);
+    InjectedScript* injectedScript = injectedScriptManager()->injectedScriptFor(context);
     if (!injectedScript)
         return;
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
@@ -225,9 +224,9 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(ScriptState* scriptState,
 }
 
 
-void V8RuntimeAgentImpl::reportExecutionContextDestroyed(ScriptState* scriptState)
+void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> context)
 {
-    int contextId = injectedScriptManager()->discardInjectedScriptFor(scriptState);
+    int contextId = injectedScriptManager()->discardInjectedScriptFor(context);
     if (m_enabled)
         m_frontend->executionContextDestroyed(contextId);
 }

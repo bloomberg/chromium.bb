@@ -40,10 +40,10 @@
 
 namespace blink {
 
-ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id, InjectedScriptNative* injectedScriptNative)
+v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& scriptSource, v8::Local<v8::Context> context, int id, InjectedScriptNative* injectedScriptNative)
 {
-    v8::Isolate* isolate = inspectedScriptState->isolate();
-    ScriptState::Scope scope(inspectedScriptState);
+    v8::Isolate* isolate = context->GetIsolate();
+    v8::Context::Scope scope(context);
 
     v8::Local<v8::FunctionTemplate> wrapperTemplate = m_injectedScriptHost->wrapperTemplate(isolate);
     if (wrapperTemplate.IsEmpty()) {
@@ -51,9 +51,9 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
         m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
     }
 
-    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, inspectedScriptState->context(), m_injectedScriptHost);
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, context, m_injectedScriptHost);
     if (scriptHostWrapper.IsEmpty())
-        return ScriptValue();
+        return v8::Local<v8::Object>();
 
     injectedScriptNative->setOnInjectedScriptHost(scriptHostWrapper);
 
@@ -64,15 +64,17 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
     // to create and configure InjectedScript instance that is going to be used by the inspector.
     v8::Local<v8::Value> value;
     if (!V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, scriptSource), isolate).ToLocal(&value))
-        return ScriptValue();
+        return v8::Local<v8::Object>();
     ASSERT(value->IsFunction());
 
-    v8::Local<v8::Object> windowGlobal = inspectedScriptState->context()->Global();
-    v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedScriptState->isolate(), id) };
+    v8::Local<v8::Object> windowGlobal = context->Global();
+    v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(context->GetIsolate(), id) };
     v8::Local<v8::Value> injectedScriptValue;
-    if (!V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedScriptState->isolate()).ToLocal(&injectedScriptValue))
-        return ScriptValue();
-    return ScriptValue(inspectedScriptState, injectedScriptValue);
+    if (!V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, context->GetIsolate()).ToLocal(&injectedScriptValue))
+        return v8::Local<v8::Object>();
+    if (!injectedScriptValue->IsObject())
+        return v8::Local<v8::Object>();
+    return injectedScriptValue.As<v8::Object>();
 }
 
 } // namespace blink
