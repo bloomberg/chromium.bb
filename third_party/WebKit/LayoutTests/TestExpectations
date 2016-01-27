@@ -1308,8 +1308,6 @@ crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-
 
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
 
-crbug.com/579365 [ Mac ] fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
-
 crbug.com/579151 editing/deleting/delete-to-select-table.html [ NeedsRebaseline ]
 crbug.com/579151 editing/inserting/insert-div-018.html [ NeedsRebaseline ]
 
