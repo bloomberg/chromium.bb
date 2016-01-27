@@ -2370,5 +2370,13 @@ TEST_F(LayerTreeImplTest, NumLayersSmallTree) {
   EXPECT_EQ(4u, host_impl().active_tree()->NumLayers());
 }
 
+TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {
+  host_impl().active_tree()->SetDeviceScaleFactor(1.f);
+  host_impl().active_tree()->UpdateDrawProperties(false);
+  EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
+  host_impl().active_tree()->SetDeviceScaleFactor(2.f);
+  EXPECT_TRUE(host_impl().active_tree()->needs_update_draw_properties());
+}
+
 }  // namespace
 }  // namespace cc

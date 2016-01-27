@@ -599,6 +599,7 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
     return;
   device_scale_factor_ = device_scale_factor;
 
+  set_needs_update_draw_properties();
   if (IsActiveTree())
     layer_tree_host_impl_->SetFullRootLayerDamage();
 }
