@@ -70,6 +70,10 @@ declare_args() {
     # The patch is preapplied to the internal toolchain and hence all bots.
     msvs_xtree_patched = false
   }
+
+  # Omit unwind support in official builds to save space.
+  # We can use breakpad for these builds.
+  exclude_unwind_tables = is_chrome_branded && is_official_build
 }
 
 # Apply the default logic for these values if they were not set explicitly.
@@ -225,9 +229,7 @@ config("compiler") {
     }
 
     if (!is_nacl) {
-      # Omit unwind support in official builds to save space.
-      # We can use breakpad for these builds.
-      if (is_chrome_branded && is_official_build) {
+      if (exclude_unwind_tables) {
         cflags += [
           "-fno-unwind-tables",
           "-fno-asynchronous-unwind-tables",
