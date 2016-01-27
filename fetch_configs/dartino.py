@@ -8,14 +8,14 @@ import config_util  # pylint: disable=F0401
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Fletch(config_util.Config):
-  """Basic Config class for Fletch."""
+class Dartino(config_util.Config):
+  """Basic Config class for Dartino."""
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://github.com/dart-lang/fletch.git'
+    url = 'https://github.com/dartino/sdk.git'
     solution = {
-      'name'   :'fletch',
+      'name'   :'sdk',
       'url'    : url,
       'deps_file': 'DEPS',
       'managed'   : False,
@@ -34,11 +34,11 @@ class Fletch(config_util.Config):
 
   @staticmethod
   def expected_root(_props):
-    return 'fletch'
+    return 'sdk'
 
 
 def main(argv=None):
-  return Fletch().handle_args(argv)
+  return Dartino().handle_args(argv)
 
 
 if __name__ == '__main__':
