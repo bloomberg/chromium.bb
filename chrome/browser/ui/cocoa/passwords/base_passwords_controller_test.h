@@ -43,8 +43,7 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
 };
 
 // Helper delegate for testing the views of the password management bubble.
-@interface ContentViewDelegateMock
-    : NSObject<ManagePasswordsBubbleContentViewDelegate>
+@interface ContentViewDelegateMock : NSObject<BasePasswordsContentViewDelegate>
 @property(nonatomic) ManagePasswordsBubbleModel* model;
 @property(readonly, nonatomic) BOOL dismissed;
 @end

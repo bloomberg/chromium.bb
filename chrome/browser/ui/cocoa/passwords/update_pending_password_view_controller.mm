@@ -32,14 +32,14 @@
       model->OnUpdateClicked(model->pending_password());
     }
   }
-  [delegate_ viewShouldDismiss];
+  [self.delegate viewShouldDismiss];
 }
 
 - (void)onNopeClicked:(id)sender {
   ManagePasswordsBubbleModel* model = [self model];
   if (model)
     model->OnNopeUpdateClicked();
-  [delegate_ viewShouldDismiss];
+  [self.delegate viewShouldDismiss];
 }
 
 - (NSView*)createPasswordView {

@@ -68,20 +68,14 @@
     currentController_.reset([[UpdatePendingPasswordViewController alloc]
         initWithDelegate:self]);
   } else if (model_->state() == password_manager::ui::CONFIRMATION_STATE) {
-    currentController_.reset(
-        [[ManagePasswordsBubbleConfirmationViewController alloc]
-            initWithModel:model_
-                 delegate:self]);
+    currentController_.reset([[ConfirmationPasswordSavedViewController alloc]
+        initWithDelegate:self]);
   } else if (model_->state() == password_manager::ui::MANAGE_STATE) {
     currentController_.reset(
-        [[ManagePasswordsBubbleManageViewController alloc]
-            initWithModel:model_
-                 delegate:self]);
+        [[ManagePasswordsViewController alloc] initWithDelegate:self]);
   } else if (model_->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     currentController_.reset(
-        [[ManagePasswordsBubbleAutoSigninViewController alloc]
-            initWithModel:model_
-                 delegate:self]);
+        [[AutoSigninViewController alloc] initWithDelegate:self]);
   } else {
     NOTREACHED();
   }
@@ -142,7 +136,7 @@
            animate:[window isVisible]];
 }
 
-#pragma mark ManagePasswordsBubbleContentViewDelegate
+#pragma mark BasePasswordsContentViewDelegate
 
 - (void)viewShouldDismiss {
   [self close];

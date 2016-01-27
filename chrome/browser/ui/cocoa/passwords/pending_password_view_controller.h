@@ -14,7 +14,7 @@
 
 // Base class for the views that offer to save/update the user's password.
 @interface PendingPasswordViewController
-    : ManagePasswordsBubbleContentViewController<NSTextViewDelegate> {
+    : BasePasswordsContentViewController<NSTextViewDelegate> {
  @private
   base::scoped_nsobject<NSButton> closeButton_;
 }

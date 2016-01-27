@@ -13,23 +13,19 @@
 
 @class AccountAvatarFetcherManager;
 @class CredentialItemView;
-class ManagePasswordsBubbleModel;
 
 namespace base {
 class Timer;
 }  // namespace base
 
 // Manages the view that informs the user they're being automatically signed in.
-@interface ManagePasswordsBubbleAutoSigninViewController
-    : ManagePasswordsBubbleContentViewController {
+@interface AutoSigninViewController : BasePasswordsContentViewController {
  @private
-  ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<CredentialItemView> credentialView_;
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
   scoped_ptr<base::Timer> timer_;
 }
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
+- (instancetype)initWithDelegate:(id<BasePasswordsContentViewDelegate>)delegate;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_AUTO_SIGNIN_VIEW_CONTROLLER_H_

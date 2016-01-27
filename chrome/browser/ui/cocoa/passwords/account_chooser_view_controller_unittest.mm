@@ -212,4 +212,19 @@ TEST_F(AccountChooserViewControllerTest, ClickTitleLink) {
                                      atIndex:0];
 }
 
+TEST_F(AccountChooserViewControllerTest, ClosePromptAndHandleClick) {
+  // A user may press mouse down, some navigation closes the dialog, mouse up
+  // still sends the action. The view should not crash.
+  PasswordDialogController::FormsVector local_forms;
+  local_forms.push_back(Credential("pizza"));
+  SetUpAccountChooser(std::move(local_forms),
+                      PasswordDialogController::FormsVector());
+  [view_controller() setBridge:nil];
+  [view_controller().titleView clickedOnLink:@"" atIndex:0];
+  [view_controller().credentialsView
+          selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
+      byExtendingSelection:NO];
+  [view_controller().cancelButton performClick:nil];
+}
+
 }  // namespace

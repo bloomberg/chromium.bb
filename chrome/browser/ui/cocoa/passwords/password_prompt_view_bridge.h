@@ -11,6 +11,8 @@
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 #include "chrome/browser/ui/passwords/account_chooser_prompt.h"
 
+@class AccountChooserViewController;
+
 class PasswordPromptViewBridge : public AccountChooserPrompt,
                                  public ConstrainedWindowMacDelegate,
                                  public AccountChooserBridge {
@@ -36,7 +38,7 @@ class PasswordPromptViewBridge : public AccountChooserPrompt,
   content::WebContents* web_contents_;
 
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  base::scoped_nsobject<NSViewController> view_controller_;
+  base::scoped_nsobject<AccountChooserViewController> view_controller_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_VIEW_BRIDGE_H_

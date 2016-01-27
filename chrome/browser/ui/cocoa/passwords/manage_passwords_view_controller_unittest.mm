@@ -21,10 +21,9 @@ using testing::ReturnRef;
 
 namespace {
 
-class ManagePasswordsBubbleManageViewControllerTest
-    : public ManagePasswordsControllerTest {
+class ManagePasswordsViewControllerTest : public ManagePasswordsControllerTest {
  public:
-  ManagePasswordsBubbleManageViewControllerTest() : controller_(nil) {}
+  ManagePasswordsViewControllerTest() : controller_(nil) {}
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
@@ -33,12 +32,12 @@ class ManagePasswordsBubbleManageViewControllerTest
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
-  ManagePasswordsBubbleManageViewController* controller() {
+  ManagePasswordsViewController* controller() {
     if (!controller_) {
-      controller_.reset([[ManagePasswordsBubbleManageViewController alloc]
-          initWithModel:GetModelAndCreateIfNull()
-               delegate:delegate()]);
-      [controller_ loadView];
+      [delegate() setModel:GetModelAndCreateIfNull()];
+      controller_.reset(
+          [[ManagePasswordsViewController alloc] initWithDelegate:delegate()]);
+      [controller_ view];
     }
     return controller_.get();
   }
@@ -48,19 +47,18 @@ class ManagePasswordsBubbleManageViewControllerTest
   }
 
  private:
-  base::scoped_nsobject<ManagePasswordsBubbleManageViewController> controller_;
+  base::scoped_nsobject<ManagePasswordsViewController> controller_;
   base::scoped_nsobject<ContentViewDelegateMock> delegate_;
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleManageViewControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsViewControllerTest);
 };
 
-TEST_F(ManagePasswordsBubbleManageViewControllerTest,
-       ShouldDismissWhenDoneClicked) {
+TEST_F(ManagePasswordsViewControllerTest, ShouldDismissWhenDoneClicked) {
   SetUpManageState();
   [controller().doneButton performClick:nil];
   EXPECT_TRUE([delegate() dismissed]);
 }
 
-TEST_F(ManagePasswordsBubbleManageViewControllerTest,
+TEST_F(ManagePasswordsViewControllerTest,
        ShouldOpenPasswordsWhenManageClicked) {
   SetUpManageState();
   EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage());
@@ -68,7 +66,7 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
   EXPECT_TRUE([delegate() dismissed]);
 }
 
-TEST_F(ManagePasswordsBubbleManageViewControllerTest,
+TEST_F(ManagePasswordsViewControllerTest,
        ShouldShowNoPasswordsWhenNoPasswordsExistForSite) {
   SetUpManageState();
   EXPECT_TRUE(GetModelAndCreateIfNull()->local_credentials().empty());
@@ -76,7 +74,7 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
   EXPECT_FALSE([controller() passwordsListController]);
 }
 
-TEST_F(ManagePasswordsBubbleManageViewControllerTest,
+TEST_F(ManagePasswordsViewControllerTest,
        ShouldShowAllPasswordItemsWhenPasswordsExistForSite) {
   // Add a few password entries.
   autofill::PasswordForm form1;
@@ -117,6 +115,18 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
       NOTREACHED();
     }
   }
+}
+
+TEST_F(ManagePasswordsViewControllerTest, CloseBubbleAndHandleClick) {
+  // A user may press mouse down, some navigation closes the bubble, mouse up
+  // still sends the action.
+  SetUpManageState();
+  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage())
+      .Times(0);
+  [controller() bubbleWillDisappear];
+  [delegate() setModel:nil];
+  [controller().doneButton performClick:nil];
+  [controller().manageButton performClick:nil];
 }
 
 }  // namespace

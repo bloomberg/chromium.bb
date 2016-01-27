@@ -28,7 +28,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   ManagePasswordsBubbleModel* model = [self model];
   if (model)
     model->OnBrandLinkClicked();
-  [delegate_ viewShouldDismiss];
+  [self.delegate viewShouldDismiss];
   return YES;
 }
 
@@ -38,7 +38,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   base::scoped_nsobject<NSButton> button(
       [[WebUIHoverCloseButton alloc] initWithFrame:frame]);
   [button setAction:@selector(viewShouldDismiss)];
-  [button setTarget:delegate_];
+  [button setTarget:self.delegate];
   return button;
 }
 
@@ -172,7 +172,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 }
 
 - (ManagePasswordsBubbleModel*)model {
-  return [delegate_ model];
+  return [self.delegate model];
 }
 
 @end

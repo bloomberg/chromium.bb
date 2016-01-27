@@ -11,21 +11,17 @@
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 
 @class HyperlinkTextView;
-class ManagePasswordsBubbleModel;
 
 // Manages the view that confirms that the generated password was saved.
-@interface ManagePasswordsBubbleConfirmationViewController
-    : ManagePasswordsBubbleContentViewController<NSTextViewDelegate> {
+@interface ConfirmationPasswordSavedViewController
+    : BasePasswordsContentViewController<NSTextViewDelegate> {
  @private
-  ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<HyperlinkTextView> confirmationText_;
   base::scoped_nsobject<NSButton> okButton_;
 }
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
 @end
 
-@interface ManagePasswordsBubbleConfirmationViewController (Testing)
+@interface ConfirmationPasswordSavedViewController (Testing)
 @property(readonly) HyperlinkTextView* confirmationText;
 @property(readonly) NSButton* okButton;
 @end

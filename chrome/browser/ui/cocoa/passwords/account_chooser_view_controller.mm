@@ -42,8 +42,9 @@
 @end
 
 @implementation AccountChooserViewController
+@synthesize bridge = bridge_;
 
-- (id)initWithBridge:(AccountChooserBridge*)bridge {
+- (instancetype)initWithBridge:(AccountChooserBridge*)bridge {
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager(
       [[AccountAvatarFetcherManager alloc]
            initWithRequestContext:bridge->GetRequestContext()]);
@@ -134,12 +135,14 @@
 - (BOOL)textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  bridge_->GetDialogController()->OnSmartLockLinkClicked();
+  if (bridge_ && bridge_->GetDialogController())
+    bridge_->GetDialogController()->OnSmartLockLinkClicked();
   return YES;
 }
 
 - (void)onCancelClicked:(id)sender {
-  bridge_->PerformClose();
+  if (bridge_)
+    bridge_->PerformClose();
 }
 
 - (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemView*)view {
@@ -197,16 +200,18 @@
 - (void)tableViewSelectionDidChange:(NSNotification *)notification {
   CredentialItemView* item =
       [credentialItems_.get() objectAtIndex:[credentialsView_ selectedRow]];
-  bridge_->GetDialogController()->OnChooseCredentials(item.passwordForm,
-                                                      item.credentialType);
+  if (bridge_ && bridge_->GetDialogController()) {
+    bridge_->GetDialogController()->OnChooseCredentials(item.passwordForm,
+                                                        item.credentialType);
+  }
 }
 
 @end
 
 @implementation AccountChooserViewController(Testing)
 
-- (id)initWithBridge:(AccountChooserBridge*)bridge
-      avatarManager:(AccountAvatarFetcherManager*)avatarManager {
+- (instancetype)initWithBridge:(AccountChooserBridge*)bridge
+                 avatarManager:(AccountAvatarFetcherManager*)avatarManager {
   DCHECK(bridge);
   if (self = [super initWithNibName:nil bundle:nil]) {
     bridge_ = bridge;

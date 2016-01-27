@@ -18,7 +18,9 @@ PasswordPromptViewBridge::PasswordPromptViewBridge(
       web_contents_(web_contents) {
 }
 
-PasswordPromptViewBridge::~PasswordPromptViewBridge() = default;
+PasswordPromptViewBridge::~PasswordPromptViewBridge() {
+  [view_controller_ setBridge:nil];
+}
 
 void PasswordPromptViewBridge::Show() {
   view_controller_.reset(

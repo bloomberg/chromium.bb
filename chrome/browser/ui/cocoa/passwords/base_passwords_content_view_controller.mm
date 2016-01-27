@@ -8,12 +8,12 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 
-@implementation ManagePasswordsBubbleContentViewController
-
+@implementation BasePasswordsContentViewController
 @synthesize delegate = delegate_;
 
-- (id)initWithDelegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
-  if ((self = [super initWithNibName:nil bundle:nil])) {
+- (instancetype)initWithDelegate:
+    (id<BasePasswordsContentViewDelegate>)delegate {
+  if (self = [super initWithNibName:nil bundle:nil]) {
     delegate_ = delegate;
   }
   return self;

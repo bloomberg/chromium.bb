@@ -70,7 +70,7 @@ TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
 
 TEST_F(ManagePasswordsBubbleControllerTest, ManageStateShouldHaveManageView) {
   SetUpManageState();
-  EXPECT_EQ([ManagePasswordsBubbleManageViewController class],
+  EXPECT_EQ([ManagePasswordsViewController class],
             [[controller() currentController] class]);
 }
 

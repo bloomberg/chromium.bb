@@ -18,34 +18,32 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 
-@interface ManagePasswordsBubbleConfirmationViewController ()
+@interface ConfirmationPasswordSavedViewController ()
 - (void)onOKClicked:(id)sender;
 @end
 
-@implementation ManagePasswordsBubbleConfirmationViewController
-
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
-  if (([super initWithDelegate:delegate])) {
-    model_ = model;
-  }
-  return self;
-}
+@implementation ConfirmationPasswordSavedViewController
 
 - (NSButton*)defaultButton {
   return okButton_;
 }
 
+- (ManagePasswordsBubbleModel*)model {
+  return [self.delegate model];
+}
+
 - (void)onOKClicked:(id)sender {
-  model_->OnOKClicked();
-  [delegate_ viewShouldDismiss];
+  if (self.model)
+    self.model->OnOKClicked();
+  [self.delegate viewShouldDismiss];
 }
 
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  model_->OnManageLinkClicked();
-  [delegate_ viewShouldDismiss];
+  if (self.model)
+    self.model->OnManageLinkClicked();
+  [self.delegate viewShouldDismiss];
   return YES;
 }
 
@@ -64,7 +62,7 @@
 
   // Title.
   NSTextField* titleLabel =
-      [self addTitleLabel:base::SysUTF16ToNSString(model_->title())
+      [self addTitleLabel:base::SysUTF16ToNSString(self.model->title())
                    toView:view];
 
   // Text.
@@ -74,14 +72,14 @@
       .GetPrimaryFont()
       .GetNativeFont();
   NSColor* textColor = [NSColor blackColor];
-  [confirmationText_
-        setMessage:base::SysUTF16ToNSString(model_->save_confirmation_text())
-          withFont:font
-      messageColor:textColor];
+  [confirmationText_ setMessage:base::SysUTF16ToNSString(
+                                    self.model->save_confirmation_text())
+                       withFont:font
+                   messageColor:textColor];
   NSColor* linkColor =
       skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
   [confirmationText_
-      addLinkRange:model_->save_confirmation_link_range().ToNSRange()
+      addLinkRange:self.model->save_confirmation_link_range().ToNSRange()
            withURL:nil
          linkColor:linkColor];
   [confirmationText_ setDelegate:self];
@@ -97,7 +95,7 @@
   NSTextStorage* text = [confirmationText_ textStorage];
   [text addAttribute:NSUnderlineStyleAttributeName
                value:[NSNumber numberWithInt:NSUnderlineStyleNone]
-               range:model_->save_confirmation_link_range().ToNSRange()];
+               range:self.model->save_confirmation_link_range().ToNSRange()];
   [view addSubview:confirmationText_];
 
   // OK button.
@@ -132,7 +130,7 @@
 
 @end
 
-@implementation ManagePasswordsBubbleConfirmationViewController (Testing)
+@implementation ConfirmationPasswordSavedViewController (Testing)
 
 - (HyperlinkTextView*)confirmationText {
   return confirmationText_.get();

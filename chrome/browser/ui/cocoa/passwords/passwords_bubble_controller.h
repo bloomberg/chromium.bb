@@ -17,11 +17,10 @@
 // views according to user interaction and updates the password management state
 // accordingly.
 @interface ManagePasswordsBubbleController
-    : BaseBubbleController<ManagePasswordsBubbleContentViewDelegate> {
+    : BaseBubbleController<BasePasswordsContentViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;
-  base::scoped_nsobject<ManagePasswordsBubbleContentViewController>
-      currentController_;
+  base::scoped_nsobject<BasePasswordsContentViewController> currentController_;
 }
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                      model:(ManagePasswordsBubbleModel*)model;

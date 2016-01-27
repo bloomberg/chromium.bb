@@ -25,45 +25,43 @@ namespace {
 const int kAutoSigninToastTimeoutSeconds = 3;
 }  // namespace
 
-@interface ManagePasswordsBubbleAutoSigninViewController () <
-    CredentialItemDelegate>
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-      avatarManager:(AccountAvatarFetcherManager*)avatarManager
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
+@interface AutoSigninViewController ()<CredentialItemDelegate>
+- (instancetype)
+initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
+             delegate:(id<BasePasswordsContentViewDelegate>)delegate;
 @end
 
-@implementation ManagePasswordsBubbleAutoSigninViewController
+@implementation AutoSigninViewController
 
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
+- (instancetype)initWithDelegate:
+    (id<BasePasswordsContentViewDelegate>)delegate {
+  auto request_context = delegate.model->GetProfile()->GetRequestContext();
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager(
       [[AccountAvatarFetcherManager alloc]
-          initWithRequestContext:model->GetProfile()->GetRequestContext()]);
-  return
-      [self initWithModel:model avatarManager:avatarManager delegate:delegate];
+          initWithRequestContext:request_context]);
+  return [self initWithAvatarManager:avatarManager delegate:delegate];
 }
 
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-      avatarManager:(AccountAvatarFetcherManager*)avatarManager
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
+- (instancetype)
+initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
+             delegate:(id<BasePasswordsContentViewDelegate>)delegate {
   if ((self = [super initWithDelegate:delegate])) {
-    model_ = model;
     avatarManager_.reset([avatarManager retain]);
     credentialView_.reset([[CredentialItemView alloc]
-        initWithPasswordForm:model->pending_password()
+        initWithPasswordForm:delegate.model->pending_password()
               credentialType:password_manager::CredentialType::
                                  CREDENTIAL_TYPE_PASSWORD
                        style:password_manager_mac::CredentialItemStyle::
                                  AUTO_SIGNIN
                     delegate:self]);
     timer_.reset(new base::Timer(false, false));
-    __block ManagePasswordsBubbleAutoSigninViewController* weakSelf = self;
+    __block AutoSigninViewController* weakSelf = self;
     timer_->Start(FROM_HERE,
                   base::TimeDelta::FromSeconds(kAutoSigninToastTimeoutSeconds),
                   base::BindBlock(^{
                     // |weakSelf| is still valid. Otherwise the timer would have
                     // stopped when it was deleted by [self dealloc].
-                    [weakSelf->delegate_ viewShouldDismiss];
+                    [weakSelf.delegate viewShouldDismiss];
                   }));
   }
   return self;

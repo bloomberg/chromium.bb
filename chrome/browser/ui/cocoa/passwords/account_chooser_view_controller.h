@@ -59,12 +59,14 @@ class AccountChooserBridge {
 
 // Initializes a new account chooser and populates it with the credentials
 // stored in |bridge->controller()|.
-- (id)initWithBridge:(AccountChooserBridge*)bridge;
+- (instancetype)initWithBridge:(AccountChooserBridge*)bridge;
+
+@property(nonatomic) AccountChooserBridge* bridge;
 @end
 
 @interface AccountChooserViewController(Testing)
-- (id)initWithBridge:(AccountChooserBridge*)bridge
-      avatarManager:(AccountAvatarFetcherManager*)avatarManager;
+- (instancetype)initWithBridge:(AccountChooserBridge*)bridge
+                 avatarManager:(AccountAvatarFetcherManager*)avatarManager;
 @property(nonatomic, readonly) NSButton* cancelButton;
 @property(nonatomic, readonly) NSTableView* credentialsView;
 @property(nonatomic, readonly) NSTextView* titleView;

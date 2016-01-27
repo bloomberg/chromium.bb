@@ -24,14 +24,14 @@
   ManagePasswordsBubbleModel* model = self.model;
   if (model)
     model->OnSaveClicked();
-  [delegate_ viewShouldDismiss];
+  [self.delegate viewShouldDismiss];
 }
 
 - (void)onNeverForThisSiteClicked:(id)sender {
   ManagePasswordsBubbleModel* model = self.model;
   if (model)
     model->OnNeverForThisSiteClicked();
-  [delegate_ viewShouldDismiss];
+  [self.delegate viewShouldDismiss];
 }
 
 - (NSView*)createPasswordView {
