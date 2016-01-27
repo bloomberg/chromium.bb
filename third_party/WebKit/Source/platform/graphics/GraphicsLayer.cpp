@@ -1119,9 +1119,6 @@ bool GraphicsLayer::addAnimation(PassOwnPtr<WebCompositorAnimation> popAnimation
     OwnPtr<WebCompositorAnimation> animation(std::move(popAnimation));
     ASSERT(animation);
     platformLayer()->setAnimationDelegate(this);
-
-    // Remove any existing animations with the same animation id and target property.
-    platformLayer()->removeAnimation(animation->id(), animation->targetProperty());
     return platformLayer()->addAnimation(animation.leakPtr());
 }
 

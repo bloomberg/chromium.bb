@@ -29,7 +29,6 @@
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
-#include "WebCompositorAnimation.h"
 #include "WebDoublePoint.h"
 #include "WebFloatPoint3D.h"
 #include "WebPoint.h"
@@ -48,6 +47,7 @@ class LayerClient;
 }
 
 namespace blink {
+class WebCompositorAnimation;
 class WebCompositorAnimationDelegate;
 class WebFilterOperations;
 class WebLayerScrollClient;
@@ -153,9 +153,6 @@ public:
 
     // Removes all animations with the given id.
     virtual void removeAnimation(int animationId) = 0;
-
-    // Removes all animations with the given id targeting the given property.
-    virtual void removeAnimation(int animationId, WebCompositorAnimation::TargetProperty) = 0;
 
     // Pauses all animations with the given id.
     virtual void pauseAnimation(int animationId, double timeOffset) = 0;

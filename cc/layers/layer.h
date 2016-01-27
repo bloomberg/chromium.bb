@@ -418,7 +418,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool AddAnimation(scoped_ptr<Animation> animation);
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
-  void RemoveAnimation(int animation_id, Animation::TargetProperty property);
   void AbortAnimation(int animation_id);
   LayerAnimationController* layer_animation_controller() const {
     return layer_animation_controller_.get();

@@ -1851,13 +1851,6 @@ void Layer::RemoveAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
-void Layer::RemoveAnimation(int animation_id,
-                            Animation::TargetProperty property) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->RemoveAnimation(animation_id, property);
-  SetNeedsCommit();
-}
-
 void Layer::AbortAnimation(int animation_id) {
   DCHECK(layer_animation_controller_);
   layer_animation_controller_->AbortAnimation(animation_id);

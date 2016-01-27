@@ -265,13 +265,6 @@ void WebLayerImpl::removeAnimation(int animation_id) {
   layer_->RemoveAnimation(animation_id);
 }
 
-void WebLayerImpl::removeAnimation(
-    int animation_id,
-    blink::WebCompositorAnimation::TargetProperty target_property) {
-  layer_->RemoveAnimation(
-      animation_id, static_cast<Animation::TargetProperty>(target_property));
-}
-
 void WebLayerImpl::pauseAnimation(int animation_id, double time_offset) {
   layer_->PauseAnimation(animation_id, time_offset);
 }

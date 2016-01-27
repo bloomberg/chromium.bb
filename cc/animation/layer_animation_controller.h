@@ -46,8 +46,6 @@ class CC_EXPORT LayerAnimationController
   void AddAnimation(scoped_ptr<Animation> animation);
   void PauseAnimation(int animation_id, base::TimeDelta time_offset);
   void RemoveAnimation(int animation_id);
-  void RemoveAnimation(int animation_id,
-                       Animation::TargetProperty target_property);
   void AbortAnimation(int animation_id);
   void AbortAnimations(Animation::TargetProperty target_property);
 

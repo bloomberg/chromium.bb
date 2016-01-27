@@ -113,35 +113,6 @@ void LayerAnimationController::RemoveAnimation(int animation_id) {
     UpdatePotentiallyAnimatingTransform();
 }
 
-void LayerAnimationController::RemoveAnimation(
-    int animation_id,
-    Animation::TargetProperty target_property) {
-  bool removed_transform_animation = false;
-  auto does_not_have_id_or_property = [animation_id, target_property](
-      const scoped_ptr<Animation>& animation) {
-    return animation->id() != animation_id ||
-           animation->target_property() != target_property;
-  };
-  // Since we want to use the animations that we're going to remove, we need to
-  // use a stable_parition here instead of remove_if. Remove_if leaves the
-  // removed items in an unspecified state.
-  auto animations_to_remove = std::stable_partition(
-      animations_.begin(), animations_.end(), does_not_have_id_or_property);
-  if (animations_to_remove == animations_.end())
-    return;
-
-  if (target_property == Animation::SCROLL_OFFSET)
-    scroll_offset_animation_was_interrupted_ = true;
-  else if (target_property == Animation::TRANSFORM &&
-           !(*animations_to_remove)->is_finished())
-    removed_transform_animation = true;
-
-  animations_.erase(animations_to_remove, animations_.end());
-  UpdateActivation(NORMAL_ACTIVATION);
-  if (removed_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
-}
-
 void LayerAnimationController::AbortAnimation(int animation_id) {
   bool aborted_transform_animation = false;
   if (Animation* animation = GetAnimationById(animation_id)) {

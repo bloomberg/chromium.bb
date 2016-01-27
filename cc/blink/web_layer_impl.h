@@ -18,7 +18,6 @@
 #include "cc/layers/layer_client.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
-#include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
 #include "third_party/WebKit/public/platform/WebDoublePoint.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
@@ -110,8 +109,6 @@ class WebLayerImpl : public blink::WebLayer {
       blink::WebCompositorAnimationDelegate* delegate) override;
   bool addAnimation(blink::WebCompositorAnimation* animation) override;
   void removeAnimation(int animation_id) override;
-  void removeAnimation(int animation_id,
-                       blink::WebCompositorAnimation::TargetProperty) override;
   void pauseAnimation(int animation_id, double time_offset) override;
   void abortAnimation(int animation_id) override;
   bool hasActiveAnimation() override;
