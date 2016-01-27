@@ -24,8 +24,6 @@ namespace edk {
 
 namespace {
 
-const size_t kMaxBatchReadCapacity = 256 * 1024;
-
 // A view over a Channel::Message object. The write queue uses these since
 // large messages may need to be sent in chunks.
 class MessageView {
