@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.TransactionTooLargeException;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -39,8 +40,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         /**
          * Constructs a new instance of {@link CustomTabNavigationDelegate}.
          */
-        public CustomTabNavigationDelegate(ChromeActivity activity, String clientPackageName) {
-            super(activity);
+        public CustomTabNavigationDelegate(Tab tab, String clientPackageName) {
+            super(tab);
             mClientPackageName = clientPackageName;
         }
 
@@ -57,17 +58,21 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
             try {
                 // For a URL chrome can handle and there is no default set, handle it ourselves.
                 if (!hasDefaultHandler) {
-                    if (isPackageSpecializedHandler(getActivity(), mClientPackageName, intent)) {
+                    if (isPackageSpecializedHandler(
+                            mApplicationContext, mClientPackageName, intent)) {
                         intent.setPackage(mClientPackageName);
                     } else if (!isExternalProtocol) {
                         return false;
                     }
                 }
                 // If android fails to find a handler, handle it ourselves.
-                if (!getActivity().startActivityIfNeeded(intent, -1)) return false;
-
-                mHasActivityStarted = true;
-                return true;
+                Context context = getAvailableContext();
+                if (context instanceof Activity
+                        && ((Activity) context).startActivityIfNeeded(intent, -1)) {
+                    mHasActivityStarted = true;
+                    return true;
+                }
+                return false;
             } catch (RuntimeException e) {
                 logTransactionTooLargeOrRethrow(e, intent);
                 return false;
@@ -81,9 +86,10 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
          */
         private boolean hasDefaultHandler(Intent intent) {
             try {
-                ResolveInfo info = getActivity().getPackageManager().resolveActivity(intent, 0);
+                ResolveInfo info =
+                        mApplicationContext.getPackageManager().resolveActivity(intent, 0);
                 if (info != null) {
-                    final String chromePackage = getActivity().getPackageName();
+                    final String chromePackage = mApplicationContext.getPackageName();
                     // If a default handler is found and it is not chrome itself, fire the intent.
                     if (info.match != 0 && !chromePackage.equals(info.activityInfo.packageName)) {
                         return true;
@@ -141,11 +147,10 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab,
-            ChromeActivity activity) {
-        mNavigationDelegate = new CustomTabNavigationDelegate(activity, tab.getAppAssociatedWith());
+    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
+        mNavigationDelegate = new CustomTabNavigationDelegate(tab, tab.getAppAssociatedWith());
         mNavigationHandler = new ExternalNavigationHandler(mNavigationDelegate);
-        return new InterceptNavigationDelegateImpl(mNavigationHandler, activity, tab);
+        return new InterceptNavigationDelegateImpl(mNavigationHandler, tab);
     }
 
     @Override

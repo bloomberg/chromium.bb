@@ -115,7 +115,7 @@ public class OverlayPanelContent {
     // which would also handle functionality like long-press-to-paste.
     private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
         final ExternalNavigationHandler mExternalNavHandler = new ExternalNavigationHandler(
-                mActivity);
+                mActivity.getActivityTab());
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
             // TODO(mdjones): Rather than passing the two navigation params, instead consider

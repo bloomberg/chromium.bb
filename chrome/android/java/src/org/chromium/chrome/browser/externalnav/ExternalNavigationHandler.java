@@ -17,10 +17,10 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.base.PageTransition;
@@ -65,10 +65,10 @@ public class ExternalNavigationHandler {
     /**
      * A constructor for UrlHandler.
      *
-     * @param activity The activity to launch an external intent from.
+     * @param tab The tab that initiated the external intent.
      */
-    public ExternalNavigationHandler(ChromeActivity activity) {
-        this(new ExternalNavigationDelegateImpl(activity));
+    public ExternalNavigationHandler(Tab tab) {
+        this(new ExternalNavigationDelegateImpl(tab));
     }
 
     /**

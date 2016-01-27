@@ -1609,7 +1609,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
             cvc.setDownloadDelegate(mDownloadDelegate);
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
-                    this, getActivity()));
+                    this));
 
             if (mGestureStateListener == null) {
                 mGestureStateListener = createGestureStateListener();

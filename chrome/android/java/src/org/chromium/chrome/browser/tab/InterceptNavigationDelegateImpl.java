@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -25,7 +24,6 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
  * tracking has ended.
  */
 public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
-    private final ChromeActivity mActivity;
     private final Tab mTab;
     private final ExternalNavigationHandler mExternalNavHandler;
     private final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
@@ -41,17 +39,15 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     /**
      * Default constructor of {@link InterceptNavigationDelegateImpl}.
      */
-    public InterceptNavigationDelegateImpl(ChromeActivity activity, Tab tab) {
-        this(new ExternalNavigationHandler(activity), activity, tab);
+    public InterceptNavigationDelegateImpl(Tab tab) {
+        this(new ExternalNavigationHandler(tab), tab);
     }
 
     /**
      * Constructs a new instance of {@link InterceptNavigationDelegateImpl} with the given
      * {@link ExternalNavigationHandler}.
      */
-    public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler,
-            ChromeActivity activity, Tab tab) {
-        mActivity = activity;
+    public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler, Tab tab) {
         mTab = tab;
         mExternalNavHandler = externalNavHandler;
         mAuthenticatorHelper = ((ChromeApplication) mTab.getApplicationContext())
@@ -88,7 +84,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         tabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
                 navigationParams.isRedirect,
                 navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
-                mActivity.getLastUserInteractionTime(), getLastCommittedEntryIndex());
+                mTab.getActivity().getLastUserInteractionTime(), getLastCommittedEntryIndex());
         boolean shouldCloseTab = shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
         boolean isInitialTabLaunchInBackground =
                 mTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
@@ -131,7 +127,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                     logBlockedNavigationToDevToolsConsole(url);
                     return true;
                 }
-                return DataUseTabUIManager.shouldOverrideUrlLoading(mActivity, mTab, url,
+                return DataUseTabUIManager.shouldOverrideUrlLoading(mTab.getActivity(), mTab, url,
                         navigationParams.pageTransitionType, navigationParams.referrer);
         }
     }
@@ -209,9 +205,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 // Moving task back before closing the tab allows back button to function better
                 // when Chrome was an intermediate link redirector between two apps.
                 // crbug.com/487938.
-                mActivity.moveTaskToBack(true);
+                mTab.getActivity().moveTaskToBack(true);
             }
-            mActivity.getTabModelSelector().closeTab(mTab);
+            mTab.getTabModelSelector().closeTab(mTab);
         } else if (mTab.getTabRedirectHandler().isOnNavigation()) {
             int lastCommittedEntryIndexBeforeNavigation = mTab.getTabRedirectHandler()
                     .getLastCommittedEntryIndexBeforeStartingNavigation();

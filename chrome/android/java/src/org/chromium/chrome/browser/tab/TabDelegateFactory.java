@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -27,12 +26,10 @@ public class TabDelegateFactory {
     /**
      * Creates the {@link InterceptNavigationDelegate} the tab will be initialized with.
      * @param tab The associated {@link Tab}.
-     * @param activity The {@link ChromeActivity} that the tab belongs to.
      * @return The {@link InterceptNavigationDelegate} to be used for this tab.
      */
-    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(
-            Tab tab, ChromeActivity activity) {
-        return new InterceptNavigationDelegateImpl(activity, tab);
+    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
+        return new InterceptNavigationDelegateImpl(tab);
     }
 
     /**

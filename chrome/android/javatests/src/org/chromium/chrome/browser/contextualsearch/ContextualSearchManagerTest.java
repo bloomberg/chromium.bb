@@ -2000,7 +2000,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testExternalNavigationWithUserGesture() {
         final ExternalNavigationHandler externalNavHandler =
-                new ExternalNavigationHandler(getActivity());
+                new ExternalNavigationHandler(getActivity().getActivityTab());
         final NavigationParams navigationParams = new NavigationParams(
                 "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
                 false /* isPost */, true /* hasUserGesture */, PageTransition.LINK,
@@ -2026,7 +2026,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testRedirectedExternalNavigationWithUserGesture() {
         final ExternalNavigationHandler externalNavHandler =
-                new ExternalNavigationHandler(getActivity());
+                new ExternalNavigationHandler(getActivity().getActivityTab());
 
         final NavigationParams initialNavigationParams = new NavigationParams("http://test.com", "",
                 false /* isPost */, true /* hasUserGesture */, PageTransition.LINK,
@@ -2060,7 +2060,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testExternalNavigationWithoutUserGesture() {
         final ExternalNavigationHandler externalNavHandler =
-                new ExternalNavigationHandler(getActivity());
+                new ExternalNavigationHandler(getActivity().getActivityTab());
         final NavigationParams navigationParams = new NavigationParams(
                 "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
                 false /* isPost */, false /* hasUserGesture */, PageTransition.LINK,
