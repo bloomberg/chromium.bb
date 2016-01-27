@@ -58,6 +58,9 @@ def main(argv):
   run_parser.add_argument('--enable-kvm', action='store_true',
                           dest='enable_kvm', default=False,
                           help='Enable kvm for faster x86 emulator run')
+  run_parser.add_argument('--headless', action='store_true',
+                          dest='headless', default=False,
+                          help='Launch an emulator with no UI.')
 
   arguments = arg_parser.parse_args(argv[1:])
 
@@ -120,7 +123,8 @@ def main(argv):
         enable_kvm=arguments.enable_kvm,
         kill_and_launch=arguments.reset_and_launch,
         sdcard_size=arguments.sdcard_size,
-        storage_size=arguments.partition_size
+        storage_size=arguments.partition_size,
+        headless=arguments.headless
     )
   else:
     emulator.LaunchTempEmulators(
@@ -131,7 +135,8 @@ def main(argv):
         kill_and_launch=arguments.kill_and_launch,
         sdcard_size=arguments.sdcard_size,
         storage_size=arguments.partition_size,
-        wait_for_boot=True
+        wait_for_boot=True,
+        headless=arguments.headless
     )
 
 if __name__ == '__main__':
