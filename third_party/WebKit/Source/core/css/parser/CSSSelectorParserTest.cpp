@@ -190,7 +190,8 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound)
         "::shadow:not(::after)",
         "::content:not(#id)",
         "::-webkit-scrollbar:vertical:not(:first-child)",
-        "video::-webkit-media-text-track-region-container.scrolling"
+        "video::-webkit-media-text-track-region-container.scrolling",
+        "div ::before.a"
     };
 
     for (auto testCase : testCases) {

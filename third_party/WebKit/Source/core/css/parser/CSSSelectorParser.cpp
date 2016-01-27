@@ -291,8 +291,10 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
         // TODO(rune@opera.com): crbug.com/578131
         // The UASheetMode check is a work-around to allow this selector in mediaControls(New).css:
         // video::-webkit-media-text-track-region-container.scrolling
-        if (m_context.mode() != UASheetMode && !isSimpleSelectorValidAfterPseudoElement(*simpleSelector.get(), compoundPseudoElement))
+        if (m_context.mode() != UASheetMode && !isSimpleSelectorValidAfterPseudoElement(*simpleSelector.get(), compoundPseudoElement)) {
+            m_failedParsing = true;
             return nullptr;
+        }
         if (simpleSelector->match() == CSSSelector::PseudoElement)
             compoundPseudoElement = simpleSelector->pseudoType();
 
