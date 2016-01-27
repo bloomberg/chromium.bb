@@ -1266,8 +1266,6 @@ crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/574196 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
 
-crbug.com/570611 [ Mac Linux Android Win7 ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
