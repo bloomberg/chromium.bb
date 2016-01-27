@@ -28,9 +28,9 @@ function run() {
   let div = document.createElement('div');
   for (let i = 0; i < loops; ++i) {
     host.appendChild(div);
-    slot.getDistributedNodes();;
+    slot.getAssignedNodes({flatten: true});
     host.removeChild(div);
-    slot.getDistributedNodes();;
+    slot.getAssignedNodes({flatten: true});
   }
 }
 
