@@ -20,6 +20,13 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <sys/file.h>
+#include <unistd.h>
+#endif
+
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -512,6 +519,17 @@ int main(int argc, const char* argv[]) {
   if (result != 0)
     return result;
 
+#if defined(_WIN32)
+  HFILE lockfd = CreateFile("rewrite-sym.lock", GENERIC_READ, FILE_SHARE_READ,
+                            NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  OVERLAPPED overlapped = {};
+  LockFileEx(lockfd, LOCKFILE_EXCLUSIVE_LOCK, 0, 1, 0, &overlapped);
+#else
+  int lockfd = open("rewrite-sym.lock", O_RDWR | O_CREAT, 0666);
+  while (flock(lockfd, LOCK_EX)) {  // :D
+  }
+#endif
+
   std::ofstream replacement_db_file("rewrite-sym.txt",
                                     std::ios_base::out | std::ios_base::app);
   for (const auto& p : field_decl_rewriter.replacement_names())
@@ -523,6 +541,14 @@ int main(int argc, const char* argv[]) {
   for (const auto& p : method_decl_rewriter.replacement_names())
     replacement_db_file << "fun:" << p.first << ":" << p.second << "\n";
   replacement_db_file.close();
+
+#if defined(_WIN32)
+  UnlockFileEx(lockfd, 0, 1, 0, &overlapped);
+  CloseHandle(lockfd);
+#else
+  flock(lockfd, LOCK_UN);
+  close(lockfd);
+#endif
 
   // Serialization format is documented in tools/clang/scripts/run_tool.py
   llvm::outs() << "==== BEGIN EDITS ====\n";
