@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -37,8 +38,13 @@ std::string ReturnEmptySalt() {
 
 
 ResourceContext::ResourceContext() {
-  if (ResourceDispatcherHostImpl::Get())
-    ResourceDispatcherHostImpl::Get()->AddResourceContext(this);
+  ResourceDispatcherHostImpl* rdhi = ResourceDispatcherHostImpl::Get();
+  if (rdhi) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourceDispatcherHostImpl::AddResourceContext,
+                   base::Unretained(rdhi), this));
+  }
 }
 
 ResourceContext::~ResourceContext() {
