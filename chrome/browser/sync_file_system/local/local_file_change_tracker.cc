@@ -599,6 +599,7 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::GetDirtyEntries(
       LOG(WARNING) << "Failed to deserialize an URL. "
                    << "TrackerDB might be corrupted.";
       db_status_ = SYNC_DATABASE_ERROR_CORRUPTION;
+      iter.reset();  // Must delete before closing the database.
       db_.reset();
       return db_status_;
     }
