@@ -344,12 +344,8 @@ void AppBannerDataFetcher::OnDidCheckHasServiceWorker(
 
 void AppBannerDataFetcher::OnHasServiceWorker(
     content::WebContents* web_contents) {
-  GURL icon_url =
-    ManifestIconSelector::FindBestMatchingIcon(
-        web_app_data_.icons,
-        ideal_icon_size_in_dp_,
-        minimum_icon_size_in_dp_,
-        gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
+  GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
+      web_app_data_.icons, ideal_icon_size_in_dp_, minimum_icon_size_in_dp_);
 
   if (!FetchAppIcon(web_contents, icon_url)) {
     OutputDeveloperNotShownMessage(web_contents, kCannotDetermineBestIcon,

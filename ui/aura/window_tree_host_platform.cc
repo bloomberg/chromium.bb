@@ -125,7 +125,7 @@ void WindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
 
 void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   float current_scale = compositor()->device_scale_factor();
-  float new_scale = gfx::Screen::GetScreenFor(window())
+  float new_scale = gfx::Screen::GetScreen()
                         ->GetDisplayNearestWindow(window())
                         .device_scale_factor();
   gfx::Rect old_bounds = bounds_;

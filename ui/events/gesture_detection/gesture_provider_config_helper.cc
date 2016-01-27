@@ -90,7 +90,7 @@ GestureProvider::Config GetGestureProviderConfig(
       break;
   }
 
-  gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   // |screen| is sometimes NULL during tests.
   if (screen)
     config.display = screen->GetPrimaryDisplay();

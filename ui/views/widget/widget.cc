@@ -509,9 +509,9 @@ void Widget::CenterWindow(const gfx::Size& size) {
 }
 
 void Widget::SetBoundsConstrained(const gfx::Rect& bounds) {
-  gfx::Rect work_area =
-      gfx::Screen::GetScreenFor(GetNativeView())->GetDisplayNearestPoint(
-          bounds.origin()).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestPoint(bounds.origin())
+                            .work_area();
   if (work_area.IsEmpty()) {
     SetBounds(bounds);
   } else {

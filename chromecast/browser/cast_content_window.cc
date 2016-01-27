@@ -75,8 +75,8 @@ void CastContentWindow::CreateWindowTree(
   // Aura initialization
   CastScreen* cast_screen =
       shell::CastBrowserProcess::GetInstance()->cast_screen();
-  if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, cast_screen);
+  if (!gfx::Screen::GetScreen())
+    gfx::Screen::SetScreenInstance(cast_screen);
   if (cast_screen->GetPrimaryDisplay().size() != initial_size)
     cast_screen->UpdateDisplaySize(initial_size);
   media::VideoPlaneController::GetInstance()->SetGraphicsPlaneResolution(

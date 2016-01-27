@@ -25,8 +25,7 @@ TooltipManagerMac::TooltipManagerMac(BridgedNativeWidget* widget)
 TooltipManagerMac::~TooltipManagerMac() {
 }
 
-int TooltipManagerMac::GetMaxWidth(const gfx::Point& location,
-                                   gfx::NativeView context) const {
+int TooltipManagerMac::GetMaxWidth(const gfx::Point& location) const {
   return kTooltipMaxWidthPixels;
 }
 

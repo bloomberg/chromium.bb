@@ -42,7 +42,7 @@ void TestLauncherAlignment(aura::Window* root,
                            ShelfAlignment alignment,
                            const std::string& expected) {
   Shell::GetInstance()->SetShelfAlignment(alignment, root);
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(root);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   EXPECT_EQ(expected,
             screen->GetDisplayNearestWindow(root).work_area().ToString());
 }

@@ -397,12 +397,11 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 #endif
 #if defined(OS_CHROMEOS)
   test_screen_ = aura::TestScreen::Create(gfx::Size());
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_);
+  gfx::Screen::SetScreenInstance(test_screen_);
   wm_test_helper_ = new wm::WMTestHelper(default_window_size,
                                          GetContextFactory());
 #else
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
+  gfx::Screen::SetScreenInstance(views::CreateDesktopScreen());
 #endif
   views_delegate_ = new views::DesktopTestViewsDelegate();
 }

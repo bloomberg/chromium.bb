@@ -188,8 +188,10 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
   ResetIDs(browser2->tab_strip_model(), 100);
 
   // Resize the two windows so they're right next to each other.
-  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-      browser()->window()->GetNativeWindow()).work_area();
+  gfx::Rect work_area =
+      gfx::Screen::GetScreen()
+          ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
+          .work_area();
   gfx::Size half_size =
       gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
   browser()->window()->SetBounds(gfx::Rect(work_area.origin(), half_size));
@@ -808,7 +810,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        MAYBE_DetachFromFullsizeWindow) {
   // Resize the browser window so that it is as big as the work area.
   gfx::Rect work_area =
-      gfx::Screen::GetNativeScreen()
+      gfx::Screen::GetScreen()
           ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
           .work_area();
   browser()->window()->SetBounds(work_area);
@@ -1718,8 +1720,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
   aura::Window* second_root = roots[1];
-  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-      second_root).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(second_root)
+                            .work_area();
   browser2->window()->SetBounds(work_area);
   EXPECT_EQ(second_root,
             browser2->window()->GetNativeWindow()->GetRootWindow());
@@ -1768,8 +1771,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
   aura::Window* second_root = roots[1];
-  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-      second_root).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(second_root)
+                            .work_area();
   browser()->window()->SetBounds(work_area);
 
   // position both browser windows side by side on the second screen.
@@ -1828,8 +1832,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   ASSERT_EQ(2u, roots.size());
   aura::Window* first_root = roots[0];
   aura::Window* second_root = roots[1];
-  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-      second_root).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(second_root)
+                            .work_area();
   work_area.Inset(20, 20, 20, 60);
   Browser::CreateParams params(browser()->profile(),
                                browser()->host_desktop_type());
@@ -1898,8 +1903,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
   aura::Window* second_root = roots[1];
-  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-      second_root).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(second_root)
+                            .work_area();
   browser2->window()->SetBounds(work_area);
   EXPECT_EQ(second_root,
             browser2->window()->GetNativeWindow()->GetRootWindow());
@@ -2144,9 +2150,10 @@ IN_PROC_BROWSER_TEST_F(
   // Move the second browser to the second display.
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
-  gfx::Point final_destination =
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-          roots[1]).work_area().CenterPoint();
+  gfx::Point final_destination = gfx::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(roots[1])
+                                     .work_area()
+                                     .CenterPoint();
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough to move to another display.
@@ -2183,15 +2190,16 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
   EXPECT_EQ(roots[0], browser()->window()->GetNativeWindow()->GetRootWindow());
 
-  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->
-      GetDisplayNearestWindow(roots[1]).work_area();
+  gfx::Rect work_area =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(roots[1]).work_area();
   browser()->window()->SetBounds(work_area);
   EXPECT_EQ(roots[1], browser()->window()->GetNativeWindow()->GetRootWindow());
 
   // Move the second browser to the display.
-  gfx::Point final_destination =
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-          roots[0]).work_area().CenterPoint();
+  gfx::Point final_destination = gfx::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(roots[0])
+                                     .work_area()
+                                     .CenterPoint();
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough to move to another display.

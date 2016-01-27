@@ -145,15 +145,11 @@ DisplayManager::DisplayManager()
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableUnifiedDesktop);
 #endif
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());
-  gfx::Screen* current_native =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  gfx::Screen* current = gfx::Screen::GetScreen();
   // If there is no native, or the native was for shutdown,
   // use ash's screen.
-  if (!current_native ||
-      current_native == screen_for_shutdown) {
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
-  }
+  if (!current || current == screen_for_shutdown)
+    gfx::Screen::SetScreenInstance(screen_.get());
 }
 
 DisplayManager::~DisplayManager() {
@@ -1068,16 +1064,9 @@ scoped_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(
 }
 
 void DisplayManager::CreateScreenForShutdown() const {
-  bool native_is_ash =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE) == screen_.get();
   delete screen_for_shutdown;
   screen_for_shutdown = screen_->CloneForShutdown();
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE,
-                                 screen_for_shutdown);
-  if (native_is_ash) {
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                   screen_for_shutdown);
-  }
+  gfx::Screen::SetScreenInstance(screen_for_shutdown);
 }
 
 void DisplayManager::UpdateInternalDisplayModeListForTest() {

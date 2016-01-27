@@ -128,8 +128,7 @@ gfx::Rect PopupViewCommon::CalculatePopupBounds(int desired_width,
 gfx::Display PopupViewCommon::GetDisplayNearestPoint(
     const gfx::Point& point,
     gfx::NativeView container_view) {
-  return gfx::Screen::GetScreenFor(container_view)
-      ->GetDisplayNearestPoint(point);
+  return gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
 }
 
 }  // namespace autofill

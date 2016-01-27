@@ -36,9 +36,7 @@ void BaseScrollBarButton::OnMouseCaptureLost() {
 
 void BaseScrollBarButton::RepeaterNotifyClick() {
   // TODO(sky): See if we can convert to using |Screen| everywhere.
-  // TODO(scottmg): Native is wrong: http://crbug.com/133312
-  gfx::Point cursor_point =
-      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+  gfx::Point cursor_point = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   ui::MouseEvent event(ui::ET_MOUSE_RELEASED, cursor_point, cursor_point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_LEFT_MOUSE_BUTTON);

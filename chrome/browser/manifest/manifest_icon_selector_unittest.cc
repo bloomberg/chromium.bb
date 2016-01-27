@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/screen_type_delegate.h"
 #include "ui/gfx/test/test_screen.h"
 
 class ManifestIconSelectorTest : public testing::Test  {
@@ -19,16 +18,18 @@ class ManifestIconSelectorTest : public testing::Test  {
   ManifestIconSelectorTest() {
     test_screen_.display()->set_id(0x1337);
     test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
+    gfx::Screen::SetScreenInstance(&test_screen_);
   }
 
-  ~ManifestIconSelectorTest() override {}
+  ~ManifestIconSelectorTest() override {
+    gfx::Screen::SetScreenInstance(nullptr);
+  }
 
   GURL FindBestMatchingIconWithMinimum(
       const std::vector<content::Manifest::Icon>& icons,
       int minimum_icon_size_in_dp) {
     return ManifestIconSelector::FindBestMatchingIcon(
-        icons, GetPreferredIconSizeInDp(),
-        minimum_icon_size_in_dp, &test_screen_);
+        icons, GetPreferredIconSizeInDp(), minimum_icon_size_in_dp);
   }
 
   GURL FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons) {

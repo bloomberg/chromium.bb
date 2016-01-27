@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen_type_delegate.h"
 
 namespace gfx {
 class DisplayObserver;
@@ -22,37 +21,19 @@ class Rect;
 // cursor position, etc.
 //
 // Note that this class does not represent an individual display connected to a
-// computer -- see the Display class for that. A single Screen object exists on
-// most operating systems regardless of the number of connected displays. On
-// Windows 8, two Screens exist: one for Metro UI and another for the desktop.
+// computer -- see the Display class for that. A single Screen object exists
+// regardless of the number of connected displays.
 class GFX_EXPORT Screen {
  public:
-  // Retrieves the Screen that the specified NativeView belongs to. A value of
-  // NULL is treated as |SCREEN_TYPE_NATIVE|.
-  static Screen* GetScreenFor(NativeView view);
-
-  // Returns the SCREEN_TYPE_NATIVE Screen. This should be used with caution,
-  // as it is likely to be incorrect for code that runs on Windows.
-  static Screen* GetNativeScreen();
-
-  // Sets the global screen for a particular screen type. Only the _NATIVE
-  // ScreenType must be provided.
-  // NOTE: this does not take ownership of |screen|. Tests must be sure to
-  // reset any state they install.
-  static void SetScreenInstance(ScreenType type, Screen* instance);
-
-  // Returns the global screen for a particular type. Types other than _NATIVE
-  // may be NULL.
-  static Screen* GetScreenByType(ScreenType type);
-
-  // Sets the global ScreenTypeDelegate. May be left unset if the platform
-  // uses only the _NATIVE ScreenType.
-  // NOTE: this does not take ownership of |delegate|. Tests must be sure to
-  // reset any state they install.
-  static void SetScreenTypeDelegate(ScreenTypeDelegate* delegate);
-
   Screen();
   virtual ~Screen();
+
+  // Retrieves the single Screen object.
+  static Screen* GetScreen();
+
+  // Sets the global screen. NOTE: this does not take ownership of |screen|.
+  // Tests must be sure to reset any state they install.
+  static void SetScreenInstance(Screen* instance);
 
   // Returns the current absolute position of the mouse pointer.
   virtual gfx::Point GetCursorScreenPoint() = 0;

@@ -138,7 +138,7 @@ void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
                                    const gfx::Size& tooltip_size) {
   gfx::Rect tooltip_rect(mouse_pos, tooltip_size);
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(tooltip_window_);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   gfx::Rect display_bounds(screen->GetDisplayNearestPoint(mouse_pos).bounds());
 
   // If tooltip is out of bounds on the x axis, we simply shift it
@@ -165,9 +165,8 @@ void TooltipAura::DestroyWidget() {
   }
 }
 
-int TooltipAura::GetMaxWidth(const gfx::Point& location,
-                             aura::Window* context) const {
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(context);
+int TooltipAura::GetMaxWidth(const gfx::Point& location) const {
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   gfx::Rect display_bounds(screen->GetDisplayNearestPoint(location).bounds());
   return std::min(kTooltipMaxWidthPixels, (display_bounds.width() + 1) / 2);
 }
@@ -176,7 +175,7 @@ void TooltipAura::SetText(aura::Window* window,
                           const base::string16& tooltip_text,
                           const gfx::Point& location) {
   tooltip_window_ = window;
-  tooltip_view_->SetMaxWidth(GetMaxWidth(location, window));
+  tooltip_view_->SetMaxWidth(GetMaxWidth(location));
   tooltip_view_->SetText(tooltip_text);
 
   if (!widget_) {

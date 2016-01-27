@@ -40,8 +40,7 @@ class ManifestIconSelector {
   static GURL FindBestMatchingIcon(
       const std::vector<content::Manifest::Icon>& icons,
       int ideal_icon_size_in_dp,
-      int minimum_icon_size_in_dp,
-      const gfx::Screen* screen);
+      int minimum_icon_size_in_dp);
 
  private:
   ManifestIconSelector(int ideal_icon_size_in_px,

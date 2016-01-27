@@ -55,11 +55,8 @@ bool ManifestIconDownloader::Download(
   if (!web_contents || !icon_url.is_valid())
     return false;
 
-  const gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(web_contents->GetNativeView());
-
   const float device_scale_factor =
-      screen->GetPrimaryDisplay().device_scale_factor();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
   const int ideal_icon_size_in_px =
       static_cast<int>(round(ideal_icon_size_in_dp * device_scale_factor));
   const int minimum_icon_size_in_px =

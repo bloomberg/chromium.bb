@@ -117,7 +117,7 @@ app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
     view = new app_list::AppListView(delegate_->GetViewDelegateForCreate());
   }
 
-  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+  gfx::Point cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   view->InitAsBubbleAtFixedLocation(NULL,
                                     0,
                                     cursor,

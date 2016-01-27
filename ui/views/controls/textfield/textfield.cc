@@ -1090,8 +1090,8 @@ void Textfield::WriteDragDataForView(View* sender,
   label.SetSubpixelRenderingEnabled(false);
   gfx::Size size(label.GetPreferredSize());
   gfx::NativeView native_view = GetWidget()->GetNativeView();
-  gfx::Display display = gfx::Screen::GetScreenFor(native_view)->
-      GetDisplayNearestWindow(native_view);
+  gfx::Display display =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
   size.SetToMin(gfx::Size(display.size().width(), height()));
   label.SetBoundsRect(gfx::Rect(size));
   scoped_ptr<gfx::Canvas> canvas(

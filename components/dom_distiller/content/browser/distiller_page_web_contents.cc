@@ -143,7 +143,7 @@ gfx::Size DistillerPageWebContents::GetSizeForNewRenderView(
   // in the executed domdistiller.js won't be 0.
   if (size.IsEmpty()) {
     DVLOG(1) << "Using fullscreen as default RenderView size";
-    size = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().size();
+    size = gfx::Screen::GetScreen()->GetPrimaryDisplay().size();
   }
   return size;
 }

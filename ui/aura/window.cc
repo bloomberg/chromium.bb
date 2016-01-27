@@ -67,8 +67,7 @@ class ScopedCursorHider {
       client::CursorClient* cursor_client = client::GetCursorClient(window_);
       if (cursor_client) {
         const gfx::Display& display =
-            gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(
-                window_);
+            gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
         cursor_client->SetDisplay(display);
         cursor_client->ShowCursor();
       }

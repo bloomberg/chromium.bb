@@ -696,8 +696,9 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   float scale = 1;
   aura::Window* root = host_->window();
   if (root) {
-    scale = gfx::Screen::GetScreenFor(root)->
-        GetDisplayNearestWindow(root).device_scale_factor();
+    scale = gfx::Screen::GetScreen()
+                ->GetDisplayNearestWindow(root)
+                .device_scale_factor();
   }
   gfx::Rect bounds_in_pixels =
     gfx::ScaleToEnclosingRect(bounds, scale, scale);

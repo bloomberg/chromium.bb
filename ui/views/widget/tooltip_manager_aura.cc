@@ -49,7 +49,7 @@ void TooltipManagerAura::UpdateTooltipManagerForCapture(Widget* source) {
   if (!screen_position_client)
     return;
   screen_position_client->ConvertPointToScreen(root_window, &screen_loc);
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   aura::Window* target = screen->GetWindowAtScreenPoint(screen_loc);
   if (!target)
     return;
@@ -81,10 +81,10 @@ const gfx::FontList& TooltipManagerAura::GetFontList() const {
   return GetDefaultFontList();
 }
 
-int TooltipManagerAura::GetMaxWidth(const gfx::Point& point,
-                                    aura::Window* context) const {
-  return aura::client::GetTooltipClient(context->GetRootWindow())->
-      GetMaxWidth(point, context);
+int TooltipManagerAura::GetMaxWidth(const gfx::Point& point) const {
+  return aura::client::GetTooltipClient(
+             widget_->GetNativeView()->GetRootWindow())
+      ->GetMaxWidth(point);
 }
 
 void TooltipManagerAura::UpdateTooltip() {

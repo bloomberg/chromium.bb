@@ -113,10 +113,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
   }
 
   GURL icon_src = ManifestIconSelector::FindBestMatchingIcon(
-      manifest.icons,
-      ideal_icon_size_in_dp_,
-      minimum_icon_size_in_dp_,
-      gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
+      manifest.icons, ideal_icon_size_in_dp_, minimum_icon_size_in_dp_);
 
   // If fetching the Manifest icon fails, fallback to the best favicon
   // for the page.
@@ -132,10 +129,8 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
 
   // Save the splash screen URL for the later download.
   splash_screen_url_ = ManifestIconSelector::FindBestMatchingIcon(
-      manifest.icons,
-      ideal_splash_image_size_in_dp_,
-      minimum_splash_image_size_in_dp_,
-      gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
+      manifest.icons, ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_);
 
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
@@ -197,9 +192,9 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
 
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.
-  int ideal_icon_size_in_px = ideal_icon_size_in_dp_ *
-      gfx::Screen::GetScreenFor(web_contents()->GetNativeView())->
-          GetPrimaryDisplay().device_scale_factor();
+  int ideal_icon_size_in_px =
+      ideal_icon_size_in_dp_ *
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
   int threshold_to_get_any_largest_icon = ideal_icon_size_in_px - 1;
   favicon_service->GetLargestRawFaviconForPageURL(
       shortcut_info_.url,

@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::Create(GetFullscreenSize()));
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
+  gfx::Screen::SetScreenInstance(test_screen.get());
   scoped_ptr<aura::WindowTreeHost> host(
       test_screen->CreateHostForPrimaryDisplay());
   aura::client::SetCaptureClient(

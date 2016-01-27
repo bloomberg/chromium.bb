@@ -146,7 +146,7 @@ void ChromeBrowserMainExtraPartsAura::PreCreateThreads() {
 #endif
   if (!should_open_ash) {
     gfx::Screen* screen = views::CreateDesktopScreen();
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
+    gfx::Screen::SetScreenInstance(screen);
 #if defined(USE_X11)
     views::LinuxUI::instance()->UpdateDeviceScaleFactor(
         screen->GetPrimaryDisplay().device_scale_factor());

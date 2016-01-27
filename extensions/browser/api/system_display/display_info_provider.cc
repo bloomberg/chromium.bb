@@ -77,8 +77,7 @@ DisplayInfoProvider::CreateDisplayUnitInfo(const gfx::Display& display,
 void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
 
 DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
-  // TODO(scottmg): Native is wrong http://crbug.com/133312
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   int64_t primary_id = screen->GetPrimaryDisplay().id();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
   DisplayInfo all_displays;

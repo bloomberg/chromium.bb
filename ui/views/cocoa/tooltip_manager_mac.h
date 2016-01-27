@@ -18,8 +18,7 @@ class TooltipManagerMac : public TooltipManager {
   ~TooltipManagerMac() override;
 
   // TooltipManager:
-  int GetMaxWidth(const gfx::Point& location,
-                  gfx::NativeView context) const override;
+  int GetMaxWidth(const gfx::Point& location) const override;
   const gfx::FontList& GetFontList() const override;
   void UpdateTooltip() override;
   void TooltipTextChanged(View* view) override;

@@ -65,7 +65,7 @@ void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
 
   gfx::Size host_size(800, 600);
   test_screen_.reset(aura::TestScreen::Create(host_size));
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+  gfx::Screen::SetScreenInstance(test_screen_.get());
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(
       new ::wm::WMTestHelper(host_size, content::GetContextFactory()));

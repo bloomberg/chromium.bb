@@ -62,7 +62,7 @@ void DragDownloadItem(const content::DownloadItem* download,
   if (!root_window || !aura::client::GetDragDropClient(root_window))
     return;
 
-  gfx::Point location = gfx::Screen::GetScreenFor(view)->GetCursorScreenPoint();
+  gfx::Point location = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
       data,

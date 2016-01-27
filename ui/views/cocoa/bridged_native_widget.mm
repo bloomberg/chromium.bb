@@ -96,7 +96,7 @@ int kWindowPropertiesKey;
 
 float GetDeviceScaleFactorFromView(NSView* view) {
   gfx::Display display =
-      gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
   DCHECK(display.is_valid());
   return display.device_scale_factor();
 }

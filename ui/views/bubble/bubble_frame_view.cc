@@ -370,9 +370,9 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 gfx::Rect BubbleFrameView::GetAvailableScreenBounds(
     const gfx::Rect& rect) const {
   // The bubble attempts to fit within the current screen bounds.
-  // TODO(scottmg): Native is wrong. http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
-      rect.CenterPoint()).work_area();
+  return gfx::Screen::GetScreen()
+      ->GetDisplayNearestPoint(rect.CenterPoint())
+      .work_area();
 }
 
 bool BubbleFrameView::IsCloseButtonVisible() const {

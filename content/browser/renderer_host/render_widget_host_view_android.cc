@@ -429,8 +429,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     src_subrect = gfx::Rect(bounds);
   DCHECK_LE(src_subrect.width() + src_subrect.x(), bounds.width());
   DCHECK_LE(src_subrect.height() + src_subrect.y(), bounds.height());
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
   DCHECK_GT(device_scale_factor, 0);
   gfx::Size dst_size(
@@ -885,8 +884,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
   gfx::Size dst_size_in_pixel =
       gfx::ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();
@@ -2057,8 +2055,7 @@ void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
 // static
 void RenderWidgetHostViewBase::GetDefaultScreenInfo(
     blink::WebScreenInfo* results) {
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   results->rect = display.bounds();
   // TODO(husky): Remove any system controls from availableRect.
   results->availableRect = display.work_area();

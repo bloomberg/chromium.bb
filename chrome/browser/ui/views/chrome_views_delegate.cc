@@ -195,8 +195,9 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetBoolean("maximized",
                                  show_state == ui::SHOW_STATE_MAXIMIZED);
   window_preferences->SetBoolean("docked", show_state == ui::SHOW_STATE_DOCKED);
-  gfx::Rect work_area(gfx::Screen::GetScreenFor(window->GetNativeView())->
-      GetDisplayNearestWindow(window->GetNativeView()).work_area());
+  gfx::Rect work_area(gfx::Screen::GetScreen()
+                          ->GetDisplayNearestWindow(window->GetNativeView())
+                          .work_area());
   window_preferences->SetInteger("work_area_left", work_area.x());
   window_preferences->SetInteger("work_area_top", work_area.y());
   window_preferences->SetInteger("work_area_right", work_area.right());
@@ -237,8 +238,8 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
   gfx::NativeView window = widget->GetNativeView();
   if (chrome::GetHostDesktopTypeForNativeView(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH) {
-    gfx::Display display = gfx::Screen::GetScreenFor(window)->
-        GetDisplayMatching(*bounds);
+    gfx::Display display =
+        gfx::Screen::GetScreen()->GetDisplayMatching(*bounds);
     bounds->AdjustToFit(display.work_area());
     ash::wm::GetWindowState(window)->set_minimum_visibility(true);
   }

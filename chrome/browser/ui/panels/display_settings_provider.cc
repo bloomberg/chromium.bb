@@ -66,8 +66,7 @@ void DisplaySettingsProvider::RemoveFullScreenObserver(
 
 // TODO(scottmg): This should be moved to ui/.
 gfx::Rect DisplaySettingsProvider::GetPrimaryDisplayArea() const {
-  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
+  return gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 }
 
 gfx::Rect DisplaySettingsProvider::GetPrimaryWorkArea() const {
@@ -76,8 +75,7 @@ gfx::Rect DisplaySettingsProvider::GetPrimaryWorkArea() const {
   // screen (and overlap Dock). And we also want to exclude the system menu
   // area. Note that the rect returned from gfx::Screen util functions is in
   // platform-independent screen coordinates with (0, 0) as the top-left corner.
-  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect display_area = display.bounds();
   gfx::Rect work_area = display.work_area();
   int system_menu_height = work_area.y() - display_area.y();
@@ -87,21 +85,18 @@ gfx::Rect DisplaySettingsProvider::GetPrimaryWorkArea() const {
   }
   return display_area;
 #else
-  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area();
+  return gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 #endif
 }
 
 gfx::Rect DisplaySettingsProvider::GetDisplayAreaMatching(
     const gfx::Rect& bounds) const {
-  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen()->GetDisplayMatching(bounds).bounds();
+  return gfx::Screen::GetScreen()->GetDisplayMatching(bounds).bounds();
 }
 
 gfx::Rect DisplaySettingsProvider::GetWorkAreaMatching(
     const gfx::Rect& bounds) const {
-  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   gfx::Display display = screen->GetDisplayMatching(bounds);
   if (display.bounds() == screen->GetPrimaryDisplay().bounds())
     return GetPrimaryWorkArea();

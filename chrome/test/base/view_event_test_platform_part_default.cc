@@ -18,7 +18,7 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
       ui::ContextFactory* context_factory) {
 #if defined(USE_AURA)
     screen_.reset(views::CreateDesktopScreen());
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+    gfx::Screen::SetScreenInstance(screen_.get());
     aura::Env::CreateInstance(true);
     aura::Env::GetInstance()->set_context_factory(context_factory);
 #endif
@@ -27,7 +27,7 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
   ~ViewEventTestPlatformPartDefault() override {
 #if defined(USE_AURA)
     aura::Env::DeleteInstance();
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
+    gfx::Screen::SetScreenInstance(nullptr);
 #endif
   }
 

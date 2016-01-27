@@ -218,7 +218,7 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
             !bounds().Contains(ui::EventLocationFromNative(xev)))
           return false;
       } else {
-        gfx::Screen* screen = gfx::Screen::GetScreenFor(window());
+        gfx::Screen* screen = gfx::Screen::GetScreen();
         gfx::Display display = screen->GetDisplayNearestWindow(window());
         return touch_display_id == display.id();
       }

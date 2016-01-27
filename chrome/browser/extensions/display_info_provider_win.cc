@@ -83,8 +83,7 @@ void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
 }
 
 gfx::Screen* DisplayInfoProviderWin::GetActiveScreen() {
-  // TODO(scottmg): native screen is wrong http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen();
+  return gfx::Screen::GetScreen();
 }
 
 // static

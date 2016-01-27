@@ -93,8 +93,7 @@ int main(int argc, char** argv) {
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
     scoped_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                   desktop_screen.get());
+    gfx::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
     views::examples::ShowExamplesWindow(

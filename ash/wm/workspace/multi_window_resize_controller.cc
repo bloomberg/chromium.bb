@@ -236,8 +236,7 @@ void MultiWindowResizeController::OnWindowDestroying(
 MultiWindowResizeController::ResizeWindows
 MultiWindowResizeController::DetermineWindowsFromScreenPoint(
     aura::Window* window) const {
-  gfx::Point mouse_location(
-      gfx::Screen::GetScreenFor(window)->GetCursorScreenPoint());
+  gfx::Point mouse_location(gfx::Screen::GetScreen()->GetCursorScreenPoint());
   ::wm::ConvertPointFromScreen(window, &mouse_location);
   const int component =
       window->delegate()->GetNonClientComponent(mouse_location);

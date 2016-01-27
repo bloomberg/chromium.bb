@@ -151,9 +151,8 @@ void X11WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
   if (!widget)
     return;
 
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   gfx::Rect display_work_area =
-      screen->GetDisplayNearestWindow(target).work_area();
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(target).work_area();
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
   if (event->IsMiddleMouseButton()) {
     bounds.set_y(display_work_area.y());

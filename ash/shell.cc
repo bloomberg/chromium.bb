@@ -243,7 +243,7 @@ aura::Window* Shell::GetTargetRootWindow() {
 
 // static
 gfx::Screen* Shell::GetScreen() {
-  return gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+  return gfx::Screen::GetScreen();
 }
 
 // static

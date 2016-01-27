@@ -59,8 +59,7 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
   void AddObserverOnUIThread() {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
-    gfx::Screen* screen =
-        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     if (screen) {
       screen->AddObserver(this);
       SendDisplayRotation(screen->GetPrimaryDisplay());
@@ -69,8 +68,7 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
   void RemoveObserverOnUIThread() {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
-    gfx::Screen* screen =
-        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     if (screen)
       screen->RemoveObserver(this);
   }

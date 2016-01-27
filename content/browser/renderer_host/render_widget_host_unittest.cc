@@ -463,7 +463,7 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
 #if defined(USE_AURA)
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+    gfx::Screen::SetScreenInstance(screen_.get());
 #endif
     host_.reset(new MockRenderWidgetHost(delegate_.get(), process_,
                                          process_->GetNextRoutingID()));
@@ -483,7 +483,7 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset();
 
 #if defined(USE_AURA)
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
+    gfx::Screen::SetScreenInstance(nullptr);
     screen_.reset();
 #endif
 #if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))

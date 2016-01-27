@@ -55,8 +55,8 @@ class CandidateWindowBorder : public views::BubbleBorder {
     // It cannot use the normal logic of arrow offset for horizontal offscreen,
     // because the arrow must be in the content's edge. But CandidateWindow has
     // to be visible even when |anchor_rect| is out of the screen.
-    gfx::Rect work_area = gfx::Screen::GetNativeScreen()->
-        GetDisplayNearestWindow(parent_).work_area();
+    gfx::Rect work_area =
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(parent_).work_area();
     if (bounds.right() > work_area.right())
       bounds.set_x(work_area.right() - bounds.width());
     if (bounds.x() < work_area.x())

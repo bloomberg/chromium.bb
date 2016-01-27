@@ -59,14 +59,13 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
 bool DisplayManagerTestApi::TestIfMouseWarpsAt(
     ui::test::EventGenerator& event_generator,
     const gfx::Point& point_in_screen) {
-  aura::Window* context = Shell::GetAllRootWindows()[0];
   DCHECK(!Shell::GetInstance()->display_manager()->IsInUnifiedMode());
   static_cast<ExtendedMouseWarpController*>(
       Shell::GetInstance()
           ->mouse_cursor_filter()
           ->mouse_warp_controller_for_test())
       ->allow_non_native_event_for_test();
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(context);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   gfx::Display original_display =
       screen->GetDisplayNearestPoint(point_in_screen);
   event_generator.MoveMouseTo(point_in_screen);

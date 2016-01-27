@@ -256,8 +256,8 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
           client::CursorClient* cursor_client =
               client::GetCursorClient(root_window);
           if (cursor_client) {
-            const gfx::Display display = gfx::Screen::GetScreenFor(
-                root_window)->GetDisplayNearestWindow(root_window);
+            const gfx::Display display =
+                gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
             cursor_client->SetDisplay(display);
           }
           // EnterNotify creates ET_MOUSE_MOVE. Mark as synthesized as this is
@@ -398,8 +398,9 @@ void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = compositor()->device_scale_factor();
-  float new_scale = gfx::Screen::GetScreenFor(window())->
-      GetDisplayNearestWindow(window()).device_scale_factor();
+  float new_scale = gfx::Screen::GetScreen()
+                        ->GetDisplayNearestWindow(window())
+                        .device_scale_factor();
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};

@@ -565,9 +565,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   void HandleMouseLocation(SubmenuView* source,
                            const gfx::Point& mouse_location);
 
-  // Retrieve an appropriate Screen.
-  gfx::Screen* GetScreen();
-
   // The active instance.
   static MenuController* active_instance_;
 

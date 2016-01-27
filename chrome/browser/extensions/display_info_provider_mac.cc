@@ -33,7 +33,7 @@ void DisplayInfoProviderMac::UpdateDisplayUnitInfoForPlatform(
 }
 
 gfx::Screen* DisplayInfoProviderMac::GetActiveScreen() {
-  return gfx::Screen::GetNativeScreen();
+  return gfx::Screen::GetScreen();
 }
 
 // static

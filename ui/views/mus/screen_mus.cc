@@ -76,7 +76,7 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
 ScreenMus::~ScreenMus() {}
 
 void ScreenMus::Init(mojo::ApplicationImpl* app) {
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, this);
+  gfx::Screen::SetScreenInstance(this);
 
   app->ConnectToService("mojo:mus", &display_manager_);
 

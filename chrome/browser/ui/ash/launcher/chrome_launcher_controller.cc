@@ -121,8 +121,8 @@ namespace {
 const char kAppShelfIdPlaceholder[] = "AppShelfIDPlaceholder--------";
 
 std::string GetPrefKeyForRootWindow(aura::Window* root_window) {
-  gfx::Display display = gfx::Screen::GetScreenFor(
-      root_window)->GetDisplayNearestWindow(root_window);
+  gfx::Display display =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
   DCHECK(display.is_valid());
 
   return base::Int64ToString(display.id());

@@ -261,9 +261,9 @@ bool IsXButtonUpEvent(const ui::MouseEvent* event) {
 }
 
 void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
-  const gfx::Display display = window ?
-      gfx::Screen::GetScreenFor(window)->GetDisplayNearestWindow(window) :
-      gfx::Screen::GetScreenFor(window)->GetPrimaryDisplay();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
+  const gfx::Display display = window ? screen->GetDisplayNearestWindow(window)
+                                      : screen->GetPrimaryDisplay();
   results->rect = display.bounds();
   results->availableRect = display.work_area();
   // TODO(derat|oshima): Don't hardcode this. Get this from display object.
@@ -527,7 +527,7 @@ void RenderWidgetHostViewAura::InitAsChild(
     parent_view->AddChild(GetNativeView());
 
   const gfx::Display display =
-      gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(window_);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   device_scale_factor_ = display.device_scale_factor();
 }
 
@@ -580,7 +580,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 
   const gfx::Display display =
-      gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(window_);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   device_scale_factor_ = display.device_scale_factor();
 }
 
@@ -603,8 +603,8 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
       host_tracker_.reset(new aura::WindowTracker);
       host_tracker_->Add(reference_window);
     }
-    gfx::Display display = gfx::Screen::GetScreenFor(window_)->
-        GetDisplayNearestWindow(reference_window);
+    gfx::Display display =
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(reference_window);
     parent = reference_window->GetRootWindow();
     bounds = display.bounds();
   }
@@ -613,7 +613,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   Focus();
 
   const gfx::Display display =
-      gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(window_);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   device_scale_factor_ = display.device_scale_factor();
 }
 
@@ -993,8 +993,8 @@ void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
-  const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
-      GetDisplayNearestWindow(window_);
+  const gfx::Display display =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   current_cursor_.SetDisplayInfo(display);
   UpdateCursorIfOverSelf();
 }
@@ -1191,12 +1191,9 @@ void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
 }
 
 void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
-  // Clip the cursor if chrome is running on regular desktop.
-  if (gfx::Screen::GetScreenFor(window_) == gfx::Screen::GetNativeScreen()) {
-    RECT window_rect =
-        gfx::win::DIPToScreenRect(window_->GetBoundsInScreen()).ToRECT();
-    ::ClipCursor(&window_rect);
-  }
+  RECT window_rect =
+      gfx::win::DIPToScreenRect(window_->GetBoundsInScreen()).ToRECT();
+  ::ClipCursor(&window_rect);
 }
 
 void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
@@ -1851,7 +1848,7 @@ void RenderWidgetHostViewAura::OnDisplayRemoved(
 void RenderWidgetHostViewAura::OnDisplayMetricsChanged(
     const gfx::Display& display, uint32_t metrics) {
   // The screen info should be updated regardless of the metric change.
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   if (display.id() == screen->GetDisplayNearestWindow(window_).id()) {
     UpdateScreenInfo(window_);
     current_cursor_.SetDisplayInfo(display);
@@ -1921,7 +1918,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   UpdateScreenInfo(window_);
 
   device_scale_factor_ = device_scale_factor;
-  const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
+  const gfx::Display display = gfx::Screen::GetScreen()->
       GetDisplayNearestWindow(window_);
   DCHECK_EQ(device_scale_factor, display.device_scale_factor());
   current_cursor_.SetDisplayInfo(display);
@@ -2446,7 +2443,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     // If we lose the focus while fullscreen, close the window; Pepper Flash
     // won't do it for us (unlike NPAPI Flash). However, we do not close the
     // window if we lose the focus to a window on another display.
-    gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     bool focusing_other_display =
         gained_focus && screen->GetNumDisplays() > 1 &&
         (screen->GetDisplayNearestWindow(window_).id() !=
@@ -2508,7 +2505,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
       window_->GetHost()->RemoveObserver(this);
     UnlockMouse();
     aura::client::SetTooltipText(window_, NULL);
-    gfx::Screen::GetScreenFor(window_)->RemoveObserver(this);
+    gfx::Screen::GetScreen()->RemoveObserver(this);
 
     // This call is usually no-op since |this| object is already removed from
     // the Aura root window and we don't have a way to get an input method
@@ -2544,7 +2541,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow() {
   aura::client::SetActivationDelegate(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
   window_->set_layer_owner_delegate(delegated_frame_host_.get());
-  gfx::Screen::GetScreenFor(window_)->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
@@ -2555,7 +2552,7 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (!root_window)
     return;
 
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(GetNativeView());
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   DCHECK(screen);
 
   gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
@@ -2703,15 +2700,7 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   // to avoid the web contents area looking blurry we translate the web contents
   // in the +x, +y direction to land on the nearest pixel boundary. This may
   // cause the bottom and right edges to be clipped slightly, but that's ok.
-  aura::Window* snapped = NULL;
-  // On desktop, use the root window. On alternative environment (ash),
-  // use the toplevel window which must be already snapped.
-  if (gfx::Screen::GetScreenFor(window_) !=
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE)) {
-    snapped = window_->GetRootWindow();
-  } else {
-    snapped = window_->GetToplevelWindow();
-  }
+  aura::Window* snapped = window_->GetRootWindow();
   if (snapped && snapped != window_)
     ui::SnapLayerToPhysicalPixelBoundary(snapped->layer(), window_->layer());
 

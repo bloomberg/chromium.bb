@@ -17,7 +17,7 @@ namespace content {
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   CHECK(!platform_);
   aura::TestScreen* screen = aura::TestScreen::Create(gfx::Size());
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
+  gfx::Screen::SetScreenInstance(screen);
   platform_ = new ShellPlatformDataAura(default_window_size);
 }
 

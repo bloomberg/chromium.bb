@@ -42,12 +42,12 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
 ChromeBrowserMainExtraPartsMetricsTest::ChromeBrowserMainExtraPartsMetricsTest()
     : device_data_manager_test_api_() {
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &test_screen_);
+  gfx::Screen::SetScreenInstance(&test_screen_);
 }
 
 ChromeBrowserMainExtraPartsMetricsTest::
     ~ChromeBrowserMainExtraPartsMetricsTest() {
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
+  gfx::Screen::SetScreenInstance(nullptr);
 }
 
 // Verify a TouchEventsEnabled value isn't recorded during construction.

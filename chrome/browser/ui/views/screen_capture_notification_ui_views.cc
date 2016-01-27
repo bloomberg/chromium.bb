@@ -195,7 +195,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   // TODO(sergeyu): Move the notification to the display being captured when
   // per-display screen capture is supported.
   gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();

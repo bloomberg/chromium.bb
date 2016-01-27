@@ -63,10 +63,8 @@ void AppBannerDataFetcherAndroid::FetchWebappSplashScreenImage(
   DCHECK(web_contents);
 
   GURL image_url = ManifestIconSelector::FindBestMatchingIcon(
-      web_app_data().icons,
-      ideal_splash_image_size_in_dp_,
-      minimum_splash_image_size_in_dp_,
-      gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
+      web_app_data().icons, ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_);
 
   ShortcutHelper::FetchSplashScreenImage(
       web_contents,

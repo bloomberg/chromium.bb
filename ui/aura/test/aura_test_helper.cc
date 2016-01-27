@@ -72,7 +72,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
   gfx::Size host_size(800, 600);
   test_screen_.reset(TestScreen::Create(host_size));
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+  gfx::Screen::SetScreenInstance(test_screen_.get());
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
 
   focus_client_.reset(new TestFocusClient);
@@ -94,7 +94,7 @@ void AuraTestHelper::TearDown() {
   host_.reset();
   ui::GestureRecognizer::Reset();
   test_screen_.reset();
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
+  gfx::Screen::SetScreenInstance(NULL);
 
 #if defined(USE_X11)
   ui::test::ResetXCursorCache();

@@ -197,8 +197,7 @@ WindowSizer::WindowSizer(
     const Browser* browser)
     : state_provider_(std::move(state_provider)),
       target_display_provider_(std::move(target_display_provider)),
-      // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-      screen_(gfx::Screen::GetNativeScreen()),
+      screen_(gfx::Screen::GetScreen()),
       browser_(browser) {}
 
 WindowSizer::WindowSizer(

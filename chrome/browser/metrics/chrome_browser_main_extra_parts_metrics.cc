@@ -300,7 +300,7 @@ ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
 
 ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() {
   if (is_screen_observer_)
-    gfx::Screen::GetNativeScreen()->RemoveObserver(this);
+    gfx::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
@@ -345,9 +345,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
       base::Bind(&RecordStartupMetricsOnBlockingPool),
       base::TimeDelta::FromSeconds(kStartupMetricsGatheringDelaySeconds));
 
-  display_count_ = gfx::Screen::GetNativeScreen()->GetNumDisplays();
+  display_count_ = gfx::Screen::GetScreen()->GetNumDisplays();
   UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
-  gfx::Screen::GetNativeScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
@@ -371,7 +371,7 @@ void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
 }
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
-  int display_count = gfx::Screen::GetNativeScreen()->GetNumDisplays();
+  int display_count = gfx::Screen::GetScreen()->GetNumDisplays();
   if (display_count != display_count_) {
     display_count_ = display_count;
     UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnChange", display_count_);

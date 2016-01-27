@@ -184,8 +184,7 @@ TEST_F(UnifiedMouseWarpControllerTest, WarpMouse) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("500x500,600+0-500x500");
-  ASSERT_EQ(1, gfx::Screen::GetScreenFor(Shell::GetPrimaryRootWindow())
-                   ->GetNumDisplays());
+  ASSERT_EQ(1, gfx::Screen::GetScreen()->GetNumDisplays());
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(10, 10)));
   // Touch the right edge of the first display. Pointer should warp.
@@ -204,8 +203,7 @@ TEST_F(UnifiedMouseWarpControllerTest, WarpMouse) {
 
   // With 2X and 1X displays
   UpdateDisplay("500x500*2,600+0-500x500");
-  ASSERT_EQ(1, gfx::Screen::GetScreenFor(Shell::GetPrimaryRootWindow())
-                   ->GetNumDisplays());
+  ASSERT_EQ(1, gfx::Screen::GetScreen()->GetNumDisplays());
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(10, 10)));
   // Touch the right edge of the first display. Pointer should warp.
@@ -225,8 +223,7 @@ TEST_F(UnifiedMouseWarpControllerTest, WarpMouse) {
 
   // With 1X and 2X displays
   UpdateDisplay("500x500,600+0-500x500*2");
-  ASSERT_EQ(1, gfx::Screen::GetScreenFor(Shell::GetPrimaryRootWindow())
-                   ->GetNumDisplays());
+  ASSERT_EQ(1, gfx::Screen::GetScreen()->GetNumDisplays());
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(10, 10)));
   // Touch the right edge of the first display. Pointer should warp.
@@ -245,8 +242,7 @@ TEST_F(UnifiedMouseWarpControllerTest, WarpMouse) {
 
   // With two 2X displays
   UpdateDisplay("500x500*2,600+0-500x500*2");
-  ASSERT_EQ(1, gfx::Screen::GetScreenFor(Shell::GetPrimaryRootWindow())
-                   ->GetNumDisplays());
+  ASSERT_EQ(1, gfx::Screen::GetScreen()->GetNumDisplays());
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(10, 10)));
   // Touch the right edge of the first display. Pointer should warp.

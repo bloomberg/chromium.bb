@@ -612,10 +612,7 @@ gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
 }
 
 gfx::Point ExclusiveAccessBubbleViews::GetCursorScreenPoint() {
-  gfx::Point cursor_pos =
-      gfx::Screen::GetScreenFor(
-          bubble_view_context_->GetBubbleAssociatedWidget()->GetNativeView())
-          ->GetCursorScreenPoint();
+  gfx::Point cursor_pos = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   views::View::ConvertPointFromScreen(GetBrowserRootView(), &cursor_pos);
   return cursor_pos;
 }

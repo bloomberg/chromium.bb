@@ -183,8 +183,8 @@ BlimpEngineSession::~BlimpEngineSession() {
 }
 
 void BlimpEngineSession::Initialize() {
-  DCHECK(!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+  DCHECK(!gfx::Screen::GetScreen());
+  gfx::Screen::SetScreenInstance(screen_.get());
 
 #if defined(USE_X11)
   window_tree_host_.reset(aura::WindowTreeHost::Create(

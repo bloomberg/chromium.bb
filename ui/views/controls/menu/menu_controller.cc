@@ -889,7 +889,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
 
 void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
   if (submenu->IsShowing()) {
-    gfx::Point point = GetScreen()->GetCursorScreenPoint();
+    gfx::Point point = gfx::Screen::GetScreen()->GetCursorScreenPoint();
     const SubmenuView* root_submenu =
         submenu->GetMenuItem()->GetRootMenuItem()->GetSubmenu();
     View::ConvertPointFromScreen(
@@ -1235,14 +1235,16 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
 
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.
-  pending_state_.monitor_bounds = GetScreen()->GetDisplayNearestPoint(
-      bounds.origin()).work_area();
+  pending_state_.monitor_bounds = gfx::Screen::GetScreen()
+                                      ->GetDisplayNearestPoint(bounds.origin())
+                                      .work_area();
 
   if (!pending_state_.monitor_bounds.Contains(bounds)) {
     // Use the monitor area if the work area doesn't contain the bounds. This
     // handles showing a menu from the launcher.
-    gfx::Rect monitor_area = GetScreen()->GetDisplayNearestPoint(
-        bounds.origin()).bounds();
+    gfx::Rect monitor_area = gfx::Screen::GetScreen()
+                                 ->GetDisplayNearestPoint(bounds.origin())
+                                 .bounds();
     if (monitor_area.Contains(bounds))
       pending_state_.monitor_bounds = monitor_area;
   }
@@ -1275,7 +1277,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
     return false;
   }
 
-  gfx::NativeWindow window_under_mouse = GetScreen()->GetWindowUnderCursor();
+  gfx::NativeWindow window_under_mouse =
+      gfx::Screen::GetScreen()->GetWindowUnderCursor();
   // TODO(oshima): Replace with views only API.
   if (!owner_ || window_under_mouse != owner_->GetNativeWindow())
     return false;
@@ -2274,7 +2277,7 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
   gfx::NativeView native_view = source->GetWidget()->GetNativeView();
   gfx::NativeWindow window = nullptr;
   if (native_view) {
-    gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     window = screen->GetWindowAtScreenPoint(screen_loc);
   }
 #endif
@@ -2569,12 +2572,6 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
     SetSelection(pending_state_.item->GetParentMenuItem(),
                  SELECTION_OPEN_SUBMENU);
   }
-}
-
-gfx::Screen* MenuController::GetScreen() {
-  Widget* root = owner_ ? owner_->GetTopLevelWidget() : NULL;
-  return root ? gfx::Screen::GetScreenFor(root->GetNativeView())
-              : gfx::Screen::GetNativeScreen();
 }
 
 }  // namespace views

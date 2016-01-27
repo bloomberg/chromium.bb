@@ -11,8 +11,7 @@
 namespace {
 
 float GetDeviceScaleFactor() {
-  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  return display.device_scale_factor();
+  return gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
 }
 
 gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {

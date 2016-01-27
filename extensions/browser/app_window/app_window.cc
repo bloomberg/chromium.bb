@@ -851,7 +851,7 @@ void AppWindow::SetNativeWindowFullscreen() {
 
 bool AppWindow::IntersectsWithTaskbar() const {
 #if defined(OS_WIN)
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   gfx::Rect window_bounds = native_app_window_->GetRestoredBounds();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
 
@@ -1012,7 +1012,7 @@ void AppWindow::SaveWindowPosition() {
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   gfx::Rect screen_bounds =
-      gfx::Screen::GetNativeScreen()->GetDisplayMatching(bounds).work_area();
+      gfx::Screen::GetScreen()->GetDisplayMatching(bounds).work_area();
   ui::WindowShowState window_state = native_app_window_->GetRestoredState();
   cache->SaveGeometry(
       extension_id(), window_key_, bounds, screen_bounds, window_state);
@@ -1078,7 +1078,7 @@ AppWindow::CreateParams AppWindow::LoadDefaults(CreateParams params)
                            &cached_state)) {
       // App window has cached screen bounds, make sure it fits on screen in
       // case the screen resolution changed.
-      gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+      gfx::Screen* screen = gfx::Screen::GetScreen();
       gfx::Display display = screen->GetDisplayMatching(cached_bounds);
       gfx::Rect current_screen_bounds = display.work_area();
       SizeConstraints constraints(params.GetWindowMinimumSize(gfx::Insets()),

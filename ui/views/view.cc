@@ -946,8 +946,7 @@ bool View::IsMouseHovered() const {
   if (!GetWidget()->IsMouseEventsEnabled())
     return false;
 
-  gfx::Point cursor_pos(gfx::Screen::GetScreenFor(
-      GetWidget()->GetNativeView())->GetCursorScreenPoint());
+  gfx::Point cursor_pos(gfx::Screen::GetScreen()->GetCursorScreenPoint());
   ConvertPointFromScreen(this, &cursor_pos);
   return HitTestPoint(cursor_pos);
 }

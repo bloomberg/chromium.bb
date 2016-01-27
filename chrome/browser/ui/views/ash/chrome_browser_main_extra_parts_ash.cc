@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/screen_type_delegate.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 
@@ -26,20 +25,6 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #endif
-
-#if !defined(OS_CHROMEOS)
-class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
- public:
-  ScreenTypeDelegateWin() {}
-  gfx::ScreenType GetScreenTypeForNativeView(gfx::NativeView view) override {
-    return chrome::IsNativeViewInAsh(view) ?
-        gfx::SCREEN_TYPE_ALTERNATE :
-        gfx::SCREEN_TYPE_NATIVE;
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenTypeDelegateWin);
-};
-#endif  // !OS_CHROMEOS
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
 }
@@ -54,10 +39,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   ash::Shell::GetInstance()->CreateShelf();
   ash::Shell::GetInstance()->ShowShelf();
-#endif
-  } else {
-#if !defined(OS_CHROMEOS)
-    gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);
 #endif
   }
 #if defined(OS_CHROMEOS)

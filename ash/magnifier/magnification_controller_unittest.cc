@@ -703,8 +703,7 @@ TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
 
   GetMagnificationController()->SetEnabled(true);
 
-  gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(Shell::GetPrimaryRootWindow());
+  gfx::Screen* screen = gfx::Screen::GetScreen();
 
   UpdateDisplay("500x500, 500x500");
   EXPECT_EQ("0,0 1000x500", screen->GetPrimaryDisplay().bounds().ToString());

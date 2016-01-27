@@ -396,7 +396,7 @@ NSWindow* ApparentWindowForView(NSView* view) {
 
 blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
   gfx::Display display =
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(view);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
 
   NSScreen* screen = [NSScreen deepestScreen];
 
@@ -539,7 +539,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   delegated_frame_host_.reset(new DelegatedFrameHost(this));
 
-  gfx::Screen::GetScreenFor(cocoa_view_)->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 
   if (!is_guest_view_hack_)
     render_widget_host_->SetView(this);
@@ -555,7 +555,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  gfx::Screen::GetScreenFor(cocoa_view_)->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
@@ -1574,7 +1574,7 @@ uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
     gfx::Point* transformed_point) {
   // The surface hittest happens in device pixels, so we need to convert the
   // |point| from DIPs to pixels before hittesting.
-  float scale_factor = gfx::Screen::GetScreenFor(cocoa_view_)
+  float scale_factor = gfx::Screen::GetScreen()
                            ->GetDisplayNearestWindow(cocoa_view_)
                            .device_scale_factor();
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
@@ -1759,7 +1759,7 @@ void RenderWidgetHostViewMac::OnDisplayRemoved(const gfx::Display& display) {
 
 void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     const gfx::Display& display, uint32_t metrics) {
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(cocoa_view_);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   if (display.id() != screen->GetDisplayNearestWindow(cocoa_view_).id())
     return;
 

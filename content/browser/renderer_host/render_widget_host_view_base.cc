@@ -401,9 +401,8 @@ bool RenderWidgetHostViewBase::GetBackgroundOpaque() {
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
-  gfx::NativeView view = GetNativeView();
   gfx::Display display =
-      gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 display.device_scale_factor());
 }
@@ -535,7 +534,7 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
 
 bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   gfx::Display display =
-      gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor() &&
       current_display_rotation_ == display.rotation()) {

@@ -269,8 +269,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
   cursor_manager_.reset(
       new wm::CursorManager(scoped_ptr<wm::NativeCursorManager>(
           new ShellNativeCursorManager(host_.get()))));
-  cursor_manager_->SetDisplay(
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay());
+  cursor_manager_->SetDisplay(gfx::Screen::GetScreen()->GetPrimaryDisplay());
   cursor_manager_->SetCursor(ui::kCursorPointer);
   aura::client::SetCursorClient(host_->window(), cursor_manager_.get());
 
@@ -298,7 +297,7 @@ void ShellDesktopControllerAura::CreateRootWindow() {
     size = gfx::Size(1920, 1080);
 
   screen_.reset(new ShellScreen(size));
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+  gfx::Screen::SetScreenInstance(screen_.get());
   // TODO(mukai): Set up input method.
 
   host_.reset(screen_->CreateHostForPrimaryDisplay());

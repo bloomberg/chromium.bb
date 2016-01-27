@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -39,10 +38,8 @@ class VIEWS_EXPORT TooltipManager {
   virtual ~TooltipManager() {}
 
   // Returns the maximum width of the tooltip. |point| gives the location
-  // the tooltip is to be displayed on in screen coordinates. |context| is
-  // used to determine which gfx::Screen should be used.
-  virtual int GetMaxWidth(const gfx::Point& location,
-                          gfx::NativeView context) const = 0;
+  // the tooltip is to be displayed on in screen coordinates.
+  virtual int GetMaxWidth(const gfx::Point& location) const = 0;
 
   // Returns the font list used for tooltips.
   virtual const gfx::FontList& GetFontList() const = 0;

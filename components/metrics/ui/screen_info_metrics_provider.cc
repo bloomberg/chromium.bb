@@ -78,17 +78,15 @@ void ScreenInfoMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 gfx::Size ScreenInfoMetricsProvider::GetScreenSize() const {
-  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
+  return gfx::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
 }
 
 float ScreenInfoMetricsProvider::GetScreenDeviceScaleFactor() const {
-  return gfx::Screen::GetNativeScreen()->
-      GetPrimaryDisplay().device_scale_factor();
+  return gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
 }
 
 int ScreenInfoMetricsProvider::GetScreenCount() const {
-  // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen()->GetNumDisplays();
+  return gfx::Screen::GetScreen()->GetNumDisplays();
 }
 
 }  // namespace metrics

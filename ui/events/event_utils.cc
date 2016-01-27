@@ -71,7 +71,7 @@ bool ShouldDefaultToNaturalScroll() {
 }
 
 gfx::Display::TouchSupport GetInternalDisplayTouchSupport() {
-  gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   // No screen in some unit tests.
   if (!screen)
     return gfx::Display::TOUCH_SUPPORT_UNKNOWN;

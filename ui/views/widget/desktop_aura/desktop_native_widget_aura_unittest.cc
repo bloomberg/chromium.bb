@@ -434,9 +434,7 @@ TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupRepositionTest) {
 
   gfx::Rect new_pos(10, 10, 400, 400);
   popup_window.owned_window()->SetBoundsInScreen(
-      new_pos,
-      gfx::Screen::GetScreenFor(
-          popup_window.owned_window())->GetDisplayNearestPoint(gfx::Point()));
+      new_pos, gfx::Screen::GetScreen()->GetDisplayNearestPoint(gfx::Point()));
 
   EXPECT_EQ(new_pos,
             popup_window.top_level_widget()->GetWindowBoundsInScreen());

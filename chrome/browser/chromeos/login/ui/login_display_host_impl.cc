@@ -878,8 +878,7 @@ void LoginDisplayHostImpl::OnDisplayRemoved(const gfx::Display& old_display) {
 
 void LoginDisplayHostImpl::OnDisplayMetricsChanged(const gfx::Display& display,
                                                    uint32_t changed_metrics) {
-  gfx::Display primary_display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.id() != primary_display.id() ||
       !(changed_metrics & DISPLAY_METRIC_BOUNDS)) {
     return;

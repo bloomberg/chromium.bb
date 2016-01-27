@@ -110,8 +110,7 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   // Ensure the top left and top right of the window are on screen, with
   // priority given to the top left.
   gfx::Rect screen_rect =
-      gfx::Screen::GetScreenFor(parent_widget->GetNativeView())
-          ->GetDisplayNearestPoint(center).bounds();
+      gfx::Screen::GetScreen()->GetDisplayNearestPoint(center).bounds();
   gfx::Rect bounds_rect = gfx::Rect(x, y, width, height);
   bounds_rect.AdjustToFit(screen_rect);
   window->SetBounds(bounds_rect);

@@ -21,8 +21,7 @@ class ScopedTooltipDisabler;
 class AURA_EXPORT TooltipClient {
  public:
   // Returns the max width of the tooltip when shown at the specified location.
-  virtual int GetMaxWidth(const gfx::Point& point,
-                          aura::Window* context) const = 0;
+  virtual int GetMaxWidth(const gfx::Point& point) const = 0;
 
   // Informs the shell tooltip manager of change in tooltip for window |target|.
   virtual void UpdateTooltip(Window* target) = 0;

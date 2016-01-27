@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
   window->SetBounds(original_bounds);
   window->Show();
   // Dock the browser window using |kShowStateKey| property.
-  gfx::Rect work_area = gfx::Screen::GetScreenFor(window)
+  gfx::Rect work_area = gfx::Screen::GetScreen()
                             ->GetDisplayNearestPoint(window->bounds().origin())
                             .work_area();
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DOCKED);

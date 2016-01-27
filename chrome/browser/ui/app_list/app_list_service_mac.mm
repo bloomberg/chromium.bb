@@ -229,7 +229,7 @@ void AdjustWorkAreaForDock(const gfx::Display& display,
 
 void GetAppListWindowOrigins(
     NSWindow* window, NSPoint* target_origin, NSPoint* start_origin) {
-  gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
+  gfx::Screen* const screen = gfx::Screen::GetScreen();
   // Ensure y coordinates are flipped back into AppKit's coordinate system.
   bool cursor_is_visible = CGCursorIsVisible();
   gfx::Display display;

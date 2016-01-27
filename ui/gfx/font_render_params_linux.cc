@@ -210,7 +210,7 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
 #else
     // Linux does not support per-display DPI, so we use a slightly simpler
     // code path than on Chrome OS to figure out the device scale factor.
-    gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     if (screen) {
       gfx::Display display = screen->GetPrimaryDisplay();
       actual_query.device_scale_factor = display.device_scale_factor();

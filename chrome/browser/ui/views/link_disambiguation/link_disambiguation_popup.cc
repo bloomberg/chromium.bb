@@ -185,7 +185,7 @@ void LinkDisambiguationPopup::Show(
       zoomed_bitmap.width(),
       zoomed_bitmap.height());
   const gfx::Display display =
-      gfx::Screen::GetScreenFor(content)->GetDisplayNearestWindow(content);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(content);
   window_bounds.AdjustToFit(display.work_area());
   view_->GetWidget()->SetBounds(window_bounds);
   view_->GetWidget()->Show();

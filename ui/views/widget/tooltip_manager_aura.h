@@ -39,8 +39,7 @@ class TooltipManagerAura : public TooltipManager {
   static const gfx::FontList& GetDefaultFontList();
 
   // TooltipManager:
-  int GetMaxWidth(const gfx::Point& location,
-                  aura::Window* context) const override;
+  int GetMaxWidth(const gfx::Point& location) const override;
   const gfx::FontList& GetFontList() const override;
   void UpdateTooltip() override;
   void TooltipTextChanged(View* view) override;

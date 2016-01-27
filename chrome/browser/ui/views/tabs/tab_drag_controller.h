@@ -462,10 +462,6 @@ class TabDragController : public content::NotificationObserver,
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
 
-  // The screen that this drag is associated with. Cached, because other UI
-  // elements are NULLd at various points during the lifetime of this object.
-  gfx::Screen* screen_;
-
   // The desktop type that this drag is associated with. Cached, because other
   // UI elements are NULLd at various points during the lifetime of this
   // object.

@@ -19,7 +19,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/screen_type_delegate.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
@@ -427,14 +426,13 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
                                           &screen_position_client_);
 #if !defined(OS_CHROMEOS)
     desktop_screen_.reset(CreateDesktopScreen());
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                   desktop_screen_.get());
+    gfx::Screen::SetScreenInstance(desktop_screen_.get());
 #endif
   }
 
   void TearDown() override {
 #if !defined(OS_CHROMEOS)
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen());
+    gfx::Screen::SetScreenInstance(test_screen());
     desktop_screen_.reset();
 #endif
     aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
@@ -534,8 +532,7 @@ class TestTooltip : public Tooltip {
   const base::string16& tooltip_text() const { return tooltip_text_; }
 
   // Tooltip:
-  int GetMaxWidth(const gfx::Point& location,
-                  aura::Window* context) const override {
+  int GetMaxWidth(const gfx::Point& location) const override {
     return 100;
   }
   void SetText(aura::Window* window,

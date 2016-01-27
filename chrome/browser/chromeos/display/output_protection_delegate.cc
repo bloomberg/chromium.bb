@@ -22,11 +22,10 @@ bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
   DCHECK(rfh);
   DCHECK(display_id);
 
-  gfx::NativeView native_view = rfh->GetNativeView();
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   if (!screen)
     return false;
-  gfx::Display display = screen->GetDisplayNearestWindow(native_view);
+  gfx::Display display = screen->GetDisplayNearestWindow(rfh->GetNativeView());
   *display_id = display.id();
   return true;
 }

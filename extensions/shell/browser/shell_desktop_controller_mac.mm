@@ -26,7 +26,7 @@ ShellDesktopControllerMac::~ShellDesktopControllerMac() {
 
 gfx::Size ShellDesktopControllerMac::GetWindowSize() {
   // This is the full screen size.
-  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds().size();
+  return gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
 }
 
 AppWindow* ShellDesktopControllerMac::CreateAppWindow(

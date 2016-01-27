@@ -16,8 +16,8 @@ float GetDeviceScaleForNativeView(views::Widget* widget) {
   float device_scale = 1.0f;
   if (widget && widget->GetNativeView()) {
     gfx::NativeView view = widget->GetNativeView();
-    gfx::Display display = gfx::Screen::GetScreenFor(view)->
-        GetDisplayNearestWindow(view);
+    gfx::Display display =
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
     device_scale = display.device_scale_factor();
   }
   return device_scale;

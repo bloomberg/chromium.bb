@@ -820,7 +820,7 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (fullscreen) {
     restored_bounds_in_pixels_ = bounds_in_pixels_;
     const gfx::Display display =
-        gfx::Screen::GetScreenFor(NULL)->GetDisplayNearestWindow(window());
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(window());
     bounds_in_pixels_ = ToPixelRect(display.bounds());
   } else {
     bounds_in_pixels_ = restored_bounds_in_pixels_;
@@ -938,10 +938,10 @@ void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 
 gfx::Transform DesktopWindowTreeHostX11::GetRootTransform() const {
-  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   if (window_mapped_) {
     aura::Window* win = const_cast<aura::Window*>(window());
-    display = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(win);
+    display = gfx::Screen::GetScreen()->GetDisplayNearestWindow(win);
   }
 
   float scale = display.device_scale_factor();
@@ -1287,7 +1287,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
 gfx::Size DesktopWindowTreeHostX11::AdjustSize(
     const gfx::Size& requested_size_in_pixels) {
   std::vector<gfx::Display> displays =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE)->GetAllDisplays();
+      gfx::Screen::GetScreen()->GetAllDisplays();
   // Compare against all monitor sizes. The window manager can move the window
   // to whichever monitor it wants.
   for (size_t i = 0; i < displays.size(); ++i) {
@@ -1533,9 +1533,9 @@ void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
     DesktopWindowTreeHostX11* host) {
   DCHECK_NE(this, host);
   const gfx::Display display_src =
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(window());
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window());
   const gfx::Display display_dest =
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(host->window());
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(host->window());
   DCHECK_EQ(display_src.device_scale_factor(),
             display_dest.device_scale_factor());
   gfx::Vector2d offset = GetLocationOnNativeScreen() -

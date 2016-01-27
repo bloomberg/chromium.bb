@@ -302,9 +302,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   }
 
   int64_t display_id = target.id();
-  // TODO(scottmg): Native is wrong http://crbug.com/133312
-  const gfx::Display& primary =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  const gfx::Display& primary = gfx::Screen::GetScreen()->GetPrimaryDisplay();
 
   if (!ValidateParamsForDisplay(
           info, target, display_manager, primary.id(), error)) {

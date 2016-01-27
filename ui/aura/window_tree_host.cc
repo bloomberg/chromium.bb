@@ -32,8 +32,8 @@ const char kWindowTreeHostForAcceleratedWidget[] =
     "__AURA_WINDOW_TREE_HOST_ACCELERATED_WIDGET__";
 
 float GetDeviceScaleFactorFromDisplay(Window* window) {
-  gfx::Display display = gfx::Screen::GetScreenFor(window)->
-      GetDisplayNearestWindow(window);
+  gfx::Display display =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window);
   DCHECK(display.is_valid());
   return display.device_scale_factor();
 }
@@ -314,7 +314,7 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
   client::CursorClient* cursor_client = client::GetCursorClient(window());
   if (cursor_client) {
     const gfx::Display& display =
-        gfx::Screen::GetScreenFor(window())->GetDisplayNearestWindow(window());
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(window());
     cursor_client->SetDisplay(display);
   }
   dispatcher()->OnCursorMovedToRootLocation(root_location);

@@ -87,8 +87,7 @@ content::StoragePartition* GetPartition(content::WebContents* embedder,
 }  // namespace
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect bounds = gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();

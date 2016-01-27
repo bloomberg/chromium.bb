@@ -590,8 +590,8 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
     test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
     test_screen_.display()->set_device_scale_factor(kTestDeviceScaleFactor);
 
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &test_screen_);
-    ASSERT_EQ(&test_screen_, gfx::Screen::GetNativeScreen());
+    gfx::Screen::SetScreenInstance(&test_screen_);
+    ASSERT_EQ(&test_screen_, gfx::Screen::GetScreen());
 
     // TODO(nick): Sadness and woe! Much "mock-the-world" boilerplate could be
     // eliminated here, if only we could use RenderViewHostTestHarness. The
@@ -649,7 +649,7 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
     render_view_host_factory_.reset();
     render_process_host_factory_.reset();
 
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
+    gfx::Screen::SetScreenInstance(nullptr);
   }
 
   // Accessors.

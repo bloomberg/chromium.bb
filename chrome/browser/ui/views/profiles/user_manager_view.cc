@@ -291,8 +291,9 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
       gfx::NativeView native_view =
           views::Widget::GetWidgetForNativeWindow(
               browser->window()->GetNativeWindow())->GetNativeView();
-      bounds = gfx::Screen::GetScreenFor(native_view)->
-          GetDisplayNearestWindow(native_view).work_area();
+      bounds = gfx::Screen::GetScreen()
+                   ->GetDisplayNearestWindow(native_view)
+                   .work_area();
       bounds.ClampToCenteredSize(gfx::Size(UserManager::kWindowWidth,
                                            UserManager::kWindowHeight));
     }

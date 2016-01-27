@@ -326,9 +326,8 @@ int CastBrowserMainParts::PreCreateThreads() {
   // code.  See CastContentWindow::CreateWindowTree for update when resolution
   // is available.
   cast_browser_process_->SetCastScreen(make_scoped_ptr(new CastScreen));
-  DCHECK(!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                 cast_browser_process_->cast_screen());
+  DCHECK(!gfx::Screen::GetScreen());
+  gfx::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
 #endif
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(

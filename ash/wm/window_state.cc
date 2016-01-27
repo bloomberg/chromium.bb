@@ -415,8 +415,10 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
   if (window_->delegate() && !IsMaximized() && !IsFullscreen()) {
     // Get the minimum usable size of the minimum size and the screen size.
     gfx::Size min_size = window_->delegate()->GetMinimumSize();
-    min_size.SetToMin(gfx::Screen::GetScreenFor(
-        window_)->GetDisplayNearestWindow(window_).work_area().size());
+    min_size.SetToMin(gfx::Screen::GetScreen()
+                          ->GetDisplayNearestWindow(window_)
+                          .work_area()
+                          .size());
 
     actual_new_bounds.set_width(
         std::max(min_size.width(), actual_new_bounds.width()));

@@ -30,7 +30,6 @@
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/screen_type_delegate.h"
 
 namespace ash {
 
@@ -1540,8 +1539,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Defaults to the unified desktop.
-  gfx::Screen* screen =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   // The 2nd display is scaled so that it has the same height as 1st display.
   // 300 * 500 / 200  + 400 = 1150.
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
@@ -1643,8 +1641,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   display_manager()->SetUnifiedDesktopEnabled(true);
-  gfx::Screen* screen =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
 
   // 2nd display is 2x.
   UpdateDisplay("400x500,1000x800*2");
@@ -1765,8 +1762,7 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
 
   UpdateDisplay("400x500,300x200");
 
-  gfx::Screen* screen =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   const gfx::Display& display = screen->GetPrimaryDisplay();
   EXPECT_EQ("1150x500", display.size().ToString());
   display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_90,
@@ -1852,13 +1848,11 @@ class ScreenShutdownTest : public test::AshTestBase {
   ~ScreenShutdownTest() override {}
 
   void TearDown() override {
-    gfx::Screen* orig_screen =
-        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+    gfx::Screen* orig_screen = gfx::Screen::GetScreen();
     AshTestBase::TearDown();
     if (!SupportsMultipleDisplays())
       return;
-    gfx::Screen* screen =
-        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     EXPECT_NE(orig_screen, screen);
     EXPECT_EQ(2, screen->GetNumDisplays());
     EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());

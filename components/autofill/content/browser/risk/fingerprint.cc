@@ -126,12 +126,10 @@ void AddAcceptLanguagesToFingerprint(
 // into the |machine|.
 void AddScreenInfoToFingerprint(const WebScreenInfo& screen_info,
                                 Fingerprint::MachineCharacteristics* machine) {
-  // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
-  machine->set_screen_count(
-      gfx::Screen::GetNativeScreen()->GetNumDisplays());
+  machine->set_screen_count(gfx::Screen::GetScreen()->GetNumDisplays());
 
   const gfx::Size screen_size =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
   machine->mutable_screen_size()->set_width(screen_size.width());
   machine->mutable_screen_size()->set_height(screen_size.height());
 

@@ -1186,8 +1186,8 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
 
-  gfx::Point location = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint() -
-                        drag_widget_offset_;
+  gfx::Point location =
+      gfx::Screen::GetScreen()->GetCursorScreenPoint() - drag_widget_offset_;
   params.bounds = gfx::Rect(location, image.size());
   widget->set_focus_on_creation(false);
   widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);

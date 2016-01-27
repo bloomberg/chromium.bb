@@ -38,7 +38,7 @@ message_center::MessageCenter* WebNotificationTray::message_center() {
 }
 
 bool WebNotificationTray::ShowPopups() {
-  alignment_delegate_->StartObserving(gfx::Screen::GetNativeScreen());
+  alignment_delegate_->StartObserving(gfx::Screen::GetScreen());
   popup_collection_->DoUpdateIfPossible();
   return true;
 }

@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/screen_type_delegate.h"
 #endif
 
 namespace ash {
@@ -46,20 +45,6 @@ static const char kTestAccountId[] = "testuser@test.com";
 static const std::string kNotificationId =
     "chrome://settings/signin/testuser@test.com";
 }
-
-#if defined(OS_WIN)
-class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
- public:
-  ScreenTypeDelegateDesktop() {}
-  gfx::ScreenType GetScreenTypeForNativeView(gfx::NativeView view) override {
-    return chrome::IsNativeViewInAsh(view) ?
-        gfx::SCREEN_TYPE_ALTERNATE :
-        gfx::SCREEN_TYPE_NATIVE;
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenTypeDelegateDesktop);
-};
-#endif
 
 class SigninErrorNotifierTest : public AshTestBase {
  public:
@@ -81,8 +66,7 @@ class SigninErrorNotifierTest : public AshTestBase {
     // Set up screen for Windows.
 #if defined(OS_WIN)
     test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
-    gfx::Screen::SetScreenTypeDelegate(&screen_type_delegate_);
+    gfx::Screen::SetScreenInstance(test_screen_.get());
 #endif
 
     error_controller_ = SigninErrorControllerFactory::GetForProfile(
@@ -93,8 +77,7 @@ class SigninErrorNotifierTest : public AshTestBase {
 
   void TearDown() override {
 #if defined(OS_WIN)
-    gfx::Screen::SetScreenTypeDelegate(nullptr);
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
+    gfx::Screen::SetScreenInstance(nullptr);
     test_screen_.reset();
 #endif
     profile_manager_.reset();
@@ -113,7 +96,6 @@ class SigninErrorNotifierTest : public AshTestBase {
   }
 
 #if defined(OS_WIN)
-  ScreenTypeDelegateDesktop screen_type_delegate_;
   scoped_ptr<gfx::Screen> test_screen_;
 #endif
   scoped_ptr<TestingProfileManager> profile_manager_;
