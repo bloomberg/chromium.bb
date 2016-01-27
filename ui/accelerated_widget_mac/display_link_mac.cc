@@ -86,14 +86,6 @@ DisplayLinkMac::DisplayLinkMac(
 DisplayLinkMac::~DisplayLinkMac() {
   StopDisplayLink();
 
-  // Usually |display_link_| holds the last reference to CVDisplayLinkRef, but
-  // that's not guaranteed, so it might not free all resources after the
-  // destructor completes. Ensure the callback is cleared out regardless to
-  // avoid possible crashes (see http://crbug.com/564780).
-  CVReturn ret =
-      CVDisplayLinkSetOutputCallback(display_link_, nullptr, nullptr);
-  DCHECK_EQ(kCGErrorSuccess, ret);
-
   DisplayMap::iterator found = display_map_.Get().find(display_id_);
   DCHECK(found != display_map_.Get().end());
   DCHECK(found->second == this);
