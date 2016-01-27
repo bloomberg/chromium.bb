@@ -1456,13 +1456,13 @@ struct FuzzTraits<net::HostPortPair> {
 template <>
 struct FuzzTraits<net::IPEndPoint> {
   static bool Fuzz(net::IPEndPoint* p, Fuzzer* fuzzer) {
-    net::IPAddressNumber address = p->address();
+    net::IPAddressNumber address_number = p->address().bytes();
     int port = p->port();
-    if (!FuzzParam(&address, fuzzer))
+    if (!FuzzParam(&address_number, fuzzer))
       return false;
     if (!FuzzParam(&port, fuzzer))
       return false;
-    net::IPEndPoint ip_endpoint(address, port);
+    net::IPEndPoint ip_endpoint(address_number, port);
     *p = ip_endpoint;
     return true;
   }
