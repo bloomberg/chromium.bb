@@ -132,6 +132,11 @@ NET_EXPORT std::string CanonicalizeHost(base::StringPiece host,
 // CanonicalizeHost(), or you may not get accurate results.
 NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host);
 
+// Returns true if |hostname| contains a non-registerable or non-assignable
+// domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
+// that falls in an IANA-reserved range.
+NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
+
 // Strip the portions of |url| that aren't core to the network request.
 //   - user name / password
 //   - reference section

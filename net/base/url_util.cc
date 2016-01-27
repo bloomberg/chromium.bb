@@ -8,8 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
+#include "net/base/ip_address_number.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
-#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
 
@@ -290,6 +291,52 @@ bool IsCanonicalizedHostCompliant(const std::string& host) {
   }
 
   return most_recent_component_started_alphanumeric;
+}
+
+bool IsHostnameNonUnique(const std::string& hostname) {
+  // CanonicalizeHost requires surrounding brackets to parse an IPv6 address.
+  const std::string host_or_ip = hostname.find(':') != std::string::npos ?
+      "[" + hostname + "]" : hostname;
+  url::CanonHostInfo host_info;
+  std::string canonical_name = CanonicalizeHost(host_or_ip, &host_info);
+
+  // If canonicalization fails, then the input is truly malformed. However,
+  // to avoid mis-reporting bad inputs as "non-unique", treat them as unique.
+  if (canonical_name.empty())
+    return false;
+
+  // If |hostname| is an IP address, check to see if it's in an IANA-reserved
+  // range.
+  if (host_info.IsIPAddress()) {
+    IPAddressNumber host_addr;
+    if (!ParseIPLiteralToNumber(hostname.substr(host_info.out_host.begin,
+                                                host_info.out_host.len),
+                                &host_addr)) {
+      return false;
+    }
+    switch (host_info.family) {
+      case url::CanonHostInfo::IPV4:
+      case url::CanonHostInfo::IPV6:
+        return IsIPAddressReserved(host_addr);
+      case url::CanonHostInfo::NEUTRAL:
+      case url::CanonHostInfo::BROKEN:
+        return false;
+    }
+  }
+
+  // Check for a registry controlled portion of |hostname|, ignoring private
+  // registries, as they already chain to ICANN-administered registries,
+  // and explicitly ignoring unknown registries.
+  //
+  // Note: This means that as new gTLDs are introduced on the Internet, they
+  // will be treated as non-unique until the registry controlled domain list
+  // is updated. However, because gTLDs are expected to provide significant
+  // advance notice to deprecate older versions of this code, this an
+  // acceptable tradeoff.
+  return 0 == registry_controlled_domains::GetRegistryLength(
+                  canonical_name,
+                  registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+                  registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 GURL SimplifyUrlForRequest(const GURL& url) {

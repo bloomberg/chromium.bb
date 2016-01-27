@@ -16,11 +16,6 @@ namespace net {
 
 class AddressList;
 
-// Returns true if |hostname| contains a non-registerable or non-assignable
-// domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
-// that falls in an IANA-reserved range.
-NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
-
 // Returns the hostname of the current system. Returns empty string on failure.
 NET_EXPORT std::string GetHostName();
 

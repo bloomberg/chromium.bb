@@ -4,6 +4,8 @@
 
 #include "net/base/url_util.h"
 
+#include <ostream>
+
 #include "base/format_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -305,6 +307,85 @@ TEST(UrlUtilTest, CompliantHost) {
               IsCanonicalizedHostCompliant(compliant_host_cases[i].host));
   }
 }
+
+struct NonUniqueNameTestData {
+  bool is_unique;
+  const char* const hostname;
+};
+
+// Google Test pretty-printer.
+void PrintTo(const NonUniqueNameTestData& data, std::ostream* os) {
+  ASSERT_TRUE(data.hostname);
+  *os << " hostname: " << testing::PrintToString(data.hostname)
+      << "; is_unique: " << testing::PrintToString(data.is_unique);
+}
+
+const NonUniqueNameTestData kNonUniqueNameTestData[] = {
+    // Domains under ICANN-assigned domains.
+    { true, "google.com" },
+    { true, "google.co.uk" },
+    // Domains under private registries.
+    { true, "appspot.com" },
+    { true, "test.appspot.com" },
+    // Unreserved IPv4 addresses (in various forms).
+    { true, "8.8.8.8" },
+    { true, "99.64.0.0" },
+    { true, "212.15.0.0" },
+    { true, "212.15" },
+    { true, "212.15.0" },
+    { true, "3557752832" },
+    // Reserved IPv4 addresses (in various forms).
+    { false, "192.168.0.0" },
+    { false, "192.168.0.6" },
+    { false, "10.0.0.5" },
+    { false, "10.0" },
+    { false, "10.0.0" },
+    { false, "3232235526" },
+    // Unreserved IPv6 addresses.
+    { true, "FFC0:ba98:7654:3210:FEDC:BA98:7654:3210" },
+    { true, "2000:ba98:7654:2301:EFCD:BA98:7654:3210" },
+    // Reserved IPv6 addresses.
+    { false, "::192.9.5.5" },
+    { false, "FEED::BEEF" },
+    { false, "FEC0:ba98:7654:3210:FEDC:BA98:7654:3210" },
+    // 'internal'/non-IANA assigned domains.
+    { false, "intranet" },
+    { false, "intranet." },
+    { false, "intranet.example" },
+    { false, "host.intranet.example" },
+    // gTLDs under discussion, but not yet assigned.
+    { false, "intranet.corp" },
+    { false, "intranet.internal" },
+    // Invalid host names are treated as unique - but expected to be
+    // filtered out before then.
+    { true, "junk)(£)$*!@~#" },
+    { true, "w$w.example.com" },
+    { true, "nocolonsallowed:example" },
+    { true, "[::4.5.6.9]" },
+};
+
+class UrlUtilNonUniqueNameTest
+    : public testing::TestWithParam<NonUniqueNameTestData> {
+ public:
+  virtual ~UrlUtilNonUniqueNameTest() {}
+
+ protected:
+  bool IsUnique(const std::string& hostname) {
+    return !IsHostnameNonUnique(hostname);
+  }
+};
+
+// Test that internal/non-unique names are properly identified as such, but
+// that IP addresses and hosts beneath registry-controlled domains are flagged
+// as unique names.
+TEST_P(UrlUtilNonUniqueNameTest, IsHostnameNonUnique) {
+  const NonUniqueNameTestData& test_data = GetParam();
+
+  EXPECT_EQ(test_data.is_unique, IsUnique(test_data.hostname));
+}
+
+INSTANTIATE_TEST_CASE_P(, UrlUtilNonUniqueNameTest,
+                        testing::ValuesIn(kNonUniqueNameTestData));
 
 TEST(UrlUtilTest, SimplifyUrlForRequest) {
   struct {
