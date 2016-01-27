@@ -49,7 +49,7 @@ using namespace HTMLNames;
 inline HTMLAreaElement::HTMLAreaElement(Document& document)
     : HTMLAnchorElement(areaTag, document)
     , m_lastSize(-1, -1)
-    , m_shape(Unknown)
+    , m_shape(Rect)
 {
 }
 
@@ -67,14 +67,17 @@ DEFINE_NODE_FACTORY(HTMLAreaElement)
 void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == shapeAttr) {
-        if (equalIgnoringASCIICase(value, "default"))
+        if (equalIgnoringASCIICase(value, "default")) {
             m_shape = Default;
-        else if (equalIgnoringASCIICase(value, "circle"))
+        } else if (equalIgnoringASCIICase(value, "circle") || equalIgnoringASCIICase(value, "circ")) {
             m_shape = Circle;
-        else if (equalIgnoringASCIICase(value, "poly"))
+        } else if (equalIgnoringASCIICase(value, "polygon") || equalIgnoringASCIICase(value, "poly")) {
             m_shape = Poly;
-        else if (equalIgnoringASCIICase(value, "rect"))
+        } else {
+            // The missing (and implicitly invalid) value default for the
+            // 'shape' attribute is 'rect'.
             m_shape = Rect;
+        }
         invalidateCachedRegion();
     } else if (name == coordsAttr) {
         m_coords = parseHTMLAreaElementCoords(value.string());
@@ -136,19 +139,8 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
     if (m_coords.isEmpty() && m_shape != Default)
         return Path();
 
-    // If element omits the shape attribute, select shape based on number of coordinates.
-    Shape shape = m_shape;
-    if (shape == Unknown) {
-        if (m_coords.size() == 3)
-            shape = Circle;
-        else if (m_coords.size() == 4)
-            shape = Rect;
-        else if (m_coords.size() >= 6)
-            shape = Poly;
-    }
-
     Path path;
-    switch (shape) {
+    switch (m_shape) {
     case Poly:
         if (m_coords.size() >= 6) {
             int numPoints = m_coords.size() / 2;
@@ -176,8 +168,6 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
         break;
     case Default:
         path.addRect(FloatRect(FloatPoint(0, 0), FloatSize(size)));
-        break;
-    case Unknown:
         break;
     }
 

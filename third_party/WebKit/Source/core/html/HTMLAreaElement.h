@@ -59,7 +59,7 @@ private:
     void updateFocusAppearance(SelectionBehaviorOnFocus) override;
     void setFocus(bool) override;
 
-    enum Shape { Default, Poly, Rect, Circle, Unknown };
+    enum Shape { Default, Poly, Rect, Circle };
     Path getRegion(const LayoutSize&) const;
     void invalidateCachedRegion();
 
