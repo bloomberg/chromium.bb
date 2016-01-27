@@ -10,3 +10,6 @@ BreakpadWinDeathTest.TestDebugbreak
 
 # DrM-i#1465
 RdpClientTest.Basic
+
+# https://crbug.com/581519
+Webrtc/ConnectionTest.Video/0
