@@ -55,18 +55,22 @@ if (sysroot != "") {
     sysroot,
     "-a",
     current_cpu,
-    "--system_libdir",
-    system_libdir,
   ]
 } else if (pkg_config != "") {
   pkg_config_args = [
     "-p",
     pkg_config,
-    "--system_libdir",
-    system_libdir,
   ]
 } else {
   pkg_config_args = []
+}
+
+# Only use the custom libdir when building with the default toolchain.
+if (current_toolchain == default_toolchain) {
+  pkg_config_args += [
+    "--system_libdir",
+    system_libdir,
+  ]
 }
 
 template("pkg_config") {
