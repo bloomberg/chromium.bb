@@ -48,8 +48,7 @@ function test()
     var originalUserAgent = navigator.userAgent;
 
     InspectorTest.addResult("Enable emulation and set User-Agent override");
-    WebInspector.overridesSupport.setEmulationEnabled(true);
-    WebInspector.overridesSupport.settings.userAgent.set(userAgentString);
+    WebInspector.multitargetNetworkManager.setUserAgentOverride(userAgentString);
 
     InspectorTest.registerServiceWorker(scriptURL, scope)
         .then(waitForTarget)
@@ -58,7 +57,7 @@ function test()
         .then(function(msg) {
             InspectorTest.addResult("Overriden user agent: " + msg.messageText);
             InspectorTest.addResult("Disable emulation");
-            WebInspector.overridesSupport.setEmulationEnabled(false);
+                WebInspector.multitargetNetworkManager.setUserAgentOverride("");
             return InspectorTest.unregisterServiceWorker(scope);
         })
         .then(function() {
