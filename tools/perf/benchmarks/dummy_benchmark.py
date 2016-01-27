@@ -58,9 +58,3 @@ class DummyBenchmarkTwo(_DummyBenchmark):
   @classmethod
   def Name(cls):
     return 'dummy_benchmark.noisy_benchmark_1'
-
-  def CreateStorySet(self, options):
-    del options  # unused
-    story_set = dummy_story_set.DummyStorySet()
-    story_set.AddStory(dummy_story_set.BrokenDummyPage(story_set))
-    return story_set
