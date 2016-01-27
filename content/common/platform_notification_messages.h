@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
@@ -54,6 +55,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(actions)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::NotificationResources)
+  IPC_STRUCT_TRAITS_MEMBER(notification_icon)
+IPC_STRUCT_TRAITS_END()
+
 // Messages sent from the browser to the renderer.
 
 // Informs the renderer that the browser has displayed the notification.
@@ -84,18 +89,20 @@ IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidGetNotifications,
 
 // Messages sent from the renderer to the browser.
 
-IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_Show,
-                     int /* notification_id */,
-                     GURL /* origin */,
-                     SkBitmap /* icon */,
-                     content::PlatformNotificationData /* notification_data */)
+IPC_MESSAGE_CONTROL4(
+    PlatformNotificationHostMsg_Show,
+    int /* notification_id */,
+    GURL /* origin */,
+    content::PlatformNotificationData /* notification_data */,
+    content::NotificationResources /* notification_resources */)
 
-IPC_MESSAGE_CONTROL5(PlatformNotificationHostMsg_ShowPersistent,
-                     int /* request_id */,
-                     int64_t /* service_worker_registration_id */,
-                     GURL /* origin */,
-                     SkBitmap /* icon */,
-                     content::PlatformNotificationData /* notification_data */)
+IPC_MESSAGE_CONTROL5(
+    PlatformNotificationHostMsg_ShowPersistent,
+    int /* request_id */,
+    int64_t /* service_worker_registration_id */,
+    GURL /* origin */,
+    content::PlatformNotificationData /* notification_data */,
+    content::NotificationResources /* notification_resources */)
 
 IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_GetNotifications,
                      int /* request_id */,

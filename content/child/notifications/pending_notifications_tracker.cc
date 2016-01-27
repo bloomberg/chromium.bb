@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/notifications/notification_image_loader.h"
-#include "content/child/notifications/notification_manager.h"
+#include "content/public/common/notification_resources.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -75,7 +75,9 @@ void PendingNotificationsTracker::DidFetchPageNotification(
       pending_notifications_.Lookup(notification_id);
   DCHECK(pending_notification);
 
-  pending_notification->callback.Run(icon);
+  NotificationResources notification_resources;
+  notification_resources.notification_icon = icon;
+  pending_notification->callback.Run(notification_resources);
 
   delegate_to_pending_id_map_.erase(delegate);
   pending_notifications_.Remove(notification_id);
@@ -87,7 +89,9 @@ void PendingNotificationsTracker::DidFetchPersistentNotification(
       pending_notifications_.Lookup(notification_id);
   DCHECK(pending_notification);
 
-  pending_notification->callback.Run(icon);
+  NotificationResources notification_resources;
+  notification_resources.notification_icon = icon;
+  pending_notification->callback.Run(notification_resources);
 
   pending_notifications_.Remove(notification_id);
 }

@@ -25,6 +25,7 @@ class NotificationUIManager;
 
 namespace content {
 class BrowserContext;
+struct NotificationResources;
 }
 
 namespace gcm {
@@ -95,16 +96,16 @@ class PlatformNotificationServiceImpl
   void DisplayNotification(
       content::BrowserContext* browser_context,
       const GURL& origin,
-      const SkBitmap& icon,
       const content::PlatformNotificationData& notification_data,
+      const content::NotificationResources& notification_resources,
       scoped_ptr<content::DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       content::BrowserContext* browser_context,
       int64_t persistent_notification_id,
       const GURL& origin,
-      const SkBitmap& icon,
-      const content::PlatformNotificationData& notification_data) override;
+      const content::PlatformNotificationData& notification_data,
+      const content::NotificationResources& notification_resources) override;
   void ClosePersistentNotification(
       content::BrowserContext* browser_context,
       int64_t persistent_notification_id) override;
@@ -131,8 +132,8 @@ class PlatformNotificationServiceImpl
   Notification CreateNotificationFromData(
       Profile* profile,
       const GURL& origin,
-      const SkBitmap& icon,
       const content::PlatformNotificationData& notification_data,
+      const content::NotificationResources& notification_resources,
       NotificationDelegate* delegate) const;
 
   // Overrides the Notification UI Manager to use to |manager|. Only to be

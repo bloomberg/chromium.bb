@@ -22,10 +22,9 @@
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
-class SkBitmap;
-
 namespace content {
 
+struct NotificationResources;
 struct PlatformNotificationData;
 class ThreadSafeSender;
 
@@ -91,7 +90,7 @@ class NotificationManager : public blink::WebNotificationManager,
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       blink::WebNotificationDelegate* delegate,
-      const SkBitmap& icon);
+      const NotificationResources& notification_resources);
 
   // To be called when a persistent notification is ready to be displayed. Will
   // inform the browser process about all available data. The |callbacks| will
@@ -102,14 +101,14 @@ class NotificationManager : public blink::WebNotificationManager,
       const blink::WebNotificationData& notification_data,
       int64_t service_worker_registration_id,
       scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
-      const SkBitmap& icon);
+      const NotificationResources& notification_resources);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   // Tracker which stores all pending Notifications, both page and persistent
   // ones, until all their associated resources have been fetched.
-  PendingNotificationsTracker pending_notifications_;
+  PendingNotificationsTracker notifications_tracker_;
 
   // Tracks pending requests for getting a list of notifications.
   IDMap<blink::WebNotificationGetCallbacks, IDMapOwnPointer>

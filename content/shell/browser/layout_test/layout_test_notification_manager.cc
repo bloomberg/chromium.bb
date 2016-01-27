@@ -48,8 +48,8 @@ LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
 void LayoutTestNotificationManager::DisplayNotification(
     BrowserContext* browser_context,
     const GURL& origin,
-    const SkBitmap& icon,
     const PlatformNotificationData& notification_data,
+    const NotificationResources& notification_resources,
     scoped_ptr<DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -70,8 +70,8 @@ void LayoutTestNotificationManager::DisplayPersistentNotification(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin,
-    const SkBitmap& icon,
-    const PlatformNotificationData& notification_data) {
+    const PlatformNotificationData& notification_data,
+    const NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string title = base::UTF16ToUTF8(notification_data.title);
 

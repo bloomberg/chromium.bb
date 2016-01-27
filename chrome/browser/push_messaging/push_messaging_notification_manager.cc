@@ -27,8 +27,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/notification_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -43,6 +43,7 @@
 
 using content::BrowserThread;
 using content::NotificationDatabaseData;
+using content::NotificationResources;
 using content::PlatformNotificationContext;
 using content::PlatformNotificationData;
 using content::PushMessagingService;
@@ -335,8 +336,8 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
   }
 
   PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
-      profile_, persistent_notification_id, origin, SkBitmap() /* icon */,
-      notification_data);
+      profile_, persistent_notification_id, origin, notification_data,
+      NotificationResources());
 
   message_handled_closure.Run();
 }

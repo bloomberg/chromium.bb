@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -17,11 +18,11 @@
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
 class GURL;
-class SkBitmap;
 
 namespace content {
 
 class BrowserContext;
+struct NotificationResources;
 class PlatformNotificationContextImpl;
 struct PlatformNotificationData;
 class PlatformNotificationService;
@@ -57,14 +58,14 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   void OnShowPlatformNotification(
       int notification_id,
       const GURL& origin,
-      const SkBitmap& icon,
-      const PlatformNotificationData& notification_data);
+      const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources);
   void OnShowPersistentNotification(
       int request_id,
       int64_t service_worker_registration_id,
       const GURL& origin,
-      const SkBitmap& icon,
-      const PlatformNotificationData& notification_data);
+      const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources);
   void OnGetNotifications(int request_id,
                           int64_t service_worker_registration_id,
                           const GURL& origin,
@@ -79,8 +80,8 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   void DidWritePersistentNotificationData(
       int request_id,
       const GURL& origin,
-      const SkBitmap& icon,
       const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources,
       bool success,
       int64_t persistent_notification_id);
 

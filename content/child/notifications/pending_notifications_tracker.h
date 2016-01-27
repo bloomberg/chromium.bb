@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
 class SkBitmap;
 
@@ -28,12 +27,12 @@ class WebNotificationDelegate;
 namespace content {
 
 class NotificationImageLoader;
-class NotificationManager;
+struct NotificationResources;
 
 // Type definition for the callback signature which is to be invoked when the
 // resources associated with a notification have been fetched.
 using NotificationResourcesFetchedCallback =
-    base::Callback<void(const SkBitmap&)>;
+    base::Callback<void(const NotificationResources&)>;
 
 // Tracks all aspects of all pending Web Notifications. Most notably, it's in
 // charge of ensuring that all resource fetches associated with the notification

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,12 +16,12 @@
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
 class GURL;
-class SkBitmap;
 
 namespace content {
 
 class BrowserContext;
 class DesktopNotificationDelegate;
+struct NotificationResources;
 struct PlatformNotificationData;
 class ResourceContext;
 
@@ -48,14 +49,14 @@ class CONTENT_EXPORT PlatformNotificationService {
       const GURL& origin,
       int render_process_id) = 0;
 
-  // Displays the notification described in |params| to the user. A closure
-  // through which the notification can be closed will be stored in the
+  // Displays the notification described in |notification_data| to the user. A
+  // closure through which the notification can be closed will be stored in the
   // |cancel_callback| argument. This method must be called on the UI thread.
   virtual void DisplayNotification(
       BrowserContext* browser_context,
       const GURL& origin,
-      const SkBitmap& icon,
       const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources,
       scoped_ptr<DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) = 0;
 
@@ -65,8 +66,8 @@ class CONTENT_EXPORT PlatformNotificationService {
       BrowserContext* browser_context,
       int64_t persistent_notification_id,
       const GURL& origin,
-      const SkBitmap& icon,
-      const PlatformNotificationData& notification_data) = 0;
+      const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources) = 0;
 
   // Closes the persistent notification identified by
   // |persistent_notification_id|. This method must be called on the UI thread.

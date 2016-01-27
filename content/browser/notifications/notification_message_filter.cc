@@ -109,8 +109,8 @@ void NotificationMessageFilter::OnCheckNotificationPermission(
 void NotificationMessageFilter::OnShowPlatformNotification(
     int notification_id,
     const GURL& origin,
-    const SkBitmap& icon,
-    const PlatformNotificationData& notification_data) {
+    const PlatformNotificationData& notification_data,
+    const NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!RenderProcessHost::FromID(process_id_))
     return;
@@ -126,9 +126,9 @@ void NotificationMessageFilter::OnShowPlatformNotification(
     return;
 
   base::Closure close_closure;
-  service->DisplayNotification(browser_context_, origin, icon,
-                               SanitizeNotificationData(notification_data),
-                               std::move(delegate), &close_closure);
+  service->DisplayNotification(
+      browser_context_, origin, SanitizeNotificationData(notification_data),
+      notification_resources, std::move(delegate), &close_closure);
 
   if (!close_closure.is_null())
     close_closures_[notification_id] = close_closure;
@@ -138,8 +138,8 @@ void NotificationMessageFilter::OnShowPersistentNotification(
     int request_id,
     int64_t service_worker_registration_id,
     const GURL& origin,
-    const SkBitmap& icon,
-    const PlatformNotificationData& notification_data) {
+    const PlatformNotificationData& notification_data,
+    const NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
       blink::WebNotificationPermissionAllowed) {
@@ -160,15 +160,15 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   notification_context_->WriteNotificationData(
       origin, database_data,
       base::Bind(&NotificationMessageFilter::DidWritePersistentNotificationData,
-                 weak_factory_io_.GetWeakPtr(), request_id, origin, icon,
-                 sanitized_notification_data));
+                 weak_factory_io_.GetWeakPtr(), request_id, origin,
+                 sanitized_notification_data, notification_resources));
 }
 
 void NotificationMessageFilter::DidWritePersistentNotificationData(
     int request_id,
     const GURL& origin,
-    const SkBitmap& icon,
     const PlatformNotificationData& notification_data,
+    const NotificationResources& notification_resources,
     bool success,
     int64_t persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -182,8 +182,8 @@ void NotificationMessageFilter::DidWritePersistentNotificationData(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&PlatformNotificationService::DisplayPersistentNotification,
                    base::Unretained(service),  // The service is a singleton.
-                   browser_context_, persistent_notification_id, origin, icon,
-                   notification_data));
+                   browser_context_, persistent_notification_id, origin,
+                   notification_data, notification_resources));
   }
 
   Send(new PlatformNotificationMsg_DidShowPersistent(request_id, success));

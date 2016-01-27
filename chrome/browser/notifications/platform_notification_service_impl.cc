@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -338,8 +340,8 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
 void PlatformNotificationServiceImpl::DisplayNotification(
     BrowserContext* browser_context,
     const GURL& origin,
-    const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
+    const content::NotificationResources& notification_resources,
     scoped_ptr<content::DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -351,7 +353,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(browser_context, std::move(delegate));
   Notification notification = CreateNotificationFromData(
-      profile, origin, icon, notification_data, proxy);
+      profile, origin, notification_data, notification_resources, proxy);
 
   GetNotificationUIManager()->Add(notification, profile);
   if (cancel_callback)
@@ -368,8 +370,8 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin,
-    const SkBitmap& icon,
-    const content::PlatformNotificationData& notification_data) {
+    const content::PlatformNotificationData& notification_data,
+    const content::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -383,7 +385,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
       settings_button_index);
 
   Notification notification = CreateNotificationFromData(
-      profile, origin, icon, notification_data, delegate);
+      profile, origin, notification_data, notification_resources, delegate);
 
   // TODO(peter): Remove this mapping when we have reliable id generation for
   // the message_center::Notification objects.
@@ -461,8 +463,8 @@ bool PlatformNotificationServiceImpl::GetDisplayedPersistentNotifications(
 Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     Profile* profile,
     const GURL& origin,
-    const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
+    const content::NotificationResources& notification_resources,
     NotificationDelegate* delegate) const {
   // TODO(peter): Icons for Web Notifications are currently always requested for
   // 1x scale, whereas the displays on which they can be displayed can have a
@@ -470,7 +472,8 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   // with a way for developers to specify images of different resolutions.
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_data.title,
-      notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
+      notification_data.body,
+      gfx::Image::CreateFrom1xBitmap(notification_resources.notification_icon),
       message_center::NotifierId(origin), base::UTF8ToUTF16(origin.host()),
       origin, notification_data.tag, message_center::RichNotificationData(),
       delegate);
