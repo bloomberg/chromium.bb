@@ -219,8 +219,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       url_prefix_(config.url_prefix),
       backup_update_reason_(BACKUP_UPDATE_REASON_MAX),
       disable_auto_update_(config.disable_auto_update),
-      url_fetcher_id_(0),
-      app_in_foreground_(true) {
+      url_fetcher_id_(0) {
   DCHECK(!url_prefix_.empty());
 
   backup_url_prefixes_[BACKUP_UPDATE_REASON_CONNECT] =

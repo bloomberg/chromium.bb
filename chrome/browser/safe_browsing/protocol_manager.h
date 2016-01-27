@@ -191,11 +191,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // Returns whether another update is currently scheduled.
   bool IsUpdateScheduled() const;
 
-  // Called when app changes status of foreground or background.
-  void SetAppInForeground(bool foreground) {
-    app_in_foreground_ = foreground;
-  }
-
  protected:
   // Constructs a SafeBrowsingProtocolManager for |delegate| that issues
   // network requests using |request_context_getter|.
@@ -468,9 +463,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
 
   // ID for URLFetchers for testing.
   int url_fetcher_id_;
-
-  // Whether the app is in foreground or background.
-  bool app_in_foreground_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolManager);
 };

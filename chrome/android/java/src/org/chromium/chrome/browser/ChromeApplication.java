@@ -262,7 +262,6 @@ public class ChromeApplication extends ContentApplication {
         updatePasswordEchoState();
         updateFontSize();
         updateAcceptLanguages();
-        changeAppStatus(true);
         mVariationsSession.start(getApplicationContext());
         mPowerBroadcastReceiver.onForegroundSessionStart();
 
@@ -284,7 +283,6 @@ public class ChromeApplication extends ContentApplication {
         mBackgroundProcessing.suspendTimers();
         flushPersistentData();
         mIsStarted = false;
-        changeAppStatus(false);
         mPowerBroadcastReceiver.onForegroundSessionEnd();
 
         ChildProcessLauncher.onSentToBackground();
@@ -602,12 +600,7 @@ public class ChromeApplication extends ContentApplication {
         }
     }
 
-    protected void changeAppStatus(boolean inForeground) {
-        nativeChangeAppStatus(inForeground);
-    }
-
     private static native void nativeRemoveSessionCookies();
-    private static native void nativeChangeAppStatus(boolean inForeground);
     private static native String nativeGetBrowserUserAgent();
     private static native void nativeFlushPersistentData();
 

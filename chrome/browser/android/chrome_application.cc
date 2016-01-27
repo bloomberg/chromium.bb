@@ -15,8 +15,6 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/protocol_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -68,15 +66,6 @@ void RemoveSessionCookiesForProfile(Profile* profile) {
                  make_scoped_refptr(profile->GetRequestContext())));
 }
 
-void ChangeAppStatusOnIOThread(safe_browsing::SafeBrowsingService* sb_service,
-                               jboolean foreground) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  safe_browsing::SafeBrowsingProtocolManager* proto_manager =
-      sb_service->protocol_manager();
-  if (proto_manager)
-    proto_manager->SetAppInForeground(foreground);
-}
-
 }  // namespace
 
 static ScopedJavaLocalRef<jstring> GetBrowserUserAgent(
@@ -101,16 +90,6 @@ static void RemoveSessionCookies(JNIEnv* env, const JavaParamRef<jclass>& obj) {
       g_browser_process->profile_manager()->GetLoadedProfiles();
   std::for_each(loaded_profiles.begin(), loaded_profiles.end(),
                 RemoveSessionCookiesForProfile);
-}
-
-static void ChangeAppStatus(JNIEnv* env,
-                            const JavaParamRef<jclass>& obj,
-                            jboolean foreground) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChangeAppStatusOnIOThread,
-                 base::Unretained(g_browser_process->safe_browsing_service()),
-                 foreground));
 }
 
 namespace chrome {
