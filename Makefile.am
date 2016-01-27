@@ -347,8 +347,11 @@ bin_PROGRAMS += \
 	src/tools/linux/dump_syms/dump_syms \
 	src/tools/linux/md2core/minidump-2-core \
 	src/tools/linux/symupload/minidump_upload \
-	src/tools/linux/symupload/sym_upload \
+	src/tools/linux/symupload/sym_upload
+if X86_HOST
+bin_PROGRAMS += \
 	src/tools/mac/dump_syms/dump_syms_mac
+endif
 endif
 endif LINUX_HOST
 

@@ -640,6 +640,8 @@ DISABLE_TOOLS_FALSE
 DISABLE_TOOLS_TRUE
 DISABLE_PROCESSOR_FALSE
 DISABLE_PROCESSOR_TRUE
+X86_HOST_FALSE
+X86_HOST_TRUE
 ANDROID_HOST_FALSE
 ANDROID_HOST_TRUE
 LINUX_HOST_FALSE
@@ -7425,6 +7427,21 @@ else
 fi
 
 
+# Some tools (like mac ones) only support x86 currently.
+case $host_cpu in
+  i?86|x86_64)
+    X86_HOST=true
+    ;;
+esac
+ if test x$X86_HOST = xtrue; then
+  X86_HOST_TRUE=
+  X86_HOST_FALSE='#'
+else
+  X86_HOST_TRUE='#'
+  X86_HOST_FALSE=
+fi
+
+
 # Check whether --enable-processor was given.
 if test "${enable_processor+set}" = set; then :
   enableval=$enable_processor; case "${enableval}" in
@@ -7891,6 +7908,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ANDROID_HOST_TRUE}" && test -z "${ANDROID_HOST_FALSE}"; then
   as_fn_error $? "conditional \"ANDROID_HOST\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${X86_HOST_TRUE}" && test -z "${X86_HOST_FALSE}"; then
+  as_fn_error $? "conditional \"X86_HOST\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DISABLE_PROCESSOR_TRUE}" && test -z "${DISABLE_PROCESSOR_FALSE}"; then
