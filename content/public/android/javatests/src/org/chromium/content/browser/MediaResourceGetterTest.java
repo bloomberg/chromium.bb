@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.mock.MockContext;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -32,6 +33,8 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
             + "(KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36";
     private static final String TEST_FILE_PATH = "/mnt/sdcard/test";
     private static final String TEST_FILE_URL = "file://" + TEST_FILE_PATH;
+    private static final String TEST_CONTENT_URI =
+            "content://com.android.providers.media.documents/document/video:113";
     private static final String TEST_COOKIES = "yum yum yum!";
     private static final MediaMetadata sEmptyMetadata = new MediaMetadata(0, 0, 0, false);
     private static final String sExternalStorageDirectory = "/test_external_storage";
@@ -97,6 +100,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         String mUri = null;
         Map<String, String> mHeaders = null;
         String mPath = null;
+        String mContentUri = null;
         int mFd;
         long mOffset;
         long mLength;
@@ -136,6 +140,15 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
                 throw new RuntimeException("test exception");
             }
             mPath = path;
+        }
+
+        // Can't use a real MediaMetadataRetriever as we have no media
+        @Override
+        public void configure(Context context, Uri uri) {
+            if (mThrowExceptionInConfigure) {
+                throw new RuntimeException("test exception");
+            }
+            mContentUri = uri.toString();
         }
 
         // Can't use a real MediaMetadataRetriever as we have no media
@@ -295,6 +308,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
         assertEquals(sHeadersCookieOnly, mFakeMRG.mHeaders);
         assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mContentUri);
     }
 
     @SmallTest
@@ -306,6 +320,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
         assertEquals(sHeadersCookieOnly, mFakeMRG.mHeaders);
         assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mContentUri);
     }
 
     @SmallTest
@@ -317,6 +332,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
         assertEquals(Collections.emptyMap(), mFakeMRG.mHeaders);
         assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mContentUri);
     }
 
     @SmallTest
@@ -328,6 +344,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
         assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
         assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mContentUri);
     }
 
     @SmallTest
@@ -339,6 +356,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertEquals(TEST_HTTP_URL, mFakeMRG.mUri);
         assertEquals(sHeadersUAOnly, mFakeMRG.mHeaders);
         assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mContentUri);
     }
 
     @SmallTest
@@ -367,6 +385,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
             assertEquals(localHostUrl, mFakeMRG.mUri);
             assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
             assertNull(mFakeMRG.mPath);
+            assertNull(mFakeMRG.mContentUri);
         }
     }
 
@@ -378,6 +397,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
         assertEquals(path, mFakeMRG.mPath);
         assertNull(mFakeMRG.mUri);
+        assertNull(mFakeMRG.mContentUri);
         assertNull(mFakeMRG.mHeaders);
     }
 
@@ -389,6 +409,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
         assertEquals(path, mFakeMRG.mPath);
         assertNull(mFakeMRG.mUri);
+        assertNull(mFakeMRG.mContentUri);
         assertNull(mFakeMRG.mHeaders);
     }
 
@@ -409,6 +430,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertTrue(mFakeMRG.configure(mMockContext, url, "", null));
         assertEquals(path, mFakeMRG.mPath);
         assertNull(mFakeMRG.mUri);
+        assertNull(mFakeMRG.mContentUri);
         assertNull(mFakeMRG.mHeaders);
     }
 
@@ -478,6 +500,23 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         mFakeMRG.mThrowExceptionInConfigure = true;
         assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
         assertNull(mFakeMRG.mPath);
+    }
+
+    @SmallTest
+    public void testConfigure_Content_Uri_Allowed() {
+        assertTrue(mFakeMRG.configure(mMockContext, TEST_CONTENT_URI, "", null));
+        assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mUri);
+        assertEquals(TEST_CONTENT_URI, mFakeMRG.mContentUri);
+    }
+
+    @SmallTest
+    public void testConfigure_Content_Uri_Disallowed() {
+        mFakeMRG.mThrowExceptionInConfigure = true;
+        assertFalse(mFakeMRG.configure(mMockContext, TEST_CONTENT_URI, "", null));
+        assertNull(mFakeMRG.mPath);
+        assertNull(mFakeMRG.mUri);
+        assertNull(mFakeMRG.mContentUri);
     }
 
     @SmallTest

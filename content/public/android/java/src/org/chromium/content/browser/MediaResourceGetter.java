@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 
@@ -32,8 +33,7 @@ import java.util.Map;
  */
 @JNINamespace("content")
 class MediaResourceGetter {
-
-    private static final String TAG = "cr.MediaResourceGetter";
+    private static final String TAG = "cr_MediaResource";
     private static final MediaMetadata EMPTY_METADATA = new MediaMetadata(0, 0, 0, false);
 
     private final MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
@@ -195,7 +195,7 @@ class MediaResourceGetter {
             Log.d(TAG, "extracted valid metadata: %s", result);
             return result;
         } catch (RuntimeException e) {
-            Log.e(TAG, "Unable to extract metadata: %s", e.getMessage());
+            Log.e(TAG, "Unable to extract metadata: %s", e);
             return EMPTY_METADATA;
         }
     }
@@ -206,7 +206,7 @@ class MediaResourceGetter {
         try {
             uri = URI.create(url);
         } catch (IllegalArgumentException  e) {
-            Log.e(TAG, "Cannot parse uri: %s", e.getMessage());
+            Log.e(TAG, "Cannot parse uri: %s", e);
             return false;
         }
         String scheme = uri.getScheme();
@@ -224,7 +224,16 @@ class MediaResourceGetter {
                 configure(file.getAbsolutePath());
                 return true;
             } catch (RuntimeException e) {
-                Log.e(TAG, "Error configuring data source: %s", e.getMessage());
+                Log.e(TAG, "Error configuring data source: %s", e);
+                return false;
+            }
+        }
+        if (scheme.equals("content")) {
+            try {
+                configure(context, Uri.parse(uri.toString()));
+                return true;
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Error configuring data source: %s", e);
                 return false;
             }
         }
@@ -248,7 +257,7 @@ class MediaResourceGetter {
             configure(url, headersMap);
             return true;
         } catch (RuntimeException e) {
-            Log.e(TAG, "Error configuring data source: %s", e.getMessage());
+            Log.e(TAG, "Error configuring data source: %s", e);
             return false;
         }
     }
@@ -395,6 +404,11 @@ class MediaResourceGetter {
     @VisibleForTesting
     void configure(String path) {
         mRetriever.setDataSource(path);
+    }
+
+    @VisibleForTesting
+    void configure(Context context, Uri uri) {
+        mRetriever.setDataSource(context, uri);
     }
 
     @VisibleForTesting
