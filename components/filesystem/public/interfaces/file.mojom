@@ -27,10 +27,6 @@ interface File {
   Read(uint32 num_bytes_to_read, int64 offset, Whence whence)
       => (FileError error, array<uint8>? bytes_read);
 
-  // Returns the entire contents of the file as an array of bytes. The mojo
-  // equivalent of base::ReadFileToString().
-  ReadEntireFile() => (FileError error, array<uint8>? bytes_read);
-
   // Writes |bytes_to_write| to the location specified by |offset|/|whence|.
   // TODO(vtl): Clarify behavior when |num_bytes_written| is less than the size
   // of |bytes_to_write|.
