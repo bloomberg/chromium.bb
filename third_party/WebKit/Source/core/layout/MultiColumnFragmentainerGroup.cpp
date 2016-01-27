@@ -292,21 +292,8 @@ unsigned MultiColumnFragmentainerGroup::actualColumnCount() const
 
 LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit height) const
 {
-    // Adjust for the top offset within the content box of the multicol container (containing
-    // block), unless we're in the first set. We know that the top offset for the first set will be
-    // zero, but if the multicol container has non-zero top border or padding, the set's top offset
-    // (initially being 0 and relative to the border box) will be negative until it has been laid
-    // out. Had we used this bogus offset, we would calculate the wrong height, and risk performing
-    // a wasted layout iteration. Of course all other sets (if any) have this problem in the first
-    // layout pass too, but there's really nothing we can do there until the flow thread has been
-    // laid out anyway.
-    if (m_columnSet.previousSiblingMultiColumnSet()) {
-        LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
-        LayoutUnit contentLogicalTop = m_columnSet.logicalTop() - multicolBlock->borderAndPaddingBefore();
-        height -= contentLogicalTop;
-    }
-    height -= logicalTop();
-    return max(height, LayoutUnit(1)); // Let's avoid zero height, as that would probably cause an infinite amount of columns to be created.
+    // Let's avoid zero height, as that would cause an infinite amount of columns to be created.
+    return std::max(height - logicalTop() - m_columnSet.logicalTopFromMulticolContentEdge(), LayoutUnit(1));
 }
 
 LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const

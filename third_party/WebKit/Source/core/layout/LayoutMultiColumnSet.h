@@ -101,6 +101,9 @@ public:
 
     MultiColumnFragmentainerGroup& appendNewFragmentainerGroup();
 
+    // Logical top relative to the content edge of the multicol container.
+    LayoutUnit logicalTopFromMulticolContentEdge() const;
+
     LayoutUnit logicalTopInFlowThread() const;
     LayoutUnit logicalBottomInFlowThread() const;
     LayoutUnit logicalHeightInFlowThread() const { return logicalBottomInFlowThread() - logicalTopInFlowThread(); }

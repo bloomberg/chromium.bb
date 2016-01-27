@@ -170,6 +170,22 @@ MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup
     return m_fragmentainerGroups.last();
 }
 
+LayoutUnit LayoutMultiColumnSet::logicalTopFromMulticolContentEdge() const
+{
+    // We subtract the position of the first column set or spanner placeholder, rather than the
+    // "before" border+padding of the multicol container. This distinction doesn't matter after
+    // layout, but during layout it does: The flow thread (i.e. the multicol contents) is laid out
+    // before the column sets and spanner placeholders, which means that compesating for a top
+    // border+padding that hasn't yet been baked into the offset will produce the wrong results in
+    // the first layout pass, and we'd end up performing a wasted layout pass in many cases.
+    const LayoutBox& firstColumnBox = *multiColumnFlowThread()->firstMultiColumnBox();
+    // The top margin edge of the first column set or spanner placeholder is flush with the top
+    // content edge of the multicol container. The margin here never collapses with other margins,
+    // so we can just subtract it. Column sets never have margins, but spanner placeholders may.
+    LayoutUnit firstColumnBoxMarginEdge = firstColumnBox.logicalTop() - multiColumnBlockFlow()->marginBeforeForChild(firstColumnBox);
+    return logicalTop() - firstColumnBoxMarginEdge;
+}
+
 LayoutUnit LayoutMultiColumnSet::logicalTopInFlowThread() const
 {
     return firstFragmentainerGroup().logicalTopInFlowThread();
