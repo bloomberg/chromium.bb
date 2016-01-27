@@ -251,6 +251,8 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
 }
 
 TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+    return;
   base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
@@ -258,6 +260,8 @@ TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
 }
 
 TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+    return;
   base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
@@ -272,6 +276,8 @@ TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
 }
 
 TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedOldDevice) {
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+    return;
   base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
@@ -302,6 +308,8 @@ TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedOldDevice) {
 }
 
 TEST_F(BluetoothAdapterMacTest, UpdateDevicesRemovesLowEnergyDevice) {
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+    return;
   base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
