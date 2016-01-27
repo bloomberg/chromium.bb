@@ -89,18 +89,23 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     if (result != sandbox::SBOX_ALL_OK)
       return false;
 
+    content::ContentBrowserClient* browser_client =
+        GetContentClient()->browser();
+
 #if !defined(NACL_WIN64)
-    for (const auto& mime_type : info_.mime_types) {
-      if (IsWin32kLockdownEnabledForMimeType(mime_type.mime_type)) {
-        if (!AddWin32kLockdownPolicy(policy))
-          return false;
-        break;
+    if (IsWin32kRendererLockdownEnabled()) {
+      for (const auto& mime_type : info_.mime_types) {
+        if (browser_client->IsWin32kLockdownEnabledForMimeType(
+                mime_type.mime_type)) {
+          if (!AddWin32kLockdownPolicy(policy))
+            return false;
+          break;
+        }
       }
     }
 #endif
     const base::string16& sid =
-        GetContentClient()->browser()->GetAppContainerSidForSandboxType(
-            GetSandboxType());
+        browser_client->GetAppContainerSidForSandboxType(GetSandboxType());
     if (!sid.empty())
       AddAppContainerPolicy(policy, sid.c_str());
 

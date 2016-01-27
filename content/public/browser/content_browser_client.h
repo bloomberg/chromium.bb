@@ -751,6 +751,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // an AppContainer.
   virtual base::string16 GetAppContainerSidForSandboxType(
       int sandbox_type) const;
+
+  // Returns whether the Win32k lockdown process mitigation should be applied to
+  // a process hosting a plugin with the specified |mime_type|.
+  virtual bool IsWin32kLockdownEnabledForMimeType(
+      const std::string& mime_type) const;
 #endif
 
 #if defined(VIDEO_HOLE)

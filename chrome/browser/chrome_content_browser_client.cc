@@ -165,6 +165,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 #if defined(OS_WIN)
+#include "base/strings/string_tokenizer.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -2640,7 +2641,55 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
                            L"File");
   return result == sandbox::SBOX_ALL_OK;
 }
-#endif
+
+bool ChromeContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
+    const std::string& mime_type) const {
+  // First, check if any variation parameters have enabled or disabled this
+  // mime type either specifically or globally.
+  std::map<std::string, std::string> mime_params;
+  if (variations::GetVariationParams("EnableWin32kLockDownMimeTypes",
+                                     &mime_params)) {
+    bool enabled = false;
+    for (const auto& param : mime_params) {
+      if (param.first == mime_type || param.first == "*") {
+        // Disabled entries take precedence over Enabled entries.
+        if (base::StartsWith(param.second, "Disabled",
+                             base::CompareCase::INSENSITIVE_ASCII)) {
+          return false;
+        }
+        if (base::StartsWith(param.second, "Enabled",
+                             base::CompareCase::INSENSITIVE_ASCII)) {
+          enabled = true;
+        }
+      }
+    }
+    return enabled;
+  }
+
+  // Second, check the command line to see if this mime type is enabled
+  // either specifically or globally.
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  if (!cmd_line->HasSwitch(switches::kEnableWin32kLockDownMimeTypes))
+    return false;
+
+  std::string mime_types =
+      cmd_line->GetSwitchValueASCII(switches::kEnableWin32kLockDownMimeTypes);
+
+  // Consider the value * to enable all mime types for lockdown.
+  if (mime_types == "*")
+    return true;
+
+  base::StringTokenizer tokenizer(mime_types, ",");
+  tokenizer.set_quote_chars("\"");
+  while (tokenizer.GetNext()) {
+    if (tokenizer.token() == mime_type)
+      return true;
+  }
+
+  return false;
+}
+#endif  // defined(OS_WIN)
 
 void ChromeContentBrowserClient::RegisterFrameMojoShellServices(
     content::ServiceRegistry* registry,

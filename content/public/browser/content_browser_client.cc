@@ -411,6 +411,13 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
       L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
       L"924012148-129201922");
 }
+
+bool ContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
+    const std::string& mime_type) const {
+  // TODO(wfh): Enable this by default once Win32k lockdown for PPAPI processes
+  // is enabled by default in Chrome. See crbug.com/523278.
+  return false;
+}
 #endif
 
 #if defined(VIDEO_HOLE)
