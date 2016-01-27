@@ -49,8 +49,7 @@ public:
     PassRefPtr<Image> image(const IntSize&, float) const override;
     bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
 
-    bool imageHasRelativeWidth() const override { return m_styleImage->imageHasRelativeWidth(); }
-    bool imageHasRelativeHeight() const override { return m_styleImage->imageHasRelativeHeight(); }
+    bool imageHasRelativeSize() const override { return m_styleImage->imageHasRelativeSize(); }
 
     LayoutSize imageSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
 

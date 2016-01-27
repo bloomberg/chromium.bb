@@ -42,8 +42,7 @@ public:
     }
 
     bool usesContainerSize() const override { return false; }
-    bool hasRelativeWidth() const override { return false; }
-    bool hasRelativeHeight() const override { return false; }
+    bool hasRelativeSize() const override { return false; }
 
     IntSize size() const override { return m_crossfadeSize; }
 

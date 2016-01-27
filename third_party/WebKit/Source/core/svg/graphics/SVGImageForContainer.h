@@ -48,8 +48,7 @@ public:
     IntSize size() const override;
 
     bool usesContainerSize() const override { return m_image->usesContainerSize(); }
-    bool hasRelativeWidth() const override { return m_image->hasRelativeWidth(); }
-    bool hasRelativeHeight() const override { return m_image->hasRelativeHeight(); }
+    bool hasRelativeSize() const override { return m_image->hasRelativeSize(); }
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override
     {
         m_image->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);

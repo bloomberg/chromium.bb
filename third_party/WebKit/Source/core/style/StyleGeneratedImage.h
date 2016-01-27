@@ -45,8 +45,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
 
     LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
-    bool imageHasRelativeWidth() const override { return !m_fixedSize; }
-    bool imageHasRelativeHeight() const override { return !m_fixedSize; }
+    bool imageHasRelativeSize() const override { return !m_fixedSize; }
     void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
     bool usesImageContainerSize() const override { return !m_fixedSize; }
     void addClient(LayoutObject*) override;

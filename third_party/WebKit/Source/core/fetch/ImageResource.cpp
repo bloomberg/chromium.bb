@@ -197,18 +197,10 @@ bool ImageResource::usesImageContainerSize() const
     return false;
 }
 
-bool ImageResource::imageHasRelativeWidth() const
+bool ImageResource::imageHasRelativeSize() const
 {
     if (m_image)
-        return m_image->hasRelativeWidth();
-
-    return false;
-}
-
-bool ImageResource::imageHasRelativeHeight() const
-{
-    if (m_image)
-        return m_image->hasRelativeHeight();
+        return m_image->hasRelativeSize();
 
     return false;
 }
@@ -234,8 +226,8 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
         return size;
 
     // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-    float widthScale = m_image->hasRelativeWidth() ? 1.0f : multiplier;
-    float heightScale = m_image->hasRelativeHeight() ? 1.0f : multiplier;
+    float widthScale = m_image->hasRelativeSize() ? 1.0f : multiplier;
+    float heightScale = m_image->hasRelativeSize() ? 1.0f : multiplier;
     LayoutSize minimumSize(size.width() > 0 ? 1 : 0, size.height() > 0 ? 1 : 0);
     size.scale(widthScale, heightScale);
     size.clampToMinimumSize(minimumSize);

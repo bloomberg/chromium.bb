@@ -67,8 +67,7 @@ public:
     bool canRender() { return !errorOccurred() && !imageSize(DoNotRespectImageOrientation, 1).isEmpty(); }
 
     bool usesImageContainerSize() const;
-    bool imageHasRelativeWidth() const;
-    bool imageHasRelativeHeight() const;
+    bool imageHasRelativeSize() const;
     // The device pixel ratio we got from the server for this image, or 1.0.
     float devicePixelRatioHeaderValue() const { return m_devicePixelRatioHeaderValue; }
     bool hasDevicePixelRatioHeaderValue() const { return m_hasDevicePixelRatioHeaderValue; }

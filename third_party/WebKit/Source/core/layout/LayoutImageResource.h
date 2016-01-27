@@ -58,8 +58,7 @@ public:
     virtual PassRefPtr<Image> image(const IntSize&, float) const;
     virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
 
-    virtual bool imageHasRelativeWidth() const { return m_cachedImage ? m_cachedImage->imageHasRelativeWidth() : false; }
-    virtual bool imageHasRelativeHeight() const { return m_cachedImage ? m_cachedImage->imageHasRelativeHeight() : false; }
+    virtual bool imageHasRelativeSize() const { return m_cachedImage ? m_cachedImage->imageHasRelativeSize() : false; }
 
     virtual LayoutSize imageSize(float multiplier) const;
 

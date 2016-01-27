@@ -646,7 +646,7 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
         return FloatSize();
     LayoutSize size;
     size = image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f);
-    if (layoutObject() && layoutObject()->isLayoutImage() && image->image() && !image->image()->hasRelativeWidth())
+    if (layoutObject() && layoutObject()->isLayoutImage() && image->image() && !image->image()->hasRelativeSize())
         size.scale(toLayoutImage(layoutObject())->imageDevicePixelRatio());
     return FloatSize(size);
 }

@@ -98,10 +98,10 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 void Image::drawTiled(GraphicsContext& ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const FloatSize& repeatSpacing)
 {
     FloatSize intrinsicTileSize = FloatSize(size());
-    if (hasRelativeWidth())
+    if (hasRelativeSize()) {
         intrinsicTileSize.setWidth(scaledTileSize.width());
-    if (hasRelativeHeight())
         intrinsicTileSize.setHeight(scaledTileSize.height());
+    }
 
     FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
                     scaledTileSize.height() / intrinsicTileSize.height());

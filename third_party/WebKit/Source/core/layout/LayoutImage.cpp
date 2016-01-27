@@ -289,7 +289,7 @@ void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
     LayoutReplaced::computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
     // Our intrinsicSize is empty if we're laying out generated images with relative width/height. Figure out the right intrinsic size to use.
-    if (intrinsicSize.isEmpty() && (m_imageResource->imageHasRelativeWidth() || m_imageResource->imageHasRelativeHeight())) {
+    if (intrinsicSize.isEmpty() && m_imageResource->imageHasRelativeSize()) {
         LayoutObject* containingBlock = isOutOfFlowPositioned() ? container() : this->containingBlock();
         if (containingBlock->isBox()) {
             LayoutBox* box = toLayoutBox(containingBlock);

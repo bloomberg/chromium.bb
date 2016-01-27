@@ -62,8 +62,7 @@ public:
     CSSImageSetValue* cssImageSetValue() const { return m_value->isImageSetValue() ? toCSSImageSetValue(m_value.get()) : 0; }
 
     LayoutSize imageSize(const LayoutObject*, float /*multiplier*/) const override { return LayoutSize(); }
-    bool imageHasRelativeWidth() const override { return false; }
-    bool imageHasRelativeHeight() const override { return false; }
+    bool imageHasRelativeSize() const override { return false; }
     void computeIntrinsicDimensions(const LayoutObject*, Length& /* intrinsicWidth */ , Length& /* intrinsicHeight */, FloatSize& /* intrinsicRatio */) override { }
     bool usesImageContainerSize() const override { return false; }
     void addClient(LayoutObject*) override { }

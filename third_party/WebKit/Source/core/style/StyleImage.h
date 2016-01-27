@@ -58,8 +58,7 @@ public:
     virtual bool errorOccurred() const { return false; }
     virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const = 0;
     virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) = 0;
-    virtual bool imageHasRelativeWidth() const = 0;
-    virtual bool imageHasRelativeHeight() const = 0;
+    virtual bool imageHasRelativeSize() const = 0;
     virtual bool usesImageContainerSize() const = 0;
     virtual void addClient(LayoutObject*) = 0;
     virtual void removeClient(LayoutObject*) = 0;

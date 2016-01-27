@@ -95,14 +95,9 @@ LayoutSize StyleFetchedImage::imageSize(const LayoutObject* layoutObject, float 
     return m_image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject), multiplier);
 }
 
-bool StyleFetchedImage::imageHasRelativeWidth() const
+bool StyleFetchedImage::imageHasRelativeSize() const
 {
-    return m_image->imageHasRelativeWidth();
-}
-
-bool StyleFetchedImage::imageHasRelativeHeight() const
-{
-    return m_image->imageHasRelativeHeight();
+    return m_image->imageHasRelativeSize();
 }
 
 void StyleFetchedImage::computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
