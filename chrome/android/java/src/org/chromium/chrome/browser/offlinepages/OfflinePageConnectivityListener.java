@@ -40,7 +40,6 @@ public class OfflinePageConnectivityListener
         Log.d(TAG, "Got connectivity event, connectionType: " + connectionType);
 
         boolean connected = (connectionType != ConnectionType.CONNECTION_NONE
-                && connectionType != ConnectionType.CONNECTION_UNKNOWN
                 && connectionType != ConnectionType.CONNECTION_BLUETOOTH);
 
         // TODO(petewil): We should consider using the connection quality monitor instead
@@ -53,6 +52,8 @@ public class OfflinePageConnectivityListener
         if (connected && mTab != null && !mSeen) {
             Log.d(TAG, "Showing reload snackbar");
             OfflinePageUtils.showOfflineSnackbarIfNecessary(mActivity, mTab);
+            // We can stop listening for online transitions once we go online.
+            disable();
             mSeen = true;
         }
     }
@@ -61,8 +62,12 @@ public class OfflinePageConnectivityListener
      * Enable the listener when we have an offline page showing.
      */
     public void enable() {
-        NetworkChangeNotifier.addConnectionTypeObserver(this);
-        mEnabled = true;
+        if (!mEnabled) {
+            Log.d(TAG, "enabled");
+            NetworkChangeNotifier.addConnectionTypeObserver(this);
+            mEnabled = true;
+            mSeen = false;
+        }
     }
 
     /**
@@ -70,6 +75,7 @@ public class OfflinePageConnectivityListener
      */
     public void disable() {
         if (mEnabled) {
+            Log.d(TAG, "disabled");
             NetworkChangeNotifier.removeConnectionTypeObserver(this);
         }
         mEnabled = false;

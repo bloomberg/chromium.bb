@@ -26,8 +26,41 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     private boolean mWasHidden;
     private OfflinePageConnectivityListener mListener;
 
-    private static final Map<Integer, OfflinePageConnectivityListener> sConnectivityListeners =
-            new TreeMap<Integer, OfflinePageConnectivityListener>();
+    static final Map<Integer, OfflinePageTabObserver> sTabObservers =
+            new TreeMap<Integer, OfflinePageTabObserver>();
+
+    /**
+     * Create and attach a tab observer if we don't already have one, otherwise update it.
+     * @param activity The ChromeActivity we are associated with.
+     * @param tab The tab we are adding an observer for.
+     * @param conneted True if we were connected when this call was made.
+     * @param bookmarkId The ID of the bookmark we are adding an observer for.
+     */
+    public static void addObserverForTab(
+            ChromeActivity activity, Tab tab, boolean connected, long bookmarkId) {
+        // See if we already have an observer for this tab.
+        int tabId = tab.getId();
+        OfflinePageTabObserver observer = sTabObservers.get(tabId);
+
+        if (observer == null) {
+            // If we don't have an observer, build one and attach it to the tab.
+            observer = new OfflinePageTabObserver(activity, tab, connected, bookmarkId);
+            sTabObservers.put(tabId, observer);
+            tab.addObserver(observer);
+            Log.d(TAG, "Added tab observer connected " + connected + ", bookmarkId " + bookmarkId);
+        } else {
+            // If we already have an observer, update the bookmark ID and connected state.
+            observer.setConnected(connected);
+            observer.setBookmarkId(bookmarkId);
+            // If we already have an observer and addObserver was called, we should re-enable
+            // the connectivity listener in case we go offline again.  This typically happens
+            // if a background page comes back to the foreground.
+            if (!connected) {
+                observer.enableConnectivityListener();
+            }
+            Log.d(TAG, "Updated tab observer " + connected + ", bookmarkId " + bookmarkId);
+        }
+    }
 
     /**
      * Builds a new OfflinePageTabObserver.
@@ -35,7 +68,7 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
      * @param connected True if the phone is connected when the observer is created.
      * @param bookmarkId Id of the bookmark (offline page) that is associated with this observer.
      */
-    public OfflinePageTabObserver(
+    private OfflinePageTabObserver(
             ChromeActivity activity, Tab tab, boolean connected, long bookmarkId) {
         mActivity = activity;
         mConnected = connected;
@@ -45,8 +78,19 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
         mWasHidden = tab.isHidden();
 
         mListener = new OfflinePageConnectivityListener(activity, tab);
-        sConnectivityListeners.put(tab.getId(), mListener);
         Log.d(TAG, "OfflinePageTabObserver built");
+    }
+
+    public void setConnected(boolean connected) {
+        mConnected = connected;
+    }
+
+    public void setBookmarkId(long bookmarkId) {
+        mBookmarkId = bookmarkId;
+    }
+
+    public void enableConnectivityListener() {
+        mListener.enable();
     }
 
     @Override
@@ -68,6 +112,8 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     public void onHidden(Tab hiddenTab) {
         mWasHidden = true;
         // TODO(petewil): In case any snackbars are showing, dismiss them before we switch tabs.
+        // We will need a handle on the snackbar manager (likely via ChromeActivity) and the
+        // snackbar controller (likely via showReload/EditSnackbar).
     }
 
     @Override
@@ -78,22 +124,16 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     @Override
     public void onDestroyed(Tab destroyedTab) {
         // Unregister this tab for OS connectivity notifications.
-        if (mListener != null) {
-            mListener.disable();
-            destroyedTab.removeObserver(this);
-            sConnectivityListeners.remove(destroyedTab.getId());
-            Log.d(TAG, "onDestroyed");
-        }
+        mListener.disable();
+        destroyedTab.removeObserver(this);
+        sTabObservers.remove(destroyedTab.getId());
+        Log.d(TAG, "onDestroyed");
     }
 
     @Override
     public void onUrlUpdated(Tab reloadingTab) {
         // Unregister this tab for OS connectivity notifications.
-        if (mListener != null) {
-            mListener.disable();
-            reloadingTab.removeObserver(this);
-            sConnectivityListeners.remove(reloadingTab.getId());
-            Log.d(TAG, "onUrlUpdated");
-        }
+        mListener.disable();
+        Log.d(TAG, "onUrlUpdated");
     }
 }

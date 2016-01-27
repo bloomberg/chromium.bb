@@ -234,7 +234,7 @@ public class OfflinePageUtils {
         }
 
         // Set up the connectivity listener to watch for connectivity.
-        tab.addObserver(new OfflinePageTabObserver(activity, tab, connected, bookmarkId));
+        OfflinePageTabObserver.addObserverForTab(activity, tab, connected, bookmarkId);
         return;
     }
 
