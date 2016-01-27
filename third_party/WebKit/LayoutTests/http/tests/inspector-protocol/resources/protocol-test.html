@@ -310,6 +310,21 @@ InspectorTest.safeWrap = function(func, onexception)
     return result;
 }
 
+InspectorTest.navigate = function(url, callback)
+{
+    InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
+    InspectorTest.evaluateInPage("navigateProtocolTest('" + url + "')");
+}
+
+InspectorTest.pageReloaded = function()
+{
+    InspectorTest.log("Page reloaded.");
+    var callback = InspectorTest._pageLoadedCallback;
+    delete InspectorTest._pageLoadedCallback;
+    if (callback)
+        callback();
+}
+
 var lastPromiseEvalId = 0;
 var pendingPromiseEvalRequests = {};
 

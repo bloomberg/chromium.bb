@@ -72,12 +72,23 @@ function closeTest()
     testRunner.notifyDone();
 }
 
+var reloadParam = "__protocol__test__reload__";
+
 function runTest()
 {
     if (!window.testRunner) {
         console.error("This test requires DumpRenderTree");
         return;
     }
+
+    var reloadIndex = window.location.href.lastIndexOf(reloadParam);
+    if (reloadIndex !== -1) {
+        var lastId = window.location.href.substring(reloadIndex + reloadParam.length);
+        window.lastFrontendEvalId = parseInt(lastId, 10);
+        evaluateInFrontend("InspectorTest.pageReloaded();");
+        return;
+    }
+
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
     testRunner.setCanOpenWindows(true);
@@ -94,6 +105,12 @@ var lastFrontendEvalId = 0;
 function evaluateInFrontend(script)
 {
     testRunner.evaluateInWebInspector(++lastFrontendEvalId, script);
+}
+
+function navigateProtocolTest(url)
+{
+    url += (url.indexOf("?") === -1 ? "?" : "&") + reloadParam + lastFrontendEvalId;
+    window.location.replace(url);
 }
 
 function openInspector()

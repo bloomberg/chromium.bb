@@ -1,0 +1,37 @@
+<html>
+<head>
+
+<script src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script src="device-emulation-test.js"></script>
+
+<script>
+// This test is based on http://jsbin.com/urowoh/latest.
+setMetaViewport();
+</script>
+
+<style>
+html {
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    min-height: 1000px;
+    overflow-x: hidden;
+}
+</style>
+
+<script>
+function test()
+{
+    InspectorTest.testDeviceEmulation("device-emulation-insets.html", 1200, 1000, 1, "none", {left: 10, top: 20, right: 30, bottom: 40});
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that device emulation with insets affects window.screenWidth, window.screenHeight, screen.width and screen.height.
+</p>
+</body>
+</html>

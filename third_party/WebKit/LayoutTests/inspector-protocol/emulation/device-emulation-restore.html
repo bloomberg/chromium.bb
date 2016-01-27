@@ -1,0 +1,63 @@
+<html>
+<head>
+
+<script src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script src="device-emulation-test.js"></script>
+
+<script>
+// This test is based on http://jsbin.com/urowoh/latest.
+setMetaViewport();
+</script>
+
+<style>
+html {
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    min-height: 1000px;
+    overflow-x: hidden;
+}
+</style>
+
+<script>
+function test()
+{
+    InspectorTest._deviceEmulationPageUrl = "device-emulation-restore.html";
+    InspectorTest._deviceEmulationResults = [];
+    var originalMetrics;
+
+    InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", null, undefined, InspectorTest.getPageMetrics.bind(InspectorTest, true, saveMetrics));
+
+    function saveMetrics(metrics)
+    {
+        originalMetrics = metrics.value;
+        InspectorTest.emulateAndGetMetrics(1200, 1000, 1, "w=320", null, undefined, restore);
+    }
+
+    function restore()
+    {
+        function callback(metrics)
+        {
+            metrics = metrics.value;
+            if (metrics != originalMetrics)
+                InspectorTest._deviceEmulationResults.push("Original metrics not restored.\n==== Original ===\n" + originalMetrics + "\n==== Restored ====\n" + metrics);
+            else
+                InspectorTest._deviceEmulationResults.push("Original metrics restored correctly.");
+            InspectorTest.log(InspectorTest._deviceEmulationResults.join("\n"));
+            InspectorTest.completeTest();
+        }
+
+        InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", null, undefined, InspectorTest.getPageMetrics.bind(InspectorTest, true, callback));
+    }
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that disabling device emulation restores back to original values.
+</p>
+</body>
+</html>
