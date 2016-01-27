@@ -41,7 +41,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
       base::SequencedTaskRunner* original_task_runner,
       const GURL& origin,
       StorageType type,
-      const QuotaManager::GetUsageAndQuotaCallback& callback) override {}
+      const QuotaManager::GetUsageAndQuotaCallback& callback) override;
 
   // Validates the |client_id| and updates the internal access count
   // which can be accessed via notify_storage_accessed_count().

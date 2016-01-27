@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
@@ -58,9 +59,9 @@ typedef base::Callback<void(scoped_ptr<CacheMetadata>)> MetadataCallback;
 
 enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
 
-// The maximum size of an individual cache. Ultimately cache size is controlled
-// per-origin.
-const int kMaxCacheBytes = 512 * 1024 * 1024;
+// The maximum size of each cache. Ultimately, cache size
+// is controlled per-origin by the QuotaManager.
+const int kMaxCacheBytes = std::numeric_limits<int>::max();
 
 void NotReachedCompletionCallback(int rv) {
   NOTREACHED();
@@ -276,6 +277,7 @@ struct CacheStorageCache::PutContext {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy;
   disk_cache::ScopedEntryPtr cache_entry;
+  int64_t available_bytes = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PutContext);
@@ -794,6 +796,31 @@ void CacheStorageCache::PutDidDelete(scoped_ptr<PutContext> put_context,
     return;
   }
 
+  quota_manager_proxy_->GetUsageAndQuota(
+      base::ThreadTaskRunnerHandle::Get().get(), origin_,
+      storage::kStorageTypeTemporary,
+      base::Bind(&CacheStorageCache::PutDidGetUsageAndQuota,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(put_context))));
+}
+
+void CacheStorageCache::PutDidGetUsageAndQuota(
+    scoped_ptr<PutContext> put_context,
+    storage::QuotaStatusCode status_code,
+    int64_t usage,
+    int64_t quota) {
+  if (backend_state_ != BACKEND_OPEN) {
+    put_context->callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+    return;
+  }
+
+  if (status_code != storage::kQuotaStatusOk) {
+    put_context->callback.Run(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED);
+    return;
+  }
+
+  put_context->available_bytes = quota - usage;
+
   scoped_ptr<disk_cache::Entry*> scoped_entry_ptr(new disk_cache::Entry*());
   disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
   ServiceWorkerFetchRequest* request_ptr = put_context->request.get();
@@ -859,6 +886,12 @@ void CacheStorageCache::PutDidCreateEntry(
 
   scoped_refptr<net::StringIOBuffer> buffer(
       new net::StringIOBuffer(std::move(serialized)));
+
+  int64_t bytes_to_write = buffer->size() + put_context->response->blob_size;
+  if (put_context->available_bytes < bytes_to_write) {
+    put_context->callback.Run(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED);
+    return;
+  }
 
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
   disk_cache::Entry* temp_entry_ptr = put_context->cache_entry.get();

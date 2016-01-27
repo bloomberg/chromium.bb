@@ -18,6 +18,7 @@
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/disk_cache/disk_cache.h"
+#include "storage/common/quota/quota_status_code.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -190,6 +191,10 @@ class CONTENT_EXPORT CacheStorageCache
   void PutImpl(scoped_ptr<PutContext> put_context);
   void PutDidDelete(scoped_ptr<PutContext> put_context,
                     CacheStorageError delete_error);
+  void PutDidGetUsageAndQuota(scoped_ptr<PutContext> put_context,
+                              storage::QuotaStatusCode status_code,
+                              int64_t usage,
+                              int64_t quota);
   void PutDidCreateEntry(scoped_ptr<disk_cache::Entry*> entry_ptr,
                          scoped_ptr<PutContext> put_context,
                          int rv);

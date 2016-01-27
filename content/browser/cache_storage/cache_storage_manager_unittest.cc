@@ -24,6 +24,7 @@
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_usage_info.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context.h"
@@ -75,19 +76,25 @@ class CacheStorageManagerTest : public testing::Test {
 
     url_request_context->set_job_factory(url_request_job_factory_.get());
 
-    quota_manager_proxy_ = new MockQuotaManagerProxy(
-        nullptr, base::ThreadTaskRunnerHandle::Get().get());
-
-    if (MemoryOnly()) {
-      cache_manager_ = CacheStorageManager::Create(
-          base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
-          quota_manager_proxy_);
-    } else {
+    if (!MemoryOnly())
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      cache_manager_ = CacheStorageManager::Create(
-          temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
-          quota_manager_proxy_);
-    }
+
+    quota_policy_ = new MockSpecialStoragePolicy;
+    mock_quota_manager_ = new MockQuotaManager(
+        MemoryOnly() /* is incognito */, temp_dir_.path(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(), quota_policy_.get());
+    mock_quota_manager_->SetQuota(
+        GURL(origin1_), storage::kStorageTypeTemporary, 1024 * 1024 * 100);
+    mock_quota_manager_->SetQuota(
+        GURL(origin2_), storage::kStorageTypeTemporary, 1024 * 1024 * 100);
+
+    quota_manager_proxy_ = new MockQuotaManagerProxy(
+        mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+
+    cache_manager_ = CacheStorageManager::Create(
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+        quota_manager_proxy_);
 
     cache_manager_->SetBlobParametersForCache(
         browser_context_.GetRequestContext(),
@@ -307,6 +314,8 @@ class CacheStorageManagerTest : public testing::Test {
   scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   storage::BlobStorageContext* blob_storage_context_;
 
+  scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
+  scoped_refptr<MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<CacheStorageManager> cache_manager_;
 

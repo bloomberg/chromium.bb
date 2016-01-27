@@ -23,6 +23,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
@@ -41,6 +42,7 @@ namespace content {
 
 namespace {
 const char kTestData[] = "Hello World";
+const char kOrigin[] = "http://example.com";
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
 // the memory.
@@ -264,8 +266,19 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     blob_storage_context_ = blob_storage_context->context();
 
+    if (!MemoryOnly())
+      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    quota_policy_ = new MockSpecialStoragePolicy;
+    mock_quota_manager_ = new MockQuotaManager(
+        MemoryOnly() /* is incognito */, temp_dir_.path(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(), quota_policy_.get());
+    mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
+                                  1024 * 1024 * 100);
+
     quota_manager_proxy_ = new MockQuotaManagerProxy(
-        nullptr, base::ThreadTaskRunnerHandle::Get().get());
+        mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
 
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
     url_request_job_factory_->SetProtocolHandler(
@@ -278,12 +291,8 @@ class CacheStorageCacheTest : public testing::Test {
 
     CreateRequests(blob_storage_context);
 
-    if (!MemoryOnly())
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = MemoryOnly() ? base::FilePath() : temp_dir_.path();
-
     cache_ = make_scoped_refptr(new TestCacheStorageCache(
-        GURL("http://example.com"), path, browser_context_.GetRequestContext(),
+        GURL(kOrigin), temp_dir_.path(), browser_context_.GetRequestContext(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr()));
   }
 
@@ -514,6 +523,8 @@ class CacheStorageCacheTest : public testing::Test {
   TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
+  scoped_refptr<MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   storage::BlobStorageContext* blob_storage_context_;
 
@@ -934,6 +945,13 @@ TEST_P(CacheStorageCacheTestP, QuotaManagerModified) {
   sum_delta += quota_manager_proxy_->last_notified_delta();
 
   EXPECT_EQ(0, sum_delta);
+}
+
+TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimits) {
+  mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
+                                0);
+  EXPECT_FALSE(Put(no_body_request_, no_body_response_));
+  EXPECT_EQ(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED, callback_error_);
 }
 
 TEST_F(CacheStorageCacheMemoryOnlyTest, MemoryBackedSize) {

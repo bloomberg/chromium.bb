@@ -11,6 +11,7 @@ enum WebServiceWorkerCacheError {
     WebServiceWorkerCacheErrorNotImplemented,
     WebServiceWorkerCacheErrorNotFound,
     WebServiceWorkerCacheErrorExists,
+    WebServiceWorkerCacheErrorQuotaExceeded,
     WebServiceWorkerCacheErrorLast = WebServiceWorkerCacheErrorExists
 };
 

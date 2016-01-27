@@ -36,6 +36,16 @@ void MockQuotaManagerProxy::SimulateQuotaManagerDestroyed() {
   }
 }
 
+void MockQuotaManagerProxy::GetUsageAndQuota(
+    base::SequencedTaskRunner* original_task_runner,
+    const GURL& origin,
+    StorageType type,
+    const QuotaManager::GetUsageAndQuotaCallback& callback) {
+  if (mock_manager()) {
+    mock_manager()->GetUsageAndQuota(origin, type, callback);
+  }
+}
+
 void MockQuotaManagerProxy::NotifyStorageAccessed(
     QuotaClient::ID client_id, const GURL& origin, StorageType type) {
   ++storage_accessed_count_;

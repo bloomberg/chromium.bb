@@ -77249,6 +77249,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Exists Error"/>
   <int value="2" label="Storage Error"/>
   <int value="3" label="Not Found Error"/>
+  <int value="4" label="Quota Exceeded Error"/>
 </enum>
 
 <enum name="ServiceWorkerCacheResponseType" type="int">
