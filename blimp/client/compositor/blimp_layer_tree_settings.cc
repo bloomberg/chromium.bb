@@ -104,6 +104,75 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
 
   // Blimp always uses new cc::AnimationHost system.
   settings->use_compositor_animation_timelines = true;
+
+  // Set the GpuMemoryPolicy.
+  cc::ManagedMemoryPolicy memory_policy = settings->memory_policy_;
+  memory_policy.bytes_limit_when_visible = 0;
+
+#if defined(OS_ANDROID)
+  // We can't query available GPU memory from the system on Android.
+  // Physical memory is also mis-reported sometimes (eg. Nexus 10 reports
+  // 1262MB when it actually has 2GB, while Razr M has 1GB but only reports
+  // 128MB java heap size). First we estimate physical memory using both.
+  size_t dalvik_mb = base::SysInfo::DalvikHeapSizeMB();
+  size_t physical_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  size_t physical_memory_mb = 0;
+  if (dalvik_mb >= 256)
+    physical_memory_mb = dalvik_mb * 4;
+  else
+    physical_memory_mb = std::max(dalvik_mb * 4, (physical_mb * 4) / 3);
+
+  // Now we take a default of 1/8th of memory on high-memory devices,
+  // and gradually scale that back for low-memory devices (to be nicer
+  // to other apps so they don't get killed). Examples:
+  // Nexus 4/10(2GB)    256MB (normally 128MB)
+  // Droid Razr M(1GB)  114MB (normally 57MB)
+  // Galaxy Nexus(1GB)  100MB (normally 50MB)
+  // Xoom(1GB)          100MB (normally 50MB)
+  // Nexus S(low-end)   8MB (normally 8MB)
+  // Note that the compositor now uses only some of this memory for
+  // pre-painting and uses the rest only for 'emergencies'.
+  if (memory_policy.bytes_limit_when_visible == 0) {
+    // NOTE: Non-low-end devices use only 50% of these limits,
+    // except during 'emergencies' where 100% can be used.
+    if (!base::SysInfo::IsLowEndDevice()) {
+      if (physical_memory_mb >= 1536)
+        memory_policy.bytes_limit_when_visible =
+            physical_memory_mb / 8;  // >192MB
+      else if (physical_memory_mb >= 1152)
+        memory_policy.bytes_limit_when_visible =
+            physical_memory_mb / 8;  // >144MB
+      else if (physical_memory_mb >= 768)
+        memory_policy.bytes_limit_when_visible =
+            physical_memory_mb / 10;  // >76MB
+      else
+        memory_policy.bytes_limit_when_visible =
+            physical_memory_mb / 12;  // <64MB
+    } else {
+      // Low-end devices have 512MB or less memory by definition
+      // so we hard code the limit rather than relying on the heuristics
+      // above. Low-end devices use 4444 textures so we can use a lower limit.
+      memory_policy.bytes_limit_when_visible = 8;
+    }
+    memory_policy.bytes_limit_when_visible =
+        memory_policy.bytes_limit_when_visible * 1024 * 1024;
+    // Clamp the observed value to a specific range on Android.
+    memory_policy.bytes_limit_when_visible = std::max(
+        memory_policy.bytes_limit_when_visible,
+        static_cast<size_t>(8 * 1024 * 1024));
+    memory_policy.bytes_limit_when_visible =
+        std::min(memory_policy.bytes_limit_when_visible,
+                 static_cast<size_t>(256 * 1024 * 1024));
+  }
+  memory_policy.priority_cutoff_when_visible =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
+#else
+  // Ignore what the system said and give all clients the same maximum
+  // allocation on desktop platforms.
+  memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
+  memory_policy.priority_cutoff_when_visible =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
+#endif
 }
 
 }  // namespace client
