@@ -371,7 +371,7 @@ pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
 
 void PnaclCoordinator::LoadCompiler() {
   PLUGIN_PRINTF(("PnaclCoordinator::LoadCompiler"));
-  int64_t compiler_load_start_time = NaClGetTimeOfDayMicroseconds();
+  base::TimeTicks compiler_load_start_time = base::TimeTicks::Now();
   pp::CompletionCallback load_finished = callback_factory_.NewCallback(
       &PnaclCoordinator::RunCompile, compiler_load_start_time);
   PnaclResources::ResourceType compiler_type = pnacl_options_.use_subzero
@@ -385,7 +385,7 @@ void PnaclCoordinator::LoadCompiler() {
 }
 
 void PnaclCoordinator::RunCompile(int32_t pp_error,
-                                  int64_t compiler_load_start_time) {
+                                  base::TimeTicks compiler_load_start_time) {
   PLUGIN_PRINTF(
       ("PnaclCoordinator::RunCompile (pp_error=%" NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
@@ -395,7 +395,7 @@ void PnaclCoordinator::RunCompile(int32_t pp_error,
     return;
   }
   int64_t compiler_load_time_total =
-      NaClGetTimeOfDayMicroseconds() - compiler_load_start_time;
+      (base::TimeTicks::Now() - compiler_load_start_time).InMicroseconds();
   GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.LoadCompiler",
                                        compiler_load_time_total);
   GetNaClInterface()->LogTranslateTime(
@@ -428,7 +428,7 @@ void PnaclCoordinator::LoadLinker(int32_t pp_error) {
     return;
   }
   ErrorInfo error_info;
-  int64_t ld_load_start_time = NaClGetTimeOfDayMicroseconds();
+  base::TimeTicks ld_load_start_time = base::TimeTicks::Now();
   pp::CompletionCallback load_finished = callback_factory_.NewCallback(
       &PnaclCoordinator::RunLink, ld_load_start_time);
   // Transfer file_info ownership to the sel_ldr launcher.
@@ -437,7 +437,8 @@ void PnaclCoordinator::LoadLinker(int32_t pp_error) {
                                 ld_file_info, &ld_subprocess_, load_finished);
 }
 
-void PnaclCoordinator::RunLink(int32_t pp_error, int64_t ld_load_start_time) {
+void PnaclCoordinator::RunLink(int32_t pp_error,
+                               base::TimeTicks ld_load_start_time) {
   PLUGIN_PRINTF(
       ("PnaclCoordinator::RunLink (pp_error=%" NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
@@ -448,7 +449,7 @@ void PnaclCoordinator::RunLink(int32_t pp_error, int64_t ld_load_start_time) {
   }
   GetNaClInterface()->LogTranslateTime(
       "NaCl.Perf.PNaClLoadTime.LoadLinker",
-      NaClGetTimeOfDayMicroseconds() - ld_load_start_time);
+      (base::TimeTicks::Now() - ld_load_start_time).InMicroseconds());
   translate_thread_->RunLink();
 }
 

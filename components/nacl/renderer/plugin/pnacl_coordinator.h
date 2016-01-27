@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_resources.h"
@@ -103,9 +104,9 @@ class PnaclCoordinator {
   // been created, this starts the translation.  Translation starts two
   // subprocesses, one for llc and one for ld.
   void LoadCompiler();
-  void RunCompile(int32_t pp_error, int64_t compile_load_start_time);
+  void RunCompile(int32_t pp_error, base::TimeTicks compile_load_start_time);
   void LoadLinker(int32_t pp_error);
-  void RunLink(int32_t pp_error, int64_t ld_load_start_time);
+  void RunLink(int32_t pp_error, base::TimeTicks ld_load_start_time);
 
   // Invoked when translation is finished.
   void TranslateFinished(int32_t pp_error);

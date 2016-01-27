@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/utility.h"
@@ -214,7 +215,7 @@ void PnaclTranslateThread::DoCompile() {
   PLUGIN_PRINTF(("DoCompile using subzero: %d\n", pnacl_options_->use_subzero));
 
   pp::Core* core = pp::Module::Get()->core();
-  int64_t do_compile_start_time = NaClGetTimeOfDayMicroseconds();
+  base::TimeTicks do_compile_start_time = base::TimeTicks::Now();
 
   std::vector<std::string> args;
   if (pnacl_options_->use_subzero) {
@@ -300,7 +301,8 @@ void PnaclTranslateThread::DoCompile() {
     TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL, error_str);
     return;
   }
-  compile_time_ = NaClGetTimeOfDayMicroseconds() - do_compile_start_time;
+  compile_time_ =
+    (base::TimeTicks::Now() - do_compile_start_time).InMicroseconds();
   GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.CompileTime",
                                        compile_time_);
   GetNaClInterface()->LogTranslateTime(
@@ -353,7 +355,7 @@ void PnaclTranslateThread::DoLink() {
                                ld_channel_peer_pid_));
   }
 
-  int64_t link_start_time = NaClGetTimeOfDayMicroseconds();
+  base::TimeTicks link_start_time = base::TimeTicks::Now();
   bool success = false;
   bool sent = ld_channel_filter_->Send(
       new PpapiMsg_PnaclTranslatorLink(ld_input_files, nexe_file, &success));
@@ -370,7 +372,7 @@ void PnaclTranslateThread::DoLink() {
 
   GetNaClInterface()->LogTranslateTime(
       "NaCl.Perf.PNaClLoadTime.LinkTime",
-      NaClGetTimeOfDayMicroseconds() - link_start_time);
+      (base::TimeTicks::Now() - link_start_time).InMicroseconds());
   PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
                  this));
 
