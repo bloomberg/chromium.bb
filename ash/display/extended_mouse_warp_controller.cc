@@ -42,7 +42,7 @@ aura::Window* GetRootWindowForDisplayId(int64_t display_id) {
 
 // Helper method that maps an aura::Window to a gfx::Display.
 gfx::Display GetDisplayFromWindow(aura::Window* window) {
-  return Shell::GetScreen()->GetDisplayNearestWindow(window);
+  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window);
 }
 
 }  // namespace
@@ -94,7 +94,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
     // display. DisplayLayout::Position is defined in terms of primary.
     DisplayLayout::Position position =
         display_manager->GetCurrentDisplayLayout().position;
-    const gfx::Display& a = Shell::GetScreen()->GetPrimaryDisplay();
+    const gfx::Display& a = gfx::Screen::GetScreen()->GetPrimaryDisplay();
     const gfx::Display& b = ScreenUtil::GetSecondaryDisplay();
 
     // TODO(oshima): Use ComputeBondary instead.
@@ -112,7 +112,7 @@ ExtendedMouseWarpController::~ExtendedMouseWarpController() {
 }
 
 bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
-  if (Shell::GetScreen()->GetNumDisplays() <= 1 || !enabled_)
+  if (gfx::Screen::GetScreen()->GetNumDisplays() <= 1 || !enabled_)
     return false;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());

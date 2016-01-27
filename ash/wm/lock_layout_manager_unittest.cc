@@ -105,7 +105,8 @@ class LockLayoutManagerTest : public AshTestBase {
 };
 
 TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
-  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect screen_bounds =
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -131,7 +132,8 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
   if (!SupportsHostWindowResize())
     return;
 
-  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect screen_bounds =
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -183,7 +185,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   if (!SupportsHostWindowResize())
     return;
 
-  gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect screen_bounds = primary_display.bounds();
 
   views::Widget::InitParams widget_params(
@@ -219,7 +221,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   display_manager->SetDisplayRotation(primary_display.id(),
                                       gfx::Display::ROTATE_90,
                                       gfx::Display::ROTATION_SOURCE_ACTIVE);
-  primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   display_manager->SetDisplayRotation(primary_display.id(),
@@ -233,7 +235,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
   keyboard::KeyboardController* keyboard =
         keyboard::KeyboardController::GetInstance();
-  primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);
   target_bounds.set_height(
@@ -251,7 +253,8 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
     return;
 
   UpdateDisplay("300x400,400x500");
-  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect screen_bounds =
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   views::Widget::InitParams widget_params(

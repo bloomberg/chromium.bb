@@ -106,8 +106,9 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 
   wm::ActivateWindow(window.get());
 
-  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(window.get())
+                            .work_area();
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window.get());
@@ -212,8 +213,9 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindow(&delegate, restored_bounds));
 
-  gfx::Rect work_area_in_screen = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  gfx::Rect work_area_in_screen = gfx::Screen::GetScreen()
+                                      ->GetDisplayNearestWindow(window.get())
+                                      .work_area();
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   const wm::WMEvent snap_event(wm::WM_EVENT_SNAP_LEFT);
@@ -253,8 +255,9 @@ TEST_F(WorkspaceEventHandlerTest,
 
   wm::ActivateWindow(window.get());
 
-  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(window.get())
+                            .work_area();
 
   delegate.set_maximum_size(gfx::Size(0, 100));
 
@@ -277,8 +280,9 @@ TEST_F(WorkspaceEventHandlerTest,
 
   wm::ActivateWindow(window.get());
 
-  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(window.get())
+                            .work_area();
 
   delegate.set_maximum_size(gfx::Size(100, 0));
 

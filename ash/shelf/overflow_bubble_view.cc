@@ -111,8 +111,10 @@ void OverflowBubbleView::ScrollByYOffset(int y_offset) {
 gfx::Size OverflowBubbleView::GetPreferredSize() const {
   gfx::Size preferred_size = GetContentsSize();
 
-  const gfx::Rect monitor_rect = Shell::GetScreen()->GetDisplayNearestPoint(
-      GetAnchorRect().CenterPoint()).work_area();
+  const gfx::Rect monitor_rect =
+      gfx::Screen::GetScreen()
+          ->GetDisplayNearestPoint(GetAnchorRect().CenterPoint())
+          .work_area();
   if (!monitor_rect.IsEmpty()) {
     if (IsHorizontalAlignment()) {
       preferred_size.set_width(std::min(
@@ -194,8 +196,10 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       content_size,
       false);
 
-  gfx::Rect monitor_rect = Shell::GetScreen()->GetDisplayNearestPoint(
-      anchor_rect.CenterPoint()).work_area();
+  gfx::Rect monitor_rect =
+      gfx::Screen::GetScreen()
+          ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
+          .work_area();
 
   int offset = 0;
   if (views::BubbleBorder::is_arrow_on_horizontal(arrow())) {

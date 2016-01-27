@@ -15,6 +15,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -144,7 +145,7 @@ void PartialScreenshotController::StartPartialScreenshotSession(
   }
 
   screenshot_delegate_ = screenshot_delegate;
-  Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     layers_[root] = new PartialScreenshotLayer(
         Shell::GetContainer(root, kShellWindowId_OverlayContainer)->layer());
@@ -185,7 +186,7 @@ void PartialScreenshotController::Complete() {
 void PartialScreenshotController::Cancel() {
   root_window_ = nullptr;
   screenshot_delegate_ = nullptr;
-  Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
   STLDeleteValues(&layers_);
   cursor_setter_.reset();
   EnableMouseWarp(true);

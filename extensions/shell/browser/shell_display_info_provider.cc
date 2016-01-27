@@ -30,10 +30,6 @@ void ShellDisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
   }
 }
 
-gfx::Screen* ShellDisplayInfoProvider::GetActiveScreen() {
-  return NULL;
-}
-
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new ShellDisplayInfoProvider();

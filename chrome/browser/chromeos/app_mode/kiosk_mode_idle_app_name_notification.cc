@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -77,7 +76,7 @@ void KioskModeIdleAppNameNotification::Setup() {
 
 void KioskModeIdleAppNameNotification::OnUserActivity(const ui::Event* event) {
   if (show_notification_upon_next_user_activity_) {
-    gfx::Display display = ash::Shell::GetScreen()->GetPrimaryDisplay();
+    gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
     // Display the notification only on internal display.
     if (display.IsInternal()) {
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

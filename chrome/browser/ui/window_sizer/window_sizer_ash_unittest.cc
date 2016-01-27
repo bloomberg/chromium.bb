@@ -584,8 +584,8 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewBrowserWindowOnEmptyDesktop) {
 // Test the placement of newly created windows on multiple dislays.
 TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
-  gfx::Rect primary_bounds = ash::Shell::GetInstance()->GetScreen()->
-      GetPrimaryDisplay().bounds();
+  gfx::Rect primary_bounds =
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect secondary_bounds = ash::ScreenUtil::GetSecondaryDisplay().bounds();
 
   ash::Shell::GetInstance()->set_target_root_window(
@@ -637,8 +637,9 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   // Move the window to the right side of the secondary display and create a new
   // window. It should be opened then on the secondary display.
   {
-    gfx::Display second_display = ash::Shell::GetScreen()->
-        GetDisplayNearestPoint(gfx::Point(1600 + 100,10));
+    gfx::Display second_display =
+        gfx::Screen::GetScreen()->GetDisplayNearestPoint(
+            gfx::Point(1600 + 100, 10));
     browser_window->GetNativeWindow()->SetBoundsInScreen(
         gfx::Rect(secondary_bounds.CenterPoint().x() - 100, 10, 200, 200),
         second_display);
@@ -828,8 +829,8 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   scoped_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
-  gfx::Rect display_bounds = ash::Shell::GetInstance()->GetScreen()->
-      GetPrimaryDisplay().bounds();
+  gfx::Rect display_bounds =
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect specified_bounds = display_bounds;
 
   // Make a window bigger than the display work area.

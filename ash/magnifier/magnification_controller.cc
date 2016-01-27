@@ -372,7 +372,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
       base::TimeDelta::FromMilliseconds(duration_in_ms));
 
   gfx::Display display =
-      Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
   scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
   GetRootWindowController(root_window_)

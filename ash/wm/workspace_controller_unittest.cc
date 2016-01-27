@@ -139,7 +139,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
   }
 
   gfx::Rect GetFullscreenBounds(aura::Window* window) {
-    return Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
+    return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds();
   }
 
   ShelfWidget* shelf_widget() {
@@ -626,7 +626,7 @@ TEST_F(WorkspaceControllerTest, MoveOnSwitch) {
   // Increase the size of the WorkAreaInsets. This would make |w1| fall
   // completely out of the display work area.
   gfx::Insets insets =
-      Shell::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
   insets.Set(0, 0, insets.bottom() + 30, 0);
   Shell::GetInstance()->SetDisplayWorkAreaInsets(w1.get(), insets);
 

@@ -45,7 +45,7 @@ class TouchHudTestBase : public test::AshTestBase {
   }
 
   gfx::Display GetPrimaryDisplay() {
-    return Shell::GetScreen()->GetPrimaryDisplay();
+    return gfx::Screen::GetScreen()->GetPrimaryDisplay();
   }
 
   const gfx::Display& GetSecondaryDisplay() {

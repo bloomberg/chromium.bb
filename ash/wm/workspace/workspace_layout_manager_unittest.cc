@@ -389,7 +389,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
   default_container->AddChild(window.get());
   window->Show();
   gfx::Rect work_area(
-      Shell::GetScreen()->GetPrimaryDisplay().work_area());
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area());
   EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
 }
 
@@ -464,7 +464,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
 TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // Normal window bounds shouldn't be changed.
   gfx::Size work_area(
-      Shell::GetScreen()->GetPrimaryDisplay().work_area().size());
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area().size());
   const gfx::Rect window_bounds(
       100, 101, work_area.width() + 1, work_area.height() + 2);
   scoped_ptr<aura::Window> window(
@@ -636,8 +636,10 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Fullscreen) {
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   // Fullscreen window fills the whole display.
-  EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
-                window.get()).bounds().ToString(),
+  EXPECT_EQ(gfx::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window.get())
+                .bounds()
+                .ToString(),
             window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
@@ -677,13 +679,17 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   // Fullscreen window fills the whole display.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
-                window.get()).bounds().ToString(),
+  EXPECT_EQ(gfx::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window.get())
+                .bounds()
+                .ToString(),
             window->bounds().ToString());
   // Enlarge the root window.  We should still match the display size.
   UpdateDisplay("800x600");
-  EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
-                window.get()).bounds().ToString(),
+  EXPECT_EQ(gfx::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window.get())
+                .bounds()
+                .ToString(),
             window->bounds().ToString());
 }
 
@@ -692,23 +698,26 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
 TEST_F(WorkspaceLayoutManagerSoloTest, RootWindowResizeShrinksWindows) {
   scoped_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 20, 500, 400)));
-  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(window.get())
+                            .work_area();
   // Invariant: Window is smaller than work area.
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window narrower than our window.
   UpdateDisplay("300x400");
-  work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  work_area = gfx::Screen::GetScreen()
+                  ->GetDisplayNearestWindow(window.get())
+                  .work_area();
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window shorter than our window.
   UpdateDisplay("300x200");
-  work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window.get()).work_area();
+  work_area = gfx::Screen::GetScreen()
+                  ->GetDisplayNearestWindow(window.get())
+                  .work_area();
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
@@ -1019,8 +1028,8 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
 
   void ShowKeyboard() {
     layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
-    restore_work_area_insets_ = Shell::GetScreen()->GetPrimaryDisplay().
-        GetWorkAreaInsets();
+    restore_work_area_insets_ =
+        gfx::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
     Shell::GetInstance()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
@@ -1049,7 +1058,7 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
 // is resized to fit the remaining workspace area.
 TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   gfx::Rect work_area(
-      Shell::GetScreen()->GetPrimaryDisplay().work_area());
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area());
   gfx::Rect keyboard_bounds(work_area.x(),
                             work_area.y() + work_area.height() / 2,
                             work_area.width(),
@@ -1068,7 +1077,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   wm::ActivateWindow(window.get());
 
   int available_height =
-      Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().height() -
       keyboard_bounds.height();
 
   gfx::Rect initial_window_bounds(50, 50, 100, 500);
@@ -1085,7 +1094,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   gfx::Rect work_area(
-      Shell::GetScreen()->GetPrimaryDisplay().work_area());
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area());
   gfx::Rect keyboard_bounds(work_area.x(),
                             work_area.y() + work_area.height() / 2,
                             work_area.width(),
@@ -1098,7 +1107,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
       &delegate, -1, work_area));
 
   int available_height =
-      Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().height() -
       keyboard_bounds.height();
 
   wm::ActivateWindow(window.get());

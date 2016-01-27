@@ -120,7 +120,7 @@ CreateCurrentRootWindowTransformerForMirroring() {
   const DisplayInfo& mirror_display_info =
       display_manager->GetDisplayInfo(display_manager->mirroring_display_id());
   const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
-      Shell::GetScreen()->GetPrimaryDisplay().id());
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
   return scoped_ptr<RootWindowTransformer>(
       CreateRootWindowTransformerForMirroredDisplay(source_display_info,
                                                     mirror_display_info));
@@ -151,7 +151,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("120x200,300x400*2");
-  gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display display1 = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   int64_t display2_id = ScreenUtil::GetSecondaryDisplay().id();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -243,7 +243,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
 
   UpdateDisplay("600x400*2@1.5,500x300");
 
-  gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display display1 = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   test::ScopedSetInternalDisplayId set_internal(display1.id());
   gfx::Display display2 = ScreenUtil::GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -264,7 +264,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   magnifier->SetEnabled(false);
 
   SetDisplayUIScale(display1.id(), 1.25f);
-  display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  display1 = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenUtil::GetSecondaryDisplay();
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
@@ -283,7 +283,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("200x200*2");
-  gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* root_window = root_windows[0];
   ui::test::EventGenerator generator(root_window);
@@ -323,7 +323,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
   // Test 1
   UpdateDisplay("600x400*2/r@1.5");
 
-  gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display display1 = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ("0,0 300x450", display1.bounds().ToString());
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
@@ -349,7 +349,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
 
   // Test 2
   UpdateDisplay("600x400*2/u@1.5");
-  display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  display1 = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
   EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
@@ -374,7 +374,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
 
   // Test 3
   UpdateDisplay("600x400*2/l@1.5");
-  display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  display1 = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ("0,0 300x450", display1.bounds().ToString());
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());

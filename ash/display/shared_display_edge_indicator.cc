@@ -57,7 +57,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget->GetNativeWindow()->SetName("SharedEdgeIndicator");
   widget->SetContentsView(contents_view);
-  gfx::Display display = Shell::GetScreen()->GetDisplayMatching(bounds);
+  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
   aura::Window* window = widget->GetNativeWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window->GetRootWindow());

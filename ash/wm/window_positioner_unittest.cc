@@ -60,8 +60,10 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
   // The window should be in the 2nd display with the default size.
   EXPECT_EQ("300x300", bounds.size().ToString());
 #endif
-  EXPECT_TRUE(Shell::GetScreen()->GetDisplayNearestWindow(
-      second_root_window).bounds().Contains(bounds));
+  EXPECT_TRUE(gfx::Screen::GetScreen()
+                  ->GetDisplayNearestWindow(second_root_window)
+                  .bounds()
+                  .Contains(bounds));
 }
 
 // Tests that second window inherits first window's maximized state as well as
@@ -169,7 +171,7 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      Shell::GetScreen(), nullptr, false, ui::SHOW_STATE_DEFAULT,
+      gfx::Screen::GetScreen(), nullptr, false, ui::SHOW_STATE_DEFAULT,
       &bounds_in_out, &show_state_out);
 
   EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);
@@ -189,7 +191,7 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      Shell::GetScreen(), nullptr, false, ui::SHOW_STATE_DEFAULT,
+      gfx::Screen::GetScreen(), nullptr, false, ui::SHOW_STATE_DEFAULT,
       &bounds_in_out, &show_state_out);
 
   EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);

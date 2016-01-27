@@ -379,8 +379,9 @@ void HandleRotateScreen() {
     return;
 
   base::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
-  gfx::Point point = Shell::GetScreen()->GetCursorScreenPoint();
-  gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(point);
+  gfx::Point point = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Display display =
+      gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
   const DisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
   ash::ScreenRotationAnimator(display.id())

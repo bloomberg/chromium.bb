@@ -58,7 +58,7 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
 
   // Check if the destination has changed displays.
-  gfx::Screen* screen = Shell::GetScreen();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   const gfx::Display dst_display =
       screen->GetDisplayNearestPoint(last_location_);
   if (dst_display.id() !=

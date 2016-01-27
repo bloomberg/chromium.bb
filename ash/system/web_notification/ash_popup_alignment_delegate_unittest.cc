@@ -60,7 +60,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
 
   void UpdateWorkArea(AshPopupAlignmentDelegate* alignment_delegate,
                       const gfx::Display& display) {
-    alignment_delegate->StartObserving(Shell::GetScreen(), display);
+    alignment_delegate->StartObserving(gfx::Screen::GetScreen(), display);
     // Update the layout
     alignment_delegate->OnDisplayWorkAreaInsetsChanged();
   }
@@ -72,12 +72,12 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     }
     alignment_delegate_ = std::move(delegate);
     UpdateWorkArea(alignment_delegate_.get(),
-                   Shell::GetScreen()->GetPrimaryDisplay());
+                   gfx::Screen::GetScreen()->GetPrimaryDisplay());
   }
 
   Position GetPositionInDisplay(const gfx::Point& point) {
     const gfx::Rect& work_area =
-        Shell::GetScreen()->GetPrimaryDisplay().work_area();
+        gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
     const gfx::Point center_point = work_area.CenterPoint();
     if (work_area.x() > point.x() || work_area.y() > point.y() ||
         work_area.right() < point.x() || work_area.bottom() < point.y()) {

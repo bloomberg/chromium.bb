@@ -436,7 +436,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   // Move the mouse cursor at the bottom, which shows the shelf.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   gfx::Point bottom_right =
-      Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
   bottom_right.Offset(-1, -1);
   generator.MoveMouseTo(bottom_right);
   shelf->UpdateAutoHideStateNow();
@@ -444,7 +444,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 
   generator.MoveMouseTo(
-      Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
   shelf->UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(bottom_auto_hidden, GetPopupWorkAreaBottom());

@@ -70,7 +70,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
   set_should_emit_login_prompt_visible(false);
   ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
-  ash::Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   if (keyboard::KeyboardController::GetInstance()) {
@@ -164,7 +164,7 @@ void WebUIScreenLocker::ResetAndFocusUserPod() {
 
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  ash::Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
   ash::Shell::GetInstance()->
       lock_state_controller()->RemoveObserver(this);
 

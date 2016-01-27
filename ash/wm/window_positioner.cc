@@ -81,8 +81,10 @@ gfx::Rect GetWorkAreaForWindowInParent(aura::Window* window) {
   // use window's bounds instead.
   // TODO(oshima): Emulate host window resize on win8.
   gfx::Rect work_area = gfx::Rect(window->parent()->bounds().size());
-  work_area.Inset(Shell::GetScreen()->GetDisplayMatching(
-      window->parent()->GetBoundsInScreen()).GetWorkAreaInsets());
+  work_area.Inset(
+      gfx::Screen::GetScreen()
+          ->GetDisplayMatching(window->parent()->GetBoundsInScreen())
+          .GetWorkAreaInsets());
   return work_area;
 #else
   return ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
@@ -457,9 +459,12 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   // We handle the Multi monitor support by retrieving the active window's
   // work area.
   aura::Window* window = wm::GetActiveWindow();
-  const gfx::Rect work_area = window && window->IsVisible() ?
-      Shell::GetScreen()->GetDisplayNearestWindow(window).work_area() :
-      Shell::GetScreen()->GetPrimaryDisplay().work_area();
+  const gfx::Rect work_area =
+      window && window->IsVisible()
+          ? gfx::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window)
+                .work_area()
+          : gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   // Only try to reposition the popup when it is not spanning the entire
   // screen.
   if ((old_pos.width() + popup_position_offset_from_screen_corner_x >=

@@ -35,6 +35,7 @@
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"
@@ -159,7 +160,7 @@ void MirrorWindowController::UpdateWindow(
     const std::vector<DisplayInfo>& display_info_list) {
   static int mirror_host_count = 0;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  const gfx::Display& primary = Shell::GetScreen()->GetPrimaryDisplay();
+  const gfx::Display& primary = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   const DisplayInfo& source_display_info =
       display_manager->GetDisplayInfo(primary.id());
 
@@ -214,7 +215,7 @@ void MirrorWindowController::UpdateWindow(
             Shell::GetInstance()
                 ->window_tree_host_manager()
                 ->GetAshWindowTreeHostForDisplayId(
-                    Shell::GetScreen()->GetPrimaryDisplay().id());
+                    gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
         unified_ash_host->RegisterMirroringHost(host_info->ash_host.get());
         aura::client::SetScreenPositionClient(host->window(),
                                               screen_position_client_.get());

@@ -20,7 +20,6 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/system_storage/storage_info_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/api/system_display.h"
@@ -120,7 +119,7 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
     return;
 
   if (IsDisplayChangedEvent(event_name)) {
-    gfx::Screen* screen = DisplayInfoProvider::Get()->GetActiveScreen();
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     if (screen)
       screen->AddObserver(this);
   }
@@ -146,7 +145,7 @@ void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
   }
 
   if (IsDisplayChangedEvent(event_name)) {
-    gfx::Screen* screen = DisplayInfoProvider::Get()->GetActiveScreen();
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     if (screen)
       screen->RemoveObserver(this);
   }

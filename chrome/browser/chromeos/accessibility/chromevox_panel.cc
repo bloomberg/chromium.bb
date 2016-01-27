@@ -88,11 +88,11 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
   widget_->Init(params);
   SetShadowType(widget_->GetNativeWindow(), wm::SHADOW_TYPE_RECTANGULAR);
 
-  ash::Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 }
 
 ChromeVoxPanel::~ChromeVoxPanel() {
-  ash::Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 }
 
 aura::Window* ChromeVoxPanel::GetRootWindow() {

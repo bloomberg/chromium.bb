@@ -54,12 +54,13 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   // TODO(oshima): Restore information should contain the
   // work area information like WindowResizer does for the
   // last window location.
-  gfx::Rect display_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      window_state->window()).bounds();
+  gfx::Rect display_area = gfx::Screen::GetScreen()
+                               ->GetDisplayNearestWindow(window_state->window())
+                               .bounds();
 
   if (!display_area.Intersects(restore_bounds)) {
     const gfx::Display& display =
-        Shell::GetScreen()->GetDisplayMatching(restore_bounds);
+        gfx::Screen::GetScreen()->GetDisplayMatching(restore_bounds);
     WindowTreeHostManager* window_tree_host_manager =
         Shell::GetInstance()->window_tree_host_manager();
     aura::Window* new_root =
@@ -260,8 +261,8 @@ void DefaultState::AttachState(
 
   // If the display has changed while in the another mode,
   // we need to let windows know the change.
-  gfx::Display current_display = Shell::GetScreen()->
-      GetDisplayNearestWindow(window_state->window());
+  gfx::Display current_display =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_state->window());
   if (stored_display_state_.bounds() != current_display.bounds()) {
     const WMEvent event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     window_state->OnWMEvent(&event);
@@ -281,8 +282,8 @@ void DefaultState::DetachState(WindowState* window_state) {
   // while in the other mode, we can perform necessary action to
   // restore the window state to the proper state for the current
   // display.
-  stored_display_state_ = Shell::GetScreen()->
-      GetDisplayNearestWindow(window_state->window());
+  stored_display_state_ =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_state->window());
 }
 
 // static
@@ -739,7 +740,7 @@ void DefaultState::CenterWindow(WindowState* window_state) {
   aura::Window* window = window_state->window();
   if (window_state->IsSnapped()) {
     gfx::Rect center_in_screen =
-        Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
     gfx::Size size = window_state->HasRestoreBounds() ?
         window_state->GetRestoreBoundsInScreen().size() :
         window->bounds().size();

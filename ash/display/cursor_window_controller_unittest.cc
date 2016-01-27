@@ -154,17 +154,19 @@ TEST_F(CursorWindowControllerTest, VisibilityTest) {
 // the DSF becomes 1x as a result of zooming out.
 TEST_F(CursorWindowControllerTest, DSF) {
   UpdateDisplay("1000x500*2");
-  int64_t primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   test::ScopedSetInternalDisplayId set_internal(primary_id);
   SetCursorCompositionEnabled(true);
-  ASSERT_EQ(2.0f,
-            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  ASSERT_EQ(
+      2.0f,
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 
   ASSERT_TRUE(SetDisplayUIScale(primary_id, 2.0f));
-  ASSERT_EQ(1.0f,
-            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  ASSERT_EQ(
+      1.0f,
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 }
 #endif

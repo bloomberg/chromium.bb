@@ -383,10 +383,6 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.bottom = overscan_insets.bottom();
 }
 
-gfx::Screen* DisplayInfoProviderChromeOS::GetActiveScreen() {
-  return ash::Shell::GetScreen();
-}
-
 void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
   ash::Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
       enable);

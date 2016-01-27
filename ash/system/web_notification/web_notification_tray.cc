@@ -189,9 +189,10 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
       message_center(),
       message_center_tray_.get(),
       popup_alignment_delegate_.get()));
-  const gfx::Display& display = Shell::GetScreen()->GetDisplayNearestWindow(
-      status_area_widget->GetNativeView());
-  popup_alignment_delegate_->StartObserving(Shell::GetScreen(), display);
+  const gfx::Display& display =
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(
+          status_area_widget->GetNativeView());
+  popup_alignment_delegate_->StartObserving(gfx::Screen::GetScreen(), display);
   OnMessageCenterTrayChanged();
 }
 

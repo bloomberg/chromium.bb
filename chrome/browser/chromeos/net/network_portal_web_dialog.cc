@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
 
-#include "ash/shell.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -20,7 +20,7 @@ const float kNetworkPortalWebDialogWidthFraction = .8;
 const float kNetworkPortalWebDialogHeightFraction = .8;
 
 gfx::Size GetPortalDialogSize() {
-  const gfx::Display display = ash::Shell::GetScreen()->GetPrimaryDisplay();
+  const gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
 
   gfx::Size display_size = display.size();
 

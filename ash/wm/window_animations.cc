@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
@@ -493,7 +492,7 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   // to the location of the application launcher (which is fixed as first item
   // of the shelf).
   gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
   switch (layout_manager->GetAlignment()) {
     case SHELF_ALIGNMENT_BOTTOM:

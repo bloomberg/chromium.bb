@@ -22,7 +22,6 @@ class ShellDisplayInfoProvider : public DisplayInfoProvider {
   void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
       extensions::api::system_display::DisplayUnitInfo* unit) override;
-  gfx::Screen* GetActiveScreen() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDisplayInfoProvider);

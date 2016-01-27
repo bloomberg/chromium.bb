@@ -31,11 +31,11 @@ const char kOrientationVertical[] = "vertical";
 }
 
 DisplayOverscanHandler::DisplayOverscanHandler() {
-  ash::Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 }
 
 DisplayOverscanHandler::~DisplayOverscanHandler() {
-  ash::Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void DisplayOverscanHandler::GetLocalizedValues(

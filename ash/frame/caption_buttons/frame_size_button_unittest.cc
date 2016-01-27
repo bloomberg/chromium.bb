@@ -337,7 +337,7 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   const gfx::Rect& kWorkAreaBoundsInScreen =
-      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   generator.MoveMouseTo(kWorkAreaBoundsInScreen.bottom_left());
 
   // None of the buttons should be pressed because we are really far away from
@@ -388,7 +388,7 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   // the close button (snap right button) should hover the close button and
   // keep the size button pressed.
   const gfx::Rect& kWorkAreaBoundsInScreen =
-      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   generator.MoveMouseTo(kWorkAreaBoundsInScreen.bottom_left());
   EXPECT_TRUE(AllButtonsInNormalState());
   generator.MoveMouseTo(CenterPointInScreen(close_button()));

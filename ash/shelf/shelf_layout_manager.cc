@@ -371,7 +371,7 @@ void ShelfLayoutManager::UpdateAutoHideState() {
       if (!auto_hide_timer_.IsRunning()) {
         mouse_over_shelf_when_auto_hide_timer_started_ =
             shelf_->GetWindowBoundsInScreen().Contains(
-                Shell::GetScreen()->GetCursorScreenPoint());
+                gfx::Screen::GetScreen()->GetCursorScreenPoint());
       }
       auto_hide_timer_.Start(
           FROM_HERE,
@@ -1085,7 +1085,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   }
 
   gfx::Point cursor_position_in_screen =
-      Shell::GetScreen()->GetCursorScreenPoint();
+      gfx::Screen::GetScreen()->GetCursorScreenPoint();
   if (shelf_region.Contains(cursor_position_in_screen))
     return SHELF_AUTO_HIDE_SHOWN;
 

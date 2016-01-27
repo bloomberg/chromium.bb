@@ -42,14 +42,14 @@ gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
 gfx::Rect ScreenUtil::GetDisplayBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
-      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds());
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
 }
 
 // static
 gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
-      Shell::GetScreen()->GetDisplayNearestWindow(window).work_area());
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area());
 }
 
 gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
@@ -92,8 +92,9 @@ const gfx::Display& ScreenUtil::GetSecondaryDisplay() {
   DisplayManager* display_manager = GetDisplayManager();
   CHECK_LE(2U, display_manager->GetNumDisplays());
   return display_manager->GetDisplayAt(0).id() ==
-      Shell::GetScreen()->GetPrimaryDisplay().id() ?
-      display_manager->GetDisplayAt(1) : display_manager->GetDisplayAt(0);
+                 gfx::Screen::GetScreen()->GetPrimaryDisplay().id()
+             ? display_manager->GetDisplayAt(1)
+             : display_manager->GetDisplayAt(0);
 }
 
 }  // namespace ash

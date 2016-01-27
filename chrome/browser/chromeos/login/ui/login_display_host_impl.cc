@@ -281,7 +281,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   }
 
   ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
-  ash::Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
@@ -386,7 +386,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
   ash::Shell::GetInstance()->delegate()->
       RemoveVirtualKeyboardStateObserver(this);
-  ash::Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);

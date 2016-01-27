@@ -289,7 +289,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
   else
     display_mode = ash::DisplayManager::EXTENDED;
   base::FundamentalValue mode(static_cast<int>(display_mode));
-  int64_t primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   base::ListValue js_displays;
   for (const gfx::Display& display : displays) {
     const ash::DisplayInfo& display_info =

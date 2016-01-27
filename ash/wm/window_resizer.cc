@@ -137,8 +137,9 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // has to come first since it might have an impact on the origin as well as
   // on the size.
   if (details().bounds_change & kBoundsChange_Resizes) {
-    gfx::Rect work_area =
-        Shell::GetScreen()->GetDisplayNearestWindow(GetTarget()).work_area();
+    gfx::Rect work_area = gfx::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(GetTarget())
+                              .work_area();
     aura::Window* dock_container = Shell::GetContainer(
         GetTarget()->GetRootWindow(), kShellWindowId_DockedContainer);
     DockedWindowLayoutManager* dock_layout =
@@ -207,7 +208,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // Use a pointer location (matching the logic in DragWindowResizer) to
     // calculate the target display after the drag.
     const gfx::Display& display =
-        Shell::GetScreen()->GetDisplayMatching(near_passed_location);
+        gfx::Screen::GetScreen()->GetDisplayMatching(near_passed_location);
     aura::Window* dock_container =
         Shell::GetContainer(wm::GetRootWindowMatching(near_passed_location),
                             kShellWindowId_DockedContainer);
@@ -308,8 +309,10 @@ int WindowResizer::GetWidthForDrag(int min_width, int* delta_x) {
     }
 
     // And don't let the window go bigger than the display.
-    int max_width = Shell::GetScreen()->GetDisplayNearestWindow(
-        GetTarget()).bounds().width();
+    int max_width = gfx::Screen::GetScreen()
+                        ->GetDisplayNearestWindow(GetTarget())
+                        .bounds()
+                        .width();
     gfx::Size max_size = GetTarget()->delegate()->GetMaximumSize();
     if (max_size.width() != 0)
       max_width = std::min(max_width, max_size.width());
@@ -338,8 +341,10 @@ int WindowResizer::GetHeightForDrag(int min_height, int* delta_y) {
     }
 
     // And don't let the window go bigger than the display.
-    int max_height = Shell::GetScreen()->GetDisplayNearestWindow(
-        GetTarget()).bounds().height();
+    int max_height = gfx::Screen::GetScreen()
+                         ->GetDisplayNearestWindow(GetTarget())
+                         .bounds()
+                         .height();
     gfx::Size max_size = GetTarget()->delegate()->GetMaximumSize();
     if (max_size.height() != 0)
       max_height = std::min(max_height, max_size.height());

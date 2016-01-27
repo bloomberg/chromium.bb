@@ -1822,7 +1822,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   gfx::Rect app_list_bounds =
       test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
   gfx::Display display =
-      ash::Shell::GetScreen()->GetDisplayNearestWindow(secondary_root_window);
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(secondary_root_window);
   const gfx::Point& origin = display.bounds().origin();
   app_list_bounds.Offset(-origin.x(), -origin.y());
 

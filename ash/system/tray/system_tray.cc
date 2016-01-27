@@ -365,7 +365,7 @@ bool SystemTray::IsMouseInNotificationBubble() const {
   if (!notification_bubble_)
     return false;
   return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
-      Shell::GetScreen()->GetCursorScreenPoint());
+      gfx::Screen::GetScreen()->GetCursorScreenPoint());
 }
 
 bool SystemTray::CloseSystemBubble() const {
@@ -595,8 +595,10 @@ void SystemTray::UpdateWebNotifications() {
 
   int height = 0;
   if (bubble_view) {
-    gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-        bubble_view->GetWidget()->GetNativeView()).work_area();
+    gfx::Rect work_area =
+        gfx::Screen::GetScreen()
+            ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
+            .work_area();
     if (GetShelfLayoutManager()->GetAlignment() != SHELF_ALIGNMENT_TOP) {
       height = std::max(
           0, work_area.height() - bubble_view->GetBoundsInScreen().y());

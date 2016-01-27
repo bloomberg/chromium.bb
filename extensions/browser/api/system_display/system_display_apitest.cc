@@ -88,8 +88,6 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     return true;
   }
 
-  gfx::Screen* GetActiveScreen() override { return NULL; }
-
   void EnableUnifiedDesktop(bool enable) override {
     unified_desktop_enabled_ = enable;
   }

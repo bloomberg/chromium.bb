@@ -269,7 +269,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
       id1, dummy_id, ash::DisplayLayout(ash::DisplayLayout::LEFT, 20));
   // Can't switch to a display that does not exist.
   window_tree_host_manager->SetPrimaryDisplayId(dummy_id);
-  EXPECT_NE(dummy_id, ash::Shell::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_NE(dummy_id, gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
 
   window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90,
@@ -474,7 +474,7 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   ResolutionNotificationController::SuppressTimerForTest();
   LoggedInAsUser();
   UpdateDisplay("400x300#500x400|400x300|300x200");
-  int64_t id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   // Set display's resolution in single display. It creates the notification and
   // display preferences should not stored meanwhile.
   ash::Shell* shell = ash::Shell::GetInstance();
@@ -590,7 +590,7 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   UpdateDisplay("200x200*2,200x200");
 
   LoggedInAsGuest();
-  int64_t id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t id1 = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   ash::test::ScopedSetInternalDisplayId set_internal(id1);
   int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayManager* display_manager =
@@ -599,7 +599,7 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   display_manager->SetLayoutForCurrentDisplays(layout);
   ash::SetDisplayUIScale(id1, 1.25f);
   window_tree_host_manager->SetPrimaryDisplayId(id2);
-  int64_t new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t new_primary = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   window_tree_host_manager->SetOverscanInsets(new_primary,
                                               gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(new_primary, gfx::Display::ROTATE_90,

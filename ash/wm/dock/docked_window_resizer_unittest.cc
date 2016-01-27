@@ -100,7 +100,7 @@ class DockedWindowResizerTest
       ParentWindowInPrimaryRootWindow(window);
     } else {
       gfx::Display display =
-          Shell::GetScreen()->GetDisplayMatching(bounds);
+          gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
       aura::Window* root = ash::Shell::GetInstance()
                                ->window_tree_host_manager()
                                ->GetRootWindowForDisplayId(display.id());
@@ -214,7 +214,7 @@ class DockedWindowResizerTest
                                                               grab_x, grab_y));
 
     gfx::Rect work_area =
-        Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
     gfx::Point initial_location_in_screen = initial_location_in_parent_;
     ::wm::ConvertPointToScreen(window->parent(), &initial_location_in_screen);
     // Drag the window left or right to the edge (or almost to it).
@@ -597,7 +597,7 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
 
   gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
   DockedWindowLayoutManager* manager =
       static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
 
@@ -611,7 +611,7 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
   shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
                                   shell->GetPrimaryRootWindow());
   work_area =
-        Shell::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
+      gfx::Screen::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
   // Docked window should be centered vertically in the work area.
   EXPECT_EQ(work_area.CenterPoint().y(), w1->bounds().CenterPoint().y());
   // Docked background should extend to the bottom of work area.

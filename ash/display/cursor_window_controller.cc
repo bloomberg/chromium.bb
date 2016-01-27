@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -101,7 +102,7 @@ void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {
 
 void CursorWindowController::UpdateContainer() {
   if (is_cursor_compositing_enabled_) {
-    gfx::Screen* screen = Shell::GetScreen();
+    gfx::Screen* screen = gfx::Screen::GetScreen();
     gfx::Display display = screen->GetDisplayNearestPoint(
         screen->GetCursorScreenPoint());
     DCHECK(display.is_valid());
@@ -113,7 +114,7 @@ void CursorWindowController::UpdateContainer() {
                                       ->mirror_window_controller()
                                       ->GetWindow();
     if (mirror_window)
-      display_ = Shell::GetScreen()->GetPrimaryDisplay();
+      display_ = gfx::Screen::GetScreen()->GetPrimaryDisplay();
     SetContainer(mirror_window);
   }
   // Updates the hot point based on the current display.

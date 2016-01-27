@@ -99,7 +99,8 @@ gfx::Point ScreenAsh::GetCursorScreenPoint() {
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowUnderCursor() {
-  return GetWindowAtScreenPoint(Shell::GetScreen()->GetCursorScreenPoint());
+  return GetWindowAtScreenPoint(
+      gfx::Screen::GetScreen()->GetCursorScreenPoint());
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {

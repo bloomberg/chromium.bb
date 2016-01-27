@@ -120,11 +120,11 @@ ShelfWindowWatcher::ShelfWindowWatcher(
        it != root_windows.end(); ++it)
     OnRootWindowAdded(*it);
 
-  Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 }
 
 ShelfWindowWatcher::~ShelfWindowWatcher() {
-  Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {

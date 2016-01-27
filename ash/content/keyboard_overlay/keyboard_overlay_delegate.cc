@@ -77,7 +77,7 @@ views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   gfx::Size size;
   GetDialogSize(&size);
   const gfx::Rect& rect =
-      Shell::GetScreen()
+      gfx::Screen::GetScreen()
           ->GetDisplayNearestWindow(widget_->GetNativeView())
           .work_area();
   gfx::Rect bounds(rect.x() + (rect.width() - size.width()) / 2,
@@ -108,7 +108,7 @@ void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
 void KeyboardOverlayDelegate::GetDialogSize(gfx::Size* size) const {
   using std::min;
   DCHECK(widget_);
-  gfx::Rect rect = ash::Shell::GetScreen()
+  gfx::Rect rect = gfx::Screen::GetScreen()
                        ->GetDisplayNearestWindow(widget_->GetNativeView())
                        .work_area();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);

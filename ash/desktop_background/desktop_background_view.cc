@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 
@@ -52,7 +53,7 @@ class LayerControlView : public views::View {
 
   // Overrides views::View.
   void Layout() override {
-    gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+    gfx::Display display = gfx::Screen::GetScreen()->GetDisplayNearestWindow(
         GetWidget()->GetNativeView());
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     DisplayInfo info = display_manager->GetDisplayInfo(display.id());

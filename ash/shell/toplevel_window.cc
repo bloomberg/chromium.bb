@@ -84,11 +84,7 @@ bool ToplevelWindow::GetSavedWindowPlacement(
     bounds->SetRect(10, 150, 300, 300);
   }
   ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      ash::Shell::GetScreen(),
-      NULL,
-      is_saved_bounds,
-      *show_state,
-      bounds,
+      gfx::Screen::GetScreen(), NULL, is_saved_bounds, *show_state, bounds,
       show_state);
   return true;
 }

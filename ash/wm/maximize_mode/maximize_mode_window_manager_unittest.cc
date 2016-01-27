@@ -102,8 +102,10 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
 
   // Resize our desktop.
   void ResizeDesktop(int width_delta) {
-    gfx::Size size = Shell::GetScreen()->GetDisplayNearestWindow(
-        Shell::GetPrimaryRootWindow()).size();
+    gfx::Size size =
+        gfx::Screen::GetScreen()
+            ->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow())
+            .size();
     size.Enlarge(0, width_delta);
     UpdateDisplay(size.ToString());
   }

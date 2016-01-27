@@ -29,6 +29,7 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 using wallpaper::WallpaperResizer;
@@ -162,7 +163,8 @@ void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
 gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
   int width = 0;
   int height = 0;
-  std::vector<gfx::Display> displays = Shell::GetScreen()->GetAllDisplays();
+  std::vector<gfx::Display> displays =
+      gfx::Screen::GetScreen()->GetAllDisplays();
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   for (std::vector<gfx::Display>::iterator iter = displays.begin();

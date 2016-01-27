@@ -46,7 +46,7 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
   widget_->AddObserver(this);
 
   // Observe changes in display size and mode to update touch HUD.
-  Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif  // defined(OS_CHROMEOS)
@@ -61,7 +61,7 @@ TouchObserverHUD::~TouchObserverHUD() {
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
 #endif  // defined(OS_CHROMEOS)
-  Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 
   widget_->RemoveObserver(this);
 }

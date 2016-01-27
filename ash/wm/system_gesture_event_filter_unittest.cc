@@ -477,8 +477,9 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   ui::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging left snaps before reaching the screen edge.
-  gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(root_window).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(root_window)
+                            .work_area();
   int drag_x = work_area.x() + 20 - points[0].x();
   generator.GestureMultiFingerScroll(
       kTouchPoints, points, 120, kSteps, drag_x, 0);
@@ -505,8 +506,9 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   ui::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging right snaps before reaching the screen edge.
-  gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(root_window).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(root_window)
+                            .work_area();
   int drag_x = work_area.right() - 20 - points[0].x();
   generator.GestureMultiFingerScroll(
       kTouchPoints, points, 120, kSteps, drag_x, 0);

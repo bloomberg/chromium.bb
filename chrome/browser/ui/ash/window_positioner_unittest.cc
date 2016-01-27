@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_resizer.h"
@@ -104,7 +103,7 @@ int AlignToGridRoundDown(int location, int grid_size) {
 
 TEST_F(WindowPositionerTest, cascading) {
   const gfx::Rect work_area =
-      Shell::GetScreen()->GetPrimaryDisplay().work_area();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   // First see that the window will cascade down when there is no space.
   window()->SetBounds(work_area);
@@ -165,7 +164,7 @@ TEST_F(WindowPositionerTest, cascading) {
 
 TEST_F(WindowPositionerTest, filling) {
   const gfx::Rect work_area =
-      Shell::GetScreen()->GetPrimaryDisplay().work_area();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect popup_position(0, 0, 256, 128);
   // Leave space on the left and the right and see if we fill top to bottom.
   window()->SetBounds(gfx::Rect(work_area.x() + popup_position.width(),
@@ -220,7 +219,7 @@ TEST_F(WindowPositionerTest, filling) {
 
 TEST_F(WindowPositionerTest, biggerThenBorder) {
   const gfx::Rect work_area =
-      Shell::GetScreen()->GetPrimaryDisplay().work_area();
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   gfx::Rect pop_position(0, 0, work_area.width(), work_area.height());
 

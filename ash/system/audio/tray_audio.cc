@@ -48,11 +48,11 @@ TrayAudio::TrayAudio(SystemTray* system_tray,
       volume_view_(NULL),
       pop_up_volume_view_(false) {
   Shell::GetInstance()->system_tray_notifier()->AddAudioObserver(this);
-  Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 }
 
 TrayAudio::~TrayAudio() {
-  Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
   Shell::GetInstance()->system_tray_notifier()->RemoveAudioObserver(this);
 }
 

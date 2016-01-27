@@ -242,11 +242,6 @@ aura::Window* Shell::GetTargetRootWindow() {
 }
 
 // static
-gfx::Screen* Shell::GetScreen() {
-  return gfx::Screen::GetScreen();
-}
-
-// static
 aura::Window::Windows Shell::GetAllRootWindows() {
   CHECK(HasInstance());
   return Shell::GetInstance()->window_tree_host_manager()->GetAllRootWindows();
@@ -910,7 +905,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       new ResolutionNotificationController);
 #endif
 
-  cursor_manager_.SetDisplay(GetScreen()->GetPrimaryDisplay());
+  cursor_manager_.SetDisplay(gfx::Screen::GetScreen()->GetPrimaryDisplay());
 
   nested_accelerator_controller_.reset(
       new ::wm::NestedAcceleratorController(new NestedAcceleratorDelegate));

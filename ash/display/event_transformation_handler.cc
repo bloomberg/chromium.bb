@@ -8,7 +8,6 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -43,7 +42,7 @@ void EventTransformationHandler::OnScrollEvent(ui::ScrollEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ::wm::ConvertPointToScreen(target, &point_in_screen);
   const gfx::Display& display =
-      Shell::GetScreen()->GetDisplayNearestPoint(point_in_screen);
+      gfx::Screen::GetScreen()->GetDisplayNearestPoint(point_in_screen);
 
   // Apply some additional scaling if the display is non-integrated.
   if (!display.IsInternal())

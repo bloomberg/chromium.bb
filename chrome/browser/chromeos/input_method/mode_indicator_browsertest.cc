@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
   EXPECT_EQ(mi1_bounds.height(), mi2_bounds.height());
 
   const gfx::Rect screen_bounds =
-      ash::Shell::GetScreen()->GetDisplayMatching(cursor1_bounds).work_area();
+      gfx::Screen::GetScreen()->GetDisplayMatching(cursor1_bounds).work_area();
 
   // Check if the location of the mode indicator is concidered with
   // the screen size.

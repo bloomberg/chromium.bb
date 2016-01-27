@@ -15,7 +15,6 @@
 
 namespace gfx {
 class Display;
-class Screen;
 }
 
 namespace extensions {
@@ -48,10 +47,6 @@ class DisplayInfoProvider {
   virtual bool SetInfo(const std::string& display_id,
                        const api::system_display::DisplayProperties& info,
                        std::string* error) = 0;
-
-  // Get the screen that is always active, which will be used for monitoring
-  // display changes events.
-  virtual gfx::Screen* GetActiveScreen() = 0;
 
   // Enable the unified desktop feature.
   virtual void EnableUnifiedDesktop(bool enable);

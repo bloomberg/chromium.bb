@@ -770,14 +770,14 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginOnPrimary) {
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
   // The operation failed because the primary property would be set before
   // setting bounds. The primary display shouldn't have been changed, though.
-  EXPECT_NE(ash::Shell::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
+  EXPECT_NE(gfx::Screen::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginWithMirroring) {
   UpdateDisplay("1200x600,600x1000*2");
 
   const gfx::Display& secondary = ash::ScreenUtil::GetSecondaryDisplay();
-  const gfx::Display& primary = ash::Shell::GetScreen()->GetPrimaryDisplay();
+  const gfx::Display& primary = gfx::Screen::GetScreen()->GetPrimaryDisplay();
 
   api::system_display::DisplayProperties info;
   info.bounds_origin_x.reset(new int(300));
@@ -833,7 +833,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
 
   EXPECT_EQ("0,0 300x500", secondary.bounds().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_180, secondary.rotation());
-  EXPECT_EQ(ash::Shell::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
+  EXPECT_EQ(gfx::Screen::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
 
   info.rotation.reset(new int(0));
   CallSetDisplayUnitInfo(
@@ -844,7 +844,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
 
   EXPECT_EQ("0,0 300x500", secondary.bounds().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_0, secondary.rotation());
-  EXPECT_EQ(ash::Shell::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
+  EXPECT_EQ(gfx::Screen::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
 }
 
 // Tests that rotation changes made before entering maximize mode are restored

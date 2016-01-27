@@ -646,8 +646,9 @@ TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
 
   // Center the window using accelerator.
   GetController()->PerformActionIfEnabled(WINDOW_POSITION_CENTER);
-  gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(window.get()).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(window.get())
+                            .work_area();
   gfx::Rect bounds = window->GetBoundsInScreen();
   EXPECT_NEAR(bounds.x() - work_area.x(),
               work_area.right() - bounds.right(),

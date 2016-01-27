@@ -130,7 +130,7 @@ void AshPopupAlignmentDelegate::UpdateShelf() {
 }
 
 gfx::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
-  return Shell::GetScreen()->GetDisplayNearestWindow(
+  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(
       shelf_->shelf_widget()->GetNativeView());
 }
 

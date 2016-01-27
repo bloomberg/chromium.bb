@@ -321,7 +321,7 @@ void WindowSelector::Init(const WindowList& windows) {
 
   shell->activation_client()->AddObserver(this);
 
-  shell->GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
   shell->accessibility_delegate()->TriggerAccessibilityAlert(
@@ -385,7 +385,7 @@ void WindowSelector::RemoveAllObservers() {
     window->RemoveObserver(this);
 
   shell->activation_client()->RemoveObserver(this);
-  shell->GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
   if (restore_focus_window_)
     restore_focus_window_->RemoveObserver(this);
 }

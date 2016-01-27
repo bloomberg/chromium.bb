@@ -100,7 +100,7 @@ void DragWindowResizer::CompleteDrag() {
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
-  gfx::Screen* screen = Shell::GetScreen();
+  gfx::Screen* screen = gfx::Screen::GetScreen();
   const gfx::Display dst_display =
       screen->GetDisplayNearestPoint(last_mouse_location_in_screen);
 
@@ -190,7 +190,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
         drag_window_controller = new DragWindowController(GetTarget());
         // Always show the drag phantom on the |another_root| window.
         drag_window_controller->SetDestinationDisplay(
-            Shell::GetScreen()->GetDisplayNearestWindow(another_root));
+            gfx::Screen::GetScreen()->GetDisplayNearestWindow(another_root));
         drag_window_controller->Show();
       } else {
         // No animation.

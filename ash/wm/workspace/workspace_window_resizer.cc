@@ -786,7 +786,7 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
-  gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(
+  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayNearestPoint(
       last_mouse_location_in_screen);
   gfx::Rect work_area =
       ScreenUtil::ConvertRectFromScreen(GetTarget()->parent(),

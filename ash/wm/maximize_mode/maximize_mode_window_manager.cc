@@ -47,7 +47,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
 
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Shell::GetInstance()->RemoveShellObserver(this);
-  Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   RestoreAllWindows();
@@ -195,7 +195,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   MaximizeAllWindows();
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
-  Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
 }

@@ -209,9 +209,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // |wm::GetActiveWindow()->GetRootWindow()|.
   static aura::Window* GetTargetRootWindow();
 
-  // Returns the global Screen object that's always active in ash.
-  static gfx::Screen* GetScreen();
-
   // Returns all root windows.
   static aura::Window::Windows GetAllRootWindows();
 

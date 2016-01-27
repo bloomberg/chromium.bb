@@ -250,7 +250,7 @@ class DisplayView : public ActionableView {
     if (display_manager->IsInUnifiedMode())
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED);
 
-    int64_t primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+    int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
     if (gfx::Display::HasInternalDisplay() &&
         !(gfx::Display::IsInternalDisplayId(primary_id))) {
       if (additional_message_out) {

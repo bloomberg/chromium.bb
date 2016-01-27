@@ -128,7 +128,7 @@ BrowserStatusMonitor::BrowserStatusMonitor(
           aura::client::GetActivationClient(*iter));
       observed_root_windows_.Add(static_cast<aura::Window*>(*iter));
     }
-    ash::Shell::GetInstance()->GetScreen()->AddObserver(this);
+    gfx::Screen::GetScreen()->AddObserver(this);
   }
 
   browser_tab_strip_tracker_.Init(
@@ -139,7 +139,7 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
   // This check needs for win7_aura. Without this, all tests in
   // ChromeLauncherController will fail in win7_aura.
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->GetScreen()->RemoveObserver(this);
+    gfx::Screen::GetScreen()->RemoveObserver(this);
 
   chrome::SettingsWindowManager::GetInstance()->RemoveObserver(
       settings_window_observer_.get());

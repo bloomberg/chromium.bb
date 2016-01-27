@@ -152,12 +152,12 @@ ResolutionNotificationController::ResolutionChangeInfo::
 
 ResolutionNotificationController::ResolutionNotificationController() {
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-  Shell::GetScreen()->AddObserver(this);
+  gfx::Screen::GetScreen()->AddObserver(this);
 }
 
 ResolutionNotificationController::~ResolutionNotificationController() {
   Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-  Shell::GetScreen()->RemoveObserver(this);
+  gfx::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ResolutionNotificationController::PrepareNotification(
