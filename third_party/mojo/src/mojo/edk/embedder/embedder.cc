@@ -229,35 +229,32 @@ void InitIPCSupport(ProcessType process_type,
 }
 
 void ShutdownIPCSupportOnIOThread() {
-  if (UseNewEDK()) {
-    mojo::edk::ShutdownIPCSupportOnIOThread();
-    return;
+  if (!UseNewEDK()) {
+    DCHECK(internal::g_ipc_support);
+
+    internal::g_ipc_support->ShutdownOnIOThread();
+    delete internal::g_ipc_support;
+    internal::g_ipc_support = nullptr;
+    delete g_wrapper_process_delegate;
+    g_wrapper_process_delegate = nullptr;
   }
-
-  DCHECK(internal::g_ipc_support);
-
-  internal::g_ipc_support->ShutdownOnIOThread();
-  delete internal::g_ipc_support;
-  internal::g_ipc_support = nullptr;
-  delete g_wrapper_process_delegate;
-  g_wrapper_process_delegate = nullptr;
+  mojo::edk::ShutdownIPCSupportOnIOThread();
 }
 
 void ShutdownIPCSupport() {
-  if (UseNewEDK()) {
+  if (!UseNewEDK()) {
+    DCHECK(internal::g_ipc_support);
+
+    ProcessDelegate* delegate = internal::g_ipc_support->process_delegate();
+    bool ok = internal::g_ipc_support->io_thread_task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ShutdownIPCSupportOnIOThread),
+        base::Bind(&ProcessDelegate::OnShutdownComplete,
+                   base::Unretained(delegate)));
+    DCHECK(ok);
+  } else {
     mojo::edk::ShutdownIPCSupport();
-    return;
   }
-
-  DCHECK(internal::g_ipc_support);
-
-  ProcessDelegate* delegate = internal::g_ipc_support->process_delegate();
-  bool ok = internal::g_ipc_support->io_thread_task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ShutdownIPCSupportOnIOThread),
-      base::Bind(&ProcessDelegate::OnShutdownComplete,
-                 base::Unretained(delegate)));
-  DCHECK(ok);
 }
 
 ScopedMessagePipeHandle ConnectToSlave(

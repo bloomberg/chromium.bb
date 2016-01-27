@@ -29,7 +29,6 @@ class PlatformSupport;
 namespace internal {
 
 Core* g_core;
-base::TaskRunner* g_io_thread_task_runner;
 PlatformSupport* g_platform_support;
 ProcessDelegate* g_process_delegate;
 
@@ -101,10 +100,6 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
 void InitIPCSupport(ProcessDelegate* process_delegate,
                     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   CHECK(internal::g_core);
-  CHECK(!internal::g_io_thread_task_runner);
-  internal::g_io_thread_task_runner = io_thread_task_runner.get();
-  internal::g_io_thread_task_runner->AddRef();
-
   internal::g_core->SetIOTaskRunner(io_thread_task_runner);
   internal::g_process_delegate = process_delegate;
 }
