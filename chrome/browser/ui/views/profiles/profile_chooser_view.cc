@@ -866,7 +866,7 @@ void ProfileChooserView::WindowClosing() {
 
   if (tutorial_mode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN) {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(false /* configure_sync_first */);
+        SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
 }
 
@@ -914,7 +914,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
   } else if (sender == tutorial_sync_settings_ok_button_) {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(false /* configure_sync_first */);
+        SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
     DismissTutorial();
     ProfileMetrics::LogProfileNewAvatarMenuSignin(
         ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
@@ -1015,7 +1015,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_ADD_ACCT);
   } else if (sender == tutorial_sync_settings_link_) {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(true /* configure_sync_first */);
+        SyncConfirmationUIClosed(LoginUIService::CONFIGURE_SYNC_FIRST);
     tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
     ProfileMetrics::LogProfileNewAvatarMenuSignin(
         ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);

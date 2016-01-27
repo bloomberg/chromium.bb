@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
@@ -47,11 +48,6 @@ namespace {
 const char kAuthorizationHeader[] =
     "Authorization: Bearer %s";
 
-// Path format for specifying thumbnail's size.
-const char kThumbnailSizeFormat[] = "s%d-c";
-// Default thumbnail size.
-const int kDefaultThumbnailSize = 64;
-
 // Separator of URL path components.
 const char kURLPathSeparator = '/';
 
@@ -69,55 +65,6 @@ const int kPhotoIdPathComponentIndex = 2;
 
 // Index of path component with photo version.
 const int kPhotoVersionPathComponentIndex = 3;
-
-// Given an image URL this function builds a new URL set to |size|.
-// For example, if |size| was set to 256 and |old_url| was either:
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg
-//   or
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s64-c/photo.jpg
-// then return value in |new_url| would be:
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c/photo.jpg
-bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
-  DCHECK(new_url);
-  std::vector<std::string> components = base::SplitString(
-      old_url.path(), std::string(1, kURLPathSeparator),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (components.size() == 0)
-    return false;
-
-  const std::string& old_spec = old_url.spec();
-  std::string default_size_component(
-      base::StringPrintf(kThumbnailSizeFormat, kDefaultThumbnailSize));
-  std::string new_size_component(
-      base::StringPrintf(kThumbnailSizeFormat, size));
-
-  size_t pos = old_spec.find(default_size_component);
-  size_t end = std::string::npos;
-  if (pos != std::string::npos) {
-    // The default size is already specified in the URL so it needs to be
-    // replaced with the new size.
-    end = pos + default_size_component.size();
-  } else {
-    // The default size is not in the URL so try to insert it before the last
-    // component.
-    const std::string& file_name = old_url.ExtractFileName();
-    if (!file_name.empty()) {
-      pos = old_spec.find(file_name);
-      end = pos - 1;
-    }
-  }
-
-  if (pos != std::string::npos) {
-    std::string new_spec = old_spec.substr(0, pos) + new_size_component +
-                           old_spec.substr(end);
-    *new_url = GURL(new_spec);
-    return new_url->is_valid();
-  }
-
-  // We can't set the image size, just use the default size.
-  *new_url = old_url;
-  return true;
-}
 
 }  // namespace
 
@@ -214,9 +161,10 @@ ProfileDownloader::PictureStatus ProfileDownloader::GetProfilePictureStatus()
 
 std::string ProfileDownloader::GetProfilePictureURL() const {
   GURL url;
-  if (GetImageURLWithSize(GURL(account_info_.picture_url),
-                          delegate_->GetDesiredImageSideLength(),
-                          &url)) {
+  if (profiles::GetImageURLWithThumbnailSize(
+          GURL(account_info_.picture_url),
+          delegate_->GetDesiredImageSideLength(),
+          &url)) {
     return url.spec();
   }
   return account_info_.picture_url;

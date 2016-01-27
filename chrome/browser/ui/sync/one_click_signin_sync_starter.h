@@ -134,7 +134,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   void AccountAddedToCookie(const GoogleServiceAuthError& error) override;
 
   // LoginUIService::Observer override.
-  void OnSyncConfirmationUIClosed(bool configure_sync_first) override;
+  void OnSyncConfirmationUIClosed(
+      LoginUIService::SyncConfirmationUIClosedResults results) override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // User input handler for the signin confirmation dialog.
@@ -217,6 +218,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.
   void DisplayFinalConfirmationBubble(const base::string16& custom_message);
+
+  void DisplayModalSyncConfirmationWindow();
 
   // Loads the |continue_url_| in the current tab.
   void LoadContinueUrl();

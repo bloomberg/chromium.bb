@@ -10913,6 +10913,20 @@ I don't think this site should be blocked!
         </message>
       </if>
 
+      <!--  Sync Confirmation section of the tab modal signin flow -->
+      <message name="IDS_SYNC_CONFIRMATION_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow">
+        You're now signed in to Chrome
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_BODY" desc="Body of the sync confirmation dialog in the tab modal signin flow">
+        Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them wherever you use Chrome. You can change this in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
+        Ok, got it
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_UNDO_BUTTON_LABEL" desc="Label of the undo button in the sync confirmation dialog of the tab modal signin flow">
+        Undo
+      </message>
+
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> was blocked because it is out of date.
       </message>

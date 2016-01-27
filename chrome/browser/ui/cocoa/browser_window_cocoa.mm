@@ -862,7 +862,12 @@ void BrowserWindowCocoa::ShowModalSigninWindow(
     signin_metrics::AccessPoint access_point) {
   NOTREACHED();
 }
+
 void BrowserWindowCocoa::CloseModalSigninWindow() {
+  NOTREACHED();
+}
+
+void BrowserWindowCocoa::ShowModalSyncConfirmationWindow() {
   NOTREACHED();
 }
 

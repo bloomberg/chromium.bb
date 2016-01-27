@@ -42,6 +42,8 @@ class SigninViewController {
       Profile* profile,
       signin_metrics::AccessPoint access_point);
 
+  static views::WebView* CreateSyncConfirmationWebView(Profile* profile);
+
   // Shows the signin flow as a tab modal dialog attached to |browser|'s active
   // web contents.
   // |access_point| indicates the access point used to open the Gaia sign in
@@ -49,6 +51,8 @@ class SigninViewController {
   void ShowModalSignin(profiles::BubbleViewMode mode,
                        Browser* browser,
                        signin_metrics::AccessPoint access_point);
+
+  void ShowModalSyncConfirmationDialog(Browser* browser);
 
   // Closes the tab-modal signin flow previously shown using this
   // SigninViewController, if one exists. Does nothing otherwise.

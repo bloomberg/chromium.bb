@@ -1127,7 +1127,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)configureSyncSettings:(id)sender {
   tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
   LoginUIServiceFactory::GetForProfile(browser_->profile())->
-      SyncConfirmationUIClosed(true);
+      SyncConfirmationUIClosed(LoginUIService::CONFIGURE_SYNC_FIRST);
   ProfileMetrics::LogProfileNewAvatarMenuSignin(
       ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
 }
@@ -1135,7 +1135,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)syncSettingsConfirmed:(id)sender {
   tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
   LoginUIServiceFactory::GetForProfile(browser_->profile())->
-      SyncConfirmationUIClosed(false);
+      SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   ProfileMetrics::LogProfileNewAvatarMenuSignin(
       ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
@@ -1174,7 +1174,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)windowWillClose:(NSNotification*)notification {
   if (tutorialMode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN) {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(false);
+        SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
 
   [super windowWillClose:notification];

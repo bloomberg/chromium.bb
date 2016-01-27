@@ -1,0 +1,102 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  font-size: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: rgb(85, 149, 254);
+  text-decoration: none;
+}
+
+.picture img {
+  border-radius: 50%;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.container {
+  background-color: white;
+  height: 351px;
+  overflow: hidden;
+  width: 448px;
+}
+
+.top-title-bar {
+  -webkit-padding-start: 24px;
+  -webkit-padding-start: 24px;
+  align-items: center;
+  border-bottom: 1px solid lightgray;
+  color: #333;
+  display: flex;
+  font-size: 1em;
+  height: 56px;
+}
+
+.details {
+  height: 250px;
+  padding: 20px 24px;
+}
+
+.sync-message {
+  color: #595959;
+  font-size: 0.8125em;
+  line-height: 150%;
+  padding-bottom: 32px;
+}
+
+.picture-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 32px;
+}
+
+.picture {
+  height: 96px;
+  position: relative;
+  width: 96px;
+}
+
+#profile-picture,
+.checkmark-bubble {
+  position: absolute;
+}
+
+.checkmark-bubble {
+  background-color: white;
+  background-image: url(//resources/images/check_circle.svg);
+  background-size: 100%;
+  border: 1px solid white;
+  border-radius: 50%;
+  display: inline-block;
+  height: 30px;
+  left: 64px;
+  top: 66px;
+  width: 30px;
+}
+
+.action-container {
+  align-items: baseline;
+  display: flex;
+  justify-content: flex-end;
+}
+
+paper-button {
+  font-size:  0.8125em;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+#confirmButton {
+  background-color: rgb(66, 133, 244);
+  color: white;
+}
+
+#undoButton {
+  color: #5A5A5A;
+}

@@ -42,6 +42,9 @@ void FakeSigninManager::StartSignInWithRefreshToken(
   set_password(password);
   username_ = username;
 
+  possibly_invalid_gaia_id_.assign(gaia_id);
+  possibly_invalid_email_.assign(username);
+
   if (!oauth_fetched_callback.is_null())
     oauth_fetched_callback.Run(refresh_token);
 }

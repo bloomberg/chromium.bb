@@ -618,7 +618,7 @@ bool SyncTest::SetupSync() {
     // be removed. http://crbug.com/484388
     for (int i = 0; i < num_clients_; ++i) {
       LoginUIServiceFactory::GetForProfile(GetProfile(i))->
-          SyncConfirmationUIClosed(false /* configure_sync_first */);
+          SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
     }
   }
 

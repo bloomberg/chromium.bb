@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/common/url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -34,6 +35,8 @@ const int kFixedGaiaViewHeight = 512;
 const int kFixedGaiaViewWidth = 448;
 const int kNavigationButtonSize = 16;
 const int kNavigationButtonOffset = 16;
+const int kSyncConfirmationDialogWidth = 448;
+const int kSyncConfirmationDialogHeight = 351;
 
 // View that contains the signin web contents and the back/close overlay button.
 class HostView : public views::View {
@@ -222,6 +225,16 @@ views::WebView* SigninViewController::CreateGaiaWebView(
   return web_view;
 }
 
+views::WebView* SigninViewController::CreateSyncConfirmationWebView(
+    Profile* profile) {
+  views::WebView* web_view = new views::WebView(profile);
+  web_view->LoadInitialURL(GURL(chrome::kChromeUISyncConfirmationURL));
+  web_view->SetPreferredSize(
+      gfx::Size(kSyncConfirmationDialogWidth, kSyncConfirmationDialogHeight));
+
+  return web_view;
+}
+
 void SigninViewController::ShowModalSignin(
     profiles::BubbleViewMode mode,
     Browser* browser,
@@ -242,6 +255,12 @@ void SigninViewController::CloseModalSignin() {
 
 void SigninViewController::ResetModalSigninDelegate() {
   modal_signin_delegate_ = nullptr;
+}
+
+void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
+  CloseModalSignin();
+  modal_signin_delegate_ = new ModalSigninDelegate(
+      this, CreateSyncConfirmationWebView(browser->profile()), browser);
 }
 
 // static

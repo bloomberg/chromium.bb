@@ -1617,6 +1617,7 @@
       'browser/signin/signin_global_error_unittest.cc',
       'browser/sync/sync_global_error_unittest.cc',
       'browser/upgrade_detector_impl_unittest.cc',
+      'browser/ui/webui/signin/sync_confirmation_handler_unittest.cc'
     ],
     'chrome_unit_tests_app_list_sources': [
       'browser/ui/app_list/app_list_positioner_unittest.cc',

@@ -19,6 +19,7 @@ namespace gfx {
 class Image;
 }
 
+class GURL;
 class SkBitmap;
 
 namespace profiles {
@@ -92,6 +93,16 @@ bool IsDefaultAvatarIconIndex(size_t index);
 // Checks if the given URL points to one of the default avatar icons. If it
 // is, returns true and its index through |icon_index|. If not, returns false.
 bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
+
+// Given an image URL this function builds a new URL set to |thumbnail_size|.
+// For example, if |thumbnail_size| was set to 256 and |old_url| was either:
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg
+//   or
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s64-c/photo.jpg
+// then return value in |new_url| would be:
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c/photo.jpg
+bool GetImageURLWithThumbnailSize(
+    const GURL& old_url, int thumbnail_size, GURL* new_url);
 
 }  // namespace profiles
 

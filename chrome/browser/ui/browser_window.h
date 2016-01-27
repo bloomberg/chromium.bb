@@ -391,6 +391,11 @@ class BrowserWindow : public ui::BaseWindow {
   // open. Does nothing otherwise.
   virtual void CloseModalSigninWindow() = 0;
 
+  // Shows the tab modal sync confirmation dialog that informs the user about
+  // sync and gives them a chance to abort signin under the tab modal signin
+  // flow.
+  virtual void ShowModalSyncConfirmationWindow() = 0;
+
   // Returns the height inset for RenderView when detached bookmark bar is
   // shown.  Invoked when a new RenderHostView is created for a non-NTP
   // navigation entry and the bookmark bar is detached.

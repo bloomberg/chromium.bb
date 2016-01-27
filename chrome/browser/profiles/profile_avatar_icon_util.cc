@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -28,9 +29,18 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
 
 // Helper methods for transforming and drawing avatar icons.
 namespace {
+
+// Path format for specifying thumbnail's size.
+const char kThumbnailSizeFormat[] = "s%d-c";
+// Default thumbnail size.
+const int kDefaultThumbnailSize = 64;
+// Separator of URL path components.
+const char kURLPathSeparator = '/';
 
 // Determine what the scaled height of the avatar icon should be for a
 // specified width, to preserve the aspect ratio.
@@ -386,6 +396,51 @@ bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
   }
 
   return false;
+}
+
+bool GetImageURLWithThumbnailSize(
+    const GURL& old_url, int size, GURL* new_url) {
+  DCHECK(new_url);
+  std::vector<std::string> components = base::SplitString(
+      old_url.path(), std::string(1, kURLPathSeparator),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (components.empty())
+    return false;
+
+  const std::string& old_path = old_url.path();
+  std::string default_size_component(
+      base::StringPrintf(kThumbnailSizeFormat, kDefaultThumbnailSize));
+  std::string new_size_component(
+      base::StringPrintf(kThumbnailSizeFormat, size));
+
+  size_t pos = old_path.find(default_size_component);
+  size_t end = std::string::npos;
+  if (pos != std::string::npos) {
+    // The default size is already specified in the URL so it needs to be
+    // replaced with the new size.
+    end = pos + default_size_component.size();
+  } else {
+    // The default size is not in the URL so try to insert it before the last
+    // component.
+    const std::string& file_name = old_url.ExtractFileName();
+    if (!file_name.empty()) {
+      pos = old_path.find(file_name);
+      end = pos - 1;
+    }
+  }
+
+  if (pos != std::string::npos) {
+    std::string new_path = old_path.substr(0, pos) + new_size_component +
+                           old_path.substr(end);
+    GURL::Replacements replacement;
+    replacement.SetPathStr(new_path.c_str());
+    *new_url = old_url.ReplaceComponents(replacement);
+    return new_url->is_valid();
+  }
+
+  // We can't set the image size, just use the default size.
+  *new_url = old_url;
+  return true;
 }
 
 }  // namespace profiles
