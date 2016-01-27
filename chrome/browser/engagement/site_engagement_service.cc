@@ -121,7 +121,7 @@ double SiteEngagementScore::param_values[] = {
     7,     // DECAY_PERIOD_IN_DAYS
     5,     // DECAY_POINTS
     0.5,   // NAVIGATION_POINTS
-    0.05,  // USER_INPUT_POINTS
+    0.2,   // USER_INPUT_POINTS
     0.02,  // VISIBLE_MEDIA_POINTS
     0.01,  // HIDDEN_MEDIA_POINTS
     5,     // WEB_APP_INSTALLED_POINTS
@@ -325,7 +325,18 @@ double SiteEngagementScore::BonusScore() const {
   return 0;
 }
 
-void SiteEngagementScore::DisableFirstDailyEngagementBonusForTesting() {
+void SiteEngagementScore::SetParamValuesForTesting() {
+  param_values[MAX_POINTS_PER_DAY] = 5;
+  param_values[DECAY_PERIOD_IN_DAYS] = 7;
+  param_values[DECAY_POINTS] = 5;
+  param_values[NAVIGATION_POINTS] = 0.5;
+  param_values[USER_INPUT_POINTS] = 0.05;
+  param_values[VISIBLE_MEDIA_POINTS] = 0.02;
+  param_values[HIDDEN_MEDIA_POINTS] = 0.01;
+  param_values[WEB_APP_INSTALLED_POINTS] = 5;
+
+  // This is set to zero to avoid interference with tests and is set when
+  // testing this functionality.
   param_values[FIRST_DAILY_ENGAGEMENT] = 0;
 }
 

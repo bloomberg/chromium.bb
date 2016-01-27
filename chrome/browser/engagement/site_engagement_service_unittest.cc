@@ -106,7 +106,7 @@ class SiteEngagementScoreTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     // Disable the first engagement bonus for tests.
-    SiteEngagementScore::DisableFirstDailyEngagementBonusForTesting();
+    SiteEngagementScore::SetParamValuesForTesting();
   }
 
  protected:
@@ -456,7 +456,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     g_temp_history_dir = temp_dir_.path();
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
-    SiteEngagementScore::DisableFirstDailyEngagementBonusForTesting();
+    SiteEngagementScore::SetParamValuesForTesting();
   }
 
   void NavigateWithTransitionAndExpectHigherScore(

@@ -22,7 +22,7 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    SiteEngagementScore::DisableFirstDailyEngagementBonusForTesting();
+    SiteEngagementScore::SetParamValuesForTesting();
   }
 
   SiteEngagementHelper* GetHelper(content::WebContents* web_contents) {

@@ -132,7 +132,9 @@ class SiteEngagementScore {
   // Determine any score bonus from having installed shortcuts.
   double BonusScore() const;
 
-  static void DisableFirstDailyEngagementBonusForTesting();
+  // Sets fixed parameter values for testing site engagement. Ensure that any
+  // newly added parameters receive a fixed value here.
+  static void SetParamValuesForTesting();
 
   // The clock used to vend times. Enables time travelling in tests. Owned by
   // the SiteEngagementService.
