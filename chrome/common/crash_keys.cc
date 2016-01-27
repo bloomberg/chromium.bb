@@ -162,6 +162,13 @@ size_t RegisterChromeCrashKeys() {
     { "commit_proxy_id", kSmallSize },
     { "commit_view_id", kSmallSize },
     { "commit_main_render_frame_id", kSmallSize },
+    { "newproxy_proxy_id", kSmallSize },
+    { "newproxy_view_id", kSmallSize },
+    { "newproxy_opener_id", kSmallSize },
+    { "newproxy_parent_id", kSmallSize },
+    { "rvinit_view_id", kSmallSize },
+    { "rvinit_proxy_id", kSmallSize },
+    { "rvinit_main_frame_id", kSmallSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

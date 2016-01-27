@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
@@ -670,6 +671,14 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
+
+  // Debug cases of https://crbug.com/575245.
+  base::debug::SetCrashKeyValue("rvinit_view_id",
+                                base::IntToString(routing_id()));
+  base::debug::SetCrashKeyValue("rvinit_proxy_id",
+                                base::IntToString(params.proxy_routing_id));
+  base::debug::SetCrashKeyValue(
+      "rvinit_main_frame_id", base::IntToString(params.main_frame_routing_id));
 
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
