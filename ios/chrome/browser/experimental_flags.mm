@@ -143,27 +143,7 @@ bool CanCheckWKWebViewExperiment() {
 }
 
 bool IsWKWebViewEnabled() {
-  if (!CanCheckWKWebViewExperiment()) {
-    return false;
-  }
-
-  // Now that it's been established that user is a candidate, set up the trial
-  // by checking the group.
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kWKWebViewTrialName);
-
-  // Check if the experimental flag is turned on.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableIOSWKWebView))
-    return true;
-  else if (command_line->HasSwitch(switches::kDisableIOSWKWebView))
-    return false;
-
-  // Check if the finch experiment is turned on.
-  return !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::INSENSITIVE_ASCII) &&
-         !base::StartsWith(group_name, "Control",
-                           base::CompareCase::INSENSITIVE_ASCII);
+  return true;
 }
 
 bool IsTargetedToWKWebViewExperimentControlGroup() {

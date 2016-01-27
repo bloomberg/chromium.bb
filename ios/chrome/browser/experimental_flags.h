@@ -28,8 +28,8 @@ void SetWKWebViewTrialEligibility(bool eligible);
 // Whether the lru snapshot cache experiment is enabled.
 bool IsLRUSnapshotCacheEnabled();
 
-// Whether the app uses WKWebView instead of UIWebView.
-// The returned value will not change within a given session.
+// TODO(crbug.com/579697): This always returns true; cleanup codepaths that use
+// this.
 bool IsWKWebViewEnabled();
 
 // Whether the user would be put into a control group for the WKWebView
