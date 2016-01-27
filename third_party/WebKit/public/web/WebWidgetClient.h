@@ -48,6 +48,7 @@ class WebString;
 class WebWidget;
 struct WebCursorInfo;
 struct WebFloatPoint;
+struct WebFloatRect;
 struct WebFloatSize;
 struct WebSize;
 
@@ -176,6 +177,13 @@ public:
     // becomes DSF times larger than window coordinates.
     // TODO(oshima): Update the comment when the migration is completed.
     virtual void convertViewportToWindow(WebRect* rect) {}
+
+    // Converts the |rect| from the coordinates in native window in
+    // DIP to Blink's Viewport coordinates. They're identical in
+    // tradional world, but will differ when use-zoom-for-dsf feature
+    // is eanbled.  TODO(oshima): Update the comment when the
+    // migration is completed.
+    virtual void convertWindowToViewport(WebFloatRect* rect) {}
 
 protected:
     ~WebWidgetClient() { }

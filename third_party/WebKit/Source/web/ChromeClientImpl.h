@@ -94,6 +94,7 @@ public:
     void invalidateRect(const IntRect&) override;
     void scheduleAnimation(Widget*) override;
     IntRect viewportToScreen(const IntRect&) const override;
+    FloatRect windowToViewport(const FloatRect&) const override;
     WebScreenInfo screenInfo() const override;
     void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
     void pageScaleFactorChanged() const override;

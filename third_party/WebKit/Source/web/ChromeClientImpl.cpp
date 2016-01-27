@@ -64,6 +64,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCursorInfo.h"
+#include "public/platform/WebFloatRect.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLRequest.h"
@@ -517,6 +518,14 @@ IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport) const
         screenRect.y += windowRect.y;
     }
     return screenRect;
+}
+
+FloatRect ChromeClientImpl::windowToViewport(const FloatRect& rectInWindow) const
+{
+    WebFloatRect viewportRect(rectInWindow);
+    if (m_webView->client())
+        m_webView->client()->convertWindowToViewport(&viewportRect);
+    return viewportRect;
 }
 
 WebScreenInfo ChromeClientImpl::screenInfo() const

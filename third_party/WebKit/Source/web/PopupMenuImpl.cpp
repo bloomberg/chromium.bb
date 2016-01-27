@@ -290,8 +290,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
 
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
     float zoom = zoomFactor();
-    IntRect inScreen = m_chromeClient->viewportToScreen(IntRect(0, 0, 100, 0));
-    float scaleFactor = 100.f / inScreen.width();
+    float scaleFactor = m_chromeClient->windowToViewport(FloatRect(0, 0, 1.0f, 0)).width();
     addProperty("zoomFactor", zoom / scaleFactor, data);
     bool isRTL = !ownerStyle->isLeftToRightDirection();
     addProperty("isRTL", isRTL, data);

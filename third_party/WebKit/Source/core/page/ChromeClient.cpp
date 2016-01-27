@@ -191,15 +191,4 @@ void ChromeClient::print(LocalFrame* frame)
     printDelegate(frame);
 }
 
-float ChromeClient::screenToViewport(float length) const
-{
-    // Convert the thickness in the screen (dip) to the viewport by applying
-    // the invert of the viewport to screen scale.
-    // TODO(oshima): Add native implementation instead of using viewportToScreen.
-
-    IntRect inScreen(0, 0, 100, 0);
-    inScreen = viewportToScreen(inScreen);
-    return length * 100.f / inScreen.width();
-}
-
 } // namespace blink

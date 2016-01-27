@@ -29,6 +29,7 @@
 #include "platform/HostWindow.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/CullRect.h"
 // See windowActiveChangedForSnowLeopardOnly() below.
 // TODO(ellyjones): remove this when Snow Leopard support is gone.
@@ -81,7 +82,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     // alone when sizing).
     int thickness = m_theme.scrollbarThickness(controlSize);
     if (m_hostWindow)
-        thickness = m_hostWindow->screenToViewport(thickness);
+        thickness = m_hostWindow->windowToViewport(FloatRect(0, 0, thickness, 0)).width();
     Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
 
     m_currentPos = scrollableAreaCurrentPos();
@@ -482,7 +483,7 @@ int Scrollbar::scrollbarThickness() const
     int thickness = orientation() == HorizontalScrollbar ? height() : width();
     if (!thickness || !m_hostWindow)
         return thickness;
-    return m_hostWindow->screenToViewport(m_theme.scrollbarThickness(controlSize()));
+    return m_hostWindow->windowToViewport(FloatRect(0, 0, m_theme.scrollbarThickness(controlSize()), 0)).width();
 }
 
 

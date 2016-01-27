@@ -40,6 +40,7 @@
 #include "core/page/SpellCheckerClient.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceError.h"
@@ -132,6 +133,7 @@ public:
     void scheduleAnimation(Widget*) override {}
 
     IntRect viewportToScreen(const IntRect& r) const override { return r; }
+    FloatRect windowToViewport(const FloatRect& r) const override { return r; }
     WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
     void contentsSizeChanged(LocalFrame*, const IntSize&) const override {}
 

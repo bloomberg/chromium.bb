@@ -235,6 +235,7 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatSize& velocity) override;
   void showImeIfNeeded() override;
   void convertViewportToWindow(blink::WebRect* rect) override;
+  void convertWindowToViewport(blink::WebFloatRect* rect) override;
 
   // Override point to obtain that the current input method state and caret
   // position.

@@ -1777,6 +1777,15 @@ void RenderWidget::convertViewportToWindow(blink::WebRect* rect) {
   }
 }
 
+void RenderWidget::convertWindowToViewport(blink::WebFloatRect* rect) {
+  if (IsUseZoomForDSFEnabled()) {
+    rect->x *= device_scale_factor_;
+    rect->y *= device_scale_factor_;
+    rect->width *= device_scale_factor_;
+    rect->height *= device_scale_factor_;
+  }
+}
+
 void RenderWidget::OnShowImeIfNeeded() {
 #if defined(OS_ANDROID) || defined(USE_AURA)
   UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
