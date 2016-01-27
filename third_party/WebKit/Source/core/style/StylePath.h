@@ -5,8 +5,8 @@
 #ifndef StylePath_h
 #define StylePath_h
 
-#include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -14,6 +14,7 @@
 namespace blink {
 
 class CSSValue;
+class Path;
 class SVGPathByteStream;
 
 class StylePath : public RefCounted<StylePath> {
@@ -23,7 +24,7 @@ public:
 
     static StylePath* emptyPath();
 
-    const Path& path() const { return m_path; }
+    const Path& path() const;
     const SVGPathByteStream& byteStream() const;
 
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const;
@@ -34,7 +35,7 @@ private:
     explicit StylePath(PassRefPtr<SVGPathByteStream>);
 
     RefPtr<SVGPathByteStream> m_byteStream;
-    Path m_path;
+    mutable OwnPtr<Path> m_path;
 };
 
 } // namespace blink

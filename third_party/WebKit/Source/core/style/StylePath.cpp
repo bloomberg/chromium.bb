@@ -7,6 +7,7 @@
 #include "core/css/CSSPathValue.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -14,7 +15,6 @@ StylePath::StylePath(PassRefPtr<SVGPathByteStream> pathByteStream)
     : m_byteStream(pathByteStream)
 {
     ASSERT(m_byteStream);
-    buildPathFromByteStream(*m_byteStream, m_path);
 }
 
 StylePath::~StylePath()
@@ -30,6 +30,15 @@ StylePath* StylePath::emptyPath()
 {
     DEFINE_STATIC_REF(StylePath, emptyPath, StylePath::create(SVGPathByteStream::create()));
     return emptyPath;
+}
+
+const Path& StylePath::path() const
+{
+    if (!m_path) {
+        m_path = adoptPtr(new Path);
+        buildPathFromByteStream(*m_byteStream, *m_path);
+    }
+    return *m_path;
 }
 
 const SVGPathByteStream& StylePath::byteStream() const
