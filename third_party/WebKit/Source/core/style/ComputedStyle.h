@@ -90,6 +90,10 @@ template<typename T, typename U> inline bool compareEqual(const T& t, const U& u
     if (!compareEqual(group->variable, value)) \
         group.access()->variable = value
 
+#define SET_NESTED_VAR(group, base, variable, value)            \
+    if (!compareEqual(group->base->variable, value))            \
+        group.access()->base.access()->variable = value
+
 #define SET_VAR_WITH_SETTER(group, getter, setter, value)    \
     if (!compareEqual(group->getter(), value)) \
         group.access()->setter(value)
@@ -1404,7 +1408,7 @@ public:
     void setTransformOriginX(const Length& v) { setTransformOrigin(TransformOrigin(v, transformOriginY(), transformOriginZ())); }
     void setTransformOriginY(const Length& v) { setTransformOrigin(TransformOrigin(transformOriginX(), v, transformOriginZ())); }
     void setTransformOriginZ(float f) { setTransformOrigin(TransformOrigin(transformOriginX(), transformOriginY(), f)); }
-    void setTransformOrigin(const TransformOrigin& o) { SET_VAR(rareNonInheritedData.access()->m_transform, m_origin, o); }
+    void setTransformOrigin(const TransformOrigin& o) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_origin, o); }
     void setTranslate(PassRefPtr<TranslateTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_translate = v; }
     void setRotate(PassRefPtr<RotateTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_rotate = v; }
     void setScale(PassRefPtr<ScaleTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_scale = v; }
