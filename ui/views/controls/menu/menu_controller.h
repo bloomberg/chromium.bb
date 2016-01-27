@@ -49,7 +49,6 @@ class View;
 namespace internal {
 class MenuControllerDelegate;
 class MenuEventDispatcher;
-class MenuMessagePumpDispatcher;
 class MenuRunnerImpl;
 }
 
@@ -200,7 +199,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
  private:
   friend class internal::MenuEventDispatcher;
-  friend class internal::MenuMessagePumpDispatcher;
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
   friend class MenuKeyEventHandler;

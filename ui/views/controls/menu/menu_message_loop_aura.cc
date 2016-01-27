@@ -15,19 +15,13 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/controls/menu/menu_key_event_handler.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/dispatcher_client.h"
 #include "ui/wm/public/drag_drop_client.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/internal_constants.h"
-#include "ui/views/controls/menu/menu_message_pump_dispatcher_win.h"
-#include "ui/views/win/hwnd_util.h"
-#else
-#include "ui/views/controls/menu/menu_key_event_handler.h"
-#endif
 
 using aura::client::ScreenPositionClient;
 
@@ -139,24 +133,6 @@ void MenuMessageLoopAura::Run(MenuController* controller,
   base::AutoReset<base::Closure> reset_quit_closure(&message_loop_quit_,
                                                     base::Closure());
 
-#if defined(OS_WIN)
-  internal::MenuMessagePumpDispatcher nested_dispatcher(controller);
-  if (root) {
-    scoped_ptr<ActivationChangeObserverImpl> observer;
-    if (!nested_menu)
-      observer.reset(new ActivationChangeObserverImpl(controller, root));
-    aura::client::DispatcherRunLoop run_loop(
-        aura::client::GetDispatcherClient(root), &nested_dispatcher);
-    message_loop_quit_ = run_loop.QuitClosure();
-    run_loop.Run();
-  } else {
-    base::MessageLoop* loop = base::MessageLoop::current();
-    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    base::RunLoop run_loop(&nested_dispatcher);
-    message_loop_quit_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-#else
   scoped_ptr<ActivationChangeObserverImpl> observer;
   if (root) {
     if (!nested_menu)
@@ -176,7 +152,6 @@ void MenuMessageLoopAura::Run(MenuController* controller,
   message_loop_quit_ = run_loop.QuitClosure();
 
   run_loop.Run();
-#endif  // defined(OS_WIN)
 }
 
 void MenuMessageLoopAura::QuitNow() {

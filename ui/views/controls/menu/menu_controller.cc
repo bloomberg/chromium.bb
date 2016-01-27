@@ -1149,6 +1149,15 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       break;
     }
 
+#if defined(OS_WIN)
+    // On Windows, pressing Alt and F10 keys should hide the menu to match the
+    // OS behavior.
+    case ui::VKEY_MENU:
+    case ui::VKEY_F10:
+      Cancel(EXIT_ALL);
+      break;
+#endif
+
     default:
       break;
   }

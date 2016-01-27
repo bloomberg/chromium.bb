@@ -128,8 +128,6 @@
       'controls/menu/menu_message_loop.h',
       'controls/menu/menu_message_loop_mac.cc',
       'controls/menu/menu_message_loop_mac.h',
-      'controls/menu/menu_message_pump_dispatcher_win.cc',
-      'controls/menu/menu_message_pump_dispatcher_win.h',
       'controls/menu/menu_model_adapter.cc',
       'controls/menu/menu_model_adapter.h',
       'controls/menu/menu_runner.cc',

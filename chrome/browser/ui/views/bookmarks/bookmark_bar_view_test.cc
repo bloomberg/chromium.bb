@@ -53,6 +53,10 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "ui/aura/window_tree_host.h"
+#endif
+
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -2243,3 +2247,90 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
 #endif
 VIEW_TEST(BookmarkBarViewTest24, MAYBE_ContextMenusKeyboardEscape)
 
+#if defined(OS_WIN)
+// Tests that pressing the key KEYCODE closes the menu.
+template <ui::KeyboardCode KEYCODE>
+class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
+ protected:
+  void DoTestOnMessageLoop() override {
+    // Move the mouse to the first folder on the bookmark bar and press the
+    // mouse.
+    views::LabelButton* button = GetBookmarkButton(0);
+    ui_test_utils::MoveMouseToCenterAndPress(
+        button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest25::Step2));
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != nullptr);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Send KEYCODE key event, which should close the menu.
+    ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
+        window_->GetNativeWindow(), KEYCODE, false, false, false, false,
+        CreateEventTask(this, &BookmarkBarViewTest25::Step3)));
+  }
+
+  void Step3() {
+    // Make sure menu is not showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu == nullptr);
+
+    Done();
+  }
+};
+
+// Tests that pressing F10 system key closes the menu.
+using BookmarkBarViewTest25F10 = BookmarkBarViewTest25<ui::VKEY_F10>;
+VIEW_TEST(BookmarkBarViewTest25F10, F10ClosesMenu);
+
+// Tests that pressing Alt system key closes the menu.
+using BookmarkBarViewTest25Alt = BookmarkBarViewTest25<ui::VKEY_MENU>;
+VIEW_TEST(BookmarkBarViewTest25Alt, AltClosesMenu);
+
+// Tests that WM_CANCELMODE closes the menu.
+class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
+ protected:
+  void DoTestOnMessageLoop() override {
+    // Move the mouse to the first folder on the bookmark bar and press the
+    // mouse.
+    views::LabelButton* button = GetBookmarkButton(0);
+    ui_test_utils::MoveMouseToCenterAndPress(
+        button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest26::Step2));
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != nullptr);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Send WM_CANCELMODE, which should close the menu. The message is sent
+    // synchronously, however, we post a task to make sure that the message is
+    // processed completely before finishing the test.
+    ::SendMessage(
+        GetWidget()->GetNativeView()->GetHost()->GetAcceleratedWidget(),
+        WM_CANCELMODE, 0, 0);
+
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&BookmarkBarViewTest26::Step3, this));
+  }
+
+  void Step3() {
+    // Menu should not be showing anymore.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu == nullptr);
+
+    Done();
+  }
+};
+
+VIEW_TEST(BookmarkBarViewTest26, CancelModeClosesMenu);
+#endif
