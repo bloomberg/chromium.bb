@@ -36,7 +36,11 @@ class CC_EXPORT DisplayListRasterSource
   // rasterizing to the stats if the respective pointer is not nullptr.
   // It is assumed that the canvas passed here will only be rasterized by
   // this raster source via this call.
-  // virtual for testing.
+  //
+  // Virtual for testing.
+  //
+  // Note that this should only be called after the image decode controller has
+  // been set, which happens during commit.
   virtual void PlaybackToCanvas(SkCanvas* canvas,
                                 const gfx::Rect& canvas_bitmap_rect,
                                 const gfx::Rect& canvas_playback_rect,
