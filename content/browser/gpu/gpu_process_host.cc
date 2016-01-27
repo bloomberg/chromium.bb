@@ -632,25 +632,28 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
     const gfx::PluginWindowHandle& parent_handle,
     const gfx::PluginWindowHandle& window_handle) {
-  DCHECK(process_);
-  {
-    DWORD process_id = 0;
-    DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
+  if (!in_process_) {
+    DCHECK(process_);
+    {
+      DWORD process_id = 0;
+      DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
 
-    if (!thread_id || process_id != ::GetCurrentProcessId()) {
-      process_->TerminateOnBadMessageReceived(
-          GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
-      return;
+      if (!thread_id || process_id != ::GetCurrentProcessId()) {
+        process_->TerminateOnBadMessageReceived(
+            GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+        return;
+      }
     }
-  }
-  {
-    DWORD process_id = 0;
-    DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
 
-    if (!thread_id || process_id != process_->GetProcess().Pid()) {
-      process_->TerminateOnBadMessageReceived(
-          GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
-      return;
+    {
+      DWORD process_id = 0;
+      DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
+
+      if (!thread_id || process_id != process_->GetProcess().Pid()) {
+        process_->TerminateOnBadMessageReceived(
+            GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+        return;
+      }
     }
   }
 
