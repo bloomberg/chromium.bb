@@ -47,13 +47,14 @@ static void initialAndFinalPositionsFromStyle(const ComputedStyle& gridContainer
     if (initialPosition.isSpan() && finalPosition.isSpan())
         finalPosition.setAutoPosition();
 
-    // Try to early detect the case of non existing named grid lines. This way we could assume later that
-    // GridResolvedPosition::resolveGrisPositionFromStyle() always return a valid resolved position.
-    if (initialPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, GridResolvedPosition::initialPositionSide(direction)))
-        initialPosition.setAutoPosition();
+    if (gridItem.isOutOfFlowPositioned()) {
+        // Early detect the case of non existing named grid lines for positioned items.
+        if (initialPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, GridResolvedPosition::initialPositionSide(direction)))
+            initialPosition.setAutoPosition();
 
-    if (finalPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, GridResolvedPosition::finalPositionSide(direction)))
-        finalPosition.setAutoPosition();
+        if (finalPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, GridResolvedPosition::finalPositionSide(direction)))
+            finalPosition.setAutoPosition();
+    }
 
     // If the grid item has an automatic position and a grid span for a named line in a given dimension, instead treat the grid span as one.
     if (initialPosition.isAuto() && finalPosition.isSpan() && !finalPosition.namedGridLine().isNull())
@@ -62,46 +63,80 @@ static void initialAndFinalPositionsFromStyle(const ComputedStyle& gridContainer
         initialPosition.setSpanPosition(1, String());
 }
 
-static GridSpan definiteGridSpanWithInitialNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
+static size_t lookAheadForNamedGridLine(int start, size_t numberOfLines, const Vector<size_t>* namedGridLinesIndexes, size_t gridLastLine)
 {
-    if (resolvedOppositePosition == 0)
-        return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
+    ASSERT(numberOfLines);
 
-    size_t firstLineBeforeOppositePositionIndex = 0;
-    const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
-    if (firstLineBeforeOppositePosition != gridLines.end())
-        firstLineBeforeOppositePositionIndex = firstLineBeforeOppositePosition - gridLines.begin();
-    size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition());
-    size_t resolvedGridLinePosition = gridLines[gridLineIndex];
-    if (resolvedGridLinePosition >= resolvedOppositePosition)
-        resolvedGridLinePosition = resolvedOppositePosition - 1;
-    return GridSpan::untranslatedDefiniteGridSpan(resolvedGridLinePosition, resolvedOppositePosition);
+    // Only implicit lines on the search direction are assumed to have the given name, so we can start to look from first line.
+    // See: https://drafts.csswg.org/css-grid/#grid-placement-span-int
+    size_t end = std::max(start, 0);
+
+    if (!namedGridLinesIndexes) {
+        end = std::max(end, gridLastLine + 1);
+        return end + numberOfLines - 1;
+    }
+
+    for (; numberOfLines; ++end) {
+        if (end > gridLastLine || namedGridLinesIndexes->contains(end))
+            numberOfLines--;
+    }
+
+    ASSERT(end);
+    return end - 1;
 }
 
-static GridSpan definiteGridSpanWithFinalNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
+static int lookBackForNamedGridLine(int end, size_t numberOfLines, const Vector<size_t>* namedGridLinesIndexes, int gridLastLine)
 {
-    ASSERT(gridLines.size());
-    size_t firstLineAfterOppositePositionIndex = gridLines.size() - 1;
-    const size_t* firstLineAfterOppositePosition = std::upper_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
-    if (firstLineAfterOppositePosition != gridLines.end())
-        firstLineAfterOppositePositionIndex = firstLineAfterOppositePosition - gridLines.begin();
-    size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
-    size_t resolvedGridLinePosition = gridLines[gridLineIndex];
-    if (resolvedGridLinePosition <= resolvedOppositePosition)
-        resolvedGridLinePosition = resolvedOppositePosition + 1;
+    ASSERT(numberOfLines);
 
-    return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedGridLinePosition);
+    // Only implicit lines on the search direction are assumed to have the given name, so we can start to look from last line.
+    // See: https://drafts.csswg.org/css-grid/#grid-placement-span-int
+    int start = std::min(end, gridLastLine);
+
+    if (!namedGridLinesIndexes) {
+        start = std::min(start, -1);
+        return start - numberOfLines + 1;
+    }
+
+    for (; numberOfLines; --start) {
+        if (start < 0 || namedGridLinesIndexes->contains(static_cast<size_t>(start)))
+            numberOfLines--;
+    }
+
+    return start + 1;
 }
 
-static GridSpan definiteGridSpanWithNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>& gridLines)
+static GridSpan definiteGridSpanWithNamedSpanAgainstOpposite(int resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>* gridLines, int lastLine)
 {
-    if (side == RowStartSide || side == ColumnStartSide)
-        return definiteGridSpanWithInitialNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
+    int start, end;
 
-    return definiteGridSpanWithFinalNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
+    if (side == RowStartSide || side == ColumnStartSide) {
+        start = lookBackForNamedGridLine(resolvedOppositePosition - 1, position.spanPosition(), gridLines, lastLine);
+        end = resolvedOppositePosition;
+    } else {
+        start = resolvedOppositePosition;
+        end = lookAheadForNamedGridLine(resolvedOppositePosition + 1, position.spanPosition(), gridLines, lastLine);
+    }
+
+    return GridSpan::untranslatedDefiniteGridSpan(start, end);
 }
 
-static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+size_t GridResolvedPosition::explicitGridColumnCount(const ComputedStyle& gridContainerStyle)
+{
+    return std::min<size_t>(gridContainerStyle.gridTemplateColumns().size(), kGridMaxTracks);
+}
+
+size_t GridResolvedPosition::explicitGridRowCount(const ComputedStyle& gridContainerStyle)
+{
+    return std::min<size_t>(gridContainerStyle.gridTemplateRows().size(), kGridMaxTracks);
+}
+
+static size_t explicitGridSizeForSide(const ComputedStyle& gridContainerStyle, GridPositionSide side)
+{
+    return (side == ColumnStartSide || side == ColumnEndSide) ? GridResolvedPosition::explicitGridColumnCount(gridContainerStyle) : GridResolvedPosition::explicitGridRowCount(gridContainerStyle);
+}
+
+static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, int resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     ASSERT(position.isSpan());
     ASSERT(!position.namedGridLine().isNull());
@@ -110,16 +145,9 @@ static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const Comput
 
     const NamedGridLinesMap& gridLinesNames = gridLinesForSide(gridContainerStyle, side);
     NamedGridLinesMap::const_iterator it = gridLinesNames.find(position.namedGridLine());
-
-    // If there is no named grid line of that name, we resolve the position to 'auto' (which is equivalent to 'span 1' in this case).
-    // See http://lists.w3.org/Archives/Public/www-style/2013Jun/0394.html.
-    if (it == gridLinesNames.end()) {
-        if ((side == ColumnStartSide || side == RowStartSide) && resolvedOppositePosition)
-            return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition - 1, resolvedOppositePosition);
-        return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
-    }
-
-    return definiteGridSpanWithNamedSpanAgainstOpposite(resolvedOppositePosition, position, side, it->value);
+    const Vector<size_t>* gridLines = it == gridLinesNames.end() ? nullptr : &it->value;
+    size_t lastLine = explicitGridSizeForSide(gridContainerStyle, side);
+    return definiteGridSpanWithNamedSpanAgainstOpposite(resolvedOppositePosition, position, side, gridLines, lastLine);
 }
 
 static GridSpan definiteGridSpanWithSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
@@ -131,7 +159,7 @@ static GridSpan definiteGridSpanWithSpanAgainstOpposite(size_t resolvedOppositeP
     return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + positionOffset);
 }
 
-static GridSpan resolveGridPositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+static GridSpan resolveGridPositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, int resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     if (position.isAuto()) {
         if (side == ColumnStartSide || side == RowStartSide)
@@ -167,40 +195,18 @@ size_t GridResolvedPosition::spanSizeForAutoPlacedItem(const ComputedStyle& grid
     return position.spanPosition();
 }
 
-size_t GridResolvedPosition::explicitGridColumnCount(const ComputedStyle& gridContainerStyle)
-{
-    return std::min<size_t>(gridContainerStyle.gridTemplateColumns().size(), kGridMaxTracks);
-}
-
-size_t GridResolvedPosition::explicitGridRowCount(const ComputedStyle& gridContainerStyle)
-{
-    return std::min<size_t>(gridContainerStyle.gridTemplateRows().size(), kGridMaxTracks);
-}
-
-static size_t explicitGridSizeForSide(const ComputedStyle& gridContainerStyle, GridPositionSide side)
-{
-    return (side == ColumnStartSide || side == ColumnEndSide) ? GridResolvedPosition::explicitGridColumnCount(gridContainerStyle) : GridResolvedPosition::explicitGridRowCount(gridContainerStyle);
-}
-
-static size_t resolveNamedGridLinePositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
+static int resolveNamedGridLinePositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
 {
     ASSERT(!position.namedGridLine().isNull());
 
     const NamedGridLinesMap& gridLinesNames = gridLinesForSide(gridContainerStyle, side);
     NamedGridLinesMap::const_iterator it = gridLinesNames.find(position.namedGridLine());
-    if (it == gridLinesNames.end()) {
-        if (position.isPositive())
-            return 0;
-        size_t lastLine = explicitGridSizeForSide(gridContainerStyle, side);
-        return lastLine;
-    }
-
-    size_t namedGridLineIndex;
+    const Vector<size_t>* gridLines = it == gridLinesNames.end() ? nullptr : &it->value;
+    size_t lastLine = explicitGridSizeForSide(gridContainerStyle, side);
     if (position.isPositive())
-        namedGridLineIndex = std::min<size_t>(position.integerPosition(), it->value.size()) - 1;
+        return lookAheadForNamedGridLine(0, abs(position.integerPosition()), gridLines, lastLine);
     else
-        namedGridLineIndex = std::max<int>(it->value.size() - abs(position.integerPosition()), 0);
-    return it->value[namedGridLineIndex];
+        return lookBackForNamedGridLine(lastLine, abs(position.integerPosition()), gridLines, lastLine);
 }
 
 static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
@@ -227,7 +233,7 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
         // ''<custom-ident>-start (for grid-*-start) / <custom-ident>-end'' (for grid-*-end), contributes the first such
         // line to the grid item's placement.
         String namedGridLine = position.namedGridLine();
-        ASSERT(GridResolvedPosition::isValidNamedLineOrArea(namedGridLine, gridContainerStyle, side));
+        ASSERT(!position.namedGridLine().isNull());
 
         const NamedGridLinesMap& gridLineNames = gridLinesForSide(gridContainerStyle, side);
         NamedGridLinesMap::const_iterator implicitLineIter = gridLineNames.find(implicitNamedGridLineForSide(namedGridLine, side));
@@ -240,11 +246,10 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
         if (explicitLineIter != gridLineNames.end())
             return explicitLineIter->value[0];
 
-        // If none of the above works specs mandate us to treat it as auto BUT we should have detected it before calling
-        // this function in GridResolvedPosition::resolveGridPositionsFromStyle(). We should be also covered by the
-        // ASSERT at the beginning of this block.
-        ASSERT_NOT_REACHED();
-        return 0;
+        ASSERT(!GridResolvedPosition::isValidNamedLineOrArea(namedGridLine, gridContainerStyle, side));
+        // If none of the above works specs mandate to assume that all the lines in the implicit grid have this name.
+        size_t lastLine = explicitGridSizeForSide(gridContainerStyle, side);
+        return lastLine + 1;
     }
     case AutoPosition:
     case SpanPosition:
