@@ -231,13 +231,13 @@
         this._writePage(this._Start, buffer.byteLength);
         this.buffer.appendData(buffer);
         this._writePageChecksum(start);
-        this._writeCommentHeader('OpusTags');
+        this._writeCommentHeader();
       },
       _writeCommentHeader: function(name) {
         var start = this.buffer.getSize();
         var buffer = new Uint8Array(8 + 4 + 8 + 4 + 4 + 13), i = 0;
         // Opus comment header.
-        i += writeString(buffer, i, name);
+        i += writeString(buffer, i, 'OpusTags');
         // Vendor string.
         i += this._writeLengthString(buffer, i, 'Chromium');
         // User comment list length
@@ -245,13 +245,13 @@
         // User comment 0 length.
         i += this._writeLengthString(buffer, i, 'TITLE=example');
 
-        this._writePage(this._Continue, buffer.byteLength);
+        this._writePage(0, buffer.byteLength);
         this.buffer.appendData(buffer);
         this._writePageChecksum(start);
       },
       _writeLengthString: function(buffer, offset, str) {
-        return (writeValue(buffer, offset, 4, str.length) +
-                writeString(buffer, offset, str));
+        return (writeValue(buffer, 4, offset, str.length) +
+                writeString(buffer, offset + 4, str));
       },
       writeData: function(data) {
         this.position += this.format.sample_per_frame / this.format.channels;
