@@ -453,9 +453,10 @@ class TemplateURLRef {
   // into the string, and may be empty.
   mutable Replacements replacements_;
 
-  // Host, path, key and location of the search term. These are only set if the
-  // url contains one search term.
+  // Host, port, path, key and location of the search term. These are only set
+  // if the url contains one search term.
   mutable std::string host_;
+  mutable std::string port_;
   mutable std::string path_;
   mutable std::string search_term_key_;
   mutable size_t search_term_position_in_path_;

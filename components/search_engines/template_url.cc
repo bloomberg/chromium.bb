@@ -457,14 +457,9 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
       (search_term_key_location_ != url::Parsed::PATH))
     return false;
 
-  // Fill-in the replacements. We don't care about search terms in the pattern,
-  // so we use the empty string.
-  // Currently we assume the search term only shows in URL, not in post params.
-  GURL pattern(ReplaceSearchTerms(SearchTermsArgs(base::string16()),
-                                  search_terms_data, NULL));
-  // Host, path and port must match.
-  if ((url.port() != pattern.port()) ||
-      (url.host() != host_) ||
+  // Host, port, and path must match.
+  if ((url.host() != host_) ||
+      (url.port() != port_) ||
       ((url.path() != path_) &&
           (search_term_key_location_ != url::Parsed::PATH))) {
     return false;
@@ -521,6 +516,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
 void TemplateURLRef::InvalidateCachedValues() const {
   supports_replacements_ = valid_ = parsed_ = false;
   host_.clear();
+  port_.clear();
   path_.clear();
   search_term_key_.clear();
   search_term_position_in_path_ = std::string::npos;
@@ -771,12 +767,6 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
       &url_string, 0, "{google:baseSuggestURL}",
       search_terms_data.GoogleBaseSuggestURLValue());
 
-  search_term_key_.clear();
-  search_term_position_in_path_ = std::string::npos;
-  host_.clear();
-  path_.clear();
-  search_term_key_location_ = url::Parsed::QUERY;
-
   GURL url(url_string);
   if (!url.is_valid())
     return;
@@ -791,6 +781,7 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
     return;  // No key or multiple keys found.  We only handle having one key.
 
   host_ = url.host();
+  port_ = url.port();
   path_ = url.path();
   if (in_query) {
     search_term_key_ = query_key;
