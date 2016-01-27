@@ -17,9 +17,9 @@ kmstest_SOURCES = \
 	main.c
 
 kmstest_LDADD = \
-	$(top_builddir)/libdrm.la \
+	$(top_builddir)/tests/util/libutil.la \
 	$(top_builddir)/libkms/libkms.la \
-	$(top_builddir)/tests/util/libutil.la
+	$(top_builddir)/libdrm.la
 
 run: kmstest
 	./kmstest
