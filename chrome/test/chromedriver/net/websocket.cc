@@ -51,7 +51,7 @@ bool ResolveHost(const std::string& host, net::IPAddressNumber* address) {
         freeaddrinfo(result);
         return false;
       }
-      *address = end_point.address();
+      *address = end_point.address().bytes();
     }
   }
   freeaddrinfo(result);

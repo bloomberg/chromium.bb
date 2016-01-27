@@ -253,15 +253,15 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     ASSERT_TRUE(server_hello.GetStringPiece(kCADR, &address));
     QuicSocketAddressCoder decoder;
     ASSERT_TRUE(decoder.Decode(address.data(), address.size()));
-    EXPECT_EQ(client_address_.address(), decoder.ip());
+    EXPECT_EQ(client_address_.address().bytes(), decoder.ip());
     EXPECT_EQ(client_address_.port(), decoder.port());
   }
 
   void ShouldSucceed(const CryptoHandshakeMessage& message) {
     bool called = false;
     IPAddressNumber server_ip;
-    config_.ValidateClientHello(message, client_address_.address(), server_ip,
-                                supported_versions_.front(), &clock_,
+    config_.ValidateClientHello(message, client_address_.address().bytes(),
+                                server_ip, supported_versions_.front(), &clock_,
                                 &crypto_proof_,
                                 new ValidateCallback(this, true, "", &called));
     EXPECT_TRUE(called);
@@ -279,7 +279,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
                             bool* called) {
     IPAddressNumber server_ip;
     config_.ValidateClientHello(
-        message, client_address_.address(), server_ip,
+        message, client_address_.address().bytes(), server_ip,
         supported_versions_.front(), &clock_, &crypto_proof_,
         new ValidateCallback(this, false, error_substr, called));
   }
@@ -1167,7 +1167,7 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
 
   bool called = false;
   IPAddressNumber server_ip;
-  config_.ValidateClientHello(msg, client_address_.address(), server_ip,
+  config_.ValidateClientHello(msg, client_address_.address().bytes(), server_ip,
                               client_version_, &clock_, &crypto_proof_,
                               new ValidateCallback(this, true, "", &called));
   // The verification request was queued.
@@ -1183,7 +1183,7 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   EXPECT_EQ(kSHLO, out_.tag());
 
   // Rejected if replayed.
-  config_.ValidateClientHello(msg, client_address_.address(), server_ip,
+  config_.ValidateClientHello(msg, client_address_.address().bytes(), server_ip,
                               client_version_, &clock_, &crypto_proof_,
                               new ValidateCallback(this, true, "", &called));
   // The verification request was queued.

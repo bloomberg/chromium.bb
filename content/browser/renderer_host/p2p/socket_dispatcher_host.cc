@@ -95,7 +95,7 @@ class P2PSocketDispatcherHost::DnsRequest {
     DCHECK(!addresses_.empty());
     for (net::AddressList::iterator iter = addresses_.begin();
          iter != addresses_.end(); ++iter) {
-      list.push_back(iter->address());
+      list.push_back(iter->address().bytes());
     }
     done_callback_.Run(list);
   }
@@ -382,7 +382,7 @@ net::IPAddressNumber P2PSocketDispatcherHost::GetDefaultLocalAddress(
   if (socket->GetLocalAddress(&local_address) != net::OK)
     return net::IPAddressNumber();
 
-  return local_address.address();
+  return local_address.address().bytes();
 }
 
 void P2PSocketDispatcherHost::OnAddressResolved(

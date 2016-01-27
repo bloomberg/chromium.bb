@@ -408,8 +408,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
     }
     server_thread_->Initialize();
-    server_address_ =
-        IPEndPoint(server_address_.address(), server_thread_->GetPort());
+    server_address_ = IPEndPoint(server_address_.address().bytes(),
+                                 server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
@@ -1465,7 +1465,7 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
                           const IPEndPoint& peer_address) override {
     // Use wrong address!
     return QuicPacketWriterWrapper::WritePacket(
-        buffer, buf_len, self_address_.address(), peer_address);
+        buffer, buf_len, self_address_.address().bytes(), peer_address);
   }
 
   bool IsWriteBlockedDataBuffered() const override { return false; }
@@ -1481,7 +1481,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
 
   // Store the client IP address which was used to send the first request.
   IPAddressNumber old_host =
-      client_->client()->GetLatestClientAddress().address();
+      client_->client()->GetLatestClientAddress().address().bytes();
 
   // Migrate socket to the new IP address.
   IPAddressNumber new_host;
@@ -1805,7 +1805,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(packet->data(), packet->length(),
-                              server_address_.address(),
+                              server_address_.address().bytes(),
                               client_->client()->GetLatestClientAddress());
   server_thread_->Resume();
 
@@ -1834,7 +1834,8 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
   scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
   client_writer_->WritePacket(
       packet->data(), packet->length(),
-      client_->client()->GetLatestClientAddress().address(), server_address_);
+      client_->client()->GetLatestClientAddress().address().bytes(),
+      server_address_);
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1860,7 +1861,7 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(packet->data(), packet->length(),
-                              server_address_.address(),
+                              server_address_.address().bytes(),
                               client_->client()->GetLatestClientAddress());
   server_thread_->Resume();
 
@@ -1887,7 +1888,8 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
                    0x11};
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
-      client_->client()->GetLatestClientAddress().address(), server_address_);
+      client_->client()->GetLatestClientAddress().address().bytes(),
+      server_address_);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1925,7 +1927,8 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
   };
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
-      client_->client()->GetLatestClientAddress().address(), server_address_);
+      client_->client()->GetLatestClientAddress().address().bytes(),
+      server_address_);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1960,7 +1963,8 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   DVLOG(1) << "Sending bad packet.";
   client_writer_->WritePacket(
       damaged_packet.data(), damaged_packet.length(),
-      client_->client()->GetLatestClientAddress().address(), server_address_);
+      client_->client()->GetLatestClientAddress().address().bytes(),
+      server_address_);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // This error is sent to the connection's OnError (which ignores it), so the

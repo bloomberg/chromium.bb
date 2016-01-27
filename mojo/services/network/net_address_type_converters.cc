@@ -42,13 +42,13 @@ NetAddressPtr TypeConverter<NetAddressPtr, net::IPEndPoint>::Convert(
       net_address->family = NetAddressFamily::IPV4;
       net_address->ipv4 = NetAddressIPv4::New();
       net_address->ipv4->port = static_cast<uint16_t>(obj.port());
-      net_address->ipv4->addr = Array<uint8_t>::From(obj.address());
+      net_address->ipv4->addr = Array<uint8_t>::From(obj.address().bytes());
       break;
     case net::ADDRESS_FAMILY_IPV6:
       net_address->ipv6 = NetAddressIPv6::New();
       net_address->family = NetAddressFamily::IPV6;
       net_address->ipv6->port = static_cast<uint16_t>(obj.port());
-      net_address->ipv6->addr = Array<uint8_t>::From(obj.address());
+      net_address->ipv6->addr = Array<uint8_t>::From(obj.address().bytes());
       break;
     default:
       break;

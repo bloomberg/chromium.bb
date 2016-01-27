@@ -182,7 +182,8 @@ class ValidatePublicResetPacketPredicate
            packet.public_header.reset_flag &&
            !packet.public_header.version_flag &&
            packet_number_ == packet.rejected_packet_number &&
-           net::test::TestPeerIPAddress() == packet.client_address.address() &&
+           net::test::TestPeerIPAddress() ==
+               packet.client_address.address().bytes() &&
            kTestPort == packet.client_address.port();
   }
 
@@ -228,8 +229,9 @@ TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
                   /*connection_rejected_statelessly=*/false,
                   &termination_packets);
   const int kRandomSequenceNumber = 1;
-  EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
-                                   server_address_.address(), client_address_))
+  EXPECT_CALL(writer_,
+              WritePacket(_, kConnectionCloseLength,
+                          server_address_.address().bytes(), client_address_))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   ProcessPacket(connection_id_, kRandomSequenceNumber);
@@ -247,8 +249,9 @@ TEST_F(QuicTimeWaitListManagerTest, SendTwoConnectionCloses) {
                   /*connection_rejected_statelessly=*/false,
                   &termination_packets);
   const int kRandomSequenceNumber = 1;
-  EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
-                                   server_address_.address(), client_address_))
+  EXPECT_CALL(writer_,
+              WritePacket(_, kConnectionCloseLength,
+                          server_address_.address().bytes(), client_address_))
       .Times(2)
       .WillRepeatedly(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
@@ -259,8 +262,8 @@ TEST_F(QuicTimeWaitListManagerTest, SendPublicReset) {
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
   AddConnectionId(connection_id_);
   const int kRandomSequenceNumber = 1;
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.address(), client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, _, server_address_.address().bytes(),
+                                   client_address_))
       .With(Args<0, 1>(
           PublicResetPacketEq(connection_id_, kRandomSequenceNumber)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
@@ -294,8 +297,8 @@ TEST_F(QuicTimeWaitListManagerTest, NoPublicResetForStatelessConnections) {
   AddStatelessConnectionId(connection_id_);
   const int kRandomSequenceNumber = 1;
 
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.address(), client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, _, server_address_.address().bytes(),
+                                   client_address_))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   ProcessPacket(connection_id_, kRandomSequenceNumber);
@@ -361,15 +364,15 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   scoped_ptr<QuicEncryptedPacket> packet(
       ConstructEncryptedPacket(connection_id, packet_number));
   // Let first write through.
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.address(), client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, _, server_address_.address().bytes(),
+                                   client_address_))
       .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   ProcessPacket(connection_id, packet_number);
 
   // write block for the next packet.
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.address(), client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, _, server_address_.address().bytes(),
+                                   client_address_))
       .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
       .WillOnce(DoAll(Assign(&writer_is_blocked_, true),
                       Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN))));
@@ -393,12 +396,12 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
 
   // Now expect all the write blocked public reset packets to be sent again.
   writer_is_blocked_ = false;
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.address(), client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, _, server_address_.address().bytes(),
+                                   client_address_))
       .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.address(), client_address_))
+  EXPECT_CALL(writer_, WritePacket(_, _, server_address_.address().bytes(),
+                                   client_address_))
       .With(Args<0, 1>(
           PublicResetPacketEq(other_connection_id, other_packet_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, other_packet->length())));
@@ -447,8 +450,9 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));
   EXPECT_EQ(1u, time_wait_list_manager_.num_connections());
 
-  EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
-                                   server_address_.address(), client_address_))
+  EXPECT_CALL(writer_,
+              WritePacket(_, kConnectionCloseLength,
+                          server_address_.address().bytes(), client_address_))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   const int kRandomSequenceNumber = 1;

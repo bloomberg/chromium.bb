@@ -79,6 +79,7 @@ class NET_EXPORT IPAddress {
   const std::vector<uint8_t>& bytes() const { return ip_address_; };
 
   bool operator==(const IPAddress& that) const;
+  bool operator!=(const IPAddress& that) const;
   bool operator<(const IPAddress& that) const;
 
  private:

@@ -1112,7 +1112,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
           framer_.supported_versions()));
   WriteResult result =
       writer_->WritePacket(version_packet->data(), version_packet->length(),
-                           self_address().address(), peer_address());
+                           self_address().address().bytes(), peer_address());
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
@@ -1300,7 +1300,7 @@ void QuicConnection::CheckForAddressMigration(const IPEndPoint& self_address,
     peer_port_changed_ = (peer_address.port() != peer_address_.port());
 
     // Store in case we want to migrate connection in ProcessValidatedPacket.
-    migrating_peer_ip_ = peer_address.address();
+    migrating_peer_ip_ = peer_address.address().bytes();
     migrating_peer_port_ = peer_address.port();
   }
 
@@ -1429,7 +1429,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
   if (peer_ip_changed_ || peer_port_changed_) {
     IPEndPoint old_peer_address = peer_address_;
     peer_address_ = IPEndPoint(
-        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address(),
+        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address().bytes(),
         peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
 
     DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
@@ -1648,7 +1648,7 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
   QuicTime packet_send_time = clock_->Now();
   WriteResult result =
       writer_->WritePacket(encrypted->data(), encrypted->length(),
-                           self_address().address(), peer_address());
+                           self_address().address().bytes(), peer_address());
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }

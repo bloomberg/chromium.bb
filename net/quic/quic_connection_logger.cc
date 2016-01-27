@@ -458,9 +458,10 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                                             const QuicEncryptedPacket& packet) {
   if (local_address_from_self_.GetFamily() == ADDRESS_FAMILY_UNSPECIFIED) {
     local_address_from_self_ = self_address;
-    UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromSelf",
-                              GetRealAddressFamily(self_address.address()),
-                              ADDRESS_FAMILY_LAST);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.QuicSession.ConnectionTypeFromSelf",
+        GetRealAddressFamily(self_address.address().bytes()),
+        ADDRESS_FAMILY_LAST);
   }
 
   previous_received_packet_size_ = last_received_packet_size_;
@@ -659,7 +660,7 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
       local_address_from_shlo_ = IPEndPoint(decoder.ip(), decoder.port());
       UMA_HISTOGRAM_ENUMERATION(
           "Net.QuicSession.ConnectionTypeFromPeer",
-          GetRealAddressFamily(local_address_from_shlo_.address()),
+          GetRealAddressFamily(local_address_from_shlo_.address().bytes()),
           ADDRESS_FAMILY_LAST);
     }
   }

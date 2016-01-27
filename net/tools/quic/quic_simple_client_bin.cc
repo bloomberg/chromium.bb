@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
                  << "' : " << net::ErrorToShortString(rv);
       return 1;
     }
-    ip_addr = addresses[0].address();
+    ip_addr = addresses[0].address().bytes();
   }
 
   string host_port = net::IPAddressToStringWithPort(ip_addr, FLAGS_port);

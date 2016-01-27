@@ -3033,8 +3033,7 @@ TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
   EXPECT_EQ(kPacketNumber,
             visitor_.public_reset_packet_->rejected_packet_number);
   EXPECT_EQ("4.31.198.44",
-            IPAddressToString(
-                visitor_.public_reset_packet_->client_address.address()));
+            visitor_.public_reset_packet_->client_address.address().ToString());
   EXPECT_EQ(443, visitor_.public_reset_packet_->client_address.port());
 
   // Now test framing boundaries.

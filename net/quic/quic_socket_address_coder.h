@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE QuicSocketAddressCoder {
 
   bool Decode(const char* data, size_t length);
 
-  IPAddressNumber ip() const { return address_.address(); }
+  IPAddressNumber ip() const { return address_.address().bytes(); }
 
   uint16_t port() const { return address_.port(); }
 

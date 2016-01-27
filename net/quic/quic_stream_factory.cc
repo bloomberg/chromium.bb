@@ -691,7 +691,7 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
   require_confirmation_ = require_confirmation;
   if (!(local_address_ == IPEndPoint())) {
     http_server_properties_->SetSupportsQuic(!require_confirmation,
-                                             local_address_.address());
+                                             local_address_.address().bytes());
   }
 }
 
@@ -1369,7 +1369,7 @@ int QuicStreamFactory::ConfigureSocket(
     check_persisted_supports_quic_ = false;
     IPAddressNumber last_address;
     if (http_server_properties_->GetSupportsQuic(&last_address) &&
-        last_address == local_address_.address()) {
+        last_address == local_address_.address().bytes()) {
       require_confirmation_ = false;
     }
   }

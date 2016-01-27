@@ -235,7 +235,7 @@ void PepperTCPServerSocketMessageFilter::OnListenCompleted(
     return;
   }
   if (!NetAddressPrivateImpl::IPEndPointToNetAddress(
-          end_point.address(), end_point.port(), &addr)) {
+          end_point.address().bytes(), end_point.port(), &addr)) {
     SendListenError(context, PP_ERROR_FAILED);
     state_ = STATE_BEFORE_LISTENING;
     return;
@@ -301,12 +301,10 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     return;
   }
   if (!NetAddressPrivateImpl::IPEndPointToNetAddress(
-          ip_end_point_local.address(),
-          ip_end_point_local.port(),
+          ip_end_point_local.address().bytes(), ip_end_point_local.port(),
           &local_addr) ||
       !NetAddressPrivateImpl::IPEndPointToNetAddress(
-          accepted_address_.address(),
-          accepted_address_.port(),
+          accepted_address_.address().bytes(), accepted_address_.port(),
           &remote_addr)) {
     SendAcceptError(context, PP_ERROR_FAILED);
     return;

@@ -61,6 +61,10 @@ bool IPAddress::operator==(const IPAddress& that) const {
   return ip_address_ == that.ip_address_;
 }
 
+bool IPAddress::operator!=(const IPAddress& that) const {
+  return ip_address_ != that.ip_address_;
+}
+
 bool IPAddress::operator<(const IPAddress& that) const {
   // Sort IPv4 before IPv6.
   if (ip_address_.size() != that.ip_address_.size()) {

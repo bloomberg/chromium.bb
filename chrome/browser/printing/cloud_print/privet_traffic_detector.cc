@@ -140,12 +140,13 @@ int PrivetTrafficDetector::Bind() {
   if (rv < net::OK)
     return rv;
   socket_->SetMulticastLoopbackMode(false);
-  return socket_->JoinGroup(multicast_addr.address());
+  return socket_->JoinGroup(multicast_addr.address().bytes());
 }
 
 bool PrivetTrafficDetector::IsSourceAcceptable() const {
   for (size_t i = 0; i < networks_.size(); ++i) {
-    if (net::IPNumberMatchesPrefix(recv_addr_.address(), networks_[i].address,
+    if (net::IPNumberMatchesPrefix(recv_addr_.address().bytes(),
+                                   networks_[i].address,
                                    networks_[i].prefix_length)) {
       return true;
     }

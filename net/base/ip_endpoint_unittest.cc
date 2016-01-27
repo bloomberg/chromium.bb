@@ -54,7 +54,7 @@ struct TestData {
   std::string host;
   std::string host_normalized;
   bool ipv6;
-  IPAddressNumber ip_address;
+  IPAddress ip_address;
 } tests[] = {
   { "127.0.00.1", "127.0.0.1", false},
   { "192.168.1.1", "192.168.1.1", false },
@@ -68,8 +68,8 @@ class IPEndPointTest : public PlatformTest {
   void SetUp() override {
     // This is where we populate the TestData.
     for (int index = 0; index < test_count; ++index) {
-      EXPECT_TRUE(ParseIPLiteralToNumber(tests[index].host,
-          &tests[index].ip_address));
+      EXPECT_TRUE(IPAddress::FromIPLiteral(tests[index].host,
+                                           &tests[index].ip_address));
     }
   }
 };

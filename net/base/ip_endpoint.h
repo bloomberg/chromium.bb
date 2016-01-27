@@ -11,15 +11,13 @@
 
 #include "base/compiler_specific.h"
 #include "net/base/address_family.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/base/sys_addrinfo.h"
 
 struct sockaddr;
 
 namespace net {
-
-class IPAddress;
 
 // An IPEndPoint represents the address of a transport endpoint:
 //  * IP address (either v4 or v6)
@@ -33,7 +31,7 @@ class NET_EXPORT IPEndPoint {
   IPEndPoint(const IPAddress& address, uint16_t port);
   IPEndPoint(const IPEndPoint& endpoint);
 
-  const IPAddressNumber& address() const { return address_; }
+  const IPAddress& address() const { return address_; }
   uint16_t port() const { return port_; }
 
   // Returns AddressFamily of the address.
@@ -70,7 +68,7 @@ class NET_EXPORT IPEndPoint {
   bool operator==(const IPEndPoint& that) const;
 
  private:
-  IPAddressNumber address_;
+  IPAddress address_;
   uint16_t port_;
 };
 

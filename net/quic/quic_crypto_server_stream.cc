@@ -112,8 +112,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 
   validate_client_hello_cb_ = new ValidateCallback(this);
   return crypto_config_->ValidateClientHello(
-      message, session()->connection()->peer_address().address(),
-      session()->connection()->self_address().address(), version(),
+      message, session()->connection()->peer_address().address().bytes(),
+      session()->connection()->self_address().address().bytes(), version(),
       session()->connection()->clock(), &crypto_proof_,
       validate_client_hello_cb_);
 }
@@ -221,8 +221,8 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
   CryptoHandshakeMessage server_config_update_message;
   if (!crypto_config_->BuildServerConfigUpdateMessage(
           session()->connection()->version(), previous_source_address_tokens_,
-          session()->connection()->self_address().address(),
-          session()->connection()->peer_address().address(),
+          session()->connection()->self_address().address().bytes(),
+          session()->connection()->peer_address().address().bytes(),
           session()->connection()->clock(),
           session()->connection()->random_generator(),
           crypto_negotiated_params_, cached_network_params,
@@ -333,8 +333,9 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
           ? GenerateConnectionIdForReject(connection->connection_id())
           : 0;
   return crypto_config_->ProcessClientHello(
-      result, connection->connection_id(), connection->self_address().address(),
-      connection->peer_address(), version(), connection->supported_versions(),
+      result, connection->connection_id(),
+      connection->self_address().address().bytes(), connection->peer_address(),
+      version(), connection->supported_versions(),
       use_stateless_rejects_in_crypto_config, server_designated_connection_id,
       connection->clock(), connection->random_generator(),
       &crypto_negotiated_params_, &crypto_proof_, reply, error_details);

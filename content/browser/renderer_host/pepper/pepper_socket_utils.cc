@@ -181,11 +181,12 @@ std::string AddressToFirewallString(const net::IPAddressNumber& address) {
 void OpenFirewallHole(const net::IPEndPoint& address,
                       chromeos::FirewallHole::PortType type,
                       FirewallHoleOpenCallback callback) {
-  if (IsLoopbackAddress(address.address())) {
+  if (IsLoopbackAddress(address.address().bytes())) {
     callback.Run(nullptr);
     return;
   }
-  std::string address_string = AddressToFirewallString(address.address());
+  std::string address_string =
+      AddressToFirewallString(address.address().bytes());
 
   chromeos::FirewallHole::Open(type, address.port(), address_string, callback);
 }

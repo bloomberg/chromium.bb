@@ -25,8 +25,8 @@ const int kMaxPacketSize = 1500;
 
 bool IsEmpty(const net::IPEndPoint& addr) {
   net::IPAddressNumber empty_addr(addr.address().size());
-  return std::equal(
-             empty_addr.begin(), empty_addr.end(), addr.address().begin()) &&
+  return std::equal(empty_addr.begin(), empty_addr.end(),
+                    addr.address().bytes().begin()) &&
          !addr.port();
 }
 

@@ -41,7 +41,7 @@ string QuicSocketAddressCoder::Encode() const {
   }
   serialized.append(reinterpret_cast<const char*>(&address_family),
                     sizeof(address_family));
-  serialized.append(IPAddressToPackedString(address_.address()));
+  serialized.append(IPAddressToPackedString(address_.address().bytes()));
   uint16_t port = address_.port();
   serialized.append(reinterpret_cast<const char*>(&port), sizeof(port));
   return serialized;

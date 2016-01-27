@@ -215,7 +215,7 @@ bool IsGloballyReachable(const IPAddressNumber& dest,
   if (rv != OK)
     return false;
   DCHECK_EQ(ADDRESS_FAMILY_IPV6, endpoint.GetFamily());
-  const IPAddressNumber& address = endpoint.address();
+  const IPAddressNumber& address = endpoint.address().bytes();
   bool is_link_local = (address[0] == 0xFE) && ((address[1] & 0xC0) == 0x80);
   if (is_link_local)
     return false;
@@ -299,7 +299,7 @@ AddressList EnsurePortOnAddressList(const AddressList& list, uint16_t port) {
 // Returns true if |addresses| contains only IPv4 loopback addresses.
 bool IsAllIPv4Loopback(const AddressList& addresses) {
   for (unsigned i = 0; i < addresses.size(); ++i) {
-    const IPAddressNumber& address = addresses[i].address();
+    const IPAddressNumber& address = addresses[i].address().bytes();
     switch (addresses[i].GetFamily()) {
       case ADDRESS_FAMILY_IPV4:
         if (address[0] != 127)
@@ -711,7 +711,7 @@ class HostResolverImpl::ProcTask
     // Fail the resolution if the result contains 127.0.53.53. See the comment
     // block of kIcanNameCollisionIp for details on why.
     for (const auto& it : results) {
-      const IPAddressNumber& cur = it.address();
+      const IPAddressNumber& cur = it.address().bytes();
       if (cur.size() == arraysize(kIcanNameCollisionIp) &&
           0 == memcmp(&cur.front(), kIcanNameCollisionIp, cur.size())) {
         error = ERR_ICANN_NAME_COLLISION;

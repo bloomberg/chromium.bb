@@ -48,7 +48,8 @@ NameServerClassifier::NameServersType NameServerClassifier::GetNameServersType(
   for (std::vector<IPEndPoint>::const_iterator it = nameservers.begin();
        it != nameservers.end();
        ++it) {
-    type = MergeNameServersTypes(type, GetNameServerType(it->address()));
+    type =
+        MergeNameServersTypes(type, GetNameServerType(it->address().bytes()));
   }
   return type;
 }

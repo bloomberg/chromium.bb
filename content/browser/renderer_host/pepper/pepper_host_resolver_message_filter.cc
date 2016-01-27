@@ -70,7 +70,7 @@ void CreateNetAddressListFromAddressList(
   PP_NetAddress_Private address;
   for (size_t i = 0; i < list.size(); ++i) {
     if (!ppapi::NetAddressPrivateImpl::IPEndPointToNetAddress(
-            list[i].address(), list[i].port(), &address)) {
+            list[i].address().bytes(), list[i].port(), &address)) {
       net_address_list->clear();
       return;
     }

@@ -77,7 +77,7 @@ TypeConverter<net::interfaces::AddressListPtr, net::AddressList>::Convert(
   for (const auto& endpoint : obj) {
     net::interfaces::IPEndPointPtr ep(net::interfaces::IPEndPoint::New());
     ep->port = endpoint.port();
-    ep->address = mojo::Array<uint8_t>::From(endpoint.address());
+    ep->address = mojo::Array<uint8_t>::From(endpoint.address().bytes());
     result->addresses.push_back(std::move(ep));
   }
   return result;

@@ -14,11 +14,11 @@ int GetAddressMismatch(const IPEndPoint& first_address,
   if (first_address.address().empty() || second_address.address().empty()) {
     return -1;
   }
-  IPAddressNumber first_ip_address = first_address.address();
+  IPAddressNumber first_ip_address = first_address.address().bytes();
   if (IsIPv4Mapped(first_ip_address)) {
     first_ip_address = ConvertIPv4MappedToIPv4(first_ip_address);
   }
-  IPAddressNumber second_ip_address = second_address.address();
+  IPAddressNumber second_ip_address = second_address.address().bytes();
   if (IsIPv4Mapped(second_ip_address)) {
     second_ip_address = ConvertIPv4MappedToIPv4(second_ip_address);
   }

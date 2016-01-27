@@ -544,7 +544,7 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
   // TODO(szym): Measure how often this happens. http://crbug.com/125599
   const IPAddressNumber kEmptyAddress(kIPv4AddressSize);
   for (unsigned i = 0; i < dns_config->nameservers.size(); ++i) {
-    if (dns_config->nameservers[i].address() == kEmptyAddress)
+    if (dns_config->nameservers[i].address().bytes() == kEmptyAddress)
       return CONFIG_PARSE_POSIX_NULL_ADDRESS;
   }
   return CONFIG_PARSE_POSIX_OK;

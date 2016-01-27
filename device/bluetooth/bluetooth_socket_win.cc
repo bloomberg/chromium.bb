@@ -44,13 +44,11 @@ std::string IPEndPointToBluetoothAddress(const net::IPEndPoint& end_point) {
   // The address is copied from BTH_ADDR field of SOCKADDR_BTH, which is a
   // 64-bit ULONGLONG that stores Bluetooth address in little-endian. Print in
   // reverse order to preserve the correct ordering.
-  return base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
-      end_point.address()[5],
-      end_point.address()[4],
-      end_point.address()[3],
-      end_point.address()[2],
-      end_point.address()[1],
-      end_point.address()[0]);
+  return base::StringPrintf(
+      "%02X:%02X:%02X:%02X:%02X:%02X", end_point.address().bytes()[5],
+      end_point.address().bytes()[4], end_point.address().bytes()[3],
+      end_point.address().bytes()[2], end_point.address().bytes()[1],
+      end_point.address().bytes()[0]);
 }
 
 }  // namespace

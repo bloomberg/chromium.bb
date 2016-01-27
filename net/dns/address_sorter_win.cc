@@ -60,7 +60,7 @@ class AddressSorterWin : public AddressSorter {
         IPEndPoint ipe = list[i];
         // Addresses must be sockaddr_in6.
         if (ipe.GetFamily() == ADDRESS_FAMILY_IPV4) {
-          ipe = IPEndPoint(ConvertIPv4NumberToIPv6Number(ipe.address()),
+          ipe = IPEndPoint(ConvertIPv4NumberToIPv6Number(ipe.address().bytes()),
                            ipe.port());
         }
 
@@ -116,9 +116,9 @@ class AddressSorterWin : public AddressSorter {
           DCHECK(result) << "Unable to roundtrip between IPEndPoint and "
                          << "SOCKET_ADDRESS!";
           // Unmap V4MAPPED IPv6 addresses so that Happy Eyeballs works.
-          if (IsIPv4Mapped(ipe.address())) {
-            ipe = IPEndPoint(ConvertIPv4MappedToIPv4(ipe.address()),
-                                                     ipe.port());
+          if (IsIPv4Mapped(ipe.address().bytes())) {
+            ipe = IPEndPoint(ConvertIPv4MappedToIPv4(ipe.address().bytes()),
+                             ipe.port());
           }
           list.push_back(ipe);
         }

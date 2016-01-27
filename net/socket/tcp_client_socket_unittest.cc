@@ -36,7 +36,7 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
 
   IPEndPoint local_address_result;
   EXPECT_EQ(OK, socket.GetLocalAddress(&local_address_result));
-  EXPECT_EQ(lo_address, local_address_result.address());
+  EXPECT_EQ(lo_address, local_address_result.address().bytes());
 
   TestCompletionCallback connect_callback;
   EXPECT_EQ(ERR_IO_PENDING, socket.Connect(connect_callback.callback()));

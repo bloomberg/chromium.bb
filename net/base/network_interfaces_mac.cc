@@ -205,12 +205,12 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
         }
         IPEndPoint netmask;
         if (netmask.FromSockAddr(interface->ifa_netmask, addr_size)) {
-          prefix_length = MaskPrefixLength(netmask.address());
+          prefix_length = MaskPrefixLength(netmask.address().bytes());
         }
       }
       networks->push_back(NetworkInterface(
           name, name, if_nametoindex(name.c_str()), connection_type,
-          address.address(), prefix_length, ip_attributes));
+          address.address().bytes(), prefix_length, ip_attributes));
     }
   }
 

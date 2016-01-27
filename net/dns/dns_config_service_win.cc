@@ -281,10 +281,12 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
       }
       if (!have_ipv4 && (ipe.GetFamily() == ADDRESS_FAMILY_IPV4)) {
         have_ipv4 = true;
-        (*hosts)[DnsHostsKey(localname, ADDRESS_FAMILY_IPV4)] = ipe.address();
+        (*hosts)[DnsHostsKey(localname, ADDRESS_FAMILY_IPV4)] =
+            ipe.address().bytes();
       } else if (!have_ipv6 && (ipe.GetFamily() == ADDRESS_FAMILY_IPV6)) {
         have_ipv6 = true;
-        (*hosts)[DnsHostsKey(localname, ADDRESS_FAMILY_IPV6)] = ipe.address();
+        (*hosts)[DnsHostsKey(localname, ADDRESS_FAMILY_IPV6)] =
+            ipe.address().bytes();
       }
     }
   }
@@ -513,7 +515,7 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
       IPEndPoint ipe;
       if (ipe.FromSockAddr(address->Address.lpSockaddr,
                            address->Address.iSockaddrLength)) {
-        if (IsStatelessDiscoveryAddress(ipe.address()))
+        if (IsStatelessDiscoveryAddress(ipe.address().bytes()))
           continue;
         // Override unset port.
         if (!ipe.port())

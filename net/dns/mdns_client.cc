@@ -39,7 +39,7 @@ int Bind(const IPEndPoint& multicast_addr,
   if (rv < OK)
     return rv;
 
-  return socket->JoinGroup(multicast_addr.address());
+  return socket->JoinGroup(multicast_addr.address().bytes());
 }
 
 }  // namespace

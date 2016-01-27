@@ -263,7 +263,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
 
   for (size_t i = 0; i < list.size(); ++i) {
     scoped_ptr<DestinationInfo> info(new DestinationInfo());
-    info->address = list[i].address();
+    info->address = list[i].address().bytes();
     info->scope = GetScope(ipv4_scope_table_, info->address);
     info->precedence = GetPolicyValue(precedence_table_, info->address);
     info->label = GetPolicyValue(label_table_, info->address);
@@ -293,18 +293,18 @@ void AddressSorterPosix::Sort(const AddressList& list,
       continue;
     }
 
-    SourceAddressInfo& src_info = source_map_[src.address()];
+    SourceAddressInfo& src_info = source_map_[src.address().bytes()];
     if (src_info.scope == SCOPE_UNDEFINED) {
       // If |source_info_| is out of date, |src| might be missing, but we still
       // want to sort, even though the HostCache will be cleared soon.
-      FillPolicy(src.address(), &src_info);
+      FillPolicy(src.address().bytes(), &src_info);
     }
     info->src = &src_info;
 
     if (info->address.size() == src.address().size()) {
-      info->common_prefix_length = std::min(
-          CommonPrefixLength(info->address, src.address()),
-          info->src->prefix_length);
+      info->common_prefix_length =
+          std::min(CommonPrefixLength(info->address, src.address().bytes()),
+                   info->src->prefix_length);
     }
     sort_list.push_back(std::move(info));
   }
@@ -357,7 +357,7 @@ void AddressSorterPosix::OnIPAddressChanged() {
     IPEndPoint src;
     if (!src.FromSockAddr(ifa->ifa_addr, ifa->ifa_addr->sa_len))
       continue;
-    SourceAddressInfo& info = source_map_[src.address()];
+    SourceAddressInfo& info = source_map_[src.address().bytes()];
     // Note: no known way to fill in |native| and |home|.
     info.native = info.home = info.deprecated = false;
     if (ifa->ifa_addr->sa_family == AF_INET6) {
@@ -375,12 +375,12 @@ void AddressSorterPosix::OnIPAddressChanged() {
     if (ifa->ifa_netmask) {
       IPEndPoint netmask;
       if (netmask.FromSockAddr(ifa->ifa_netmask, ifa->ifa_addr->sa_len)) {
-        info.prefix_length = MaskPrefixLength(netmask.address());
+        info.prefix_length = MaskPrefixLength(netmask.address().bytes());
       } else {
         LOG(WARNING) << "FromSockAddr failed on netmask";
       }
     }
-    FillPolicy(src.address(), &info);
+    FillPolicy(src.address().bytes(), &info);
   }
   freeifaddrs(addrs);
   close(ioctl_socket);

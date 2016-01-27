@@ -70,7 +70,7 @@ TEST(AddressListTest, CreateFromAddrinfo) {
   for (size_t i = 0; i < list.size(); ++i) {
     EXPECT_EQ(ADDRESS_FAMILY_IPV4, list[i].GetFamily());
     // Only check the first byte of the address.
-    EXPECT_EQ(i, list[i].address()[0]);
+    EXPECT_EQ(i, list[i].address().bytes()[0]);
     EXPECT_EQ(static_cast<int>(i << 2), list[i].port());
   }
 
@@ -82,7 +82,7 @@ TEST(AddressListTest, CreateFromAddrinfo) {
   // Check if copy is independent.
   copy[1] = IPEndPoint(copy[2].address(), 0xBEEF);
   // Original should be unchanged.
-  EXPECT_EQ(1u, list[1].address()[0]);
+  EXPECT_EQ(1u, list[1].address().bytes()[0]);
   EXPECT_EQ(1 << 2, list[1].port());
 }
 
