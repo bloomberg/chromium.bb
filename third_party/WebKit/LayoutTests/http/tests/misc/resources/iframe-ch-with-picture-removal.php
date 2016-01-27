@@ -6,9 +6,8 @@
 <script>
     window.addEventListener("message", function (message) {
         var pic = document.getElementById("pic");
-        pic.removeChild(pic.childNodes[0]);
-        // TODO(yoav): this should trigger a load, but doesn't. See https://crbug.com/418903
-        success();
+        pic.removeChild(document.getElementById("firstsource"));
+        setTimeout(function(){fail(4);}, 200);
     });
 
     var fail = function(num) {
@@ -37,7 +36,7 @@
     }
 </script>
 <picture id=pic>
-    <source sizes="50vw" media="(min-width: 800px)" srcset="image-checks-for-width.php?rw=400">
-    <source sizes="50vw" srcset="image-checks-for-width.php?rw=300">
+    <source sizes="50vw" id="firstsource" media="(min-width: 800px)" srcset="image-checks-for-width.php?rw=400">
+    <source sizes="40vw" srcset="image-checks-for-width.php?rw=320">
     <img onerror="error()" onload="load()">
 </picture>
