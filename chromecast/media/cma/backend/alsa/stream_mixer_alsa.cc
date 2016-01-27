@@ -83,6 +83,7 @@ const int kSupportedSampleRates[] =
      32000, 44100, 48000,
      64000, 88200, 96000};
 // clang-format on
+const int kInvalidSampleRate = 0;
 
 // Arbitrary sample rate in Hz to mix all audio to when a new primary input has
 // a sample rate that is not directly supported, and a better fallback sample
@@ -90,6 +91,9 @@ const int kSupportedSampleRates[] =
 // rate. 96000 is the highest supported hi-res sample rate.
 const unsigned int kFallbackSampleRate = 48000;
 const unsigned int kFallbackSampleRateHiRes = 96000;
+
+// Resample all audio below this frequency.
+const unsigned int kLowSampleRateCutoff = 32000;
 
 // The snd_pcm_(hw|sw)_params_set_*_near families of functions will report what
 // direction they adjusted the requested parameter in, but since we read the
@@ -169,8 +173,8 @@ void StreamMixerAlsa::MakeSingleThreadedForTest() {
 StreamMixerAlsa::StreamMixerAlsa()
     : mixer_thread_(new base::Thread("ALSA CMA mixer thread")),
       mixer_task_runner_(nullptr),
-      requested_output_samples_per_second_(0),
-      output_samples_per_second_(0),
+      requested_output_samples_per_second_(kInvalidSampleRate),
+      output_samples_per_second_(kInvalidSampleRate),
       pcm_(nullptr),
       pcm_hw_params_(nullptr),
       pcm_status_(nullptr),
@@ -306,8 +310,17 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
                          return abs(requested_output_samples_per_second_ - r1) <
                                 abs(requested_output_samples_per_second_ - r2);
                        });
+  // Resample audio with sample rates deemed to be too low (i.e.  below 32kHz)
+  // because some common AV receivers don't support optical out at these
+  // frequencies. See b/26385501
+  unsigned int first_choice_sample_rate = requested_rate;
+  if (requested_rate < kLowSampleRateCutoff) {
+    first_choice_sample_rate = output_samples_per_second_ != kInvalidSampleRate
+                                   ? output_samples_per_second_
+                                   : kFallbackSampleRate;
+  }
   const unsigned int preferred_sample_rates[] = {
-      requested_rate,
+      first_choice_sample_rate,
       static_cast<unsigned int>(*nearest_sample_rate),
       kFallbackSampleRateHiRes,
       kFallbackSampleRate};
@@ -464,6 +477,7 @@ void StreamMixerAlsa::Stop() {
   alsa_->PcmHwParamsFree(pcm_hw_params_);
   pcm_hw_params_ = nullptr;
   state_ = kStateUninitialized;
+  output_samples_per_second_ = kInvalidSampleRate;
 
   if (!pcm_)
     return;
@@ -548,7 +562,8 @@ void StreamMixerAlsa::CheckChangeOutputRate(int input_samples_per_second) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (!pcm_ ||
       input_samples_per_second == requested_output_samples_per_second_ ||
-      input_samples_per_second == output_samples_per_second_)
+      input_samples_per_second == output_samples_per_second_ ||
+      input_samples_per_second < static_cast<int>(kLowSampleRateCutoff))
     return;
   for (InputQueue* input : inputs_) {
     if (input->primary() && !input->IsDeleting())

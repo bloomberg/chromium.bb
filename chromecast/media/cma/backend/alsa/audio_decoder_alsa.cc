@@ -34,7 +34,6 @@ namespace {
 const CastAudioDecoder::OutputFormat kDecoderSampleFormat =
     CastAudioDecoder::kOutputPlanarFloat;
 
-const int kInvalidSampleRate = -1;
 const int64_t kInvalidDelayTimestamp = std::numeric_limits<int64_t>::min();
 
 AudioDecoderAlsa::RenderingDelay kInvalidRenderingDelay() {
@@ -93,7 +92,7 @@ bool AudioDecoderAlsa::Initialize() {
 bool AudioDecoderAlsa::Start(int64_t start_pts) {
   TRACE_FUNCTION_ENTRY0();
   current_pts_ = start_pts;
-  DCHECK_NE(config_.samples_per_second, kInvalidSampleRate);
+  DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new StreamMixerAlsaInput(
       this, config_.samples_per_second, backend_->Primary()));
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
