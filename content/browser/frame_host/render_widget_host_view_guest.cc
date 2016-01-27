@@ -62,6 +62,8 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(platform_view) {
+  // Inputs for guest view are already scaled.
+  host_->set_scale_input_to_viewport(false);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {

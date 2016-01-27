@@ -18,6 +18,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
@@ -315,6 +316,12 @@ void ChildFrameCompositingHelper::OnSetSurface(
   scoped_refptr<cc::SurfaceLayer> surface_layer =
       cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
                                satisfy_callback, require_callback);
+  // TODO(oshima): This is a stopgap fix so that the compositor does not
+  // scaledown the content when 2x frame data is added to 1x parent frame data.
+  // Fix this in cc/.
+  if (IsUseZoomForDSFEnabled())
+    scale_factor = 1.0f;
+
   surface_layer->SetSurfaceId(surface_id, scale_factor, frame_size);
   surface_layer->SetMasksToBounds(true);
   blink::WebLayer* layer = new cc_blink::WebLayerImpl(surface_layer);

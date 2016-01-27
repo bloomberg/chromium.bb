@@ -129,7 +129,6 @@ void BrowserPlugin::OnSetChildFrameSurface(
 
   EnableCompositing(true);
   DCHECK(compositing_helper_.get());
-
   compositing_helper_->OnSetSurface(surface_id, frame_size, scale_factor,
                                     sequence);
 }
@@ -434,13 +433,17 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
   return IPC_MESSAGE_CLASS(message) == BrowserPluginMsgStart;
 }
 
-void BrowserPlugin::updateGeometry(const WebRect& window_rect,
+void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
                                    const WebRect& clip_rect,
                                    const WebRect& unobscured_rect,
                                    const WebVector<WebRect>& cut_outs_rects,
                                    bool is_visible) {
   gfx::Rect old_view_rect = view_rect_;
-  view_rect_ = window_rect;
+  // Convert the plugin_rect_in_viewport to window coordinates, which is css.
+  WebRect rect_in_css(plugin_rect_in_viewport);
+  blink::WebView* webview = container()->element().document().frame()->view();
+  RenderView::FromWebView(webview)->convertViewportToWindow(&rect_in_css);
+  view_rect_ = rect_in_css;
 
   if (!ready_) {
     if (delegate_)

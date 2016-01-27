@@ -174,6 +174,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // then we will attempt to access a nullptr.
   const int render_frame_routing_id_;
   blink::WebPluginContainer* container_;
+  // The plugin's rect in css pixels.
   gfx::Rect view_rect_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
