@@ -1002,6 +1002,7 @@ public:
         ElementRequestPointerLockIframe = 1146,
         NotificationAPIInsecureOriginIframe = 1147,
         NotificationAPISecureOriginIframe = 1148,
+        WebSocket = 1149,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

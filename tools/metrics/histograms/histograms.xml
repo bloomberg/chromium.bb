@@ -65819,6 +65819,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1137" label="V8PromiseChain"/>
   <int value="1138" label="V8PromiseAccept"/>
   <int value="1139" label="V8PromiseDefer"/>
+  <int value="1140" label="EventScoped"/>
+  <int value="1141" label="GeolocationInsecureOriginIframe"/>
+  <int value="1142" label="GeolocationSecureOriginIframe"/>
+  <int value="1143" label="RequestMIDIAccessIframe"/>
+  <int value="1144" label="GetUserMediaInsecureOriginIframe"/>
+  <int value="1145" label="GetUserMediaSecureOriginIframe"/>
+  <int value="1146" label="ElementRequestPointerLockIframe"/>
+  <int value="1147" label="NotificationAPIInsecureOriginIframe"/>
+  <int value="1148" label="NotificationAPISecureOriginIframe"/>
+  <int value="1149" label="WebSocket"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
