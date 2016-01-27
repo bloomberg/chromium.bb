@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
 #define CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
 
+#include <map>
 #include <ostream>
 #include <string>
 
@@ -15,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
+#include "components/test_runner/layout_dump_flags.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -38,6 +40,7 @@ namespace content {
 
 class LayoutTestBluetoothChooserFactory;
 class LayoutTestDevToolsFrontend;
+class RenderFrameHost;
 class Shell;
 
 #if defined(OS_ANDROID)
@@ -144,6 +147,8 @@ class BlinkTestController : public base::NonThreadSafe,
 
   // WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* render_frame_host) override;
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override;
   void RenderViewCreated(RenderViewHost* render_view_host) override;
@@ -174,6 +179,8 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
+  void OnInitiateLayoutDump(test_runner::LayoutDumpFlags layout_dump_flags);
+  void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
   void OnTestFinished();
@@ -232,6 +239,11 @@ class BlinkTestController : public base::NonThreadSafe,
   LayoutTestDevToolsFrontend* devtools_frontend_;
 
   scoped_ptr<LayoutTestBluetoothChooserFactory> bluetooth_chooser_factory_;
+
+  // Map from frame_tree_node_id into frame-specific dumps.
+  std::map<int, std::string> frame_to_layout_dump_map_;
+  // Number of ShellViewHostMsg_LayoutDumpResponse messages we are waiting for.
+  int pending_layout_dumps_;
 
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow

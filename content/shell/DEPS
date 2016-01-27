@@ -26,6 +26,7 @@ include_rules = [
   "+components/crash",
   "+components/devtools_discovery",
   "+components/devtools_http_handler",
+  "+components/test_runner/layout_dump_flags.h",  # POD only.
   "+components/url_formatter",
 
   # For enabling media related features.

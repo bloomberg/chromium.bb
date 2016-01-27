@@ -30,6 +30,8 @@
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/gamepad_controller.h"
+#include "components/test_runner/layout_dump.h"
+#include "components/test_runner/layout_dump_flags.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_task.h"
@@ -819,6 +821,7 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewMsg_TryLeakDetection, OnTryLeakDetection)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ReplyBluetoothManualChooserEvents,
                         OnReplyBluetoothManualChooserEvents)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_LayoutDumpCompleted, OnLayoutDumpCompleted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -887,33 +890,70 @@ void BlinkTestRunner::CaptureDump() {
     std::vector<unsigned char> vector_data;
     interfaces->TestRunner()->GetAudioData(&vector_data);
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
-  } else {
-      const base::CommandLine& command_line =
-          *base::CommandLine::ForCurrentProcess();
-    Send(new ShellViewHostMsg_TextDump(
-        routing_id(), proxy()->CaptureTree(
-            false, command_line.HasSwitch(switches::kDumpLineBoxTrees))));
-
-    if (test_config_.enable_pixel_dumping &&
-        interfaces->TestRunner()->ShouldGeneratePixelResults()) {
-      CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
-      proxy()->CapturePixelsAsync(base::Bind(
-          &BlinkTestRunner::CaptureDumpPixels, base::Unretained(this)));
-      return;
-    }
-  }
-#ifndef NDEBUG
-    // Force a layout/paint by the end of the test to ensure test coverage of
-    // incremental painting.
-    proxy()->LayoutAndPaintAsyncThen(base::Bind(
-        &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
+    CaptureDumpContinued();
     return;
+  }
+
+  std::string custom_text_dump;
+  if (interfaces->TestRunner()->HasCustomTextDump(&custom_text_dump)) {
+    Send(new ShellViewHostMsg_TextDump(routing_id(), custom_text_dump + "\n"));
+    CaptureDumpContinued();
+    return;
+  }
+
+  test_runner::LayoutDumpFlags layout_dump_flags =
+      interfaces->TestRunner()->GetLayoutDumpFlags();
+  layout_dump_flags.dump_line_box_trees =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpLineBoxTrees);
+
+  if (!layout_dump_flags.dump_child_frames) {
+    std::string layout_dump = DumpLayout(
+        render_view()->GetMainRenderFrame()->GetWebFrame(), layout_dump_flags);
+    OnLayoutDumpCompleted(layout_dump);
+    return;
+  }
+
+  Send(
+      new ShellViewHostMsg_InitiateLayoutDump(routing_id(), layout_dump_flags));
+  // OnLayoutDumpCompleted will be eventually called by an IPC from the browser.
+}
+
+void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+  if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
+    completed_layout_dump.append(proxy()->DumpBackForwardLists());
+  }
+
+  Send(new ShellViewHostMsg_TextDump(routing_id(), completed_layout_dump));
+
+  CaptureDumpContinued();
+}
+
+void BlinkTestRunner::CaptureDumpContinued() {
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+  if (test_config_.enable_pixel_dumping &&
+      interfaces->TestRunner()->ShouldGeneratePixelResults() &&
+      !interfaces->TestRunner()->ShouldDumpAsAudio()) {
+    CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
+    proxy()->CapturePixelsAsync(base::Bind(
+        &BlinkTestRunner::OnPixelsDumpCompleted, base::Unretained(this)));
+    return;
+  }
+
+#ifndef NDEBUG
+  // Force a layout/paint by the end of the test to ensure test coverage of
+  // incremental painting.
+  proxy()->LayoutAndPaintAsyncThen(base::Bind(
+      &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
 #else
   CaptureDumpComplete();
 #endif
 }
 
-void BlinkTestRunner::CaptureDumpPixels(const SkBitmap& snapshot) {
+void BlinkTestRunner::OnPixelsDumpCompleted(const SkBitmap& snapshot) {
   DCHECK_NE(0, snapshot.info().width());
   DCHECK_NE(0, snapshot.info().height());
 

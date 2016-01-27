@@ -41,6 +41,8 @@ class LeakDetector;
 struct LeakDetectionResult;
 
 // This is the renderer side of the webkit test runner.
+// TODO(lukasza): Rename to LayoutTestRenderViewObserver for consistency with
+// LayoutTestRenderFrameObserver.
 class BlinkTestRunner : public RenderViewObserver,
                         public RenderViewObserverTracker<BlinkTestRunner>,
                         public test_runner::WebTestDelegate {
@@ -177,7 +179,9 @@ class BlinkTestRunner : public RenderViewObserver,
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
-  void CaptureDumpPixels(const SkBitmap& snapshot);
+  void OnLayoutDumpCompleted(std::string completed_layout_dump);
+  void CaptureDumpContinued();
+  void OnPixelsDumpCompleted(const SkBitmap& snapshot);
   void CaptureDumpComplete();
 
   test_runner::WebTestProxyBase* proxy_;

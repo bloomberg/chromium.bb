@@ -7,11 +7,13 @@
 #include <stddef.h>
 
 #include <iostream>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -47,8 +50,26 @@
 
 namespace content {
 
+namespace {
+
 const int kTestSVGWindowWidthDip = 480;
 const int kTestSVGWindowHeightDip = 360;
+
+void AppendLayoutDumpForFrame(
+    const std::map<int, std::string>& frame_to_layout_dump_map,
+    std::string* stitched_layout_dump,
+    RenderFrameHost* target) {
+  auto it = frame_to_layout_dump_map.find(target->GetFrameTreeNodeId());
+
+  // No match will happen if frames have been added since OnInitiateLayoutDump.
+  if (it == frame_to_layout_dump_map.end())
+    return;
+
+  const std::string& dump = it->second;
+  stitched_layout_dump->append(dump);
+}
+
+}  // namespace
 
 // BlinkTestResultPrinter ----------------------------------------------------
 
@@ -257,6 +278,7 @@ bool BlinkTestController::PrepareForLayoutTest(
   expected_pixel_hash_ = expected_pixel_hash;
   test_url_ = test_url;
   printer_->reset();
+  frame_to_layout_dump_map_.clear();
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
@@ -392,6 +414,8 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_InitiateLayoutDump,
+                        OnInitiateLayoutDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_AudioDump, OnAudioDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
@@ -419,6 +443,19 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
+  return handled;
+}
+
+bool BlinkTestController::OnMessageReceived(
+    const IPC::Message& message,
+    RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BlinkTestController, message,
+                                   render_frame_host)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutDumpResponse,
+                        OnLayoutDumpResponse)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 
@@ -595,6 +632,42 @@ void BlinkTestController::OnTextDump(const std::string& dump) {
   printer_->PrintTextHeader();
   printer_->PrintTextBlock(dump);
   printer_->PrintTextFooter();
+}
+
+void BlinkTestController::OnInitiateLayoutDump(
+    test_runner::LayoutDumpFlags layout_dump_flags) {
+  DCHECK(layout_dump_flags.dump_child_frames);
+  pending_layout_dumps_ = main_window_->web_contents()->SendToAllFrames(
+      new ShellViewMsg_LayoutDumpRequest(MSG_ROUTING_NONE, layout_dump_flags));
+}
+
+void BlinkTestController::OnLayoutDumpResponse(RenderFrameHost* sender,
+                                               const std::string& dump) {
+  // Store the result.
+  auto pair = frame_to_layout_dump_map_.insert(
+      std::make_pair(sender->GetFrameTreeNodeId(), dump));
+  bool insertion_took_place = pair.second;
+  DCHECK(insertion_took_place);
+
+  // See if we need to wait for more responses.
+  pending_layout_dumps_--;
+  DCHECK_LE(0, pending_layout_dumps_);
+  if (pending_layout_dumps_ > 0)
+    return;
+
+  // Stitch the frame-specific results in the right order.
+  // TODO(lukasza): Replace with a for loop similar to crrev.com/1612503003.
+  std::string stitched_layout_dump;
+  main_window_->web_contents()->ForEachFrame(base::Bind(
+      &AppendLayoutDumpForFrame,
+      base::ConstRef(frame_to_layout_dump_map_),
+      &stitched_layout_dump));
+
+  // Continue finishing the test.
+  RenderViewHost* render_view_host =
+      main_window_->web_contents()->GetRenderViewHost();
+  render_view_host->Send(new ShellViewMsg_LayoutDumpCompleted(
+      render_view_host->GetRoutingID(), stitched_layout_dump));
 }
 
 void BlinkTestController::OnPrintMessage(const std::string& message) {

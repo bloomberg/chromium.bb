@@ -72,6 +72,8 @@ class TestRunner : public WebTestRunner,
   bool ShouldStayOnPageAfterHandlingBeforeUnload() const override;
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
+  LayoutDumpFlags GetLayoutDumpFlags() override;
+  bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
 

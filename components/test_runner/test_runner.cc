@@ -1863,6 +1863,36 @@ void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
   *buffer_view = audio_data_;
 }
 
+LayoutDumpFlags TestRunner::GetLayoutDumpFlags() {
+  LayoutDumpFlags result;
+
+  if (shouldDumpAsText()) {
+    result.main_dump_mode = LayoutDumpMode::DUMP_AS_TEXT;
+    result.dump_child_frames = shouldDumpChildFramesAsText();
+  } else if (shouldDumpAsMarkup()) {
+    result.main_dump_mode = LayoutDumpMode::DUMP_AS_MARKUP;
+    result.dump_child_frames = shouldDumpChildFramesAsMarkup();
+  } else {
+    result.main_dump_mode = LayoutDumpMode::DUMP_SCROLL_POSITIONS;
+    result.dump_child_frames = shouldDumpChildFrameScrollPositions();
+  }
+
+  result.dump_as_printed = isPrinting();
+
+  result.dump_line_box_trees = result.debug_render_tree = false;
+
+  return result;
+}
+
+bool TestRunner::HasCustomTextDump(std::string* custom_text_dump) const {
+  if (shouldDumpAsCustomText()) {
+    *custom_text_dump = customDumpText();
+    return true;
+  }
+
+  return false;
+}
+
 bool TestRunner::shouldDumpFrameLoadCallbacks() const {
   return test_is_running_ && dump_frame_load_callbacks_;
 }

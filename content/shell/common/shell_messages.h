@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "components/test_runner/layout_dump_flags.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_state.h"
 #include "content/shell/common/leak_detection_result.h"
@@ -25,6 +26,19 @@ IPC_STRUCT_TRAITS_MEMBER(enable_pixel_dumping)
 IPC_STRUCT_TRAITS_MEMBER(allow_external_pages)
 IPC_STRUCT_TRAITS_MEMBER(expected_pixel_hash)
 IPC_STRUCT_TRAITS_MEMBER(initial_size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(
+    test_runner::LayoutDumpMode,
+    test_runner::LayoutDumpMode::DUMP_AS_TEXT,
+    test_runner::LayoutDumpMode::DUMP_SCROLL_POSITIONS)
+
+IPC_STRUCT_TRAITS_BEGIN(test_runner::LayoutDumpFlags)
+  IPC_STRUCT_TRAITS_MEMBER(main_dump_mode)
+  IPC_STRUCT_TRAITS_MEMBER(dump_as_printed)
+  IPC_STRUCT_TRAITS_MEMBER(dump_child_frames)
+  IPC_STRUCT_TRAITS_MEMBER(dump_line_box_trees)
+  IPC_STRUCT_TRAITS_MEMBER(debug_render_tree)
 IPC_STRUCT_TRAITS_END()
 
 // Tells the renderer to reset all test runners.
@@ -54,9 +68,28 @@ IPC_MESSAGE_ROUTED3(
 
 IPC_MESSAGE_ROUTED0(ShellViewMsg_TryLeakDetection)
 
+// Asks a frame to dump its contents into a string and send them back over IPC.
+IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpRequest,
+                    test_runner::LayoutDumpFlags)
+
+// Notifies BlinkTestRunner that the layout dump has completed
+// (and that it can proceed with finishing up the test).
+IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpCompleted,
+                    std::string /* completed/stitched layout dump */)
+
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
+
+// Asks the browser process to perform a layout dump (potentially spanning
+// multiple cross-process frames) using the given flags.  This triggers
+// multiple ShellViewMsg_LayoutDumpRequest / ShellViewHostMsg_LayoutDumpResponse
+// messages and ends with sending of ShellViewMsg_LayoutDumpCompleted.
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_InitiateLayoutDump,
+                    test_runner::LayoutDumpFlags)
+
+// Sends a layout dump of a frame (response to ShellViewMsg_LayoutDumpRequest).
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LayoutDumpResponse, std::string /* dump */)
 
 // Send an image dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,

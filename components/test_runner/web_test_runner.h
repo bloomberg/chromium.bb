@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_RUNNER_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_RUNNER_H_
 
+#include <string>
 #include <vector>
+
+#include "components/test_runner/layout_dump_flags.h"
 
 namespace blink {
 class WebContentSettingsClient;
@@ -27,6 +30,15 @@ class WebTestRunner {
   // or pixel results are available.
   virtual bool ShouldDumpAsAudio() const = 0;
   virtual void GetAudioData(std::vector<unsigned char>* buffer_view) const = 0;
+
+  // Gets layout dump flags (i.e. dump-as-text or dump-as-markup) requested
+  // by the test (i.e. via testRunner.dumpAsText() called from javascript).
+  virtual LayoutDumpFlags GetLayoutDumpFlags() = 0;
+
+  // If custom text dump is present (i.e. if testRunner.setCustomTextOutput has
+  // been called from javascript), then returns |true| and populates the
+  // |custom_text_dump| argument.  Otherwise returns |false|.
+  virtual bool HasCustomTextDump(std::string* custom_text_dump) const = 0;
 
   // Returns true if the call to WebTestProxy::captureTree will invoke
   // WebTestDelegate::captureHistoryForWindow.
