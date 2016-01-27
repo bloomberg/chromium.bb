@@ -9,7 +9,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _MSC_VER
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <list>
 #include <sstream>
@@ -164,6 +169,14 @@ static void RenderPdf(const char* pBuf, size_t len) {
 }
 
 std::string ProgramPath() {
+#ifdef _MSC_VER
+  wchar_t wpath[MAX_PATH];
+  char path[MAX_PATH];
+  DWORD res = GetModuleFileName(NULL, wpath, MAX_PATH);
+  assert(res != 0);
+  wcstombs(path, wpath, MAX_PATH);
+  return std::string(path, res);
+#else
   char *path = new char[PATH_MAX + 1];
   assert(path);
   ssize_t sz = readlink("/proc/self/exe", path, PATH_MAX);
@@ -171,6 +184,7 @@ std::string ProgramPath() {
   std::string result(path, sz);
   delete[] path;
   return result;
+#endif
 }
 
 struct TestCase {
