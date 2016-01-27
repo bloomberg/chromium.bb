@@ -24,10 +24,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
 
-namespace gfx {
-class GLFence;
-}
-
 namespace gpu {
 
 class PreemptionFlag

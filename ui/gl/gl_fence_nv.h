@@ -17,6 +17,8 @@ class GL_EXPORT GLFenceNV : public GLFence {
   ~GLFenceNV() override;
 
   // GLFence implementation:
+  bool ResetSupported() override;
+  void ResetState() override;
   bool HasCompleted() override;
   void ClientWait() override;
   void ServerWait() override;

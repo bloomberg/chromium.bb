@@ -64,4 +64,13 @@ GLFence* GLFence::Create() {
   return fence.release();
 }
 
+bool GLFence::ResetSupported() {
+  // Resetting a fence to its original state isn't supported by default.
+  return false;
+}
+
+void GLFence::ResetState() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace gfx

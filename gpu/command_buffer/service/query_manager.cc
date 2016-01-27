@@ -504,7 +504,12 @@ void CommandsCompletedQuery::Resume() {
 }
 
 bool CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
-  fence_.reset(gfx::GLFence::Create());
+  if (fence_ && fence_->ResetSupported()) {
+    fence_->ResetState();
+  }
+  else {
+    fence_.reset(gfx::GLFence::Create());
+  }
   DCHECK(fence_);
   return AddToPendingQueue(submit_count);
 }

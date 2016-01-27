@@ -20,6 +20,14 @@ GLFenceNV::GLFenceNV() {
   //     they are bound, in that they acquire their state upon binding.
   //     We will arbitrarily return TRUE for consistency.
   glGenFencesNV(1, &fence_);
+  ResetState();
+}
+
+bool GLFenceNV::ResetSupported() {
+  return true;
+}
+
+void GLFenceNV::ResetState() {
   glSetFenceNV(fence_, GL_ALL_COMPLETED_NV);
   DCHECK(glIsFenceNV(fence_));
   glFlush();

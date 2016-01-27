@@ -25,6 +25,12 @@ class GL_EXPORT GLFence {
   // client.
   virtual void ServerWait() = 0;
 
+  // Returns true if re-setting state is supported.
+  virtual bool ResetSupported();
+
+  // Resets the fence to the original state.
+  virtual void ResetState();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLFence);
 };
