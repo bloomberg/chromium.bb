@@ -48,13 +48,16 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   }
 
  private:
-  void OnMediaPlayingNotification(RenderFrameHost* render_frame_host,
-                                  int64_t player_cookie,
-                                  bool has_video,
-                                  bool has_audio,
-                                  bool is_remote);
-  void OnMediaPausedNotification(RenderFrameHost* render_frame_host,
-                                 int64_t player_cookie);
+  void OnMediaDestroyed(RenderFrameHost* render_frame_host, int delegate_id);
+  void OnMediaPaused(RenderFrameHost* render_frame_host,
+                     int delegate_id,
+                     bool reached_end_of_stream);
+  void OnMediaPlaying(RenderFrameHost* render_frame_host,
+                      int delegate_id,
+                      bool has_video,
+                      bool has_audio,
+                      bool is_remote,
+                      base::TimeDelta duration);
 
   // Clear |render_frame_host|'s tracking entry for its power save blockers.
   void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);
@@ -69,7 +72,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void MaybeReleasePowerSaveBlockers();
 
   // Helper methods for adding or removing player entries in |player_map|.
-  using PlayerList = std::vector<int64_t>;
+  using PlayerList = std::vector<int>;
   using ActiveMediaPlayerMap = std::map<RenderFrameHost*, PlayerList>;
   void AddMediaPlayerEntry(const MediaPlayerId& id,
                            ActiveMediaPlayerMap* player_map);

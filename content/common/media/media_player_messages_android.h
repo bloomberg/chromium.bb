@@ -68,6 +68,7 @@ IPC_STRUCT_BEGIN(MediaPlayerHostMsg_Initialize_Params)
   IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
   IPC_STRUCT_MEMBER(GURL, frame_url)
   IPC_STRUCT_MEMBER(bool, allow_credentials)
+  IPC_STRUCT_MEMBER(int, delegate_id)
 IPC_STRUCT_END()
 
 // Chrome for Android seek message sequence is:

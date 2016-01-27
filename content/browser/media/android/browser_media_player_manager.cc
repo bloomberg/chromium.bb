@@ -52,9 +52,6 @@ namespace content {
 const int kMediaPlayerThreshold = 1;
 const int kInvalidMediaPlayerId = -1;
 
-// Minimal duration of a media player in order to be considered as Content type.
-const int kMinimumDurationForContentInSeconds = 5;
-
 static BrowserMediaPlayerManager::Factory g_factory = NULL;
 static media::MediaUrlInterceptor* media_url_interceptor_ = NULL;
 
@@ -233,7 +230,6 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
   for (MediaPlayerAndroid* player : players_)
     player->DeleteOnCorrectThread();
 
-  MediaSession::Get(web_contents())->RemovePlayers(this);
   players_.weak_clear();
 }
 
@@ -309,13 +305,11 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
 
 void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(RoutingID(), player_id));
-  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
 }
 
 void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
   // Tell WebKit that the audio should be paused, then release all resources
   Send(new MediaPlayerMsg_MediaPlayerReleased(RoutingID(), player_id));
-  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
   ReleaseResources(player_id);
 }
 
@@ -406,45 +400,12 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
 bool BrowserMediaPlayerManager::RequestPlay(int player_id,
                                             base::TimeDelta duration,
                                             bool has_audio) {
-  if (!has_audio)
-    return true;
-
-  MediaSession::Type media_session_type =
-      duration == base::TimeDelta() ||
-              duration.InSeconds() > kMinimumDurationForContentInSeconds
-          ? MediaSession::Type::Content
-          : MediaSession::Type::Transient;
-
-  bool succeeded = MediaSession::Get(web_contents())->AddPlayer(
-      this, player_id, media_session_type);
-  if (!succeeded)
-    Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
-  return succeeded;
-}
-
-void BrowserMediaPlayerManager::OnSuspend(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  DCHECK(player);
-
-  player->Pause(true);
-  Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
-}
-
-void BrowserMediaPlayerManager::OnResume(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  DCHECK(player);
-
-  player->Start();
-  Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
-}
-
-void BrowserMediaPlayerManager::OnSetVolumeMultiplier(
-    int player_id, double volume_multiplier) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (!player)
-    return;
-
-  player->SetVolumeMultiplier(volume_multiplier);
+  DCHECK(player_id_to_delegate_id_map_.find(player_id) !=
+         player_id_to_delegate_id_map_.end());
+  return MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
+      ->RequestPlay(render_frame_host_,
+                    player_id_to_delegate_id_map_[player_id], has_audio,
+                    IsPlayingRemotely(player_id), duration);
 }
 
 #if defined(VIDEO_HOLE)
@@ -589,6 +550,8 @@ void BrowserMediaPlayerManager::OnInitialize(
   if (!player)
     return;
 
+  player_id_to_delegate_id_map_[media_player_params.player_id] =
+      media_player_params.delegate_id;
   AddPlayer(player);
 }
 
@@ -621,9 +584,6 @@ void BrowserMediaPlayerManager::OnPause(
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Pause(is_media_related_action);
-
-  if (is_media_related_action && !IsPlayingRemotely(player_id))
-    MediaSession::Get(web_contents())->OnPlayerPaused(this, player_id);
 }
 
 void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {
@@ -637,7 +597,6 @@ void BrowserMediaPlayerManager::OnSetPoster(int player_id, const GURL& url) {
 }
 
 void BrowserMediaPlayerManager::OnSuspendAndReleaseResources(int player_id) {
-  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
   ReleaseResources(player_id);
 }
 
@@ -674,11 +633,11 @@ void BrowserMediaPlayerManager::DestroyPlayer(int player_id) {
 #endif
       (*it)->DeleteOnCorrectThread();
       players_.weak_erase(it);
-      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
       break;
     }
   }
   active_players_.erase(player_id);
+  player_id_to_delegate_id_map_.erase(player_id);
 }
 
 void BrowserMediaPlayerManager::ReleaseResources(int player_id) {

@@ -49,7 +49,8 @@ class RendererMediaPlayerManager :
                   const GURL& first_party_for_cookies,
                   int demuxer_client_id,
                   const GURL& frame_url,
-                  bool allow_credentials) override;
+                  bool allow_credentials,
+                  int delegate_id) override;
 
   // Starts the player.
   void Start(int player_id) override;

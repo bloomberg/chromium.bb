@@ -18,25 +18,35 @@ class WebMediaPlayerDelegate {
    public:
     virtual void OnHidden() = 0;
     virtual void OnShown() = 0;
+    virtual void OnPlay() = 0;
+    virtual void OnPause() = 0;
+
+    // Playout volume should be set to current_volume * multiplier.  The range
+    // is [0, 1] and is typically 1.
+    virtual void OnVolumeMultiplierUpdate(double multiplier) = 0;
   };
 
   WebMediaPlayerDelegate() {}
 
+  // Subscribe or unsubscribe from observer callbacks respectively. A client
+  // must use the delegate id returned by AddObserver() for all other calls.
+  virtual int AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(int delegate_id) = 0;
+
   // The specified player started playing media.
-  virtual void DidPlay(blink::WebMediaPlayer* player) = 0;
+  virtual void DidPlay(int delegate_id,
+                       bool has_video,
+                       bool has_audio,
+                       bool is_remote,
+                       base::TimeDelta duration) = 0;
 
   // The specified player stopped playing media.
-  virtual void DidPause(blink::WebMediaPlayer* player) = 0;
+  virtual void DidPause(int delegate_id, bool reached_end_of_stream) = 0;
 
-  // The specified player was destroyed. Do not call any methods on it.
-  // (RemoveObserver() is still necessary if the player is also an observer.)
-  virtual void PlayerGone(blink::WebMediaPlayer* player) = 0;
-
-  // Subscribe to observer callbacks.
-  virtual void AddObserver(Observer* observer) = 0;
-
-  // Unsubscribe from observer callbacks.
-  virtual void RemoveObserver(Observer* observer) = 0;
+  // The specified player was destroyed or suspended.  This may be called
+  // multiple times in row. Note: Clients must still call RemoveObserver() to
+  // unsubscribe from callbacks.
+  virtual void PlayerGone(int delegate_id) = 0;
 
   // Returns whether the render frame is currently hidden.
   virtual bool IsHidden() = 0;

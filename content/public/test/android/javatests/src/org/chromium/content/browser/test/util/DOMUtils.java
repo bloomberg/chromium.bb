@@ -76,6 +76,17 @@ public class DOMUtils {
     }
 
     /**
+     * Returns the current time of the media with given {@code id}.
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to check.
+     * @return the current time (in seconds) of the media.
+     */
+    private static double getCurrentTime(final WebContents webContents, final String id)
+            throws InterruptedException, TimeoutException {
+        return getNodeField("currentTime", webContents, id, Double.class);
+    }
+
+    /**
      * Waits until the playback of the media with given {@code id} has started.
      * @param webContents The WebContents in which the media element lives.
      * @param id The element's id to check.
@@ -86,7 +97,9 @@ public class DOMUtils {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return !DOMUtils.isMediaPaused(webContents, id);
+                    // Playback can't be reliably detected until current time moves forward.
+                    return !DOMUtils.isMediaPaused(webContents, id)
+                            && DOMUtils.getCurrentTime(webContents, id) > 0;
                 } catch (InterruptedException e) {
                     // Intentionally do nothing
                     return false;

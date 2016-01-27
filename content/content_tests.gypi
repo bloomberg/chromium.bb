@@ -503,6 +503,7 @@
       'browser/loader/upload_data_stream_builder_unittest.cc',
       'browser/mach_broker_mac_unittest.cc',
       'browser/media/android/media_session_uma_helper_unittest.cc',
+      'browser/media/android/media_session_controller_unittest.cc',
       'browser/media/audible_metrics_unittest.cc',
       'browser/media/audio_stream_monitor_unittest.cc',
       'browser/media/capture/audio_mirroring_manager_unittest.cc',

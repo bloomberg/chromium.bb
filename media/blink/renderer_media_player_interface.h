@@ -13,6 +13,7 @@
 
 #include <string>
 #include "base/time/time.h"
+#include "media/blink/webmediaplayer_delegate.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
@@ -85,7 +86,8 @@ class RendererMediaPlayerManagerInterface {
                           const GURL& first_party_for_cookies,
                           int demuxer_client_id,
                           const GURL& frame_url,
-                          bool allow_credentials) = 0;
+                          bool allow_credentials,
+                          int delegate_id) = 0;
 
   // Starts the player.
   virtual void Start(int player_id) = 0;

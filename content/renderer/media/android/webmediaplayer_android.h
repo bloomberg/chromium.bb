@@ -18,7 +18,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -29,6 +28,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
+#include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/cdm/proxy_decryptor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -66,7 +66,6 @@ class CdmFactory;
 class MediaLog;
 class MediaPermission;
 class WebContentDecryptionModuleImpl;
-class WebMediaPlayerDelegate;
 }
 
 namespace content {
@@ -78,11 +77,12 @@ class RendererMediaPlayerManager;
 // media player in the browser process. It listens to all the status changes
 // sent from the browser process and sends playback controls to the media
 // player.
-class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
-                              public cc::VideoFrameProvider,
-                              public RenderFrameObserver,
-                              public StreamTextureFactoryContextObserver,
-                              public media::RendererMediaPlayerInterface {
+class WebMediaPlayerAndroid
+    : public blink::WebMediaPlayer,
+      public cc::VideoFrameProvider,
+      public StreamTextureFactoryContextObserver,
+      public media::RendererMediaPlayerInterface,
+      public NON_EXPORTED_BASE(media::WebMediaPlayerDelegate::Observer) {
  public:
   // Construct a WebMediaPlayerAndroid object. This class communicates with the
   // MediaPlayerAndroid object in the browser process through |proxy|.
@@ -226,9 +226,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // However, the actual GlTexture is not released to keep the video screenshot.
   void SuspendAndReleaseResources() override;
 
-  // RenderFrameObserver implementation.
-  void OnDestruct() override;
-
 #if defined(VIDEO_HOLE)
   // Calculate the boundary rectangle of the media player (i.e. location and
   // size of the video frame).
@@ -271,6 +268,13 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Called when a decoder detects that the key needed to decrypt the stream
   // is not available.
   void OnWaitingForDecryptionKey() override;
+
+  // WebMediaPlayerDelegate::Observer implementation.
+  void OnHidden() override;
+  void OnShown() override;
+  void OnPlay() override;
+  void OnPause() override;
+  void OnVolumeMultiplierUpdate(double multiplier) override;
 
  protected:
   // Helper method to update the playing state.
@@ -357,12 +361,12 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   blink::WebMediaPlayerClient* const client_;
   blink::WebMediaPlayerEncryptedMediaClient* const encrypted_client_;
 
-  // |delegate_| is used to notify the browser process of the player status, so
-  // that the browser process can control screen locks.
-  // TODO(qinmin): Currently android mediaplayer takes care of the screen
-  // lock. So this is only used for media source. Will apply this to regular
-  // media tag once http://crbug.com/247892 is fixed.
+  // WebMediaPlayer notifies the |delegate_| of playback state changes using
+  // |delegate_id_|; an id provided after registering with the delegate.  The
+  // WebMediaPlayer may also receive directives (play, pause) from the delegate
+  // via the WebMediaPlayerDelegate::Observer interface after registration.
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
+  int delegate_id_;
 
   // Callback responsible for determining if loading of media should be deferred
   // for external reasons; called during load().
@@ -543,6 +547,16 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Whether to delete the existing texture and re-create it.
   bool suppress_deleting_texture_;
+
+  // Whether OnPlaybackComplete() has been called since the last playback.
+  bool playback_completed_;
+
+  // The last volume received by setVolume() and the last volume multiplier from
+  // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
+  // if the WebMediaPlayerDelegate has requested a volume reduction (ducking)
+  // for a transient sound.  Playout volume is derived by volume * multiplier.
+  double volume_;
+  double volume_multiplier_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;

@@ -32,12 +32,6 @@
 
 namespace content {
 
-namespace {
-
-static const float DEFAULT_AUDIO_VOLUME = 1.0f;
-
-}  // anonymous namespace
-
 WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
@@ -50,13 +44,13 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     media::GpuVideoAcceleratorFactories* gpu_factories,
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin)
-    : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
-      frame_(frame),
+    : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       buffered_(static_cast<size_t>(0)),
       client_(client),
       delegate_(delegate),
+      delegate_id_(0),
       paused_(true),
       render_frame_suspended_(false),
       received_first_frame_(false),
@@ -69,9 +63,14 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       initial_audio_output_device_id_(sink_id.utf8()),
       initial_security_origin_(security_origin.isNull()
                                    ? url::Origin()
-                                   : url::Origin(security_origin)) {
+                                   : url::Origin(security_origin)),
+      volume_(1.0),
+      volume_multiplier_(1.0) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(client);
+  if (delegate_)
+    delegate_id_ = delegate_->AddObserver(this);
+
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 }
@@ -94,8 +93,10 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
-  if (delegate_.get())
-    delegate_->PlayerGone(this);
+  if (delegate_) {
+    delegate_->PlayerGone(delegate_id_);
+    delegate_->RemoveObserver(delegate_id_);
+  }
 }
 
 void WebMediaPlayerMS::load(LoadType load_type,
@@ -137,7 +138,7 @@ void WebMediaPlayerMS::load(LoadType load_type,
   }
 
   if (audio_renderer_) {
-    audio_renderer_->SetVolume(DEFAULT_AUDIO_VOLUME);
+    audio_renderer_->SetVolume(volume_);
     audio_renderer_->Start();
   }
   if (video_frame_provider_)
@@ -161,8 +162,10 @@ void WebMediaPlayerMS::play() {
     if (audio_renderer_.get())
       audio_renderer_->Play();
 
-    if (delegate_.get())
-      delegate_->DidPlay(this);
+    if (delegate_) {
+      delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
+                         media::kInfiniteDuration());
+    }
   }
 
   paused_ = false;
@@ -184,8 +187,8 @@ void WebMediaPlayerMS::pause() {
     if (audio_renderer_.get())
       audio_renderer_->Pause();
 
-    if (delegate_.get())
-      delegate_->DidPause(this);
+    if (delegate_)
+      delegate_->DidPause(delegate_id_, false);
   }
 
   paused_ = true;
@@ -209,8 +212,9 @@ void WebMediaPlayerMS::setRate(double rate) {
 void WebMediaPlayerMS::setVolume(double volume) {
   DVLOG(1) << __FUNCTION__ << "(volume=" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
+  volume_ = volume;
   if (audio_renderer_.get())
-    audio_renderer_->SetVolume(volume);
+    audio_renderer_->SetVolume(volume_ * volume_multiplier_);
 }
 
 void WebMediaPlayerMS::setSinkId(
@@ -360,7 +364,7 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
   return 0;
 }
 
-void WebMediaPlayerMS::WasHidden() {
+void WebMediaPlayerMS::OnHidden() {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!render_frame_suspended_);
@@ -368,18 +372,33 @@ void WebMediaPlayerMS::WasHidden() {
   // Method called when the RenderFrame is sent to background and suspended
   // (android). Substitute the displayed VideoFrame with a copy to avoid
   // holding on to it unnecessarily.
-  render_frame_suspended_=true;
+  render_frame_suspended_ = true;
   if (!paused_)
     compositor_->ReplaceCurrentFrameWithACopy();
 #endif  // defined(OS_ANDROID)
 }
 
-void WebMediaPlayerMS::WasShown() {
+void WebMediaPlayerMS::OnShown() {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
 
   render_frame_suspended_ = false;
 #endif  // defined(OS_ANDROID)
+}
+
+void WebMediaPlayerMS::OnPlay() {
+  play();
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerMS::OnPause() {
+  pause();
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {
+  volume_multiplier_ = multiplier;
+  setVolume(volume_);
 }
 
 bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(

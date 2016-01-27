@@ -5,9 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDERER_WEBMEDIAPLAYER_DELEGATE_H_
 #define CONTENT_RENDERER_MEDIA_RENDERER_WEBMEDIAPLAYER_DELEGATE_H_
 
+#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "media/blink/webmediaplayer_delegate.h"
 
@@ -31,20 +31,30 @@ class RendererWebMediaPlayerDelegate
   bool has_played_media() const { return has_played_media_; }
 
   // WebMediaPlayerDelegate implementation.
-  void DidPlay(blink::WebMediaPlayer* player) override;
-  void DidPause(blink::WebMediaPlayer* player) override;
-  void PlayerGone(blink::WebMediaPlayer* player) override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  int AddObserver(Observer* observer) override;
+  void RemoveObserver(int delegate_id) override;
+  void DidPlay(int delegate_id,
+               bool has_video,
+               bool has_audio,
+               bool is_remote,
+               base::TimeDelta duration) override;
+  void DidPause(int delegate_id, bool reached_end_of_stream) override;
+  void PlayerGone(int delegate_id) override;
   bool IsHidden() override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
   void WasShown() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
+  void OnMediaDelegatePause(int delegate_id);
+  void OnMediaDelegatePlay(int delegate_id);
+  void OnMediaDelegateVolumeMultiplierUpdate(int delegate_id,
+                                             double multiplier);
+
   bool has_played_media_ = false;
-  base::ObserverList<Observer> observer_list_;
+  IDMap<Observer> id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

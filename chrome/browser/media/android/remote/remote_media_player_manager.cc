@@ -145,18 +145,6 @@ RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
   return player;
 }
 
-// OnSuspend and OnResume are called when the local player loses or gains
-// audio focus. If we are playing remotely then ignore these.
-void RemoteMediaPlayerManager::OnSuspend(int player_id) {
-  if (!IsPlayingRemotely(player_id))
-    BrowserMediaPlayerManager::OnSuspend(player_id);
-}
-
-void RemoteMediaPlayerManager::OnResume(int player_id) {
-  if (!IsPlayingRemotely(player_id))
-    BrowserMediaPlayerManager::OnResume(player_id);
-}
-
 void RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
   // Find the remote player
   auto it = GetAlternativePlayer(player_id);

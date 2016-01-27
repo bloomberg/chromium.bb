@@ -13,7 +13,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
-#include "content/browser/media/android/media_session_observer.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
@@ -45,7 +44,6 @@ class WebContents;
 // process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
     : public media::MediaPlayerManager,
-      public MediaSessionObserver,
       public ContentVideoView::Client {
  public:
   // Permits embedders to provide an extended version of the class.
@@ -113,11 +111,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
 
-  // MediaSessionObserver overrides.
-  void OnSuspend(int player_id) override;
-  void OnResume(int player_id) override;
-  void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
-
   // Message handlers.
   virtual void OnEnterFullscreen(int player_id);
   virtual void OnInitialize(
@@ -144,9 +137,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   explicit BrowserMediaPlayerManager(RenderFrameHost* render_frame_host);
 
   WebContents* web_contents() const { return web_contents_; }
-
-  // Adds a given player to the list.
-  void AddPlayer(media::MediaPlayerAndroid* player);
 
   // Removes the player with the specified id.
   void DestroyPlayer(int player_id);
@@ -182,6 +172,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   bool Send(IPC::Message* msg);
 
  private:
+  // Adds a given player to the list.
+  void AddPlayer(media::MediaPlayerAndroid* player);
+
   // Constructs a MediaPlayerAndroid object.
   media::MediaPlayerAndroid* CreateMediaPlayer(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params,
@@ -233,6 +226,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Object for retrieving resources media players.
   scoped_ptr<media::MediaResourceGetter> media_resource_getter_;
+
+  // Map of player IDs to delegate IDs for use with
+  // MediaWebContentsObserverAndroid.
+  std::map<int, int> player_id_to_delegate_id_map_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<BrowserMediaPlayerManager> weak_ptr_factory_;

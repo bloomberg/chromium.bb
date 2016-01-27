@@ -438,6 +438,7 @@
       'common/media/cdm_messages_enums.h',
       'common/media/media_param_traits.cc',
       'common/media/media_param_traits.h',
+      'common/media/media_player_delegate_messages.h',
       'common/media/media_player_messages_android.h',
       'common/media/media_session_messages_android.h',
       'common/media/media_stream_messages.h',

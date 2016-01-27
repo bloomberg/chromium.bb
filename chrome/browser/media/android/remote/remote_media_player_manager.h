@@ -70,8 +70,6 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
       const MediaPlayerHostMsg_Initialize_Params& media_player_params) override;
   void OnDestroyPlayer(int player_id) override;
   void OnSuspendAndReleaseResources(int player_id) override;
-  void OnSuspend(int player_id) override;
-  void OnResume(int player_id) override;
   void OnRequestRemotePlayback(int player_id) override;
   void OnRequestRemotePlaybackControl(int player_id) override;
 

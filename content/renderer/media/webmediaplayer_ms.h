@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/render_frame_observer.h"
+#include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/renderers/skcanvas_video_renderer.h"
@@ -30,7 +30,6 @@ class WebString;
 
 namespace media {
 class MediaLog;
-class WebMediaPlayerDelegate;
 class VideoFrame;
 }
 
@@ -60,8 +59,8 @@ class RenderFrameObserver;
 //   WebKit client of this media player object.
 class CONTENT_EXPORT WebMediaPlayerMS
     : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
-      public NON_EXPORTED_BASE(base::SupportsWeakPtr<WebMediaPlayerMS>),
-      public NON_EXPORTED_BASE(RenderFrameObserver) {
+      public NON_EXPORTED_BASE(media::WebMediaPlayerDelegate::Observer),
+      public NON_EXPORTED_BASE(base::SupportsWeakPtr<WebMediaPlayerMS>) {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides VideoFrameProvider.
@@ -135,10 +134,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
   unsigned audioDecodedByteCount() const override;
   unsigned videoDecodedByteCount() const override;
 
-  // RenderFrameObserver implementation. Called when the RenderFrame visiblity
-  // is changed.
-  void WasHidden() override;
-  void WasShown() override;
+  // WebMediaPlayerDelegate::Observer implementation.
+  void OnHidden() override;
+  void OnShown() override;
+  void OnPlay() override;
+  void OnPause() override;
+  void OnVolumeMultiplierUpdate(double multiplier) override;
 
   bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
@@ -176,7 +177,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   blink::WebMediaPlayerClient* const client_;
 
+  // WebMediaPlayer notifies the |delegate_| of playback state changes using
+  // |delegate_id_|; an id provided after registering with the delegate.  The
+  // WebMediaPlayer may also receive directives (play, pause) from the delegate
+  // via the WebMediaPlayerDelegate::Observer interface after registration.
   const base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
+  int delegate_id_;
 
   // Specify content:: to disambiguate from cc::.
   scoped_refptr<content::VideoFrameProvider> video_frame_provider_;  // Weak
@@ -209,6 +215,13 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   const std::string initial_audio_output_device_id_;
   const url::Origin initial_security_origin_;
+
+  // The last volume received by setVolume() and the last volume multiplier from
+  // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
+  // if the WebMediaPlayerDelegate has requested a volume reduction (ducking)
+  // for a transient sound.  Playout volume is derived by volume * multiplier.
+  double volume_;
+  double volume_multiplier_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

@@ -160,6 +160,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
+      delegate_id_(0),
       defer_load_cb_(params.defer_load_cb()),
       context_3d_cb_(params.context_3d_cb()),
       adjust_allocated_memory_cb_(params.adjust_allocated_memory_cb()),
@@ -184,14 +185,16 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                           base::Bind(&IgnoreCdmAttached))),
       is_cdm_attached_(false),
 #if defined(OS_ANDROID)  // WMPI_CAST
-      cast_impl_(this, client_, params.context_3d_cb(), delegate),
+      cast_impl_(this, client_, params.context_3d_cb()),
 #endif
+      volume_(1.0),
+      volume_multiplier_(1.0),
       renderer_factory_(std::move(renderer_factory)) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
 
-  if (delegate)
-    delegate->AddObserver(this);
+  if (delegate_)
+    delegate_id_ = delegate_->AddObserver(this);
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -218,8 +221,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (delegate_) {
-    delegate_->RemoveObserver(this);
-    delegate_->PlayerGone(this);
+    delegate_->PlayerGone(delegate_id_);
+    delegate_->RemoveObserver(delegate_id_);
   }
 
   // Abort any pending IO so stopping the pipeline doesn't get blocked.
@@ -309,7 +312,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
       base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
 
 #if defined(OS_ANDROID)  // WMPI_CAST
-  cast_impl_.Initialize(url, frame_);
+  cast_impl_.Initialize(url, frame_, delegate_id_);
 #endif
 }
 
@@ -332,7 +335,7 @@ void WebMediaPlayerImpl::play() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
-  if (delegate_ && playback_rate_ > 0)
+  if (playback_rate_ > 0)
     NotifyPlaybackStarted();
 }
 
@@ -355,7 +358,7 @@ void WebMediaPlayerImpl::pause() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
 
-  if (!was_already_paused && delegate_)
+  if (!was_already_paused)
     NotifyPlaybackPaused();
 }
 
@@ -475,9 +478,9 @@ void WebMediaPlayerImpl::setRate(double rate) {
       rate = kMinRate;
     else if (rate > kMaxRate)
       rate = kMaxRate;
-    if (playback_rate_ == 0 && !paused_ && delegate_)
+    if (playback_rate_ == 0 && !paused_)
       NotifyPlaybackStarted();
-  } else if (playback_rate_ != 0 && !paused_ && delegate_) {
+  } else if (playback_rate_ != 0 && !paused_) {
     NotifyPlaybackPaused();
   }
 
@@ -492,8 +495,8 @@ void WebMediaPlayerImpl::setRate(double rate) {
 void WebMediaPlayerImpl::setVolume(double volume) {
   DVLOG(1) << __FUNCTION__ << "(" << volume << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  pipeline_.SetVolume(volume);
+  volume_ = volume;
+  pipeline_.SetVolume(volume_ * volume_multiplier_);
 }
 
 void WebMediaPlayerImpl::setSinkId(
@@ -915,6 +918,10 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
     return;
   }
 
+  // If we we're resuming into the playing state, notify the delegate.
+  if (resuming_ && playback_rate_ > 0 && !paused_)
+    NotifyPlaybackStarted();
+
   // Whether or not the seek was caused by a resume, we're not suspended now.
   resuming_ = false;
   suspended_ = false;
@@ -959,6 +966,8 @@ void WebMediaPlayerImpl::OnPipelineSuspended(PipelineStatus status) {
   }
 
   suspending_ = false;
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
 
 #if defined(OS_ANDROID)
   if (isRemote()) {
@@ -1186,6 +1195,21 @@ void WebMediaPlayerImpl::ScheduleResume() {
   // Might already be resuming iff we came back from remote playback recently.
   if (suspended_ && !resuming_)
     Resume();
+}
+
+void WebMediaPlayerImpl::OnPlay() {
+  play();
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerImpl::OnPause() {
+  pause();
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
+  volume_multiplier_ = multiplier;
+  setVolume(volume_);
 }
 
 void WebMediaPlayerImpl::Resume() {
@@ -1472,8 +1496,10 @@ void WebMediaPlayerImpl::NotifyPlaybackStarted() {
   if (isRemote())
     return;
 #endif
-  if (delegate_)
-    delegate_->DidPlay(this);
+  if (delegate_) {
+    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
+                       pipeline_.GetMediaDuration());
+  }
   if (!memory_usage_reporting_timer_.IsRunning()) {
     memory_usage_reporting_timer_.Start(FROM_HERE,
                                         base::TimeDelta::FromSeconds(2), this,
@@ -1487,7 +1513,7 @@ void WebMediaPlayerImpl::NotifyPlaybackPaused() {
     return;
 #endif
   if (delegate_)
-    delegate_->DidPause(this);
+    delegate_->DidPause(delegate_id_, ended_);
   memory_usage_reporting_timer_.Stop();
   ReportMemoryUsage();
 }

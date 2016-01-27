@@ -194,6 +194,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // WebMediaPlayerDelegate::Observer implementation.
   void OnHidden() override;
   void OnShown() override;
+  void OnPlay() override;
+  void OnPause() override;
+  void OnVolumeMultiplierUpdate(double multiplier) override;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   bool isRemote() const override;
@@ -385,7 +388,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   blink::WebMediaPlayerClient* client_;
   blink::WebMediaPlayerEncryptedMediaClient* encrypted_client_;
 
+  // WebMediaPlayer notifies the |delegate_| of playback state changes using
+  // |delegate_id_|; an id provided after registering with the delegate.  The
+  // WebMediaPlayer may also receive directives (play, pause) from the delegate
+  // via the WebMediaPlayerDelegate::Observer interface after registration.
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
+  int delegate_id_;
 
   WebMediaPlayerParams::DeferLoadCB defer_load_cb_;
   WebMediaPlayerParams::Context3DCB context_3d_cb_;
@@ -433,6 +441,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 #if defined(OS_ANDROID)  // WMPI_CAST
   WebMediaPlayerCast cast_impl_;
 #endif
+
+  // The last volume received by setVolume() and the last volume multiplier from
+  // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
+  // if the WebMediaPlayerDelegate has requested a volume reduction (ducking)
+  // for a transient sound.  Playout volume is derived by volume * multiplier.
+  double volume_;
+  double volume_multiplier_;
 
   scoped_ptr<RendererFactory> renderer_factory_;
 

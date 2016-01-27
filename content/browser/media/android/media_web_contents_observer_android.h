@@ -18,6 +18,7 @@ namespace content {
 class BrowserCdmManager;
 class BrowserMediaPlayerManager;
 class BrowserMediaSessionManager;
+class MediaSessionController;
 
 // This class adds Android specific extensions to the MediaWebContentsObserver.
 class CONTENT_EXPORT MediaWebContentsObserverAndroid
@@ -38,6 +39,16 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   BrowserMediaSessionManager* GetMediaSessionManager(
       RenderFrameHost* render_frame_host);
 
+  // Initiates a synchronous MediaSession request for browser side players.
+  //
+  // TODO(dalecurtis): Delete this method once we're no longer using WMPA and
+  // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
+  bool RequestPlay(RenderFrameHost* render_frame_host,
+                   int delegate_id,
+                   bool has_audio,
+                   bool is_remote,
+                   base::TimeDelta duration);
+
 #if defined(VIDEO_HOLE)
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
@@ -48,6 +59,21 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
                          RenderFrameHost* render_frame_host) override;
 
  private:
+  // Handles messages from the WebMediaPlayerDelegate; does not modify the
+  // handled state since the superclass needs to handle these as well.
+  void OnMediaPlayerDelegateMessageReceived(const IPC::Message& msg,
+                                            RenderFrameHost* render_frame_host);
+  void OnMediaDestroyed(RenderFrameHost* render_frame_host, int delegate_id);
+  void OnMediaPaused(RenderFrameHost* render_frame_host,
+                     int delegate_id,
+                     bool reached_end_of_stream);
+  void OnMediaPlaying(RenderFrameHost* render_frame_host,
+                      int delegate_id,
+                      bool has_video,
+                      bool has_audio,
+                      bool is_remote,
+                      base::TimeDelta duration);
+
   // Helper functions to handle media player IPC messages. Returns whether the
   // |message| is handled in the function.
   bool OnMediaPlayerMessageReceived(const IPC::Message& message,
@@ -72,6 +98,11 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
       base::ScopedPtrHashMap<RenderFrameHost*,
                              scoped_ptr<BrowserMediaSessionManager>>;
   MediaSessionManagerMap media_session_managers_;
+
+  // Map of renderer process media players to session controllers.
+  using MediaSessionMap =
+      std::map<MediaPlayerId, scoped_ptr<MediaSessionController>>;
+  MediaSessionMap media_session_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserverAndroid);
 };

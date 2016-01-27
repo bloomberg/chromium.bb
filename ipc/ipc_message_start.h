@@ -134,6 +134,7 @@ enum IPCMessageStart {
   StartupMetricMsgStart,
   ArcCameraMsgStart,
   DWriteFontProxyMsgStart,
+  MediaPlayerDelegateMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

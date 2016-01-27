@@ -31,11 +31,12 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
  public:
   WebMediaPlayerCast(WebMediaPlayerImpl* impl,
                      blink::WebMediaPlayerClient* client,
-                     const WebMediaPlayerParams::Context3DCB& context_3d_cb,
-                     base::WeakPtr<WebMediaPlayerDelegate> delegate);
+                     const WebMediaPlayerParams::Context3DCB& context_3d_cb);
   ~WebMediaPlayerCast();
 
-  void Initialize(const GURL& url, blink::WebLocalFrame* frame);
+  void Initialize(const GURL& url,
+                  blink::WebLocalFrame* frame,
+                  int delegate_id);
 
   void requestRemotePlayback();
   void requestRemotePlaybackControl();
@@ -109,7 +110,6 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   WebMediaPlayerImpl* webmediaplayer_;
   blink::WebMediaPlayerClient* client_;
   WebMediaPlayerParams::Context3DCB context_3d_cb_;
-  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   // Manages this object and delegates player calls to the browser process.
   // Owned by RenderFrameImpl.
@@ -128,6 +128,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   // Last reported playout time.
   base::TimeDelta remote_time_;
   base::TimeTicks remote_time_at_;
+  base::TimeDelta duration_;
 
   // Whether the media player has been initialized.
   bool is_player_initialized_ = false;

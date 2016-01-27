@@ -184,11 +184,11 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     int frame_id,
     bool enable_texture_copy,
     const media::WebMediaPlayerParams& params)
-    : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
-      frame_(frame),
+    : frame_(frame),
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
+      delegate_id_(0),
       defer_load_cb_(params.defer_load_cb()),
       buffered_(static_cast<size_t>(1)),
       media_task_runner_(params.media_task_runner()),
@@ -226,6 +226,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       frame_id_(frame_id),
       enable_texture_copy_(enable_texture_copy),
       suppress_deleting_texture_(false),
+      playback_completed_(false),
+      volume_(1.0),
+      volume_multiplier_(1.0),
       weak_factory_(this) {
   DCHECK(player_manager_);
   DCHECK(cdm_factory_);
@@ -233,13 +236,15 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   stream_texture_factory_->AddObserver(this);
 
+  if (delegate_)
+    delegate_id_ = delegate_->AddObserver(this);
+
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
-  const RendererPreferences& prefs =
-      static_cast<RenderFrameImpl*>(render_frame())
-          ->render_view()
-          ->renderer_preferences();
+  const RendererPreferences& prefs = RenderFrameImpl::FromRoutingID(frame_id)
+                                         ->render_view()
+                                         ->renderer_preferences();
   force_use_overlay_embedded_video_ = prefs.use_view_overlay_for_all_video;
   if (force_use_overlay_embedded_video_ ||
     player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
@@ -282,8 +287,10 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     current_frame_ = NULL;
   }
 
-  if (delegate_)
-    delegate_->PlayerGone(this);
+  if (delegate_) {
+    delegate_->PlayerGone(delegate_id_);
+    delegate_->RemoveObserver(delegate_id_);
+  }
 
   stream_texture_factory_->RemoveObserver(this);
 
@@ -429,9 +436,13 @@ void WebMediaPlayerAndroid::play() {
     EstablishSurfaceTexturePeer();
   }
 
-  if (paused())
-    player_manager_->Start(player_id_);
+  // UpdatePlayingState() must be run before calling Start() to ensure that the
+  // browser side MediaPlayerAndroid values for hasAudio() and hasVideo() take
+  // precedent over the guesses that we make based on mime type.
+  const bool is_paused = paused();
   UpdatePlayingState(true);
+  if (is_paused)
+    player_manager_->Start(player_id_);
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
 }
 
@@ -452,6 +463,7 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
 
+  playback_completed_ = false;
   base::TimeDelta new_seek_time = base::TimeDelta::FromSecondsD(seconds);
 
   if (seeking_) {
@@ -495,13 +507,12 @@ bool WebMediaPlayerAndroid::supportsSave() const {
   return false;
 }
 
-void WebMediaPlayerAndroid::setRate(double rate) {
-  NOTIMPLEMENTED();
-}
+void WebMediaPlayerAndroid::setRate(double rate) {}
 
 void WebMediaPlayerAndroid::setVolume(double volume) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  player_manager_->SetVolume(player_id_, volume);
+  volume_ = volume;
+  player_manager_->SetVolume(player_id_, volume_ * volume_multiplier_);
 }
 
 void WebMediaPlayerAndroid::setSinkId(
@@ -852,6 +863,8 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // playing after seek completes.
   if (seeking_ && seek_time_ == base::TimeDelta())
     player_manager_->Start(player_id_);
+  else
+    playback_completed_ = true;
 }
 
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
@@ -1088,6 +1101,9 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
   if (is_playing_)
     OnMediaPlayerPause();
 
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
+
 #if defined(VIDEO_HOLE)
   last_computed_rect_ = gfx::RectF();
 #endif  // defined(VIDEO_HOLE)
@@ -1102,6 +1118,8 @@ void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
     case WebMediaPlayer::NetworkStateLoaded:
       Pause(false);
       client_->playbackStateChanged();
+      if (delegate_)
+        delegate_->PlayerGone(delegate_id_);
       break;
     // If a WebMediaPlayer instance has entered into one of these states,
     // the internal network state in HTMLMediaElement could be set to empty.
@@ -1117,12 +1135,6 @@ void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
     SetNeedsEstablishPeer(true);
 }
 
-void WebMediaPlayerAndroid::OnDestruct() {
-  NOTREACHED() << "WebMediaPlayer should be destroyed before any "
-                  "RenderFrameObserver::OnDestruct() gets called when "
-                  "the RenderFrame goes away.";
-}
-
 void WebMediaPlayerAndroid::InitializePlayer(
     const GURL& url,
     const GURL& first_party_for_cookies,
@@ -1133,7 +1145,7 @@ void WebMediaPlayerAndroid::InitializePlayer(
   allow_stored_credentials_ = allow_stored_credentials;
   player_manager_->Initialize(
       player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
-      frame_->document().url(), allow_stored_credentials);
+      frame_->document().url(), allow_stored_credentials, delegate_id_);
   is_player_initialized_ = true;
 
   if (is_fullscreen_)
@@ -1373,10 +1385,20 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
     interpolator_.StopInterpolating();
 
   if (delegate_) {
-    if (is_playing)
-      delegate_->DidPlay(this);
-    else
-      delegate_->DidPause(this);
+    if (is_playing) {
+      // We must specify either video or audio to the delegate, but neither may
+      // be known at this point -- there are no video only containers, so only
+      // send audio if we know for sure its audio.  The browser side player will
+      // fill in the correct value later for media sessions.
+      delegate_->DidPlay(delegate_id_, hasVideo(), !hasVideo(), isRemote(),
+                         duration_);
+    } else {
+      // Even if OnPlaybackComplete() has not been called yet, Blink may have
+      // already fired the ended event based on current time relative to
+      // duration -- so we need to check both possibilities here.
+      delegate_->DidPause(delegate_id_,
+                          playback_completed_ || currentTime() >= duration());
+    }
   }
 }
 
@@ -1757,6 +1779,31 @@ void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
   // when a key has been successfully added (e.g. OnSessionKeysChange() with
   // |has_additional_usable_key| = true). http://crbug.com/461903
   encrypted_client_->didResumePlaybackBlockedForKey();
+}
+
+void WebMediaPlayerAndroid::OnHidden() {
+  // RendererMediaPlayerManager will not call SuspendAndReleaseResources() if we
+  // were already in the paused state; thus notify the MediaWebContentsObserver
+  // that we've been hidden so any lingering MediaSessions are released.
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
+}
+
+void WebMediaPlayerAndroid::OnShown() {}
+
+void WebMediaPlayerAndroid::OnPlay() {
+  play();
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerAndroid::OnPause() {
+  pause();
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerAndroid::OnVolumeMultiplierUpdate(double multiplier) {
+  volume_multiplier_ = multiplier;
+  setVolume(volume_);
 }
 
 void WebMediaPlayerAndroid::OnCdmContextReady(media::CdmContext* cdm_context) {

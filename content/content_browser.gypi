@@ -989,6 +989,8 @@
       'browser/media/android/media_resource_getter_impl.h',
       'browser/media/android/media_session.cc',
       'browser/media/android/media_session.h',
+      'browser/media/android/media_session_controller.cc',
+      'browser/media/android/media_session_controller.h',
       'browser/media/android/media_session_observer.h',
       'browser/media/android/media_session_uma_helper.cc',
       'browser/media/android/media_session_uma_helper.h',
