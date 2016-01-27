@@ -12,8 +12,9 @@ namespace blink {
 
 void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState)
 {
-    if (isUndefinedOrNull(v8Value))
+    if (isUndefinedOrNull(v8Value)) {
         return;
+    }
     if (!v8Value->IsObject()) {
         // Do nothing.
         return;

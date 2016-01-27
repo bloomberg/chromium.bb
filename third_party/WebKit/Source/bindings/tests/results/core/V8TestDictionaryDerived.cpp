@@ -14,8 +14,10 @@ namespace blink {
 
 void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionaryDerivedImplementedAs& impl, ExceptionState& exceptionState)
 {
-    if (isUndefinedOrNull(v8Value))
+    if (isUndefinedOrNull(v8Value)) {
+        exceptionState.throwTypeError("Missing required member(s): requiredLongMember.");
         return;
+    }
     if (!v8Value->IsObject()) {
         exceptionState.throwTypeError("cannot convert to dictionary.");
         return;
