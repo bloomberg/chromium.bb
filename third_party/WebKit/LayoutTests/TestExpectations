@@ -1308,13 +1308,6 @@ crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-
 
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
 
-crbug.com/516751 css3/blending/effect-background-blend-mode-stacking.html [ NeedsRebaseline ]
-crbug.com/516751 fast/backgrounds/mask-box-image.html [ NeedsRebaseline ]
-crbug.com/516751 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-crbug.com/516751 svg/custom/pointer-events-image-css-transform.svg [ NeedsRebaseline ]
-crbug.com/516751 svg/custom/pointer-events-image.svg [ NeedsRebaseline ]
-crbug.com/516751 svg/hixie/perf/004.xml [ NeedsRebaseline ]
-
 crbug.com/579365 [ Mac ] fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
 
 crbug.com/579151 editing/deleting/delete-to-select-table.html [ NeedsRebaseline ]
