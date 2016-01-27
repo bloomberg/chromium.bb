@@ -322,7 +322,6 @@ source_set("test_support") {
   deps = [
     "//base",
     "//chrome/browser",
-    "//chrome/browser/policy:path_parser",
     "//chrome/child",
     "//chrome/common",
     "//chrome/plugin",
@@ -351,6 +350,10 @@ source_set("test_support") {
 
   if (is_chromeos) {
     deps += [ "//chrome/browser/chromeos" ]
+  }
+
+  if (enable_configuration_policy) {
+    deps += [ "//chrome/browser/policy:path_parser" ]
   }
 
   if (enable_pdf) {
