@@ -359,6 +359,10 @@ crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Fail
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/transforms/text-with-pattern-with-svg-transform.svg [ Failure Pass ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/hixie/perf/006.xml [ Failure Pass ]
 
+crbug.com/581661 svg/hixie/perf/002.xml [ NeedsManualRebaseline ]
+crbug.com/581661 svg/batik/text/textOnPath.svg [ NeedsManualRebaseline ]
+crbug.com/581661 svg/hixie/perf/001.xml [ NeedsManualRebaseline ]
+
 crbug.com/441840 [ Mac ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/530044 transforms/2d/transform-borderbox.html [ NeedsManualRebaseline ]
