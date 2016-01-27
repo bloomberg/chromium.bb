@@ -1302,27 +1302,6 @@ crbug.com/572723 [ Mac10.7 Release ] inspector/sources/debugger/debugger-complet
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
-# SK_SUPPORT_LEGACY_CONIC_MEASURE
-crbug.com/530095 fast/borders/borderRadiusAllStylesAllCorners.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDashed01.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDashed02.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDashed03.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDashed04.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDashed05.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDashed06.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDotted01.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDotted02.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDotted03.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDotted04.html [ NeedsRebaseline ]
-crbug.com/530095 fast/borders/borderRadiusDotted06.html [ NeedsRebaseline ]
-crbug.com/530095 fast/box-shadow/inset-subpixel.html [ NeedsRebaseline ]
-crbug.com/530095 fast/box-shadow/inset.html [ NeedsRebaseline ]
-crbug.com/530095 ietestcenter/css3/bordersbackgrounds/border-radius-style-001.htm [ NeedsRebaseline ]
-crbug.com/530095 ietestcenter/css3/bordersbackgrounds/border-radius-style-002.htm [ NeedsRebaseline ]
-crbug.com/530095 svg/W3C-SVG-1.2-Tiny/struct-use-recursion-02-t.svg [ NeedsRebaseline ]
-crbug.com/530095 svg/W3C-SVG-1.2-Tiny/struct-use-recursion-03-t.svg [ NeedsRebaseline ]
-crbug.com/530095 svg/custom/dasharrayOrigin.svg [ NeedsRebaseline ]
-
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]

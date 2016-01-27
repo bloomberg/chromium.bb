@@ -5,9 +5,9 @@ layer at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (148,25) size 502x451
       LayoutSVGContainer {g} at (148,25) size 502x77
-        LayoutSVGContainer {use} at (148,65) size 38x37 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,25.00)}]
-          LayoutSVGContainer {g} at (148,65) size 38x37
-            LayoutSVGEllipse {circle} at (148,65) size 38x37 [stroke={[type=SOLID] [color=#808080] [stroke width=2.00] [line cap=ROUND] [dash array={4.00}]}] [fill={[type=SOLID] [color=#FF7F00]}] [cx=100.00] [cy=25.00] [r=10.00]
+        LayoutSVGContainer {use} at (148,64) size 37x38 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,25.00)}]
+          LayoutSVGContainer {g} at (148,64) size 37x38
+            LayoutSVGEllipse {circle} at (148,64) size 37x38 [stroke={[type=SOLID] [color=#808080] [stroke width=2.00] [line cap=ROUND] [dash array={4.00}]}] [fill={[type=SOLID] [color=#FF7F00]}] [cx=100.00] [cy=25.00] [r=10.00]
             LayoutSVGContainer {g} at (0,0) size 0x0 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,25.00)}]
         LayoutSVGEllipse {circle} at (616,25) size 34x34 [fill={[type=SOLID] [color=#FFFF00]}] [cx=380.00] [cy=25.00] [r=10.00]
       LayoutSVGText {text} at (104,258) size 272x28 contains 1 chunk(s)
