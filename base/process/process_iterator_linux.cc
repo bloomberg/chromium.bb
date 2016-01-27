@@ -61,17 +61,27 @@ bool GetProcCmdline(pid_t pid, std::vector<std::string>* proc_cmd_line_args) {
 ProcessIterator::ProcessIterator(const ProcessFilter* filter)
     : filter_(filter) {
   procfs_dir_ = opendir(internal::kProcDir);
+  if (!procfs_dir_) {
+    // On Android, SELinux may prevent reading /proc. See
+    // https://crbug.com/581517 for details.
+    PLOG(ERROR) << "opendir " << internal::kProcDir;
+  }
 }
 
 ProcessIterator::~ProcessIterator() {
   if (procfs_dir_) {
     closedir(procfs_dir_);
-    procfs_dir_ = NULL;
+    procfs_dir_ = nullptr;
   }
 }
 
 bool ProcessIterator::CheckForNextProcess() {
   // TODO(port): skip processes owned by different UID
+
+  if (!procfs_dir_) {
+    DLOG(ERROR) << "Skipping CheckForNextProcess(), no procfs_dir_";
+    return false;
+  }
 
   pid_t pid = kNullProcessId;
   std::vector<std::string> cmd_line_args;
