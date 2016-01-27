@@ -191,7 +191,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   PermissionBubbleViewViews* owner_;
   views::Button* allow_;
   views::Button* deny_;
-  base::string16 hostname_;
+  base::string16 display_origin_;
   scoped_ptr<PermissionMenuModel> menu_button_model_;
   std::vector<PermissionCombobox*> customize_comboboxes_;
 
@@ -219,8 +219,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
 
-  hostname_ = url_formatter::FormatUrlForSecurityDisplay(
-      requests[0]->GetRequestingHostname(), languages);
+  display_origin_ = url_formatter::FormatUrlForSecurityDisplay(
+      requests[0]->GetOrigin(), languages);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   for (size_t index = 0; index < requests.size(); index++) {
@@ -262,9 +262,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
 
     if (requests.size() > 1) {
       PermissionCombobox* combobox = new PermissionCombobox(
-          this,
-          index,
-          requests[index]->GetRequestingHostname(),
+          this, index, requests[index]->GetOrigin(),
           accept_state[index] ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
       row_layout->AddView(combobox);
       customize_comboboxes_.push_back(combobox);
@@ -344,7 +342,7 @@ const gfx::FontList& PermissionsBubbleDelegateView::GetTitleFontList() const {
 
 base::string16 PermissionsBubbleDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
-                                    hostname_);
+                                    display_origin_);
 }
 
 void PermissionsBubbleDelegateView::SizeToContents() {

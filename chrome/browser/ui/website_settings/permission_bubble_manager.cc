@@ -27,7 +27,7 @@ class CancelledRequest : public PermissionBubbleRequest {
         message_text_(cancelled->GetMessageText()),
         message_fragment_(cancelled->GetMessageTextFragment()),
         user_gesture_(cancelled->HasUserGesture()),
-        hostname_(cancelled->GetRequestingHostname()) {}
+        origin_(cancelled->GetOrigin()) {}
   ~CancelledRequest() override {}
 
   int GetIconId() const override { return icon_; }
@@ -36,7 +36,7 @@ class CancelledRequest : public PermissionBubbleRequest {
     return message_fragment_;
   }
   bool HasUserGesture() const override { return user_gesture_; }
-  GURL GetRequestingHostname() const override { return hostname_; }
+  GURL GetOrigin() const override { return origin_; }
 
   // These are all no-ops since the placeholder is non-forwarding.
   void PermissionGranted() override {}
@@ -50,7 +50,7 @@ class CancelledRequest : public PermissionBubbleRequest {
   base::string16 message_text_;
   base::string16 message_fragment_;
   bool user_gesture_;
-  GURL hostname_;
+  GURL origin_;
 };
 
 }  // namespace
@@ -105,9 +105,8 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
   request_url_ = web_contents()->GetLastCommittedURL();
-  bool is_main_frame =
-      url::Origin(request_url_)
-          .IsSameOriginWith(url::Origin(request->GetRequestingHostname()));
+  bool is_main_frame = url::Origin(request_url_)
+                           .IsSameOriginWith(url::Origin(request->GetOrigin()));
 
   // Don't re-add an existing request or one with a duplicate text request.
   // TODO(johnme): Instead of dropping duplicate requests, we should queue them
@@ -413,7 +412,7 @@ bool PermissionBubbleManager::ExistingRequest(
     }
     if ((*iter)->GetMessageTextFragment() ==
             request->GetMessageTextFragment() &&
-        (*iter)->GetRequestingHostname() == request->GetRequestingHostname()) {
+        (*iter)->GetOrigin() == request->GetOrigin()) {
       return true;
     }
   }

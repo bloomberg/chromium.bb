@@ -61,7 +61,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   bool HasUserGesture() const override;
-  GURL GetRequestingHostname() const override;
+  GURL GetOrigin() const override;
   void PermissionGranted() override;
   void PermissionDenied() override;
   void Cancelled() override;
@@ -116,7 +116,7 @@ bool QuotaPermissionRequest::HasUserGesture() const {
   return user_gesture_;
 }
 
-GURL QuotaPermissionRequest::GetRequestingHostname() const {
+GURL QuotaPermissionRequest::GetOrigin() const {
   return origin_url_;
 }
 

@@ -47,8 +47,8 @@ class PermissionBubbleRequest {
   // requests will have priority over non-gestured ones.
   virtual bool HasUserGesture() const = 0;
 
-  // Get the hostname on whose behalf this permission request is being made.
-  virtual GURL GetRequestingHostname() const = 0;
+  // Get the origin on whose behalf this permission request is being made.
+  virtual GURL GetOrigin() const = 0;
 
   // Called when the user has granted the requested permission.
   virtual void PermissionGranted() = 0;

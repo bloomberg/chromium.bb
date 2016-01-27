@@ -14,7 +14,7 @@ DownloadPermissionRequest::DownloadPermissionRequest(
     : host_(host) {
   const content::WebContents* web_contents = host_->web_contents();
   DCHECK(web_contents);
-  request_url_ = web_contents->GetURL();
+  request_origin_ = web_contents->GetURL().GetOrigin();
 }
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
@@ -40,8 +40,8 @@ bool DownloadPermissionRequest::HasUserGesture() const {
   return false;
 }
 
-GURL DownloadPermissionRequest::GetRequestingHostname() const {
-  return request_url_;
+GURL DownloadPermissionRequest::GetOrigin() const {
+  return request_origin_;
 }
 
 void DownloadPermissionRequest::PermissionGranted() {

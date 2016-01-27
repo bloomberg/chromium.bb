@@ -37,7 +37,7 @@ RegisterProtocolHandlerPermissionRequest
       bool user_gesture)
     : registry_(registry),
       handler_(handler),
-      url_(url),
+      origin_(url.GetOrigin()),
       user_gesture_(user_gesture) {}
 
 RegisterProtocolHandlerPermissionRequest::
@@ -92,8 +92,8 @@ bool RegisterProtocolHandlerPermissionRequest::HasUserGesture() const {
   return user_gesture_;
 }
 
-GURL RegisterProtocolHandlerPermissionRequest::GetRequestingHostname() const {
-  return url_;
+GURL RegisterProtocolHandlerPermissionRequest::GetOrigin() const {
+  return origin_;
 }
 
 void RegisterProtocolHandlerPermissionRequest::PermissionGranted() {

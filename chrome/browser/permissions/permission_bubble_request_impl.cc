@@ -150,7 +150,7 @@ bool PermissionBubbleRequestImpl::HasUserGesture() const {
   return user_gesture_;
 }
 
-GURL PermissionBubbleRequestImpl::GetRequestingHostname() const {
+GURL PermissionBubbleRequestImpl::GetOrigin() const {
   return request_origin_;
 }
 

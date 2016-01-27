@@ -340,8 +340,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   }
 
   base::scoped_nsobject<NSView> titleView(
-      [[self titleWithHostname:requests[0]->GetRequestingHostname().host()]
-          retain]);
+      [[self titleWithHostname:requests[0]->GetOrigin().host()] retain]);
   [contentView addSubview:titleView];
   [titleView setFrameOrigin:NSMakePoint(kHorizontalPadding,
                                         kVerticalPadding + yOffset)];
@@ -541,7 +540,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   DCHECK(request);
   DCHECK(delegate_);
   base::scoped_nsobject<AllowBlockMenuButton> button(
-      [[AllowBlockMenuButton alloc] initForURL:request->GetRequestingHostname()
+      [[AllowBlockMenuButton alloc] initForURL:request->GetOrigin()
                                        allowed:allow
                                          index:index
                                       delegate:delegate_]);

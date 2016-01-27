@@ -275,7 +275,7 @@ bool MediaStreamDevicesController::HasUserGesture() const {
   return request_.user_gesture;
 }
 
-GURL MediaStreamDevicesController::GetRequestingHostname() const {
+GURL MediaStreamDevicesController::GetOrigin() const {
   return request_.security_origin;
 }
 

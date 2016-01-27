@@ -38,10 +38,7 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   bool HasUserGesture() const override;
-
-  // TODO(miguelg) Change this method to GetOrigin()
-  GURL GetRequestingHostname() const override;
-
+  GURL GetOrigin() const override;
   // Remember to call RegisterActionTaken for these methods if you are
   // overriding them.
   void PermissionGranted() override;
