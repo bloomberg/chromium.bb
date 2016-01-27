@@ -26,10 +26,9 @@
 namespace blink {
 
 SVGPathStringSource::SVGPathStringSource(const String& string)
-    : m_string(string)
-    , m_is8BitSource(string.is8Bit())
-    , m_seenError(false)
+    : m_is8BitSource(string.is8Bit())
     , m_previousCommand(PathSegUnknown)
+    , m_string(string)
 {
     ASSERT(!string.isNull());
 
@@ -124,23 +123,39 @@ static bool nextCommandHelper(unsigned lookahead, SVGPathSegType previousCommand
     return false;
 }
 
+void SVGPathStringSource::setErrorMark(SVGParseStatus status)
+{
+    if (m_error.status() != SVGParseStatus::NoError)
+        return;
+    size_t locus = m_is8BitSource
+        ? m_current.m_character8 - m_string.characters8()
+        : m_current.m_character16 - m_string.characters16();
+    m_error = SVGParsingError(status, locus);
+}
+
 float SVGPathStringSource::parseNumberWithError()
 {
     float numberValue = 0;
+    bool error;
     if (m_is8BitSource)
-        m_seenError |= !parseNumber(m_current.m_character8, m_end.m_character8, numberValue);
+        error = !parseNumber(m_current.m_character8, m_end.m_character8, numberValue);
     else
-        m_seenError |= !parseNumber(m_current.m_character16, m_end.m_character16, numberValue);
+        error = !parseNumber(m_current.m_character16, m_end.m_character16, numberValue);
+    if (UNLIKELY(error))
+        setErrorMark(SVGParseStatus::ExpectedNumber);
     return numberValue;
 }
 
 bool SVGPathStringSource::parseArcFlagWithError()
 {
     bool flagValue = false;
+    bool error;
     if (m_is8BitSource)
-        m_seenError |= !parseArcFlag(m_current.m_character8, m_end.m_character8, flagValue);
+        error = !parseArcFlag(m_current.m_character8, m_end.m_character8, flagValue);
     else
-        m_seenError |= !parseArcFlag(m_current.m_character16, m_end.m_character16, flagValue);
+        error = !parseArcFlag(m_current.m_character16, m_end.m_character16, flagValue);
+    if (UNLIKELY(error))
+        setErrorMark(SVGParseStatus::ExpectedArcFlag);
     return flagValue;
 }
 
@@ -149,7 +164,14 @@ SVGPathSegType SVGPathStringSource::peekSegmentType()
     ASSERT(hasMoreData());
     // This won't work in all cases because of the state required to "detect" implicit commands.
     unsigned lookahead = m_is8BitSource ? *m_current.m_character8 : *m_current.m_character16;
-    return parseSVGSegmentTypeHelper(lookahead);
+    SVGPathSegType segmentType = parseSVGSegmentTypeHelper(lookahead);
+    // Here we assume that this is only called via SVGPathParser::initialCommandIsMoveTo.
+    // TODO(fs): It ought to be possible to refactor away this entirely, and
+    // just handle this in parseSegment (which we sort of do already...) The
+    // only user is the method mentioned above.
+    if (segmentType != PathSegMoveToAbs && segmentType != PathSegMoveToRel)
+        setErrorMark(SVGParseStatus::ExpectedMoveToCommand);
+    return segmentType;
 }
 
 PathSegmentData SVGPathStringSource::parseSegment()
@@ -160,10 +182,14 @@ PathSegmentData SVGPathStringSource::parseSegment()
     SVGPathSegType command = parseSVGSegmentTypeHelper(lookahead);
     if (command == PathSegUnknown) {
         // Possibly an implicit command. Not allowed if this is the first command.
-        if (m_previousCommand == PathSegUnknown)
+        if (m_previousCommand == PathSegUnknown) {
+            setErrorMark(SVGParseStatus::ExpectedMoveToCommand);
             return segment;
-        if (!nextCommandHelper(lookahead, m_previousCommand, command))
+        }
+        if (!nextCommandHelper(lookahead, m_previousCommand, command)) {
+            setErrorMark(SVGParseStatus::ExpectedPathCommand);
             return segment;
+        }
     } else {
         // Valid explicit command.
         if (m_is8BitSource)
@@ -174,7 +200,7 @@ PathSegmentData SVGPathStringSource::parseSegment()
 
     segment.command = m_previousCommand = command;
 
-    ASSERT(!m_seenError);
+    ASSERT(m_error.status() == SVGParseStatus::NoError);
 
     switch (segment.command) {
     case PathSegCurveToCubicRel:
@@ -228,7 +254,7 @@ PathSegmentData SVGPathStringSource::parseSegment()
         ASSERT_NOT_REACHED();
     }
 
-    if (UNLIKELY(m_seenError))
+    if (UNLIKELY(m_error.status() != SVGParseStatus::NoError))
         segment.command = PathSegUnknown;
     return segment;
 }

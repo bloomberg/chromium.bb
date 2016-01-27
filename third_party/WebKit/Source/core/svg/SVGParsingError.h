@@ -39,10 +39,13 @@ enum class SVGParseStatus {
 
     // Syntax errors
     TrailingGarbage,
+    ExpectedArcFlag,
     ExpectedBoolean,
     ExpectedEnumeration,
     ExpectedLength,
+    ExpectedMoveToCommand,
     ExpectedNumber,
+    ExpectedPathCommand,
 
     // Semantic errors
     NegativeValue,

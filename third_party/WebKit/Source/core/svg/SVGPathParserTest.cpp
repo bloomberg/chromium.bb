@@ -141,6 +141,49 @@ TEST(SVGPathParserTest, Simple)
 #undef MALFORMED
 #undef VALID
 
+SVGParsingError parsePathWithError(const char* input)
+{
+    String inputString(input);
+    SVGPathStringSource source(inputString);
+    SVGPathStringBuilder builder;
+    SVGPathParser parser(&source, &builder);
+    parser.parsePathDataFromSource();
+    return source.parseError();
+}
+
+#define EXPECT_ERROR(input, expectedLocus, expectedError)      \
+    {                                                          \
+        SVGParsingError error = parsePathWithError(input);     \
+        EXPECT_EQ(expectedError, error.status());              \
+        EXPECT_TRUE(error.hasLocus());                         \
+        EXPECT_EQ(expectedLocus, error.locus());               \
+    }
+
+TEST(SVGPathParserTest, ErrorReporting)
+{
+    // Missing initial moveto.
+    EXPECT_ERROR(" 10 10", 1u, SVGParseStatus::ExpectedMoveToCommand);
+    EXPECT_ERROR("L 10 10", 0u, SVGParseStatus::ExpectedMoveToCommand);
+    // Invalid command letter.
+    EXPECT_ERROR("M 10 10 #", 8u, SVGParseStatus::ExpectedPathCommand);
+    EXPECT_ERROR("M 10 10 E 100 100", 8u, SVGParseStatus::ExpectedPathCommand);
+    // Invalid number.
+    EXPECT_ERROR("M 10 10 L100 ", 13u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M 10 10 L100 #", 13u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M 10 10 L100#100", 12u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M0,0 A#,10 0 0,0 20,20", 6u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M0,0 A10,# 0 0,0 20,20", 9u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M0,0 A10,10 # 0,0 20,20", 12u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M0,0 A10,10 0 0,0 #,20", 18u, SVGParseStatus::ExpectedNumber);
+    EXPECT_ERROR("M0,0 A10,10 0 0,0 20,#", 21u, SVGParseStatus::ExpectedNumber);
+    // Invalid arc-flag.
+    EXPECT_ERROR("M0,0 A10,10 0 #,0 20,20", 14u, SVGParseStatus::ExpectedArcFlag);
+    EXPECT_ERROR("M0,0 A10,10 0 0,# 20,20", 16u, SVGParseStatus::ExpectedArcFlag);
+    EXPECT_ERROR("M0,0 A10,10 0 0,2 20,20", 16u, SVGParseStatus::ExpectedArcFlag);
+}
+
+#undef EXPECT_ERROR
+
 } // namespace
 
 } // namespace blink

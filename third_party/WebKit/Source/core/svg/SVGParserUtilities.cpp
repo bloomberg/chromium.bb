@@ -161,7 +161,7 @@ bool genericParseArcFlag(const CharType*& ptr, const CharType* end, bool& flag)
 {
     if (ptr >= end)
         return false;
-    const CharType flagChar = *ptr++;
+    const CharType flagChar = *ptr;
     if (flagChar == '0')
         flag = false;
     else if (flagChar == '1')
@@ -169,6 +169,7 @@ bool genericParseArcFlag(const CharType*& ptr, const CharType* end, bool& flag)
     else
         return false;
 
+    ptr++;
     skipOptionalSVGSpacesOrDelimiter(ptr, end);
 
     return true;

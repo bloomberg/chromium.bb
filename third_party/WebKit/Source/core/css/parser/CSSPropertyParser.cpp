@@ -1927,7 +1927,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePath(CSSParserTokenRange& range)
     String pathString = functionArgs.consumeIncludingWhitespace().value();
 
     RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
-    if (!buildByteStreamFromString(pathString, *byteStream) || !functionArgs.atEnd())
+    if (buildByteStreamFromString(pathString, *byteStream) != SVGParseStatus::NoError
+        || !functionArgs.atEnd())
         return nullptr;
 
     range = functionRange;

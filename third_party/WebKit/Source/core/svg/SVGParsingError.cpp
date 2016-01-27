@@ -28,14 +28,20 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
     switch (status) {
     case SVGParseStatus::TrailingGarbage:
         return std::make_pair("Trailing garbage, ", ".");
+    case SVGParseStatus::ExpectedArcFlag:
+        return std::make_pair("Expected arc flag ('0' or '1'), ", ".");
     case SVGParseStatus::ExpectedBoolean:
         return std::make_pair("Expected 'true' or 'false', ", ".");
     case SVGParseStatus::ExpectedEnumeration:
         return std::make_pair("Unrecognized enumerated value, ", ".");
     case SVGParseStatus::ExpectedLength:
         return std::make_pair("Expected length, ", ".");
+    case SVGParseStatus::ExpectedMoveToCommand:
+        return std::make_pair("Expected moveto path command ('M' or 'm'), ", ".");
     case SVGParseStatus::ExpectedNumber:
         return std::make_pair("Expected number, ", ".");
+    case SVGParseStatus::ExpectedPathCommand:
+        return std::make_pair("Expected path command, ", ".");
     case SVGParseStatus::NegativeValue:
         return std::make_pair("A negative value is not valid. (", ")");
     case SVGParseStatus::ParsingFailed:
