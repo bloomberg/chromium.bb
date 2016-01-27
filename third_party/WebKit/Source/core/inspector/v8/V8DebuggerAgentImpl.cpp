@@ -173,6 +173,7 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_compiledScripts(debugger->isolate())
 {
     ASSERT(contextGroupId);
+    // FIXME: remove once InjectedScriptManager moves to v8.
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
     m_promiseTracker = PromiseTracker::create(this, m_isolate);
     clearBreakDetails();

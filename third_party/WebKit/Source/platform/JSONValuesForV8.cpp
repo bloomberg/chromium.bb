@@ -15,7 +15,7 @@ static String coreString(v8::Local<v8::String> v8String)
     return result;
 }
 
-PassRefPtr<JSONValue> toJSONValue(v8::Isolate* isolate, v8::Local<v8::Value> value, int maxDepth)
+PassRefPtr<JSONValue> toJSONValue(v8::Local<v8::Context> context, v8::Local<v8::Value> value, int maxDepth)
 {
     if (value.IsEmpty()) {
         ASSERT_NOT_REACHED();
@@ -26,7 +26,6 @@ PassRefPtr<JSONValue> toJSONValue(v8::Isolate* isolate, v8::Local<v8::Value> val
         return nullptr;
     maxDepth--;
 
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     if (value->IsNull() || value->IsUndefined())
         return JSONValue::null();
     if (value->IsBoolean())
@@ -43,7 +42,7 @@ PassRefPtr<JSONValue> toJSONValue(v8::Isolate* isolate, v8::Local<v8::Value> val
             v8::Local<v8::Value> value;
             if (!array->Get(context, i).ToLocal(&value))
                 return nullptr;
-            RefPtr<JSONValue> element = toJSONValue(isolate, value, maxDepth);
+            RefPtr<JSONValue> element = toJSONValue(context, value, maxDepth);
             if (!element)
                 return nullptr;
             inspectorArray->pushValue(element);
@@ -73,7 +72,7 @@ PassRefPtr<JSONValue> toJSONValue(v8::Isolate* isolate, v8::Local<v8::Value> val
             v8::Local<v8::Value> property;
             if (!object->Get(context, name).ToLocal(&property))
                 return nullptr;
-            RefPtr<JSONValue> propertyValue = toJSONValue(isolate, property, maxDepth);
+            RefPtr<JSONValue> propertyValue = toJSONValue(context, property, maxDepth);
             if (!propertyValue)
                 return nullptr;
             jsonObject->setValue(coreString(propertyName), propertyValue);

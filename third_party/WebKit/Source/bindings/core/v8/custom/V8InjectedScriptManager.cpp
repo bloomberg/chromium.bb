@@ -30,11 +30,9 @@
 
 #include "core/inspector/InjectedScriptManager.h"
 
-#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/V8Window.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptNative.h"
 #include "core/inspector/v8/V8InjectedScriptHost.h"
@@ -75,15 +73,6 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
     if (!V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedScriptState->isolate()).ToLocal(&injectedScriptValue))
         return ScriptValue();
     return ScriptValue(inspectedScriptState, injectedScriptValue);
-}
-
-bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
-{
-    if (!scriptState->contextIsValid())
-        return false;
-    ScriptState::Scope scope(scriptState);
-    DOMWindow* window = toDOMWindow(scriptState->isolate(), scriptState->context()->Global());
-    return window && BindingSecurity::shouldAllowAccessTo(scriptState->isolate(), callingDOMWindow(scriptState->isolate()), window, DoNotReportSecurityError);
 }
 
 } // namespace blink

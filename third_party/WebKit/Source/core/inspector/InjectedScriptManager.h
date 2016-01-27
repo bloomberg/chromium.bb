@@ -44,13 +44,13 @@ class InjectedScriptHost;
 class InjectedScriptNative;
 class RemoteObjectIdBase;
 class ScriptValue;
+class V8DebuggerClient;
 
 class CORE_EXPORT InjectedScriptManager {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
     USING_FAST_MALLOC(InjectedScriptManager);
 public:
-    static PassOwnPtr<InjectedScriptManager> createForPage();
-    static PassOwnPtr<InjectedScriptManager> createForWorker();
+    static PassOwnPtr<InjectedScriptManager> create(V8DebuggerClient*);
     ~InjectedScriptManager();
 
     void disconnect();
@@ -65,24 +65,20 @@ public:
     void releaseObjectGroup(const String& objectGroup);
 
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);
-    InspectedStateAccessCheck inspectedStateAccessCheck() const { return m_inspectedStateAccessCheck; }
 
     void setCustomObjectFormatterEnabled(bool);
 
 private:
-    explicit InjectedScriptManager(InspectedStateAccessCheck);
+    explicit InjectedScriptManager(V8DebuggerClient*);
 
     String injectedScriptSource();
     ScriptValue createInjectedScript(const String& source, ScriptState*, int id, InjectedScriptNative*);
 
-    static bool canAccessInspectedWindow(ScriptState*);
-    static bool canAccessInspectedWorkerGlobalScope(ScriptState*);
-
     typedef HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
     RefPtr<InjectedScriptHost> m_injectedScriptHost;
-    InspectedStateAccessCheck m_inspectedStateAccessCheck;
     bool m_customObjectFormatterEnabled;
+    V8DebuggerClient* m_client;
 };
 
 } // namespace blink

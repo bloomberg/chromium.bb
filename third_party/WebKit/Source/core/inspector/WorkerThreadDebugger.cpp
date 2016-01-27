@@ -78,4 +78,9 @@ void WorkerThreadDebugger::quitMessageLoopOnPause()
     m_paused = false;
 }
 
+bool WorkerThreadDebugger::canAccessContext(v8::Local<v8::Context> context)
+{
+    return true;
+}
+
 } // namespace blink

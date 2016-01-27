@@ -30,115 +30,102 @@
 
 #include "bindings/core/v8/ScriptFunctionCall.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
+#include "wtf/PassOwnPtr.h"
 
 #include <v8.h>
 
 namespace blink {
 
-void ScriptCallArgumentHandler::appendArgument(v8::Local<v8::Value> value)
+static v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string)
 {
-    m_arguments.append(ScriptValue(m_scriptState.get(), value));
+    v8::Local<v8::String> result;
+    bool success = v8::String::NewFromUtf8(isolate, string.utf8().data(), v8::NewStringType::kNormal).ToLocal(&result);
+    ASSERT_UNUSED(success, success);
+    return result;
 }
 
-void ScriptCallArgumentHandler::appendArgument(const ScriptValue& argument)
-{
-    if (argument.scriptState() != m_scriptState) {
-        appendUndefinedArgument();
-        return;
-    }
-    m_arguments.append(argument);
-}
-
-void ScriptCallArgumentHandler::appendArgument(const String& argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8String(isolate, argument)));
-}
-
-void ScriptCallArgumentHandler::appendArgument(int argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    ScriptState::Scope scope(m_scriptState.get());
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Number::New(isolate, argument)));
-}
-
-void ScriptCallArgumentHandler::appendArgument(bool argument)
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8Boolean(argument, isolate)));
-}
-
-void ScriptCallArgumentHandler::appendUndefinedArgument()
-{
-    v8::Isolate* isolate = m_scriptState->isolate();
-    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Undefined(isolate)));
-}
-
-ScriptFunctionCall::ScriptFunctionCall(const ScriptValue& thisObject, const String& name)
-    : ScriptCallArgumentHandler(thisObject.scriptState())
-    , m_thisObject(thisObject)
-    , m_name(name)
+ScriptFunctionCall::ScriptFunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& name)
+    : m_client(client)
+    , m_context(context)
+    , m_name(v8String(context->GetIsolate(), name))
+    , m_value(value)
 {
 }
 
-ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
+void ScriptFunctionCall::appendArgument(v8::Local<v8::Value> value)
 {
-    ScriptState::Scope scope(m_scriptState.get());
-    v8::TryCatch tryCatch(m_scriptState->isolate());
+    m_arguments.append(value);
+}
+
+void ScriptFunctionCall::appendArgument(const String& argument)
+{
+    m_arguments.append(v8String(m_context->GetIsolate(), argument));
+}
+
+void ScriptFunctionCall::appendArgument(int argument)
+{
+    m_arguments.append(v8::Number::New(m_context->GetIsolate(), argument));
+}
+
+void ScriptFunctionCall::appendArgument(bool argument)
+{
+    m_arguments.append(argument ? v8::True(m_context->GetIsolate()) : v8::False(m_context->GetIsolate()));
+}
+
+void ScriptFunctionCall::appendUndefinedArgument()
+{
+    m_arguments.append(v8::Undefined(m_context->GetIsolate()));
+}
+
+v8::Local<v8::Value> ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
+{
+    v8::TryCatch tryCatch(m_context->GetIsolate());
     tryCatch.SetVerbose(reportExceptions);
 
-    ScriptValue result = callWithoutExceptionHandling();
+    v8::Local<v8::Value> result = callWithoutExceptionHandling();
     hadException = tryCatch.HasCaught();
     return result;
 }
 
-ScriptValue ScriptFunctionCall::call()
+v8::Local<v8::Value> ScriptFunctionCall::call()
 {
     bool hadException = false;
     return call(hadException);
 }
 
-ScriptValue ScriptFunctionCall::callWithoutExceptionHandling()
+v8::Local<v8::Value> ScriptFunctionCall::callWithoutExceptionHandling()
 {
-    ScriptState::Scope scope(m_scriptState.get());
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
+    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);
     v8::Local<v8::Value> value;
-    if (!thisObject->Get(m_scriptState->context(), v8String(m_scriptState->isolate(), m_name)).ToLocal(&value))
-        return ScriptValue();
+    if (!thisObject->Get(m_context, m_name).ToLocal(&value))
+        return v8::Local<v8::Value>();
 
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i) {
-        info[i] = m_arguments[i].v8Value();
+        info[i] = m_arguments[i];
         ASSERT(!info[i].IsEmpty());
     }
 
     v8::Local<v8::Value> result;
-    if (!V8ScriptRunner::callFunction(function, m_scriptState->executionContext(), thisObject, m_arguments.size(), info.get(), m_scriptState->isolate()).ToLocal(&result))
-        return ScriptValue();
-    return ScriptValue(m_scriptState.get(), result);
+    if (!m_client->callFunction(function, m_context, thisObject, m_arguments.size(), info.get()).ToLocal(&result))
+        return v8::Local<v8::Value>();
+    return result;
 }
 
 v8::Local<v8::Function> ScriptFunctionCall::function()
 {
-    v8::TryCatch tryCatch(m_scriptState->isolate());
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
+    v8::TryCatch tryCatch(m_context->GetIsolate());
+    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);
     v8::Local<v8::Value> value;
-    if (!thisObject->Get(m_scriptState->context(), v8String(m_scriptState->isolate(), m_name)).ToLocal(&value))
+    if (!thisObject->Get(m_context, m_name).ToLocal(&value))
         return v8::Local<v8::Function>();
 
     ASSERT(value->IsFunction());
     return v8::Local<v8::Function>::Cast(value);
 }
-
 
 } // namespace blink

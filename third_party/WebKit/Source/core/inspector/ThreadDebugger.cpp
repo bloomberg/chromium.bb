@@ -39,4 +39,10 @@ void ThreadDebugger::eventListeners(v8::Isolate* isolate, v8::Local<v8::Value> v
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, value, result);
 }
 
+v8::MaybeLocal<v8::Value> ThreadDebugger::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
+{
+    ScriptState* scriptState = ScriptState::from(context);
+    return V8ScriptRunner::callFunction(function, scriptState->executionContext(), receiver, argc, info, m_isolate);
+}
+
 } // namespace blink

@@ -263,7 +263,8 @@ void V8InjectedScriptHost::inspectCallback(const v8::FunctionCallbackInfo<v8::Va
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    host->inspectImpl(toJSONValue(scriptState->isolate(), info[0]), toJSONValue(scriptState->isolate(), info[1]));
+    ScriptState::Scope scope(scriptState);
+    host->inspectImpl(toJSONValue(scriptState->context(), info[0]), toJSONValue(scriptState->context(), info[1]));
 }
 
 void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

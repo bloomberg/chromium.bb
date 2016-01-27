@@ -494,11 +494,10 @@ public:
         // object is inspected.
         const String errorMessage("\"Inspection error. Maximum depth reached?\"");
         ScriptState* scriptState = m_scriptState.get();
-        v8::Isolate* isolate = scriptState->isolate();
         ScriptState::Scope scope(scriptState);
-        RefPtr<JSONValue> keyJsonValue = toJSONValue(isolate, idbCursor->key(scriptState).v8Value());
-        RefPtr<JSONValue> primaryKeyJsonValue = toJSONValue(isolate, idbCursor->primaryKey(scriptState).v8Value());
-        RefPtr<JSONValue> valueJsonValue = toJSONValue(isolate, idbCursor->value(scriptState).v8Value());
+        RefPtr<JSONValue> keyJsonValue = toJSONValue(scriptState->context(), idbCursor->key(scriptState).v8Value());
+        RefPtr<JSONValue> primaryKeyJsonValue = toJSONValue(scriptState->context(), idbCursor->primaryKey(scriptState).v8Value());
+        RefPtr<JSONValue> valueJsonValue = toJSONValue(scriptState->context(), idbCursor->value(scriptState).v8Value());
         String key = keyJsonValue ? keyJsonValue->toJSONString() : errorMessage;
         String value = valueJsonValue ? valueJsonValue->toJSONString() : errorMessage;
         String primaryKey = primaryKeyJsonValue ? primaryKeyJsonValue->toJSONString() : errorMessage;

@@ -36,26 +36,22 @@
 #include "core/inspector/InjectedScriptNative.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-PassOwnPtr<InjectedScriptManager> InjectedScriptManager::createForPage()
+PassOwnPtr<InjectedScriptManager> InjectedScriptManager::create(V8DebuggerClient* client)
 {
-    return adoptPtr(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWindow));
+    return adoptPtr(new InjectedScriptManager(client));
 }
 
-PassOwnPtr<InjectedScriptManager> InjectedScriptManager::createForWorker()
-{
-    return adoptPtr(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWorkerGlobalScope));
-}
-
-InjectedScriptManager::InjectedScriptManager(InspectedStateAccessCheck accessCheck)
+InjectedScriptManager::InjectedScriptManager(V8DebuggerClient* client)
     : m_injectedScriptHost(InjectedScriptHost::create())
-    , m_inspectedStateAccessCheck(accessCheck)
     , m_customObjectFormatterEnabled(false)
+    , m_client(client)
 {
 }
 
@@ -100,11 +96,6 @@ int InjectedScriptManager::discardInjectedScriptFor(ScriptState* scriptState)
     return contextId;
 }
 
-bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(ScriptState*)
-{
-    return true;
-}
-
 void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
 {
     Vector<int> keys;
@@ -140,12 +131,12 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(ScriptState* scriptStat
     if (it != m_idToInjectedScript.end())
         return it->value.get();
 
-    if (!m_inspectedStateAccessCheck(scriptState))
+    if (!m_client->canAccessContext(scriptState->context()))
         return nullptr;
 
     RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(scriptState->isolate()));
     ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), scriptState, contextId, injectedScriptNative.get());
-    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(injectedScriptValue, m_inspectedStateAccessCheck, injectedScriptNative.release(), contextId));
+    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(injectedScriptValue, m_client, injectedScriptNative.release(), contextId));
     InjectedScript* resultPtr = result.get();
     if (m_customObjectFormatterEnabled)
         result->setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);

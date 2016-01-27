@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PLATFORM_EXPORT PassRefPtr<JSONValue> toJSONValue(v8::Isolate*, v8::Local<v8::Value>, int maxDepth = JSONValue::maxDepth);
+PLATFORM_EXPORT PassRefPtr<JSONValue> toJSONValue(v8::Local<v8::Context>, v8::Local<v8::Value>, int maxDepth = JSONValue::maxDepth);
 
 } // namespace blink
 

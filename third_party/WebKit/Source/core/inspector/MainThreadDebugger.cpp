@@ -30,7 +30,9 @@
 
 #include "core/inspector/MainThreadDebugger.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/V8Window.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/v8/V8Debugger.h"
@@ -120,6 +122,14 @@ void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 void MainThreadDebugger::quitMessageLoopOnPause()
 {
     m_clientMessageLoop->quitNow();
+}
+
+bool MainThreadDebugger::canAccessContext(v8::Local<v8::Context> context)
+{
+    if (context.IsEmpty())
+        return false;
+    DOMWindow* window = toDOMWindow(context->GetIsolate(), context->Global());
+    return window && BindingSecurity::shouldAllowAccessTo(context->GetIsolate(), callingDOMWindow(context->GetIsolate()), window, DoNotReportSecurityError);
 }
 
 } // namespace blink

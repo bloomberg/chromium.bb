@@ -31,42 +31,37 @@
 #ifndef ScriptFunctionCall_h
 #define ScriptFunctionCall_h
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace blink {
-class ScriptValue;
 
-class ScriptCallArgumentHandler {
+class V8DebuggerClient;
+
+class ScriptFunctionCall {
     STACK_ALLOCATED();
 public:
-    ScriptCallArgumentHandler(ScriptState* scriptState) : m_scriptState(scriptState) { }
+    ScriptFunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String& name);
 
     void appendArgument(v8::Local<v8::Value>);
-    void appendArgument(const ScriptValue&);
     void appendArgument(const String&);
     void appendArgument(int);
     void appendArgument(bool);
     void appendUndefinedArgument();
 
-protected:
-    RefPtr<ScriptState> m_scriptState;
-    Vector<ScriptValue> m_arguments;
-};
-
-class ScriptFunctionCall : public ScriptCallArgumentHandler {
-    STACK_ALLOCATED();
-public:
-    ScriptFunctionCall(const ScriptValue& thisObject, const String& name);
-    ScriptValue call(bool& hadException, bool reportExceptions = true);
-    ScriptValue call();
+    v8::Local<v8::Value> call(bool& hadException, bool reportExceptions = true);
+    v8::Local<v8::Value> call();
     v8::Local<v8::Function> function();
-    ScriptValue callWithoutExceptionHandling();
+    v8::Local<v8::Value> callWithoutExceptionHandling();
+    v8::Local<v8::Context> context() { return m_context; }
 
 protected:
-    ScriptValue m_thisObject;
-    String m_name;
+    V8DebuggerClient* m_client;
+    v8::Local<v8::Context> m_context;
+    Vector<v8::Local<v8::Value>> m_arguments;
+    v8::Local<v8::String> m_name;
+    v8::Local<v8::Value> m_value;
 };
 
 } // namespace blink

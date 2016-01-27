@@ -44,14 +44,13 @@ namespace blink {
 class JSONValue;
 class RemoteObjectId;
 class ScriptFunctionCall;
+class V8DebuggerClient;
 
 typedef String ErrorString;
-PassRefPtr<JSONValue> toJSONValue(const ScriptValue&);
 
 class InjectedScript final {
     USING_FAST_MALLOC(InjectedScript);
 public:
-    InjectedScript();
     ~InjectedScript();
 
     ScriptState* scriptState() const
@@ -115,19 +114,19 @@ public:
 
 private:
     friend InjectedScript* InjectedScriptManager::injectedScriptFor(ScriptState*);
-    using InspectedStateAccessCheck = bool (*)(ScriptState*);
-    InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>, int contextId);
+    InjectedScript(ScriptValue, V8DebuggerClient*, PassRefPtr<InjectedScriptNative>, int contextId);
 
-    void initialize(ScriptValue, InspectedStateAccessCheck);
     bool canAccessInspectedWindow() const;
-    const ScriptValue& injectedScriptObject() const;
-    ScriptValue callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
+    v8::Local<v8::Context> v8Context() const;
+    v8::Local<v8::Value> v8Value() const;
+    v8::Local<v8::Value> callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
     void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
     void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
     void makeCallWithExceptionDetails(ScriptFunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
 
+    v8::Isolate* m_isolate;
     ScriptValue m_injectedScriptObject;
-    InspectedStateAccessCheck m_inspectedStateAccessCheck;
+    V8DebuggerClient* m_client;
     RefPtr<InjectedScriptNative> m_native;
     int m_contextId;
 };

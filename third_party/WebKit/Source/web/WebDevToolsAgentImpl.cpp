@@ -316,7 +316,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_hasBeenDisposed(false)
 #endif
     , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
-    , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
@@ -339,6 +338,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     long processId = Platform::current()->getUniqueIdForProcess();
     ASSERT(processId > 0);
     IdentifiersFactory::setProcessId(processId);
+
+    ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
+    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
+    m_injectedScriptManager = InjectedScriptManager::create(mainThreadDebugger);
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
 
     OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgentPtr(InspectorInspectorAgent::create(injectedScriptManager));
@@ -354,9 +357,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(layerTreeAgentPtr.release());
 
     m_agents.append(InspectorTimelineAgent::create());
-
-    ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
-    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
 
     OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, mainThreadDebugger->debugger(), m_inspectedFrames.get()));
     m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
