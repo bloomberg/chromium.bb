@@ -918,7 +918,6 @@ void BridgedNativeWidget::OnDeviceScaleFactorChanged(
 }
 
 base::Closure BridgedNativeWidget::PrepareForLayerBoundsChange() {
-  NOTIMPLEMENTED();
   return base::Closure();
 }
 
