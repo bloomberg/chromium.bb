@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/trace_event/trace_event.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8-platform.h"
 
