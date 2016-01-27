@@ -22,6 +22,7 @@
 namespace content {
 
 class CALayerTree;
+class CALayerPartialDamageTree;
 
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                                         public ImageTransportSurface,
@@ -78,13 +79,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
 
-  void UpdateRootAndPartialDamagePlanes(
-      const linked_ptr<OverlayPlane>& new_root_plane,
-      const gfx::RectF& pixel_damage_rect);
-  void UpdateRootAndPartialDamageCALayers(float scale_factor);
-  void UpdateCALayerTree(scoped_ptr<CALayerTree> ca_layer_tree,
-                         float scale_factor);
-
   // Returns true if the front of |pending_swaps_| has completed, or has timed
   // out by |now|.
   bool IsFirstPendingSwapReadyToDisplay(
@@ -125,7 +119,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   // Planes that have been scheduled, but have not had a subsequent SwapBuffers
   // call made yet.
-  linked_ptr<OverlayPlane> pending_root_plane_;
+  scoped_ptr<CALayerPartialDamageTree> pending_partial_damage_tree_;
   scoped_ptr<CALayerTree> pending_ca_layer_tree_;
 
   // A queue of all frames that have been created by SwapBuffersInternal but
@@ -134,8 +128,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   std::deque<linked_ptr<PendingSwap>> pending_swaps_;
 
   // The planes that are currently being displayed on the screen.
-  linked_ptr<OverlayPlane> current_root_plane_;
-  std::list<linked_ptr<OverlayPlane>> current_partial_damage_planes_;
+  scoped_ptr<CALayerPartialDamageTree> current_partial_damage_tree_;
   scoped_ptr<CALayerTree> current_ca_layer_tree_;
 
   // The time of the last swap was issued. If this is more than two vsyncs, then
@@ -146,10 +139,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   bool vsync_parameters_valid_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
-
-  // Calls to ScheduleCALayer come in back-to-front. This is reset to 1 at each
-  // swap and increments with each call to ScheduleCALayer.
-  int next_ca_layer_z_order_;
 
   base::Timer display_pending_swap_timer_;
   base::WeakPtrFactory<ImageTransportSurfaceOverlayMac> weak_factory_;
