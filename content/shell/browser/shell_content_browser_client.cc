@@ -218,6 +218,14 @@ bool ShellContentBrowserClient::IsNPAPIEnabled() {
 #endif
 }
 
+void ShellContentBrowserClient::RegisterInProcessMojoApplications(
+    StaticMojoApplicationMap* apps) {
+#if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  apps->insert(std::make_pair(
+      GURL("mojo:media"), base::Bind(&media::MojoMediaApplication::CreateApp)));
+#endif
+}
+
 void ShellContentBrowserClient::RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {
   apps->insert(std::make_pair(GURL(kTestMojoAppUrl),

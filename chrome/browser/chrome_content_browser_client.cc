@@ -295,6 +295,10 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 #endif
 
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#include "media/mojo/services/mojo_media_application.h"
+#endif
+
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
 using content::AccessTokenStore;
@@ -2709,6 +2713,14 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
   registry->AddService(
       base::Bind(&CreateWebUsbPermissionBubble, render_frame_host));
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+}
+
+void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
+    StaticMojoApplicationMap* apps) {
+#if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  apps->insert(std::make_pair(
+      GURL("mojo:media"), base::Bind(&media::MojoMediaApplication::CreateApp)));
+#endif
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(

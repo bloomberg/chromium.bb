@@ -30,11 +30,6 @@
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/static_application_loader.h"
 
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
-    defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-#include "media/mojo/services/mojo_media_application.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -251,13 +246,7 @@ MojoShellContext::MojoShellContext() {
         app.first);
   }
 
-#if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  application_manager_->SetLoaderForURL(
-      scoped_ptr<mojo::shell::ApplicationLoader>(
-          new mojo::shell::StaticApplicationLoader(
-              base::Bind(&media::MojoMediaApplication::CreateApp))),
-      GURL("mojo:media"));
-#elif(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+#if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   application_manager_->SetLoaderForURL(
       scoped_ptr<mojo::shell::ApplicationLoader>(new GpuProcessLoader()),
       GURL("mojo:media"));

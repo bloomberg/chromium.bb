@@ -47,6 +47,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       URLRequestInterceptorScopedVector request_interceptors) override;
   bool IsHandledURL(const GURL& url) override;
   bool IsNPAPIEnabled() override;
+  void RegisterInProcessMojoApplications(
+      StaticMojoApplicationMap* apps) override;
   void RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

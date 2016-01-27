@@ -154,6 +154,7 @@ include_rules = [
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/midi",  # For midi switches
+  "+media/mojo",  # For mojo media services.
   "+mojo/shell/public/cpp",
   "+mojo/converters",
   "+mojo/runner/child",
