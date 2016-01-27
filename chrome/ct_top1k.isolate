@@ -6,7 +6,6 @@
   'includes': [
     # TODO(rmistry): Try out the below once things are running on the
     #                FYI waterfall.
-    # '../tools/telemetry/telemetry.isolate',
     # '../tools/perf/perf.isolate',
     '../tools/perf/chrome_telemetry_build/telemetry_binary_manager.isolate',
   ],
@@ -18,7 +17,6 @@
           '../build/android/devil/',
           '../testing/variations/',
           '../third_party/catapult/',
-          '../tools/telemetry/',
           '../tools/perf/',
           '../tools/variations/',
           '../testing/test_env.py',

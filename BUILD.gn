@@ -190,6 +190,7 @@ group("both_gn_and_gyp") {
       "//third_party/WebKit/Source/platform:blink_platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
       "//third_party/WebKit/Source/wtf:wtf_unittests",
+      "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
       "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
@@ -197,7 +198,6 @@ group("both_gn_and_gyp") {
       "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
       "//third_party/smhasher:pmurhash",
       "//tools/imagediff($host_toolchain)",
-      "//tools/telemetry:bitmaptools($host_toolchain)",
       "//ui/display:display_unittests",
       "//ui/events:events_unittests",
       "//ui/gl:gl_unittests",
@@ -863,7 +863,7 @@ group("chromium_builder_perf") {
       "//gpu:gpu_perftests",
       "//media:media_perftests",
       "//media/midi:midi_unittests",
-      "//tools/telemetry:bitmaptools",
+      "//third_party/catapult/telemetry:bitmaptools",
     ]
 
     if (!is_chromeos) {

@@ -5,19 +5,16 @@
 import("//build/config/compiler/compiler.gni")
 
 group("telemetry_chrome_test") {
-  deps = [
-    "//tools/telemetry:telemetry_test_support",
-  ]
-
   data_deps = [
     # TODO(kbr): this used to be "//chrome". Had to change this to
     # chrome_initial temporarily to work around crbug.com/536192.
     "//chrome:chrome_initial",
-    "//tools/telemetry:bitmaptools",
+    "//third_party/catapult/telemetry:bitmaptools",
   ]
 
   data = [
     "//tools/perf/chrome_telemetry_build/",
+    "//third_party/catapult/",
   ]
 
   if (is_win) {

@@ -1060,7 +1060,7 @@
           'target_name': 'telemetry_base',
           'type': 'none',
           'dependencies': [
-            '../tools/telemetry/telemetry.gyp:bitmaptools#host',
+            '../third_party/catapult/telemetry/telemetry.gyp:bitmaptools#host',
           ],
         },
       ],

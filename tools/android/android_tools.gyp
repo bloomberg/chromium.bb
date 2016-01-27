@@ -17,7 +17,7 @@
         'md5sum/md5sum.gyp:md5sum',
         'memtrack_helper/memtrack_helper.gyp:memtrack_helper',
         'purge_ashmem/purge_ashmem.gyp:purge_ashmem',
-        '../../tools/telemetry/telemetry.gyp:*#host',
+        '../../third_party/catapult/telemetry/telemetry.gyp:*#host',
       ],
     },
     {

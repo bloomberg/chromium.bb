@@ -745,7 +745,7 @@ if (!is_android) {
 
   group("telemetry_gpu_unittests") {
     deps = [
-      "//tools/telemetry:telemetry_test_support",
+      "//third_party/catapult/telemetry:telemetry_test_support",
     ]
     data = [
       # TODO(kbr): refactor the telemetry dependencies more cleanly.

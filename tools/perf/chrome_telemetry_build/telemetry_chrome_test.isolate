@@ -7,7 +7,16 @@
   'includes': [
     '../../../chrome/breakpad.isolate',
     '../../../chrome/chrome.isolate',
-    '../../telemetry/telemetry.isolate',
     'telemetry_binary_manager.isolate',
   ],
+  'conditions': [
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'files': [
+          '../../../third_party/catapult/',
+        ],
+      },
+    }],
+  ]
+
 }

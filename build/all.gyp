@@ -82,7 +82,7 @@
             '../content/content_shell_and_tests.gyp:content_shell_apk',
             '<@(android_app_targets)',
             'android_builder_tests',
-            '../tools/telemetry/telemetry.gyp:*#host',
+            '../third_party/catapult/telemetry/telemetry.gyp:*#host',
             # TODO(nyquist) This should instead by a target for sync when all of
             # the sync-related code for Android has been upstreamed.
             # See http://crbug.com/159203
@@ -141,6 +141,7 @@
             '../ppapi/tools/ppapi_tools.gyp:*',
             '../skia/skia.gyp:*',
             '../sync/tools/sync_tools.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
             '../third_party/WebKit/public/all.gyp:*',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:*',
             '../third_party/codesighs/codesighs.gyp:*',
@@ -159,7 +160,6 @@
             '../third_party/qcms/qcms.gyp:*',
             '../tools/gn/gn.gyp:*',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
-            '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
             '<(libjpeg_gyp_path):*',
           ],
@@ -362,12 +362,12 @@
             '../mojo/mojo.gyp:mojo',
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
             '../third_party/WebKit/public/all.gyp:all_blink',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/leveldatabase/leveldatabase.gyp:env_chromium_unittests',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            '../tools/telemetry/telemetry.gyp:*',
           ],
         }],
         ['OS!="ios" and OS!="android" and chromecast==0', {
@@ -581,7 +581,7 @@
             '../media/media.gyp:media_perftests',
             '../media/midi/midi.gyp:midi_unittests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
-            '../tools/telemetry/telemetry.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
             ['OS!="ios" and OS!="win"', {
@@ -620,7 +620,7 @@
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
-            '../tools/telemetry/telemetry.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
             ['OS!="ios" and OS!="win"', {
@@ -657,7 +657,7 @@
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
-            '../tools/telemetry/telemetry.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
             ['OS!="ios" and OS!="win"', {
@@ -953,7 +953,7 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
-            '../tools/telemetry/telemetry.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/gl/gl_tests.gyp:gl_unittests',
@@ -993,7 +993,7 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
-            '../tools/telemetry/telemetry.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/gl/gl_tests.gyp:gl_unittests',
@@ -1100,7 +1100,7 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
-            '../tools/telemetry/telemetry.gyp:*',
+            '../third_party/catapult/telemetry/telemetry.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/events/events_unittests.gyp:events_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
@@ -1288,7 +1288,7 @@
             '../sandbox/sandbox.gyp:chrome_sandbox',
             '../sandbox/sandbox.gyp:sandbox_linux_unittests',
             '../third_party/mesa/mesa.gyp:osmesa',
-            '../tools/telemetry/telemetry.gyp:bitmaptools#host',
+            '../third_party/catapult/telemetry/telemetry.gyp:bitmaptools#host',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:clear_system_cache',
           ],
           'conditions': [

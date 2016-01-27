@@ -11,7 +11,6 @@
       '../../third_party/catapult/',
       '../../third_party/requests/',
       '../../tools/swarming_client/',
-      '../../tools/telemetry/telemetry/',
       '<(PRODUCT_DIR)/icudtl.dat',
       '<(PRODUCT_DIR)/lib.java/chromium_commands.dex.jar',
       '<(PRODUCT_DIR)/host_forwarder',

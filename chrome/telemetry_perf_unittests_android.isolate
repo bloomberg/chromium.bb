@@ -4,7 +4,7 @@
 {
   'includes': [
     '../build/android/android.isolate',
-    '../chrome/telemetry.isolate',
+    '../third_party/catapult/telemetry/telemetry.isolate',
   ],
   'variables': {
     'command': [
