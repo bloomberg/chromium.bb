@@ -454,7 +454,7 @@ public class NotificationUIManager {
                 NotificationConstants.ACTION_CLOSE_NOTIFICATION, persistentNotificationId, origin,
                 profileId, incognito, tag, -1 /* actionIndex */);
 
-        NotificationBuilder notificationBuilder =
+        NotificationBuilderBase notificationBuilder =
                 createNotificationBuilder()
                         .setTitle(title)
                         .setBody(body)
@@ -505,7 +505,7 @@ public class NotificationUIManager {
         }
     }
 
-    private NotificationBuilder createNotificationBuilder() {
+    private NotificationBuilderBase createNotificationBuilder() {
         if (useCustomLayouts()) {
             return new CustomNotificationBuilder(mAppContext);
         }

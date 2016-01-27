@@ -110,7 +110,7 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
     @Feature({"Browser", "Notifications"})
     public void testMaxActionButtons() {
         Context context = getInstrumentation().getTargetContext();
-        NotificationBuilder builder = new CustomNotificationBuilder(context)
+        NotificationBuilderBase builder = new CustomNotificationBuilder(context)
                                               .addAction(0 /* iconId */, "button",
                                                       createIntent(context, "ActionButtonOne"))
                                               .addAction(0 /* iconId */, "button",

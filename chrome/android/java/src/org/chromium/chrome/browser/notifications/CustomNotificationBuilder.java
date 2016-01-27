@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -26,30 +25,12 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.LocalizationUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
  */
-public class CustomNotificationBuilder implements NotificationBuilder {
-    /**
-     * Maximum length of CharSequence inputs to prevent excessive memory consumption. At current
-     * screen sizes we display about 500 characters at most, so this is a pretty generous limit, and
-     * it matches what NotificationCompat does.
-     */
-    @VisibleForTesting static final int MAX_CHARSEQUENCE_LENGTH = 5 * 1024;
-
-    /**
-     * The maximum number of action buttons. One is for the settings button, and two more slots are
-     * for developer provided buttons.
-     */
-    private static final int MAX_ACTION_BUTTONS = 3;
-
+public class CustomNotificationBuilder extends NotificationBuilderBase {
     /**
      * The maximum number of lines of body text for the expanded state. Fewer lines are used when
      * the text is scaled up, with a minimum of one line.
@@ -90,28 +71,12 @@ public class CustomNotificationBuilder implements NotificationBuilder {
 
     private final Context mContext;
 
-    private CharSequence mTitle;
-    private CharSequence mBody;
-    private CharSequence mOrigin;
-    private CharSequence mTickerText;
-    private Bitmap mLargeIcon;
-    private int mSmallIconId;
-    private PendingIntent mContentIntent;
-    private PendingIntent mDeleteIntent;
-    private List<Action> mActions = new ArrayList<>(MAX_ACTION_BUTTONS);
-    private Action mSettingsAction;
-    private int mDefaults = Notification.DEFAULT_ALL;
-    private long[] mVibratePattern;
-
     public CustomNotificationBuilder(Context context) {
         mContext = context;
     }
 
     @Override
     public Notification build() {
-        // TODO(mvanouwerkerk): Try inheriting from StandardNotificationBuilder to reduce
-        // duplication.
-
         // A note about RemoteViews and updating notifications. When a notification is passed to the
         // {@code NotificationManager} with the same tag and id as a previous notification, an
         // in-place update will be performed. In that case, the actions of all new
@@ -176,83 +141,6 @@ public class CustomNotificationBuilder implements NotificationBuilder {
         Notification notification = builder.build();
         notification.bigContentView = bigView;
         return notification;
-    }
-
-    @Override
-    public NotificationBuilder setTitle(CharSequence title) {
-        mTitle = limitLength(title);
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setBody(CharSequence body) {
-        mBody = limitLength(body);
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setOrigin(CharSequence origin) {
-        mOrigin = limitLength(origin);
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setTicker(CharSequence tickerText) {
-        mTickerText = limitLength(tickerText);
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setLargeIcon(Bitmap icon) {
-        mLargeIcon = icon;
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setSmallIcon(int iconId) {
-        mSmallIconId = iconId;
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setContentIntent(PendingIntent intent) {
-        mContentIntent = intent;
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setDeleteIntent(PendingIntent intent) {
-        mDeleteIntent = intent;
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder addAction(int iconId, CharSequence title, PendingIntent intent) {
-        if (mActions.size() == MAX_ACTION_BUTTONS) {
-            throw new IllegalStateException(
-                    "Cannot add more than " + MAX_ACTION_BUTTONS + " actions.");
-        }
-        mActions.add(new Action(iconId, limitLength(title), intent));
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder addSettingsAction(
-            int iconId, CharSequence title, PendingIntent intent) {
-        mSettingsAction = new Action(iconId, limitLength(title), intent);
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setDefaults(int defaults) {
-        mDefaults = defaults;
-        return this;
-    }
-
-    @Override
-    public NotificationBuilder setVibrate(long[] pattern) {
-        mVibratePattern = Arrays.copyOf(pattern, pattern.length);
-        return this;
     }
 
     /**
@@ -335,17 +223,6 @@ public class CustomNotificationBuilder implements NotificationBuilder {
                     R.id.work_profile_badge, ((BitmapDrawable) outputDrawable).getBitmap());
             view.setViewVisibility(R.id.work_profile_badge, View.VISIBLE);
         }
-    }
-
-    @Nullable
-    private static CharSequence limitLength(@Nullable CharSequence input) {
-        if (input == null) {
-            return input;
-        }
-        if (input.length() > MAX_CHARSEQUENCE_LENGTH) {
-            return input.subSequence(0, MAX_CHARSEQUENCE_LENGTH);
-        }
-        return input;
     }
 
     /**
