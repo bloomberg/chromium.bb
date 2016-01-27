@@ -37,8 +37,7 @@ class SVGPathBuilder final : public SVGPathConsumer {
 public:
     SVGPathBuilder(Path& path)
         : m_path(path)
-        // Starting in ClosePath state ensures correct handling of the first moveTo.
-        , m_lastCommand(PathSegClosePath)
+        , m_lastCommand(PathSegUnknown)
     { }
 
 private:

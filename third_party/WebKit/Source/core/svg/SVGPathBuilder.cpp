@@ -56,12 +56,7 @@ void SVGPathBuilder::emitMoveTo(const FloatPoint& p)
 {
     m_path.moveTo(p);
 
-    // If a "closepath" is followed immediately by a "moveto", then
-    // the "moveto" identifies the start point of the next subpath.
-    // [https://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand]
-    if (m_lastCommand == PathSegClosePath)
-        m_subpathPoint = p;
-
+    m_subpathPoint = p;
     m_currentPoint = p;
 }
 
