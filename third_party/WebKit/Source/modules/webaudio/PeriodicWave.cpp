@@ -87,7 +87,8 @@ PeriodicWave* PeriodicWave::createTriangle(float sampleRate)
 }
 
 PeriodicWave::PeriodicWave(float sampleRate)
-    : m_sampleRate(sampleRate)
+    : m_v8ExternalMemory(0)
+    , m_sampleRate(sampleRate)
     , m_centsPerRange(CentsPerRange)
 {
     float nyquist = 0.5 * m_sampleRate;
@@ -96,6 +97,11 @@ PeriodicWave::PeriodicWave(float sampleRate)
     // Compute the number of ranges needed to cover the entire frequency range, assuming
     // kNumberOfOctaveBands per octave.
     m_numberOfRanges = 0.5 + kNumberOfOctaveBands * log2f(periodicWaveSize());
+}
+
+PeriodicWave::~PeriodicWave()
+{
+    adjustV8ExternalMemory(-static_cast<int64_t>(m_v8ExternalMemory));
 }
 
 unsigned PeriodicWave::periodicWaveSize() const
@@ -162,6 +168,13 @@ unsigned PeriodicWave::numberOfPartialsForRange(unsigned rangeIndex) const
     return numberOfPartials;
 }
 
+// Tell V8 about the memory we're using so it can properly schedule garbage collects.
+void PeriodicWave::adjustV8ExternalMemory(int delta)
+{
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(delta);
+    m_v8ExternalMemory += delta;
+}
+
 // Convert into time-domain wave buffers.
 // One table is created for each range for non-aliasing playback at different playback rates.
 // Thus, higher ranges have more high-frequency partials culled out.
@@ -208,7 +221,9 @@ void PeriodicWave::createBandLimitedTables(const float* realData, const float* i
         imagP[0] = 0;
 
         // Create the band-limited table.
-        OwnPtr<AudioFloatArray> table = adoptPtr(new AudioFloatArray(periodicWaveSize()));
+        unsigned waveSize = periodicWaveSize();
+        OwnPtr<AudioFloatArray> table = adoptPtr(new AudioFloatArray(waveSize));
+        adjustV8ExternalMemory(waveSize * sizeof(float));
         m_bandLimitedTables.append(table.release());
 
         // Apply an inverse FFT to generate the time-domain table data.
