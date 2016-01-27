@@ -132,7 +132,7 @@ static base::DictionaryValue* ReadHeader(base::StringPiece* data) {
 
   if (!header->IsType(base::Value::TYPE_DICTIONARY))
     return NULL;
-  return reinterpret_cast<base::DictionaryValue*>(header.release());
+  return static_cast<base::DictionaryValue*>(header.release());
 }
 
 // kCurrentFileVersion is the version of the CRLSet file format that we
