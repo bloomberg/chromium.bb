@@ -91,10 +91,10 @@ void ContentTestSuiteBase::Initialize() {
   media::RegisterJni(env);
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);
+  ui::RegisterUIAndroidJni(env);
   ui::gl::android::RegisterJni(env);
   ui::events::android::RegisterJni(env);
 #if !defined(USE_AURA)
-  ui::RegisterUIAndroidJni(env);
   ui::shell_dialogs::RegisterJni(env);
   content::Compositor::Initialize();
 #endif

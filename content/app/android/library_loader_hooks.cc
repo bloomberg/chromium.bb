@@ -64,6 +64,11 @@ bool EnsureJniRegistered(JNIEnv* env) {
     if (!ui::events::android::RegisterJni(env))
       return false;
 
+#if !defined(USE_AURA)
+    if (!ui::shell_dialogs::RegisterJni(env))
+      return false;
+#endif
+
     if (!content::android::RegisterCommonJni(env))
       return false;
 
@@ -85,13 +90,8 @@ bool EnsureJniRegistered(JNIEnv* env) {
     if (!media::midi::RegisterJni(env))
       return false;
 
-#if !defined(USE_AURA)
-    if (!ui::shell_dialogs::RegisterJni(env))
-      return false;
-
     if (!ui::RegisterUIAndroidJni(env))
       return false;
-#endif
 
     g_jni_init_done = true;
   }

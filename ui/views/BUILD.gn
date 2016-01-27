@@ -114,7 +114,7 @@ component("views") {
       "//ui/touch_selection",
       "//ui/wm",
     ]
-    if (!is_chromeos && !is_android) {
+    if (!is_chromeos) {
       sources += gypi_values.views_desktop_aura_sources
       if (use_x11) {
         sources += gypi_values.views_desktop_aura_x11_sources
