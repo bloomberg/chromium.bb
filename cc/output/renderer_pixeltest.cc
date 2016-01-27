@@ -1705,12 +1705,10 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   // Set up a mask on the RenderPassDrawQuad.
   RenderPassDrawQuad* mask_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  mask_quad->SetNew(root_pass_shared_state,
-                    sub_rect,
-                    sub_rect,
-                    child_pass_id,
+  mask_quad->SetNew(root_pass_shared_state, sub_rect, sub_rect, child_pass_id,
                     mask_resource_id,
-                    gfx::Vector2dF(2.f, 1.f),     // mask_uv_scale
+                    gfx::Vector2dF(2.f / mask_rect.width(),
+                                   2.f / mask_rect.height()),  // mask_uv_scale
                     gfx::Size(mask_rect.size()),  // mask_texture_size
                     FilterOperations(),           // foreground filters
                     gfx::Vector2dF(),             // filters scale

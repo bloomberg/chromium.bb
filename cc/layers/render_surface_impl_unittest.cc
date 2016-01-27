@@ -111,7 +111,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
 
   const RenderPassDrawQuad* quad =
       RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
-  EXPECT_EQ(gfx::Vector2dF(1.f, 1.f), quad->mask_uv_scale);
+  EXPECT_EQ(gfx::Vector2dF(0.0005f, 0.0005f), quad->mask_uv_scale);
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), quad->filters_scale);
 }
 

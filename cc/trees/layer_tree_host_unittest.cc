@@ -6019,7 +6019,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
                   .ToString(),
               render_pass_quad->MaskUVRect().ToString());
-    EXPECT_EQ(gfx::Vector2dF(10.f / 50.f, 20.f / 50.f).ToString(),
+    EXPECT_EQ(gfx::Vector2dF(1.f / 50.f, 1.f / 50.f).ToString(),
               render_pass_quad->mask_uv_scale.ToString());
     EndTest();
     return draw_result;
@@ -6102,7 +6102,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
                   render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.01f, 0.01f).ToString(),
                   render_pass_quad->mask_uv_scale.ToString());
         break;
       case 1:
@@ -6112,7 +6112,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
                   render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.005f, 0.005f).ToString(),
                   render_pass_quad->mask_uv_scale.ToString());
         EndTest();
         break;
@@ -6190,7 +6190,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
                   render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.02f, 0.02f).ToString(),
                   render_pass_quad->mask_uv_scale.ToString());
         break;
       case 1:
@@ -6200,7 +6200,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
                   render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.01f, 0.01f).ToString(),
                   render_pass_quad->mask_uv_scale.ToString());
         EndTest();
         break;
@@ -6283,7 +6283,7 @@ class LayerTreeTestReflectionMaskLayerWithDifferentBounds
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
                   render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.02f, 0.02f).ToString(),
                   render_pass_quad->mask_uv_scale.ToString());
         break;
       case 1:
@@ -6293,7 +6293,7 @@ class LayerTreeTestReflectionMaskLayerWithDifferentBounds
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
                   render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.01f, 0.01f).ToString(),
                   render_pass_quad->mask_uv_scale.ToString());
         EndTest();
         break;
@@ -6383,7 +6383,7 @@ class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
                   replica_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
                   replica_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(2.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.02f, 0.02f).ToString(),
                   replica_quad->mask_uv_scale.ToString());
         break;
       case 1:
@@ -6393,7 +6393,7 @@ class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
                   replica_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
                   replica_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(2.f, 1.f).ToString(),
+        EXPECT_EQ(gfx::Vector2dF(0.02f, 0.02f).ToString(),
                   replica_quad->mask_uv_scale.ToString());
         EndTest();
         break;
