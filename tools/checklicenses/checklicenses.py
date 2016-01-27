@@ -223,6 +223,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN'
     ],
 
+    # https://bitbucket.org/ned/coveragepy/issue/313/add-license-file-containing-2-3-or-4
+    # Apache (v2.0) license, not shipped
+    'third_party/catapult/third_party/coverage': [
+        'UNKNOWN'
+    ],
+
     # https://code.google.com/p/graphy/issues/detail?id=6
     # Apache (v2.0)
     'third_party/catapult/third_party/graphy': [
