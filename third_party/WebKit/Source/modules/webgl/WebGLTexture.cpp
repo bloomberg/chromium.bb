@@ -40,7 +40,6 @@ WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
     , m_isNPOT(false)
     , m_isCubeComplete(false)
     , m_isComplete(false)
-    , m_needToUseBlackTexture(false)
     , m_isFloatType(false)
     , m_isHalfFloatType(false)
     , m_isWebGL2OrHigher(ctx->isWebGL2OrHigher())
@@ -228,7 +227,6 @@ void WebGLTexture::generateMipmapLevelInfo()
         }
         m_isComplete = true;
     }
-    m_needToUseBlackTexture = false;
 }
 
 GLenum WebGLTexture::getInternalFormat(GLenum target, GLint level) const
@@ -301,8 +299,6 @@ bool WebGLTexture::needToUseBlackTexture(TextureExtensionFlag flag, const WebGLS
     ASSERT(samplerState);
     if (!object())
         return false;
-    if (m_needToUseBlackTexture)
-        return true;
     if ((m_isFloatType && !(flag & TextureFloatLinearExtensionEnabled)) || (m_isHalfFloatType && !(flag && TextureHalfFloatLinearExtensionEnabled))) {
         if (samplerState->magFilter != GL_NEAREST || (samplerState->minFilter != GL_NEAREST && samplerState->minFilter != GL_NEAREST_MIPMAP_NEAREST))
             return true;
@@ -437,21 +433,6 @@ void WebGLTexture::update()
     }
     m_isFloatType = m_info[0][0].type == GL_FLOAT;
     m_isHalfFloatType = m_info[0][0].type == GL_HALF_FLOAT_OES;
-
-    m_needToUseBlackTexture = false;
-    // If it is a Cube texture, check Cube Completeness first
-    if (m_info.size() > 1 && !m_isCubeComplete)
-        m_needToUseBlackTexture = true;
-    if (!m_isWebGL2OrHigher) {
-        // We can do these checks up front in WebGL 1 because there's no separate samplers.
-        // NPOT
-        if (m_isNPOT && ((m_samplerState.minFilter != GL_NEAREST && m_samplerState.minFilter != GL_LINEAR)
-            || m_samplerState.wrapS != GL_CLAMP_TO_EDGE || m_samplerState.wrapT != GL_CLAMP_TO_EDGE))
-            m_needToUseBlackTexture = true;
-        // Completeness
-        if (!m_isComplete && m_samplerState.minFilter != GL_NEAREST && m_samplerState.minFilter != GL_LINEAR)
-            m_needToUseBlackTexture = true;
-    }
 }
 
 const WebGLTexture::LevelInfo* WebGLTexture::getLevelInfo(GLenum target, GLint level) const

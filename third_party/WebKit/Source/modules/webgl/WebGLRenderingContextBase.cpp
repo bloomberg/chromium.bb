@@ -5524,14 +5524,16 @@ ScriptValue WebGLRenderingContextBase::getWebGLIntArrayParameter(ScriptState* sc
 void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionName, bool prepareToDraw)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
+    // We only handle the situation with float/half_float textures here. Other situations are handled in command buffer.
     bool resetActiveUnit = false;
     WebGLTexture::TextureExtensionFlag flag = static_cast<WebGLTexture::TextureExtensionFlag>((extensionEnabled(OESTextureFloatLinearName) ? WebGLTexture::TextureFloatLinearExtensionEnabled : 0)
         | ((extensionEnabled(OESTextureHalfFloatLinearName) || isWebGL2OrHigher()) ? WebGLTexture::TextureHalfFloatLinearExtensionEnabled : 0));
     for (unsigned ii = 0; ii < m_onePlusMaxNonDefaultTextureUnit; ++ii) {
         const WebGLSamplerState* samplerState2D = getTextureUnitSamplerState(GL_TEXTURE_2D, ii);
         const WebGLSamplerState* samplerStateCubeMap = getTextureUnitSamplerState(GL_TEXTURE_CUBE_MAP, ii);
-        if ((m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag, samplerState2D))
-            || (m_textureUnits[ii].m_textureCubeMapBinding.get() && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag, samplerStateCubeMap))) {
+        bool needToUseBlackTex2D = (m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag, samplerState2D));
+        bool needToUseBlackTexCubeMap = (m_textureUnits[ii].m_textureCubeMapBinding.get() && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag, samplerStateCubeMap));
+        if (needToUseBlackTex2D || needToUseBlackTexCubeMap) {
             if (ii != m_activeTextureUnit) {
                 webContext()->activeTexture(GL_TEXTURE0 + ii);
                 resetActiveUnit = true;
@@ -5543,8 +5545,7 @@ void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionNa
             WebGLTexture* texCubeMap;
             if (prepareToDraw) {
                 String msg(String("texture bound to texture unit ") + String::number(ii)
-                    + " is not renderable. It maybe non-power-of-2 and have incompatible texture filtering or is not 'texture complete'."
-                    + " Or the texture is Float or Half Float type with linear filtering while OES_float_linear or OES_half_float_linear extension is not enabled.");
+                    + " is not renderable. Texture is Float or Half Float type with linear filtering while OES_float_linear or OES_half_float_linear extension is not enabled.");
                 emitGLWarning(functionName, msg.utf8().data());
                 tex2D = m_blackTexture2D.get();
                 texCubeMap = m_blackTextureCubeMap.get();
@@ -5552,9 +5553,9 @@ void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionNa
                 tex2D = m_textureUnits[ii].m_texture2DBinding.get();
                 texCubeMap = m_textureUnits[ii].m_textureCubeMapBinding.get();
             }
-            if (m_textureUnits[ii].m_texture2DBinding && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag, samplerState2D))
+            if (needToUseBlackTex2D)
                 webContext()->bindTexture(GL_TEXTURE_2D, objectOrZero(tex2D));
-            if (m_textureUnits[ii].m_textureCubeMapBinding && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag, samplerStateCubeMap))
+            if (needToUseBlackTexCubeMap)
                 webContext()->bindTexture(GL_TEXTURE_CUBE_MAP, objectOrZero(texCubeMap));
         }
     }
