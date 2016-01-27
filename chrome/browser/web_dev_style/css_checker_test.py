@@ -20,12 +20,9 @@ class CssCheckerTest(SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
 
-    self.fake_file_name = 'fake.css'
-
     self.fake_file = self.mox.CreateMockAnything()
+    # Actual calls to NewContents() and LocalPath() are defined in each test.
     self.mox.StubOutWithMock(self.fake_file, 'LocalPath')
-    self.fake_file.LocalPath().AndReturn(self.fake_file_name)
-    # Actual calls to NewContents() are defined in each test.
     self.mox.StubOutWithMock(self.fake_file, 'NewContents')
 
     self.input_api = self.mox.CreateMockAnything()
@@ -43,13 +40,18 @@ class CssCheckerTest(SuperMoxTestBase):
     self.mox.StubOutWithMock(self.output_api, 'PresubmitNotifyResult',
                              use_mock_anything=True)
 
-  def VerifyContentsIsValid(self, contents):
+  def _create_file(self, contents, filename):
+    self.fake_file_name = filename
+    self.fake_file.LocalPath().AndReturn(self.fake_file_name)
     self.fake_file.NewContents().AndReturn(contents.splitlines())
+
+  def VerifyContentIsValid(self, contents, filename='fake.css'):
+    self._create_file(contents, filename)
     self.mox.ReplayAll()
     css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
 
-  def VerifyContentsProducesOutput(self, contents, output):
-    self.fake_file.NewContents().AndReturn(contents.splitlines())
+  def VerifyContentsProducesOutput(self, contents, output, filename='fake.css'):
+    self._create_file(contents, filename)
     self.output_api.PresubmitPromptWarning(
         self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
     self.mox.ReplayAll()
@@ -95,7 +97,7 @@ class CssCheckerTest(SuperMoxTestBase):
     color: black;""")
 
   def testCssStringWithAt(self):
-    self.VerifyContentsIsValid("""
+    self.VerifyContentIsValid("""
 #logo {
   background-image: url(images/google_logo.png@2x);
 }
@@ -427,6 +429,28 @@ body.alternate-logo #logo {
     height: 0cm;
     width: 0in;
 """)
+
+  def testHtmlInlineStyle(self):
+    self.VerifyContentsProducesOutput("""<!doctype html>
+<html>
+<head>
+  <!-- Don't warn about problems outside of style tags
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+    }
+  -->
+  <style>
+    body {
+      flex-direction:column;
+    }
+  </style>
+</head>
+</html>""", """
+- Colons (:) should have a space after them.
+    flex-direction:column;
+""", filename='test.html')
 
 
 if __name__ == '__main__':
