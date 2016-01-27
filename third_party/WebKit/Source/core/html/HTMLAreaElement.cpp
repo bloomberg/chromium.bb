@@ -152,7 +152,7 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
         }
         break;
     case Circle:
-        if (m_coords.size() >= 3) {
+        if (m_coords.size() >= 3 && m_coords[2].value() > 0) {
             float r = clampCoordinate(m_coords[2]);
             path.addEllipse(FloatRect(clampCoordinate(m_coords[0]) - r, clampCoordinate(m_coords[1]) - r, 2 * r, 2 * r));
         }
