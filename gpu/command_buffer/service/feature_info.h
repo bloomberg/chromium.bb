@@ -184,6 +184,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool unsafe_es3_apis_enabled_;
 
+  // Whether the command line switch kEnableGLPathRendering is passed in.
+  bool enable_gl_path_rendering_switch_;
+
   bool disable_shader_translator_;
   scoped_ptr<gfx::GLVersionInfo> gl_version_info_;
 

@@ -194,7 +194,9 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
     init.request_depth = true;
     init.bind_generates_resource = true;
     init.extensions = "GL_NV_path_rendering";
-    InitDecoder(init);
+    base::CommandLine command_line(0, NULL);
+    command_line.AppendSwitch(switches::kEnableGLPathRendering);
+    InitDecoderWithCommandLine(init, &command_line);
 
     EXPECT_CALL(*gl_, GenPathsNV(1))
         .WillOnce(Return(kServicePathId))
@@ -553,7 +555,9 @@ class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
     init.request_depth = true;
     init.bind_generates_resource = true;
     init.extensions = "GL_NV_path_rendering GL_NV_framebuffer_mixed_samples ";
-    InitDecoder(init);
+    base::CommandLine command_line(0, NULL);
+    command_line.AppendSwitch(switches::kEnableGLPathRendering);
+    InitDecoderWithCommandLine(init, &command_line);
   }
 };
 

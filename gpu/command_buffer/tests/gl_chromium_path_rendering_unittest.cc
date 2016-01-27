@@ -38,8 +38,10 @@ class CHROMIUMPathRenderingTest : public testing::Test {
 
   void SetUp() override {
     GLManager::Options options;
+    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
+    command_line.AppendSwitch(switches::kEnableGLPathRendering);
     InitializeContextFeatures(&options);
-    gl_.Initialize(options);
+    gl_.InitializeWithCommandLine(options, &command_line);
   }
 
   virtual void InitializeContextFeatures(GLManager::Options* options) {

@@ -2160,7 +2160,11 @@ class ProgramManagerWithPathRenderingTest
           testing::tuple<const char*, const char*>> {
  protected:
   void SetUp() override {
-    SetUpBase(testing::get<0>(GetParam()), testing::get<1>(GetParam()));
+    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
+    command_line.AppendSwitch(switches::kEnableGLPathRendering);
+    FeatureInfo* feature_info = new FeatureInfo(command_line);
+    SetUpBase(testing::get<0>(GetParam()), testing::get<1>(GetParam()),
+              feature_info);
   }
   static const char* kFragmentInput1Name;
   static const char* kFragmentInput2Name;
