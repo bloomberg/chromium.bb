@@ -471,6 +471,15 @@ void Shell::ShowShelf() {
     (*iter)->ShowShelf();
 }
 
+void Shell::HideShelf() {
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter) {
+    if ((*iter)->shelf())
+      (*iter)->shelf()->ShutdownStatusAreaWidget();
+  }
+}
+
 void Shell::AddShellObserver(ShellObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -715,7 +724,13 @@ Shell::~Shell() {
   logout_confirmation_controller_.reset();
 #endif
 
-  // Destroy SystemTrayDelegate before destroying the status area(s).
+  // Destroy the keyboard before closing the shelf, since it will invoke a shelf
+  // layout.
+  DeactivateKeyboard();
+
+  // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
+  // to deinitialize the shelf first, as it is initialized after the delegate.
+  HideShelf();
   system_tray_delegate_->Shutdown();
   system_tray_delegate_.reset();
 

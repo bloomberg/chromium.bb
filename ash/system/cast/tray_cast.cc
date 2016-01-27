@@ -42,12 +42,6 @@ const int kStopButtonRightPadding = 18;
 
 // Returns the active CastConfigDelegate instance.
 ash::CastConfigDelegate* GetCastConfigDelegate() {
-  // When shutting down Chrome, there may not be a shell or a delegate instance.
-  if (!ash::Shell::GetInstance() ||
-      !ash::Shell::GetInstance()->system_tray_delegate()) {
-    return nullptr;
-  }
-
   return ash::Shell::GetInstance()
       ->system_tray_delegate()
       ->GetCastConfigDelegate();
@@ -560,14 +554,9 @@ TrayCast::TrayCast(SystemTray* system_tray) : SystemTrayItem(system_tray) {
 }
 
 TrayCast::~TrayCast() {
-  // TODO(jdufault): Remove these if checks (and the ones in
-  // GetCastConfigDelegate) by fixing deinit order. See crbug.com/577413.
-  if (Shell::GetInstance())
-    Shell::GetInstance()->RemoveShellObserver(this);
-
-  ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
-  if (added_observer_ && cast_config_delegate)
-    cast_config_delegate->RemoveObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
+  if (added_observer_)
+    GetCastConfigDelegate()->RemoveObserver(this);
 }
 
 void TrayCast::StartCastForTest(const std::string& receiver_id) {
