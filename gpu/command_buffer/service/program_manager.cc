@@ -228,6 +228,7 @@ Program::UniformInfo::UniformInfo(const std::string& client_name,
     case GL_SAMPLER_2D_ARRAY:
     case GL_SAMPLER_2D_SHADOW:
     case GL_SAMPLER_2D_ARRAY_SHADOW:
+    case GL_SAMPLER_CUBE_SHADOW:
     case GL_INT_SAMPLER_2D:
     case GL_INT_SAMPLER_3D:
     case GL_INT_SAMPLER_CUBE:
