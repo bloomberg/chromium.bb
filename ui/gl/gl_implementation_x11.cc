@@ -42,8 +42,8 @@ const char kGLLibraryName[] = "libGL.so.1";
 const char kGLESv2LibraryName[] = "libGLESv2.so.2";
 const char kEGLLibraryName[] = "libEGL.so.1";
 
-const char kGLESv2ANGLELibraryName[] = "libGLESv2_ANGLE.so";
-const char kEGLANGLELibraryName[] = "libEGL_ANGLE.so";
+const char kGLESv2ANGLELibraryName[] = "libGLESv2.so";
+const char kEGLANGLELibraryName[] = "libEGL.so";
 
 }  // namespace
 
