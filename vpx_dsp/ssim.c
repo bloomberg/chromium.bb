@@ -14,8 +14,8 @@
 #include "vpx_ports/mem.h"
 #include "vpx_ports/system_state.h"
 
-void vpx_ssim_parms_16x16_c(const uint8_t *s, int sp, const uint8_t *r,
-                            int rp, uint32_t *sum_s, uint32_t *sum_r,
+void vpx_ssim_parms_16x16_c(const uint8_t *s, int sp, const uint8_t *r, int rp,
+                            uint32_t *sum_s, uint32_t *sum_r,
                             uint32_t *sum_sq_s, uint32_t *sum_sq_r,
                             uint32_t *sum_sxr) {
   int i, j;
@@ -30,9 +30,8 @@ void vpx_ssim_parms_16x16_c(const uint8_t *s, int sp, const uint8_t *r,
   }
 }
 void vpx_ssim_parms_8x8_c(const uint8_t *s, int sp, const uint8_t *r, int rp,
-                          uint32_t *sum_s, uint32_t *sum_r,
-                          uint32_t *sum_sq_s, uint32_t *sum_sq_r,
-                          uint32_t *sum_sxr) {
+                          uint32_t *sum_s, uint32_t *sum_r, uint32_t *sum_sq_s,
+                          uint32_t *sum_sq_r, uint32_t *sum_sxr) {
   int i, j;
   for (i = 0; i < 8; i++, s += sp, r += rp) {
     for (j = 0; j < 8; j++) {
@@ -46,9 +45,8 @@ void vpx_ssim_parms_8x8_c(const uint8_t *s, int sp, const uint8_t *r, int rp,
 }
 
 #if CONFIG_VPX_HIGHBITDEPTH
-void vpx_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp,
-                                 const uint16_t *r, int rp,
-                                 uint32_t *sum_s, uint32_t *sum_r,
+void vpx_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp, const uint16_t *r,
+                                 int rp, uint32_t *sum_s, uint32_t *sum_r,
                                  uint32_t *sum_sq_s, uint32_t *sum_sq_r,
                                  uint32_t *sum_sxr) {
   int i, j;
@@ -64,12 +62,11 @@ void vpx_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp,
 }
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
-static const int64_t cc1 =  26634;  // (64^2*(.01*255)^2
+static const int64_t cc1 = 26634;   // (64^2*(.01*255)^2
 static const int64_t cc2 = 239708;  // (64^2*(.03*255)^2
 
-static double similarity(uint32_t sum_s, uint32_t sum_r,
-                         uint32_t sum_sq_s, uint32_t sum_sq_r,
-                         uint32_t sum_sxr, int count) {
+static double similarity(uint32_t sum_s, uint32_t sum_r, uint32_t sum_sq_s,
+                         uint32_t sum_sq_r, uint32_t sum_sxr, int count) {
   int64_t ssim_n, ssim_d;
   int64_t c1, c2;
 
@@ -77,12 +74,12 @@ static double similarity(uint32_t sum_s, uint32_t sum_r,
   c1 = (cc1 * count * count) >> 12;
   c2 = (cc2 * count * count) >> 12;
 
-  ssim_n = (2 * sum_s * sum_r + c1) * ((int64_t) 2 * count * sum_sxr -
-                                       (int64_t) 2 * sum_s * sum_r + c2);
+  ssim_n = (2 * sum_s * sum_r + c1) *
+           ((int64_t)2 * count * sum_sxr - (int64_t)2 * sum_s * sum_r + c2);
 
   ssim_d = (sum_s * sum_s + sum_r * sum_r + c1) *
            ((int64_t)count * sum_sq_s - (int64_t)sum_s * sum_s +
-            (int64_t)count * sum_sq_r - (int64_t) sum_r * sum_r + c2);
+            (int64_t)count * sum_sq_r - (int64_t)sum_r * sum_r + c2);
 
   return ssim_n * 1.0 / ssim_d;
 }
@@ -101,12 +98,8 @@ static double highbd_ssim_8x8(const uint16_t *s, int sp, const uint16_t *r,
   const int oshift = bd - 8;
   vpx_highbd_ssim_parms_8x8(s, sp, r, rp, &sum_s, &sum_r, &sum_sq_s, &sum_sq_r,
                             &sum_sxr);
-  return similarity(sum_s >> oshift,
-                    sum_r >> oshift,
-                    sum_sq_s >> (2 * oshift),
-                    sum_sq_r >> (2 * oshift),
-                    sum_sxr >> (2 * oshift),
-                    64);
+  return similarity(sum_s >> oshift, sum_r >> oshift, sum_sq_s >> (2 * oshift),
+                    sum_sq_r >> (2 * oshift), sum_sxr >> (2 * oshift), 64);
 }
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
@@ -145,9 +138,9 @@ static double vpx_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
   for (i = 0; i <= height - 8;
        i += 4, img1 += stride_img1 * 4, img2 += stride_img2 * 4) {
     for (j = 0; j <= width - 8; j += 4) {
-      double v = highbd_ssim_8x8(CONVERT_TO_SHORTPTR(img1 + j), stride_img1,
-                                 CONVERT_TO_SHORTPTR(img2 + j), stride_img2,
-                                 bd);
+      double v =
+          highbd_ssim_8x8(CONVERT_TO_SHORTPTR(img1 + j), stride_img1,
+                          CONVERT_TO_SHORTPTR(img2 + j), stride_img2, bd);
       ssim_total += v;
       samples++;
     }
@@ -158,22 +151,18 @@ static double vpx_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 double vpx_calc_ssim(const YV12_BUFFER_CONFIG *source,
-                     const YV12_BUFFER_CONFIG *dest,
-                     double *weight) {
+                     const YV12_BUFFER_CONFIG *dest, double *weight) {
   double a, b, c;
   double ssimv;
 
-  a = vpx_ssim2(source->y_buffer, dest->y_buffer,
-                source->y_stride, dest->y_stride,
-                source->y_crop_width, source->y_crop_height);
+  a = vpx_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
+                dest->y_stride, source->y_crop_width, source->y_crop_height);
 
-  b = vpx_ssim2(source->u_buffer, dest->u_buffer,
-                source->uv_stride, dest->uv_stride,
-                source->uv_crop_width, source->uv_crop_height);
+  b = vpx_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
+                dest->uv_stride, source->uv_crop_width, source->uv_crop_height);
 
-  c = vpx_ssim2(source->v_buffer, dest->v_buffer,
-                source->uv_stride, dest->uv_stride,
-                source->uv_crop_width, source->uv_crop_height);
+  c = vpx_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
+                dest->uv_stride, source->uv_crop_width, source->uv_crop_height);
 
   ssimv = a * .8 + .1 * (b + c);
 
@@ -183,22 +172,19 @@ double vpx_calc_ssim(const YV12_BUFFER_CONFIG *source,
 }
 
 double vpx_calc_ssimg(const YV12_BUFFER_CONFIG *source,
-                      const YV12_BUFFER_CONFIG *dest,
-                      double *ssim_y, double *ssim_u, double *ssim_v) {
+                      const YV12_BUFFER_CONFIG *dest, double *ssim_y,
+                      double *ssim_u, double *ssim_v) {
   double ssim_all = 0;
   double a, b, c;
 
-  a = vpx_ssim2(source->y_buffer, dest->y_buffer,
-                source->y_stride, dest->y_stride,
-                source->y_crop_width, source->y_crop_height);
+  a = vpx_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
+                dest->y_stride, source->y_crop_width, source->y_crop_height);
 
-  b = vpx_ssim2(source->u_buffer, dest->u_buffer,
-                source->uv_stride, dest->uv_stride,
-                source->uv_crop_width, source->uv_crop_height);
+  b = vpx_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
+                dest->uv_stride, source->uv_crop_width, source->uv_crop_height);
 
-  c = vpx_ssim2(source->v_buffer, dest->v_buffer,
-                source->uv_stride, dest->uv_stride,
-                source->uv_crop_width, source->uv_crop_height);
+  c = vpx_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
+                dest->uv_stride, source->uv_crop_width, source->uv_crop_height);
   *ssim_y = a;
   *ssim_u = b;
   *ssim_v = c;
@@ -242,13 +228,13 @@ static double ssimv_similarity(const Ssimv *sv, int64_t n) {
   const int64_t c2 = (cc2 * n * n) >> 12;
 
   const double l = 1.0 * (2 * sv->sum_s * sv->sum_r + c1) /
-      (sv->sum_s * sv->sum_s + sv->sum_r * sv->sum_r + c1);
+                   (sv->sum_s * sv->sum_s + sv->sum_r * sv->sum_r + c1);
 
   // Since these variables are unsigned sums, convert to double so
   // math is done in double arithmetic.
-  const double v = (2.0 * n * sv->sum_sxr - 2 * sv->sum_s * sv->sum_r + c2)
-      / (n * sv->sum_sq_s - sv->sum_s * sv->sum_s + n * sv->sum_sq_r
-         - sv->sum_r * sv->sum_r + c2);
+  const double v = (2.0 * n * sv->sum_sxr - 2 * sv->sum_s * sv->sum_r + c2) /
+                   (n * sv->sum_sq_s - sv->sum_s * sv->sum_s +
+                    n * sv->sum_sq_r - sv->sum_r * sv->sum_r + c2);
 
   return l * v;
 }
@@ -277,24 +263,21 @@ static double ssimv_similarity2(const Ssimv *sv, int64_t n) {
 
   // Since these variables are unsigned, sums convert to double so
   // math is done in double arithmetic.
-  const double v = (2.0 * n * sv->sum_sxr - 2 * sv->sum_s * sv->sum_r + c2)
-      / (n * sv->sum_sq_s - sv->sum_s * sv->sum_s +
-         n * sv->sum_sq_r - sv->sum_r * sv->sum_r + c2);
+  const double v = (2.0 * n * sv->sum_sxr - 2 * sv->sum_s * sv->sum_r + c2) /
+                   (n * sv->sum_sq_s - sv->sum_s * sv->sum_s +
+                    n * sv->sum_sq_r - sv->sum_r * sv->sum_r + c2);
 
   return l * v;
 }
 static void ssimv_parms(uint8_t *img1, int img1_pitch, uint8_t *img2,
                         int img2_pitch, Ssimv *sv) {
-  vpx_ssim_parms_8x8(img1, img1_pitch, img2, img2_pitch,
-                     &sv->sum_s, &sv->sum_r, &sv->sum_sq_s, &sv->sum_sq_r,
-                     &sv->sum_sxr);
+  vpx_ssim_parms_8x8(img1, img1_pitch, img2, img2_pitch, &sv->sum_s, &sv->sum_r,
+                     &sv->sum_sq_s, &sv->sum_sq_r, &sv->sum_sxr);
 }
 
-double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch,
-                            uint8_t *img2, int img2_pitch,
-                            int width, int height,
-                            Ssimv *sv2, Metrics *m,
-                            int do_inconsistency) {
+double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
+                            int img2_pitch, int width, int height, Ssimv *sv2,
+                            Metrics *m, int do_inconsistency) {
   double dssim_total = 0;
   double ssim_total = 0;
   double ssim2_total = 0;
@@ -305,10 +288,10 @@ double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch,
   double old_ssim_total = 0;
   vpx_clear_system_state();
   // We can sample points as frequently as we like start with 1 per 4x4.
-  for (i = 0; i < height; i += 4,
-       img1 += img1_pitch * 4, img2 += img2_pitch * 4) {
+  for (i = 0; i < height;
+       i += 4, img1 += img1_pitch * 4, img2 += img2_pitch * 4) {
     for (j = 0; j < width; j += 4, ++c) {
-      Ssimv sv = {0};
+      Ssimv sv = { 0 };
       double ssim;
       double ssim2;
       double dssim;
@@ -394,27 +377,29 @@ double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch,
 
         // This measures how much consistent variance is in two consecutive
         // source frames. 1.0 means they have exactly the same variance.
-        const double variance_term = (2.0 * var_old * var_new + c1) /
+        const double variance_term =
+            (2.0 * var_old * var_new + c1) /
             (1.0 * var_old * var_old + 1.0 * var_new * var_new + c1);
 
         // This measures how consistent the local mean are between two
         // consecutive frames. 1.0 means they have exactly the same mean.
-        const double mean_term = (2.0 * mean_old * mean_new + c2) /
+        const double mean_term =
+            (2.0 * mean_old * mean_new + c2) /
             (1.0 * mean_old * mean_old + 1.0 * mean_new * mean_new + c2);
 
         // This measures how consistent the ssims of two
         // consecutive frames is. 1.0 means they are exactly the same.
-        double ssim_term = pow((2.0 * ssim_old * ssim_new + c3) /
-                               (ssim_old * ssim_old + ssim_new * ssim_new + c3),
-                               5);
+        double ssim_term =
+            pow((2.0 * ssim_old * ssim_new + c3) /
+                    (ssim_old * ssim_old + ssim_new * ssim_new + c3),
+                5);
 
         double this_inconsistency;
 
         // Floating point math sometimes makes this > 1 by a tiny bit.
         // We want the metric to scale between 0 and 1.0 so we can convert
         // it to an snr scaled value.
-        if (ssim_term > 1)
-          ssim_term = 1;
+        if (ssim_term > 1) ssim_term = 1;
 
         // This converts the consistency metric to an inconsistency metric
         // ( so we can scale it like psnr to something like sum square error.
@@ -442,8 +427,7 @@ double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch,
   ssim2_total *= norm;
   m->ssim2 = ssim2_total;
   m->ssim = ssim_total;
-  if (old_ssim_total == 0)
-    inconsistency_total = 0;
+  if (old_ssim_total == 0) inconsistency_total = 0;
 
   m->ssimc = inconsistency_total;
 
@@ -451,25 +435,24 @@ double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch,
   return inconsistency_total;
 }
 
-
 #if CONFIG_VPX_HIGHBITDEPTH
 double vpx_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
-                            const YV12_BUFFER_CONFIG *dest,
-                            double *weight, unsigned int bd) {
+                            const YV12_BUFFER_CONFIG *dest, double *weight,
+                            unsigned int bd) {
   double a, b, c;
   double ssimv;
 
-  a = vpx_highbd_ssim2(source->y_buffer, dest->y_buffer,
-                       source->y_stride, dest->y_stride,
-                       source->y_crop_width, source->y_crop_height, bd);
+  a = vpx_highbd_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
+                       dest->y_stride, source->y_crop_width,
+                       source->y_crop_height, bd);
 
-  b = vpx_highbd_ssim2(source->u_buffer, dest->u_buffer,
-                       source->uv_stride, dest->uv_stride,
-                       source->uv_crop_width, source->uv_crop_height, bd);
+  b = vpx_highbd_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
+                       dest->uv_stride, source->uv_crop_width,
+                       source->uv_crop_height, bd);
 
-  c = vpx_highbd_ssim2(source->v_buffer, dest->v_buffer,
-                       source->uv_stride, dest->uv_stride,
-                       source->uv_crop_width, source->uv_crop_height, bd);
+  c = vpx_highbd_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
+                       dest->uv_stride, source->uv_crop_width,
+                       source->uv_crop_height, bd);
 
   ssimv = a * .8 + .1 * (b + c);
 
@@ -484,17 +467,17 @@ double vpx_highbd_calc_ssimg(const YV12_BUFFER_CONFIG *source,
   double ssim_all = 0;
   double a, b, c;
 
-  a = vpx_highbd_ssim2(source->y_buffer, dest->y_buffer,
-                       source->y_stride, dest->y_stride,
-                       source->y_crop_width, source->y_crop_height, bd);
+  a = vpx_highbd_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
+                       dest->y_stride, source->y_crop_width,
+                       source->y_crop_height, bd);
 
-  b = vpx_highbd_ssim2(source->u_buffer, dest->u_buffer,
-                       source->uv_stride, dest->uv_stride,
-                       source->uv_crop_width, source->uv_crop_height, bd);
+  b = vpx_highbd_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
+                       dest->uv_stride, source->uv_crop_width,
+                       source->uv_crop_height, bd);
 
-  c = vpx_highbd_ssim2(source->v_buffer, dest->v_buffer,
-                       source->uv_stride, dest->uv_stride,
-                       source->uv_crop_width, source->uv_crop_height, bd);
+  c = vpx_highbd_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
+                       dest->uv_stride, source->uv_crop_width,
+                       source->uv_crop_height, bd);
   *ssim_y = a;
   *ssim_u = b;
   *ssim_v = c;

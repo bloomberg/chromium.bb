@@ -23,16 +23,16 @@ extern const unsigned int vp10_prob_cost[256];
 
 #define vp10_cost_one(prob) vp10_cost_zero(vpx_complement(prob))
 
-#define vp10_cost_bit(prob, bit) vp10_cost_zero((bit) ? vpx_complement(prob) \
-                                                    : (prob))
+#define vp10_cost_bit(prob, bit) \
+  vp10_cost_zero((bit) ? vpx_complement(prob) : (prob))
 
 static INLINE unsigned int cost_branch256(const unsigned int ct[2],
                                           vpx_prob p) {
   return ct[0] * vp10_cost_zero(p) + ct[1] * vp10_cost_one(p);
 }
 
-static INLINE int treed_cost(vpx_tree tree, const vpx_prob *probs,
-                             int bits, int len) {
+static INLINE int treed_cost(vpx_tree tree, const vpx_prob *probs, int bits,
+                             int len) {
   int cost = 0;
   vpx_tree_index i = 0;
 

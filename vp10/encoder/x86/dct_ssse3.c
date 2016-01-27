@@ -20,16 +20,12 @@
 #include "vpx_dsp/x86/inv_txfm_sse2.h"
 #include "vpx_dsp/x86/txfm_common_sse2.h"
 
-void vp10_fdct8x8_quant_ssse3(const int16_t *input, int stride,
-                             int16_t* coeff_ptr, intptr_t n_coeffs,
-                             int skip_block, const int16_t* zbin_ptr,
-                             const int16_t* round_ptr, const int16_t* quant_ptr,
-                             const int16_t* quant_shift_ptr,
-                             int16_t* qcoeff_ptr,
-                             int16_t* dqcoeff_ptr, const int16_t* dequant_ptr,
-                             uint16_t* eob_ptr,
-                             const int16_t* scan_ptr,
-                             const int16_t* iscan_ptr) {
+void vp10_fdct8x8_quant_ssse3(
+    const int16_t* input, int stride, int16_t* coeff_ptr, intptr_t n_coeffs,
+    int skip_block, const int16_t* zbin_ptr, const int16_t* round_ptr,
+    const int16_t* quant_ptr, const int16_t* quant_shift_ptr,
+    int16_t* qcoeff_ptr, int16_t* dqcoeff_ptr, const int16_t* dequant_ptr,
+    uint16_t* eob_ptr, const int16_t* scan_ptr, const int16_t* iscan_ptr) {
   __m128i zero;
   int pass;
   // Constants
@@ -47,15 +43,15 @@ void vp10_fdct8x8_quant_ssse3(const int16_t *input, int stride,
   const __m128i k__cospi_m20_p12 = pair_set_epi16(-cospi_20_64, cospi_12_64);
   const __m128i k__DCT_CONST_ROUNDING = _mm_set1_epi32(DCT_CONST_ROUNDING);
   // Load input
-  __m128i in0  = _mm_load_si128((const __m128i *)(input + 0 * stride));
-  __m128i in1  = _mm_load_si128((const __m128i *)(input + 1 * stride));
-  __m128i in2  = _mm_load_si128((const __m128i *)(input + 2 * stride));
-  __m128i in3  = _mm_load_si128((const __m128i *)(input + 3 * stride));
-  __m128i in4  = _mm_load_si128((const __m128i *)(input + 4 * stride));
-  __m128i in5  = _mm_load_si128((const __m128i *)(input + 5 * stride));
-  __m128i in6  = _mm_load_si128((const __m128i *)(input + 6 * stride));
-  __m128i in7  = _mm_load_si128((const __m128i *)(input + 7 * stride));
-  __m128i *in[8];
+  __m128i in0 = _mm_load_si128((const __m128i*)(input + 0 * stride));
+  __m128i in1 = _mm_load_si128((const __m128i*)(input + 1 * stride));
+  __m128i in2 = _mm_load_si128((const __m128i*)(input + 2 * stride));
+  __m128i in3 = _mm_load_si128((const __m128i*)(input + 3 * stride));
+  __m128i in4 = _mm_load_si128((const __m128i*)(input + 4 * stride));
+  __m128i in5 = _mm_load_si128((const __m128i*)(input + 5 * stride));
+  __m128i in6 = _mm_load_si128((const __m128i*)(input + 6 * stride));
+  __m128i in7 = _mm_load_si128((const __m128i*)(input + 7 * stride));
+  __m128i* in[8];
   int index = 0;
 
   (void)scan_ptr;
@@ -393,7 +389,7 @@ void vp10_fdct8x8_quant_ssse3(const int16_t *input, int stride,
         qcoeff1 = _mm_sub_epi16(qcoeff1, coeff1_sign);
 
         nzflag = _mm_movemask_epi8(_mm_cmpgt_epi16(qcoeff0, thr)) |
-            _mm_movemask_epi8(_mm_cmpgt_epi16(qcoeff1, thr));
+                 _mm_movemask_epi8(_mm_cmpgt_epi16(qcoeff1, thr));
 
         if (nzflag) {
           qcoeff0 = _mm_adds_epi16(qcoeff0, round);

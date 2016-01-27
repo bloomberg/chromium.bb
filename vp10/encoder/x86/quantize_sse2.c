@@ -15,13 +15,12 @@
 #include "vpx/vpx_integer.h"
 
 void vp10_quantize_fp_sse2(const int16_t* coeff_ptr, intptr_t n_coeffs,
-                          int skip_block, const int16_t* zbin_ptr,
-                          const int16_t* round_ptr, const int16_t* quant_ptr,
-                          const int16_t* quant_shift_ptr, int16_t* qcoeff_ptr,
-                          int16_t* dqcoeff_ptr, const int16_t* dequant_ptr,
-                          uint16_t* eob_ptr,
-                          const int16_t* scan_ptr,
-                          const int16_t* iscan_ptr) {
+                           int skip_block, const int16_t* zbin_ptr,
+                           const int16_t* round_ptr, const int16_t* quant_ptr,
+                           const int16_t* quant_shift_ptr, int16_t* qcoeff_ptr,
+                           int16_t* dqcoeff_ptr, const int16_t* dequant_ptr,
+                           uint16_t* eob_ptr, const int16_t* scan_ptr,
+                           const int16_t* iscan_ptr) {
   __m128i zero;
   __m128i thr;
   int16_t nzflag;
@@ -133,7 +132,7 @@ void vp10_quantize_fp_sse2(const int16_t* coeff_ptr, intptr_t n_coeffs,
         qcoeff1 = _mm_sub_epi16(qcoeff1, coeff1_sign);
 
         nzflag = _mm_movemask_epi8(_mm_cmpgt_epi16(qcoeff0, thr)) |
-            _mm_movemask_epi8(_mm_cmpgt_epi16(qcoeff1, thr));
+                 _mm_movemask_epi8(_mm_cmpgt_epi16(qcoeff1, thr));
 
         if (nzflag) {
           qcoeff0 = _mm_adds_epi16(qcoeff0, round);

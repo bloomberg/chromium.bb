@@ -86,15 +86,16 @@ class RegisterStateCheck {
   CONTEXT pre_context_;
 };
 
-#define ASM_REGISTER_STATE_CHECK(statement) do {  \
-  libvpx_test::RegisterStateCheck reg_check;      \
-  statement;                                      \
-} while (false)
+#define ASM_REGISTER_STATE_CHECK(statement)    \
+  do {                                         \
+    libvpx_test::RegisterStateCheck reg_check; \
+    statement;                                 \
+  } while (false)
 
 }  // namespace libvpx_test
 
-#elif defined(CONFIG_SHARED) && defined(HAVE_NEON_ASM) \
-      && !CONFIG_SHARED && HAVE_NEON_ASM && CONFIG_VP10
+#elif defined(CONFIG_SHARED) && defined(HAVE_NEON_ASM) && !CONFIG_SHARED && \
+    HAVE_NEON_ASM && CONFIG_VP10
 
 extern "C" {
 // Save the d8-d15 registers into store.
@@ -123,8 +124,8 @@ class RegisterStateCheck {
     int64_t post_store[8];
     vpx_push_neon(post_store);
     for (int i = 0; i < 8; ++i) {
-      EXPECT_EQ(pre_store_[i], post_store[i]) << "d"
-          << i + 8 << " has been modified";
+      EXPECT_EQ(pre_store_[i], post_store[i]) << "d" << i + 8
+                                              << " has been modified";
     }
     return !testing::Test::HasNonfatalFailure();
   }
@@ -133,10 +134,11 @@ class RegisterStateCheck {
   int64_t pre_store_[8];
 };
 
-#define ASM_REGISTER_STATE_CHECK(statement) do {  \
-  libvpx_test::RegisterStateCheck reg_check;      \
-  statement;                                      \
-} while (false)
+#define ASM_REGISTER_STATE_CHECK(statement)    \
+  do {                                         \
+    libvpx_test::RegisterStateCheck reg_check; \
+    statement;                                 \
+  } while (false)
 
 }  // namespace libvpx_test
 
@@ -181,10 +183,11 @@ class RegisterStateCheckMMX {
   uint16_t pre_fpu_env_[14];
 };
 
-#define API_REGISTER_STATE_CHECK(statement) do {  \
-  libvpx_test::RegisterStateCheckMMX reg_check;   \
-  ASM_REGISTER_STATE_CHECK(statement);            \
-} while (false)
+#define API_REGISTER_STATE_CHECK(statement)       \
+  do {                                            \
+    libvpx_test::RegisterStateCheckMMX reg_check; \
+    ASM_REGISTER_STATE_CHECK(statement);          \
+  } while (false)
 
 }  // namespace libvpx_test
 

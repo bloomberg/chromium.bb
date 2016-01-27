@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-
 #ifndef VP10_COMMON_BLOCKD_H_
 #define VP10_COMMON_BLOCKD_H_
 
@@ -55,12 +54,12 @@ typedef struct {
 // decoder implementation modules critically rely on the defined entry values
 // specified herein. They should be refactored concurrently.
 
-#define NONE           -1
-#define INTRA_FRAME     0
-#define LAST_FRAME      1
-#define GOLDEN_FRAME    2
-#define ALTREF_FRAME    3
-#define MAX_REF_FRAMES  4
+#define NONE -1
+#define INTRA_FRAME 0
+#define LAST_FRAME 1
+#define GOLDEN_FRAME 2
+#define ALTREF_FRAME 3
+#define MAX_REF_FRAMES 4
 typedef int8_t MV_REFERENCE_FRAME;
 
 // This structure now relates to 8x8 block regions.
@@ -94,8 +93,7 @@ typedef struct MODE_INFO {
 } MODE_INFO;
 
 static INLINE PREDICTION_MODE get_y_mode(const MODE_INFO *mi, int block) {
-  return mi->mbmi.sb_type < BLOCK_8X8 ? mi->bmi[block].as_mode
-                                      : mi->mbmi.mode;
+  return mi->mbmi.sb_type < BLOCK_8X8 ? mi->bmi[block].as_mode : mi->mbmi.mode;
 }
 
 static INLINE int is_inter_block(const MB_MODE_INFO *mbmi) {
@@ -107,15 +105,12 @@ static INLINE int has_second_ref(const MB_MODE_INFO *mbmi) {
 }
 
 PREDICTION_MODE vp10_left_block_mode(const MODE_INFO *cur_mi,
-                                    const MODE_INFO *left_mi, int b);
+                                     const MODE_INFO *left_mi, int b);
 
 PREDICTION_MODE vp10_above_block_mode(const MODE_INFO *cur_mi,
-                                     const MODE_INFO *above_mi, int b);
+                                      const MODE_INFO *above_mi, int b);
 
-enum mv_precision {
-  MV_PRECISION_Q3,
-  MV_PRECISION_Q4
-};
+enum mv_precision { MV_PRECISION_Q3, MV_PRECISION_Q4 };
 
 struct buf_2d {
   uint8_t *buf;
@@ -143,7 +138,7 @@ struct macroblockd_plane {
   const int16_t *dequant;
 };
 
-#define BLOCK_OFFSET(x, i) ((x) + (i) * 16)
+#define BLOCK_OFFSET(x, i) ((x) + (i)*16)
 
 typedef struct RefBuffer {
   // TODO(dkovalev): idx is not really required and should be removed, now it
@@ -226,7 +221,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
 
-  (void) block_idx;
+  (void)block_idx;
   if (plane_type != PLANE_TYPE_Y || xd->lossless[mbmi->segment_id] ||
       mbmi->tx_size >= TX_32X32)
     return DCT_DCT;
@@ -252,8 +247,8 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
                              pd->subsampling_y);
 }
 
-static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
-    const struct macroblockd_plane *pd) {
+static INLINE BLOCK_SIZE
+get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
   return ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
 }
 
@@ -272,21 +267,20 @@ static INLINE void reset_skip_context(MACROBLOCKD *xd, BLOCK_SIZE bsize) {
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   int blk_row, int blk_col,
                                                   BLOCK_SIZE plane_bsize,
-                                                  TX_SIZE tx_size,
-                                                  void *arg);
+                                                  TX_SIZE tx_size, void *arg);
 
 void vp10_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
-
-void vp10_foreach_transformed_block(
-    const MACROBLOCKD* const xd, BLOCK_SIZE bsize,
-    foreach_transformed_block_visitor visit, void *arg);
+void vp10_foreach_transformed_block(const MACROBLOCKD *const xd,
+                                    BLOCK_SIZE bsize,
+                                    foreach_transformed_block_visitor visit,
+                                    void *arg);
 
 void vp10_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
-                      BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int has_eob,
-                      int aoff, int loff);
+                       BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int has_eob,
+                       int aoff, int loff);
 
 #ifdef __cplusplus
 }  // extern "C"

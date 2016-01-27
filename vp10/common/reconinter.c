@@ -20,14 +20,11 @@
 #include "vp10/common/reconintra.h"
 
 #if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
-                                      uint8_t *dst, int dst_stride,
-                                      const MV *src_mv,
-                                      const struct scale_factors *sf,
-                                      int w, int h, int ref,
-                                      const InterpKernel *kernel,
-                                      enum mv_precision precision,
-                                      int x, int y, int bd) {
+void vp10_highbd_build_inter_predictor(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
+    const MV *src_mv, const struct scale_factors *sf, int w, int h, int ref,
+    const InterpKernel *kernel, enum mv_precision precision, int x, int y,
+    int bd) {
   const int is_q4 = precision == MV_PRECISION_Q4;
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
@@ -37,19 +34,16 @@ void vp10_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
 
   src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
 
-  high_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
-                       sf, w, h, ref, kernel, sf->x_step_q4, sf->y_step_q4, bd);
+  high_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf,
+                       w, h, ref, kernel, sf->x_step_q4, sf->y_step_q4, bd);
 }
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 void vp10_build_inter_predictor(const uint8_t *src, int src_stride,
-                               uint8_t *dst, int dst_stride,
-                               const MV *src_mv,
-                               const struct scale_factors *sf,
-                               int w, int h, int ref,
-                               const InterpKernel *kernel,
-                               enum mv_precision precision,
-                               int x, int y) {
+                                uint8_t *dst, int dst_stride, const MV *src_mv,
+                                const struct scale_factors *sf, int w, int h,
+                                int ref, const InterpKernel *kernel,
+                                enum mv_precision precision, int x, int y) {
   const int is_q4 = precision == MV_PRECISION_Q4;
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
@@ -59,14 +53,13 @@ void vp10_build_inter_predictor(const uint8_t *src, int src_stride,
 
   src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
 
-  inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
-                  sf, w, h, ref, kernel, sf->x_step_q4, sf->y_step_q4);
+  inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
+                  h, ref, kernel, sf->x_step_q4, sf->y_step_q4);
 }
 
-void build_inter_predictors(MACROBLOCKD *xd, int plane, int block,
-                                   int bw, int bh,
-                                   int x, int y, int w, int h,
-                                   int mi_x, int mi_y) {
+void build_inter_predictors(MACROBLOCKD *xd, int plane, int block, int bw,
+                            int bh, int x, int y, int w, int h, int mi_x,
+                            int mi_y) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const MODE_INFO *mi = xd->mi[0];
   const int is_compound = has_second_ref(&mi->mbmi);
@@ -79,17 +72,16 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane, int block,
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
     const MV mv = mi->mbmi.sb_type < BLOCK_8X8
-               ? average_split_mvs(pd, mi, ref, block)
-               : mi->mbmi.mv[ref].as_mv;
+                      ? average_split_mvs(pd, mi, ref, block)
+                      : mi->mbmi.mv[ref].as_mv;
 
     // TODO(jkoleszar): This clamping is done in the incorrect place for the
     // scaling case. It needs to be done on the scaled MV, not the pre-scaling
     // MV. Note however that it performs the subsampling aware scaling so
     // that the result is always q4.
     // mv_precision precision is MV_PRECISION_Q4.
-    const MV mv_q4 = clamp_mv_to_umv_border_sb(xd, &mv, bw, bh,
-                                               pd->subsampling_x,
-                                               pd->subsampling_y);
+    const MV mv_q4 = clamp_mv_to_umv_border_sb(
+        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
 
     uint8_t *pre;
     MV32 scaled_mv;
@@ -109,28 +101,26 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane, int block,
     }
     subpel_x = scaled_mv.col & SUBPEL_MASK;
     subpel_y = scaled_mv.row & SUBPEL_MASK;
-    pre += (scaled_mv.row >> SUBPEL_BITS) * pre_buf->stride
-           + (scaled_mv.col >> SUBPEL_BITS);
+    pre += (scaled_mv.row >> SUBPEL_BITS) * pre_buf->stride +
+           (scaled_mv.col >> SUBPEL_BITS);
 
 #if CONFIG_VPX_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      high_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
-                           subpel_x, subpel_y, sf, w, h, ref, kernel, xs, ys,
-                           xd->bd);
+      high_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride, subpel_x,
+                           subpel_y, sf, w, h, ref, kernel, xs, ys, xd->bd);
     } else {
-      inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
-                      subpel_x, subpel_y, sf, w, h, ref, kernel, xs, ys);
+      inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride, subpel_x,
+                      subpel_y, sf, w, h, ref, kernel, xs, ys);
     }
 #else
-    inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
-                    subpel_x, subpel_y, sf, w, h, ref, kernel, xs, ys);
+    inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride, subpel_x,
+                    subpel_y, sf, w, h, ref, kernel, xs, ys);
 #endif  // CONFIG_VPX_HIGHBITDEPTH
   }
 }
 
-void vp10_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane,
-                                       int i, int ir, int ic,
-                                       int mi_row, int mi_col) {
+void vp10_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i,
+                                       int ir, int ic, int mi_row, int mi_col) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   MODE_INFO *const mi = xd->mi[0];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mi->mbmi.sb_type, pd);
@@ -146,31 +136,25 @@ void vp10_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane,
     const uint8_t *pre =
         &pd->pre[ref].buf[(ir * pd->pre[ref].stride + ic) << 2];
 #if CONFIG_VPX_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    vp10_highbd_build_inter_predictor(pre, pd->pre[ref].stride,
-                                      dst, pd->dst.stride,
-                                      &mi->bmi[i].as_mv[ref].as_mv,
-                                      &xd->block_refs[ref]->sf, width, height,
-                                      ref, kernel, MV_PRECISION_Q3,
-                                      mi_col * MI_SIZE + 4 * ic,
-                                      mi_row * MI_SIZE + 4 * ir, xd->bd);
-  } else {
-    vp10_build_inter_predictor(pre, pd->pre[ref].stride,
-                               dst, pd->dst.stride,
-                               &mi->bmi[i].as_mv[ref].as_mv,
-                               &xd->block_refs[ref]->sf, width, height, ref,
-                               kernel, MV_PRECISION_Q3,
-                               mi_col * MI_SIZE + 4 * ic,
-                               mi_row * MI_SIZE + 4 * ir);
-  }
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      vp10_highbd_build_inter_predictor(
+          pre, pd->pre[ref].stride, dst, pd->dst.stride,
+          &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
+          ref, kernel, MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
+          mi_row * MI_SIZE + 4 * ir, xd->bd);
+    } else {
+      vp10_build_inter_predictor(
+          pre, pd->pre[ref].stride, dst, pd->dst.stride,
+          &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
+          ref, kernel, MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
+          mi_row * MI_SIZE + 4 * ir);
+    }
 #else
-    vp10_build_inter_predictor(pre, pd->pre[ref].stride,
-                               dst, pd->dst.stride,
-                               &mi->bmi[i].as_mv[ref].as_mv,
-                               &xd->block_refs[ref]->sf, width, height, ref,
-                               kernel, MV_PRECISION_Q3,
-                               mi_col * MI_SIZE + 4 * ic,
-                               mi_row * MI_SIZE + 4 * ir);
+    vp10_build_inter_predictor(
+        pre, pd->pre[ref].stride, dst, pd->dst.stride,
+        &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
+        ref, kernel, MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
+        mi_row * MI_SIZE + 4 * ir);
 #endif  // CONFIG_VPX_HIGHBITDEPTH
   }
 }
@@ -200,44 +184,43 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
       assert(pw * num_4x4_w == bw && ph * num_4x4_h == bh);
       for (y = 0; y < num_4x4_h; ++y)
         for (x = 0; x < num_4x4_w; ++x)
-           build_inter_predictors(xd, plane, y * 2 + x, bw, bh,
-                                  4 * x, 4 * y, pw, ph, mi_x, mi_y);
+          build_inter_predictors(xd, plane, y * 2 + x, bw, bh, 4 * x, 4 * y, pw,
+                                 ph, mi_x, mi_y);
     } else {
-      build_inter_predictors(xd, plane, 0, bw, bh,
-                             0, 0, bw, bh, mi_x, mi_y);
+      build_inter_predictors(xd, plane, 0, bw, bh, 0, 0, bw, bh, mi_x, mi_y);
     }
   }
 }
 
 void vp10_build_inter_predictors_sby(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BLOCK_SIZE bsize) {
+                                     BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 0, 0);
 }
 
 void vp10_build_inter_predictors_sbp(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BLOCK_SIZE bsize, int plane) {
+                                     BLOCK_SIZE bsize, int plane) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, plane, plane);
 }
 
 void vp10_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                     BLOCK_SIZE bsize) {
+                                      BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 1,
                                     MAX_MB_PLANE - 1);
 }
 
 void vp10_build_inter_predictors_sb(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                   BLOCK_SIZE bsize) {
+                                    BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 0,
                                     MAX_MB_PLANE - 1);
 }
 
 void vp10_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
-                          const YV12_BUFFER_CONFIG *src,
-                          int mi_row, int mi_col) {
+                           const YV12_BUFFER_CONFIG *src, int mi_row,
+                           int mi_col) {
   uint8_t *const buffers[MAX_MB_PLANE] = { src->y_buffer, src->u_buffer,
-      src->v_buffer};
+                                           src->v_buffer };
   const int strides[MAX_MB_PLANE] = { src->y_stride, src->uv_stride,
-      src->uv_stride};
+                                      src->uv_stride };
   int i;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
@@ -248,15 +231,14 @@ void vp10_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
 }
 
 void vp10_setup_pre_planes(MACROBLOCKD *xd, int idx,
-                          const YV12_BUFFER_CONFIG *src,
-                          int mi_row, int mi_col,
-                          const struct scale_factors *sf) {
+                           const YV12_BUFFER_CONFIG *src, int mi_row,
+                           int mi_col, const struct scale_factors *sf) {
   if (src != NULL) {
     int i;
     uint8_t *const buffers[MAX_MB_PLANE] = { src->y_buffer, src->u_buffer,
-        src->v_buffer};
+                                             src->v_buffer };
     const int strides[MAX_MB_PLANE] = { src->y_stride, src->uv_stride,
-        src->uv_stride};
+                                        src->uv_stride };
     for (i = 0; i < MAX_MB_PLANE; ++i) {
       struct macroblockd_plane *const pd = &xd->plane[i];
       setup_pred_plane(&pd->pre[idx], buffers[i], strides[i], mi_row, mi_col,

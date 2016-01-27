@@ -46,8 +46,7 @@ void reference_32x32_dct_1d(const double in[32], double out[32]) {
     out[k] = 0.0;
     for (int n = 0; n < 32; n++)
       out[k] += in[n] * cos(kPi * (2 * n + 1) * k / 64.0);
-    if (k == 0)
-      out[k] = out[k] * kInvSqrt2;
+    if (k == 0) out[k] = out[k] * kInvSqrt2;
   }
 }
 
@@ -56,21 +55,17 @@ void reference_32x32_dct_2d(const int16_t input[kNumCoeffs],
   // First transform columns
   for (int i = 0; i < 32; ++i) {
     double temp_in[32], temp_out[32];
-    for (int j = 0; j < 32; ++j)
-      temp_in[j] = input[j*32 + i];
+    for (int j = 0; j < 32; ++j) temp_in[j] = input[j * 32 + i];
     reference_32x32_dct_1d(temp_in, temp_out);
-    for (int j = 0; j < 32; ++j)
-      output[j * 32 + i] = temp_out[j];
+    for (int j = 0; j < 32; ++j) output[j * 32 + i] = temp_out[j];
   }
   // Then transform rows
   for (int i = 0; i < 32; ++i) {
     double temp_in[32], temp_out[32];
-    for (int j = 0; j < 32; ++j)
-      temp_in[j] = output[j + i*32];
+    for (int j = 0; j < 32; ++j) temp_in[j] = output[j + i * 32];
     reference_32x32_dct_1d(temp_in, temp_out);
     // Scale by some magic number
-    for (int j = 0; j < 32; ++j)
-      output[j + i * 32] = temp_out[j] / 4;
+    for (int j = 0; j < 32; ++j) output[j + i * 32] = temp_out[j] / 4;
   }
 }
 
@@ -100,8 +95,8 @@ class Trans32x32Test : public ::testing::TestWithParam<Trans32x32Param> {
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    version_  = GET_PARAM(2);  // 0: high precision forward transform
-                               // 1: low precision version for rd loop
+    version_ = GET_PARAM(2);  // 0: high precision forward transform
+                              // 1: low precision version for rd loop
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
   }
@@ -151,8 +146,8 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(test_temp_block, dst, 32));
 #if CONFIG_VPX_HIGHBITDEPTH
     } else {
-      ASM_REGISTER_STATE_CHECK(inv_txfm_(test_temp_block,
-                                         CONVERT_TO_BYTEPTR(dst16), 32));
+      ASM_REGISTER_STATE_CHECK(
+          inv_txfm_(test_temp_block, CONVERT_TO_BYTEPTR(dst16), 32));
 #endif
     }
 
@@ -164,8 +159,7 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
       const uint32_t diff = dst[j] - src[j];
 #endif
       const uint32_t error = diff * diff;
-      if (max_error < error)
-        max_error = error;
+      if (max_error < error) max_error = error;
       total_error += error;
     }
   }
@@ -224,11 +218,9 @@ TEST_P(Trans32x32Test, MemCheck) {
       input_extreme_block[j] = rnd.Rand8() & 1 ? mask_ : -mask_;
     }
     if (i == 0) {
-      for (int j = 0; j < kNumCoeffs; ++j)
-        input_extreme_block[j] = mask_;
+      for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = mask_;
     } else if (i == 1) {
-      for (int j = 0; j < kNumCoeffs; ++j)
-        input_extreme_block[j] = -mask_;
+      for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = -mask_;
     }
 
     const int stride = 32;
@@ -302,9 +294,8 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
       const int diff = dst[j] - src[j];
 #endif
       const int error = diff * diff;
-      EXPECT_GE(1, error)
-          << "Error: 32x32 IDCT has error " << error
-          << " at index " << j;
+      EXPECT_GE(1, error) << "Error: 32x32 IDCT has error " << error
+                          << " at index " << j;
     }
   }
 }
@@ -315,46 +306,38 @@ using std::tr1::make_tuple;
 INSTANTIATE_TEST_CASE_P(
     C, Trans32x32Test,
     ::testing::Values(
-        make_tuple(&vpx_highbd_fdct32x32_c,
-                   &idct32x32_10, 0, VPX_BITS_10),
-        make_tuple(&vpx_highbd_fdct32x32_rd_c,
-                   &idct32x32_10, 1, VPX_BITS_10),
-        make_tuple(&vpx_highbd_fdct32x32_c,
-                   &idct32x32_12, 0, VPX_BITS_12),
-        make_tuple(&vpx_highbd_fdct32x32_rd_c,
-                   &idct32x32_12, 1, VPX_BITS_12),
-        make_tuple(&vpx_fdct32x32_c,
-                   &vpx_idct32x32_1024_add_c, 0, VPX_BITS_8),
-        make_tuple(&vpx_fdct32x32_rd_c,
-                   &vpx_idct32x32_1024_add_c, 1, VPX_BITS_8)));
+        make_tuple(&vpx_highbd_fdct32x32_c, &idct32x32_10, 0, VPX_BITS_10),
+        make_tuple(&vpx_highbd_fdct32x32_rd_c, &idct32x32_10, 1, VPX_BITS_10),
+        make_tuple(&vpx_highbd_fdct32x32_c, &idct32x32_12, 0, VPX_BITS_12),
+        make_tuple(&vpx_highbd_fdct32x32_rd_c, &idct32x32_12, 1, VPX_BITS_12),
+        make_tuple(&vpx_fdct32x32_c, &vpx_idct32x32_1024_add_c, 0, VPX_BITS_8),
+        make_tuple(&vpx_fdct32x32_rd_c, &vpx_idct32x32_1024_add_c, 1,
+                   VPX_BITS_8)));
 #else
 INSTANTIATE_TEST_CASE_P(
     C, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&vpx_fdct32x32_c,
-                   &vpx_idct32x32_1024_add_c, 0, VPX_BITS_8),
-        make_tuple(&vpx_fdct32x32_rd_c,
-                   &vpx_idct32x32_1024_add_c, 1, VPX_BITS_8)));
+    ::testing::Values(make_tuple(&vpx_fdct32x32_c, &vpx_idct32x32_1024_add_c, 0,
+                                 VPX_BITS_8),
+                      make_tuple(&vpx_fdct32x32_rd_c, &vpx_idct32x32_1024_add_c,
+                                 1, VPX_BITS_8)));
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 #if HAVE_NEON_ASM && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     NEON, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&vpx_fdct32x32_c,
-                   &vpx_idct32x32_1024_add_neon, 0, VPX_BITS_8),
-        make_tuple(&vpx_fdct32x32_rd_c,
-                   &vpx_idct32x32_1024_add_neon, 1, VPX_BITS_8)));
+    ::testing::Values(make_tuple(&vpx_fdct32x32_c, &vpx_idct32x32_1024_add_neon,
+                                 0, VPX_BITS_8),
+                      make_tuple(&vpx_fdct32x32_rd_c,
+                                 &vpx_idct32x32_1024_add_neon, 1, VPX_BITS_8)));
 #endif  // HAVE_NEON_ASM && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&vpx_fdct32x32_sse2,
-                   &vpx_idct32x32_1024_add_sse2, 0, VPX_BITS_8),
-        make_tuple(&vpx_fdct32x32_rd_sse2,
-                   &vpx_idct32x32_1024_add_sse2, 1, VPX_BITS_8)));
+    ::testing::Values(make_tuple(&vpx_fdct32x32_sse2,
+                                 &vpx_idct32x32_1024_add_sse2, 0, VPX_BITS_8),
+                      make_tuple(&vpx_fdct32x32_rd_sse2,
+                                 &vpx_idct32x32_1024_add_sse2, 1, VPX_BITS_8)));
 #endif  // HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_SSE2 && CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
@@ -376,20 +359,18 @@ INSTANTIATE_TEST_CASE_P(
 #if HAVE_AVX2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     AVX2, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&vpx_fdct32x32_avx2,
-                   &vpx_idct32x32_1024_add_sse2, 0, VPX_BITS_8),
-        make_tuple(&vpx_fdct32x32_rd_avx2,
-                   &vpx_idct32x32_1024_add_sse2, 1, VPX_BITS_8)));
+    ::testing::Values(make_tuple(&vpx_fdct32x32_avx2,
+                                 &vpx_idct32x32_1024_add_sse2, 0, VPX_BITS_8),
+                      make_tuple(&vpx_fdct32x32_rd_avx2,
+                                 &vpx_idct32x32_1024_add_sse2, 1, VPX_BITS_8)));
 #endif  // HAVE_AVX2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_MSA && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans32x32Test,
-    ::testing::Values(
-        make_tuple(&vpx_fdct32x32_msa,
-                   &vpx_idct32x32_1024_add_msa, 0, VPX_BITS_8),
-        make_tuple(&vpx_fdct32x32_rd_msa,
-                   &vpx_idct32x32_1024_add_msa, 1, VPX_BITS_8)));
+    ::testing::Values(make_tuple(&vpx_fdct32x32_msa,
+                                 &vpx_idct32x32_1024_add_msa, 0, VPX_BITS_8),
+                      make_tuple(&vpx_fdct32x32_rd_msa,
+                                 &vpx_idct32x32_1024_add_msa, 1, VPX_BITS_8)));
 #endif  // HAVE_MSA && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 }  // namespace

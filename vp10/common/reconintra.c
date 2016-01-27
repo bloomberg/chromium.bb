@@ -50,16 +50,16 @@ enum {
 };
 
 static const uint8_t extend_modes[INTRA_MODES] = {
-  NEED_ABOVE | NEED_LEFT,       // DC
-  NEED_ABOVE,                   // V
-  NEED_LEFT,                    // H
-  NEED_ABOVERIGHT,              // D45
-  NEED_LEFT | NEED_ABOVE,       // D135
-  NEED_LEFT | NEED_ABOVE,       // D117
-  NEED_LEFT | NEED_ABOVE,       // D153
-  NEED_LEFT,                    // D207
-  NEED_ABOVERIGHT,              // D63
-  NEED_LEFT | NEED_ABOVE,       // TM
+  NEED_ABOVE | NEED_LEFT,  // DC
+  NEED_ABOVE,              // V
+  NEED_LEFT,               // H
+  NEED_ABOVERIGHT,         // D45
+  NEED_LEFT | NEED_ABOVE,  // D135
+  NEED_LEFT | NEED_ABOVE,  // D117
+  NEED_LEFT | NEED_ABOVE,  // D153
+  NEED_LEFT,               // D207
+  NEED_ABOVERIGHT,         // D63
+  NEED_LEFT | NEED_ABOVE,  // TM
 };
 #endif
 
@@ -68,61 +68,40 @@ static const uint8_t orders_64x64[1] = { 0 };
 static const uint8_t orders_64x32[2] = { 0, 1 };
 static const uint8_t orders_32x64[2] = { 0, 1 };
 static const uint8_t orders_32x32[4] = {
-  0, 1,
-  2, 3,
+  0, 1, 2, 3,
 };
 static const uint8_t orders_32x16[8] = {
-  0, 2,
-  1, 3,
-  4, 6,
-  5, 7,
+  0, 2, 1, 3, 4, 6, 5, 7,
 };
 static const uint8_t orders_16x32[8] = {
-  0, 1, 2, 3,
-  4, 5, 6, 7,
+  0, 1, 2, 3, 4, 5, 6, 7,
 };
 static const uint8_t orders_16x16[16] = {
-  0,   1,  4,  5,
-  2,   3,  6,  7,
-  8,   9, 12, 13,
-  10, 11, 14, 15,
+  0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15,
 };
 static const uint8_t orders_16x8[32] = {
-  0,   2,  8, 10,
-  1,   3,  9, 11,
-  4,   6, 12, 14,
-  5,   7, 13, 15,
-  16, 18, 24, 26,
-  17, 19, 25, 27,
-  20, 22, 28, 30,
-  21, 23, 29, 31,
+  0,  2,  8,  10, 1,  3,  9,  11, 4,  6,  12, 14, 5,  7,  13, 15,
+  16, 18, 24, 26, 17, 19, 25, 27, 20, 22, 28, 30, 21, 23, 29, 31,
 };
 static const uint8_t orders_8x16[32] = {
-  0,   1,  2,  3,  8,  9, 10, 11,
-  4,   5,  6,  7, 12, 13, 14, 15,
-  16, 17, 18, 19, 24, 25, 26, 27,
-  20, 21, 22, 23, 28, 29, 30, 31,
+  0,  1,  2,  3,  8,  9,  10, 11, 4,  5,  6,  7,  12, 13, 14, 15,
+  16, 17, 18, 19, 24, 25, 26, 27, 20, 21, 22, 23, 28, 29, 30, 31,
 };
 static const uint8_t orders_8x8[64] = {
-  0,   1,  4,  5, 16, 17, 20, 21,
-  2,   3,  6,  7, 18, 19, 22, 23,
-  8,   9, 12, 13, 24, 25, 28, 29,
-  10, 11, 14, 15, 26, 27, 30, 31,
-  32, 33, 36, 37, 48, 49, 52, 53,
-  34, 35, 38, 39, 50, 51, 54, 55,
-  40, 41, 44, 45, 56, 57, 60, 61,
-  42, 43, 46, 47, 58, 59, 62, 63,
+  0,  1,  4,  5,  16, 17, 20, 21, 2,  3,  6,  7,  18, 19, 22, 23,
+  8,  9,  12, 13, 24, 25, 28, 29, 10, 11, 14, 15, 26, 27, 30, 31,
+  32, 33, 36, 37, 48, 49, 52, 53, 34, 35, 38, 39, 50, 51, 54, 55,
+  40, 41, 44, 45, 56, 57, 60, 61, 42, 43, 46, 47, 58, 59, 62, 63,
 };
 static const uint8_t *const orders[BLOCK_SIZES] = {
-  orders_8x8, orders_8x8, orders_8x8, orders_8x8,
-  orders_8x16, orders_16x8, orders_16x16,
-  orders_16x32, orders_32x16, orders_32x32,
+  orders_8x8,   orders_8x8,   orders_8x8,   orders_8x8,   orders_8x16,
+  orders_16x8,  orders_16x16, orders_16x32, orders_32x16, orders_32x32,
   orders_32x64, orders_64x32, orders_64x64,
 };
 
 static int vp10_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
-                          int right_available,
-                          TX_SIZE txsz, int y, int x, int ss_x) {
+                          int right_available, TX_SIZE txsz, int y, int x,
+                          int ss_x) {
   if (y == 0) {
     int wl = mi_width_log2_lookup[bsize];
     int hl = mi_height_log2_lookup[bsize];
@@ -131,17 +110,14 @@ static int vp10_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
     const uint8_t *order = orders[bsize];
     int my_order, tr_order;
 
-    if (x + step < w)
-      return 1;
+    if (x + step < w) return 1;
 
     mi_row = (mi_row & 7) >> hl;
     mi_col = (mi_col & 7) >> wl;
 
-    if (mi_row == 0)
-      return right_available;
+    if (mi_row == 0) return right_available;
 
-    if (((mi_col + 1) << wl) >= 8)
-      return 0;
+    if (((mi_col + 1) << wl) >= 8) return 0;
 
     my_order = order[((mi_row + 0) << (3 - wl)) + mi_col + 0];
     tr_order = order[((mi_row - 1) << (3 - wl)) + mi_col + 1];
@@ -157,8 +133,8 @@ static int vp10_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 }
 
 static int vp10_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
-                           int bottom_available, TX_SIZE txsz,
-                           int y, int x, int ss_y) {
+                           int bottom_available, TX_SIZE txsz, int y, int x,
+                           int ss_y) {
   if (x == 0) {
     int wl = mi_width_log2_lookup[bsize];
     int hl = mi_height_log2_lookup[bsize];
@@ -174,11 +150,9 @@ static int vp10_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
       return bottom_available &&
              (mi_row << (hl + !ss_y)) + y + step < (8 << !ss_y);
 
-    if (((mi_row + 1) << hl) >= 8)
-      return 0;
+    if (((mi_row + 1) << hl) >= 8) return 0;
 
-    if (y + step < h)
-      return 1;
+    if (y + step < h) return 1;
 
     my_order = order[((mi_row + 0) << (3 - wl)) + mi_col + 0];
     bl_order = order[((mi_row + 1) << (3 - wl)) + mi_col - 1];
@@ -205,12 +179,12 @@ static intra_high_pred_fn dc_pred_high[2][2][4];
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 static void vp10_init_intra_predictors_internal(void) {
-#define INIT_NO_4X4(p, type) \
-  p[TX_8X8] = vpx_##type##_predictor_8x8; \
+#define INIT_NO_4X4(p, type)                  \
+  p[TX_8X8] = vpx_##type##_predictor_8x8;     \
   p[TX_16X16] = vpx_##type##_predictor_16x16; \
   p[TX_32X32] = vpx_##type##_predictor_32x32
 
-#define INIT_ALL_SIZES(p, type) \
+#define INIT_ALL_SIZES(p, type)           \
   p[TX_4X4] = vpx_##type##_predictor_4x4; \
   INIT_NO_4X4(p, type)
 
@@ -263,29 +237,23 @@ static void vp10_init_intra_predictors_internal(void) {
 
 #if CONFIG_MISC_FIXES
 static INLINE void memset16(uint16_t *dst, int val, int n) {
-  while (n--)
-    *dst++ = val;
+  while (n--) *dst++ = val;
 }
 #endif
 
 #if CONFIG_VPX_HIGHBITDEPTH
 static void build_intra_predictors_high(const MACROBLOCKD *xd,
-                                        const uint8_t *ref8,
-                                        int ref_stride,
-                                        uint8_t *dst8,
-                                        int dst_stride,
-                                        PREDICTION_MODE mode,
-                                        TX_SIZE tx_size,
+                                        const uint8_t *ref8, int ref_stride,
+                                        uint8_t *dst8, int dst_stride,
+                                        PREDICTION_MODE mode, TX_SIZE tx_size,
 #if CONFIG_MISC_FIXES
                                         int n_top_px, int n_topright_px,
                                         int n_left_px, int n_bottomleft_px,
 #else
-                                        int up_available,
-                                        int left_available,
+                                        int up_available, int left_available,
                                         int right_available,
 #endif
-                                        int x, int y,
-                                        int plane, int bd) {
+                                        int x, int y, int plane, int bd) {
   int i;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
@@ -309,27 +277,26 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   const int need_above = extend_modes[mode] & NEED_ABOVE;
   const int need_aboveright = extend_modes[mode] & NEED_ABOVERIGHT;
   int base = 128 << (bd - 8);
-  // 127 127 127 .. 127 127 127 127 127 127
-  // 129  A   B  ..  Y   Z
-  // 129  C   D  ..  W   X
-  // 129  E   F  ..  U   V
-  // 129  G   H  ..  S   T   T   T   T   T
+// 127 127 127 .. 127 127 127 127 127 127
+// 129  A   B  ..  Y   Z
+// 129  C   D  ..  W   X
+// 129  E   F  ..  U   V
+// 129  G   H  ..  S   T   T   T   T   T
 
 #if CONFIG_MISC_FIXES
-  (void) x;
-  (void) y;
-  (void) plane;
-  (void) need_left;
-  (void) need_above;
-  (void) need_aboveright;
+  (void)x;
+  (void)y;
+  (void)plane;
+  (void)need_left;
+  (void)need_above;
+  (void)need_aboveright;
 
   // NEED_LEFT
   if (extend_modes[mode] & NEED_LEFT) {
     const int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
     i = 0;
     if (n_left_px > 0) {
-      for (; i < n_left_px; i++)
-        left_col[i] = ref[i * ref_stride - 1];
+      for (; i < n_left_px; i++) left_col[i] = ref[i * ref_stride - 1];
       if (need_bottom && n_bottomleft_px > 0) {
         assert(i == bs);
         for (; i < bs + n_bottomleft_px; i++)
@@ -361,8 +328,8 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   }
 
   if (extend_modes[mode] & NEED_ABOVELEFT) {
-    above_row[-1] = n_top_px > 0 ?
-        (n_left_px > 0 ? above_ref[-1] : base + 1) : base - 1;
+    above_row[-1] =
+        n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : base + 1) : base - 1;
   }
 #else
   // Get current frame pointer, width and height.
@@ -384,8 +351,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
       if (xd->mb_to_bottom_edge < 0) {
         /* slower path if the block needs border extension */
         if (y0 + bs <= frame_height) {
-          for (i = 0; i < bs; ++i)
-            left_col[i] = ref[i * ref_stride - 1];
+          for (i = 0; i < bs; ++i) left_col[i] = ref[i * ref_stride - 1];
         } else {
           const int extend_bottom = frame_height - y0;
           for (i = 0; i < extend_bottom; ++i)
@@ -395,8 +361,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
         }
       } else {
         /* faster path if the block does not need extension */
-        for (i = 0; i < bs; ++i)
-          left_col[i] = ref[i * ref_stride - 1];
+        for (i = 0; i < bs; ++i) left_col[i] = ref[i * ref_stride - 1];
       }
     } else {
       // TODO(Peter): this value should probably change for high bitdepth
@@ -488,13 +453,11 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   // predict
   if (mode == DC_PRED) {
 #if CONFIG_MISC_FIXES
-    dc_pred_high[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride,
-                                                       const_above_row,
-                                                       left_col, xd->bd);
+    dc_pred_high[n_left_px > 0][n_top_px > 0][tx_size](
+        dst, dst_stride, const_above_row, left_col, xd->bd);
 #else
-    dc_pred_high[left_available][up_available][tx_size](dst, dst_stride,
-                                                        const_above_row,
-                                                        left_col, xd->bd);
+    dc_pred_high[left_available][up_available][tx_size](
+        dst, dst_stride, const_above_row, left_col, xd->bd);
 #endif
   } else {
     pred_high[mode][tx_size](dst, dst_stride, const_above_row, left_col,
@@ -529,18 +492,18 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   const uint8_t *const_above_row = above_row;
   const int bs = 4 << tx_size;
 
-  // 127 127 127 .. 127 127 127 127 127 127
-  // 129  A   B  ..  Y   Z
-  // 129  C   D  ..  W   X
-  // 129  E   F  ..  U   V
-  // 129  G   H  ..  S   T   T   T   T   T
-  // ..
+// 127 127 127 .. 127 127 127 127 127 127
+// 129  A   B  ..  Y   Z
+// 129  C   D  ..  W   X
+// 129  E   F  ..  U   V
+// 129  G   H  ..  S   T   T   T   T   T
+// ..
 
 #if CONFIG_MISC_FIXES
-  (void) xd;
-  (void) x;
-  (void) y;
-  (void) plane;
+  (void)xd;
+  (void)x;
+  (void)y;
+  (void)plane;
   assert(n_top_px >= 0);
   assert(n_topright_px >= 0);
   assert(n_left_px >= 0);
@@ -566,8 +529,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     const int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
     i = 0;
     if (n_left_px > 0) {
-      for (; i < n_left_px; i++)
-        left_col[i] = ref[i * ref_stride - 1];
+      for (; i < n_left_px; i++) left_col[i] = ref[i * ref_stride - 1];
       if (need_bottom && n_bottomleft_px > 0) {
         assert(i == bs);
         for (; i < bs + n_bottomleft_px; i++)
@@ -583,8 +545,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (xd->mb_to_bottom_edge < 0) {
         /* slower path if the block needs border extension */
         if (y0 + bs <= frame_height) {
-          for (i = 0; i < bs; ++i)
-            left_col[i] = ref[i * ref_stride - 1];
+          for (i = 0; i < bs; ++i) left_col[i] = ref[i * ref_stride - 1];
         } else {
           const int extend_bottom = frame_height - y0;
           for (i = 0; i < extend_bottom; ++i)
@@ -594,8 +555,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
         }
       } else {
         /* faster path if the block does not need extension */
-        for (i = 0; i < bs; ++i)
-          left_col[i] = ref[i * ref_stride - 1];
+        for (i = 0; i < bs; ++i) left_col[i] = ref[i * ref_stride - 1];
       }
     } else {
       memset(left_col, 129, bs);
@@ -715,10 +675,9 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 }
 
 void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
-                             TX_SIZE tx_size, PREDICTION_MODE mode,
-                             const uint8_t *ref, int ref_stride,
-                             uint8_t *dst, int dst_stride,
-                             int aoff, int loff, int plane) {
+                              TX_SIZE tx_size, PREDICTION_MODE mode,
+                              const uint8_t *ref, int ref_stride, uint8_t *dst,
+                              int dst_stride, int aoff, int loff, int plane) {
   const int txw = (1 << tx_size);
   const int have_top = loff || xd->up_available;
   const int have_left = aoff || xd->left_available;
@@ -733,14 +692,11 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int right_available =
       mi_col + (bw >> !pd->subsampling_x) < xd->tile.mi_col_end;
-  const int have_right = vp10_has_right(bsize, mi_row, mi_col,
-                                        right_available,
-                                        tx_size, loff, aoff,
-                                        pd->subsampling_x);
-  const int have_bottom = vp10_has_bottom(bsize, mi_row, mi_col,
-                                          xd->mb_to_bottom_edge > 0,
-                                          tx_size, loff, aoff,
-                                          pd->subsampling_y);
+  const int have_right = vp10_has_right(bsize, mi_row, mi_col, right_available,
+                                        tx_size, loff, aoff, pd->subsampling_x);
+  const int have_bottom =
+      vp10_has_bottom(bsize, mi_row, mi_col, xd->mb_to_bottom_edge > 0, tx_size,
+                      loff, aoff, pd->subsampling_y);
   const int wpx = 4 * bw;
   const int hpx = 4 * bh;
   const int txpx = 4 * txw;
@@ -757,8 +713,7 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
 #if CONFIG_VPX_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(xd, ref, ref_stride, dst, dst_stride, mode,
-                                tx_size,
-                                have_top ? VPXMIN(txpx, xr + txpx) : 0,
+                                tx_size, have_top ? VPXMIN(txpx, xr + txpx) : 0,
                                 have_top && have_right ? VPXMIN(txpx, xr) : 0,
                                 have_left ? VPXMIN(txpx, yd + txpx) : 0,
                                 have_bottom && have_left ? VPXMIN(txpx, yd) : 0,
@@ -766,20 +721,19 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
     return;
   }
 #endif
-  build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode,
-                         tx_size,
+  build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
                          have_top ? VPXMIN(txpx, xr + txpx) : 0,
                          have_top && have_right ? VPXMIN(txpx, xr) : 0,
                          have_left ? VPXMIN(txpx, yd + txpx) : 0,
-                         have_bottom && have_left ? VPXMIN(txpx, yd) : 0,
-                         x, y, plane);
+                         have_bottom && have_left ? VPXMIN(txpx, yd) : 0, x, y,
+                         plane);
 #else  // CONFIG_MISC_FIXES
-  (void) bhl_in;
+  (void)bhl_in;
 #if CONFIG_VPX_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(xd, ref, ref_stride, dst, dst_stride, mode,
-                                tx_size, have_top, have_left, have_right,
-                                x, y, plane, xd->bd);
+                                tx_size, have_top, have_left, have_right, x, y,
+                                plane, xd->bd);
     return;
   }
 #endif

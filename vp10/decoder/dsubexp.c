@@ -15,8 +15,7 @@
 #include "vp10/decoder/dsubexp.h"
 
 static int inv_recenter_nonneg(int v, int m) {
-  if (v > 2 * m)
-    return v;
+  if (v > 2 * m) return v;
 
   return (v & 1) ? m - ((v + 1) >> 1) : m + (v >> 1);
 }
@@ -25,10 +24,11 @@ static int decode_uniform(vpx_reader *r) {
   const int l = 8;
   const int m = (1 << l) - 191 + CONFIG_MISC_FIXES;
   const int v = vpx_read_literal(r, l - 1);
-  return v < m ?  v : (v << 1) - m + vpx_read_bit(r);
+  return v < m ? v : (v << 1) - m + vpx_read_bit(r);
 }
 
 static int inv_remap_prob(int v, int m) {
+  /* clang-format off */
   static uint8_t inv_map_table[MAX_PROB - CONFIG_MISC_FIXES] = {
       7,  20,  33,  46,  59,  72,  85,  98, 111, 124, 137, 150, 163, 176, 189,
     202, 215, 228, 241, 254,   1,   2,   3,   4,   5,   6,   8,   9,  10,  11,
@@ -50,7 +50,7 @@ static int inv_remap_prob(int v, int m) {
 #if !CONFIG_MISC_FIXES
     253
 #endif
-  };
+  }; /* clang-format on */
   assert(v < (int)(sizeof(inv_map_table) / sizeof(inv_map_table[0])));
   v = inv_map_table[v];
   m--;
@@ -62,16 +62,13 @@ static int inv_remap_prob(int v, int m) {
 }
 
 static int decode_term_subexp(vpx_reader *r) {
-  if (!vpx_read_bit(r))
-    return vpx_read_literal(r, 4);
-  if (!vpx_read_bit(r))
-    return vpx_read_literal(r, 4) + 16;
-  if (!vpx_read_bit(r))
-    return vpx_read_literal(r, 5) + 32;
+  if (!vpx_read_bit(r)) return vpx_read_literal(r, 4);
+  if (!vpx_read_bit(r)) return vpx_read_literal(r, 4) + 16;
+  if (!vpx_read_bit(r)) return vpx_read_literal(r, 5) + 32;
   return decode_uniform(r) + 64;
 }
 
-void vp10_diff_update_prob(vpx_reader *r, vpx_prob* p) {
+void vp10_diff_update_prob(vpx_reader *r, vpx_prob *p) {
   if (vpx_read(r, DIFF_UPDATE_PROB)) {
     const int delp = decode_term_subexp(r);
     *p = (vpx_prob)inv_remap_prob(delp, *p);

@@ -45,7 +45,7 @@ struct macroblock_plane {
 /* The [2] dimension is for whether we skip the EOB node (i.e. if previous
  * coefficient in this block was zero) or not. */
 typedef unsigned int vp10_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][2]
-                                   [COEFF_CONTEXTS][ENTROPY_TOKENS];
+                                    [COEFF_CONTEXTS][ENTROPY_TOKENS];
 
 typedef struct {
   int_mv ref_mvs[MAX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
@@ -70,8 +70,8 @@ struct macroblock {
   int rddiv;
   int rdmult;
   int mb_energy;
-  int * m_search_count_ptr;
-  int * ex_search_count_ptr;
+  int *m_search_count_ptr;
+  int *ex_search_count_ptr;
 
   // These are set to their default values at the beginning, and then adjusted
   // further in the encoding process.
@@ -122,9 +122,9 @@ struct macroblock {
 
   // skip forward transform and quantization
   uint8_t skip_txfm[MAX_MB_PLANE << 2];
-  #define SKIP_TXFM_NONE 0
-  #define SKIP_TXFM_AC_DC 1
-  #define SKIP_TXFM_AC_ONLY 2
+#define SKIP_TXFM_NONE 0
+#define SKIP_TXFM_AC_DC 1
+#define SKIP_TXFM_AC_ONLY 2
 
   int64_t bsse[MAX_MB_PLANE << 2];
 

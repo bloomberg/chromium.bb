@@ -61,61 +61,149 @@ static const int mode_2_counter[MB_MODE_COUNT] = {
 // 2. However the actual count can never be greater than 2 so the highest
 // counter we need is 18. 9 is an invalid counter that's never used.
 static const int counter_to_context[19] = {
-  BOTH_PREDICTED,  // 0
-  NEW_PLUS_NON_INTRA,  // 1
-  BOTH_NEW,  // 2
-  ZERO_PLUS_PREDICTED,  // 3
-  NEW_PLUS_NON_INTRA,  // 4
-  INVALID_CASE,  // 5
-  BOTH_ZERO,  // 6
-  INVALID_CASE,  // 7
-  INVALID_CASE,  // 8
+  BOTH_PREDICTED,        // 0
+  NEW_PLUS_NON_INTRA,    // 1
+  BOTH_NEW,              // 2
+  ZERO_PLUS_PREDICTED,   // 3
+  NEW_PLUS_NON_INTRA,    // 4
+  INVALID_CASE,          // 5
+  BOTH_ZERO,             // 6
+  INVALID_CASE,          // 7
+  INVALID_CASE,          // 8
   INTRA_PLUS_NON_INTRA,  // 9
   INTRA_PLUS_NON_INTRA,  // 10
-  INVALID_CASE,  // 11
+  INVALID_CASE,          // 11
   INTRA_PLUS_NON_INTRA,  // 12
-  INVALID_CASE,  // 13
-  INVALID_CASE,  // 14
-  INVALID_CASE,  // 15
-  INVALID_CASE,  // 16
-  INVALID_CASE,  // 17
-  BOTH_INTRA  // 18
+  INVALID_CASE,          // 13
+  INVALID_CASE,          // 14
+  INVALID_CASE,          // 15
+  INVALID_CASE,          // 16
+  INVALID_CASE,          // 17
+  BOTH_INTRA             // 18
 };
 
 static const POSITION mv_ref_blocks[BLOCK_SIZES][MVREF_NEIGHBOURS] = {
   // 4X4
-  {{-1, 0}, {0, -1}, {-1, -1}, {-2, 0}, {0, -2}, {-2, -1}, {-1, -2}, {-2, -2}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, -1 },
+    { -2, 0 },
+    { 0, -2 },
+    { -2, -1 },
+    { -1, -2 },
+    { -2, -2 } },
   // 4X8
-  {{-1, 0}, {0, -1}, {-1, -1}, {-2, 0}, {0, -2}, {-2, -1}, {-1, -2}, {-2, -2}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, -1 },
+    { -2, 0 },
+    { 0, -2 },
+    { -2, -1 },
+    { -1, -2 },
+    { -2, -2 } },
   // 8X4
-  {{-1, 0}, {0, -1}, {-1, -1}, {-2, 0}, {0, -2}, {-2, -1}, {-1, -2}, {-2, -2}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, -1 },
+    { -2, 0 },
+    { 0, -2 },
+    { -2, -1 },
+    { -1, -2 },
+    { -2, -2 } },
   // 8X8
-  {{-1, 0}, {0, -1}, {-1, -1}, {-2, 0}, {0, -2}, {-2, -1}, {-1, -2}, {-2, -2}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, -1 },
+    { -2, 0 },
+    { 0, -2 },
+    { -2, -1 },
+    { -1, -2 },
+    { -2, -2 } },
   // 8X16
-  {{0, -1}, {-1, 0}, {1, -1}, {-1, -1}, {0, -2}, {-2, 0}, {-2, -1}, {-1, -2}},
+  { { 0, -1 },
+    { -1, 0 },
+    { 1, -1 },
+    { -1, -1 },
+    { 0, -2 },
+    { -2, 0 },
+    { -2, -1 },
+    { -1, -2 } },
   // 16X8
-  {{-1, 0}, {0, -1}, {-1, 1}, {-1, -1}, {-2, 0}, {0, -2}, {-1, -2}, {-2, -1}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, 1 },
+    { -1, -1 },
+    { -2, 0 },
+    { 0, -2 },
+    { -1, -2 },
+    { -2, -1 } },
   // 16X16
-  {{-1, 0}, {0, -1}, {-1, 1}, {1, -1}, {-1, -1}, {-3, 0}, {0, -3}, {-3, -3}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, 1 },
+    { 1, -1 },
+    { -1, -1 },
+    { -3, 0 },
+    { 0, -3 },
+    { -3, -3 } },
   // 16X32
-  {{0, -1}, {-1, 0}, {2, -1}, {-1, -1}, {-1, 1}, {0, -3}, {-3, 0}, {-3, -3}},
+  { { 0, -1 },
+    { -1, 0 },
+    { 2, -1 },
+    { -1, -1 },
+    { -1, 1 },
+    { 0, -3 },
+    { -3, 0 },
+    { -3, -3 } },
   // 32X16
-  {{-1, 0}, {0, -1}, {-1, 2}, {-1, -1}, {1, -1}, {-3, 0}, {0, -3}, {-3, -3}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, 2 },
+    { -1, -1 },
+    { 1, -1 },
+    { -3, 0 },
+    { 0, -3 },
+    { -3, -3 } },
   // 32X32
-  {{-1, 1}, {1, -1}, {-1, 2}, {2, -1}, {-1, -1}, {-3, 0}, {0, -3}, {-3, -3}},
+  { { -1, 1 },
+    { 1, -1 },
+    { -1, 2 },
+    { 2, -1 },
+    { -1, -1 },
+    { -3, 0 },
+    { 0, -3 },
+    { -3, -3 } },
   // 32X64
-  {{0, -1}, {-1, 0}, {4, -1}, {-1, 2}, {-1, -1}, {0, -3}, {-3, 0}, {2, -1}},
+  { { 0, -1 },
+    { -1, 0 },
+    { 4, -1 },
+    { -1, 2 },
+    { -1, -1 },
+    { 0, -3 },
+    { -3, 0 },
+    { 2, -1 } },
   // 64X32
-  {{-1, 0}, {0, -1}, {-1, 4}, {2, -1}, {-1, -1}, {-3, 0}, {0, -3}, {-1, 2}},
+  { { -1, 0 },
+    { 0, -1 },
+    { -1, 4 },
+    { 2, -1 },
+    { -1, -1 },
+    { -3, 0 },
+    { 0, -3 },
+    { -1, 2 } },
   // 64X64
-  {{-1, 3}, {3, -1}, {-1, 4}, {4, -1}, {-1, -1}, {-1, 0}, {0, -1}, {-1, 6}}
+  { { -1, 3 },
+    { 3, -1 },
+    { -1, 4 },
+    { 4, -1 },
+    { -1, -1 },
+    { -1, 0 },
+    { 0, -1 },
+    { -1, 6 } }
 };
 
 static const int idx_n_column_to_subblock[4][2] = {
-  {1, 2},
-  {1, 3},
-  {3, 2},
-  {3, 3}
+  { 1, 2 }, { 1, 3 }, { 3, 2 }, { 3, 3 }
 };
 
 // clamp_mv_ref
@@ -128,16 +216,15 @@ static const int idx_n_column_to_subblock[4][2] = {
 static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
 #if CONFIG_MISC_FIXES
   clamp_mv(mv, xd->mb_to_left_edge - bw * 8 - MV_BORDER,
-               xd->mb_to_right_edge + bw * 8 + MV_BORDER,
-               xd->mb_to_top_edge - bh * 8 - MV_BORDER,
-               xd->mb_to_bottom_edge + bh * 8 + MV_BORDER);
+           xd->mb_to_right_edge + bw * 8 + MV_BORDER,
+           xd->mb_to_top_edge - bh * 8 - MV_BORDER,
+           xd->mb_to_bottom_edge + bh * 8 + MV_BORDER);
 #else
-  (void) bw;
-  (void) bh;
+  (void)bw;
+  (void)bh;
   clamp_mv(mv, xd->mb_to_left_edge - MV_BORDER,
-               xd->mb_to_right_edge + MV_BORDER,
-               xd->mb_to_top_edge - MV_BORDER,
-               xd->mb_to_bottom_edge + MV_BORDER);
+           xd->mb_to_right_edge + MV_BORDER, xd->mb_to_top_edge - MV_BORDER,
+           xd->mb_to_bottom_edge + MV_BORDER);
 #endif
 }
 
@@ -146,11 +233,11 @@ static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
 static INLINE int_mv get_sub_block_mv(const MODE_INFO *candidate, int which_mv,
                                       int search_col, int block_idx) {
   return block_idx >= 0 && candidate->mbmi.sb_type < BLOCK_8X8
-          ? candidate->bmi[idx_n_column_to_subblock[block_idx][search_col == 0]]
-              .as_mv[which_mv]
-          : candidate->mbmi.mv[which_mv];
+             ? candidate
+                   ->bmi[idx_n_column_to_subblock[block_idx][search_col == 0]]
+                   .as_mv[which_mv]
+             : candidate->mbmi.mv[which_mv];
 }
-
 
 // Performs mv sign inversion if indicated by the reference frame combination.
 static INLINE int_mv scale_mv(const MB_MODE_INFO *mbmi, int ref,
@@ -167,47 +254,47 @@ static INLINE int_mv scale_mv(const MB_MODE_INFO *mbmi, int ref,
 #if CONFIG_MISC_FIXES
 #define CLIP_IN_ADD(mv, bw, bh, xd) clamp_mv_ref(mv, bw, bh, xd)
 #else
-#define CLIP_IN_ADD(mv, bw, bh, xd) do {} while (0)
+#define CLIP_IN_ADD(mv, bw, bh, xd) \
+  do {                              \
+  } while (0)
 #endif
 
 // This macro is used to add a motion vector mv_ref list if it isn't
 // already in the list.  If it's the second motion vector it will also
 // skip all additional processing and jump to done!
-#define ADD_MV_REF_LIST(mv, refmv_count, mv_ref_list, bw, bh, xd, Done) \
-  do { \
-    (mv_ref_list)[(refmv_count)] = (mv); \
-    CLIP_IN_ADD(&(mv_ref_list)[(refmv_count)].as_mv, (bw), (bh), (xd)); \
+#define ADD_MV_REF_LIST(mv, refmv_count, mv_ref_list, bw, bh, xd, Done)      \
+  do {                                                                       \
+    (mv_ref_list)[(refmv_count)] = (mv);                                     \
+    CLIP_IN_ADD(&(mv_ref_list)[(refmv_count)].as_mv, (bw), (bh), (xd));      \
     if (refmv_count && (mv_ref_list)[1].as_int != (mv_ref_list)[0].as_int) { \
-        (refmv_count) = 2; \
-        goto Done; \
-    } \
-    (refmv_count) = 1; \
+      (refmv_count) = 2;                                                     \
+      goto Done;                                                             \
+    }                                                                        \
+    (refmv_count) = 1;                                                       \
   } while (0)
 
 // If either reference frame is different, not INTRA, and they
 // are different from each other scale and add the mv to our list.
 #define IF_DIFF_REF_FRAME_ADD_MV(mbmi, ref_frame, ref_sign_bias, refmv_count, \
-                                 mv_ref_list, bw, bh, xd, Done) \
-  do { \
-    if (is_inter_block(mbmi)) { \
-      if ((mbmi)->ref_frame[0] != ref_frame) \
-        ADD_MV_REF_LIST(scale_mv((mbmi), 0, ref_frame, ref_sign_bias), \
-                        refmv_count, mv_ref_list, bw, bh, xd, Done); \
-      if (has_second_ref(mbmi) && \
-          (CONFIG_MISC_FIXES || \
-           (mbmi)->mv[1].as_int != (mbmi)->mv[0].as_int) && \
-          (mbmi)->ref_frame[1] != ref_frame) \
-        ADD_MV_REF_LIST(scale_mv((mbmi), 1, ref_frame, ref_sign_bias), \
-                        refmv_count, mv_ref_list, bw, bh, xd, Done); \
-    } \
+                                 mv_ref_list, bw, bh, xd, Done)               \
+  do {                                                                        \
+    if (is_inter_block(mbmi)) {                                               \
+      if ((mbmi)->ref_frame[0] != ref_frame)                                  \
+        ADD_MV_REF_LIST(scale_mv((mbmi), 0, ref_frame, ref_sign_bias),        \
+                        refmv_count, mv_ref_list, bw, bh, xd, Done);          \
+      if (has_second_ref(mbmi) &&                                             \
+          (CONFIG_MISC_FIXES ||                                               \
+           (mbmi)->mv[1].as_int != (mbmi)->mv[0].as_int) &&                   \
+          (mbmi)->ref_frame[1] != ref_frame)                                  \
+        ADD_MV_REF_LIST(scale_mv((mbmi), 1, ref_frame, ref_sign_bias),        \
+                        refmv_count, mv_ref_list, bw, bh, xd, Done);          \
+    }                                                                         \
   } while (0)
-
 
 // Checks that the given mi_row, mi_col and search point
 // are inside the borders of the tile.
-static INLINE int is_inside(const TileInfo *const tile,
-                            int mi_col, int mi_row, int mi_rows,
-                            const POSITION *mi_pos) {
+static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
+                            int mi_rows, const POSITION *mi_pos) {
   return !(mi_row + mi_pos->row < 0 ||
            mi_col + mi_pos->col < tile->mi_col_start ||
            mi_row + mi_pos->row >= mi_rows ||
@@ -216,21 +303,21 @@ static INLINE int is_inside(const TileInfo *const tile,
 
 typedef void (*find_mv_refs_sync)(void *const data, int mi_row);
 void vp10_find_mv_refs(const VP10_COMMON *cm, const MACROBLOCKD *xd,
-                      MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
-                      int_mv *mv_ref_list, int mi_row, int mi_col,
-                      find_mv_refs_sync sync, void *const data,
-                      uint8_t *mode_context);
+                       MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
+                       int_mv *mv_ref_list, int mi_row, int mi_col,
+                       find_mv_refs_sync sync, void *const data,
+                       uint8_t *mode_context);
 
 // check a list of motion vectors by sad score using a number rows of pixels
 // above and a number cols of pixels in the left to select the one with best
 // score to use as ref motion vector
-void vp10_find_best_ref_mvs(int allow_hp,
-                           int_mv *mvlist, int_mv *nearest_mv, int_mv *near_mv);
+void vp10_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
+                            int_mv *near_mv);
 
-void vp10_append_sub8x8_mvs_for_idx(VP10_COMMON *cm, MACROBLOCKD *xd,
-                                   int block, int ref, int mi_row, int mi_col,
-                                   int_mv *nearest_mv, int_mv *near_mv,
-                                   uint8_t *mode_context);
+void vp10_append_sub8x8_mvs_for_idx(VP10_COMMON *cm, MACROBLOCKD *xd, int block,
+                                    int ref, int mi_row, int mi_col,
+                                    int_mv *nearest_mv, int_mv *near_mv,
+                                    uint8_t *mode_context);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -39,8 +39,7 @@ typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
 typedef std::tr1::tuple<FdctFunc, IdctFunc, int, vpx_bit_depth_t> Dct4x4Param;
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, vpx_bit_depth_t> Ht4x4Param;
 
-void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride,
-                 int tx_type) {
+void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
   vpx_fdct4x4_c(in, out, stride);
 }
 
@@ -48,8 +47,7 @@ void fht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
   vp10_fht4x4_c(in, out, stride, tx_type);
 }
 
-void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
-                 int tx_type) {
+void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
   vp10_fwht4x4_c(in, out, stride);
 }
 
@@ -128,14 +126,14 @@ class Trans4x4TestBase {
         }
       }
 
-      ASM_REGISTER_STATE_CHECK(RunFwdTxfm(test_input_block,
-                                          test_temp_block, pitch_));
+      ASM_REGISTER_STATE_CHECK(
+          RunFwdTxfm(test_input_block, test_temp_block, pitch_));
       if (bit_depth_ == VPX_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
 #if CONFIG_VPX_HIGHBITDEPTH
       } else {
-        ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block,
-                                            CONVERT_TO_BYTEPTR(dst16), pitch_));
+        ASM_REGISTER_STATE_CHECK(
+            RunInvTxfm(test_temp_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
 #endif
       }
 
@@ -148,15 +146,13 @@ class Trans4x4TestBase {
         const uint32_t diff = dst[j] - src[j];
 #endif
         const uint32_t error = diff * diff;
-        if (max_error < error)
-          max_error = error;
+        if (max_error < error) max_error = error;
         total_error += error;
       }
     }
 
     EXPECT_GE(static_cast<uint32_t>(limit), max_error)
-        << "Error: 4x4 FHT/IHT has an individual round trip error > "
-        << limit;
+        << "Error: 4x4 FHT/IHT has an individual round trip error > " << limit;
 
     EXPECT_GE(count_test_block * limit, total_error)
         << "Error: 4x4 FHT/IHT has average round trip error > " << limit
@@ -197,16 +193,14 @@ class Trans4x4TestBase {
         input_extreme_block[j] = rnd.Rand8() % 2 ? mask_ : -mask_;
       }
       if (i == 0) {
-        for (int j = 0; j < kNumCoeffs; ++j)
-          input_extreme_block[j] = mask_;
+        for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = mask_;
       } else if (i == 1) {
-        for (int j = 0; j < kNumCoeffs; ++j)
-          input_extreme_block[j] = -mask_;
+        for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = -mask_;
       }
 
       fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_, tx_type_);
-      ASM_REGISTER_STATE_CHECK(RunFwdTxfm(input_extreme_block,
-                                          output_block, pitch_));
+      ASM_REGISTER_STATE_CHECK(
+          RunFwdTxfm(input_extreme_block, output_block, pitch_));
 
       // The minimum quant value is 4.
       for (int j = 0; j < kNumCoeffs; ++j) {
@@ -251,8 +245,8 @@ class Trans4x4TestBase {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
 #if CONFIG_VPX_HIGHBITDEPTH
       } else {
-        ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16),
-                                            pitch_));
+        ASM_REGISTER_STATE_CHECK(
+            RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), pitch_));
 #endif
       }
 
@@ -265,8 +259,7 @@ class Trans4x4TestBase {
 #endif
         const uint32_t error = diff * diff;
         EXPECT_GE(static_cast<uint32_t>(limit), error)
-            << "Error: 4x4 IDCT has error " << error
-            << " at index " << j;
+            << "Error: 4x4 IDCT has error " << error << " at index " << j;
       }
     }
   }
@@ -278,17 +271,16 @@ class Trans4x4TestBase {
   int mask_;
 };
 
-class Trans4x4DCT
-    : public Trans4x4TestBase,
-      public ::testing::TestWithParam<Dct4x4Param> {
+class Trans4x4DCT : public Trans4x4TestBase,
+                    public ::testing::TestWithParam<Dct4x4Param> {
  public:
   virtual ~Trans4x4DCT() {}
 
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    tx_type_  = GET_PARAM(2);
-    pitch_    = 4;
+    tx_type_ = GET_PARAM(2);
+    pitch_ = 4;
     fwd_txfm_ref = fdct4x4_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
@@ -307,33 +299,24 @@ class Trans4x4DCT
   IdctFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4DCT, AccuracyCheck) {
-  RunAccuracyCheck(1);
-}
+TEST_P(Trans4x4DCT, AccuracyCheck) { RunAccuracyCheck(1); }
 
-TEST_P(Trans4x4DCT, CoeffCheck) {
-  RunCoeffCheck();
-}
+TEST_P(Trans4x4DCT, CoeffCheck) { RunCoeffCheck(); }
 
-TEST_P(Trans4x4DCT, MemCheck) {
-  RunMemCheck();
-}
+TEST_P(Trans4x4DCT, MemCheck) { RunMemCheck(); }
 
-TEST_P(Trans4x4DCT, InvAccuracyCheck) {
-  RunInvAccuracyCheck(1);
-}
+TEST_P(Trans4x4DCT, InvAccuracyCheck) { RunInvAccuracyCheck(1); }
 
-class Trans4x4HT
-    : public Trans4x4TestBase,
-      public ::testing::TestWithParam<Ht4x4Param> {
+class Trans4x4HT : public Trans4x4TestBase,
+                   public ::testing::TestWithParam<Ht4x4Param> {
  public:
   virtual ~Trans4x4HT() {}
 
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    tx_type_  = GET_PARAM(2);
-    pitch_    = 4;
+    tx_type_ = GET_PARAM(2);
+    pitch_ = 4;
     fwd_txfm_ref = fht4x4_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
@@ -353,33 +336,24 @@ class Trans4x4HT
   IhtFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4HT, AccuracyCheck) {
-  RunAccuracyCheck(1);
-}
+TEST_P(Trans4x4HT, AccuracyCheck) { RunAccuracyCheck(1); }
 
-TEST_P(Trans4x4HT, CoeffCheck) {
-  RunCoeffCheck();
-}
+TEST_P(Trans4x4HT, CoeffCheck) { RunCoeffCheck(); }
 
-TEST_P(Trans4x4HT, MemCheck) {
-  RunMemCheck();
-}
+TEST_P(Trans4x4HT, MemCheck) { RunMemCheck(); }
 
-TEST_P(Trans4x4HT, InvAccuracyCheck) {
-  RunInvAccuracyCheck(1);
-}
+TEST_P(Trans4x4HT, InvAccuracyCheck) { RunInvAccuracyCheck(1); }
 
-class Trans4x4WHT
-    : public Trans4x4TestBase,
-      public ::testing::TestWithParam<Dct4x4Param> {
+class Trans4x4WHT : public Trans4x4TestBase,
+                    public ::testing::TestWithParam<Dct4x4Param> {
  public:
   virtual ~Trans4x4WHT() {}
 
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    tx_type_  = GET_PARAM(2);
-    pitch_    = 4;
+    tx_type_ = GET_PARAM(2);
+    pitch_ = 4;
     fwd_txfm_ref = fwht4x4_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
@@ -398,21 +372,13 @@ class Trans4x4WHT
   IdctFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4WHT, AccuracyCheck) {
-  RunAccuracyCheck(0);
-}
+TEST_P(Trans4x4WHT, AccuracyCheck) { RunAccuracyCheck(0); }
 
-TEST_P(Trans4x4WHT, CoeffCheck) {
-  RunCoeffCheck();
-}
+TEST_P(Trans4x4WHT, CoeffCheck) { RunCoeffCheck(); }
 
-TEST_P(Trans4x4WHT, MemCheck) {
-  RunMemCheck();
-}
+TEST_P(Trans4x4WHT, MemCheck) { RunMemCheck(); }
 
-TEST_P(Trans4x4WHT, InvAccuracyCheck) {
-  RunInvAccuracyCheck(0);
-}
+TEST_P(Trans4x4WHT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 using std::tr1::make_tuple;
 
 #if CONFIG_VPX_HIGHBITDEPTH
@@ -423,10 +389,10 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_12, 0, VPX_BITS_12),
         make_tuple(&vpx_fdct4x4_c, &vpx_idct4x4_16_add_c, 0, VPX_BITS_8)));
 #else
-INSTANTIATE_TEST_CASE_P(
-    C, Trans4x4DCT,
-    ::testing::Values(
-        make_tuple(&vpx_fdct4x4_c, &vpx_idct4x4_16_add_c, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(C, Trans4x4DCT,
+                        ::testing::Values(make_tuple(&vpx_fdct4x4_c,
+                                                     &vpx_idct4x4_16_add_c, 0,
+                                                     VPX_BITS_8)));
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 #if CONFIG_VPX_HIGHBITDEPTH
@@ -463,18 +429,17 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&vp10_highbd_fwht4x4_c, &iwht4x4_12, 0, VPX_BITS_12),
         make_tuple(&vp10_fwht4x4_c, &vpx_iwht4x4_16_add_c, 0, VPX_BITS_8)));
 #else
-INSTANTIATE_TEST_CASE_P(
-    C, Trans4x4WHT,
-    ::testing::Values(
-        make_tuple(&vp10_fwht4x4_c, &vpx_iwht4x4_16_add_c, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(C, Trans4x4WHT,
+                        ::testing::Values(make_tuple(&vp10_fwht4x4_c,
+                                                     &vpx_iwht4x4_16_add_c, 0,
+                                                     VPX_BITS_8)));
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 #if HAVE_NEON_ASM && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(
-    NEON, Trans4x4DCT,
-    ::testing::Values(
-        make_tuple(&vpx_fdct4x4_c,
-                   &vpx_idct4x4_16_add_neon, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(NEON, Trans4x4DCT,
+                        ::testing::Values(make_tuple(&vpx_fdct4x4_c,
+                                                     &vpx_idct4x4_16_add_neon,
+                                                     0, VPX_BITS_8)));
 #endif  // HAVE_NEON_ASM && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_NEON && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
@@ -489,46 +454,44 @@ INSTANTIATE_TEST_CASE_P(
 
 #if CONFIG_USE_X86INC && HAVE_MMX && !CONFIG_VPX_HIGHBITDEPTH && \
     !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(
-    MMX, Trans4x4WHT,
-    ::testing::Values(
-        make_tuple(&vp10_fwht4x4_mmx, &vpx_iwht4x4_16_add_c, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(MMX, Trans4x4WHT,
+                        ::testing::Values(make_tuple(&vp10_fwht4x4_mmx,
+                                                     &vpx_iwht4x4_16_add_c, 0,
+                                                     VPX_BITS_8)));
 #endif
 
 #if CONFIG_USE_X86INC && HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && \
     !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans4x4WHT,
-    ::testing::Values(
-        make_tuple(&vp10_fwht4x4_c, &vpx_iwht4x4_16_add_sse2, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4WHT,
+                        ::testing::Values(make_tuple(&vp10_fwht4x4_c,
+                                                     &vpx_iwht4x4_16_add_sse2,
+                                                     0, VPX_BITS_8)));
 #endif
 
 #if HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans4x4DCT,
-    ::testing::Values(
-        make_tuple(&vpx_fdct4x4_sse2,
-                   &vpx_idct4x4_16_add_sse2, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4DCT,
+                        ::testing::Values(make_tuple(&vpx_fdct4x4_sse2,
+                                                     &vpx_idct4x4_16_add_sse2,
+                                                     0, VPX_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
     ::testing::Values(
         make_tuple(&vp10_fht4x4_sse2, &vp10_iht4x4_16_add_sse2, 0, VPX_BITS_8),
         make_tuple(&vp10_fht4x4_sse2, &vp10_iht4x4_16_add_sse2, 1, VPX_BITS_8),
         make_tuple(&vp10_fht4x4_sse2, &vp10_iht4x4_16_add_sse2, 2, VPX_BITS_8),
-        make_tuple(&vp10_fht4x4_sse2,
-                   &vp10_iht4x4_16_add_sse2, 3, VPX_BITS_8)));
+        make_tuple(&vp10_fht4x4_sse2, &vp10_iht4x4_16_add_sse2, 3,
+                   VPX_BITS_8)));
 #endif  // HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_SSE2 && CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4DCT,
     ::testing::Values(
-        make_tuple(&vpx_highbd_fdct4x4_c,    &idct4x4_10_sse2, 0, VPX_BITS_10),
+        make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_10_sse2, 0, VPX_BITS_10),
         make_tuple(&vpx_highbd_fdct4x4_sse2, &idct4x4_10_sse2, 0, VPX_BITS_10),
-        make_tuple(&vpx_highbd_fdct4x4_c,    &idct4x4_12_sse2, 0, VPX_BITS_12),
+        make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_12_sse2, 0, VPX_BITS_12),
         make_tuple(&vpx_highbd_fdct4x4_sse2, &idct4x4_12_sse2, 0, VPX_BITS_12),
-        make_tuple(&vpx_fdct4x4_sse2,      &vpx_idct4x4_16_add_c, 0,
-                   VPX_BITS_8)));
+        make_tuple(&vpx_fdct4x4_sse2, &vpx_idct4x4_16_add_c, 0, VPX_BITS_8)));
 
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
@@ -540,10 +503,10 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE2 && CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_MSA && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(
-    MSA, Trans4x4DCT,
-    ::testing::Values(
-        make_tuple(&vpx_fdct4x4_msa, &vpx_idct4x4_16_add_msa, 0, VPX_BITS_8)));
+INSTANTIATE_TEST_CASE_P(MSA, Trans4x4DCT,
+                        ::testing::Values(make_tuple(&vpx_fdct4x4_msa,
+                                                     &vpx_idct4x4_16_add_msa, 0,
+                                                     VPX_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans4x4HT,
     ::testing::Values(

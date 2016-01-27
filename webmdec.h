@@ -55,10 +55,8 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
 //     -1 - Error
 // TODO(vigneshv): Make the return values consistent across all functions in
 // this file.
-int webm_read_frame(struct WebmInputContext *webm_ctx,
-                    uint8_t **buffer,
-                    size_t *bytes_in_buffer,
-                    size_t *buffer_size);
+int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
+                    size_t *bytes_in_buffer, size_t *buffer_size);
 
 // Guesses the frame rate of the input file based on the container timestamps.
 int webm_guess_framerate(struct WebmInputContext *webm_ctx,

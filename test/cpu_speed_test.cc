@@ -23,10 +23,8 @@ class CpuSpeedTest
       public ::libvpx_test::CodecTestWith2Params<libvpx_test::TestMode, int> {
  protected:
   CpuSpeedTest()
-      : EncoderTest(GET_PARAM(0)),
-        encoding_mode_(GET_PARAM(1)),
-        set_cpu_used_(GET_PARAM(2)),
-        min_psnr_(kMaxPSNR) {}
+      : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)),
+        set_cpu_used_(GET_PARAM(2)), min_psnr_(kMaxPSNR) {}
   virtual ~CpuSpeedTest() {}
 
   virtual void SetUp() {
@@ -41,9 +39,7 @@ class CpuSpeedTest
     }
   }
 
-  virtual void BeginPassHook(unsigned int /*pass*/) {
-    min_psnr_ = kMaxPSNR;
-  }
+  virtual void BeginPassHook(unsigned int /*pass*/) { min_psnr_ = kMaxPSNR; }
 
   virtual void PreEncodeFrameHook(::libvpx_test::VideoSource *video,
                                   ::libvpx_test::Encoder *encoder) {
@@ -59,8 +55,7 @@ class CpuSpeedTest
   }
 
   virtual void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) {
-    if (pkt->data.psnr.psnr[0] < min_psnr_)
-      min_psnr_ = pkt->data.psnr.psnr[0];
+    if (pkt->data.psnr.psnr[0] < min_psnr_) min_psnr_ = pkt->data.psnr.psnr[0];
   }
 
   ::libvpx_test::TestMode encoding_mode_;
@@ -135,8 +130,8 @@ TEST_P(CpuSpeedTest, TestLowBitrate) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-VP10_INSTANTIATE_TEST_CASE(
-    CpuSpeedTest,
-    ::testing::Values(::libvpx_test::kTwoPassGood, ::libvpx_test::kOnePassGood),
-    ::testing::Range(0, 3));
+VP10_INSTANTIATE_TEST_CASE(CpuSpeedTest,
+                           ::testing::Values(::libvpx_test::kTwoPassGood,
+                                             ::libvpx_test::kOnePassGood),
+                           ::testing::Range(0, 3));
 }  // namespace

@@ -38,14 +38,14 @@ class CodecFactory {
   virtual Decoder* CreateDecoder(vpx_codec_dec_cfg_t cfg,
                                  const vpx_codec_flags_t flags,
                                  unsigned long deadline)  // NOLINT(runtime/int)
-                                 const = 0;
+      const = 0;
 
   virtual Encoder* CreateEncoder(vpx_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
                                  const unsigned long init_flags,
-                                 TwopassStatsStore *stats) const = 0;
+                                 TwopassStatsStore* stats) const = 0;
 
-  virtual vpx_codec_err_t DefaultEncoderConfig(vpx_codec_enc_cfg_t *cfg,
+  virtual vpx_codec_err_t DefaultEncoderConfig(vpx_codec_enc_cfg_t* cfg,
                                                int usage) const = 0;
 };
 
@@ -53,20 +53,20 @@ class CodecFactory {
  * to avoid having to include a pointer to the CodecFactory in every test
  * definition.
  */
-template<class T1>
-class CodecTestWithParam : public ::testing::TestWithParam<
-    std::tr1::tuple< const libvpx_test::CodecFactory*, T1 > > {
-};
+template <class T1>
+class CodecTestWithParam
+    : public ::testing::TestWithParam<
+          std::tr1::tuple<const libvpx_test::CodecFactory*, T1> > {};
 
-template<class T1, class T2>
-class CodecTestWith2Params : public ::testing::TestWithParam<
-    std::tr1::tuple< const libvpx_test::CodecFactory*, T1, T2 > > {
-};
+template <class T1, class T2>
+class CodecTestWith2Params
+    : public ::testing::TestWithParam<
+          std::tr1::tuple<const libvpx_test::CodecFactory*, T1, T2> > {};
 
-template<class T1, class T2, class T3>
-class CodecTestWith3Params : public ::testing::TestWithParam<
-    std::tr1::tuple< const libvpx_test::CodecFactory*, T1, T2, T3 > > {
-};
+template <class T1, class T2, class T3>
+class CodecTestWith3Params
+    : public ::testing::TestWithParam<
+          std::tr1::tuple<const libvpx_test::CodecFactory*, T1, T2, T3> > {};
 
 /*
  * VP10 Codec Definitions
@@ -94,7 +94,7 @@ class VP10Decoder : public Decoder {
 class VP10Encoder : public Encoder {
  public:
   VP10Encoder(vpx_codec_enc_cfg_t cfg, unsigned long deadline,
-              const unsigned long init_flags, TwopassStatsStore *stats)
+              const unsigned long init_flags, TwopassStatsStore* stats)
       : Encoder(cfg, deadline, init_flags, stats) {}
 
  protected:
@@ -129,7 +129,7 @@ class VP10CodecFactory : public CodecFactory {
   virtual Encoder* CreateEncoder(vpx_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
                                  const unsigned long init_flags,
-                                 TwopassStatsStore *stats) const {
+                                 TwopassStatsStore* stats) const {
 #if CONFIG_VP10_ENCODER
     return new VP10Encoder(cfg, deadline, init_flags, stats);
 #else
@@ -137,7 +137,7 @@ class VP10CodecFactory : public CodecFactory {
 #endif
   }
 
-  virtual vpx_codec_err_t DefaultEncoderConfig(vpx_codec_enc_cfg_t *cfg,
+  virtual vpx_codec_err_t DefaultEncoderConfig(vpx_codec_enc_cfg_t* cfg,
                                                int usage) const {
 #if CONFIG_VP10_ENCODER
     return vpx_codec_enc_config_default(&vpx_codec_vp10_cx_algo, cfg, usage);
@@ -149,11 +149,12 @@ class VP10CodecFactory : public CodecFactory {
 
 const libvpx_test::VP10CodecFactory kVP10;
 
-#define VP10_INSTANTIATE_TEST_CASE(test, ...)\
-  INSTANTIATE_TEST_CASE_P(VP10, test, \
-      ::testing::Combine( \
+#define VP10_INSTANTIATE_TEST_CASE(test, ...)                              \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      VP10, test,                                                          \
+      ::testing::Combine(                                                  \
           ::testing::Values(static_cast<const libvpx_test::CodecFactory*>( \
-               &libvpx_test::kVP10)), \
+              &libvpx_test::kVP10)),                                       \
           __VA_ARGS__))
 #else
 #define VP10_INSTANTIATE_TEST_CASE(test, ...)

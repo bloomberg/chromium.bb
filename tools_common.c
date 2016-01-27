@@ -29,23 +29,22 @@
 #include <fcntl.h>
 
 #ifdef __OS2__
-#define _setmode    setmode
-#define _fileno     fileno
-#define _O_BINARY   O_BINARY
+#define _setmode setmode
+#define _fileno fileno
+#define _O_BINARY O_BINARY
 #endif
 #endif
 
-#define LOG_ERROR(label) do {\
-  const char *l = label;\
-  va_list ap;\
-  va_start(ap, fmt);\
-  if (l)\
-    fprintf(stderr, "%s: ", l);\
-  vfprintf(stderr, fmt, ap);\
-  fprintf(stderr, "\n");\
-  va_end(ap);\
-} while (0)
-
+#define LOG_ERROR(label)               \
+  do {                                 \
+    const char *l = label;             \
+    va_list ap;                        \
+    va_start(ap, fmt);                 \
+    if (l) fprintf(stderr, "%s: ", l); \
+    vfprintf(stderr, fmt, ap);         \
+    fprintf(stderr, "\n");             \
+    va_end(ap);                        \
+  } while (0)
 
 FILE *set_binary_mode(FILE *stream) {
   (void)stream;
@@ -65,16 +64,13 @@ void fatal(const char *fmt, ...) {
   exit(EXIT_FAILURE);
 }
 
-void warn(const char *fmt, ...) {
-  LOG_ERROR("Warning");
-}
+void warn(const char *fmt, ...) { LOG_ERROR("Warning"); }
 
 void die_codec(vpx_codec_ctx_t *ctx, const char *s) {
   const char *detail = vpx_codec_error_detail(ctx);
 
   printf("%s: %s\n", s, vpx_codec_error(ctx));
-  if (detail)
-    printf("    %s\n", detail);
+  if (detail) printf("    %s\n", detail);
   exit(EXIT_FAILURE);
 }
 
@@ -97,15 +93,16 @@ int read_yuv_frame(struct VpxInputContext *input_ctx, vpx_image_t *yuv_frame) {
      */
     switch (plane) {
       case 1:
-        ptr = yuv_frame->planes[
-            yuv_frame->fmt == VPX_IMG_FMT_YV12 ? VPX_PLANE_V : VPX_PLANE_U];
+        ptr =
+            yuv_frame->planes[yuv_frame->fmt == VPX_IMG_FMT_YV12 ? VPX_PLANE_V
+                                                                 : VPX_PLANE_U];
         break;
       case 2:
-        ptr = yuv_frame->planes[
-            yuv_frame->fmt == VPX_IMG_FMT_YV12 ? VPX_PLANE_U : VPX_PLANE_V];
+        ptr =
+            yuv_frame->planes[yuv_frame->fmt == VPX_IMG_FMT_YV12 ? VPX_PLANE_U
+                                                                 : VPX_PLANE_V];
         break;
-      default:
-        ptr = yuv_frame->planes[plane];
+      default: ptr = yuv_frame->planes[plane];
     }
 
     for (r = 0; r < h; ++r) {
@@ -134,7 +131,7 @@ int read_yuv_frame(struct VpxInputContext *input_ctx, vpx_image_t *yuv_frame) {
 
 static const VpxInterface vpx_encoders[] = {
 #if CONFIG_VP10_ENCODER
-  {"vp10", VP10_FOURCC, &vpx_codec_vp10_cx},
+  { "vp10", VP10_FOURCC, &vpx_codec_vp10_cx },
 #endif
 };
 
@@ -142,17 +139,14 @@ int get_vpx_encoder_count(void) {
   return sizeof(vpx_encoders) / sizeof(vpx_encoders[0]);
 }
 
-const VpxInterface *get_vpx_encoder_by_index(int i) {
-  return &vpx_encoders[i];
-}
+const VpxInterface *get_vpx_encoder_by_index(int i) { return &vpx_encoders[i]; }
 
 const VpxInterface *get_vpx_encoder_by_name(const char *name) {
   int i;
 
   for (i = 0; i < get_vpx_encoder_count(); ++i) {
     const VpxInterface *encoder = get_vpx_encoder_by_index(i);
-    if (strcmp(encoder->name, name) == 0)
-      return encoder;
+    if (strcmp(encoder->name, name) == 0) return encoder;
   }
 
   return NULL;
@@ -164,7 +158,7 @@ const VpxInterface *get_vpx_encoder_by_name(const char *name) {
 
 static const VpxInterface vpx_decoders[] = {
 #if CONFIG_VP10_DECODER
-  {"vp10", VP10_FOURCC, &vpx_codec_vp10_dx},
+  { "vp10", VP10_FOURCC, &vpx_codec_vp10_dx },
 #endif
 };
 
@@ -172,17 +166,14 @@ int get_vpx_decoder_count(void) {
   return sizeof(vpx_decoders) / sizeof(vpx_decoders[0]);
 }
 
-const VpxInterface *get_vpx_decoder_by_index(int i) {
-  return &vpx_decoders[i];
-}
+const VpxInterface *get_vpx_decoder_by_index(int i) { return &vpx_decoders[i]; }
 
 const VpxInterface *get_vpx_decoder_by_name(const char *name) {
   int i;
 
   for (i = 0; i < get_vpx_decoder_count(); ++i) {
-     const VpxInterface *const decoder = get_vpx_decoder_by_index(i);
-     if (strcmp(decoder->name, name) == 0)
-       return decoder;
+    const VpxInterface *const decoder = get_vpx_decoder_by_index(i);
+    if (strcmp(decoder->name, name) == 0) return decoder;
   }
 
   return NULL;
@@ -193,8 +184,7 @@ const VpxInterface *get_vpx_decoder_by_fourcc(uint32_t fourcc) {
 
   for (i = 0; i < get_vpx_decoder_count(); ++i) {
     const VpxInterface *const decoder = get_vpx_decoder_by_index(i);
-    if (decoder->fourcc == fourcc)
-      return decoder;
+    if (decoder->fourcc == fourcc) return decoder;
   }
 
   return NULL;
@@ -212,7 +202,7 @@ int vpx_img_plane_width(const vpx_image_t *img, int plane) {
 }
 
 int vpx_img_plane_height(const vpx_image_t *img, int plane) {
-  if (plane > 0 &&  img->y_chroma_shift > 0)
+  if (plane > 0 && img->y_chroma_shift > 0)
     return (img->d_h + 1) >> img->y_chroma_shift;
   else
     return img->d_h;
@@ -225,7 +215,7 @@ void vpx_img_write(const vpx_image_t *img, FILE *file) {
     const unsigned char *buf = img->planes[plane];
     const int stride = img->stride[plane];
     const int w = vpx_img_plane_width(img, plane) *
-        ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+                  ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
     const int h = vpx_img_plane_height(img, plane);
     int y;
 
@@ -243,13 +233,12 @@ int vpx_img_read(vpx_image_t *img, FILE *file) {
     unsigned char *buf = img->planes[plane];
     const int stride = img->stride[plane];
     const int w = vpx_img_plane_width(img, plane) *
-        ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+                  ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
     const int h = vpx_img_plane_height(img, plane);
     int y;
 
     for (y = 0; y < h; ++y) {
-      if (fread(buf, 1, w, file) != (size_t)w)
-        return 0;
+      if (fread(buf, 1, w, file) != (size_t)w) return 0;
       buf += stride;
     }
   }
@@ -278,19 +267,16 @@ static void highbd_img_upshift(vpx_image_t *dst, vpx_image_t *src,
   int plane;
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
       dst->x_chroma_shift != src->x_chroma_shift ||
-      dst->y_chroma_shift != src->y_chroma_shift ||
-      dst->fmt != src->fmt || input_shift < 0) {
+      dst->y_chroma_shift != src->y_chroma_shift || dst->fmt != src->fmt ||
+      input_shift < 0) {
     fatal("Unsupported image conversion");
   }
   switch (src->fmt) {
     case VPX_IMG_FMT_I42016:
     case VPX_IMG_FMT_I42216:
     case VPX_IMG_FMT_I44416:
-    case VPX_IMG_FMT_I44016:
-      break;
-    default:
-      fatal("Unsupported image conversion");
-      break;
+    case VPX_IMG_FMT_I44016: break;
+    default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
     int w = src->d_w;
@@ -305,8 +291,7 @@ static void highbd_img_upshift(vpx_image_t *dst, vpx_image_t *src,
           (uint16_t *)(src->planes[plane] + y * src->stride[plane]);
       uint16_t *p_dst =
           (uint16_t *)(dst->planes[plane] + y * dst->stride[plane]);
-      for (x = 0; x < w; x++)
-        *p_dst++ = (*p_src++ << input_shift) + offset;
+      for (x = 0; x < w; x++) *p_dst++ = (*p_src++ << input_shift) + offset;
     }
   }
 }
@@ -319,19 +304,15 @@ static void lowbd_img_upshift(vpx_image_t *dst, vpx_image_t *src,
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
       dst->x_chroma_shift != src->x_chroma_shift ||
       dst->y_chroma_shift != src->y_chroma_shift ||
-      dst->fmt != src->fmt + VPX_IMG_FMT_HIGHBITDEPTH ||
-      input_shift < 0) {
+      dst->fmt != src->fmt + VPX_IMG_FMT_HIGHBITDEPTH || input_shift < 0) {
     fatal("Unsupported image conversion");
   }
   switch (src->fmt) {
     case VPX_IMG_FMT_I420:
     case VPX_IMG_FMT_I422:
     case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440:
-      break;
-    default:
-      fatal("Unsupported image conversion");
-      break;
+    case VPX_IMG_FMT_I440: break;
+    default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
     int w = src->d_w;
@@ -352,8 +333,7 @@ static void lowbd_img_upshift(vpx_image_t *dst, vpx_image_t *src,
   }
 }
 
-void vpx_img_upshift(vpx_image_t *dst, vpx_image_t *src,
-                     int input_shift) {
+void vpx_img_upshift(vpx_image_t *dst, vpx_image_t *src, int input_shift) {
   if (src->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
     highbd_img_upshift(dst, src, input_shift);
   } else {
@@ -363,9 +343,8 @@ void vpx_img_upshift(vpx_image_t *dst, vpx_image_t *src,
 
 void vpx_img_truncate_16_to_8(vpx_image_t *dst, vpx_image_t *src) {
   int plane;
-  if (dst->fmt + VPX_IMG_FMT_HIGHBITDEPTH != src->fmt ||
-      dst->d_w != src->d_w || dst->d_h != src->d_h ||
-      dst->x_chroma_shift != src->x_chroma_shift ||
+  if (dst->fmt + VPX_IMG_FMT_HIGHBITDEPTH != src->fmt || dst->d_w != src->d_w ||
+      dst->d_h != src->d_h || dst->x_chroma_shift != src->x_chroma_shift ||
       dst->y_chroma_shift != src->y_chroma_shift) {
     fatal("Unsupported image conversion");
   }
@@ -373,11 +352,8 @@ void vpx_img_truncate_16_to_8(vpx_image_t *dst, vpx_image_t *src) {
     case VPX_IMG_FMT_I420:
     case VPX_IMG_FMT_I422:
     case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440:
-      break;
-    default:
-      fatal("Unsupported image conversion");
-      break;
+    case VPX_IMG_FMT_I440: break;
+    default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
     int w = src->d_w;
@@ -403,19 +379,16 @@ static void highbd_img_downshift(vpx_image_t *dst, vpx_image_t *src,
   int plane;
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
       dst->x_chroma_shift != src->x_chroma_shift ||
-      dst->y_chroma_shift != src->y_chroma_shift ||
-      dst->fmt != src->fmt || down_shift < 0) {
+      dst->y_chroma_shift != src->y_chroma_shift || dst->fmt != src->fmt ||
+      down_shift < 0) {
     fatal("Unsupported image conversion");
   }
   switch (src->fmt) {
     case VPX_IMG_FMT_I42016:
     case VPX_IMG_FMT_I42216:
     case VPX_IMG_FMT_I44416:
-    case VPX_IMG_FMT_I44016:
-      break;
-    default:
-      fatal("Unsupported image conversion");
-      break;
+    case VPX_IMG_FMT_I44016: break;
+    default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
     int w = src->d_w;
@@ -430,8 +403,7 @@ static void highbd_img_downshift(vpx_image_t *dst, vpx_image_t *src,
           (uint16_t *)(src->planes[plane] + y * src->stride[plane]);
       uint16_t *p_dst =
           (uint16_t *)(dst->planes[plane] + y * dst->stride[plane]);
-      for (x = 0; x < w; x++)
-        *p_dst++ = *p_src++ >> down_shift;
+      for (x = 0; x < w; x++) *p_dst++ = *p_src++ >> down_shift;
     }
   }
 }
@@ -442,19 +414,15 @@ static void lowbd_img_downshift(vpx_image_t *dst, vpx_image_t *src,
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
       dst->x_chroma_shift != src->x_chroma_shift ||
       dst->y_chroma_shift != src->y_chroma_shift ||
-      src->fmt != dst->fmt + VPX_IMG_FMT_HIGHBITDEPTH ||
-      down_shift < 0) {
+      src->fmt != dst->fmt + VPX_IMG_FMT_HIGHBITDEPTH || down_shift < 0) {
     fatal("Unsupported image conversion");
   }
   switch (dst->fmt) {
     case VPX_IMG_FMT_I420:
     case VPX_IMG_FMT_I422:
     case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440:
-      break;
-    default:
-      fatal("Unsupported image conversion");
-      break;
+    case VPX_IMG_FMT_I440: break;
+    default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
     int w = src->d_w;
@@ -475,8 +443,7 @@ static void lowbd_img_downshift(vpx_image_t *dst, vpx_image_t *src,
   }
 }
 
-void vpx_img_downshift(vpx_image_t *dst, vpx_image_t *src,
-                       int down_shift) {
+void vpx_img_downshift(vpx_image_t *dst, vpx_image_t *src, int down_shift) {
   if (dst->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
     highbd_img_downshift(dst, src, down_shift);
   } else {

@@ -16,9 +16,9 @@
 #include "vp10/encoder/skin_detection.h"
 
 // Fixed-point skin color model parameters.
-static const int skin_mean[2] = {7463, 9614};                 // q6
-static const int skin_inv_cov[4] = {4107, 1663, 1663, 2157};  // q16
-static const int skin_threshold = 1570636;                    // q18
+static const int skin_mean[2] = { 7463, 9614 };                 // q6
+static const int skin_inv_cov[4] = { 4107, 1663, 1663, 2157 };  // q16
+static const int skin_threshold = 1570636;                      // q18
 
 // Thresholds on luminance.
 static const int y_low = 20;
@@ -34,10 +34,9 @@ static int evaluate_skin_color_difference(int cb, int cr) {
   const int cb_diff_q2 = (cb_diff_q12 + (1 << 9)) >> 10;
   const int cbcr_diff_q2 = (cbcr_diff_q12 + (1 << 9)) >> 10;
   const int cr_diff_q2 = (cr_diff_q12 + (1 << 9)) >> 10;
-  const int skin_diff = skin_inv_cov[0] * cb_diff_q2 +
-      skin_inv_cov[1] * cbcr_diff_q2 +
-      skin_inv_cov[2] * cbcr_diff_q2 +
-      skin_inv_cov[3] * cr_diff_q2;
+  const int skin_diff =
+      skin_inv_cov[0] * cb_diff_q2 + skin_inv_cov[1] * cbcr_diff_q2 +
+      skin_inv_cov[2] * cbcr_diff_q2 + skin_inv_cov[3] * cr_diff_q2;
   return skin_diff;
 }
 
@@ -61,11 +60,11 @@ void vp10_compute_skin_map(VP10_COMP *const cpi, FILE *yuv_skinmap_file) {
   const int src_uvstride = cpi->Source->uv_stride;
   YV12_BUFFER_CONFIG skinmap;
   memset(&skinmap, 0, sizeof(YV12_BUFFER_CONFIG));
-  if (vpx_alloc_frame_buffer(&skinmap, cm->width, cm->height,
-                               cm->subsampling_x, cm->subsampling_y,
-                               VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment)) {
-      vpx_free_frame_buffer(&skinmap);
-      return;
+  if (vpx_alloc_frame_buffer(&skinmap, cm->width, cm->height, cm->subsampling_x,
+                             cm->subsampling_y, VPX_ENC_BORDER_IN_PIXELS,
+                             cm->byte_alignment)) {
+    vpx_free_frame_buffer(&skinmap);
+    return;
   }
   memset(skinmap.buffer_alloc, 128, skinmap.frame_size);
   y = skinmap.y_buffer;

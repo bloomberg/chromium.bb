@@ -47,10 +47,10 @@ extern "C" {
 #define NUM_PING_PONG_BUFFERS 2
 
 typedef enum {
-  SINGLE_REFERENCE      = 0,
-  COMPOUND_REFERENCE    = 1,
+  SINGLE_REFERENCE = 0,
+  COMPOUND_REFERENCE = 1,
   REFERENCE_MODE_SELECT = 2,
-  REFERENCE_MODES       = 3,
+  REFERENCE_MODES = 3,
 } REFERENCE_MODE;
 
 typedef enum {
@@ -103,9 +103,9 @@ typedef struct {
 } RefCntBuffer;
 
 typedef struct BufferPool {
-  // Protect BufferPool from being accessed by several FrameWorkers at
-  // the same time during frame parallel decode.
-  // TODO(hkuang): Try to use atomic variable instead of locking the whole pool.
+// Protect BufferPool from being accessed by several FrameWorkers at
+// the same time during frame parallel decode.
+// TODO(hkuang): Try to use atomic variable instead of locking the whole pool.
 #if CONFIG_MULTITHREAD
   pthread_mutex_t pool_mutex;
 #endif
@@ -123,7 +123,7 @@ typedef struct BufferPool {
 } BufferPool;
 
 typedef struct VP10Common {
-  struct vpx_internal_error_info  error;
+  struct vpx_internal_error_info error;
   vpx_color_space_t color_space;
   int color_range;
   int width;
@@ -163,7 +163,7 @@ typedef struct VP10Common {
 
   int new_fb_idx;
 
-  FRAME_TYPE last_frame_type;  /* last frame's frame type for motion search.*/
+  FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
   FRAME_TYPE frame_type;
 
   int show_frame;
@@ -239,7 +239,7 @@ typedef struct VP10Common {
   // a frame decode
   REFRESH_FRAME_CONTEXT_MODE refresh_frame_context;
 
-  int ref_frame_sign_bias[MAX_REF_FRAMES];    /* Two state 0, 1 */
+  int ref_frame_sign_bias[MAX_REF_FRAMES]; /* Two state 0, 1 */
 
   struct loopfilter lf;
   struct segmentation seg;
@@ -254,9 +254,9 @@ typedef struct VP10Common {
   MV_REFERENCE_FRAME comp_var_ref[2];
   REFERENCE_MODE reference_mode;
 
-  FRAME_CONTEXT *fc;  /* this frame entropy */
-  FRAME_CONTEXT *frame_contexts;   // FRAME_CONTEXTS
-  unsigned int  frame_context_idx; /* Context to use/update */
+  FRAME_CONTEXT *fc;              /* this frame entropy */
+  FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
+  unsigned int frame_context_idx; /* Context to use/update */
   FRAME_COUNTS counts;
 
   unsigned int current_video_frame;
@@ -313,10 +313,8 @@ static void unlock_buffer_pool(BufferPool *const pool) {
 }
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame(VP10_COMMON *cm, int index) {
-  if (index < 0 || index >= REF_FRAMES)
-    return NULL;
-  if (cm->ref_frame_map[index] < 0)
-    return NULL;
+  if (index < 0 || index >= REF_FRAMES) return NULL;
+  if (cm->ref_frame_map[index] < 0) return NULL;
   assert(cm->ref_frame_map[index] < FRAME_BUFFERS);
   return &cm->buffer_pool->frame_bufs[cm->ref_frame_map[index]].buf;
 }
@@ -331,8 +329,7 @@ static INLINE int get_free_fb(VP10_COMMON *cm) {
 
   lock_buffer_pool(cm->buffer_pool);
   for (i = 0; i < FRAME_BUFFERS; ++i)
-    if (frame_bufs[i].ref_count == 0)
-      break;
+    if (frame_bufs[i].ref_count == 0) break;
 
   if (i != FRAME_BUFFERS) {
     frame_bufs[i].ref_count = 1;
@@ -365,12 +362,13 @@ static INLINE int frame_is_intra_only(const VP10_COMMON *const cm) {
 }
 
 static INLINE void vp10_init_macroblockd(VP10_COMMON *cm, MACROBLOCKD *xd,
-                                        tran_low_t *dqcoeff) {
+                                         tran_low_t *dqcoeff) {
   int i;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
-    xd->above_context[i] = cm->above_context +
+    xd->above_context[i] =
+        cm->above_context +
         i * sizeof(*cm->above_context) * 2 * mi_cols_aligned_to_sb(cm->mi_cols);
 
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
@@ -403,17 +401,16 @@ static INLINE int calc_mi_size(int len) {
 }
 
 static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
-                                  int mi_row, int bh,
-                                  int mi_col, int bw,
+                                  int mi_row, int bh, int mi_col, int bw,
                                   int mi_rows, int mi_cols) {
-  xd->mb_to_top_edge    = -((mi_row * MI_SIZE) * 8);
+  xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
   xd->mb_to_bottom_edge = ((mi_rows - bh - mi_row) * MI_SIZE) * 8;
-  xd->mb_to_left_edge   = -((mi_col * MI_SIZE) * 8);
-  xd->mb_to_right_edge  = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
+  xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+  xd->mb_to_right_edge = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
 
   // Are edges available for intra prediction?
-  xd->up_available    = (mi_row != 0);
-  xd->left_available  = (mi_col > tile->mi_col_start);
+  xd->up_available = (mi_row != 0);
+  xd->left_available = (mi_col > tile->mi_col_start);
   if (xd->up_available) {
     xd->above_mi = xd->mi[-xd->mi_stride];
     // above_mi may be NULL in encoder's first pass.
@@ -443,9 +440,8 @@ static INLINE const vpx_prob *get_y_mode_probs(const VP10_COMMON *cm,
   return cm->kf_y_prob[above][left];
 }
 
-static INLINE void update_partition_context(MACROBLOCKD *xd,
-                                            int mi_row, int mi_col,
-                                            BLOCK_SIZE subsize,
+static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
+                                            int mi_col, BLOCK_SIZE subsize,
                                             BLOCK_SIZE bsize) {
   PARTITION_CONTEXT *const above_ctx = xd->above_seg_context + mi_col;
   PARTITION_CONTEXT *const left_ctx = xd->left_seg_context + (mi_row & MI_MASK);
@@ -460,13 +456,12 @@ static INLINE void update_partition_context(MACROBLOCKD *xd,
   memset(left_ctx, partition_context_lookup[subsize].left, bs);
 }
 
-static INLINE int partition_plane_context(const MACROBLOCKD *xd,
-                                          int mi_row, int mi_col,
-                                          BLOCK_SIZE bsize) {
+static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
+                                          int mi_col, BLOCK_SIZE bsize) {
   const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
   const PARTITION_CONTEXT *left_ctx = xd->left_seg_context + (mi_row & MI_MASK);
   const int bsl = mi_width_log2_lookup[bsize];
-  int above = (*above_ctx >> bsl) & 1 , left = (*left_ctx >> bsl) & 1;
+  int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
 
   assert(b_width_log2_lookup[bsize] == b_height_log2_lookup[bsize]);
   assert(bsl >= 0);

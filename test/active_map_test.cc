@@ -40,15 +40,11 @@ class ActiveMapTest
     } else if (video->frame() == 3) {
       vpx_active_map_t map = vpx_active_map_t();
       uint8_t active_map[9 * 13] = {
-        1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0,
-        1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0,
-        1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0,
-        1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0,
-        0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1,
-        0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1,
-        0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1,
-        0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1,
-        1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0,
+        1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0,
+        0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0,
+        0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0,
       };
       map.cols = (kWidth + 15) / 16;
       map.rows = (kHeight + 15) / 16;
@@ -77,13 +73,13 @@ TEST_P(ActiveMapTest, Test) {
   cfg_.rc_end_usage = VPX_CBR;
   cfg_.kf_max_dist = 90000;
 
-  ::libvpx_test::I420VideoSource video("hantro_odd.yuv", kWidth, kHeight, 30,
-                                       1, 0, 20);
+  ::libvpx_test::I420VideoSource video("hantro_odd.yuv", kWidth, kHeight, 30, 1,
+                                       0, 20);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
 VP10_INSTANTIATE_TEST_CASE(ActiveMapTest,
-                          ::testing::Values(::libvpx_test::kRealTime),
-                          ::testing::Range(0, 6));
+                           ::testing::Values(::libvpx_test::kRealTime),
+                           ::testing::Range(0, 6));
 }  // namespace

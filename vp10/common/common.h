@@ -26,15 +26,17 @@ extern "C" {
 #endif
 
 // Only need this for fixed-size arrays, for structs just assign.
-#define vp10_copy(dest, src) {            \
+#define vp10_copy(dest, src)             \
+  {                                      \
     assert(sizeof(dest) == sizeof(src)); \
-    memcpy(dest, src, sizeof(src));  \
+    memcpy(dest, src, sizeof(src));      \
   }
 
 // Use this for variably-sized arrays.
-#define vp10_copy_array(dest, src, n) {       \
-    assert(sizeof(*dest) == sizeof(*src));   \
-    memcpy(dest, src, n * sizeof(*src)); \
+#define vp10_copy_array(dest, src, n)      \
+  {                                        \
+    assert(sizeof(*dest) == sizeof(*src)); \
+    memcpy(dest, src, n * sizeof(*src));   \
   }
 
 #define vp10_zero(dest) memset(&(dest), 0, sizeof(dest))
@@ -45,19 +47,21 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 }
 
 #if CONFIG_DEBUG
-#define CHECK_MEM_ERROR(cm, lval, expr) do { \
-  lval = (expr); \
-  if (!lval) \
-    vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR, \
-                       "Failed to allocate "#lval" at %s:%d", \
-                       __FILE__, __LINE__); \
+#define CHECK_MEM_ERROR(cm, lval, expr)                                     \
+  do {                                                                      \
+    lval = (expr);                                                          \
+    if (!lval)                                                              \
+      vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,                   \
+                         "Failed to allocate " #lval " at %s:%d", __FILE__, \
+                         __LINE__);                                         \
   } while (0)
 #else
-#define CHECK_MEM_ERROR(cm, lval, expr) do { \
-  lval = (expr); \
-  if (!lval) \
-    vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR, \
-                       "Failed to allocate "#lval); \
+#define CHECK_MEM_ERROR(cm, lval, expr)                   \
+  do {                                                    \
+    lval = (expr);                                        \
+    if (!lval)                                            \
+      vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR, \
+                         "Failed to allocate " #lval);    \
   } while (0)
 #endif
 // TODO(yaowu: validate the usage of these codes or develop new ones.)
@@ -66,7 +70,6 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 #define VP10_SYNC_CODE_2 0x43
 
 #define VPX_FRAME_MARKER 0x2
-
 
 #ifdef __cplusplus
 }  // extern "C"

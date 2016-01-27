@@ -41,8 +41,7 @@ static INLINE tran_low_t dct_const_round_shift(tran_high_t input) {
 }
 
 #if CONFIG_VPX_HIGHBITDEPTH
-static INLINE tran_low_t highbd_check_range(tran_high_t input,
-                                            int bd) {
+static INLINE tran_low_t highbd_check_range(tran_high_t input, int bd) {
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
   // For valid highbitdepth streams, intermediate stage coefficients will
   // stay within the ranges:
@@ -53,9 +52,9 @@ static INLINE tran_low_t highbd_check_range(tran_high_t input,
   const int32_t int_min = -int_max - 1;
   assert(int_min <= input);
   assert(input <= int_max);
-  (void) int_min;
+  (void)int_min;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
-  (void) bd;
+  (void)bd;
   return (tran_low_t)input;
 }
 

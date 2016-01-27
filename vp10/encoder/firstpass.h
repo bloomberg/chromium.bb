@@ -155,9 +155,8 @@ void vp10_twopass_postencode_update(struct VP10_COMP *cpi);
 
 void vp10_init_subsampling(struct VP10_COMP *cpi);
 
-void vp10_calculate_coded_size(struct VP10_COMP *cpi,
-                          int *scaled_frame_width,
-                          int *scaled_frame_height);
+void vp10_calculate_coded_size(struct VP10_COMP *cpi, int *scaled_frame_width,
+                               int *scaled_frame_height);
 
 #ifdef __cplusplus
 }  // extern "C"

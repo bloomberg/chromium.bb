@@ -27,7 +27,7 @@ int16_t vp10_dc_quant(int qindex, int delta, vpx_bit_depth_t bit_depth);
 int16_t vp10_ac_quant(int qindex, int delta, vpx_bit_depth_t bit_depth);
 
 int vp10_get_qindex(const struct segmentation *seg, int segment_id,
-                   int base_qindex);
+                    int base_qindex);
 
 #ifdef __cplusplus
 }  // extern "C"

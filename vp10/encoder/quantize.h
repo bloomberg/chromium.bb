@@ -38,7 +38,7 @@ typedef struct {
 } QUANTS;
 
 void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
-                                const int16_t *scan, const int16_t *iscan);
+                                 const int16_t *scan, const int16_t *iscan);
 
 struct VP10_COMP;
 struct VP10Common;

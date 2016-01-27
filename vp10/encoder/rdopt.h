@@ -26,33 +26,28 @@ struct macroblock;
 struct RD_COST;
 
 void vp10_rd_pick_intra_mode_sb(struct VP10_COMP *cpi, struct macroblock *x,
-                               struct RD_COST *rd_cost, BLOCK_SIZE bsize,
-                               PICK_MODE_CONTEXT *ctx, int64_t best_rd);
+                                struct RD_COST *rd_cost, BLOCK_SIZE bsize,
+                                PICK_MODE_CONTEXT *ctx, int64_t best_rd);
 
 unsigned int vp10_get_sby_perpixel_variance(VP10_COMP *cpi,
-                                           const struct buf_2d *ref,
-                                           BLOCK_SIZE bs);
+                                            const struct buf_2d *ref,
+                                            BLOCK_SIZE bs);
 #if CONFIG_VPX_HIGHBITDEPTH
 unsigned int vp10_high_get_sby_perpixel_variance(VP10_COMP *cpi,
-                                                const struct buf_2d *ref,
-                                                BLOCK_SIZE bs, int bd);
+                                                 const struct buf_2d *ref,
+                                                 BLOCK_SIZE bs, int bd);
 #endif
 
 void vp10_rd_pick_inter_mode_sb(struct VP10_COMP *cpi,
-                               struct TileDataEnc *tile_data,
-                               struct macroblock *x,
-                               int mi_row, int mi_col,
-                               struct RD_COST *rd_cost,
-                               BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
-                               int64_t best_rd_so_far);
+                                struct TileDataEnc *tile_data,
+                                struct macroblock *x, int mi_row, int mi_col,
+                                struct RD_COST *rd_cost, BLOCK_SIZE bsize,
+                                PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
 
-void vp10_rd_pick_inter_mode_sb_seg_skip(struct VP10_COMP *cpi,
-                                        struct TileDataEnc *tile_data,
-                                        struct macroblock *x,
-                                        struct RD_COST *rd_cost,
-                                        BLOCK_SIZE bsize,
-                                        PICK_MODE_CONTEXT *ctx,
-                                        int64_t best_rd_so_far);
+void vp10_rd_pick_inter_mode_sb_seg_skip(
+    struct VP10_COMP *cpi, struct TileDataEnc *tile_data, struct macroblock *x,
+    struct RD_COST *rd_cost, BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
+    int64_t best_rd_so_far);
 
 int vp10_internal_image_edge(struct VP10_COMP *cpi);
 int vp10_active_h_edge(struct VP10_COMP *cpi, int mi_row, int mi_step);
@@ -60,12 +55,11 @@ int vp10_active_v_edge(struct VP10_COMP *cpi, int mi_col, int mi_step);
 int vp10_active_edge_sb(struct VP10_COMP *cpi, int mi_row, int mi_col);
 
 void vp10_rd_pick_inter_mode_sub8x8(struct VP10_COMP *cpi,
-                                   struct TileDataEnc *tile_data,
-                                   struct macroblock *x,
-                                   int mi_row, int mi_col,
-                                   struct RD_COST *rd_cost,
-                                   BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
-                                   int64_t best_rd_so_far);
+                                    struct TileDataEnc *tile_data,
+                                    struct macroblock *x, int mi_row,
+                                    int mi_col, struct RD_COST *rd_cost,
+                                    BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
+                                    int64_t best_rd_so_far);
 
 #ifdef __cplusplus
 }  // extern "C"

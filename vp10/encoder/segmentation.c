@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-
 #include <limits.h>
 
 #include "vpx_mem/vpx_mem.h"
@@ -32,31 +31,31 @@ void vp10_disable_segmentation(struct segmentation *seg) {
   seg->update_data = 0;
 }
 
-void vp10_set_segment_data(struct segmentation *seg,
-                          signed char *feature_data,
-                          unsigned char abs_delta) {
+void vp10_set_segment_data(struct segmentation *seg, signed char *feature_data,
+                           unsigned char abs_delta) {
   seg->abs_delta = abs_delta;
 
   memcpy(seg->feature_data, feature_data, sizeof(seg->feature_data));
 }
 void vp10_disable_segfeature(struct segmentation *seg, int segment_id,
-                            SEG_LVL_FEATURES feature_id) {
+                             SEG_LVL_FEATURES feature_id) {
   seg->feature_mask[segment_id] &= ~(1 << feature_id);
 }
 
 void vp10_clear_segdata(struct segmentation *seg, int segment_id,
-                       SEG_LVL_FEATURES feature_id) {
+                        SEG_LVL_FEATURES feature_id) {
   seg->feature_data[segment_id][feature_id] = 0;
 }
 
 // Based on set of segment counts calculate a probability tree
 static void calc_segtree_probs(unsigned *segcounts,
-    vpx_prob *segment_tree_probs, const vpx_prob *cur_tree_probs) {
+                               vpx_prob *segment_tree_probs,
+                               const vpx_prob *cur_tree_probs) {
   // Work out probabilities of each segment
-  const unsigned cc[4] = {
-    segcounts[0] + segcounts[1], segcounts[2] + segcounts[3],
-    segcounts[4] + segcounts[5], segcounts[6] + segcounts[7]
-  };
+  const unsigned cc[4] = { segcounts[0] + segcounts[1],
+                           segcounts[2] + segcounts[3],
+                           segcounts[4] + segcounts[5],
+                           segcounts[6] + segcounts[7] };
   const unsigned ccc[2] = { cc[0] + cc[1], cc[2] + cc[3] };
 #if CONFIG_MISC_FIXES
   int i;
@@ -72,13 +71,13 @@ static void calc_segtree_probs(unsigned *segcounts,
 
 #if CONFIG_MISC_FIXES
   for (i = 0; i < 7; i++) {
-    const unsigned *ct = i == 0 ? ccc : i < 3 ? cc + (i & 2)
-        : segcounts + (i - 3) * 2;
-    vp10_prob_diff_update_savings_search(ct,
-        cur_tree_probs[i], &segment_tree_probs[i], DIFF_UPDATE_PROB);
+    const unsigned *ct =
+        i == 0 ? ccc : i < 3 ? cc + (i & 2) : segcounts + (i - 3) * 2;
+    vp10_prob_diff_update_savings_search(
+        ct, cur_tree_probs[i], &segment_tree_probs[i], DIFF_UPDATE_PROB);
   }
 #else
-  (void) cur_tree_probs;
+  (void)cur_tree_probs;
 #endif
 }
 
@@ -92,13 +91,11 @@ static int cost_segmap(unsigned *segcounts, vpx_prob *probs) {
   const int c4567 = c45 + c67;
 
   // Cost the top node of the tree
-  int cost = c0123 * vp10_cost_zero(probs[0]) +
-             c4567 * vp10_cost_one(probs[0]);
+  int cost = c0123 * vp10_cost_zero(probs[0]) + c4567 * vp10_cost_one(probs[0]);
 
   // Cost subsequent levels
   if (c0123 > 0) {
-    cost += c01 * vp10_cost_zero(probs[1]) +
-            c23 * vp10_cost_one(probs[1]);
+    cost += c01 * vp10_cost_zero(probs[1]) + c23 * vp10_cost_one(probs[1]);
 
     if (c01 > 0)
       cost += segcounts[0] * vp10_cost_zero(probs[3]) +
@@ -109,8 +106,7 @@ static int cost_segmap(unsigned *segcounts, vpx_prob *probs) {
   }
 
   if (c4567 > 0) {
-    cost += c45 * vp10_cost_zero(probs[2]) +
-            c67 * vp10_cost_one(probs[2]);
+    cost += c45 * vp10_cost_zero(probs[2]) + c67 * vp10_cost_one(probs[2]);
 
     if (c45 > 0)
       cost += segcounts[4] * vp10_cost_zero(probs[5]) +
@@ -127,12 +123,11 @@ static void count_segs(const VP10_COMMON *cm, MACROBLOCKD *xd,
                        const TileInfo *tile, MODE_INFO **mi,
                        unsigned *no_pred_segcounts,
                        unsigned (*temporal_predictor_count)[2],
-                       unsigned *t_unpred_seg_counts,
-                       int bw, int bh, int mi_row, int mi_col) {
+                       unsigned *t_unpred_seg_counts, int bw, int bh,
+                       int mi_row, int mi_col) {
   int segment_id;
 
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols)
-    return;
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   xd->mi = mi;
   segment_id = xd->mi[0]->mbmi.segment_id;
@@ -146,8 +141,8 @@ static void count_segs(const VP10_COMMON *cm, MACROBLOCKD *xd,
   if (cm->frame_type != KEY_FRAME) {
     const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
     // Test to see if the segment id matches the predicted value.
-    const int pred_segment_id = get_segment_id(cm, cm->last_frame_seg_map,
-                                               bsize, mi_row, mi_col);
+    const int pred_segment_id =
+        get_segment_id(cm, cm->last_frame_seg_map, bsize, mi_row, mi_col);
     const int pred_flag = pred_segment_id == segment_id;
     const int pred_context = vp10_get_pred_context_seg_id(xd);
 
@@ -157,8 +152,7 @@ static void count_segs(const VP10_COMMON *cm, MACROBLOCKD *xd,
     temporal_predictor_count[pred_context][pred_flag]++;
 
     // Update the "unpredicted" segment count
-    if (!pred_flag)
-      t_unpred_seg_counts[segment_id]++;
+    if (!pred_flag) t_unpred_seg_counts[segment_id]++;
   }
 }
 
@@ -166,15 +160,13 @@ static void count_segs_sb(const VP10_COMMON *cm, MACROBLOCKD *xd,
                           const TileInfo *tile, MODE_INFO **mi,
                           unsigned *no_pred_segcounts,
                           unsigned (*temporal_predictor_count)[2],
-                          unsigned *t_unpred_seg_counts,
-                          int mi_row, int mi_col,
+                          unsigned *t_unpred_seg_counts, int mi_row, int mi_col,
                           BLOCK_SIZE bsize) {
   const int mis = cm->mi_stride;
   int bw, bh;
   const int bs = num_8x8_blocks_wide_lookup[bsize], hbs = bs / 2;
 
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols)
-    return;
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   bw = num_8x8_blocks_wide_lookup[mi[0]->mbmi.sb_type];
   bh = num_8x8_blocks_high_lookup[mi[0]->mbmi.sb_type];
@@ -191,9 +183,9 @@ static void count_segs_sb(const VP10_COMMON *cm, MACROBLOCKD *xd,
   } else if (bw < bs && bh == bs) {
     count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
                t_unpred_seg_counts, hbs, bs, mi_row, mi_col);
-    count_segs(cm, xd, tile, mi + hbs,
-               no_pred_segcounts, temporal_predictor_count, t_unpred_seg_counts,
-               hbs, bs, mi_row, mi_col + hbs);
+    count_segs(cm, xd, tile, mi + hbs, no_pred_segcounts,
+               temporal_predictor_count, t_unpred_seg_counts, hbs, bs, mi_row,
+               mi_col + hbs);
   } else {
     const BLOCK_SIZE subsize = subsize_lookup[PARTITION_SPLIT][bsize];
     int n;
@@ -204,9 +196,8 @@ static void count_segs_sb(const VP10_COMMON *cm, MACROBLOCKD *xd,
       const int mi_dc = hbs * (n & 1);
       const int mi_dr = hbs * (n >> 1);
 
-      count_segs_sb(cm, xd, tile, &mi[mi_dr * mis + mi_dc],
-                    no_pred_segcounts, temporal_predictor_count,
-                    t_unpred_seg_counts,
+      count_segs_sb(cm, xd, tile, &mi[mi_dr * mis + mi_dc], no_pred_segcounts,
+                    temporal_predictor_count, t_unpred_seg_counts,
                     mi_row + mi_dr, mi_col + mi_dc, subsize);
     }
   }
@@ -226,7 +217,7 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
   int i, tile_col, mi_row, mi_col;
 
 #if CONFIG_MISC_FIXES
-  unsigned (*temporal_predictor_count)[2] = cm->counts.seg.pred;
+  unsigned(*temporal_predictor_count)[2] = cm->counts.seg.pred;
   unsigned *no_pred_segcounts = cm->counts.seg.tree_total;
   unsigned *t_unpred_seg_counts = cm->counts.seg.tree_mispred;
 #else
@@ -240,7 +231,7 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
   vpx_prob t_nopred_prob[PREDICTION_PROBS];
 
 #if CONFIG_MISC_FIXES
-  (void) xd;
+  (void)xd;
 #else
   // Set default state for the segment tree probabilities and the
   // temporal coding probabilities
@@ -262,8 +253,8 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
       for (mi_col = tile.mi_col_start; mi_col < tile.mi_col_end;
            mi_col += 8, mi += 8)
         count_segs_sb(cm, xd, &tile, mi, no_pred_segcounts,
-                      temporal_predictor_count, t_unpred_seg_counts,
-                      mi_row, mi_col, BLOCK_64X64);
+                      temporal_predictor_count, t_unpred_seg_counts, mi_row,
+                      mi_col, BLOCK_64X64);
     }
   }
 

@@ -25,7 +25,7 @@ extern "C" {
 
 #define TX_SIZE_CONTEXTS 2
 
-#define INTER_OFFSET(mode) ((mode) - NEARESTMV)
+#define INTER_OFFSET(mode) ((mode)-NEARESTMV)
 
 struct VP10Common;
 
@@ -53,8 +53,9 @@ typedef struct frame_contexts {
   vpx_prob uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
   vpx_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
   vp10_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
-  vpx_prob switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
-                                 [SWITCHABLE_FILTERS - 1];
+  vpx_prob
+      switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS -
+                                                         1];
   vpx_prob inter_mode_probs[INTER_MODE_CONTEXTS][INTER_MODES - 1];
   vpx_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   vpx_prob comp_inter_prob[COMP_INTER_CONTEXTS];
@@ -77,10 +78,10 @@ typedef struct FRAME_COUNTS {
   unsigned int uv_mode[INTRA_MODES][INTRA_MODES];
   unsigned int partition[PARTITION_CONTEXTS][PARTITION_TYPES];
   vp10_coeff_count_model coef[TX_SIZES][PLANE_TYPES];
-  unsigned int eob_branch[TX_SIZES][PLANE_TYPES][REF_TYPES]
-                         [COEF_BANDS][COEFF_CONTEXTS];
-  unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
-                                [SWITCHABLE_FILTERS];
+  unsigned int
+      eob_branch[TX_SIZES][PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS];
+  unsigned int
+      switchable_interp[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];
   unsigned int inter_mode[INTER_MODE_CONTEXTS][INTER_MODES];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
@@ -96,20 +97,19 @@ typedef struct FRAME_COUNTS {
   unsigned int inter_ext_tx[EXT_TX_SIZES][TX_TYPES];
 } FRAME_COUNTS;
 
-extern const vpx_prob vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES]
-                                        [INTRA_MODES - 1];
+extern const vpx_prob
+    vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
 #if !CONFIG_MISC_FIXES
 extern const vpx_prob vp10_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
-extern const vpx_prob vp10_kf_partition_probs[PARTITION_CONTEXTS]
-                                            [PARTITION_TYPES - 1];
+extern const vpx_prob
+    vp10_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
 #endif
 
 extern const vpx_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const vpx_tree_index vp10_inter_mode_tree[TREE_SIZE(INTER_MODES)];
 extern const vpx_tree_index vp10_partition_tree[TREE_SIZE(PARTITION_TYPES)];
-extern const vpx_tree_index vp10_switchable_interp_tree
-                                [TREE_SIZE(SWITCHABLE_FILTERS)];
-
+extern const vpx_tree_index
+    vp10_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
 
 void vp10_setup_past_independence(struct VP10Common *cm);
 
@@ -117,14 +117,13 @@ void vp10_adapt_intra_frame_probs(struct VP10Common *cm);
 void vp10_adapt_inter_frame_probs(struct VP10Common *cm);
 
 void vp10_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
-                                      unsigned int (*ct_32x32p)[2]);
+                                           unsigned int (*ct_32x32p)[2]);
 void vp10_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
-                                      unsigned int (*ct_16x16p)[2]);
+                                           unsigned int (*ct_16x16p)[2]);
 void vp10_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
-                                    unsigned int (*ct_8x8p)[2]);
+                                         unsigned int (*ct_8x8p)[2]);
 
-extern const vpx_tree_index
-    vp10_ext_tx_tree[TREE_SIZE(TX_TYPES)];
+extern const vpx_tree_index vp10_ext_tx_tree[TREE_SIZE(TX_TYPES)];
 
 static INLINE int vp10_ceil_log2(int n) {
   int i = 1, p = 2;
