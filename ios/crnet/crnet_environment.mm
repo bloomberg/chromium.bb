@@ -438,7 +438,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.net_log = main_context_->net_log();
   params.next_protos =
       net::NextProtosWithSpdyAndQuic(spdy_enabled(), quic_enabled());
-  params.use_alternative_services = true;
+  params.use_alternative_services = false;
   params.enable_quic = quic_enabled();
   params.alternative_service_probability_threshold =
       alternate_protocol_threshold_;
