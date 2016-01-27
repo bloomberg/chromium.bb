@@ -1491,7 +1491,9 @@ int SpdySession::DoReadComplete(int result) {
   }
 
   if (result < 0) {
-    DoDrainSession(static_cast<Error>(result), "result is < 0.");
+    DoDrainSession(
+        static_cast<Error>(result),
+        base::StringPrintf("Error %d reading from socket.", -result));
     return result;
   }
   CHECK_LE(result, kReadBufferSize);
