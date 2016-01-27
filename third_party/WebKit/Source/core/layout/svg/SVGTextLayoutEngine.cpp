@@ -259,11 +259,11 @@ void SVGTextLayoutEngine::layoutCharactersInTextBoxes(InlineFlowBox* start)
 
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
         if (child->isSVGInlineTextBox()) {
-            ASSERT(child->layoutObject().isSVGInlineText());
+            ASSERT(child->lineLayoutItem().isSVGInlineText());
             layoutInlineTextBox(toSVGInlineTextBox(child));
         } else {
             // Skip generated content.
-            Node* node = child->layoutObject().node();
+            Node* node = child->lineLayoutItem().node();
             if (!node)
                 continue;
 

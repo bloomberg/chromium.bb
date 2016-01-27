@@ -24,7 +24,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     bool hasSelection = !paintInfo.isPrinting() && m_svgRootInlineBox.selectionState() != SelectionNone;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(),
+    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()),
         paintInfoBeforeFiltering.phase, paintOffset)) {
         LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering.phase,
             paintInfoBeforeFiltering.cullRect().m_rect, paintOffset);
@@ -36,7 +36,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    SVGPaintContext paintContext(m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering);
+    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering);
     if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
             child->paint(paintContext.paintInfo(), paintOffset, 0, 0);
