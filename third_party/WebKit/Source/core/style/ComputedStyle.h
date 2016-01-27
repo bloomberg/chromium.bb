@@ -1312,22 +1312,22 @@ public:
     void setOpacity(float f) { float v = clampTo<float>(f, 0, 1); SET_VAR(rareNonInheritedData, opacity, v); }
     void setAppearance(ControlPart a) { SET_VAR(rareNonInheritedData, m_appearance, a); }
     // For valid values of box-align see http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
-    void setBoxAlign(EBoxAlignment a) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, align, a); }
+    void setBoxAlign(EBoxAlignment a) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, align, a); }
     void setBoxDecorationBreak(EBoxDecorationBreak b) { SET_VAR(m_box, m_boxDecorationBreak, b); }
     void setBoxDirection(EBoxDirection d) { inherited_flags._box_direction = d; }
-    void setBoxFlex(float f) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, flex, f); }
-    void setBoxFlexGroup(unsigned fg) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, flexGroup, fg); }
-    void setBoxLines(EBoxLines l) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, lines, l); }
-    void setBoxOrdinalGroup(unsigned og) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, ordinalGroup, og); }
-    void setBoxOrient(EBoxOrient o) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, orient, o); }
-    void setBoxPack(EBoxPack p) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, pack, p); }
+    void setBoxFlex(float f) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, flex, f); }
+    void setBoxFlexGroup(unsigned fg) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, flexGroup, fg); }
+    void setBoxLines(EBoxLines l) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, lines, l); }
+    void setBoxOrdinalGroup(unsigned og) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, ordinalGroup, og); }
+    void setBoxOrient(EBoxOrient o) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, orient, o); }
+    void setBoxPack(EBoxPack p) { SET_NESTED_VAR(rareNonInheritedData, m_deprecatedFlexibleBox, pack, p); }
     void setBoxShadow(PassRefPtr<ShadowList>);
     void setBoxReflect(PassRefPtr<StyleReflection> reflect) { if (rareNonInheritedData->m_boxReflect != reflect) rareNonInheritedData.access()->m_boxReflect = reflect; }
     void setBoxSizing(EBoxSizing s) { SET_VAR(m_box, m_boxSizing, s); }
     void setContain(Containment contain) { SET_VAR(rareNonInheritedData, m_contain, contain); }
-    void setFlexGrow(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexGrow, f); }
-    void setFlexShrink(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexShrink, f); }
-    void setFlexBasis(const Length& length) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexBasis, length); }
+    void setFlexGrow(float f) { SET_NESTED_VAR(rareNonInheritedData, m_flexibleBox, m_flexGrow, f); }
+    void setFlexShrink(float f) { SET_NESTED_VAR(rareNonInheritedData, m_flexibleBox, m_flexShrink, f); }
+    void setFlexBasis(const Length& length) { SET_NESTED_VAR(rareNonInheritedData, m_flexibleBox, m_flexBasis, length); }
     // We restrict the smallest value to int min + 2 because we use int min and int min + 1 as special values in a hash set.
     void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, max(std::numeric_limits<int>::min() + 2, o)); }
     void addCallbackSelector(const String& selector);
@@ -1341,8 +1341,8 @@ public:
     void setAlignSelf(const StyleSelfAlignmentData& data) { SET_VAR(rareNonInheritedData, m_alignSelf, data); }
     void setAlignSelfPosition(ItemPosition position) { rareNonInheritedData.access()->m_alignSelf.setPosition(position); }
     void setAlignSelfOverflow(OverflowAlignment overflow) { rareNonInheritedData.access()->m_alignSelf.setOverflow(overflow); }
-    void setFlexDirection(EFlexDirection direction) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexDirection, direction); }
-    void setFlexWrap(EFlexWrap w) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexWrap, w); }
+    void setFlexDirection(EFlexDirection direction) { SET_NESTED_VAR(rareNonInheritedData, m_flexibleBox, m_flexDirection, direction); }
+    void setFlexWrap(EFlexWrap w) { SET_NESTED_VAR(rareNonInheritedData, m_flexibleBox, m_flexWrap, w); }
     void setJustifyContent(const StyleContentAlignmentData& data) { SET_VAR(rareNonInheritedData, m_justifyContent, data); }
     void setJustifyContentPosition(ContentPosition position) { rareNonInheritedData.access()->m_justifyContent.setPosition(position); }
     void setJustifyContentDistribution(ContentDistributionType distribution) { rareNonInheritedData.access()->m_justifyContent.setDistribution(distribution); }
@@ -1354,25 +1354,25 @@ public:
     void setJustifySelf(const StyleSelfAlignmentData& data) { SET_VAR(rareNonInheritedData, m_justifySelf, data); }
     void setJustifySelfPosition(ItemPosition position) { rareNonInheritedData.access()->m_justifySelf.setPosition(position); }
     void setJustifySelfOverflow(OverflowAlignment overflow) { rareNonInheritedData.access()->m_justifySelf.setOverflow(overflow); }
-    void setGridAutoColumns(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoColumns, length); }
-    void setGridAutoRows(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoRows, length); }
-    void setGridTemplateColumns(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridTemplateColumns, lengths); }
-    void setGridTemplateRows(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridTemplateRows, lengths); }
-    void setNamedGridColumnLines(const NamedGridLinesMap& namedGridColumnLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridColumnLines, namedGridColumnLines); }
-    void setNamedGridRowLines(const NamedGridLinesMap& namedGridRowLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridRowLines, namedGridRowLines); }
-    void setOrderedNamedGridColumnLines(const OrderedNamedGridLines& orderedNamedGridColumnLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_orderedNamedGridColumnLines, orderedNamedGridColumnLines); }
-    void setOrderedNamedGridRowLines(const OrderedNamedGridLines& orderedNamedGridRowLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_orderedNamedGridRowLines, orderedNamedGridRowLines); }
-    void setNamedGridArea(const NamedGridAreaMap& namedGridArea) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridArea, namedGridArea); }
-    void setNamedGridAreaRowCount(size_t rowCount) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridAreaRowCount, rowCount); }
-    void setNamedGridAreaColumnCount(size_t columnCount) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridAreaColumnCount, columnCount); }
-    void setGridAutoFlow(GridAutoFlow flow) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoFlow, flow); }
+    void setGridAutoColumns(const GridTrackSize& length) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridAutoColumns, length); }
+    void setGridAutoRows(const GridTrackSize& length) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridAutoRows, length); }
+    void setGridTemplateColumns(const Vector<GridTrackSize>& lengths) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridTemplateColumns, lengths); }
+    void setGridTemplateRows(const Vector<GridTrackSize>& lengths) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridTemplateRows, lengths); }
+    void setNamedGridColumnLines(const NamedGridLinesMap& namedGridColumnLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridColumnLines, namedGridColumnLines); }
+    void setNamedGridRowLines(const NamedGridLinesMap& namedGridRowLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridRowLines, namedGridRowLines); }
+    void setOrderedNamedGridColumnLines(const OrderedNamedGridLines& orderedNamedGridColumnLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_orderedNamedGridColumnLines, orderedNamedGridColumnLines); }
+    void setOrderedNamedGridRowLines(const OrderedNamedGridLines& orderedNamedGridRowLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_orderedNamedGridRowLines, orderedNamedGridRowLines); }
+    void setNamedGridArea(const NamedGridAreaMap& namedGridArea) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridArea, namedGridArea); }
+    void setNamedGridAreaRowCount(size_t rowCount) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridAreaRowCount, rowCount); }
+    void setNamedGridAreaColumnCount(size_t columnCount) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridAreaColumnCount, columnCount); }
+    void setGridAutoFlow(GridAutoFlow flow) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridAutoFlow, flow); }
 
-    void setGridColumnStart(const GridPosition& columnStartPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridColumnStart, columnStartPosition); }
-    void setGridColumnEnd(const GridPosition& columnEndPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridColumnEnd, columnEndPosition); }
-    void setGridRowStart(const GridPosition& rowStartPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowStart, rowStartPosition); }
-    void setGridRowEnd(const GridPosition& rowEndPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowEnd, rowEndPosition); }
-    void setGridColumnGap(const Length& v) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridColumnGap, v); }
-    void setGridRowGap(const Length& v) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridRowGap, v); }
+    void setGridColumnStart(const GridPosition& columnStartPosition) { SET_NESTED_VAR(rareNonInheritedData, m_gridItem, m_gridColumnStart, columnStartPosition); }
+    void setGridColumnEnd(const GridPosition& columnEndPosition) { SET_NESTED_VAR(rareNonInheritedData, m_gridItem, m_gridColumnEnd, columnEndPosition); }
+    void setGridRowStart(const GridPosition& rowStartPosition) { SET_NESTED_VAR(rareNonInheritedData, m_gridItem, m_gridRowStart, rowStartPosition); }
+    void setGridRowEnd(const GridPosition& rowEndPosition) { SET_NESTED_VAR(rareNonInheritedData, m_gridItem, m_gridRowEnd, rowEndPosition); }
+    void setGridColumnGap(const Length& v) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridColumnGap, v); }
+    void setGridRowGap(const Length& v) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridRowGap, v); }
 
     void setUserModify(EUserModify u) { SET_VAR(rareInheritedData, userModify, u); }
     void setUserDrag(EUserDrag d) { SET_VAR(rareNonInheritedData, userDrag, d); }
@@ -1386,25 +1386,25 @@ public:
     void setHighlight(const AtomicString& h) { SET_VAR(rareInheritedData, highlight, h); }
     void setHyphenationString(const AtomicString& h) { SET_VAR(rareInheritedData, hyphenationString, h); }
     void setResize(EResize r) { SET_VAR(rareNonInheritedData, m_resize, r); }
-    void setColumnWidth(float f) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoWidth, false); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_width, f); }
-    void setHasAutoColumnWidth() { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoWidth, true); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_width, 0); }
-    void setColumnCount(unsigned short c) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoCount, false); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_count, c); }
-    void setHasAutoColumnCount() { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_autoCount, true); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_count, initialColumnCount()); }
-    void setColumnFill(ColumnFill columnFill) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_fill, columnFill); }
-    void setColumnGap(float f) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_normalGap, false); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_gap, f); }
-    void setHasNormalColumnGap() { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_normalGap, true); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_gap, 0); }
+    void setColumnWidth(float f) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_autoWidth, false); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_width, f); }
+    void setHasAutoColumnWidth() { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_autoWidth, true); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_width, 0); }
+    void setColumnCount(unsigned short c) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_autoCount, false); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_count, c); }
+    void setHasAutoColumnCount() { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_autoCount, true); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_count, initialColumnCount()); }
+    void setColumnFill(ColumnFill columnFill) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_fill, columnFill); }
+    void setColumnGap(float f) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_normalGap, false); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_gap, f); }
+    void setHasNormalColumnGap() { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_normalGap, true); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_gap, 0); }
     void setColumnRuleColor(const StyleColor& c) { SET_BORDERVALUE_COLOR(rareNonInheritedData.access()->m_multiCol, m_rule, c); }
-    void setColumnRuleStyle(EBorderStyle b) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_rule.m_style, b); }
-    void setColumnRuleWidth(unsigned short w) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_rule.m_width, w); }
-    void setColumnSpan(ColumnSpan columnSpan) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_columnSpan, columnSpan); }
-    void setColumnBreakBefore(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakBefore, p); }
+    void setColumnRuleStyle(EBorderStyle b) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_rule.m_style, b); }
+    void setColumnRuleWidth(unsigned short w) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_rule.m_width, w); }
+    void setColumnSpan(ColumnSpan columnSpan) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_columnSpan, columnSpan); }
+    void setColumnBreakBefore(EPageBreak p) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_breakBefore, p); }
     // For valid values of column-break-inside see http://www.w3.org/TR/css3-multicol/#break-before-break-after-break-inside
-    void setColumnBreakInside(EPageBreak p) { ASSERT(p == PBAUTO || p == PBAVOID); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakInside, p); }
-    void setColumnBreakAfter(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakAfter, p); }
+    void setColumnBreakInside(EPageBreak p) { ASSERT(p == PBAUTO || p == PBAVOID); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_breakInside, p); }
+    void setColumnBreakAfter(EPageBreak p) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_breakAfter, p); }
     void inheritColumnPropertiesFrom(const ComputedStyle& parent) { rareNonInheritedData.access()->m_multiCol = parent.rareNonInheritedData->m_multiCol; }
     void setHasInlineTransform(bool b) { SET_VAR(rareNonInheritedData, m_hasInlineTransform, b); }
     void setHasCompositorProxy(bool b) { SET_VAR(rareNonInheritedData, m_hasCompositorProxy, b); }
-    void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
+    void setTransform(const TransformOperations& ops) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_operations, ops); }
     void setTransformOriginX(const Length& v) { setTransformOrigin(TransformOrigin(v, transformOriginY(), transformOriginZ())); }
     void setTransformOriginY(const Length& v) { setTransformOrigin(TransformOrigin(transformOriginX(), v, transformOriginZ())); }
     void setTransformOriginZ(float f) { setTransformOrigin(TransformOrigin(transformOriginX(), transformOriginY(), f)); }
@@ -1425,17 +1425,17 @@ public:
 
     void setMotionPath(PassRefPtr<StyleMotionPath>);
     void resetMotionPath();
-    void setMotionOffset(const Length& motionOffset) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_offset, motionOffset); }
-    void setMotionRotation(float motionRotation) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_rotation, motionRotation); }
-    void setMotionRotationType(MotionRotationType motionRotationType) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_rotationType, motionRotationType); }
+    void setMotionOffset(const Length& motionOffset) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_motion.m_offset, motionOffset); }
+    void setMotionRotation(float motionRotation) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_motion.m_rotation, motionRotation); }
+    void setMotionRotationType(MotionRotationType motionRotationType) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_motion.m_rotationType, motionRotationType); }
 
     void setObjectFit(ObjectFit f) { SET_VAR(rareNonInheritedData, m_objectFit, f); }
     void setObjectPosition(LengthPoint position) { SET_VAR(rareNonInheritedData, m_objectPosition, position); }
 
     void setRubyPosition(RubyPosition position) { SET_VAR(rareInheritedData, m_rubyPosition, position); }
 
-    void setFilter(const FilterOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_filter, m_operations, ops); }
-    void setBackdropFilter(const FilterOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_backdropFilter, m_operations, ops); }
+    void setFilter(const FilterOperations& ops) { SET_NESTED_VAR(rareNonInheritedData, m_filter, m_operations, ops); }
+    void setBackdropFilter(const FilterOperations& ops) { SET_NESTED_VAR(rareNonInheritedData, m_backdropFilter, m_operations, ops); }
 
     void setTabSize(TabSize size) { SET_VAR(rareInheritedData, m_tabSize, size); }
 
@@ -1477,14 +1477,14 @@ public:
     void setScrollBehavior(ScrollBehavior b) { SET_VAR(rareNonInheritedData, m_scrollBehavior, b); }
 
     void setScrollSnapType(ScrollSnapType b) { SET_VAR(rareNonInheritedData, m_scrollSnapType, b); }
-    void setScrollSnapPointsX(const ScrollSnapPoints& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_xPoints, b); }
-    void setScrollSnapPointsY(const ScrollSnapPoints& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_yPoints, b); }
-    void setScrollSnapDestination(const LengthPoint& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_destination, b); }
-    void setScrollSnapCoordinate(const Vector<LengthPoint>& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_coordinates, b); }
+    void setScrollSnapPointsX(const ScrollSnapPoints& b) { SET_NESTED_VAR(rareNonInheritedData, m_scrollSnap, m_xPoints, b); }
+    void setScrollSnapPointsY(const ScrollSnapPoints& b) { SET_NESTED_VAR(rareNonInheritedData, m_scrollSnap, m_yPoints, b); }
+    void setScrollSnapDestination(const LengthPoint& b) { SET_NESTED_VAR(rareNonInheritedData, m_scrollSnap, m_destination, b); }
+    void setScrollSnapCoordinate(const Vector<LengthPoint>& b) { SET_NESTED_VAR(rareNonInheritedData, m_scrollSnap, m_coordinates, b); }
 
-    void setWillChangeProperties(const Vector<CSSPropertyID>& properties) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_properties, properties); }
-    void setWillChangeContents(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_contents, b); }
-    void setWillChangeScrollPosition(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_scrollPosition, b); }
+    void setWillChangeProperties(const Vector<CSSPropertyID>& properties) { SET_NESTED_VAR(rareNonInheritedData, m_willChange, m_properties, properties); }
+    void setWillChangeContents(bool b) { SET_NESTED_VAR(rareNonInheritedData, m_willChange, m_contents, b); }
+    void setWillChangeScrollPosition(bool b) { SET_NESTED_VAR(rareNonInheritedData, m_willChange, m_scrollPosition, b); }
     void setSubtreeWillChangeContents(bool b) { SET_VAR(rareInheritedData, m_subtreeWillChangeContents, b); }
 
     bool requiresAcceleratedCompositingForExternalReasons(bool b) { return rareNonInheritedData->m_requiresAcceleratedCompositingForExternalReasons; }
@@ -1839,7 +1839,7 @@ private:
     void setVisitedLinkBorderBottomColor(const StyleColor& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBorderBottomColor, v); }
     void setVisitedLinkBorderTopColor(const StyleColor& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBorderTopColor, v); }
     void setVisitedLinkOutlineColor(const StyleColor& v) { SET_VAR(rareNonInheritedData, m_visitedLinkOutlineColor, v); }
-    void setVisitedLinkColumnRuleColor(const StyleColor& v) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_visitedLinkColumnRuleColor, v); }
+    void setVisitedLinkColumnRuleColor(const StyleColor& v) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_visitedLinkColumnRuleColor, v); }
     void setVisitedLinkTextDecorationColor(const StyleColor& v) { SET_VAR(rareNonInheritedData, m_visitedLinkTextDecorationColor, v); }
     void setVisitedLinkTextEmphasisColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextEmphasisColor, setVisitedLinkTextEmphasisColor, v); }
     void setVisitedLinkTextFillColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextFillColor, setVisitedLinkTextFillColor, v); }
