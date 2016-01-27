@@ -611,7 +611,11 @@ void HTMLCanvasElement::toBlob(ScriptState* scriptState, BlobCallback* callback,
 
     RefPtr<CanvasAsyncBlobCreator> asyncCreatorRef = CanvasAsyncBlobCreator::create(imageDataRef.release(), encodingMimeType, imageData->size(), callback, scriptState->executionContext());
 
-    asyncCreatorRef->scheduleAsyncBlobCreation(quality);
+    if (Platform::current()->isThreadedCompositingEnabled() && (encodingMimeType == DefaultMimeType)) {
+        asyncCreatorRef->scheduleAsyncBlobCreation(true);
+    } else {
+        asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);
+    }
 }
 
 void HTMLCanvasElement::addListener(CanvasDrawListener* listener)

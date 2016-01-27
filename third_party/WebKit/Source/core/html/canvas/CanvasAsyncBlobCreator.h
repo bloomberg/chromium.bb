@@ -21,7 +21,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
     : public RefCounted<CanvasAsyncBlobCreator> {
 public:
     static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*, ExecutionContext*);
-    void scheduleAsyncBlobCreation(double quality = 0.0);
+    void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality = 0.0);
     virtual ~CanvasAsyncBlobCreator();
 
 protected:
@@ -46,6 +46,10 @@ private:
 
     RefPtr<CanvasAsyncBlobCreator> m_selfRef;
     void clearSelfReference();
+
+    void initiatePngEncoding(double deadlineSeconds);
+    void scheduleIdleEncodeRowsPng();
+    void idleEncodeRowsPng(double deadlineSeconds);
 
     void createBlobAndCall();
 

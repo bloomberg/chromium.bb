@@ -13,14 +13,26 @@
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
 
 namespace blink {
 
+namespace {
+
+const double SlackBeforeDeadline = 0.001; // a small slack period between deadline and current time for safety
 const int NumChannelsPng = 4;
 const int LongTaskImageSizeThreshold = 1000 * 1000; // The max image size we expect to encode in 14ms on Linux in PNG format
+
+bool isDeadlineNearOrPassed(double deadlineSeconds)
+{
+    return (deadlineSeconds - SlackBeforeDeadline - Platform::current()->monotonicallyIncreasingTimeSeconds() <= 0);
+}
+
+} // anonymous namespace
 
 class CanvasAsyncBlobCreator::ContextObserver final : public NoBaseWillBeGarbageCollected<CanvasAsyncBlobCreator::ContextObserver>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasAsyncBlobCreator::ContextObserver);
@@ -88,7 +100,7 @@ DEFINE_TRACE(CanvasAsyncBlobCreator::ContextObserver)
     ContextLifecycleObserver::trace(visitor);
 }
 
-void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(double quality)
+void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality)
 {
     // TODO: async blob creation should be supported in worker_pool threads as well. but right now blink does not have that
     ASSERT(isMainThread());
@@ -96,8 +108,52 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(double quality)
     // Make self-reference to keep this object alive until the final task completes
     m_selfRef = this;
 
-    BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
-    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
+    if (canUseIdlePeriodScheduling) {
+        ASSERT(m_mimeType == "image/png");
+        Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
+    } else {
+        BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
+        BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
+    }
+}
+
+void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds)
+{
+    m_encoderState = PNGImageEncoderState::create(m_size, m_encodedImage.get());
+    if (!m_encoderState) {
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
+        m_selfRef.clear();
+        return;
+    }
+
+    CanvasAsyncBlobCreator::idleEncodeRowsPng(deadlineSeconds);
+}
+
+void CanvasAsyncBlobCreator::scheduleIdleEncodeRowsPng()
+{
+    Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&CanvasAsyncBlobCreator::idleEncodeRowsPng, this));
+}
+
+void CanvasAsyncBlobCreator::idleEncodeRowsPng(double deadlineSeconds)
+{
+    unsigned char* inputPixels = m_data->data() + m_pixelRowStride * m_numRowsCompleted;
+    for (int y = m_numRowsCompleted; y < m_size.height(); ++y) {
+        if (isDeadlineNearOrPassed(deadlineSeconds)) {
+            m_numRowsCompleted = y;
+            CanvasAsyncBlobCreator::scheduleIdleEncodeRowsPng();
+            return;
+        }
+        PNGImageEncoder::writeOneRowToPng(inputPixels, m_encoderState.get());
+        inputPixels += m_pixelRowStride;
+    }
+    m_numRowsCompleted = m_size.height();
+    PNGImageEncoder::finalizePng(m_encoderState.get());
+
+    if (isDeadlineNearOrPassed(deadlineSeconds)) {
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::createBlobAndCall, this));
+    } else {
+        this->createBlobAndCall();
+    }
 }
 
 void CanvasAsyncBlobCreator::createBlobAndCall()
