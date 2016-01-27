@@ -59,24 +59,6 @@ bool IsComponentUpdatedPepperFlash(const base::FilePath& plugin) {
   return false;
 }
 
-// Returns true if |path| looks like the path to an NPAPI Flash plugin.
-bool IsNpapiFlashPath(const base::FilePath& path) {
-  base::FilePath npapi_flash;
-  // Check NPAPI Flash is installed.
-  if (!PathService::Get(chrome::FILE_FLASH_SYSTEM_PLUGIN, &npapi_flash))
-    return false;
-  // Check for same architecture NPAPI Flash.
-  if (base::FilePath::CompareEqualIgnoreCase(path.value(), npapi_flash.value()))
-    return true;
-#if defined(OS_WIN)
-  // Fuzzy check for NPAPI Flash on Windows.
-  base::FilePath::StringType kSwfPrefix = FILE_PATH_LITERAL("NPSWF");
-  if (path.BaseName().value().compare(0, kSwfPrefix.size(), kSwfPrefix) == 0)
-    return true;
-#endif
-  return false;
-}
-
 }  // namespace
 
 PluginPrefs::PluginState::PluginState() {
@@ -346,42 +328,18 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         prefs::kPluginsLastInternalDirectory, cur_internal_dir);
   }
 
-  bool migrate_to_pepper_flash = false;
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // If NPAPI Flash is enabled while Pepper Flash is disabled, we would like to
-  // turn Pepper Flash on. And we want to do it once, when NPAPI is disabled in
-  // Chrome 45.
-  // TODO(wfh): Remove this code once it has been run by most users, around
-  // Chrome 49 or Chrome 50. See crbug.com/514250.
-  if (!prefs_->GetBoolean(prefs::kNpapiFlashMigratedToPepperFlash)) {
-    prefs_->SetBoolean(prefs::kNpapiFlashMigratedToPepperFlash, true);
-    migrate_to_pepper_flash = true;
-  }
-#endif
-
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
     base::ListValue* saved_plugins_list = update.Get();
     if (saved_plugins_list && !saved_plugins_list->empty()) {
-      // The following four variables are only valid when
-      // |migrate_to_pepper_flash| is set to true.
-      base::FilePath pepper_flash;
-      base::DictionaryValue* pepper_flash_node = NULL;
-      bool npapi_flash_enabled = false;
-      if (migrate_to_pepper_flash) {
-        PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &pepper_flash);
-      }
-
-      for (base::ListValue::iterator it = saved_plugins_list->begin();
-           it != saved_plugins_list->end();
-           ++it) {
-        if (!(*it)->IsType(base::Value::TYPE_DICTIONARY)) {
+      for (base::Value* plugin_value : *saved_plugins_list) {
+        if (!plugin_value->IsType(base::Value::TYPE_DICTIONARY)) {
           LOG(WARNING) << "Invalid entry in " << prefs::kPluginsPluginsList;
           continue;  // Oops, don't know what to do with this item.
         }
 
         base::DictionaryValue* plugin =
-            static_cast<base::DictionaryValue*>(*it);
+            static_cast<base::DictionaryValue*>(plugin_value);
         base::string16 group_name;
         bool enabled;
         if (!plugin->GetBoolean("enabled", &enabled))
@@ -433,26 +391,11 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          if (migrate_to_pepper_flash && IsNpapiFlashPath(plugin_path)) {
-            npapi_flash_enabled = enabled;
-          } else if (migrate_to_pepper_flash &&
-                     base::FilePath::CompareEqualIgnoreCase(
-                         path, pepper_flash.value())) {
-            if (!enabled)
-              pepper_flash_node = plugin;
-          }
-
           plugin_state_.Set(plugin_path, enabled);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
           // Otherwise this is a list of groups.
           plugin_group_state_[group_name] = false;
         }
-      }
-
-      if (npapi_flash_enabled && pepper_flash_node) {
-        DCHECK(migrate_to_pepper_flash);
-        pepper_flash_node->SetBoolean("enabled", true);
-        plugin_state_.Set(pepper_flash, true);
       }
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()
