@@ -2723,7 +2723,7 @@ bool RenderWidgetHostViewAura::OnShowContextMenu(
 #if defined(OS_WIN)
   last_context_menu_params_.reset();
 
-  if (params.source_type == ui::MENU_SOURCE_TOUCH) {
+  if (params.source_type == ui::MENU_SOURCE_LONG_PRESS) {
     last_context_menu_params_.reset(new ContextMenuParams);
     *last_context_menu_params_ = params;
     return false;
@@ -2953,12 +2953,12 @@ void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
 
       // On Windows we want to display the context menu when the long press
       // gesture is released. To achieve that, we switch the saved context
-      // menu params source type to MENU_SOURCE_MOUSE. This is to ensure that
+      // menu params source type to MENU_SOURCE_TOUCH. This is to ensure that
       // the RenderWidgetHostViewAura::OnShowContextMenu function which is
       // called from the ShowContextMenu call below, does not treat it as
-      // a context menu request coming in from touch.
-      DCHECK(context_menu_params->source_type == ui::MENU_SOURCE_TOUCH);
-      context_menu_params->source_type = ui::MENU_SOURCE_MOUSE;
+      // a context menu request coming in from the long press gesture.
+      DCHECK(context_menu_params->source_type == ui::MENU_SOURCE_LONG_PRESS);
+      context_menu_params->source_type = ui::MENU_SOURCE_TOUCH;
 
       RenderViewHostDelegateView* delegate_view =
           GetRenderViewHostDelegateView();

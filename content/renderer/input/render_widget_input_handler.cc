@@ -294,7 +294,13 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (WebInputEvent::isGestureEventType(input_event.type)) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
-    context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
+    if (input_event.type == WebInputEvent::GestureLongPress) {
+      context_menu_source_type_ = ui::MENU_SOURCE_LONG_PRESS;
+    } else if (input_event.type == WebInputEvent::GestureLongTap) {
+      context_menu_source_type_ = ui::MENU_SOURCE_LONG_TAP;
+    } else {
+      context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
+    }
     prevent_default =
         prevent_default || delegate_->WillHandleGestureEvent(gesture_event);
   }

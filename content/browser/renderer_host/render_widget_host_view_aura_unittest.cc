@@ -3756,10 +3756,30 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
 
   // A context menu request with the MENU_SOURCE_TOUCH source type should
   // result in the MockWebContentsViewDelegate::ShowContextMenu method
-  // getting called on non Windows platforms. This means that the request
-  // worked correctly. On Windows this should be blocked.
+  // getting called on all platforms. This means that the request worked
+  // correctly.
   delegate->ClearState();
   context_menu_params.source_type = ui::MENU_SOURCE_TOUCH;
+  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
+                              context_menu_params);
+  EXPECT_TRUE(delegate->context_menu_request_received());
+
+  // A context menu request with the MENU_SOURCE_LONG_TAP source type should
+  // result in the MockWebContentsViewDelegate::ShowContextMenu method
+  // getting called on all platforms. This means that the request worked
+  // correctly.
+  delegate->ClearState();
+  context_menu_params.source_type = ui::MENU_SOURCE_LONG_TAP;
+  contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
+                              context_menu_params);
+  EXPECT_TRUE(delegate->context_menu_request_received());
+
+  // A context menu request with the MENU_SOURCE_LONG_PRESS source type should
+  // result in the MockWebContentsViewDelegate::ShowContextMenu method
+  // getting called on non Windows platforms. This means that the request
+  //  worked correctly. On Windows this should be blocked.
+  delegate->ClearState();
+  context_menu_params.source_type = ui::MENU_SOURCE_LONG_PRESS;
   contents()->ShowContextMenu(contents()->GetRenderViewHost()->GetMainFrame(),
                               context_menu_params);
 #if defined(OS_WIN)
@@ -3780,7 +3800,7 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
   view()->OnGestureEvent(&gesture_event);
 
   EXPECT_TRUE(delegate->context_menu_request_received());
-  EXPECT_EQ(delegate->context_menu_source_type(), ui::MENU_SOURCE_MOUSE);
+  EXPECT_EQ(delegate->context_menu_source_type(), ui::MENU_SOURCE_TOUCH);
 #endif
 
   RenderViewHostFactory::set_is_real_render_view_host(false);
