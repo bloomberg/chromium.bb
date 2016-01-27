@@ -42,6 +42,7 @@ bool DrmOverlayManager::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(DrmOverlayManager, message)
     IPC_MESSAGE_HANDLER(OzoneHostMsg_OverlayCapabilitiesReceived,
                         OnOverlayResult)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
