@@ -7,6 +7,7 @@
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
     '../ui/gl/gl.gyp:gl',
+    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'sources': [
     'gpu/gpu_child_thread.cc',
