@@ -3276,13 +3276,19 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
                        "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                        "Apt. 10", "Memphis", "Tennessee", "38116", "US",
-                       "12345678901");
+                       "+1 (234) 567-8901");
   profile.set_guid("00000000-0000-0000-0000-000000000001");
   profiles.push_back(profile);
   test::SetProfileInfo(&profile, "Charles", "", "Holley", "buddy@gmail.com",
                        "Decca", "123 Apple St.", "unit 6", "Lubbock", "Texas",
-                       "79401", "US", "23456789012");
+                       "79401", "US", "5142821292");
   profile.set_guid("00000000-0000-0000-0000-000000000002");
+  profiles.push_back(profile);
+  test::SetProfileInfo(&profile, "Charles", "", "Baudelaire",
+                       "lesfleursdumal@gmail.com", "", "108 Rue Saint-Lazare",
+                       "Apt. 10", "Paris", "Ile de France", "75008", "FR",
+                       "+33 2 49 19 70 70");
+  profile.set_guid("00000000-0000-0000-0000-000000000001");
   profiles.push_back(profile);
 
   // Set up the test credit cards.
@@ -3299,64 +3305,80 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   } TestCase;
 
   TestCase test_cases[] = {
-                           // Profile fields matches.
-                           {"Elvis", NAME_FIRST},
-                           {"Aaron", NAME_MIDDLE},
-                           {"A", NAME_MIDDLE_INITIAL},
-                           {"Presley", NAME_LAST},
-                           {"Elvis Aaron Presley", NAME_FULL},
-                           {"theking@gmail.com", EMAIL_ADDRESS},
-                           {"RCA", COMPANY_NAME},
-                           {"3734 Elvis Presley Blvd.", ADDRESS_HOME_LINE1},
-                           {"Apt. 10", ADDRESS_HOME_LINE2},
-                           {"Memphis", ADDRESS_HOME_CITY},
-                           {"Tennessee", ADDRESS_HOME_STATE},
-                           {"38116", ADDRESS_HOME_ZIP},
-                           {"USA", ADDRESS_HOME_COUNTRY},
-                           {"United States", ADDRESS_HOME_COUNTRY},
-                           {"+1 (234) 567-8901", PHONE_HOME_WHOLE_NUMBER},
-                           {"2345678901", PHONE_HOME_CITY_AND_NUMBER},
-                           {"1", PHONE_HOME_COUNTRY_CODE},
-                           {"234", PHONE_HOME_CITY_CODE},
-                           {"5678901", PHONE_HOME_NUMBER},
-                           {"567", PHONE_HOME_NUMBER},
-                           {"8901", PHONE_HOME_NUMBER},
+      // Profile fields matches.
+      {"Elvis", NAME_FIRST},
+      {"Aaron", NAME_MIDDLE},
+      {"A", NAME_MIDDLE_INITIAL},
+      {"Presley", NAME_LAST},
+      {"Elvis Aaron Presley", NAME_FULL},
+      {"theking@gmail.com", EMAIL_ADDRESS},
+      {"RCA", COMPANY_NAME},
+      {"3734 Elvis Presley Blvd.", ADDRESS_HOME_LINE1},
+      {"Apt. 10", ADDRESS_HOME_LINE2},
+      {"Memphis", ADDRESS_HOME_CITY},
+      {"Tennessee", ADDRESS_HOME_STATE},
+      {"38116", ADDRESS_HOME_ZIP},
+      {"USA", ADDRESS_HOME_COUNTRY},
+      {"United States", ADDRESS_HOME_COUNTRY},
+      {"12345678901", PHONE_HOME_WHOLE_NUMBER},
+      {"+1 (234) 567-8901", PHONE_HOME_WHOLE_NUMBER},
+      {"(234)567-8901", PHONE_HOME_CITY_AND_NUMBER},
+      {"2345678901", PHONE_HOME_CITY_AND_NUMBER},
+      {"1", PHONE_HOME_COUNTRY_CODE},
+      {"234", PHONE_HOME_CITY_CODE},
+      {"5678901", PHONE_HOME_NUMBER},
+      {"567", PHONE_HOME_NUMBER},
+      {"8901", PHONE_HOME_NUMBER},
 
-                           // Make sure matches for a second profile work.
-                           {"Charles Holley", NAME_FULL},
+      // Test an european profile.
+      {"Paris", ADDRESS_HOME_CITY},
+      {"Ile de France", ADDRESS_HOME_STATE},
+      {"75008", ADDRESS_HOME_ZIP},
+      {"FR", ADDRESS_HOME_COUNTRY},
+      {"France", ADDRESS_HOME_COUNTRY},
+      {"33249197070", PHONE_HOME_WHOLE_NUMBER},
+      {"+33 2 49 19 70 70", PHONE_HOME_WHOLE_NUMBER},
+      {"2 49 19 70 70", PHONE_HOME_CITY_AND_NUMBER},
+      {"249197070", PHONE_HOME_CITY_AND_NUMBER},
+      {"33", PHONE_HOME_COUNTRY_CODE},
+      {"2", PHONE_HOME_CITY_CODE},
 
-                           // Credit card fields matches.
-                           {"Elvis Presley", CREDIT_CARD_NAME},
-                           {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
-                           {"04", CREDIT_CARD_EXP_MONTH},
-                           {"April", CREDIT_CARD_EXP_MONTH},
-                           {"2012", CREDIT_CARD_EXP_4_DIGIT_YEAR},
-                           {"12", CREDIT_CARD_EXP_2_DIGIT_YEAR},
-                           {"04/2012", CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+      // Credit card fields matches.
+      {"Elvis Presley", CREDIT_CARD_NAME},
+      {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
+      {"04", CREDIT_CARD_EXP_MONTH},
+      {"April", CREDIT_CARD_EXP_MONTH},
+      {"2012", CREDIT_CARD_EXP_4_DIGIT_YEAR},
+      {"12", CREDIT_CARD_EXP_2_DIGIT_YEAR},
+      {"04/2012", CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
 
-                           // Make sure whitespaces are trimmed properly.
-                           {"", EMPTY_TYPE},
-                           {" ", EMPTY_TYPE},
-                           {" Elvis", NAME_FIRST},
-                           {"Elvis ", NAME_FIRST},
+      // Make sure whitespaces are trimmed properly.
+      {"", EMPTY_TYPE},
+      {" ", EMPTY_TYPE},
+      {" Elvis", NAME_FIRST},
+      {"Elvis ", NAME_FIRST},
 
-                           // Make sure fields that differ by case match.
-                           {"elvis ", NAME_FIRST},
-                           {"UnItEd StAtEs", ADDRESS_HOME_COUNTRY},
+      // Make sure fields that differ by case match.
+      {"elvis ", NAME_FIRST},
+      {"UnItEd StAtEs", ADDRESS_HOME_COUNTRY},
 
-                           // Make sure fields that differ by punctuation match.
-                           {"3734 Elvis Presley Blvd", ADDRESS_HOME_LINE1},
-                           {"3734, Elvis    Presley Blvd.", ADDRESS_HOME_LINE1},
+      // Make sure fields that differ by punctuation match.
+      {"3734 Elvis Presley Blvd", ADDRESS_HOME_LINE1},
+      {"3734, Elvis    Presley Blvd.", ADDRESS_HOME_LINE1},
 
-                           // Make sure unsupported variants do not match.
-                           {"Elvis Aaron", UNKNOWN_TYPE},
-                           {"Mr. Presley", UNKNOWN_TYPE},
-                           {"3734 Elvis Presley", UNKNOWN_TYPE},
-                           {"TN", UNKNOWN_TYPE},
-                           {"38116-1023", UNKNOWN_TYPE},
-                           {"5", UNKNOWN_TYPE},
-                           {"56", UNKNOWN_TYPE},
-                           {"901", UNKNOWN_TYPE}};
+      // Special phone number case. A profile with no country code should only
+      // match PHONE_HOME_CITY_AND_NUMBER.
+      {"5142821292", PHONE_HOME_CITY_AND_NUMBER},
+
+      // Make sure unsupported variants do not match.
+      {"Elvis Aaron", UNKNOWN_TYPE},
+      {"Mr. Presley", UNKNOWN_TYPE},
+      {"3734 Elvis Presley", UNKNOWN_TYPE},
+      {"TN", UNKNOWN_TYPE},
+      {"38116-1023", UNKNOWN_TYPE},
+      {"5", UNKNOWN_TYPE},
+      {"56", UNKNOWN_TYPE},
+      {"901", UNKNOWN_TYPE}};
 
   for (TestCase test_case : test_cases) {
     FormData form;
@@ -3380,6 +3402,8 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
     ASSERT_EQ(1U, form_structure.field_count());
     ServerFieldTypeSet possible_types =
         form_structure.field(0)->possible_types();
+    EXPECT_EQ(1U, possible_types.size());
+
     EXPECT_NE(possible_types.end(), possible_types.find(test_case.field_type));
   }
 }

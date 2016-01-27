@@ -149,6 +149,11 @@ bool PhoneNumber::SetInfo(const AutofillType& type,
 void PhoneNumber::GetMatchingTypes(const base::string16& text,
                                    const std::string& app_locale,
                                    ServerFieldTypeSet* matching_types) const {
+  // Strip the common phone number non numerical characters before calling the
+  // base matching type function. For example, the |text| "(514) 121-1523"
+  // would become the stripped text "5141211523". Since the base matching
+  // function only does simple canonicalization to match against the stored
+  // data, some domain specific cases will be covered below.
   base::string16 stripped_text = text;
   base::RemoveChars(stripped_text, base::ASCIIToUTF16(" .()-"), &stripped_text);
   FormGroup::GetMatchingTypes(stripped_text, app_locale, matching_types);
@@ -164,13 +169,34 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
       matching_types->insert(PHONE_HOME_NUMBER);
   }
 
-  base::string16 whole_number =
-      GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), app_locale);
-  if (!whole_number.empty()) {
-    base::string16 normalized_number =
-        i18n::NormalizePhoneNumber(text, GetRegion(*profile_, app_locale));
-    if (normalized_number == whole_number)
-      matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
+  // TODO(crbug.com/581391): Investigate the use of PhoneNumberUtil when
+  // matching phone numbers for upload.
+  // If there is not already a match for PHONE_HOME_WHOLE_NUMBER, normalize the
+  // |text| based on the app_locale before comparing it to the whole number. For
+  // example, the France number "33 2 49 19 70 70" would be normalized to
+  // "+33249197070" whereas the US number "+1 (234) 567-8901" would be
+  // normalized to "12345678901".
+  if (matching_types->find(PHONE_HOME_WHOLE_NUMBER) == matching_types->end()) {
+    base::string16 whole_number =
+        GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), app_locale);
+    if (!whole_number.empty()) {
+      base::string16 normalized_number =
+          i18n::NormalizePhoneNumber(text, GetRegion(*profile_, app_locale));
+      if (normalized_number == whole_number)
+        matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
+    }
+  }
+
+  // If both PHONE_HOME_CITY_AND_NUMBER and PHONE_HOME_WHOLE_NUMBER are matched,
+  // it means there is no country code in the profile's phone number. In that
+  // case, we should only return PHONE_HOME_CITY_AND_NUMBER because it's more
+  // precise.
+  ServerFieldTypeSet::iterator whole_number_iterator =
+      matching_types->find(PHONE_HOME_WHOLE_NUMBER);
+  if (whole_number_iterator != matching_types->end() &&
+      matching_types->find(PHONE_HOME_CITY_AND_NUMBER) !=
+          matching_types->end()) {
+    matching_types->erase(whole_number_iterator);
   }
 }
 
