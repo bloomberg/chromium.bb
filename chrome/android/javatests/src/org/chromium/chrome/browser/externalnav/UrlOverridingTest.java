@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
-
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
@@ -25,6 +23,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -272,7 +271,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
-    @Restriction(RESTRICTION_TYPE_TABLET)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     public void testOpenWindowFromUserGesture() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(OPEN_WINDOW_FROM_USER_GESTURE_PAGE),
                 true, 1, true, null, true);

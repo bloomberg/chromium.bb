@@ -10,13 +10,16 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
 import junit.framework.TestCase;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.net.test.BaseHttpTestServer;
 import org.chromium.policy.test.annotations.Policies;
@@ -220,14 +223,21 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     }
 
     private class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
+
         @Override
         protected boolean restrictionApplies(String restriction) {
-            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_PHONE)
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_PHONE)
                     && DeviceFormFactor.isTablet(getTargetContext())) {
                 return true;
             }
-            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_TABLET)
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_TABLET)
                     && !DeviceFormFactor.isTablet(getTargetContext())) {
+                return true;
+            }
+            if (TextUtils.equals(restriction,
+                                 ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+                    && (ConnectionResult.SUCCESS != GoogleApiAvailability.getInstance()
+                            .isGooglePlayServicesAvailable(getTargetContext()))) {
                 return true;
             }
             return false;

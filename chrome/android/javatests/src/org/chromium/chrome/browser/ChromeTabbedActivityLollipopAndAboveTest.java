@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -34,7 +35,7 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
     /**
      * Confirm that you can't start DocumentActivity while the user is running in tabbed mode.
      */
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     public void testDontKeepDocumentActivityInTabbedMode() throws Exception {
         // Make sure that ChromeTabbedActivity started up.

@@ -3186,6 +3186,7 @@
             '../net/net.gyp:net_java_test_support',
             '../sync/sync.gyp:sync_java',
             '../sync/sync.gyp:sync_java_test_support',
+            '../third_party/android_tools/android_tools.gyp:google_play_services_javalib'
           ],
           'includes': [ '../build/java.gypi' ],
         },

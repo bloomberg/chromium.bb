@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.widget;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
-
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
@@ -26,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
@@ -149,7 +147,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanEnterSwitcher() {
@@ -160,7 +158,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         assertNotNull("Accessibility container was not visible", getContainer().getParent());
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanLeaveSwitcher() {
@@ -175,7 +173,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         assertNull("Accessibility container was not visible", getContainer().getParent());
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanCloseWithCloseButton() throws InterruptedException, TimeoutException {
@@ -205,7 +203,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanSwipeClosed() throws InterruptedException, TimeoutException {
@@ -240,7 +238,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testResetSwipe() throws InterruptedException {
@@ -261,7 +259,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseAndUndo() throws InterruptedException, TimeoutException {
@@ -296,7 +294,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseAll() throws InterruptedException {
@@ -310,7 +308,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         assertFalse(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseAllIncognito() throws InterruptedException {
@@ -335,7 +333,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         assertFalse(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testModelSwitcherVisibility() throws InterruptedException {
@@ -355,7 +353,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
                 switcherButtons.getVisibility());
     }
 
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testModelSwitcherFunctionality() throws InterruptedException {
@@ -411,7 +409,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         assertEquals("Page 2", getTabTitleOfListItem(0));
     }
 
-    @Restriction(RESTRICTION_TYPE_TABLET)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseTabThroughTabStrip() throws InterruptedException, TimeoutException {

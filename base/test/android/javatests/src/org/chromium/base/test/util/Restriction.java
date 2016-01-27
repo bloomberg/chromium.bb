@@ -18,12 +18,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Restriction {
-    /** Specifies the test is only valid on phone form factors. */
-    public static final String RESTRICTION_TYPE_PHONE = "Phone";
-
-    /** Specifies the test is only valid on tablet form factors. */
-    public static final String RESTRICTION_TYPE_TABLET = "Tablet";
-
     /** Specifies the test is only valid on low end devices that have less memory. */
     public static final String RESTRICTION_TYPE_LOW_END_DEVICE = "Low_End_Device";
 

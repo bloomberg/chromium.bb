@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.InterstitialPageDelegateAndroid;
 import org.chromium.content.browser.test.util.Criteria;
@@ -114,7 +115,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * Test for having default primary color working correctly.
      */
     @SmallTest
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testNoBrandColor() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(""));
@@ -125,7 +126,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * Test for adding a brand color for a url.
      */
     @SmallTest
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testBrandColorNoAlpha() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -136,7 +137,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * Test to make sure onLoadStarted doesn't reset the brand color.
      */
     @SmallTest
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testBrandColorWithLoadStarted() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -154,7 +155,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * Test for checking navigating to new brand color updates correctly.
      */
     @SmallTest
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testNavigatingToNewBrandColor() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -168,7 +169,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * back again.
      */
     @SmallTest
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testNavigatingToBrandColorAndBack() throws InterruptedException {
         startMainActivityWithURL("about:blank");
@@ -199,7 +200,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * TODO(aurimas): investigate why this test is crasing in tabbed mode.
      */
     @SmallTest
-    @Restriction(Restriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @DisableInTabbedMode
     @Feature({"Omnibox"})
     public void testBrandColorInterstitial() throws InterruptedException {

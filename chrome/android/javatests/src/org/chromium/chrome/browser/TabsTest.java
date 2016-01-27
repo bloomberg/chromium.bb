@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
@@ -53,6 +52,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -373,7 +373,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @LargeTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher"})
     public void testTabSwitcherPortraitCloseButton() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -556,7 +556,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
        Bug http://crbug.com/156746
     */
     @DisabledTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTabsCulling() throws InterruptedException {
         // Open one more tabs than maxTabsDrawn.
         final int maxTabsDrawn = 8;
@@ -601,7 +601,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * @Feature({"Android-TabSwitcher"})
      */
     @FlakyTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTabsStacking() throws InterruptedException {
         final int count = openTabs(12, false);
 
@@ -667,7 +667,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * @Feature({"Android-TabSwitcher"})
      */
     @FlakyTest
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testTabSwitcherMemoryLeak() throws InterruptedException {
         openTabs(4, true);
 
@@ -696,7 +696,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * Verify that switching back and forth stay stable. This test last for at least 8 seconds.
      */
     @LargeTest
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Android-TabSwitcher"})
     public void testTabSwitcherStability() throws InterruptedException {
         openTabs(8, true);
@@ -716,7 +716,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
     @LargeTest
     @Feature({"Android-TabSwitcher"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTabSelectionPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         checkTabSelection(2, 0, false);
@@ -740,7 +740,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * @Feature({"Android-TabSwitcher"})
      */
     @FlakyTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTabSelectionLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         checkTabSelection(2, 0, true);
@@ -762,7 +762,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * Verify that we don't crash and show the overview mode after closing the last tab.
      */
     @SmallTest
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Android-TabSwitcher"})
     public void testCloseLastTabFromMain() throws InterruptedException {
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
@@ -936,7 +936,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * Test closing few tabs by swiping them in Overview portrait mode.
      */
     @MediumTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher", "Main"})
     public void testCloseTabPortrait() throws InterruptedException {
         startMainActivityWithURL(TestHttpServerClient.getUrl("chrome/test/data/android/test.html"));
@@ -960,7 +960,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Android-TabSwitcher", "Main"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCloseTabLandscape() throws InterruptedException {
         startMainActivityWithURL(TestHttpServerClient.getUrl("chrome/test/data/android/test.html"));
 
@@ -985,7 +985,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCloseIncognitoTabPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         newIncognitoTabsFromMenu(2);
@@ -1000,7 +1000,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @Feature({"Android-TabSwitcher"})
     @MediumTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCloseFiveIncognitoTabPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         newIncognitoTabsFromMenu(5);
@@ -1014,7 +1014,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * Simple swipe gesture should not close tabs when two Tabstacks are open in Overview mode.
      * Test in Portrait Mode.
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     public void testSwitchTabStackWithoutClosingTabsInPortrait() throws InterruptedException {
@@ -1061,7 +1061,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         @Feature({"Android-TabSwitcher"})
         Bug http://crbug.com/157259
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @DisabledTest
     public void testSwitchTabStackWithoutClosingTabsInLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -1103,7 +1103,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCloseIncognitoTabLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         newIncognitoTabFromMenu();
@@ -1118,7 +1118,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCloseFiveIncognitoTabLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         newIncognitoTabsFromMenu(5);
@@ -1196,7 +1196,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testNewTabButton() throws InterruptedException {
         MenuUtils.invokeCustomMenuActionSync(getInstrumentation(), getActivity(),
                 R.id.close_all_tabs_menu_id);
@@ -1405,7 +1405,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * Test that swipes and tab transitions are not causing URL bar to be focused.
      */
     @MediumTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher"})
     public void testOSKIsNotShownDuringSwipe() throws InterruptedException {
         final View urlBar = getActivity().findViewById(R.id.url_bar);
@@ -1507,7 +1507,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testOrientationChangeCausesLiveTabReflowInTabSwitcher()
             throws InterruptedException, TimeoutException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

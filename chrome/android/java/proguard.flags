@@ -143,6 +143,11 @@
   *;
 }
 
+# Needed to run ChromeTest.apk
+-keepnames class com.google.android.gms.common.GoogleApiAvailability {
+  *;
+}
+
 #-keep public class android.net.http.SslCertificate
 #-keep public class android.webkit.WebVie
 

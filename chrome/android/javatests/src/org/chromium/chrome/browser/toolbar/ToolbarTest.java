@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
-
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
@@ -15,6 +13,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbar;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -55,7 +54,7 @@ public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_TABLET)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"Omnibox"})
     public void testFindInPageDismissedOnOmniboxFocus() throws InterruptedException {
         findInPageFromMenu();

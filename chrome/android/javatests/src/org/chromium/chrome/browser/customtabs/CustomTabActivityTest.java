@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 
 import android.app.Activity;
 import android.app.Application;
@@ -52,6 +51,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.BrowserStartupController;
@@ -712,7 +712,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * Non-regression test for crbug.com/547121.
      */
     @SmallTest
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add({
             ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_DOCUMENT_MODE})
     public void testWarmupAndLaunchRegularChrome() {
@@ -739,7 +739,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * Non-regression test for crbug.com/547121.
      */
     @SmallTest
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add({
             ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_DOCUMENT_MODE})
     public void testWarmupAndLaunchRightToolbarLayout() {
@@ -846,8 +846,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     private static class OnFinishedForTest implements PendingIntent.OnFinished {
 
-        private PendingIntent mPi;
-        private AtomicBoolean mIsSent = new AtomicBoolean();
+        private final PendingIntent mPi;
+        private final AtomicBoolean mIsSent = new AtomicBoolean();
         private String mUri;
 
         /**

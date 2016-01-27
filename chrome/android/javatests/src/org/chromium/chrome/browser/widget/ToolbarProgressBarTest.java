@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.widget;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
-
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -17,6 +15,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,7 +43,7 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeAct
      */
     @Feature({"Android-Toolbar"})
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_PHONE)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testProgressBarDisappearsAfterFastShowHide() throws InterruptedException {
         // onAnimationEnd will be signaled on progress bar showing/hiding animation end.
         final Object onAnimationEnd = new Object();

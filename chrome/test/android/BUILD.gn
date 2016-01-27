@@ -30,5 +30,6 @@ android_library("chrome_java_test_support") {
     "//third_party/android_tools:legacy_http_javalib",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
+    google_play_services_library,
   ]
 }

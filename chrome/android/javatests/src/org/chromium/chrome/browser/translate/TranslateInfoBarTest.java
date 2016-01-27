@@ -4,11 +4,16 @@
 
 package org.chromium.chrome.browser.translate;
 
+import android.test.suitebuilder.annotation.MediumTest;
+
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -50,12 +55,10 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
 
     /**
      * Test the translate language panel.
-     *
-     * Bug http://crbug.com/514449
-     * @MediumTest
-     * @Feature({"Browser", "Main"})
      */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testTranslateLanguagePanel() throws InterruptedException {
         loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened.", mListener.addInfoBarAnimationFinished());
@@ -67,12 +70,10 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
 
     /**
      * Test the "never translate" panel.
-     *
-     * Bug http://crbug.com/514449
-     * @MediumTest
-     * @Feature({"Browser", "Main"})
      */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testTranslateNeverPanel() throws InterruptedException {
         loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened.", mListener.addInfoBarAnimationFinished());

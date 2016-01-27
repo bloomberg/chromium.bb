@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.media.ui;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -16,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -73,7 +73,7 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
      *      the notification should have the title of newTab.
      */
     @SmallTest
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testMultipleTabs() throws Throwable {
         simulateMediaSessionStateChanged(mTab, true, false);
         assertTitleMatches("title1");
