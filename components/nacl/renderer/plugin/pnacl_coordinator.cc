@@ -62,8 +62,6 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     const std::string& pexe_url,
     const PP_PNaClOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback) {
-  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (plugin=%p, pexe=%s)\n",
-                 static_cast<void*>(plugin), pexe_url.c_str()));
   PnaclCoordinator* coordinator =
       new PnaclCoordinator(plugin, pexe_url,
                            pnacl_options,
@@ -107,9 +105,6 @@ PnaclCoordinator::PnaclCoordinator(
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
-  PLUGIN_PRINTF(("PnaclCoordinator::~PnaclCoordinator (this=%p, "
-                 "translate_thread=%p\n",
-                 static_cast<void*>(this), translate_thread_.get()));
   // Stopping the translate thread will cause the translate thread to try to
   // run translation_complete_callback_ on the main thread.  This destructor is
   // running from the main thread, and by the time it exits, callback_factory_
@@ -143,7 +138,6 @@ void PnaclCoordinator::ReportNonPpapiError(PP_NaClError err_code,
 }
 
 void PnaclCoordinator::ExitWithError() {
-  PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError\n"));
   // Free all the intermediate callbacks we ever created.
   // Note: this doesn't *cancel* the callbacks from the factories attached
   // to the various helper classes (e.g., pnacl_resources). Thus, those
@@ -163,8 +157,6 @@ void PnaclCoordinator::ExitWithError() {
 
 // Signal that Pnacl translation completed normally.
 void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
   // Bail out if there was an earlier error (e.g., pexe load failure),
   // or if there is an error from the translation thread.
   if (translate_finish_error_ != PP_OK || pp_error != PP_OK) {
@@ -305,8 +297,6 @@ void PnaclCoordinator::BitcodeStreamGotData(const void* data, int32_t length) {
 }
 
 void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamDidFinish (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     // Defer reporting the error and cleanup until after the translation
     // thread returns, because it may be accessing the coordinator's
@@ -370,7 +360,6 @@ pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
 }
 
 void PnaclCoordinator::LoadCompiler() {
-  PLUGIN_PRINTF(("PnaclCoordinator::LoadCompiler"));
   base::TimeTicks compiler_load_start_time = base::TimeTicks::Now();
   pp::CompletionCallback load_finished = callback_factory_.NewCallback(
       &PnaclCoordinator::RunCompile, compiler_load_start_time);
@@ -386,8 +375,6 @@ void PnaclCoordinator::LoadCompiler() {
 
 void PnaclCoordinator::RunCompile(int32_t pp_error,
                                   base::TimeTicks compiler_load_start_time) {
-  PLUGIN_PRINTF(
-      ("PnaclCoordinator::RunCompile (pp_error=%" NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_LLC_SETUP,
@@ -419,8 +406,6 @@ void PnaclCoordinator::RunCompile(int32_t pp_error,
 }
 
 void PnaclCoordinator::LoadLinker(int32_t pp_error) {
-  PLUGIN_PRINTF(
-      ("PnaclCoordinator::LoadLinker (pp_error=%" NACL_PRId32 ")\n", pp_error));
   // Errors in the previous step would have skipped to TranslateFinished
   // so we only expect PP_OK here.
   DCHECK(pp_error == PP_OK);
@@ -439,8 +424,6 @@ void PnaclCoordinator::LoadLinker(int32_t pp_error) {
 
 void PnaclCoordinator::RunLink(int32_t pp_error,
                                base::TimeTicks ld_load_start_time) {
-  PLUGIN_PRINTF(
-      ("PnaclCoordinator::RunLink (pp_error=%" NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_LD_SETUP,

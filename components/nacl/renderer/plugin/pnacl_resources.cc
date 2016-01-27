@@ -77,8 +77,6 @@ bool PnaclResources::ReadResourceInfo() {
 
 
 bool PnaclResources::StartLoad() {
-  PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
-
   // Do a blocking load of each of the resources.
   std::vector<ResourceType> to_load;
   if (use_subzero_) {

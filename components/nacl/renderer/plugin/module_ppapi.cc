@@ -16,16 +16,12 @@ namespace plugin {
 ModulePpapi::ModulePpapi() : pp::Module(),
                              init_was_successful_(false),
                              private_interface_(NULL) {
-  MODULE_PRINTF(("ModulePpapi::ModulePpapi (this=%p)\n",
-                 static_cast<void*>(this)));
 }
 
 ModulePpapi::~ModulePpapi() {
   if (init_was_successful_) {
     NaClNrdAllModulesFini();
   }
-  MODULE_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
-                 static_cast<void*>(this)));
 }
 
 bool ModulePpapi::Init() {
@@ -34,8 +30,6 @@ bool ModulePpapi::Init() {
       GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
 
   if (NULL == private_interface_) {
-    MODULE_PRINTF(("ModulePpapi::Init failed: "
-                   "GetBrowserInterface returned NULL\n"));
     return false;
   }
   SetNaClInterface(private_interface_);
@@ -57,13 +51,7 @@ bool ModulePpapi::Init() {
 }
 
 pp::Instance* ModulePpapi::CreateInstance(PP_Instance pp_instance) {
-  MODULE_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%" NACL_PRId32
-                 ")\n",
-                 pp_instance));
-  Plugin* plugin = new Plugin(pp_instance);
-  MODULE_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
-                 static_cast<void* >(plugin)));
-  return plugin;
+  return new Plugin(pp_instance);
 }
 
 }  // namespace plugin
@@ -72,7 +60,6 @@ pp::Instance* ModulePpapi::CreateInstance(PP_Instance pp_instance) {
 namespace pp {
 
 Module* CreateModule() {
-  MODULE_PRINTF(("CreateModule ()\n"));
   return new plugin::ModulePpapi();
 }
 

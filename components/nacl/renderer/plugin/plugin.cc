@@ -28,15 +28,9 @@ void NoOpCallback(void* user_data, int32_t result) {
 namespace plugin {
 
 void Plugin::ShutDownSubprocesses() {
-  PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses (this=%p)\n",
-                 static_cast<void*>(this)));
-
   // Shut down service runtime. This must be done before all other calls so
   // they don't block forever when waiting for the upcall thread to exit.
   main_subprocess_.Shutdown();
-
-  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p, return)\n",
-                 static_cast<void*>(this)));
 }
 
 void Plugin::StartSelLdr(ServiceRuntime* service_runtime,
@@ -164,8 +158,6 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate (pp_error=%" NACL_PRId32 ")\n",
-                 pp_error));
   if (pp_error != PP_OK) {
     // Error should have been reported by pnacl. Just return.
     return;
@@ -185,8 +177,6 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
 }
 
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK)
     return;
 

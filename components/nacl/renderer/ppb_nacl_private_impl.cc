@@ -898,10 +898,6 @@ PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
       should_debug);
 }
 
-void Vlog(const char* message) {
-  VLOG(1) << message;
-}
-
 void InitializePlugin(PP_Instance instance,
                       uint32_t argc,
                       const char* argn[],
@@ -1714,7 +1710,6 @@ const PPB_NaCl_Private nacl_interface = {
   &InstanceCreated,
   &InstanceDestroyed,
   &GetSandboxArch,
-  &Vlog,
   &InitializePlugin,
   &RequestNaClManifest,
   &GetManifestBaseURL,

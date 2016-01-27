@@ -87,7 +87,6 @@ void PnaclTranslateThread::SetupState(
     PP_PNaClOptions* pnacl_options,
     const std::string& architecture_attributes,
     PnaclCoordinator* coordinator) {
-  PLUGIN_PRINTF(("PnaclTranslateThread::SetupState)\n"));
   compiler_subprocess_ = compiler_subprocess;
   ld_subprocess_ = ld_subprocess;
   obj_files_ = obj_files;
@@ -103,7 +102,6 @@ void PnaclTranslateThread::SetupState(
 
 void PnaclTranslateThread::RunCompile(
     const pp::CompletionCallback& compile_finished_callback) {
-  PLUGIN_PRINTF(("PnaclTranslateThread::RunCompile)\n"));
   DCHECK(started());
   DCHECK(compiler_subprocess_->service_runtime());
   compiler_subprocess_active_ = true;
@@ -127,7 +125,6 @@ void PnaclTranslateThread::RunCompile(
 }
 
 void PnaclTranslateThread::RunLink() {
-  PLUGIN_PRINTF(("PnaclTranslateThread::RunLink)\n"));
   DCHECK(started());
   DCHECK(ld_subprocess_->service_runtime());
   ld_subprocess_active_ = true;
@@ -212,8 +209,6 @@ void PnaclTranslateThread::DoCompile() {
                                compiler_channel_peer_pid_));
   }
 
-  PLUGIN_PRINTF(("DoCompile using subzero: %d\n", pnacl_options_->use_subzero));
-
   pp::Core* core = pp::Module::Get()->core();
   base::TimeTicks do_compile_start_time = base::TimeTicks::Now();
 
@@ -245,7 +240,6 @@ void PnaclTranslateThread::DoCompile() {
                     std::string("Stream init failed: ") + error_str);
     return;
   }
-  PLUGIN_PRINTF(("PnaclCoordinator: StreamInit successful\n"));
 
   // llc process is started.
   while(!done_ || data_buffers_.size() > 0) {
@@ -253,15 +247,11 @@ void PnaclTranslateThread::DoCompile() {
     while(!done_ && data_buffers_.size() == 0) {
       buffer_cond_.Wait();
     }
-    PLUGIN_PRINTF(("PnaclTranslateThread awake (done=%d, size=%" NACL_PRIuS
-                   ")\n",
-                   done_, data_buffers_.size()));
     if (data_buffers_.size() > 0) {
       std::string data;
       data.swap(data_buffers_.front());
       data_buffers_.pop_front();
       cond_mu_.Release();
-      PLUGIN_PRINTF(("StreamChunk\n"));
 
       if (!compiler_channel_filter_->Send(
               new PpapiMsg_PnaclTranslatorCompileChunk(data, &success))) {
@@ -278,7 +268,6 @@ void PnaclTranslateThread::DoCompile() {
         // console.
         break;
       }
-      PLUGIN_PRINTF(("StreamChunk Successful\n"));
       core->CallOnMainThread(
           0,
           coordinator_->GetCompileProgressCallback(data.size()),
@@ -287,7 +276,6 @@ void PnaclTranslateThread::DoCompile() {
       cond_mu_.Release();
     }
   }
-  PLUGIN_PRINTF(("PnaclTranslateThread done with chunks\n"));
   // Finish llc.
   if (!compiler_channel_filter_->Send(
           new PpapiMsg_PnaclTranslatorCompileEnd(&success, &error_str))) {
@@ -373,8 +361,6 @@ void PnaclTranslateThread::DoLink() {
   GetNaClInterface()->LogTranslateTime(
       "NaCl.Perf.PNaClLoadTime.LinkTime",
       (base::TimeTicks::Now() - link_start_time).InMicroseconds());
-  PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
-                 this));
 
   // Shut down the ld subprocess.
   {
@@ -390,8 +376,6 @@ void PnaclTranslateThread::DoLink() {
 void PnaclTranslateThread::TranslateFailed(
     PP_NaClError err_code,
     const std::string& error_string) {
-  PLUGIN_PRINTF(("PnaclTranslateThread::TranslateFailed (error_string='%s')\n",
-                 error_string.c_str()));
   pp::Core* core = pp::Module::Get()->core();
   if (coordinator_error_info_->message().empty()) {
     // Only use our message if one hasn't already been set by the coordinator
@@ -404,7 +388,6 @@ void PnaclTranslateThread::TranslateFailed(
 }
 
 void PnaclTranslateThread::AbortSubprocesses() {
-  PLUGIN_PRINTF(("PnaclTranslateThread::AbortSubprocesses\n"));
   {
     base::AutoLock lock(subprocess_mu_);
     if (compiler_subprocess_ != NULL && compiler_subprocess_active_) {
@@ -427,11 +410,9 @@ void PnaclTranslateThread::AbortSubprocesses() {
 }
 
 PnaclTranslateThread::~PnaclTranslateThread() {
-  PLUGIN_PRINTF(("~PnaclTranslateThread (translate_thread=%p)\n", this));
   AbortSubprocesses();
   if (translate_thread_)
     translate_thread_->Join();
-  PLUGIN_PRINTF(("~PnaclTranslateThread joined\n"));
 }
 
 } // namespace plugin

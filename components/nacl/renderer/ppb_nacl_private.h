@@ -281,8 +281,6 @@ struct PPB_NaCl_Private {
    * platform.
    */
   const char* (*GetSandboxArch)(void);
-  /* Logs the message via VLOG. */
-  void (*Vlog)(const char* message);
   /* Initializes internal state for a NaCl plugin. */
   void (*InitializePlugin)(PP_Instance instance,
                            uint32_t argc,
