@@ -1264,9 +1264,6 @@ crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/574196 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
 
-crbug.com/569950 svg/batik/filters/feTile.svg [ NeedsRebaseline ]
-crbug.com/569950 svg/filters/feTile.svg [ NeedsRebaseline ]
-
 crbug.com/570611 fast/inline/inline-box-background-repeat-x.html [ NeedsRebaseline ]
 crbug.com/570611 [ Mac Linux Android Win7 ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
 crbug.com/570611 ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
