@@ -64,10 +64,6 @@
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
-#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif

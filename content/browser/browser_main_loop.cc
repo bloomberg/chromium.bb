@@ -164,10 +164,6 @@
 #include "content/browser/plugin_service_impl.h"
 #endif
 
-#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif
-
 #if defined(USE_X11)
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11_connection.h"

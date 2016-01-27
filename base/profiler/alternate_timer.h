@@ -12,18 +12,10 @@
 
 namespace tracked_objects {
 
-enum TimeSourceType {
-  TIME_SOURCE_TYPE_WALL_TIME,
-  TIME_SOURCE_TYPE_TCMALLOC
-};
+enum TimeSourceType { TIME_SOURCE_TYPE_WALL_TIME };
 
 // Provide type for an alternate timer function.
 typedef unsigned int NowFunction();
-
-// Environment variable name that is used to activate alternate timer profiling
-// (such as using TCMalloc allocations to provide a pseudo-timer) for tasks
-// instead of wall clock profiling.
-BASE_EXPORT extern const char kAlternateProfilerTime[];
 
 // Set an alternate timer function to replace the OS time function when
 // profiling.  Typically this is called by an allocator that is providing a

@@ -13,3 +13,4 @@ available from the Chromium tree, and not well-documented otherwise.
 
 Local Modifications:
   * Add support for arm64 architecture
+  * Remove dead USE_TCMALLOC #define.

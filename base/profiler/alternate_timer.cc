@@ -14,8 +14,6 @@ tracked_objects::TimeSourceType g_time_source_type =
 
 namespace tracked_objects {
 
-const char kAlternateProfilerTime[] = "CHROME_PROFILER_TIME";
-
 // Set an alternate timer function to replace the OS time function when
 // profiling.
 void SetAlternateTimeSource(NowFunction* now_function, TimeSourceType type) {

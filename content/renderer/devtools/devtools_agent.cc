@@ -25,10 +25,6 @@
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif
-
 using blink::WebConsoleMessage;
 using blink::WebDevToolsAgent;
 using blink::WebDevToolsAgentClient;

@@ -28,7 +28,6 @@
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
-#include "base/profiler/alternate_timer.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -62,10 +61,6 @@
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #include "gin/v8_initializer.h"
-#endif
-
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -424,19 +419,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // TRACE_EVENT right away.
     TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
-
-#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-    // Provide optional hook for monitoring allocation quantities on a
-    // per-thread basis.  Only set the hook if the environment indicates this
-    // needs to be enabled.
-    const char* profiling = getenv(tracked_objects::kAlternateProfilerTime);
-    if (profiling &&
-        (atoi(profiling) == tracked_objects::TIME_SOURCE_TYPE_TCMALLOC)) {
-      tracked_objects::SetAlternateTimeSource(
-          MallocExtension::GetBytesAllocatedOnCurrentThread,
-          tracked_objects::TIME_SOURCE_TYPE_TCMALLOC);
-    }
-#endif  // !OS_MACOSX && USE_TCMALLOC
 
 #if !defined(OS_IOS)
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
