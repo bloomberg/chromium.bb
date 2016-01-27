@@ -1529,11 +1529,17 @@ void Node::showNode(const char* prefix) const
         value.replaceWithLiteral('\\', "\\\\");
         value.replaceWithLiteral('\n', "\\n");
         WTFLogAlways("%s%s\t%p \"%s\"\n", prefix, nodeName().utf8().data(), this, value.utf8().data());
+    } else if (isDocumentTypeNode()) {
+        WTFLogAlways("%sDOCTYPE %s\t%p\n", prefix, nodeName().utf8().data(), this);
+    } else if (nodeType() == PROCESSING_INSTRUCTION_NODE) {
+        WTFLogAlways("%s?%s\t%p\n", prefix, nodeName().utf8().data(), this);
     } else {
         StringBuilder attrs;
         appendAttributeDesc(this, attrs, idAttr, " ID");
         appendAttributeDesc(this, attrs, classAttr, " CLASS");
         appendAttributeDesc(this, attrs, styleAttr, " STYLE");
+        if (hasEditableStyle())
+            attrs.appendLiteral(" (editable)");
         WTFLogAlways("%s%s\t%p%s\n", prefix, nodeName().utf8().data(), this, attrs.toString().utf8().data());
     }
 }
