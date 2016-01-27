@@ -30,7 +30,7 @@ void LostContext(void*) {
   // TODO(fsamuel): Figure out if there's something useful to do here.
 }
 
-void OnGotContentHandlerID(uint32_t content_handler_id) {}
+void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 
 }  // namespace
 
@@ -61,7 +61,7 @@ void BitmapUploader::Init(mojo::Shell* shell) {
   shell->ConnectToApplication(std::move(request2),
                               mojo::GetProxy(&gpu_service_provider), nullptr,
                               mojo::CreatePermissiveCapabilityFilter(),
-                              base::Bind(&OnGotContentHandlerID));
+                              base::Bind(&OnGotRemoteIDs));
   ConnectToService(gpu_service_provider.get(), &gpu_service_);
 
   mus::mojom::CommandBufferPtr gles2_client;

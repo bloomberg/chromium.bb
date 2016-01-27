@@ -120,7 +120,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   params.set_filter(std::move(filter));
   application_connection_ = app->ConnectToApplication(&params);
   application_connection_->ConnectToService(&frame_client_);
-  application_connection_->AddContentHandlerIDCallback(on_got_id_callback);
+  application_connection_->AddRemoteIDCallback(on_got_id_callback);
 }
 
 mus::mojom::WindowTreeClientPtr FrameConnection::GetWindowTreeClient() {
@@ -131,8 +131,8 @@ mus::mojom::WindowTreeClientPtr FrameConnection::GetWindowTreeClient() {
 }
 
 uint32_t FrameConnection::GetContentHandlerID() const {
-  uint32_t content_handler_id = mojo::Shell::kInvalidContentHandlerID;
-  if (!application_connection_->GetContentHandlerID(&content_handler_id))
+  uint32_t content_handler_id = mojo::Shell::kInvalidApplicationID;
+  if (!application_connection_->GetRemoteContentHandlerID(&content_handler_id))
     NOTREACHED();
   return content_handler_id;
 }

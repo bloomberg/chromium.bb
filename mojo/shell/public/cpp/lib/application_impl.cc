@@ -45,6 +45,7 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  const Closure& termination_closure)
     : delegate_(delegate),
       binding_(this, std::move(request)),
+      id_(Shell::kInvalidApplicationID),
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
       quit_requested_(false),
@@ -80,8 +81,8 @@ scoped_ptr<ApplicationConnection>
   InterfaceRequest<ServiceProvider> remote_services_proxy =
       GetProxy(&remote_services);
   scoped_ptr<internal::ServiceRegistry> registry(new internal::ServiceRegistry(
-      application_url, application_url, std::move(remote_services),
-      std::move(local_request), allowed));
+      application_url, application_url, Shell::kInvalidApplicationID,
+      std::move(remote_services), std::move(local_request), allowed));
   shell_->ConnectToApplication(std::move(request),
                                std::move(remote_services_proxy),
                                std::move(local_services), params->TakeFilter(),
@@ -107,22 +108,26 @@ void ApplicationImpl::Quit() {
   }
 }
 
-void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
+void ApplicationImpl::Initialize(ShellPtr shell,
+                                 const mojo::String& url,
+                                 uint32_t id) {
   shell_ = std::move(shell);
   shell_.set_connection_error_handler([this]() { OnConnectionError(); });
   url_ = url;
+  id_ = id;
   delegate_->Initialize(this);
 }
 
 void ApplicationImpl::AcceptConnection(
     const String& requestor_url,
+    uint32_t requestor_id,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
     Array<String> allowed_interfaces,
     const String& url) {
   scoped_ptr<ApplicationConnection> registry(new internal::ServiceRegistry(
-      url, requestor_url, std::move(exposed_services), std::move(services),
-      allowed_interfaces.To<std::set<std::string>>()));
+      url, requestor_url, requestor_id, std::move(exposed_services),
+      std::move(services), allowed_interfaces.To<std::set<std::string>>()));
   if (!delegate_->ConfigureIncomingConnection(registry.get()))
     return;
 

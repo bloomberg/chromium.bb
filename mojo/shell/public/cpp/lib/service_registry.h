@@ -30,6 +30,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   // the string value "*" all interfaces may be exposed.
   ServiceRegistry(const std::string& connection_url,
                   const std::string& remote_url,
+                  uint32_t remote_id,
                   ServiceProviderPtr remote_services,
                   InterfaceRequest<ServiceProvider> local_services,
                   const std::set<std::string>& allowed_interfaces);
@@ -47,14 +48,16 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceProvider* GetLocalServiceProvider() override;
   void SetRemoteServiceProviderConnectionErrorHandler(
       const Closure& handler) override;
-  bool GetContentHandlerID(uint32_t* target_id) override;
-  void AddContentHandlerIDCallback(const Closure& callback) override;
+  bool GetRemoteApplicationID(uint32_t* remote_id) const override;
+  bool GetRemoteContentHandlerID(uint32_t* content_handler_id) const override;
+  void AddRemoteIDCallback(const Closure& callback) override;
   base::WeakPtr<ApplicationConnection> GetWeakPtr() override;
 
   void RemoveServiceConnectorForName(const std::string& interface_name);
 
  private:
-  void OnGotContentHandlerID(uint32_t content_handler_id);
+  void OnGotRemoteIDs(uint32_t target_application_id,
+                      uint32_t content_handler_id);
 
   // ServiceProvider method.
   void ConnectToService(const mojo::String& service_name,
@@ -67,11 +70,12 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceConnectorRegistry service_connector_registry_;
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;
+  uint32_t remote_id_;
   // The id of the content_handler is only available once the callback from
   // establishing the connection is made.
   uint32_t content_handler_id_;
-  bool is_content_handler_id_valid_;
-  std::vector<Closure> content_handler_id_callbacks_;
+  bool remote_ids_valid_;
+  std::vector<Closure> remote_id_callbacks_;
   base::WeakPtrFactory<ServiceRegistry> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceRegistry);

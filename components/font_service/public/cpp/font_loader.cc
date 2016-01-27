@@ -15,7 +15,7 @@
 
 namespace font_service {
 namespace {
-void OnGotContentHandlerID(uint32_t content_handler_id) {}
+void OnGotRemoteIDs(uint32_t instance_id, uint32_t content_handler_id) {}
 }  // namespace
 
 FontLoader::FontLoader(mojo::Shell* shell) {
@@ -26,7 +26,7 @@ FontLoader::FontLoader(mojo::Shell* shell) {
   shell->ConnectToApplication(std::move(request),
                               GetProxy(&font_service_provider), nullptr,
                               mojo::CreatePermissiveCapabilityFilter(),
-                              base::Bind(&OnGotContentHandlerID));
+                              base::Bind(&OnGotRemoteIDs));
   mojo::ConnectToService(font_service_provider.get(), &font_service);
 
   thread_ = new internal::FontServiceThread(std::move(font_service));

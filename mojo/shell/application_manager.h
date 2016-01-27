@@ -104,7 +104,7 @@ class ApplicationManager {
   void GetRunningApplications(
       const Callback<void(Array<mojom::ApplicationInfoPtr>)>& callback);
 
-  void ApplicationPIDAvailable(int id, base::ProcessId pid);
+  void ApplicationPIDAvailable(uint32_t id, base::ProcessId pid);
 
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;

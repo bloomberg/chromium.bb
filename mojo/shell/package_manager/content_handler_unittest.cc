@@ -225,13 +225,14 @@ TEST_F(ContentHandlerTest,
         new ConnectToApplicationParams);
     params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test:test"));
-    params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
+    params->set_connect_callback(
+        [&content_handler_id, &run_loop](uint32_t, uint32_t t) {
       content_handler_id = t;
       run_loop.Quit();
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
+    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id);
   }
 
   uint32_t content_handler_id2;
@@ -241,13 +242,14 @@ TEST_F(ContentHandlerTest,
         new ConnectToApplicationParams);
     params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test:test"));
-    params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
+    params->set_connect_callback(
+        [&content_handler_id2, &run_loop](uint32_t, uint32_t t) {
       content_handler_id2 = t;
       run_loop.Quit();
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
+    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id2);
   }
   EXPECT_EQ(content_handler_id, content_handler_id2);
 }
@@ -265,13 +267,14 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
         new ConnectToApplicationParams);
     params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test:test"));
-    params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
+    params->set_connect_callback(
+        [&content_handler_id, &run_loop](uint32_t, uint32_t t) {
       content_handler_id = t;
       run_loop.Quit();
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
+    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id);
   }
 
   const std::string mime_type2 = "test/mime-type2";
@@ -292,13 +295,14 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
         new ConnectToApplicationParams);
     params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test2:test2"));
-    params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
+    params->set_connect_callback(
+        [&content_handler_id2, &run_loop](uint32_t, uint32_t t) {
       content_handler_id2 = t;
       run_loop.Quit();
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
+    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id2);
   }
   EXPECT_NE(content_handler_id, content_handler_id2);
 }
@@ -314,7 +318,7 @@ TEST_F(ContentHandlerTest,
       new ConnectToApplicationParams);
   params->SetTargetURL(GURL("test:test"));
   params->set_connect_callback(
-      [&content_handler_id](uint32_t t) { content_handler_id = t; });
+      [&content_handler_id](uint32_t, uint32_t t) { content_handler_id = t; });
   application_manager_->ConnectToApplication(std::move(params));
   EXPECT_EQ(0u, content_handler_id);
 }

@@ -19,6 +19,7 @@ namespace test {
 namespace {
 // Share the application URL with multiple application tests.
 String g_url;
+uint32_t g_id = Shell::kInvalidApplicationID;
 
 // Application request handle passed from the shell in MojoMain, stored in
 // between SetUp()/TearDown() so we can (re-)intialize new ApplicationImpls.
@@ -41,13 +42,17 @@ class ShellGrabber : public Application {
 
  private:
   // Application implementation.
-  void Initialize(ShellPtr shell, const mojo::String& url) override {
+  void Initialize(ShellPtr shell,
+                  const mojo::String& url,
+                  uint32_t id) override {
     g_url = url;
+    g_id = id;
     g_application_request = binding_.Unbind();
     g_shell = std::move(shell);
   }
 
   void AcceptConnection(const String& requestor_url,
+                        uint32_t requestor_id,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
                         Array<String> allowed_interfaces,
@@ -113,7 +118,7 @@ TestHelper::TestHelper(ApplicationDelegate* delegate)
           std::move(g_application_request))) {
   // Fake application initialization.
   Application* application = application_impl_.get();
-  application->Initialize(std::move(g_shell), g_url);
+  application->Initialize(std::move(g_shell), g_url, g_id);
 }
 
 TestHelper::~TestHelper() {

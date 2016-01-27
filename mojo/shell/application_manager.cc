@@ -32,7 +32,8 @@ namespace {
 // Used by TestAPI.
 bool has_created_instance = false;
 
-void OnEmptyOnConnectCallback(uint32_t content_handler_id) {}
+void OnEmptyOnConnectCallback(uint32_t remote_id, uint32_t content_handler_id) {
+}
 
 }  // namespace
 
@@ -74,6 +75,8 @@ ApplicationManager::ApplicationManager(
 ApplicationManager::~ApplicationManager() {
   TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
+  for (auto& runner : native_runners_)
+    runner.reset();
 }
 
 void ApplicationManager::TerminateShellConnections() {
@@ -156,7 +159,7 @@ void ApplicationManager::AddListener(
 }
 
 void ApplicationManager::ApplicationPIDAvailable(
-    int id,
+    uint32_t id,
     base::ProcessId pid) {
   for (auto& instance : identity_to_instance_) {
     if (instance.second->id() == id) {
@@ -189,7 +192,7 @@ InterfaceRequest<Application> ApplicationManager::CreateInstance(
   ApplicationPtr application;
   InterfaceRequest<Application> application_request = GetProxy(&application);
   ApplicationInstance* instance = new ApplicationInstance(
-      std::move(application), this, target_id, Shell::kInvalidContentHandlerID,
+      std::move(application), this, target_id, Shell::kInvalidApplicationID,
       on_application_end);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
@@ -211,7 +214,8 @@ void ApplicationManager::HandleFetchCallback(
     scoped_ptr<Fetcher> fetcher) {
   if (!fetcher) {
     // Network error. Drop |params| to tell the requestor.
-    params->connect_callback().Run(Shell::kInvalidContentHandlerID);
+    params->connect_callback().Run(Shell::kInvalidApplicationID,
+                                   Shell::kInvalidApplicationID);
     return;
   }
 
@@ -247,9 +251,9 @@ void ApplicationManager::HandleFetchCallback(
 
   uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
       fetcher.get(), source, target.url(), target.filter(), &request);
-  if (content_handler_id != Shell::kInvalidContentHandlerID) {
+  if (content_handler_id != Shell::kInvalidApplicationID) {
     app->set_requesting_content_handler_id(content_handler_id);
-    connect_callback.Run(content_handler_id);
+    connect_callback.Run(app->id(), content_handler_id);
     return;
   }
 
@@ -263,7 +267,7 @@ void ApplicationManager::HandleFetchCallback(
                       target.url() == GURL("mojo://html_viewer/");
   }
 
-  connect_callback.Run(Shell::kInvalidContentHandlerID);
+  connect_callback.Run(app->id(), Shell::kInvalidApplicationID);
 
   fetcher->AsPath(
       task_runner_,

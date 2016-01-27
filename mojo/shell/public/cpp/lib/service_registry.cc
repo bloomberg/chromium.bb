@@ -19,6 +19,7 @@ namespace internal {
 ServiceRegistry::ServiceRegistry(
     const std::string& connection_url,
     const std::string& remote_url,
+    uint32_t remote_id,
     ServiceProviderPtr remote_services,
     InterfaceRequest<ServiceProvider> local_services,
     const std::set<std::string>& allowed_interfaces)
@@ -29,8 +30,9 @@ ServiceRegistry::ServiceRegistry(
       allowed_interfaces_(allowed_interfaces),
       allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
                             allowed_interfaces_.count("*") == 1),
+      remote_id_(remote_id),
       content_handler_id_(0u),
-      is_content_handler_id_valid_(false),
+      remote_ids_valid_(false),
       weak_factory_(this) {
   if (local_services.is_pending())
     local_binding_.Bind(std::move(local_services));
@@ -47,7 +49,7 @@ ServiceRegistry::~ServiceRegistry() {
 
 Shell::ConnectToApplicationCallback
 ServiceRegistry::GetConnectToApplicationCallback() {
-  return base::Bind(&ServiceRegistry::OnGotContentHandlerID,
+  return base::Bind(&ServiceRegistry::OnGotRemoteIDs,
                     weak_factory_.GetWeakPtr());
 }
 
@@ -79,20 +81,29 @@ void ServiceRegistry::SetRemoteServiceProviderConnectionErrorHandler(
   remote_service_provider_.set_connection_error_handler(handler);
 }
 
-bool ServiceRegistry::GetContentHandlerID(uint32_t* content_handler_id) {
-  if (!is_content_handler_id_valid_)
+bool ServiceRegistry::GetRemoteApplicationID(uint32_t* remote_id) const {
+  if (!remote_ids_valid_)
+    return false;
+
+  *remote_id = remote_id_;
+  return true;
+}
+
+bool ServiceRegistry::GetRemoteContentHandlerID(
+    uint32_t* content_handler_id) const {
+  if (!remote_ids_valid_)
     return false;
 
   *content_handler_id = content_handler_id_;
   return true;
 }
 
-void ServiceRegistry::AddContentHandlerIDCallback(const Closure& callback) {
-  if (is_content_handler_id_valid_) {
+void ServiceRegistry::AddRemoteIDCallback(const Closure& callback) {
+  if (remote_ids_valid_) {
     callback.Run();
     return;
   }
-  content_handler_id_callbacks_.push_back(callback);
+  remote_id_callbacks_.push_back(callback);
 }
 
 base::WeakPtr<ApplicationConnection> ServiceRegistry::GetWeakPtr() {
@@ -118,12 +129,15 @@ ServiceProvider* ServiceRegistry::GetServiceProvider() {
   return remote_service_provider_.get();
 }
 
-void ServiceRegistry::OnGotContentHandlerID(uint32_t content_handler_id) {
-  DCHECK(!is_content_handler_id_valid_);
-  is_content_handler_id_valid_ = true;
+void ServiceRegistry::OnGotRemoteIDs(uint32_t target_application_id,
+                                     uint32_t content_handler_id) {
+  DCHECK(!remote_ids_valid_);
+  remote_ids_valid_ = true;
+
+  remote_id_ = target_application_id;
   content_handler_id_ = content_handler_id;
   std::vector<Closure> callbacks;
-  callbacks.swap(content_handler_id_callbacks_);
+  callbacks.swap(remote_id_callbacks_);
   for (auto callback : callbacks)
     callback.Run();
 }

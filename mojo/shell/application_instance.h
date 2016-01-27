@@ -55,7 +55,7 @@ class ApplicationInstance : public Shell,
 
   Application* application() { return application_.get(); }
   const Identity& identity() const { return identity_; }
-  int id() const { return id_; }
+  uint32_t id() const { return id_; }
   base::ProcessId pid() const { return pid_; }
   void set_pid(base::ProcessId pid) { pid_ = pid; }
   base::Closure on_application_end() const { return on_application_end_; }
@@ -79,7 +79,7 @@ class ApplicationInstance : public Shell,
   // PIDReceiver implementation:
   void SetPID(uint32_t pid) override;
 
-  static int GenerateUniqueID();
+  uint32_t GenerateUniqueID() const;
 
   void CallAcceptConnection(scoped_ptr<ConnectToApplicationParams> params);
 
@@ -93,7 +93,7 @@ class ApplicationInstance : public Shell,
   // An id that identifies this instance. Distinct from pid, as a single process
   // may vend multiple application instances, and this object may exist before a
   // process is launched.
-  const int id_;
+  const uint32_t id_;
   const Identity identity_;
   const bool allow_any_application_;
   uint32_t requesting_content_handler_id_;

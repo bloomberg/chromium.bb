@@ -129,7 +129,7 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
                                  std::move(response));
     return connection->id();
   }
-  return Shell::kInvalidContentHandlerID;
+  return Shell::kInvalidApplicationID;
 }
 
 GURL PackageManagerImpl::ResolveURL(const GURL& url) {

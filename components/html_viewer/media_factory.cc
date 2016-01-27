@@ -50,7 +50,7 @@ bool AreSecureCodecsSupported() {
   return false;
 }
 
-void OnGotContentHandlerID(uint32_t content_handler_id) {}
+void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 
 }  // namespace
 
@@ -135,7 +135,7 @@ media::interfaces::ServiceFactory* MediaFactory::GetMediaServiceFactory() {
     request->url = mojo::String::From("mojo:media");
     shell_->ConnectToApplication(std::move(request),
                                  GetProxy(&service_provider), nullptr, nullptr,
-                                 base::Bind(&OnGotContentHandlerID));
+                                 base::Bind(&OnGotRemoteIDs));
     mojo::ConnectToService(service_provider.get(), &media_service_factory_);
   }
 

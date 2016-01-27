@@ -24,8 +24,7 @@ struct CapabilityFilter {
 // An interface through which a Mojo application may communicate with the Mojo
 // system and request connections to other applications.
 interface Shell {
-  // Used to indicate the app was not launched by a content handler.
-  const uint32 kInvalidContentHandlerID = 0;
+  const uint32 kInvalidApplicationID = 0;
 
   // Establishes a connection with another application ("target application")
   // (located at |request->url|) through which the calling application and the
@@ -61,12 +60,12 @@ interface Shell {
   // If the connection to |application_url| involves a content handler, then
   // |content_handler_id| is the id of the deepest content handler used to
   // establish the connection to |application_url|. If no content handler is
-  // used |content_handler_id| is kInvalidContentHandlerID.
-  // TODO(beng): determine if we need to expose the target application id also.
+  // used |content_handler_id| is kInvalidApplicationID.
   ConnectToApplication(URLRequest application_url,
                        ServiceProvider&? services,
                        ServiceProvider? exposed_services,
-                       CapabilityFilter filter) => (uint32 content_handler_id);
+                       CapabilityFilter filter) =>
+      (uint32 application_id, uint32 content_handler_id);
 
   // When there are no more instantiated services in an application, it should
   // start its shutdown process by calling this method. Additionally, it should

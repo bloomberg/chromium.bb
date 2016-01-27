@@ -65,11 +65,11 @@ class TaskViewer : public views::WidgetDelegateView,
 
  private:
   struct ApplicationInfo {
-    int id;
+    uint32_t id;
     std::string url;
     uint32_t pid;
 
-    ApplicationInfo(int id, const std::string url, base::ProcessId pid)
+    ApplicationInfo(uint32_t id, const std::string url, base::ProcessId pid)
         : id(id), url(url), pid(pid) {}
   };
 
@@ -145,7 +145,7 @@ class TaskViewer : public views::WidgetDelegateView,
                             application->pid)));
     observer_->OnItemsAdded(static_cast<int>(applications_.size()), 1);
   }
-  void ApplicationInstanceDestroyed(int32_t id) override {
+  void ApplicationInstanceDestroyed(uint32_t id) override {
     for (auto it = applications_.begin(); it != applications_.end(); ++it) {
       if ((*it)->id == id) {
         observer_->OnItemsRemoved(
@@ -156,7 +156,7 @@ class TaskViewer : public views::WidgetDelegateView,
     }
     NOTREACHED();
   }
-  void ApplicationPIDAvailable(int id, uint32_t pid) override {
+  void ApplicationPIDAvailable(uint32_t id, uint32_t pid) override {
     for (auto it = applications_.begin(); it != applications_.end(); ++it) {
       if ((*it)->id == id) {
         (*it)->pid = pid;
@@ -167,7 +167,7 @@ class TaskViewer : public views::WidgetDelegateView,
     }
   }
 
-  bool ContainsId(int id) const {
+  bool ContainsId(uint32_t id) const {
     for (auto& it : applications_) {
       if (it->id == id)
         return true;

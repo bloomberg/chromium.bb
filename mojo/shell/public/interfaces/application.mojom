@@ -23,7 +23,11 @@ interface Application {
   // mappings, resolution, and redirects. And it will not include the
   // querystring, since the querystring is not part of an application's
   // identity.
-  Initialize(Shell shell, string url);
+  // 
+  // The |id| parameter is the identifier of the instance in the
+  // ApplicationManager. It can be passed to other shell interfaces that request
+  // an instance identifier.
+  Initialize(Shell shell, string url, uint32 id);
 
   // Called when another application (identified by |requestor_url|) attempts to
   // open a connection to this application.
@@ -58,6 +62,7 @@ interface Application {
   // querystring that was part of the request.
   //
   AcceptConnection(string requestor_url,
+                   uint32 requestor_id,
                    ServiceProvider&? services,
                    ServiceProvider? exposed_services,
                    array<string> allowed_interfaces,

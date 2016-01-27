@@ -16,7 +16,7 @@ namespace content {
 const char kBrowserMojoAppUrl[] = "system:content_browser";
 
 namespace {
-void OnGotContentHandlerID(uint32_t content_handler_id) {}
+void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 }  // namespace
 
 // static
@@ -32,7 +32,7 @@ MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
   MojoShellContext::ConnectToApplication(
       url, requestor_url, mojo::GetProxy(&services_),
       mojo::ServiceProviderPtr(), mojo::shell::GetPermissiveCapabilityFilter(),
-      base::Bind(&OnGotContentHandlerID));
+      base::Bind(&OnGotRemoteIDs));
 }
 
 MojoAppConnectionImpl::~MojoAppConnectionImpl() {

@@ -5,7 +5,7 @@
 module mojo.shell.test.mojom;
 
 interface CreateInstanceForHandleTest {
-  Ping(string data);
+  SetTargetID(uint32 target_id);
 };
 
 interface Driver {

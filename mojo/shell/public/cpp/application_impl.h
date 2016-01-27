@@ -110,6 +110,7 @@ class ApplicationImpl : public Application {
   Shell* shell() const { return shell_.get(); }
 
   const std::string& url() const { return url_; }
+  uint32_t id() const { return id_; }
 
   AppLifetimeHelper* app_lifetime_helper() { return &app_lifetime_helper_; }
 
@@ -146,8 +147,11 @@ class ApplicationImpl : public Application {
 
  private:
   // Application implementation.
-  void Initialize(ShellPtr shell, const mojo::String& url) override;
+  void Initialize(ShellPtr shell,
+                  const mojo::String& url,
+                  uint32_t id) override;
   void AcceptConnection(const String& requestor_url,
+                        uint32_t requestor_id,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
                         Array<String> allowed_interfaces,
@@ -173,6 +177,7 @@ class ApplicationImpl : public Application {
   Binding<Application> binding_;
   ShellPtr shell_;
   std::string url_;
+  uint32_t id_;
   Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;

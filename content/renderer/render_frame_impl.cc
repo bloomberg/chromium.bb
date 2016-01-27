@@ -590,7 +590,7 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
-void OnGotContentHandlerID(uint32_t content_handler_id) {}
+void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());
@@ -6040,7 +6040,7 @@ mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
   filter->filter.insert("*", std::move(all_interfaces));
   mojo_shell_->ConnectToApplication(
       std::move(request), GetProxy(&service_provider), nullptr,
-      std::move(filter), base::Bind(&OnGotContentHandlerID));
+      std::move(filter), base::Bind(&OnGotRemoteIDs));
   return service_provider;
 }
 

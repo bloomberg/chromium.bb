@@ -18,13 +18,6 @@
 
 namespace mojo {
 namespace shell {
-namespace {
-
-base::StaticAtomicSequenceNumber g_instance_id;
-
-const int kInvalidInstanceId = -1;
-
-}  // namespace
 
 ApplicationInstance::ApplicationInstance(
     ApplicationPtr application,
@@ -44,17 +37,21 @@ ApplicationInstance::ApplicationInstance(
       pid_receiver_binding_(this),
       queue_requests_(false),
       native_runner_(nullptr),
-      pid_(base::kNullProcessId) {}
+      pid_(base::kNullProcessId) {
+  DCHECK_NE(Shell::kInvalidApplicationID, id_);
+}
 
 ApplicationInstance::~ApplicationInstance() {
-  for (auto request : queued_client_requests_)
-    request->connect_callback().Run(kInvalidContentHandlerID);
+  for (auto request : queued_client_requests_) {
+    request->connect_callback().Run(kInvalidApplicationID,
+                                    kInvalidApplicationID);
+  }
   STLDeleteElements(&queued_client_requests_);
 }
 
 void ApplicationInstance::InitializeApplication() {
   application_->Initialize(binding_.CreateInterfacePtrAndBind(),
-                           identity_.url().spec());
+                           identity_.url().spec(), id_);
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
@@ -88,7 +85,7 @@ void ApplicationInstance::ConnectToApplication(
   GURL url(url_string);
   if (!url.is_valid()) {
     LOG(ERROR) << "Error: invalid URL: " << url_string;
-    callback.Run(kInvalidContentHandlerID);
+    callback.Run(kInvalidApplicationID, kInvalidApplicationID);
     return;
   }
   if (allow_any_application_ ||
@@ -111,7 +108,7 @@ void ApplicationInstance::ConnectToApplication(
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
         identity_.url() << " to: " << url.spec();
-    callback.Run(kInvalidContentHandlerID);
+    callback.Run(kInvalidApplicationID, kInvalidApplicationID);
   }
 }
 
@@ -127,24 +124,26 @@ void ApplicationInstance::SetPID(uint32_t pid) {
   manager_->ApplicationPIDAvailable(id_, pid);
 }
 
-// static
-int ApplicationInstance::GenerateUniqueID() {
-  int id = g_instance_id.GetNext() + 1;
-  CHECK_NE(0, id);
-  CHECK_NE(kInvalidInstanceId, id);
+uint32_t ApplicationInstance::GenerateUniqueID() const {
+  static uint32_t id = Shell::kInvalidApplicationID;
+  ++id;
+  CHECK_NE(Shell::kInvalidApplicationID, id);
   return id;
 }
 
 void ApplicationInstance::CallAcceptConnection(
     scoped_ptr<ConnectToApplicationParams> params) {
-  params->connect_callback().Run(requesting_content_handler_id_);
+  params->connect_callback().Run(id_, requesting_content_handler_id_);
   AllowedInterfaces interfaces;
   interfaces.insert("*");
   if (!params->source().is_null())
     interfaces = GetAllowedInterfaces(params->source().filter(), identity_);
 
+  ApplicationInstance* source =
+      manager_->GetApplicationInstance(params->source());
+  uint32_t source_id = source ? source->id() : Shell::kInvalidApplicationID;
   application_->AcceptConnection(
-      params->source().url().spec(), params->TakeServices(),
+      params->source().url().spec(), source_id, params->TakeServices(),
       params->TakeExposedServices(), Array<String>::From(interfaces),
       params->target().url().spec());
 }

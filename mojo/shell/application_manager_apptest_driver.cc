@@ -34,6 +34,7 @@
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
+using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
 using mojo::shell::test::mojom::Driver;
 
 namespace {

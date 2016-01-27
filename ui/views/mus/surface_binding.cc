@@ -33,7 +33,7 @@
 
 namespace views {
 namespace {
-void OnGotContentHandlerID(uint32_t content_handler_id) {}
+void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 }  // namespace
 
 // PerConnectionState ----------------------------------------------------------
@@ -135,7 +135,7 @@ void SurfaceBinding::PerConnectionState::Init() {
   shell_->ConnectToApplication(std::move(request), GetProxy(&service_provider),
                                nullptr,
                                mojo::CreatePermissiveCapabilityFilter(),
-                               base::Bind(&OnGotContentHandlerID));
+                               base::Bind(&OnGotRemoteIDs));
   ConnectToService(service_provider.get(), &gpu_);
 }
 

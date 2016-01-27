@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "mojo/common/weak_binding_set.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
 #include "mojo/shell/public/cpp/application_impl.h"
@@ -29,10 +30,12 @@ class ApplicationManagerAppTestDelegate
       public InterfaceFactory<CreateInstanceForHandleTest>,
       public CreateInstanceForHandleTest {
  public:
-  ApplicationManagerAppTestDelegate() : binding_(this) {}
+  ApplicationManagerAppTestDelegate()
+      : target_id_(Shell::kInvalidApplicationID),
+        binding_(this) {}
   ~ApplicationManagerAppTestDelegate() override {}
 
-  const std::string& data() const { return data_; }
+  uint32_t target_id() const { return target_id_; }
 
  private:
   // ApplicationDelegate:
@@ -50,12 +53,12 @@ class ApplicationManagerAppTestDelegate
   }
 
   // CreateInstanceForHandleTest:
-  void Ping(const String& data) override {
-    data_ = data;
+  void SetTargetID(uint32_t target_id) override {
+    target_id_ = target_id;
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  std::string data_;
+  uint32_t target_id_;
 
   Binding<CreateInstanceForHandleTest> binding_;
 
@@ -76,10 +79,10 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
  protected:
   struct ApplicationInfo {
-    ApplicationInfo(int id, const std::string& url)
+    ApplicationInfo(uint32_t id, const std::string& url)
         : id(id), url(url), pid(base::kNullProcessId) {}
 
-    int id;
+    uint32_t id;
     std::string url;
     base::ProcessId pid;
   };
@@ -92,9 +95,9 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     binding_.WaitForIncomingMethodCall();
   }
 
-  const std::string& data() const {
+  uint32_t target_id() const {
     DCHECK(delegate_);
-    return delegate_->data();
+    return delegate_->target_id();
   }
 
   const std::vector<ApplicationInfo>& applications() const {
@@ -117,7 +120,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
       mojom::ApplicationInfoPtr application) override {
     applications_.push_back(ApplicationInfo(application->id, application->url));
   }
-  void ApplicationInstanceDestroyed(int id) override {
+  void ApplicationInstanceDestroyed(uint32_t id) override {
     for (auto it = applications_.begin(); it != applications_.end(); ++it) {
       auto& application = *it;
       if (application.id == id) {
@@ -126,7 +129,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
       }
     }
   }
-  void ApplicationPIDAvailable(int id, uint32_t pid) override {
+  void ApplicationPIDAvailable(uint32_t id, uint32_t pid) override {
     for (auto& application : applications_) {
       if (application.id == id) {
         application.pid = pid;
@@ -148,27 +151,33 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   // 1. Launch a process. (Actually, have the runner launch a process that
   //    launches a process. #becauselinkerrors).
   mojo::shell::test::mojom::DriverPtr driver;
-  application_impl()->ConnectToService("exe:application_manager_apptest_driver",
-                                       &driver);
+  scoped_ptr<ApplicationConnection> connection =
+      application_impl()->ConnectToApplication(
+          "exe:application_manager_apptest_driver");
+  connection->ConnectToService(&driver);
 
   // 2. Wait for the target to connect to us. (via
   //    mojo:application_manager_apptests)
   base::MessageLoop::current()->Run();
 
-  // 3.1. Validate that we got the ping from the target process...
-  EXPECT_EQ("From Target", data());
+  uint32_t remote_id = Shell::kInvalidApplicationID;
+  EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
+  EXPECT_NE(Shell::kInvalidApplicationID, remote_id);
 
-  // 3.2. ... and that the right applications/processes were created.
-  //      Note that the target process will be created even if the tests are
-  //      run with --single-process.
+  // 2. Validate that the right applications/processes were created.
+  //    Note that the target process will be created even if the tests are
+  //    run with --single-process.
   EXPECT_EQ(2u, applications().size());
   {
     auto& application = applications().front();
+    EXPECT_EQ(remote_id, application.id);
     EXPECT_EQ("exe://application_manager_apptest_driver/", application.url);
     EXPECT_NE(base::kNullProcessId, application.pid);
   }
   {
     auto& application = applications().back();
+    // We learn about the target process id via a ping from it.
+    EXPECT_EQ(target_id(), application.id);
     EXPECT_EQ("exe://application_manager_apptest_target/", application.url);
     EXPECT_NE(base::kNullProcessId, application.pid);
   }
