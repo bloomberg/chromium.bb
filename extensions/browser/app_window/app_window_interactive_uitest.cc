@@ -133,7 +133,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowTest, MAYBE_RuntimeFullscreenToAlwaysOnTop) {
   CloseAppWindow(window);
 }
 
-#if defined(OS_MACOSX)
+// Flaky on Windows (see http://crbug.com/581131).
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_InitFullscreenAndAlwaysOnTop DISABLED_InitFullscreenAndAlwaysOnTop
 #else
 #define MAYBE_InitFullscreenAndAlwaysOnTop InitFullscreenAndAlwaysOnTop
