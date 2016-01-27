@@ -109,8 +109,7 @@ class CookieStoreTest : public testing::Test {
         url, options,
         base::Bind(&StringResultCookieCallback::Run,
                    base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -122,8 +121,7 @@ class CookieStoreTest : public testing::Test {
     cs->GetCookiesWithOptionsAsync(
         url, options, base::Bind(&StringResultCookieCallback::Run,
                                  base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -132,8 +130,7 @@ class CookieStoreTest : public testing::Test {
     GetCookieListCallback callback;
     cs->GetAllCookiesAsync(
         base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.cookies();
   }
 
@@ -148,8 +145,7 @@ class CookieStoreTest : public testing::Test {
         base::Bind(
             &ResultSavingCookieCallback<bool>::Run,
             base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -183,8 +179,7 @@ class CookieStoreTest : public testing::Test {
     cs->DeleteCookieAsync(
         url, cookie_name,
         base::Bind(&NoResultCookieCallback::Run, base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
   }
 
   int DeleteCreatedBetween(CookieStore* cs,
@@ -197,8 +192,7 @@ class CookieStoreTest : public testing::Test {
         base::Bind(
             &ResultSavingCookieCallback<int>::Run,
             base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -213,8 +207,7 @@ class CookieStoreTest : public testing::Test {
         base::Bind(
             &ResultSavingCookieCallback<int>::Run,
             base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -225,19 +218,8 @@ class CookieStoreTest : public testing::Test {
         base::Bind(
             &ResultSavingCookieCallback<int>::Run,
             base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
-  }
-
-  void RunFor(int ms) {
-    // Runs the test thread message loop for up to |ms| milliseconds.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&base::MessageLoop::QuitWhenIdle,
-                              weak_factory_->GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(ms));
-    base::MessageLoop::current()->Run();
-    weak_factory_->InvalidateWeakPtrs();
   }
 
   scoped_refptr<CookieStore> GetCookieStore() {
@@ -1218,7 +1200,6 @@ class MultiThreadedCookieStoreTest :
   void RunOnOtherThread(const base::Closure& task) {
     other_thread_.Start();
     other_thread_.task_runner()->PostTask(FROM_HERE, task);
-    CookieStoreTest<CookieStoreTestTraits>::RunFor(kTimeout);
     other_thread_.Stop();
   }
 
@@ -1240,7 +1221,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckGetCookies) {
       &MultiThreadedCookieStoreTest<TypeParam>::GetCookiesTask,
       base::Unretained(this), cs, this->http_www_google_.url(), &callback);
   this->RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_EQ("A=B", callback.result());
 }
 
@@ -1259,7 +1240,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckGetCookiesWithOptions) {
       base::Unretained(this), cs, this->http_www_google_.url(), options,
       &callback);
   this->RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_EQ("A=B", callback.result());
 }
 
@@ -1276,7 +1257,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckSetCookieWithOptions) {
       base::Unretained(this), cs, this->http_www_google_.url(), "A=B", options,
       &callback);
   this->RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_TRUE(callback.result());
 }
 
@@ -1295,7 +1276,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckDeleteCookie) {
       &MultiThreadedCookieStoreTest<TypeParam>::DeleteCookieTask,
       base::Unretained(this), cs, this->http_www_google_.url(), "A", &callback);
   this->RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
 }
 
 TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckDeleteSessionCookies) {
@@ -1317,7 +1298,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckDeleteSessionCookies) {
       &MultiThreadedCookieStoreTest<TypeParam>::DeleteSessionCookiesTask,
       base::Unretained(this), cs, &callback);
   this->RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_EQ(1, callback.result());
 }
 

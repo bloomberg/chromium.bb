@@ -13,18 +13,12 @@
 namespace net {
 
 CookieCallback::CookieCallback(base::Thread* run_in_thread)
-    : did_run_(false),
-      run_in_thread_(run_in_thread),
-      run_in_loop_(NULL),
-      parent_loop_(base::MessageLoop::current()),
-      loop_to_quit_(base::MessageLoop::current()) {}
+    : run_in_thread_(run_in_thread), run_in_loop_(NULL) {}
 
 CookieCallback::CookieCallback()
-    : did_run_(false),
-      run_in_thread_(NULL),
-      run_in_loop_(base::MessageLoop::current()),
-      parent_loop_(NULL),
-      loop_to_quit_(base::MessageLoop::current()) {}
+    : run_in_thread_(NULL), run_in_loop_(base::MessageLoop::current()) {}
+
+CookieCallback::~CookieCallback() {}
 
 void CookieCallback::CallbackEpilogue() {
   base::MessageLoop* expected_loop = NULL;
@@ -36,10 +30,12 @@ void CookieCallback::CallbackEpilogue() {
   }
   ASSERT_TRUE(expected_loop != NULL);
 
-  did_run_ = true;
   EXPECT_EQ(expected_loop, base::MessageLoop::current());
-  loop_to_quit_->task_runner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  loop_to_quit_.Quit();
+}
+
+void CookieCallback::WaitUntilDone() {
+  loop_to_quit_.Run();
 }
 
 StringResultCookieCallback::StringResultCookieCallback() {}

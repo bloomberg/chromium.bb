@@ -115,7 +115,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(CookieMonsterStrictSecure,
 template <typename T>
 class CookieMonsterTestBase : public CookieStoreTest<T> {
  public:
-  using CookieStoreTest<T>::RunFor;
   using CookieStoreTest<T>::SetCookie;
 
  protected:
@@ -127,8 +126,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     GetCookieListCallback callback;
     cm->GetAllCookiesForURLAsync(url, base::Bind(&GetCookieListCallback::Run,
                                                  base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.cookies();
   }
 
@@ -140,8 +138,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     cm->GetAllCookiesForURLWithOptionsAsync(
         url, options,
         base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.cookies();
   }
 
@@ -164,8 +161,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         false /* enforces strict secure cookies */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -175,8 +171,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     cm->SetAllCookiesAsync(list,
                            base::Bind(&ResultSavingCookieCallback<bool>::Run,
                                       base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -185,8 +180,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     ResultSavingCookieCallback<int> callback;
     cm->DeleteAllAsync(base::Bind(&ResultSavingCookieCallback<int>::Run,
                                   base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -199,8 +193,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         delete_begin, delete_end,
         base::Bind(&ResultSavingCookieCallback<int>::Run,
                    base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -214,8 +207,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         delete_begin, delete_end, url,
         base::Bind(&ResultSavingCookieCallback<int>::Run,
                    base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -225,8 +217,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     cm->DeleteAllForHostAsync(url,
                               base::Bind(&ResultSavingCookieCallback<int>::Run,
                                          base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -236,8 +227,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     cm->DeleteCanonicalCookieAsync(
         cookie, base::Bind(&ResultSavingCookieCallback<bool>::Run,
                            base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     return callback.result();
   }
 
@@ -705,9 +695,8 @@ struct CookiesInputInfo {
   CookiePriority priority;
 };
 
-ACTION(QuitCurrentMessageLoop) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+ACTION_P(QuitRunLoop, run_loop) {
+  run_loop->Quit();
 }
 
 // TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,
@@ -786,7 +775,7 @@ ACTION_P2(DeleteSessionCookiesAction, cookie_monster, callback) {
 // 3. Invocations after the loading has completed complete immediately.
 class DeferredCookieTaskTest : public CookieMonsterTest {
  protected:
-  DeferredCookieTaskTest() {
+  DeferredCookieTaskTest() : expect_load_called_(false) {
     persistent_store_ = new NewMockPersistentCookieStore();
     cookie_monster_ = new CookieMonster(persistent_store_.get(), NULL);
   }
@@ -799,26 +788,23 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   }
 
   // Runs the message loop, waiting until PersistentCookieStore::Load is called.
-  // Call CompleteLoadingAndWait to cause the load to complete.
+  // Call CompleteLoading to cause the load to complete.
   void WaitForLoadCall() {
-    RunFor(kTimeout);
+    load_run_loop_.Run();
 
     // Verify that PeristentStore::Load was called.
     testing::Mock::VerifyAndClear(persistent_store_.get());
   }
 
   // Invokes the PersistentCookieStore::LoadCookiesForKey completion callbacks
-  // and PersistentCookieStore::Load completion callback and waits
-  // until the message loop is quit.
-  void CompleteLoadingAndWait() {
+  // and PersistentCookieStore::Load completion callback.
+  void CompleteLoading() {
     while (!loaded_for_key_callbacks_.empty()) {
       loaded_for_key_callbacks_.front().Run(loaded_cookies_);
       loaded_cookies_.clear();
       loaded_for_key_callbacks_.pop();
     }
-
     loaded_callback_.Run(loaded_cookies_);
-    RunFor(kTimeout);
   }
 
   // Performs the provided action, expecting it to cause a call to
@@ -834,30 +820,26 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
                              testing::Action<void(void)> action) {
     EXPECT_CALL(*this, Begin()).WillOnce(action);
     ExpectLoadCall();
-    ExpectLoadForKeyCall(key, false);
+    ExpectLoadForKeyCall(key);
     Begin();
   }
 
   // Declares an expectation that PersistentCookieStore::Load will be called,
-  // saving the provided callback and sending a quit to the message loop.
+  // saving the provided callback and sending a quit to |load_run_loop_|.
   void ExpectLoadCall() {
+    // Make sure the |load_run_loop_| is not reused.
+    CHECK(!expect_load_called_);
+    expect_load_called_ = true;
     EXPECT_CALL(*persistent_store_.get(), Load(testing::_))
         .WillOnce(testing::DoAll(testing::SaveArg<0>(&loaded_callback_),
-                                 QuitCurrentMessageLoop()));
+                                 QuitRunLoop(&load_run_loop_)));
   }
 
   // Declares an expectation that PersistentCookieStore::LoadCookiesForKey
-  // will be called, saving the provided callback and sending a quit to the
-  // message loop.
-  void ExpectLoadForKeyCall(const std::string& key, bool quit_queue) {
-    if (quit_queue)
-      EXPECT_CALL(*persistent_store_.get(), LoadCookiesForKey(key, testing::_))
-          .WillOnce(
-              testing::DoAll(PushCallbackAction(&loaded_for_key_callbacks_),
-                             QuitCurrentMessageLoop()));
-    else
-      EXPECT_CALL(*persistent_store_.get(), LoadCookiesForKey(key, testing::_))
-          .WillOnce(PushCallbackAction(&loaded_for_key_callbacks_));
+  // will be called, saving the provided callback.
+  void ExpectLoadForKeyCall(const std::string& key) {
+    EXPECT_CALL(*persistent_store_.get(), LoadCookiesForKey(key, testing::_))
+        .WillOnce(PushCallbackAction(&loaded_for_key_callbacks_));
   }
 
   // Invokes the initial action.
@@ -879,7 +861,10 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   // PersistentCookieStore::LoadCookiesForKey
   std::queue<CookieMonster::PersistentCookieStore::LoadedCallback>
       loaded_for_key_callbacks_;
-
+  // base::RunLoop used to wait for PersistentCookieStore::Load to be called.
+  base::RunLoop load_run_loop_;
+  // Indicates whether ExpectLoadCall() has been called.
+  bool expect_load_called_;
   // Stores the CookieMonster under test.
   scoped_refptr<CookieMonster> cookie_monster_;
   // Stores the mock PersistentCookieStore.
@@ -903,10 +888,11 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookies) {
   EXPECT_CALL(get_cookies_callback, Invoke("X=1"))
       .WillOnce(GetCookiesAction(&cookie_monster(), http_www_google_.url(),
                                  &get_cookies_callback));
-  EXPECT_CALL(get_cookies_callback, Invoke("X=1"))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(get_cookies_callback, Invoke("X=1")).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
@@ -922,10 +908,11 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
   EXPECT_CALL(set_cookies_callback, Invoke(true))
       .WillOnce(SetCookieAction(&cookie_monster(), http_www_google_.url(),
                                 "X=Y", &set_cookies_callback));
-  EXPECT_CALL(set_cookies_callback, Invoke(true))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(set_cookies_callback, Invoke(true)).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
@@ -948,10 +935,11 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
   EXPECT_CALL(set_cookies_callback, Invoke(true))
       .WillOnce(
           SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
-  EXPECT_CALL(set_cookies_callback, Invoke(true))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(set_cookies_callback, Invoke(true)).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteCookie) {
@@ -967,10 +955,11 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteCookie) {
   EXPECT_CALL(delete_cookie_callback, Invoke())
       .WillOnce(DeleteCookieAction(&cookie_monster(), http_www_google_.url(),
                                    "X", &delete_cookie_callback));
-  EXPECT_CALL(delete_cookie_callback, Invoke())
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(delete_cookie_callback, Invoke()).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
@@ -1006,10 +995,11 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
   EXPECT_CALL(set_cookies_callback, Invoke(true))
       .WillOnce(SetCookieWithDetailsAction(&cookie_monster(), cookie_info_exp,
                                            &set_cookies_callback));
-  EXPECT_CALL(set_cookies_callback, Invoke(true))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(set_cookies_callback, Invoke(true)).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
@@ -1026,10 +1016,12 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
   EXPECT_CALL(get_cookie_list_callback, Invoke(testing::_))
       .WillOnce(
           GetAllCookiesAction(&cookie_monster(), &get_cookie_list_callback));
+  base::RunLoop loop;
   EXPECT_CALL(get_cookie_list_callback, Invoke(testing::_))
-      .WillOnce(QuitCurrentMessageLoop());
+      .WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
@@ -1050,10 +1042,12 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
       .WillOnce(GetAllCookiesForUrlAction(&cookie_monster(),
                                           http_www_google_.url(),
                                           &get_cookie_list_callback));
+  base::RunLoop loop;
   EXPECT_CALL(get_cookie_list_callback, Invoke(testing::_))
-      .WillOnce(QuitCurrentMessageLoop());
+      .WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
@@ -1074,10 +1068,12 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
       .WillOnce(GetAllCookiesForUrlWithOptionsAction(
           &cookie_monster(), http_www_google_.url(),
           &get_cookie_list_callback));
+  base::RunLoop loop;
   EXPECT_CALL(get_cookie_list_callback, Invoke(testing::_))
-      .WillOnce(QuitCurrentMessageLoop());
+      .WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCookies) {
@@ -1089,10 +1085,12 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCookies) {
 
   EXPECT_CALL(delete_callback, Invoke(false))
       .WillOnce(DeleteAllAction(&cookie_monster(), &delete_callback));
-  EXPECT_CALL(delete_callback, Invoke(false))
-      .WillOnce(QuitCurrentMessageLoop());
 
-  CompleteLoadingAndWait();
+  base::RunLoop loop;
+  EXPECT_CALL(delete_callback, Invoke(false)).WillOnce(QuitRunLoop(&loop));
+
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
@@ -1107,10 +1105,11 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
       .WillOnce(DeleteAllCreatedBetweenAction(&cookie_monster(), base::Time(),
                                               base::Time::Now(),
                                               &delete_callback));
-  EXPECT_CALL(delete_callback, Invoke(false))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(delete_callback, Invoke(false)).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCookies) {
@@ -1126,10 +1125,11 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCookies) {
   EXPECT_CALL(delete_callback, Invoke(false))
       .WillOnce(DeleteAllForHostAction(
           &cookie_monster(), http_www_google_.url(), &delete_callback));
-  EXPECT_CALL(delete_callback, Invoke(false))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(delete_callback, Invoke(false)).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteCanonicalCookie) {
@@ -1147,10 +1147,12 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteCanonicalCookie) {
   EXPECT_CALL(delete_cookie_callback, Invoke(false))
       .WillOnce(DeleteCanonicalCookieAction(&cookie_monster(), cookie,
                                             &delete_cookie_callback));
+  base::RunLoop loop;
   EXPECT_CALL(delete_cookie_callback, Invoke(false))
-      .WillOnce(QuitCurrentMessageLoop());
+      .WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteSessionCookies) {
@@ -1163,10 +1165,11 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteSessionCookies) {
   EXPECT_CALL(delete_callback, Invoke(false))
       .WillOnce(
           DeleteSessionCookiesAction(&cookie_monster(), &delete_callback));
-  EXPECT_CALL(delete_callback, Invoke(false))
-      .WillOnce(QuitCurrentMessageLoop());
+  base::RunLoop loop;
+  EXPECT_CALL(delete_callback, Invoke(false)).WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 // Verify that a series of queued tasks are executed in order upon loading of
@@ -1188,7 +1191,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
           SetCookieAction(&cookie_monster(), http_www_google_.url(), "A=B",
                           &set_cookies_callback)));
   ExpectLoadCall();
-  ExpectLoadForKeyCall(http_www_google_.domain(), false);
+  ExpectLoadForKeyCall(http_www_google_.domain());
   Begin();
 
   WaitForLoadCall();
@@ -1196,10 +1199,12 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
       .WillOnce(GetCookiesAction(&cookie_monster(), http_www_google_.url(),
                                  &get_cookies_callback_deferred));
   EXPECT_CALL(set_cookies_callback, Invoke(true));
+  base::RunLoop loop;
   EXPECT_CALL(get_cookies_callback_deferred, Invoke("A=B; X=1"))
-      .WillOnce(QuitCurrentMessageLoop());
+      .WillOnce(QuitRunLoop(&loop));
 
-  CompleteLoadingAndWait();
+  CompleteLoading();
+  loop.Run();
 }
 
 TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
@@ -2591,7 +2596,6 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
   void RunOnOtherThread(const base::Closure& task) {
     other_thread_.Start();
     other_thread_.task_runner()->PostTask(FROM_HERE, task);
-    RunFor(kTimeout);
     other_thread_.Stop();
   }
 
@@ -2614,7 +2618,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckGetAllCookies) {
       base::Bind(&MultiThreadedCookieMonsterTest::GetAllCookiesTask,
                  base::Unretained(this), cm, &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   it = callback.cookies().begin();
   ASSERT_TRUE(it != callback.cookies().end());
   EXPECT_EQ(http_www_google_.host(), it->Domain());
@@ -2636,7 +2640,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckGetAllCookiesForURL) {
       base::Bind(&MultiThreadedCookieMonsterTest::GetAllCookiesForURLTask,
                  base::Unretained(this), cm, http_www_google_.url(), &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   it = callback.cookies().begin();
   ASSERT_TRUE(it != callback.cookies().end());
   EXPECT_EQ(http_www_google_.host(), it->Domain());
@@ -2660,7 +2664,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckGetAllCookiesForURLWithOpt) {
       &MultiThreadedCookieMonsterTest::GetAllCookiesForURLWithOptionsTask,
       base::Unretained(this), cm, http_www_google_.url(), options, &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   it = callback.cookies().begin();
   ASSERT_TRUE(it != callback.cookies().end());
   EXPECT_EQ(http_www_google_.host(), it->Domain());
@@ -2678,7 +2682,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckSetCookieWithDetails) {
       base::Bind(&MultiThreadedCookieMonsterTest::SetCookieWithDetailsTask,
                  base::Unretained(this), cm, www_google_foo_.url(), &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_TRUE(callback.result());
 }
 
@@ -2698,7 +2702,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteAllCreatedBetween) {
                  base::Unretained(this), cm, now - TimeDelta::FromDays(99),
                  Time(), &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_EQ(1, callback.result());
 }
 
@@ -2715,7 +2719,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteAllForHost) {
       base::Bind(&MultiThreadedCookieMonsterTest::DeleteAllForHostTask,
                  base::Unretained(this), cm, http_www_google_.url(), &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_EQ(1, callback.result());
 }
 
@@ -2762,7 +2766,7 @@ TEST_F(MultiThreadedCookieMonsterTest,
       base::Unretained(this), cm, ago1, Time(), http_www_google_.url(),
       &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_EQ(2, callback.result());  // Deletes A=B, G=H.
 }
 
@@ -2784,7 +2788,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {
       base::Bind(&MultiThreadedCookieMonsterTest::DeleteCanonicalCookieTask,
                  base::Unretained(this), cm, *it, &callback);
   RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   EXPECT_TRUE(callback.result());
 }
 
@@ -2822,11 +2826,10 @@ TEST_F(MultiThreadedCookieMonsterTest, GetAllCookiesForURLEffectiveDomain) {
   checkpoint.Call(0);
   GetAllCookiesForURLTask(cm.get(), http_www_google_.url(), &callback);
   checkpoint.Call(1);
-  ASSERT_FALSE(callback.did_run());
   // Pass the cookies to the CookieMonster.
   loaded_callback.Run(cookies);
   // Now GetAllCookiesForURLTask is done.
-  ASSERT_TRUE(callback.did_run());
+  callback.WaitUntilDone();
   // See that the callback was called with the cookies.
   ASSERT_EQ(1u, callback.cookies().size());
   EXPECT_TRUE(cookie->IsEquivalent(callback.cookies()[0]));
@@ -2841,7 +2844,7 @@ TEST_F(MultiThreadedCookieMonsterTest, GetAllCookiesForURLEffectiveDomain) {
     // calling LoadCookiesForKey.
     GetCookieListCallback callback;
     GetAllCookiesForURLTask(cm.get(), url, &callback);
-    ASSERT_TRUE(callback.did_run());
+    callback.WaitUntilDone();
     ASSERT_EQ(1u, callback.cookies().size());
     EXPECT_TRUE(cookie->IsEquivalent(callback.cookies()[0]));
   }
