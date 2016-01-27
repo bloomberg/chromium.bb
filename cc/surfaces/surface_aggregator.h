@@ -6,6 +6,8 @@
 #define CC_SURFACES_SURFACE_AGGREGATOR_H_
 
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -36,7 +38,7 @@ class CC_SURFACES_EXPORT SurfaceAggregatorClient {
 
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
-  typedef base::hash_map<SurfaceId, int> SurfaceIndexMap;
+  using SurfaceIndexMap = std::unordered_map<SurfaceId, int, SurfaceIdHash>;
 
   SurfaceAggregator(SurfaceAggregatorClient* client,
                     SurfaceManager* manager,
@@ -113,13 +115,16 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   ResourceProvider* provider_;
 
   class RenderPassIdAllocator;
-  typedef base::ScopedPtrHashMap<SurfaceId, scoped_ptr<RenderPassIdAllocator>>
-      RenderPassIdAllocatorMap;
+  using RenderPassIdAllocatorMap =
+      std::unordered_map<SurfaceId,
+                         scoped_ptr<RenderPassIdAllocator>,
+                         SurfaceIdHash>;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;
 
-  typedef base::hash_map<SurfaceId, int> SurfaceToResourceChildIdMap;
+  using SurfaceToResourceChildIdMap =
+      std::unordered_map<SurfaceId, int, SurfaceIdHash>;
   SurfaceToResourceChildIdMap surface_id_to_resource_child_id_;
 
   // The following state is only valid for the duration of one Aggregate call
@@ -137,7 +142,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   SurfaceIndexMap contained_surfaces_;
 
   // After surface validation, every Surface in this set is valid.
-  base::hash_set<SurfaceId> valid_surfaces_;
+  std::unordered_set<SurfaceId, SurfaceIdHash> valid_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;

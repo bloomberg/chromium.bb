@@ -43,13 +43,4 @@ struct SurfaceIdHash {
 
 }  // namespace cc
 
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::SurfaceId> {
-  size_t operator()(cc::SurfaceId key) const {
-    return hash<uint64_t>()(key.id);
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-
 #endif  // CC_SURFACES_SURFACE_ID_H_

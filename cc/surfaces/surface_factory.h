@@ -6,6 +6,7 @@
 #define CC_SURFACES_SURFACE_FACTORY_H_
 
 #include <set>
+#include <unordered_map>
 
 #include "base/callback_forward.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -85,8 +86,8 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   bool needs_sync_points_;
 
-  typedef base::ScopedPtrHashMap<SurfaceId, scoped_ptr<Surface>>
-      OwningSurfaceMap;
+  using OwningSurfaceMap =
+      std::unordered_map<SurfaceId, scoped_ptr<Surface>, SurfaceIdHash>;
   OwningSurfaceMap surface_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactory);

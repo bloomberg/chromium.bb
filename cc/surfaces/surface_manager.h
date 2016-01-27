@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -60,14 +61,14 @@ class CC_SURFACES_EXPORT SurfaceManager {
  private:
   void GarbageCollectSurfaces();
 
-  typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
+  using SurfaceMap = std::unordered_map<SurfaceId, Surface*, SurfaceIdHash>;
   SurfaceMap surface_map_;
   base::ObserverList<SurfaceDamageObserver> observer_list_;
   base::ThreadChecker thread_checker_;
 
   // List of surfaces to be destroyed, along with what sequences they're still
   // waiting on.
-  typedef std::list<Surface*> SurfaceDestroyList;
+  using SurfaceDestroyList = std::list<Surface*>;
   SurfaceDestroyList surfaces_to_destroy_;
 
   // Set of SurfaceSequences that have been satisfied by a frame but not yet

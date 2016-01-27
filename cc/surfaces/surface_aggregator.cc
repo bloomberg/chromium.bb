@@ -122,11 +122,10 @@ static void UnrefHelper(base::WeakPtr<SurfaceFactory> surface_factory,
 
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
                                             SurfaceId surface_id) {
-  RenderPassIdAllocator* allocator = render_pass_allocator_map_.get(surface_id);
-  if (!allocator) {
-    allocator = new RenderPassIdAllocator(&next_render_pass_id_);
-    render_pass_allocator_map_.set(surface_id, make_scoped_ptr(allocator));
-  }
+  scoped_ptr<RenderPassIdAllocator>& allocator =
+      render_pass_allocator_map_[surface_id];
+  if (!allocator)
+    allocator.reset(new RenderPassIdAllocator(&next_render_pass_id_));
   allocator->AddKnownPass(surface_local_pass_id);
   return allocator->Remap(surface_local_pass_id);
 }
