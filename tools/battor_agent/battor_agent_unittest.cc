@@ -456,6 +456,7 @@ TEST_F(BattOrAgentTest, StopTracing) {
   };
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(cal_frame_header, cal_frame, 2));
+  GetTaskRunner()->RunUntilIdle();
 
   // Send the two real data frames.
   BattOrFrameHeader frame_header1{0, 3 * sizeof(RawBattOrSample)};
@@ -464,16 +465,19 @@ TEST_F(BattOrAgentTest, StopTracing) {
   };
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header1, frame1, 3));
+  GetTaskRunner()->RunUntilIdle();
 
   BattOrFrameHeader frame_header2{0, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample frame2[] = {RawBattOrSample{1, 1}};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header2, frame2, 1));
+  GetTaskRunner()->RunUntilIdle();
 
   // Send an empty last frame to indicate that we're done.
   BattOrFrameHeader frame_header3{0, 0 * sizeof(RawBattOrSample)};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header3, nullptr, 0));
+  GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
@@ -676,6 +680,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameHasWrongLength) {
   };
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(cal_frame_header, cal_frame, 2));
+  GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
@@ -690,6 +695,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
   };
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(cal_frame_header, cal_frame, 1));
+  GetTaskRunner()->RunUntilIdle();
 
   // Send a data frame with a mismatch between the frame length in the
   // header and the actual frame length.
@@ -718,6 +724,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameMissingByte) {
 
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             std::move(cal_frame_bytes));
+  GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
@@ -732,6 +739,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
   };
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(cal_frame_header, cal_frame, 1));
+  GetTaskRunner()->RunUntilIdle();
 
   BattOrFrameHeader frame_header{0, 1};
   RawBattOrSample frame[] = {RawBattOrSample{1, 1}};
