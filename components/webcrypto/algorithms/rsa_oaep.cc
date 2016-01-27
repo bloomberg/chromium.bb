@@ -51,9 +51,9 @@ Status CommonEncryptDecrypt(InitFunc init_func,
   crypto::ScopedEVP_PKEY_CTX ctx(EVP_PKEY_CTX_new(pkey, NULL));
 
   if (!init_func(ctx.get()) ||
-      1 != EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_OAEP_PADDING) ||
-      1 != EVP_PKEY_CTX_set_rsa_oaep_md(ctx.get(), digest) ||
-      1 != EVP_PKEY_CTX_set_rsa_mgf1_md(ctx.get(), digest)) {
+      !EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_OAEP_PADDING) ||
+      !EVP_PKEY_CTX_set_rsa_oaep_md(ctx.get(), digest) ||
+      !EVP_PKEY_CTX_set_rsa_mgf1_md(ctx.get(), digest)) {
     return Status::OperationError();
   }
 
