@@ -68,8 +68,10 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
     // it also encompasses dialogs.
     bool eligible_for_otr = window->type() == ui::wm::WINDOW_TYPE_CONTROL ||
                             BrowserView::GetBrowserViewForNativeWindow(window);
-    if (eligible_for_otr && profile->IsOffTheRecord())
+    if (eligible_for_otr &&
+        profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
       return ui::NativeThemeDarkAura::instance();
+    }
 
     return ui::NativeThemeAura::instance();
   }

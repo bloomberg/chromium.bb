@@ -175,8 +175,7 @@ class ThemeService : public base::NonThreadSafe,
   // track of the incognito state of the calling code.
   class BrowserThemeProvider : public ui::ThemeProvider {
    public:
-    BrowserThemeProvider(const ThemeService& theme_service,
-                         bool off_the_record);
+    BrowserThemeProvider(const ThemeService& theme_service, bool incognito);
     ~BrowserThemeProvider() override;
 
     // Overridden from ui::ThemeProvider:
@@ -198,7 +197,7 @@ class ThemeService : public base::NonThreadSafe,
 
    private:
     const ThemeService& theme_service_;
-    bool off_the_record_;
+    bool incognito_;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserThemeProvider);
   };
@@ -210,7 +209,7 @@ class ThemeService : public base::NonThreadSafe,
   // These methods provide the implementation for ui::ThemeProvider (exposed
   // via BrowserThemeProvider).
   gfx::ImageSkia* GetImageSkiaNamed(int id) const;
-  SkColor GetColor(int id, bool off_the_record) const;
+  SkColor GetColor(int id, bool incognito) const;
   int GetDisplayProperty(int id) const;
   bool ShouldUseNativeFrame() const;
   bool HasCustomImage(int id) const;

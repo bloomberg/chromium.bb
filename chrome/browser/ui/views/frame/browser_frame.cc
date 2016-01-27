@@ -85,7 +85,8 @@ void BrowserFrame::InitBrowserFrame() {
                                              &params.show_state);
   }
 
-  if (browser_view_->browser()->profile()->IsOffTheRecord()) {
+  if (browser_view_->browser()->profile()->GetProfileType() ==
+      Profile::INCOGNITO_PROFILE) {
 #if defined(OS_WIN)
     params.native_theme = ui::NativeThemeDarkWin::instance();
 #elif defined(OS_CHROMEOS)

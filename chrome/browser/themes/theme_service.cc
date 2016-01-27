@@ -744,18 +744,18 @@ const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
   // in incognito. Since the OSX version of ThemeService caches colors, and
   // both ThemeProviders use the same ThemeService some code needs to be
   // rearranged.
-  bool off_the_record = false;
+  bool incognito = false;
 #else
-  bool off_the_record = profile->IsOffTheRecord();
+  bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
 #endif
-  return off_the_record ? service->otr_theme_provider_
-                        : service->original_theme_provider_;
+  return incognito ? service->otr_theme_provider_
+                   : service->original_theme_provider_;
 }
 
 ThemeService::BrowserThemeProvider::BrowserThemeProvider(
     const ThemeService& theme_service,
-    bool off_the_record)
-    : theme_service_(theme_service), off_the_record_(off_the_record) {}
+    bool incognito)
+    : theme_service_(theme_service), incognito_(incognito) {}
 
 ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
 
@@ -765,7 +765,7 @@ gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
 }
 
 SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
-  return theme_service_.GetColor(id, off_the_record_);
+  return theme_service_.GetColor(id, incognito_);
 }
 
 int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
