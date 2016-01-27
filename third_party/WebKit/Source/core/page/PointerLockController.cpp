@@ -52,6 +52,8 @@ void PointerLockController::requestPointerLock(Element* target)
         return;
     }
 
+    UseCounter::countCrossOriginIframe(target->document(), UseCounter::ElementRequestPointerLockIframe);
+
     if (target->document().isSandboxed(SandboxPointerLock)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
         target->document().addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked pointer lock on an element because the element's frame is sandboxed and the 'allow-pointer-lock' permission is not set."));

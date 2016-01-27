@@ -730,6 +730,18 @@ void UseCounter::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, Execut
     UseCounter::countDeprecation(context, feature);
 }
 
+void UseCounter::countCrossOriginIframe(const Document& document, Feature feature)
+{
+    Frame* frame = document.frame();
+    if (!frame)
+        return;
+    // Check to see if the frame can script into the top level document.
+    SecurityOrigin* securityOrigin = frame->securityContext()->securityOrigin();
+    Frame* top = frame->tree().top();
+    if (top && !securityOrigin->canAccess(top->securityContext()->securityOrigin()))
+        count(frame, feature);
+}
+
 static const char* milestoneString(int milestone)
 {
     switch (milestone) {

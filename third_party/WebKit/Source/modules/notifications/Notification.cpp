@@ -84,11 +84,15 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     }
 
     String insecureOriginMessage;
-    UseCounter::Feature feature = context->isSecureContext(insecureOriginMessage)
-        ? UseCounter::NotificationSecureOrigin
-        : UseCounter::NotificationInsecureOrigin;
-
-    UseCounter::count(context, feature);
+    if (context->isSecureContext(insecureOriginMessage)) {
+        UseCounter::count(context, UseCounter::NotificationSecureOrigin);
+        if (context->isDocument())
+            UseCounter::countCrossOriginIframe(*toDocument(context),  UseCounter::NotificationAPISecureOriginIframe);
+    } else {
+        UseCounter::count(context, UseCounter::NotificationInsecureOrigin);
+        if (context->isDocument())
+            UseCounter::countCrossOriginIframe(*toDocument(context),  UseCounter::NotificationAPIInsecureOriginIframe);
+    }
 
     WebNotificationData data = createWebNotificationData(context, title, options, exceptionState);
     if (exceptionState.hadException())
