@@ -51,30 +51,28 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
     exceptionState.throwDOMException(NotSupportedError, "Blob support not implemented yet");
 }
 
-RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<WebRTCDataChannelHandler> handler)
+RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
     ASSERT(handler);
-    return new RTCDataChannel(context, connection, handler);
+    return new RTCDataChannel(context, handler);
 }
 
-RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebRTCDataChannelInit& init, ExceptionState& exceptionState)
+RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebRTCDataChannelInit& init, ExceptionState& exceptionState)
 {
     OwnPtr<WebRTCDataChannelHandler> handler = adoptPtr(peerConnectionHandler->createDataChannel(label, init));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return nullptr;
     }
-    return new RTCDataChannel(context, connection, handler.release());
+    return new RTCDataChannel(context, handler.release());
 }
 
-RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<WebRTCDataChannelHandler> handler)
+RTCDataChannel::RTCDataChannel(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
     : m_executionContext(context)
     , m_handler(handler)
-    , m_stopped(false)
     , m_readyState(ReadyStateConnecting)
     , m_binaryType(BinaryTypeArrayBuffer)
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)
-    , m_connection(connection)
     , m_bufferedAmountLowThreshold(0U)
 {
     m_handler->setClient(this);
@@ -82,11 +80,8 @@ RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* con
 
 RTCDataChannel::~RTCDataChannel()
 {
-    // If the peer connection and the data channel die in the same
-    // GC cycle stop has not been called and we need to notify the
-    // client that the channel is gone.
-    if (!m_stopped)
-        m_handler->setClient(0);
+    // Notify the client that the channel is gone.
+    m_handler->setClient(0);
 }
 
 RTCDataChannel::ReadyState RTCDataChannel::getHandlerState() const
@@ -235,15 +230,12 @@ void RTCDataChannel::send(Blob* data, ExceptionState& exceptionState)
 
 void RTCDataChannel::close()
 {
-    if (m_stopped)
-        return;
-
     m_handler->close();
 }
 
 void RTCDataChannel::didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState newState)
 {
-    if (m_stopped || m_readyState == ReadyStateClosed)
+    if (m_readyState == ReadyStateClosed)
         return;
 
     m_readyState = newState;
@@ -270,17 +262,11 @@ void RTCDataChannel::didDecreaseBufferedAmount(unsigned previousAmount)
 
 void RTCDataChannel::didReceiveStringData(const WebString& text)
 {
-    if (m_stopped)
-        return;
-
     scheduleDispatchEvent(MessageEvent::create(text));
 }
 
 void RTCDataChannel::didReceiveRawData(const char* data, size_t dataLength)
 {
-    if (m_stopped)
-        return;
-
     if (m_binaryType == BinaryTypeBlob) {
         // FIXME: Implement.
         return;
@@ -295,9 +281,6 @@ void RTCDataChannel::didReceiveRawData(const char* data, size_t dataLength)
 
 void RTCDataChannel::didDetectError()
 {
-    if (m_stopped)
-        return;
-
     scheduleDispatchEvent(Event::create(EventTypeNames::error));
 }
 
@@ -311,14 +294,6 @@ ExecutionContext* RTCDataChannel::executionContext() const
     return m_executionContext;
 }
 
-void RTCDataChannel::stop()
-{
-    m_stopped = true;
-    m_readyState = ReadyStateClosed;
-    m_handler->setClient(0);
-    m_executionContext = 0;
-}
-
 void RTCDataChannel::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
@@ -329,9 +304,6 @@ void RTCDataChannel::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
 {
-    if (m_stopped)
-        return;
-
     WillBeHeapVector<RefPtrWillBeMember<Event>> events;
     events.swap(m_scheduledEvents);
 
@@ -342,19 +314,10 @@ void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
     events.clear();
 }
 
-void RTCDataChannel::clearWeakMembers(Visitor* visitor)
-{
-    if (Heap::isHeapObjectAlive(m_connection))
-        return;
-    stop();
-    m_connection = nullptr;
-}
-
 DEFINE_TRACE(RTCDataChannel)
 {
     visitor->trace(m_executionContext);
     visitor->trace(m_scheduledEvents);
-    visitor->template registerWeakMembers<RTCDataChannel, &RTCDataChannel::clearWeakMembers>(this);
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>::trace(visitor);
 }
 
