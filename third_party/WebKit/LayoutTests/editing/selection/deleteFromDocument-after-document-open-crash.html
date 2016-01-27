@@ -17,8 +17,7 @@ function run() {
 
     selection.deleteFromDocument();
 
-    document.write('This calling deleteFromDocument after document.open. WebKit should not crash.<br>');
-    document.write('PASS<br>');
+    document.body.innerHTML = 'This calling deleteFromDocument after document.open. WebKit should not crash.<br>PASS';
 }
 </script>
 </head>

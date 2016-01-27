@@ -10,7 +10,7 @@ function runTest() {
     document.open();
     window.getSelection().addRange(document.createRange());
     document.execCommand("JustifyRight", false, null);
-    document.writeln('This test ensures WebKit does not crash when executing JustifyRight in an empty document.<br><br>PASS');
+    document.body.innerHTML = 'This test ensures WebKit does not crash when executing JustifyRight in an empty document.<br><br>PASS';
 }
 </script>
 </head>

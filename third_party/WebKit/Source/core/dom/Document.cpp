@@ -4455,6 +4455,7 @@ bool Document::execCommand(const String& commandName, bool, const String& value,
     // Postpone DOM mutation events, which can execute scripts and change
     // DOM tree against implementation assumption.
     EventQueueScope eventQueueScope;
+    Editor::tidyUpHTMLStructure(*this);
     Editor::Command editorCommand = command(this, commandName);
     Platform::current()->histogramSparse("WebCore.Document.execCommand", editorCommand.idForHistogram());
     return editorCommand.execute(value);

@@ -38,6 +38,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/Text.h"
@@ -69,12 +70,15 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/loader/EmptyClients.h"
@@ -1319,6 +1323,49 @@ void Editor::toggleOverwriteModeEnabled()
 {
     m_overwriteModeEnabled = !m_overwriteModeEnabled;
     frame().selection().setShouldShowBlockCursor(m_overwriteModeEnabled);
+}
+
+void Editor::tidyUpHTMLStructure(Document& document)
+{
+    // hasEditableStyle() needs up-to-date ComputedStyle.
+    document.updateLayoutTreeIfNeeded();
+    bool needsValidStructure = document.hasEditableStyle() || (document.documentElement() && document.documentElement()->hasEditableStyle());
+    if (!needsValidStructure)
+        return;
+    RefPtrWillBeRawPtr<Element> existingHead = nullptr;
+    RefPtrWillBeRawPtr<Element> existingBody = nullptr;
+    Element* currentRoot = document.documentElement();
+    if (currentRoot) {
+        if (isHTMLHtmlElement(currentRoot))
+            return;
+        if (isHTMLHeadElement(currentRoot))
+            existingHead = currentRoot;
+        else if (isHTMLBodyElement(currentRoot))
+            existingBody = currentRoot;
+        else if (isHTMLFrameSetElement(currentRoot))
+            existingBody = currentRoot;
+    }
+    // We ensure only "the root is <html>."
+    // documentElement as rootEditableElement is problematic.  So we move
+    // non-<html> root elements under <body>, and the <body> works as
+    // rootEditableElement.
+    document.addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "document.execCommand() doesn't work with an invalid HTML structure. It is corrected automatically."));
+
+    RefPtrWillBeRawPtr<Element> root = HTMLHtmlElement::create(document);
+    if (existingHead)
+        root->appendChild(existingHead.release());
+    RefPtrWillBeRawPtr<Element> body = nullptr;
+    if (existingBody)
+        body = existingBody.release();
+    else
+        body = HTMLBodyElement::create(document);
+    if (document.documentElement())
+        body->appendChild(document.documentElement());
+    root->appendChild(body.release());
+    ASSERT(!document.documentElement());
+    document.appendChild(root.release());
+
+    // TODO(tkent): Should we check and move Text node children of <html>?
 }
 
 DEFINE_TRACE(Editor)

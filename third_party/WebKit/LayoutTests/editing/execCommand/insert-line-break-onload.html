@@ -11,10 +11,10 @@ function go() {
 
     var result = "PASS";
     if (window.testRunner) {
-        document.write("<html>" + result + "<html>");
+        document.body.innerHTML = result;
         testRunner.dumpAsText();
     } else
-        document.write("<html>" + result + "<html>");
+        document.body.innerHTML = result;
 }
 </script>
 </body>
