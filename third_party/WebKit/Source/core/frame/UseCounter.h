@@ -993,6 +993,7 @@ public:
         V8PromiseChain = 1137,
         V8PromiseAccept = 1138,
         V8PromiseDefer = 1139,
+        EventScoped = 1140,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

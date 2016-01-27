@@ -1398,6 +1398,7 @@ interface Event
     getter eventPhase
     getter path
     getter returnValue
+    getter scoped
     getter srcElement
     getter target
     getter timeStamp

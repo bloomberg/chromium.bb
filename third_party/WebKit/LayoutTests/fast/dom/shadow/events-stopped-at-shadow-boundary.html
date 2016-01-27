@@ -9,7 +9,7 @@
 <div id="sandbox"></div>
 <pre id="console"></pre>
 <script>
-description("Tests to ensure that some kinds of events are stopeed at shadow boundary.");
+description("Tests to ensure that all kinds of events are not stopeed at shadow boundary if created by users.");
 
 var eventRecords = {};
 
@@ -49,9 +49,9 @@ function recordEvent(event)
     eventRecords[eventType].push(eventString);
 }
 
-debug('Other events than "click" should be stopped at shadow boundary.  A "click" is added for the purpose of comparing results.'); 
+debug('None of the events should be stopped at a Shadow boundary if created by users.'); 
 
-var events = ['abort', 'select', 'change', 'reset', 'resize', 'scroll', 'selectstart', 'load', 'error', 'click'];
+var events = ['abort', 'select', 'change', 'reset', 'resize', 'scroll', 'selectstart', 'load', 'click'];
 
 function addEventListeners(nodes)
 {
@@ -62,7 +62,7 @@ function addEventListeners(nodes)
     }
 }
 
-function testEventsShoudBeStoppedAtShadowBoundary()
+function testEventsShouldNotBeStoppedAtShadowBoundary()
 {
     var sandbox = document.getElementById('sandbox');
     sandbox.innerHTML = '';
@@ -138,7 +138,7 @@ function testEventsInMultipleShadowTrees()
 
 function test()
 {
-    testEventsShoudBeStoppedAtShadowBoundary()
+    testEventsShouldNotBeStoppedAtShadowBoundary();
     testEventsFiredOnDistributedNodesShouldNotBeStoppedAtShadowBoundary();
     testEventsInMultipleShadowTrees();
 }

@@ -7,4 +7,5 @@
 dictionary EventInit {
     boolean bubbles = false;
     boolean cancelable = false;
+    [RuntimeEnabled=ShadowDOMV1] boolean scoped = false;
 };

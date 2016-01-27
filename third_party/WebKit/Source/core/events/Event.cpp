@@ -34,20 +34,44 @@
 
 namespace blink {
 
+static bool defaultScopedFromEventType(const AtomicString& eventType)
+{
+    return (eventType == EventTypeNames::abort
+        || eventType == EventTypeNames::change
+        || eventType == EventTypeNames::error
+        || eventType == EventTypeNames::load
+        || eventType == EventTypeNames::reset
+        || eventType == EventTypeNames::resize
+        || eventType == EventTypeNames::scroll
+        || eventType == EventTypeNames::select
+        || eventType == EventTypeNames::selectstart);
+}
+
 Event::Event()
-    : Event("", false, false)
+    : Event("", false, false, false)
 {
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
-    : Event(eventType, canBubbleArg, cancelableArg, monotonicallyIncreasingTime())
+    : Event(eventType, canBubbleArg, cancelableArg, defaultScopedFromEventType(eventType), monotonicallyIncreasingTime())
 {
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp)
+    : Event(eventType, canBubbleArg, cancelableArg, defaultScopedFromEventType(eventType), platformTimeStamp)
+{
+}
+
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool scoped)
+    : Event(eventType, canBubbleArg, cancelableArg, scoped, monotonicallyIncreasingTime())
+{
+}
+
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool scoped, double platformTimeStamp)
     : m_type(eventType)
     , m_canBubble(canBubbleArg)
     , m_cancelable(cancelableArg)
+    , m_scoped(scoped)
     , m_propagationStopped(false)
     , m_immediatePropagationStopped(false)
     , m_defaultPrevented(false)
@@ -63,7 +87,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
 }
 
 Event::Event(const AtomicString& eventType, const EventInit& initializer)
-    : Event(eventType, initializer.bubbles(), initializer.cancelable())
+    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.scoped())
 {
 }
 

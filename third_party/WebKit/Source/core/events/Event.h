@@ -123,6 +123,7 @@ public:
 
     bool bubbles() const { return m_canBubble; }
     bool cancelable() const { return m_cancelable; }
+    bool scoped() const { return m_scoped; }
 
     // Event creation timestamp in milliseconds. If |HiResEventTimeStamp|
     // runtime feature is enabled it returns a DOMHighResTimeStamp using the
@@ -205,6 +206,8 @@ protected:
     Event();
     Event(const AtomicString& type, bool canBubble, bool cancelable);
     Event(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp);
+    Event(const AtomicString& type, bool canBubble, bool cancelable, bool scoped);
+    Event(const AtomicString& type, bool canBubble, bool cancelable, bool scoped, double platformTimeStamp);
     Event(const AtomicString& type, const EventInit&);
 
     virtual void receivedTarget();
@@ -216,6 +219,7 @@ private:
     AtomicString m_type;
     unsigned m_canBubble:1;
     unsigned m_cancelable:1;
+    unsigned m_scoped:1;
 
     unsigned m_propagationStopped:1;
     unsigned m_immediatePropagationStopped:1;

@@ -55,15 +55,7 @@ static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, 
     // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
     const AtomicString eventType = event.type();
     return target.toNode() && target.toNode()->shadowHost() == shadowRoot.host()
-        && (eventType == EventTypeNames::abort
-            || eventType == EventTypeNames::change
-            || eventType == EventTypeNames::error
-            || eventType == EventTypeNames::load
-            || eventType == EventTypeNames::reset
-            || eventType == EventTypeNames::resize
-            || eventType == EventTypeNames::scroll
-            || eventType == EventTypeNames::select
-            || eventType == EventTypeNames::selectstart);
+        && event.scoped();
 }
 
 EventPath::EventPath(Node& node, Event* event)
