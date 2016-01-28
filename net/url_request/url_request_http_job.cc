@@ -376,7 +376,9 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
       if (GetResponseHeaders()->EnumerateHeader(&iter, name, &url_text)) {
         // Resolve suggested URL relative to request url.
         GURL sdch_dictionary_url = request_->url().Resolve(url_text);
-        if (sdch_dictionary_url.is_valid()) {
+        // Don't try to download Dictionary for cached responses. It's either
+        // useless or too late.
+        if (sdch_dictionary_url.is_valid() && !is_cached_content_) {
           rv = sdch_manager->OnGetDictionary(request_->url(),
                                              sdch_dictionary_url);
           if (rv != SDCH_OK) {

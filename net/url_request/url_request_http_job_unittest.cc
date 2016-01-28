@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "net/base/auth.h"
 #include "net/base/request_priority.h"
+#include "net/base/sdch_observer.h"
 #include "net/base/test_data_directory.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/http/http_transaction_factory.h"
@@ -617,6 +618,81 @@ TEST_F(URLRequestHttpJobTest, SdchAdvertisementPost) {
       make_scoped_ptr(new TestURLRequestHttpJob(req_.get())));
   req_->Start();
   EXPECT_FALSE(TransactionAcceptsSdchEncoding());
+}
+
+class MockSdchObserver : public SdchObserver {
+ public:
+  MockSdchObserver() {}
+  MOCK_METHOD2(OnDictionaryAdded,
+               void(const GURL& request_url, const std::string& server_hash));
+  MOCK_METHOD1(OnDictionaryRemoved, void(const std::string& server_hash));
+  MOCK_METHOD1(OnDictionaryUsed, void(const std::string& server_hash));
+  MOCK_METHOD2(OnGetDictionary,
+               void(const GURL& request_url, const GURL& dictionary_url));
+  MOCK_METHOD0(OnClearDictionaries, void());
+};
+
+class URLRequestHttpJobWithSdchSupportTest : public ::testing::Test {
+ protected:
+  URLRequestHttpJobWithSdchSupportTest() : context_(true) {
+    scoped_ptr<HttpNetworkSession::Params> params(
+        new HttpNetworkSession::Params);
+    context_.set_http_network_session_params(std::move(params));
+    context_.set_client_socket_factory(&socket_factory_);
+    context_.Init();
+  }
+
+  MockClientSocketFactory socket_factory_;
+  TestURLRequestContext context_;
+};
+
+TEST_F(URLRequestHttpJobWithSdchSupportTest, GetDictionary) {
+  MockWrite writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: example.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent:\r\n"
+                "Accept-Encoding: gzip, deflate, sdch\r\n"
+                "Accept-Language: en-us,fr\r\n\r\n")};
+
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Get-Dictionary: /sdch.dict\r\n"
+                               "Cache-Control: max-age=120\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  MockSdchObserver sdch_observer;
+  SdchManager sdch_manager;
+  sdch_manager.AddObserver(&sdch_observer);
+  context_.set_sdch_manager(&sdch_manager);
+
+  // First response will be "from network" and we should have OnGetDictionary
+  // invoked.
+  GURL url("http://example.com");
+  EXPECT_CALL(sdch_observer,
+              OnGetDictionary(url, GURL("http://example.com/sdch.dict")));
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_.CreateRequest(url, DEFAULT_PRIORITY, &delegate);
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(request->status().is_success());
+
+  // Second response should be from cache without notification of SdchObserver
+  TestDelegate delegate2;
+  scoped_ptr<URLRequest> request2 =
+      context_.CreateRequest(url, DEFAULT_PRIORITY, &delegate2);
+  request2->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(request->status().is_success());
+
+  // Cleanup manager.
+  sdch_manager.RemoveObserver(&sdch_observer);
 }
 
 class URLRequestHttpJobWithBrotliSupportTest : public ::testing::Test {
