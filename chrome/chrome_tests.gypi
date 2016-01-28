@@ -2363,6 +2363,8 @@
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_extension_browsertest.cc',
+            # inline login UI is disabled on chromeos
+            'browser/ui/webui/signin/inline_login_ui_browsertest.cc',
             # chromeos does not use the desktop user manager
             'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
           ],

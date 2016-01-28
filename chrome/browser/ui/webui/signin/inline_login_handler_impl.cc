@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/get_auth_frame.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -470,16 +470,16 @@ void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
   if (!web_contents())
     return;
 
-  // Returns early if this is not a gaia iframe navigation.
-  const GURL kGaiaExtOrigin(
-      GaiaUrls::GetInstance()->signin_completed_continue_url().GetOrigin());
-  content::RenderFrameHost* gaia_frame = InlineLoginUI::GetAuthFrame(
-      web_contents(), kGaiaExtOrigin, "signin-frame");
+  // Returns early if this is not a gaia webview navigation.
+  content::RenderFrameHost* gaia_frame =
+      signin::GetAuthFrame(web_contents(), "signin-frame");
   if (render_frame_host != gaia_frame)
     return;
 
   // Loading any untrusted (e.g., HTTP) URLs in the privileged sign-in process
   // will require confirmation before the sign in takes effect.
+  const GURL kGaiaExtOrigin(
+      GaiaUrls::GetInstance()->signin_completed_continue_url().GetOrigin());
   if (!url.is_empty()) {
     GURL origin(url.GetOrigin());
     if (url.spec() != url::kAboutBlankURL &&

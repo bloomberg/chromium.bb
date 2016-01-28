@@ -56,13 +56,16 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_switches.h"
 #include "grit/browser_resources.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -138,6 +141,13 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath("Roboto-Medium.ttf", IDR_FONT_ROBOTO_MEDIUM);
     source->AddResourcePath("Roboto-Bold.ttf", IDR_FONT_ROBOTO_BOLD);
   }
+
+  // Only add a filter when runing as test.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
+                               command_line->HasSwitch(::switches::kTestType);
+  if (is_running_test)
+    source->SetRequestFilter(::test::GetTestFilesRequestFilter());
 
   return source;
 }

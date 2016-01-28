@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/get_auth_frame.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -54,8 +54,6 @@ namespace {
 
 const char kJsScreenPath[] = "login.GaiaSigninScreen";
 const char kAuthIframeParentName[] = "signin-frame";
-const char kAuthIframeParentOrigin[] =
-    "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
 const char kRestrictiveProxyURL[] = "https://www.google.com/generate_204";
 
@@ -604,10 +602,8 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
 void GaiaScreenHandler::SubmitLoginFormForTest() {
   VLOG(2) << "Submit login form for test, user=" << test_user_;
 
-  content::RenderFrameHost* frame = InlineLoginUI::GetAuthFrame(
-      web_ui()->GetWebContents(),
-      GURL(kAuthIframeParentOrigin),
-      kAuthIframeParentName);
+  content::RenderFrameHost* frame =
+      signin::GetAuthFrame(web_ui()->GetWebContents(), kAuthIframeParentName);
 
   std::string code =
       "document.getElementById('identifier').value = '" + test_user_ + "';"

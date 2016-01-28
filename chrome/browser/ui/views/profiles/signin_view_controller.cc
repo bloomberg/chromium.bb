@@ -11,7 +11,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/get_auth_frame.h"
 #include "chrome/common/url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -157,8 +157,8 @@ class ModalSigninDelegate : public views::DialogDelegateView,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    auto auth_web_contents = InlineLoginUI::GetAuthFrameWebContents(
-        content_view_->GetWebContents(), GURL(), "signin-frame");
+    auto auth_web_contents = signin::GetAuthFrameWebContents(
+        content_view_->GetWebContents(), "signin-frame");
     if (auth_web_contents) {
       if (auth_web_contents->GetController().CanGoBack())
         auth_web_contents->GetController().GoBack();
@@ -171,8 +171,8 @@ class ModalSigninDelegate : public views::DialogDelegateView,
   // content::WebContentsDelegate
   void LoadingStateChanged(
       content::WebContents* source, bool to_different_document) override {
-    auto auth_web_contents = InlineLoginUI::GetAuthFrameWebContents(
-        content_view_->GetWebContents(), GURL(), "signin-frame");
+    auto auth_web_contents = signin::GetAuthFrameWebContents(
+        content_view_->GetWebContents(), "signin-frame");
     if (auth_web_contents) {
       if (auth_web_contents->GetController().CanGoBack())
         host_view_->ShowBackArrow();

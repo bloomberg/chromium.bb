@@ -39,9 +39,13 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
   }
 
   GURL GetWebViewEnabledWebUIURL() const {
+#if defined(OS_CHROMEOS)
+    return GURL(chrome::kChromeUIOobeURL).Resolve("/login");
+#else
     return GURL(signin::GetPromoURL(
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
         signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false));
+#endif
   }
 
  private:

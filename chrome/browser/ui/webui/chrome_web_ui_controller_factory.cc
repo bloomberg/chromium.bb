@@ -51,10 +51,7 @@
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_ui.h"
-#include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
-#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
@@ -125,6 +122,12 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
+#endif
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
+#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -493,8 +496,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #else
   if (url.host() == chrome::kChromeUICopresenceHost)
     return &NewWebUI<CopresenceUI>;
-  if (url.host() == chrome::kChromeUIChromeSigninHost)
-    return &NewWebUI<InlineLoginUI>;
   if (url.SchemeIs(content::kChromeDevToolsScheme))
     return &NewWebUI<DevToolsUI>;
 
@@ -509,6 +510,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PopularSitesInternalsUI>;
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (url.host() == chrome::kChromeUIChromeSigninHost)
+    return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIUserManagerHost)
     return &NewWebUI<UserManagerUI>;
   if (url.host() == chrome::kChromeUISyncConfirmationHost)
