@@ -25,8 +25,8 @@ namespace {
 // the cost of loading tasks.
 const int kLoadingTaskEstimationSampleCount = 1000;
 const double kLoadingTaskEstimationPercentile = 99;
-const int kTimerTaskEstimationSampleCount = 200;
-const double kTimerTaskEstimationPercentile = 90;
+const int kTimerTaskEstimationSampleCount = 1000;
+const double kTimerTaskEstimationPercentile = 99;
 const int kShortIdlePeriodDurationSampleCount = 10;
 const double kShortIdlePeriodDurationPercentile = 50;
 }
