@@ -631,6 +631,10 @@ public:
     bool needsPaintPhaseDescendantOutlines() const { return m_needsPaintPhaseDescendantOutlines; }
     void setNeedsPaintPhaseDescendantOutlines() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseDescendantOutlines = true; }
 
+    // Similar to above, but for PaintPhaseFloat.
+    bool needsPaintPhaseFloat() const { return m_needsPaintPhaseFloat; }
+    void setNeedsPaintPhaseFloat() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseFloat = true; }
+
     PaintTiming* paintTiming();
 
 private:
@@ -764,6 +768,7 @@ private:
     unsigned m_previousPaintResult : 1; // PaintLayerPainter::PaintResult
 
     unsigned m_needsPaintPhaseDescendantOutlines : 1;
+    unsigned m_needsPaintPhaseFloat : 1;
 
     LayoutBoxModelObject* m_layoutObject;
 
