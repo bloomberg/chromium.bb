@@ -657,7 +657,7 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
     m_touchEventTargetRectsAreDirty = true;
 }
 
-void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* child, PaintLayer* parent)
+void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* child, const PaintLayer* parent)
 {
     WebLayer* scrollParentWebLayer = nullptr;
     if (parent && parent->hasCompositedLayerMapping())
@@ -666,7 +666,7 @@ void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* chi
     child->setScrollParent(scrollParentWebLayer);
 }
 
-void ScrollingCoordinator::updateClipParentForGraphicsLayer(GraphicsLayer* child, PaintLayer* parent)
+void ScrollingCoordinator::updateClipParentForGraphicsLayer(GraphicsLayer* child, const PaintLayer* parent)
 {
     WebLayer* clipParentWebLayer = nullptr;
     if (parent && parent->hasCompositedLayerMapping())

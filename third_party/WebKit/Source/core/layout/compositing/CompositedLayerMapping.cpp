@@ -349,7 +349,7 @@ void CompositedLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
 }
 
-bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor(PaintLayer* scrollParent)
+bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor(const PaintLayer* scrollParent)
 {
     if (!m_owningLayer.parent())
         return false;
@@ -382,9 +382,9 @@ bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor
     return parentClipRect != LayoutRect::infiniteIntRect();
 }
 
-PaintLayer* CompositedLayerMapping::scrollParent()
+const PaintLayer* CompositedLayerMapping::scrollParent()
 {
-    PaintLayer* scrollParent = m_owningLayer.scrollParent();
+    const PaintLayer* scrollParent = m_owningLayer.scrollParent();
     if (scrollParent && !scrollParent->needsCompositedScrolling())
         return nullptr;
     return scrollParent;
@@ -422,7 +422,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (m_owningLayer.needsCompositedScrolling())
         needsDescendantsClippingLayer = false;
 
-    PaintLayer* scrollParent = this->scrollParent();
+    const PaintLayer* scrollParent = this->scrollParent();
 
     // This is required because compositing layers are parented according to the z-order hierarchy, yet
     // clipping goes down the layoutObject hierarchy. Thus, a PaintLayer can be clipped by a
@@ -1665,7 +1665,7 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
     return layerChanged;
 }
 
-static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer* topmostLayer, PaintLayer* scrollParent, ScrollingCoordinator* scrollingCoordinator)
+static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer* topmostLayer, const PaintLayer* scrollParent, ScrollingCoordinator* scrollingCoordinator)
 {
     if (!layer)
         return;
@@ -1677,7 +1677,7 @@ static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLay
     scrollingCoordinator->updateScrollParentForGraphicsLayer(layer, scrollParent);
 }
 
-void CompositedLayerMapping::updateScrollParent(PaintLayer* scrollParent)
+void CompositedLayerMapping::updateScrollParent(const PaintLayer* scrollParent)
 {
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         GraphicsLayer* topmostLayer = childForSuperlayers();
@@ -1687,7 +1687,7 @@ void CompositedLayerMapping::updateScrollParent(PaintLayer* scrollParent)
     }
 }
 
-static void updateClipParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer* topmostLayer, PaintLayer* clipParent, ScrollingCoordinator* scrollingCoordinator)
+static void updateClipParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer* topmostLayer, const PaintLayer* clipParent, ScrollingCoordinator* scrollingCoordinator)
 {
     if (!layer)
         return;
@@ -1699,12 +1699,12 @@ static void updateClipParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer
     scrollingCoordinator->updateClipParentForGraphicsLayer(layer, clipParent);
 }
 
-void CompositedLayerMapping::updateClipParent(PaintLayer* scrollParent)
+void CompositedLayerMapping::updateClipParent(const PaintLayer* scrollParent)
 {
     if (owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent))
         return;
 
-    PaintLayer* clipParent = m_owningLayer.clipParent();
+    const PaintLayer* clipParent = m_owningLayer.clipParent();
     if (clipParent)
         clipParent = clipParent->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
 

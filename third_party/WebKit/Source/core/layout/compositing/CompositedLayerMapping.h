@@ -61,13 +61,19 @@ enum GraphicsLayerUpdateScope {
     GraphicsLayerUpdateSubtree,
 };
 
-// CompositedLayerMapping keeps track of how Layers of the layout tree correspond to
+// CompositedLayerMapping keeps track of how PaintLayers correspond to
 // GraphicsLayers of the composited layer tree. Each instance of CompositedLayerMapping
 // manages a small cluster of GraphicsLayers and the references to which Layers
 // and paint phases contribute to each GraphicsLayer.
 //
-// Currently (Oct. 2013) there is one CompositedLayerMapping for each Layer,
-// but this is likely to evolve soon.
+// - If a PaintLayer is composited,
+//   - if it paints into its own backings (GraphicsLayers), it owns a
+//     CompositedLayerMapping (PaintLayer::compositedLayerMapping()) to keep
+//     track the backings;
+//   - if it paints into grouped backing (i.e. it's squashed), it has a pointer
+//     (PaintLayer::groupedMapping()) to the CompositedLayerMapping into which
+//     the PaintLayer is squashed;
+// - Otherwise the PaintLayer doesn't own or directly reference any CompositedLayerMapping.
 class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
     WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); USING_FAST_MALLOC(CompositedLayerMapping);
@@ -253,8 +259,8 @@ private:
     bool requiresVerticalScrollbarLayer() const { return m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->verticalScrollbar(); }
     bool requiresScrollCornerLayer() const { return m_owningLayer.scrollableArea() && !m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
-    void updateScrollParent(PaintLayer*);
-    void updateClipParent(PaintLayer* scrollParent);
+    void updateScrollParent(const PaintLayer*);
+    void updateClipParent(const PaintLayer* scrollParent);
     bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent();
     void updateChildrenTransform();
@@ -306,9 +312,9 @@ private:
 
     // Return true if |m_owningLayer|'s compositing ancestor is not a descendant (inclusive) of the
     // clipping container for |m_owningLayer|.
-    bool owningLayerClippedByLayerNotAboveCompositedAncestor(PaintLayer* scrollParent);
+    bool owningLayerClippedByLayerNotAboveCompositedAncestor(const PaintLayer* scrollParent);
 
-    PaintLayer* scrollParent();
+    const PaintLayer* scrollParent();
 
     // Clear the groupedMapping entry on the layer at the given index, only if that layer does
     // not appear earlier in the set of layers for this object.

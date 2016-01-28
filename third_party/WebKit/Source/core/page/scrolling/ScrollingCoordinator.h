@@ -110,8 +110,8 @@ public:
     void touchEventTargetRectsDidChange();
     void willDestroyLayer(PaintLayer*);
 
-    void updateScrollParentForGraphicsLayer(GraphicsLayer* child, PaintLayer* parent);
-    void updateClipParentForGraphicsLayer(GraphicsLayer* child, PaintLayer* parent);
+    void updateScrollParentForGraphicsLayer(GraphicsLayer* child, const PaintLayer* parent);
+    void updateClipParentForGraphicsLayer(GraphicsLayer* child, const PaintLayer* parent);
 
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;

@@ -97,9 +97,43 @@ namespace {
 static CompositingQueryMode gCompositingQueryMode =
     CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
 
+struct SameSizeAsPaintLayer : DisplayItemClient {
+    int bitFields;
+    void* pointers[8];
+    LayoutUnit layoutUnits[4];
+    IntSize size;
+    OwnPtrWillBePersistent<PaintLayerScrollableArea> scrollableArea;
+    struct {
+        IntRect rect;
+        void* pointers[2];
+    } ancestorCompositingInputs;
+    struct {
+        void* pointers[2];
+    } clipper;
+    struct {
+        IntSize size;
+        void* pointer;
+        LayoutRect rect;
+    } previousPaintStatus;
+};
+
+static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer), "PaintLayer should stay small");
+
 } // namespace
 
 using namespace HTMLNames;
+
+PaintLayerRareData::PaintLayerRareData()
+    : enclosingPaginationLayer(nullptr)
+    , potentialCompositingReasonsFromStyle(CompositingReasonNone)
+    , compositingReasons(CompositingReasonNone)
+    , groupedMapping(nullptr)
+{
+}
+
+PaintLayerRareData::~PaintLayerRareData()
+{
+}
 
 PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     : m_layerType(type)
@@ -129,6 +163,9 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     , m_previousPaintResult(PaintLayerPainter::FullyPainted)
     , m_needsPaintPhaseDescendantOutlines(false)
     , m_needsPaintPhaseFloat(false)
+    , m_hasDescendantWithClipPath(false)
+    , m_hasNonIsolatedDescendantWithBlendMode(false)
+    , m_hasAncestorWithClipPath(false)
     , m_layoutObject(layoutObject)
     , m_parent(0)
     , m_previous(0)
@@ -137,10 +174,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     , m_last(0)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
-    , m_enclosingPaginationLayer(0)
-    , m_potentialCompositingReasonsFromStyle(CompositingReasonNone)
-    , m_compositingReasons(CompositingReasonNone)
-    , m_groupedMapping(0)
     , m_clipper(*layoutObject)
 {
     updateStackingNode();
@@ -174,8 +207,8 @@ PaintLayer::~PaintLayer()
 
     clearCompositedLayerMapping(true);
 
-    if (m_reflectionInfo)
-        m_reflectionInfo->destroy();
+    if (PaintLayerReflectionInfo* reflectionInfo = this->reflectionInfo())
+        reflectionInfo->destroy();
 
     if (m_scrollableArea)
         m_scrollableArea->dispose();
@@ -220,8 +253,8 @@ void PaintLayer::contentChanged(ContentChangeType changeType)
             compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
-    if (m_compositedLayerMapping)
-        m_compositedLayerMapping->contentChanged(changeType);
+    if (CompositedLayerMapping* compositedLayerMapping = this->compositedLayerMapping())
+        compositedLayerMapping->contentChanged(changeType);
 }
 
 bool PaintLayer::paintsWithFilters() const
@@ -231,7 +264,7 @@ bool PaintLayer::paintsWithFilters() const
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
-    return !m_compositedLayerMapping || compositingState() != PaintsIntoOwnBacking;
+    return !compositedLayerMapping() || compositingState() != PaintsIntoOwnBacking;
 }
 
 bool PaintLayer::paintsWithBackdropFilters() const
@@ -241,17 +274,18 @@ bool PaintLayer::paintsWithBackdropFilters() const
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
-    return !m_compositedLayerMapping || compositingState() != PaintsIntoOwnBacking;
+    return !compositedLayerMapping() || compositingState() != PaintsIntoOwnBacking;
 }
 
 LayoutSize PaintLayer::subpixelAccumulation() const
 {
-    return m_subpixelAccumulation;
+    return m_rareData ? m_rareData->subpixelAccumulation : LayoutSize();
 }
 
 void PaintLayer::setSubpixelAccumulation(const LayoutSize& size)
 {
-    m_subpixelAccumulation = size;
+    if (m_rareData || !size.isZero())
+        ensureRareData().subpixelAccumulation = size;
 }
 
 void PaintLayer::updateLayerPositionsAfterLayout()
@@ -273,8 +307,8 @@ void PaintLayer::updateLayerPositionRecursive()
 {
     updateLayerPosition();
 
-    if (m_reflectionInfo)
-        m_reflectionInfo->reflection()->layout();
+    if (m_rareData && m_rareData->reflectionInfo)
+        m_rareData->reflectionInfo->reflection()->layout();
 
     // FIXME(400589): We would like to do this in PaintLayerScrollableArea::updateAfterLayout,
     // but it depends on the size computed by updateLayerPosition.
@@ -358,12 +392,12 @@ void PaintLayer::updateLayerPositionsAfterScrollRecursive(const DoubleSize& scro
 
 void PaintLayer::updateTransformationMatrix()
 {
-    if (m_transform) {
+    if (TransformationMatrix* transform = this->transform()) {
         LayoutBox* box = layoutBox();
         ASSERT(box);
-        m_transform->makeIdentity();
-        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::IncludeTransformOrigin, ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
-        makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
+        transform->makeIdentity();
+        box->style()->applyTransform(*transform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::IncludeTransformOrigin, ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
+        makeMatrixRenderable(*transform, compositor()->hasAcceleratedCompositing());
     }
 }
 
@@ -377,12 +411,12 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedSt
     bool hasTransform = layoutObject()->hasTransformRelatedProperty() && newStyle.hasTransform();
     bool had3DTransform = has3DTransform();
 
-    bool hadTransform = m_transform;
+    bool hadTransform = transform();
     if (hasTransform != hadTransform) {
         if (hasTransform)
-            m_transform = adoptPtr(new TransformationMatrix);
+            ensureRareData().transform = adoptPtr(new TransformationMatrix);
         else
-            m_transform.clear();
+            m_rareData->transform.clear();
 
         // PaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
         m_clipper.clearClipRectsIncludingDescendants();
@@ -418,23 +452,24 @@ PaintLayer* PaintLayer::renderingContextRoot()
 
 TransformationMatrix PaintLayer::currentTransform() const
 {
-    if (!m_transform)
-        return TransformationMatrix();
-    return *m_transform;
+    if (TransformationMatrix* transform = this->transform())
+        return *transform;
+    return TransformationMatrix();
 }
 
 TransformationMatrix PaintLayer::renderableTransform(GlobalPaintFlags globalPaintFlags) const
 {
-    if (!m_transform)
+    TransformationMatrix* transform = this->transform();
+    if (!transform)
         return TransformationMatrix();
 
     if (globalPaintFlags & GlobalPaintFlattenCompositingLayers) {
-        TransformationMatrix matrix = *m_transform;
+        TransformationMatrix matrix = *transform;
         makeMatrixRenderable(matrix, false /* flatten 3d */);
         return matrix;
     }
 
-    return *m_transform;
+    return *transform;
 }
 
 void PaintLayer::convertFromFlowThreadToVisualBoundingBoxInAncestor(const PaintLayer* ancestorLayer, LayoutRect& rect) const
@@ -465,7 +500,8 @@ void PaintLayer::convertFromFlowThreadToVisualBoundingBoxInAncestor(const PaintL
 
 void PaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 {
-    m_enclosingPaginationLayer = 0;
+    if (m_rareData)
+        m_rareData->enclosingPaginationLayer = nullptr;
 
     if (layoutObject()->isLayoutFlowThread())
         needsPaginationUpdate = true;
@@ -477,7 +513,7 @@ void PaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
         // enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
         // to that layer easily.
         if (LayoutFlowThread* containingFlowThread = layoutObject()->flowThreadContainingBlock())
-            m_enclosingPaginationLayer = containingFlowThread->layer();
+            ensureRareData().enclosingPaginationLayer = containingFlowThread->layer();
     }
 
     for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
@@ -486,7 +522,8 @@ void PaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 
 void PaintLayer::clearPaginationRecursive()
 {
-    m_enclosingPaginationLayer = 0;
+    if (m_rareData)
+        m_rareData->enclosingPaginationLayer = nullptr;
     for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->clearPaginationRecursive();
 }
@@ -773,11 +810,12 @@ bool PaintLayer::updateLayerPosition()
     bool positionOrOffsetChanged = false;
     if (layoutObject()->isInFlowPositioned()) {
         LayoutSize newOffset = layoutObject()->offsetForInFlowPosition();
-        positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
-        m_offsetForInFlowPosition = newOffset;
-        localPoint.move(m_offsetForInFlowPosition);
-    } else {
-        m_offsetForInFlowPosition = LayoutSize();
+        positionOrOffsetChanged = newOffset != offsetForInFlowPosition();
+        if (m_rareData || !newOffset.isZero())
+            ensureRareData().offsetForInFlowPosition = newOffset;
+        localPoint.move(newOffset);
+    } else if (m_rareData) {
+        m_rareData->offsetForInFlowPosition = LayoutSize();
     }
 
     // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the layoutObjects.
@@ -871,11 +909,9 @@ PaintLayer* PaintLayer::enclosingTransformedAncestor() const
 
 LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const
 {
-    const AncestorDependentCompositingInputs& properties = ancestorDependentCompositingInputs();
-
     TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
     // FIXME: add a test that checks flipped writing mode and ApplyContainerFlip are correct.
-    layoutObject()->mapLocalToAncestor(properties.transformAncestor ? properties.transformAncestor->layoutObject() : 0, transformState, ApplyContainerFlip);
+    layoutObject()->mapLocalToAncestor(transformAncestor() ? transformAncestor()->layoutObject() : nullptr, transformState, ApplyContainerFlip);
     transformState.flatten();
     return LayoutPoint(transformState.lastPlanarPoint());
 }
@@ -956,15 +992,21 @@ void PaintLayer::setNeedsCompositingInputsUpdate()
     compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
-void PaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs& compositingInputs)
+void PaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs& compositingInputs, const RareAncestorDependentCompositingInputs& rareCompositingInputs, bool hasAncestorWithClipPath)
 {
     m_ancestorDependentCompositingInputs = compositingInputs;
+    if (rareCompositingInputs.isDefault())
+        m_rareAncestorDependentCompositingInputs.clear();
+    else
+        m_rareAncestorDependentCompositingInputs = adoptPtr(new RareAncestorDependentCompositingInputs(rareCompositingInputs));
+    m_hasAncestorWithClipPath = hasAncestorWithClipPath;
     m_needsAncestorDependentCompositingInputsUpdate = false;
 }
 
-void PaintLayer::updateDescendantDependentCompositingInputs(const DescendantDependentCompositingInputs& compositingInputs)
+void PaintLayer::updateDescendantDependentCompositingInputs(bool hasDescendantWithClipPath, bool hasNonIsolatedDescendantWithBlendMode)
 {
-    m_descendantDependentCompositingInputs = compositingInputs;
+    m_hasDescendantWithClipPath = hasDescendantWithClipPath;
+    m_hasNonIsolatedDescendantWithBlendMode = hasNonIsolatedDescendantWithBlendMode;
     m_needsDescendantDependentCompositingInputsUpdate = false;
 }
 
@@ -978,7 +1020,8 @@ void PaintLayer::didUpdateCompositingInputs()
 
 bool PaintLayer::hasNonIsolatedDescendantWithBlendMode() const
 {
-    if (descendantDependentCompositingInputs().hasNonIsolatedDescendantWithBlendMode)
+    ASSERT(!m_needsDescendantDependentCompositingInputsUpdate);
+    if (m_hasNonIsolatedDescendantWithBlendMode)
         return true;
     if (layoutObject()->isSVGRoot())
         return toLayoutSVGRoot(layoutObject())->hasNonIsolatedBlendingDescendants();
@@ -987,9 +1030,12 @@ bool PaintLayer::hasNonIsolatedDescendantWithBlendMode() const
 
 void PaintLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
 {
-    if ((compositingReasons() & mask) == (reasons & mask))
+    CompositingReasons oldReasons = m_rareData ? m_rareData->compositingReasons : CompositingReasonNone;
+    if ((oldReasons & mask) == (reasons & mask))
         return;
-    m_compositingReasons = (reasons & mask) | (compositingReasons() & ~mask);
+    CompositingReasons newReasons = (reasons & mask) | (oldReasons & ~mask);
+    if (m_rareData || newReasons != CompositingReasonNone)
+        ensureRareData().compositingReasons = newReasons;
 }
 
 void PaintLayer::setHasCompositingDescendant(bool hasCompositingDescendant)
@@ -1230,8 +1276,8 @@ void PaintLayer::removeOnlyThisLayer()
 
     // Remove the child reflection layer before moving other child layers.
     // The reflection layer should not be moved to the parent.
-    if (m_reflectionInfo)
-        removeChild(m_reflectionInfo->reflectionLayer());
+    if (PaintLayerReflectionInfo* reflectionInfo = this->reflectionInfo())
+        removeChild(reflectionInfo->reflectionLayer());
 
     // Now walk our kids and reattach them to our parent.
     PaintLayer* current = m_first;
@@ -1374,12 +1420,11 @@ void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
 {
     ASSERT(!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle));
     if (layoutObject()->hasReflection()) {
-        if (!m_reflectionInfo)
-            m_reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
-        m_reflectionInfo->updateAfterStyleChange(oldStyle);
-    } else if (m_reflectionInfo) {
-        m_reflectionInfo->destroy();
-        m_reflectionInfo = nullptr;
+        ensureRareData().reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
+        m_rareData->reflectionInfo->updateAfterStyleChange(oldStyle);
+    } else if (m_rareData && m_rareData->reflectionInfo) {
+        m_rareData->reflectionInfo->destroy();
+        m_rareData->reflectionInfo = nullptr;
     }
 }
 
@@ -2024,7 +2069,8 @@ void PaintLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return;
-    m_blockSelectionGapsBounds.unite(enclosingIntRect(bounds));
+    if (!bounds.isEmpty())
+        ensureRareData().blockSelectionGapsBounds.unite(enclosingIntRect(bounds));
     blockSelectionGapsBoundsChanged();
 }
 
@@ -2032,7 +2078,8 @@ void PaintLayer::clearBlockSelectionGapsBounds()
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return;
-    m_blockSelectionGapsBounds = IntRect();
+    if (m_rareData)
+        m_rareData->blockSelectionGapsBounds = IntRect();
     for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->clearBlockSelectionGapsBounds();
     blockSelectionGapsBoundsChanged();
@@ -2049,10 +2096,10 @@ void PaintLayer::invalidatePaintForBlockSelectionGaps()
         child->invalidatePaintForBlockSelectionGaps();
     }
 
-    if (m_blockSelectionGapsBounds.isEmpty())
+    if (!m_rareData || m_rareData->blockSelectionGapsBounds.isEmpty())
         return;
 
-    LayoutRect rect(m_blockSelectionGapsBounds);
+    LayoutRect rect(m_rareData->blockSelectionGapsBounds);
     if (layoutObject()->hasOverflowClip()) {
         LayoutBox* box = layoutBox();
         rect.move(-box->scrolledContentOffset());
@@ -2270,12 +2317,12 @@ CompositingState PaintLayer::compositingState() const
     // This is computed procedurally so there is no redundant state variable that
     // can get out of sync from the real actual compositing state.
 
-    if (m_groupedMapping) {
-        ASSERT(!m_compositedLayerMapping);
+    if (groupedMapping()) {
+        ASSERT(!compositedLayerMapping());
         return PaintsIntoGroupedBacking;
     }
 
-    if (!m_compositedLayerMapping)
+    if (!compositedLayerMapping())
         return NotComposited;
 
     return PaintsIntoOwnBacking;
@@ -2291,7 +2338,7 @@ bool PaintLayer::isAllowedToQueryCompositingState() const
 CompositedLayerMapping* PaintLayer::compositedLayerMapping() const
 {
     ASSERT(isAllowedToQueryCompositingState());
-    return m_compositedLayerMapping.get();
+    return m_rareData ? m_rareData->compositedLayerMapping.get() : nullptr;
 }
 
 GraphicsLayer* PaintLayer::graphicsLayerBacking() const
@@ -2320,11 +2367,11 @@ GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const
 
 void PaintLayer::ensureCompositedLayerMapping()
 {
-    if (m_compositedLayerMapping)
+    if (m_rareData && m_rareData->compositedLayerMapping)
         return;
 
-    m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
-    m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+    ensureRareData().compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
+    m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
     updateOrRemoveFilterEffectBuilder();
 }
@@ -2340,7 +2387,8 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
             compositingParent->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
-    m_compositedLayerMapping.clear();
+    if (m_rareData)
+        m_rareData->compositedLayerMapping.clear();
 
     if (!layerBeingDestroyed)
         updateOrRemoveFilterEffectBuilder();
@@ -2348,27 +2396,29 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 
 void PaintLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, SetGroupMappingOptions options)
 {
-    if (groupedMapping == m_groupedMapping)
+    CompositedLayerMapping* oldGroupedMapping = this->groupedMapping();
+    if (groupedMapping == oldGroupedMapping)
         return;
 
-    if (options == InvalidateLayerAndRemoveFromMapping && m_groupedMapping) {
-        m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
-        m_groupedMapping->removeLayerFromSquashingGraphicsLayer(this);
+    if (options == InvalidateLayerAndRemoveFromMapping && oldGroupedMapping) {
+        oldGroupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+        oldGroupedMapping->removeLayerFromSquashingGraphicsLayer(this);
     }
-    m_groupedMapping = groupedMapping;
-    ASSERT(!m_groupedMapping || m_groupedMapping->verifyLayerInSquashingVector(this));
-    if (options == InvalidateLayerAndRemoveFromMapping && m_groupedMapping)
-        m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+    if (m_rareData || groupedMapping)
+        ensureRareData().groupedMapping = groupedMapping;
+    ASSERT(!groupedMapping || groupedMapping->verifyLayerInSquashingVector(this));
+    if (options == InvalidateLayerAndRemoveFromMapping && groupedMapping)
+        groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 }
 
 bool PaintLayer::hasCompositedMask() const
 {
-    return m_compositedLayerMapping && m_compositedLayerMapping->hasMaskLayer();
+    return m_rareData && m_rareData->compositedLayerMapping && m_rareData->compositedLayerMapping->hasMaskLayer();
 }
 
 bool PaintLayer::hasCompositedClippingMask() const
 {
-    return m_compositedLayerMapping && m_compositedLayerMapping->hasChildClippingMaskLayer();
+    return m_rareData && m_rareData->compositedLayerMapping && m_rareData->compositedLayerMapping->hasChildClippingMaskLayer();
 }
 
 bool PaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const
@@ -2502,7 +2552,7 @@ void PaintLayer::updateFilters(const ComputedStyle* oldStyle, const ComputedStyl
 
 bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    CompositingReasons oldPotentialCompositingReasonsFromStyle = m_potentialCompositingReasonsFromStyle;
+    CompositingReasons oldPotentialCompositingReasonsFromStyle = potentialCompositingReasonsFromStyle();
     compositor()->updatePotentialCompositingReasonsFromStyle(this);
 
     // This function implements an optimization for transforms and opacity.
@@ -2516,7 +2566,7 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Comp
         return false;
     // The potentialCompositingReasonsFromStyle could have changed without
     // a corresponding StyleDifference if an animation started or ended.
-    if (m_potentialCompositingReasonsFromStyle != oldPotentialCompositingReasonsFromStyle)
+    if (potentialCompositingReasonsFromStyle() != oldPotentialCompositingReasonsFromStyle)
         return false;
     // We could add support for reflections if we updated the transform on
     // the reflection layers.
@@ -2529,7 +2579,7 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Comp
     // scheduleSVGFilterLayerUpdateHack().
     if (layoutObject()->node() && layoutObject()->node()->svgFilterNeedsLayerUpdate())
         return false;
-    if (!m_compositedLayerMapping)
+    if (!m_rareData || !m_rareData->compositedLayerMapping)
         return false;
 
     // To cut off almost all the work in the compositing update for
@@ -2538,7 +2588,7 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Comp
     // CompositingReasonInlineTransform from the m_compositingReasons, which
     // means that the inline transform actually triggered assumed overlap in
     // the overlap map.
-    if (diff.transformChanged() && !(m_compositingReasons & CompositingReasonInlineTransform))
+    if (diff.transformChanged() && (!m_rareData || !(m_rareData->compositingReasons & CompositingReasonInlineTransform)))
         return false;
 
     // We composite transparent Layers differently from non-transparent
@@ -2559,7 +2609,7 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Comp
     // that just handles transforms and opacity. GraphicsLayerUpdateLocal
     // will also program bounds, clips, and many other properties that could
     // not possibly have changed.
-    m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+    m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
     compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
 
     if (m_scrollableArea)

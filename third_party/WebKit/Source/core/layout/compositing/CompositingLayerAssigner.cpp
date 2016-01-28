@@ -159,19 +159,16 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (layer->scrollParent() && layer->hasCompositingDescendant())
         return CompositingReasonScrollChildWithCompositedDescendants;
 
-    const PaintLayer::AncestorDependentCompositingInputs& compositingInputs = layer->ancestorDependentCompositingInputs();
-    const PaintLayer::AncestorDependentCompositingInputs& squashingLayerCompositingInputs = squashingLayer.ancestorDependentCompositingInputs();
-
-    if (compositingInputs.opacityAncestor != squashingLayerCompositingInputs.opacityAncestor)
+    if (layer->opacityAncestor() != squashingLayer.opacityAncestor())
         return CompositingReasonSquashingOpacityAncestorMismatch;
 
-    if (compositingInputs.transformAncestor != squashingLayerCompositingInputs.transformAncestor)
+    if (layer->transformAncestor() != squashingLayer.transformAncestor())
         return CompositingReasonSquashingTransformAncestorMismatch;
 
-    if (layer->hasFilter() || compositingInputs.filterAncestor != squashingLayerCompositingInputs.filterAncestor)
+    if (layer->hasFilter() || layer->filterAncestor() != squashingLayer.filterAncestor())
         return CompositingReasonSquashingFilterMismatch;
 
-    if (compositingInputs.nearestFixedPositionLayer != squashingLayerCompositingInputs.nearestFixedPositionLayer)
+    if (layer->nearestFixedPositionLayer() != squashingLayer.nearestFixedPositionLayer())
         return CompositingReasonSquashingNearestFixedPositionMismatch;
     ASSERT(layer->layoutObject()->style()->position() != FixedPosition);
 
