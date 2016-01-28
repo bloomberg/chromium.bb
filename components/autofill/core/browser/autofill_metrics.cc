@@ -683,22 +683,6 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
 }
 
-// static
-void AutofillMetrics::LogPayloadCompressionRatio(
-    int compression_ratio,
-    AutofillDownloadManager::RequestType type) {
-  switch (type) {
-    case AutofillDownloadManager::REQUEST_QUERY:
-      UMA_HISTOGRAM_PERCENTAGE("Autofill.PayloadCompressionRatio.Query",
-                               compression_ratio);
-      break;
-    case AutofillDownloadManager::REQUEST_UPLOAD:
-      UMA_HISTOGRAM_PERCENTAGE("Autofill.PayloadCompressionRatio.Upload",
-                               compression_ratio);
-      break;
-  }
-}
-
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

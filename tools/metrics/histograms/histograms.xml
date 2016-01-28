@@ -2516,6 +2516,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Autofill.PayloadCompressionRatio" units="%">
+  <obsolete>
+    Deprecated as of 1/2016, autofill payload compression was removed.
+  </obsolete>
   <owner>mathp@chromium.org</owner>
   <summary>
     Compression ratio of the query and upload payload that are sent to the

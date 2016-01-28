@@ -2159,7 +2159,6 @@
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-        '../third_party/zlib/google/zip.gyp:compression_utils',
         '../ui/accessibility/accessibility.gyp:accessibility_test_support',
         '../ui/compositor/compositor.gyp:compositor_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',

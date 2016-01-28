@@ -21,14 +21,12 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/zlib/google/compression_utils.h"
 
 using base::ASCIIToUTF16;
 
@@ -47,13 +45,6 @@ void FakeOnURLFetchComplete(net::TestURLFetcher* fetcher,
   fetcher->SetResponseString(response_body);
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-}
-
-// Compresses |data| and returns the result.
-std::string Compress(const std::string& data) {
-  std::string compressed_data;
-  EXPECT_TRUE(compression::GzipCompress(data, &compressed_data));
-  return compressed_data;
 }
 
 }  // namespace
@@ -647,133 +638,6 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
   ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
-}
-
-TEST_F(AutofillDownloadManagerTest, QueryRequestIsGzipped) {
-  // Expected query (uncompressed for visual verification).
-  AutofillQueryContents query;
-  query.set_client_version("6.1.1715.1442/en (GGLL)");
-  AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(14546501144368603154U);
-
-  query_form->add_field()->set_signature(239111655U);
-  query_form->add_field()->set_signature(3763331450U);
-  query_form->add_field()->set_signature(3494530716U);
-
-  std::string expected_query_string;
-  ASSERT_TRUE(query.SerializeToString(&expected_query_string));
-
-  // Create and register factory.
-  net::TestURLFetcherFactory factory;
-
-  FormData form;
-
-  FormFieldData field;
-  field.form_control_type = "text";
-
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
-  form.fields.push_back(field);
-
-  FormStructure* form_structure = new FormStructure(form);
-  ScopedVector<FormStructure> form_structures;
-  form_structures.push_back(form_structure);
-
-  base::HistogramTester histogram;
-  // Request with id 0.
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get()));
-  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
-                               AutofillMetrics::QUERY_SENT, 1);
-
-  // Request payload is gzipped.
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(Compress(expected_query_string), fetcher->upload_data());
-
-  // Proper content-encoding header is defined.
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
-  std::string header;
-  EXPECT_TRUE(headers.GetHeader("content-encoding", &header));
-  EXPECT_EQ("gzip", header);
-
-  // TODO(http://crbug.com/580102) The >100% compression ratio is a known
-  // problem.
-  // Expect that the compression is logged.
-  // NOTE: To get the expected value, run tests with --vmodule=autofill*=1 and
-  // watch for the VLOG which indicates compression.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 133,
-                               1);
-}
-
-TEST_F(AutofillDownloadManagerTest, UploadRequestIsGzipped) {
-  // Expected upload (uncompressed for visual verification).
-  AutofillUploadContents upload;
-  upload.set_submission(true);
-  upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(14546501144368603154U);
-  upload.set_autofill_used(true);
-  upload.set_data_present("");
-
-  std::string expected_upload_string;
-  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
-
-  // Create and register factory.
-  net::TestURLFetcherFactory factory;
-
-  FormData form;
-
-  FormFieldData field;
-  field.form_control_type = "text";
-
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
-  form.fields.push_back(field);
-
-  FormStructure* form_structure = new FormStructure(form);
-  ScopedVector<FormStructure> form_structures;
-  form_structures.push_back(form_structure);
-
-  base::HistogramTester histogram;
-  // Request with id 0.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true));
-
-  // Request payload is gzipped.
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(Compress(expected_upload_string), fetcher->upload_data());
-
-  // Proper content-encoding header is defined.
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
-  std::string header;
-  EXPECT_TRUE(headers.GetHeader("content-encoding", &header));
-  EXPECT_EQ("gzip", header);
-
-  // TODO(http://crbug.com/580102) The >100% compression ratio is a known
-  // problem.
-  // Expect that the compression is logged.
-  // NOTE: To get the expected value, run tests with --vmodule=autofill*=1 and
-  // watch for the VLOG which indicates compression.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 150,
-                               1);
 }
 
 }  // namespace autofill

@@ -94,7 +94,6 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Upload);
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, BackoffLogic_Query);
-  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, UploadRequestIsGzipped);
 
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;

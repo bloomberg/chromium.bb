@@ -22,7 +22,6 @@
 #include "content/public/test/test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/zlib/google/compression_utils.h"
 
 namespace autofill {
 namespace {
@@ -90,13 +89,6 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
   DISALLOW_COPY_AND_ASSIGN(WindowedNetworkObserver);
 };
 
-// Compresses |data| and returns the result.
-std::string Compress(const std::string& data) {
-  std::string compressed_data;
-  EXPECT_TRUE(compression::GzipCompress(data, &compressed_data));
-  return compressed_data;
-}
-
 }  // namespace
 
 class AutofillServerTest : public InProcessBrowserTest  {
@@ -152,8 +144,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  WindowedNetworkObserver query_network_observer(
-      Compress(expected_query_string));
+  WindowedNetworkObserver query_network_observer(expected_query_string);
 
   ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));
@@ -183,8 +174,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
-  WindowedNetworkObserver upload_network_observer(
-      Compress(expected_upload_string));
+  WindowedNetworkObserver upload_network_observer(expected_upload_string);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::SimulateMouseClick(
@@ -221,8 +211,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  WindowedNetworkObserver query_network_observer(
-      Compress(expected_query_string));
+  WindowedNetworkObserver query_network_observer(expected_query_string);
   ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));
   query_network_observer.Wait();

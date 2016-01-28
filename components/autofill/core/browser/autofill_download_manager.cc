@@ -26,7 +26,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-#include "third_party/zlib/google/compression_utils.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -238,18 +237,6 @@ bool AutofillDownloadManager::StartRequest(
   DCHECK(request_context);
   GURL request_url = GetRequestUrl(request_data.request_type);
 
-  // TODO(crbug.com/580102): Remove the compression step.
-  std::string compressed_data;
-  if (!compression::GzipCompress(request_data.payload, &compressed_data)) {
-    NOTREACHED();
-    return false;
-  }
-
-  const int compression_ratio = base::checked_cast<int>(
-      100 * compressed_data.size() / request_data.payload.size());
-  AutofillMetrics::LogPayloadCompressionRatio(compression_ratio,
-                                              request_data.request_type);
-
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
   net::URLFetcher* fetcher =
@@ -260,12 +247,11 @@ bool AutofillDownloadManager::StartRequest(
   url_fetchers_[fetcher] = request_data;
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);
-  fetcher->SetUploadData("text/proto", compressed_data);
+  fetcher->SetUploadData("text/proto", request_data.payload);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);
-  // Add Chrome experiment state and GZIP encoding to the request headers.
+  // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  headers.SetHeaderIfMissing("content-encoding", "gzip");
   variations::AppendVariationHeaders(
       fetcher->GetOriginalURL(), driver_->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());

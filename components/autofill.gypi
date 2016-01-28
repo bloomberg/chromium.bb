@@ -11,7 +11,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../third_party/zlib/google/zip.gyp:compression_utils',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [

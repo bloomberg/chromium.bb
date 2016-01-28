@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -650,12 +649,6 @@ class AutofillMetrics {
   // This should be called at each form submission to indicate the autofilled
   // state of the form.
   static void LogAutofillFormSubmittedState(AutofillFormSubmittedState state);
-
-  // Log the compression ratio obtained by compressing with gzip. Logs for the
-  // query or upload request, depending on |type|.
-  static void LogPayloadCompressionRatio(
-      int compression_ratio,
-      AutofillDownloadManager::RequestType type);
 
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.
