@@ -235,9 +235,8 @@ interface WindowTree {
   // See documentation for WindowTreeClient::OnWindowInputEvent().
   OnWindowInputEventAck(uint32 event_id);
 
-  // See description of WindowManagerInternal for details.
-  GetWindowManagerInternalClient(
-      associated WindowManagerInternalClient& internal);
+  // See description of WindowManager for details.
+  GetWindowManagerClient(associated WindowManagerClient& internal);
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -351,26 +350,41 @@ interface WindowTreeClient {
   // client allows the change it should delete the window.
   RequestClose(uint32 window_id);
 
-  // See description of WindowManagerInternal for details.
-  GetWindowManagerInternal(associated WindowManagerInternal& internal);
+  // See description of WindowManager for details.
+  GetWindowManager(associated WindowManager& internal);
 };
 
-// WindowManagerInternal is used when a WindowTreeClient attempts to modify
+// WindowManager is used when a WindowTreeClient attempts to modify
 // a property of the embed root. When this happens WindowTree calls the
-// appropriate function on WindowManagerInternal. For example, if a
+// appropriate function on WindowManager. For example, if a
 // WindowTreeClient calls SetWindowBounds() on its embed root, WindowTree
-// calls WmSetBounds(). WindowManagerInternal can then decide if it wants to
+// calls WmSetBounds(). WindowManager can then decide if it wants to
 // change the bounds or not.
 //
-// WindowManagerInternal may only be installed from the connection that created
+// WindowManager may only be installed from the connection that created
 // a new window tree (see WindowTreeHostFactory).
 //
 // This interface is only used as an associated interface and is associated
 // with WindowTreeClient.
-// TODO(sky): rename this to WindowManager.
-interface WindowManagerInternal {
-  // When the WindowManagerInternal completes a request it must call back to
-  // WindowManagerInternalClient::WmResponse().
+interface WindowManager {
+  // The window's preferred size as defined by its content. Type: gfx::Size.
+  const string kPreferredSize_Property = "prop:preferred-size";
+  // The window's resize behavior. Type: ResizeBehavior.
+  const string kResizeBehavior_Property = "prop:resize-behavior";
+  // Bounds the window is restored to. Type: gfx::Rect.
+  const string kRestoreBounds_Property = "prop:restore-bounds";
+  // Shadow style for the window. Type: mojom::ShadowStyle.
+  const string kShadowStyle_Property = "prop:shadow-style";
+  // The window's show state. Type: ShowState.
+  const string kShowState_Property = "prop:show-state";
+  // The window bounds as set by user input. Type: gfx::Rect.
+  const string kUserSetBounds_Property = "prop:user-set-bounds";
+  const string kWindowType_Property = "prop:window-type";
+  // The window's title. Type: mojom::String
+  const string kWindowTitle_Property = "prop:window-title";
+
+  // When the WindowManager completes a request it must call back to
+  // WindowManagerClient::WmResponse().
   WmSetBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
   WmSetProperty(uint32 change_id,
                 uint32 window_id,
@@ -383,8 +397,7 @@ interface WindowManagerInternal {
 
 // This interface is only used as an associated interface and is associated
 // with WindowTree.
-// TODO(sky): rename this to WindowManagerClient.
-interface WindowManagerInternalClient {
+interface WindowManagerClient {
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
 

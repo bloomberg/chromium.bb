@@ -29,7 +29,7 @@ class ClientConnection {
 
   mojom::WindowTreeClient* client() { return client_; }
 
-  virtual mojom::WindowManagerInternal* GetWindowManagerInternal() = 0;
+  virtual mojom::WindowManager* GetWindowManager() = 0;
 
   virtual void SetIncomingMethodCallProcessingPaused(bool paused) = 0;
 
@@ -51,14 +51,14 @@ class DefaultClientConnection : public ClientConnection {
   ~DefaultClientConnection() override;
 
   // ClientConnection:
-  mojom::WindowManagerInternal* GetWindowManagerInternal() override;
+  mojom::WindowManager* GetWindowManager() override;
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
  private:
   ConnectionManager* connection_manager_;
   mojo::Binding<mojom::WindowTree> binding_;
   mojom::WindowTreeClientPtr client_;
-  mojom::WindowManagerInternalAssociatedPtr window_manager_internal_;
+  mojom::WindowManagerAssociatedPtr window_manager_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
 };

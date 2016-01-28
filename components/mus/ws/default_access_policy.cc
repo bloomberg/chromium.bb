@@ -171,7 +171,7 @@ const ServerWindow* DefaultAccessPolicy::GetWindowForFocusChange(
   return nullptr;
 }
 
-bool DefaultAccessPolicy::CanSetWindowManagerInternal() const {
+bool DefaultAccessPolicy::CanSetWindowManager() const {
   return false;
 }
 

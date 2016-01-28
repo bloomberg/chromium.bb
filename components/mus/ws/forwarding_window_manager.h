@@ -17,14 +17,14 @@ class ConnectionManager;
 
 // WindowManager implementation that forwards to the window manager of the
 // active display.
-class ForwardingWindowManager : public mojom::WindowManager {
+class ForwardingWindowManager : public mojom::WindowManagerDeprecated {
  public:
   explicit ForwardingWindowManager(ConnectionManager* connection_manager);
   ~ForwardingWindowManager() override;
 
  private:
   // Returns the WindowManager of the active display.
-  mojom::WindowManager* GetActiveWindowManager();
+  mojom::WindowManagerDeprecated* GetActiveWindowManager();
 
   // mojom::WindowManager:
   void OpenWindow(

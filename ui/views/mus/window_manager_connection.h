@@ -40,7 +40,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   mus::Window* NewWindow(const std::map<std::string,
                          std::vector<uint8_t>>& properties);
 
-  mus::mojom::WindowManager* window_manager() {
+  mus::mojom::WindowManagerDeprecated* window_manager() {
     return window_manager_.get();
   }
 
@@ -59,7 +59,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
                                    internal::NativeWidgetDelegate* delegate);
 
   mojo::ApplicationImpl* app_;
-  mus::mojom::WindowManagerPtr window_manager_;
+  mus::mojom::WindowManagerDeprecatedPtr window_manager_;
   scoped_ptr<ScreenMus> screen_;
   scoped_ptr<mus::WindowTreeConnection> window_tree_connection_;
 

@@ -131,7 +131,7 @@ bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
   return IsWindowKnown(window) || (*new_parent && IsWindowKnown(*new_parent));
 }
 
-bool WindowManagerAccessPolicy::CanSetWindowManagerInternal() const {
+bool WindowManagerAccessPolicy::CanSetWindowManager() const {
   return true;
 }
 

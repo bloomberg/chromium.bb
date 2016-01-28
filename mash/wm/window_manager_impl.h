@@ -21,7 +21,7 @@ class WindowManagerApplication;
 using WindowManagerErrorCodeCallback =
     const mojo::Callback<void(mus::mojom::WindowManagerErrorCode)>;
 
-class WindowManagerImpl : public mus::mojom::WindowManager,
+class WindowManagerImpl : public mus::mojom::WindowManagerDeprecated,
                           public mus::WindowObserver,
                           public mus::WindowManagerDelegate {
  public:

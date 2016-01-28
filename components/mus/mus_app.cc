@@ -41,7 +41,7 @@ namespace mus {
 
 struct MandolineUIServicesApp::PendingRequest {
   scoped_ptr<mojo::InterfaceRequest<mojom::DisplayManager>> dm_request;
-  scoped_ptr<mojo::InterfaceRequest<mojom::WindowManager>> wm_request;
+  scoped_ptr<mojo::InterfaceRequest<mojom::WindowManagerDeprecated>> wm_request;
 };
 
 MandolineUIServicesApp::MandolineUIServicesApp()
@@ -93,7 +93,7 @@ bool MandolineUIServicesApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   connection->AddService<Gpu>(this);
   connection->AddService<mojom::DisplayManager>(this);
-  connection->AddService<mojom::WindowManager>(this);
+  connection->AddService<mojom::WindowManagerDeprecated>(this);
   connection->AddService<WindowTreeHostFactory>(this);
   return true;
 }
@@ -142,11 +142,12 @@ void MandolineUIServicesApp::Create(
 
 void MandolineUIServicesApp::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojom::WindowManager> request) {
+    mojo::InterfaceRequest<mojom::WindowManagerDeprecated> request) {
   if (!connection_manager_->has_tree_host_connections()) {
     scoped_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->wm_request.reset(
-        new mojo::InterfaceRequest<mojom::WindowManager>(std::move(request)));
+        new mojo::InterfaceRequest<mojom::WindowManagerDeprecated>(
+            std::move(request)));
     pending_requests_.push_back(std::move(pending_request));
     return;
   }
@@ -174,7 +175,7 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
     mojo::InterfaceRequest<mojom::WindowTreeHost> host,
     mojom::WindowTreeHostClientPtr host_client,
     mojom::WindowTreeClientPtr tree_client,
-    mojom::WindowManagerPtr window_manager) {
+    mojom::WindowManagerDeprecatedPtr window_manager) {
   DCHECK(connection_manager_);
 
   // TODO(fsamuel): We need to make sure that only the window manager can create

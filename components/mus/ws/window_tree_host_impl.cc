@@ -91,7 +91,7 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state,
-    mojom::WindowManagerPtr window_manager)
+    mojom::WindowManagerDeprecatedPtr window_manager)
     : id_(next_id++),
       delegate_(nullptr),
       connection_manager_(connection_manager),

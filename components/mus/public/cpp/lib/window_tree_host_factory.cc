@@ -14,7 +14,7 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
-                          mojom::WindowManagerPtr window_manager,
+                          mojom::WindowManagerDeprecatedPtr window_manager,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeClientPtr tree_client;
   WindowTreeConnection::CreateForWindowManager(
@@ -31,7 +31,7 @@ void CreateSingleWindowTreeHost(
     mojom::WindowTreeHostClientPtr host_client,
     WindowTreeDelegate* delegate,
     mojom::WindowTreeHostPtr* host,
-    mojom::WindowManagerPtr window_manager,
+    mojom::WindowManagerDeprecatedPtr window_manager,
     WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
   app->ConnectToService("mojo:mus", &factory);

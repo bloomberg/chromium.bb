@@ -39,9 +39,8 @@ void DefaultClientConnection::SetIncomingMethodCallProcessingPaused(
     binding_.ResumeIncomingMethodCallProcessing();
 }
 
-mojom::WindowManagerInternal*
-DefaultClientConnection::GetWindowManagerInternal() {
-  client_->GetWindowManagerInternal(
+mojom::WindowManager* DefaultClientConnection::GetWindowManager() {
+  client_->GetWindowManager(
       GetProxy(&window_manager_internal_, client_.associated_group()));
   return window_manager_internal_.get();
 }

@@ -55,7 +55,7 @@ class DefaultAccessPolicy : public AccessPolicy {
       const ServerWindow** old_parent) const override;
   const ServerWindow* GetWindowForFocusChange(
       const ServerWindow* focused) override;
-  bool CanSetWindowManagerInternal() const override;
+  bool CanSetWindowManager() const override;
 
  private:
   bool WasCreatedByThisConnection(const ServerWindow* window) const;

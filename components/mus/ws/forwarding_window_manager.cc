@@ -16,7 +16,8 @@ ForwardingWindowManager::ForwardingWindowManager(
 
 ForwardingWindowManager::~ForwardingWindowManager() {}
 
-mojom::WindowManager* ForwardingWindowManager::GetActiveWindowManager() {
+mojom::WindowManagerDeprecated*
+ForwardingWindowManager::GetActiveWindowManager() {
   // TODO(sky): This needs to detect active window, or OpenWindow() needs to
   // take the display.
   return connection_manager_->GetActiveWindowTreeHost()->window_manager();

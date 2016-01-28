@@ -25,11 +25,12 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
   ~WindowManagerAppTest() override {}
 
  protected:
-  void ConnectToWindowManager(mus::mojom::WindowManagerPtr* window_manager) {
+  void ConnectToWindowManager(
+      mus::mojom::WindowManagerDeprecatedPtr* window_manager) {
     application_impl()->ConnectToService("mojo:desktop_wm", window_manager);
   }
 
-  mus::Window* OpenWindow(mus::mojom::WindowManager* window_manager) {
+  mus::Window* OpenWindow(mus::mojom::WindowManagerDeprecated* window_manager) {
     mus::mojom::WindowTreeClientPtr window_tree_client;
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
         window_tree_client_request = GetProxy(&window_tree_client);
@@ -52,7 +53,7 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
 };
 
 TEST_F(WindowManagerAppTest, OpenWindow) {
-  mus::mojom::WindowManagerPtr connection;
+  mus::mojom::WindowManagerDeprecatedPtr connection;
   ConnectToWindowManager(&connection);
 
   ASSERT_TRUE(OpenWindow(connection.get()));

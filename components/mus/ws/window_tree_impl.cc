@@ -1172,18 +1172,16 @@ void WindowTreeImpl::SetPredefinedCursor(uint32_t change_id,
   client_->OnChangeCompleted(change_id, success);
 }
 
-void WindowTreeImpl::GetWindowManagerInternalClient(
-    mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternalClient>
-        internal) {
-  if (!access_policy_->CanSetWindowManagerInternal() ||
-      window_manager_internal_)
+void WindowTreeImpl::GetWindowManagerClient(
+    mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal) {
+  if (!access_policy_->CanSetWindowManager() || window_manager_internal_)
     return;
   window_manager_internal_client_binding_.reset(
-      new mojo::AssociatedBinding<mojom::WindowManagerInternalClient>(
+      new mojo::AssociatedBinding<mojom::WindowManagerClient>(
           this, std::move(internal)));
 
-  window_manager_internal_ = connection_manager_->GetClientConnection(this)
-                                 ->GetWindowManagerInternal();
+  window_manager_internal_ =
+      connection_manager_->GetClientConnection(this)->GetWindowManager();
 }
 
 void WindowTreeImpl::WmResponse(uint32_t change_id, bool response) {

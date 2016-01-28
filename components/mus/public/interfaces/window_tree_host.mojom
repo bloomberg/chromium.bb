@@ -57,5 +57,5 @@ interface WindowTreeHostFactory {
   CreateWindowTreeHost(WindowTreeHost& window_tree_host,
                        WindowTreeHostClient? host_client,
                        WindowTreeClient tree_client,
-                       WindowManager? window_manager);
+                       WindowManagerDeprecated? window_manager);
 };

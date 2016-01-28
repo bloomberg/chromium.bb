@@ -63,7 +63,7 @@ class AccessPolicy {
       const ServerWindow* window,
       const ServerWindow** new_parent,
       const ServerWindow** old_parent) const = 0;
-  virtual bool CanSetWindowManagerInternal() const = 0;
+  virtual bool CanSetWindowManager() const = 0;
 
   // Returns the window to supply to the client when focus changes to |focused|.
   virtual const ServerWindow* GetWindowForFocusChange(

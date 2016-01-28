@@ -63,11 +63,10 @@ ClientWindowId ClientWindowIdForWindow(WindowTreeImpl* tree,
   return client_window_id;
 }
 
-class TestWindowManagerInternal : public mojom::WindowManagerInternal {
+class TestWindowManager : public mojom::WindowManager {
  public:
-  TestWindowManagerInternal()
-      : got_create_top_level_window_(false), change_id_(0u) {}
-  ~TestWindowManagerInternal() override {}
+  TestWindowManager() : got_create_top_level_window_(false), change_id_(0u) {}
+  ~TestWindowManager() override {}
 
   bool did_call_create_top_level_window(uint32_t* change_id) {
     if (!got_create_top_level_window_)
@@ -79,7 +78,7 @@ class TestWindowManagerInternal : public mojom::WindowManagerInternal {
   }
 
  private:
-  // WindowManagerInternal:
+  // WindowManager:
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    mojo::RectPtr bounds) override {}
@@ -97,7 +96,7 @@ class TestWindowManagerInternal : public mojom::WindowManagerInternal {
   bool got_create_top_level_window_;
   uint32_t change_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerInternal);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
 };
 
 // -----------------------------------------------------------------------------
@@ -201,9 +200,8 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
       tracker_.OnChangeCompleted(change_id, success);
   }
   void RequestClose(uint32_t window_id) override {}
-  void GetWindowManagerInternal(
-      mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternal> internal)
-      override {}
+  void GetWindowManager(mojo::AssociatedInterfaceRequest<mojom::WindowManager>
+                            internal) override {}
 
   TestChangeTracker tracker_;
 
@@ -227,7 +225,7 @@ class TestClientConnection : public ClientConnection {
   bool is_paused() const { return is_paused_; }
 
   // ClientConnection:
-  mojom::WindowManagerInternal* GetWindowManagerInternal() override {
+  mojom::WindowManager* GetWindowManager() override {
     NOTREACHED();
     return nullptr;
   }
@@ -442,7 +440,7 @@ class WindowTreeTest : public testing::Test {
   }
 
   void set_window_manager_internal(WindowTreeImpl* connection,
-                                   mojom::WindowManagerInternal* wm_internal) {
+                                   mojom::WindowManager* wm_internal) {
     connection->window_manager_internal_ = wm_internal;
   }
 
@@ -834,7 +832,7 @@ TEST_F(WindowTreeTest, EventAck) {
 // Establish connection, call NewTopLevelWindow(), make sure get id, and make
 // sure client paused.
 TEST_F(WindowTreeTest, NewTopLevelWindow) {
-  TestWindowManagerInternal wm_internal;
+  TestWindowManager wm_internal;
   set_window_manager_internal(wm_connection(), &wm_internal);
   TestWindowTreeClient* embed_connection = nullptr;
   WindowTreeImpl* window_tree_connection = nullptr;
@@ -868,7 +866,7 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
                                          embed_window_id2));
 
   // Ack the change, which should resume the binding.
-  static_cast<mojom::WindowManagerInternalClient*>(wm_connection())
+  static_cast<mojom::WindowManagerClient*>(wm_connection())
       ->OnWmCreatedTopLevelWindow(wm_change_id, embed_window_id2.id);
   EXPECT_FALSE(last_client_connection()->is_paused());
   EXPECT_EQ("TopLevelCreated id=17 window_id=" +

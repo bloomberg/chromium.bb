@@ -502,8 +502,8 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   tree_ptr_.set_connection_error_handler([this]() { delete this; });
 
   if (window_manager_delegate_) {
-    tree_ptr_->GetWindowManagerInternalClient(GetProxy(
-        &window_manager_internal_client_, tree_ptr_.associated_group()));
+    tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,
+                                               tree_ptr_.associated_group()));
   }
 
   OnEmbedImpl(tree_ptr_.get(), connection_id, std::move(root_data),
@@ -795,11 +795,11 @@ void WindowTreeClientImpl::OnChangeCompleted(uint32_t change_id, bool success) {
   }
 }
 
-void WindowTreeClientImpl::GetWindowManagerInternal(
-    mojo::AssociatedInterfaceRequest<WindowManagerInternal> internal) {
+void WindowTreeClientImpl::GetWindowManager(
+    mojo::AssociatedInterfaceRequest<WindowManager> internal) {
   window_manager_internal_.reset(
-      new mojo::AssociatedBinding<mojom::WindowManagerInternal>(
-          this, std::move(internal)));
+      new mojo::AssociatedBinding<mojom::WindowManager>(this,
+                                                        std::move(internal)));
 }
 
 void WindowTreeClientImpl::RequestClose(uint32_t window_id) {

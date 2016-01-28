@@ -51,7 +51,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                      mojo::ApplicationImpl* app_impl,
                      const scoped_refptr<GpuState>& gpu_state,
                      const scoped_refptr<SurfacesState>& surfaces_state,
-                     mojom::WindowManagerPtr window_manater);
+                     mojom::WindowManagerDeprecatedPtr window_manater);
   ~WindowTreeHostImpl() override;
 
   // Initializes state that depends on the existence of a WindowTreeHostImpl.
@@ -92,7 +92,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   ConnectionManager* connection_manager() { return connection_manager_; }
 
-  mojom::WindowManager* window_manager() { return window_manager_.get(); }
+  mojom::WindowManagerDeprecated* window_manager() {
+    return window_manager_.get();
+  }
 
   // Returns the root ServerWindow of this viewport.
   ServerWindow* root_window() { return root_.get(); }
@@ -220,7 +222,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<ServerWindow> root_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;
-  mojom::WindowManagerPtr window_manager_;
+  mojom::WindowManagerDeprecatedPtr window_manager_;
   mojom::WindowTree* tree_awaiting_input_ack_;
 
   // The last cursor set. Used to track whether we need to change the cursor.

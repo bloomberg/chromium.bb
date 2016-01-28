@@ -127,8 +127,7 @@ void TestWindowTree::OnWindowInputEventAck(uint32_t event_id) {
   acked_events_.insert(event_id);
 }
 
-void TestWindowTree::GetWindowManagerInternalClient(
-    mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternalClient>
-        internal) {}
+void TestWindowTree::GetWindowManagerClient(
+    mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal) {}
 
 }  // namespace mus

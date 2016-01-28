@@ -44,7 +44,7 @@ class WindowTreeTest;
 // internal state) as necessary.
 class WindowTreeImpl : public mojom::WindowTree,
                        public AccessPolicyDelegate,
-                       public mojom::WindowManagerInternalClient {
+                       public mojom::WindowManagerClient {
  public:
   WindowTreeImpl(ConnectionManager* connection_manager,
                  ServerWindow* root,
@@ -324,11 +324,11 @@ class WindowTreeImpl : public mojom::WindowTree,
       Id transport_window_id,
       mojo::InsetsPtr insets,
       mojo::Array<mojo::RectPtr> transport_additional_client_areas) override;
-  void GetWindowManagerInternalClient(
-      mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternalClient>
-          internal) override;
+  void GetWindowManagerClient(
+      mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
+      override;
 
-  // mojom::WindowManagerInternalClient:
+  // mojom::WindowManagerClient:
   void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(
@@ -376,9 +376,9 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   std::queue<scoped_ptr<TargetedEvent>> event_queue_;
 
-  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManagerInternalClient>>
+  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManagerClient>>
       window_manager_internal_client_binding_;
-  mojom::WindowManagerInternal* window_manager_internal_;
+  mojom::WindowManager* window_manager_internal_;
 
   scoped_ptr<WaitingForTopLevelWindowInfo> waiting_for_top_level_window_info_;
 

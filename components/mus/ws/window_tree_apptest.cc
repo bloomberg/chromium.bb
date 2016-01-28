@@ -369,9 +369,8 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     }
   }
   void RequestClose(uint32_t window_id) override {}
-  void GetWindowManagerInternal(
-      mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternal> internal)
-      override {}
+  void GetWindowManager(mojo::AssociatedInterfaceRequest<mojom::WindowManager>
+                            internal) override {}
 
   TestChangeTracker tracker_;
 
