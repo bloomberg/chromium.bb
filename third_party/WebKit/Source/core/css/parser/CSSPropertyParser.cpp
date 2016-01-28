@@ -5,6 +5,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 
 #include "core/StylePropertyShorthand.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
@@ -2742,6 +2743,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRang
         if (context.useCounter())
             context.useCounter()->count(UseCounter::DeprecatedWebKitRepeatingLinearGradient);
         result = consumeLinearGradient(args, context.mode(), Repeating, CSSPrefixedLinearGradient);
+    } else if (id == CSSValueRepeatingLinearGradient) {
+        result = consumeLinearGradient(args, context.mode(), Repeating, CSSLinearGradient);
     } else if (id == CSSValueLinearGradient) {
         result = consumeLinearGradient(args, context.mode(), NonRepeating, CSSLinearGradient);
     } else if (id == CSSValueWebkitGradient) {
@@ -2933,6 +2936,216 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeVerticalAlign(CSSParserT
     if (!parsedValue)
         parsedValue = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
     return parsedValue.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeShapeRadius(CSSParserTokenRange& args, CSSParserMode cssParserMode)
+{
+    if (identMatches<CSSValueClosestSide, CSSValueFarthestSide>(args.peek().id()))
+        return consumeIdent(args);
+    return consumeLengthOrPercent(args, cssParserMode, ValueRangeNonNegative);
+}
+
+static PassRefPtrWillBeRawPtr<CSSBasicShapeCircleValue> consumeBasicShapeCircle(CSSParserTokenRange& args, const CSSParserContext& context)
+{
+    // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
+    // circle( [<shape-radius>]? [at <position>]? )
+    RefPtrWillBeRawPtr<CSSBasicShapeCircleValue> shape = CSSBasicShapeCircleValue::create();
+    if (RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = consumeShapeRadius(args, context.mode()))
+        shape->setRadius(radius.release());
+    if (consumeIdent<CSSValueAt>(args)) {
+        RefPtrWillBeRawPtr<CSSValue> centerX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
+        if (!consumePosition(args, context.mode(), UnitlessQuirk::Forbid, centerX, centerY))
+            return nullptr;
+        shape->setCenterX(centerX);
+        shape->setCenterY(centerY);
+    }
+    return shape.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSBasicShapeEllipseValue> consumeBasicShapeEllipse(CSSParserTokenRange& args, const CSSParserContext& context)
+{
+    // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
+    // ellipse( [<shape-radius>{2}]? [at <position>]? )
+    RefPtrWillBeRawPtr<CSSBasicShapeEllipseValue> shape = CSSBasicShapeEllipseValue::create();
+    if (RefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX = consumeShapeRadius(args, context.mode())) {
+        shape->setRadiusX(radiusX);
+        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY = consumeShapeRadius(args, context.mode()))
+            shape->setRadiusY(radiusY);
+    }
+    if (consumeIdent<CSSValueAt>(args)) {
+        RefPtrWillBeRawPtr<CSSValue> centerX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
+        if (!consumePosition(args, context.mode(), UnitlessQuirk::Forbid, centerX, centerY))
+            return nullptr;
+        shape->setCenterX(centerX);
+        shape->setCenterY(centerY);
+    }
+    return shape.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSBasicShapePolygonValue> consumeBasicShapePolygon(CSSParserTokenRange& args, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSBasicShapePolygonValue> shape = CSSBasicShapePolygonValue::create();
+    if (identMatches<CSSValueEvenodd, CSSValueNonzero>(args.peek().id())) {
+        shape->setWindRule(args.consumeIncludingWhitespace().id() == CSSValueEvenodd ? RULE_EVENODD : RULE_NONZERO);
+        if (!consumeCommaIncludingWhitespace(args))
+            return nullptr;
+    }
+
+    do {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> xLength = consumeLengthOrPercent(args, context.mode(), ValueRangeAll);
+        if (!xLength)
+            return nullptr;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> yLength = consumeLengthOrPercent(args, context.mode(), ValueRangeAll);
+        if (!yLength)
+            return nullptr;
+        shape->appendPoint(xLength.release(), yLength.release());
+    } while (consumeCommaIncludingWhitespace(args));
+    return shape.release();
+}
+
+static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
+{
+    if (radii[3])
+        return;
+    if (!radii[2]) {
+        if (!radii[1])
+            radii[1] = radii[0];
+        radii[2] = radii[0];
+    }
+    radii[3] = radii[1];
+}
+
+static bool consumeRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRadii[4], RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRadii[4], CSSParserTokenRange& range, CSSParserMode cssParserMode, bool useLegacyParsing)
+{
+#if ENABLE(OILPAN)
+    // Unconditionally zero initialize the arrays of raw pointers.
+    memset(horizontalRadii, 0, 4 * sizeof(horizontalRadii[0]));
+    memset(verticalRadii, 0, 4 * sizeof(verticalRadii[0]));
+#endif
+    unsigned i = 0;
+    for (; i < 4 && !range.atEnd() && range.peek().type() != DelimiterToken; ++i) {
+        horizontalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+        if (!horizontalRadii[i])
+            return false;
+    }
+    if (!horizontalRadii[0])
+        return false;
+    if (range.atEnd()) {
+        // Legacy syntax: -webkit-border-radius: l1 l2; is equivalent to border-radius: l1 / l2;
+        if (useLegacyParsing && i == 2) {
+            verticalRadii[0] = horizontalRadii[1];
+            horizontalRadii[1] = nullptr;
+        } else {
+            completeBorderRadii(horizontalRadii);
+            for (unsigned i = 0; i < 4; ++i)
+                verticalRadii[i] = horizontalRadii[i];
+            return true;
+        }
+    } else {
+        if (range.peek().type() != DelimiterToken || range.peek().delimiter() != '/')
+            return false;
+        range.consumeIncludingWhitespace();
+        for (i = 0; i < 4 && !range.atEnd(); ++i) {
+            verticalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+            if (!verticalRadii[i])
+                return false;
+        }
+        if (!verticalRadii[0] || !range.atEnd())
+            return false;
+    }
+    completeBorderRadii(horizontalRadii);
+    completeBorderRadii(verticalRadii);
+    return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> consumeBasicShapeInset(CSSParserTokenRange& args, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSBasicShapeInsetValue> shape = CSSBasicShapeInsetValue::create();
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> top = consumeLengthOrPercent(args, context.mode(), ValueRangeAll);
+    if (!top)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> right = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> left = nullptr;
+    if ((right = consumeLengthOrPercent(args, context.mode(), ValueRangeAll))) {
+        if ((bottom = consumeLengthOrPercent(args, context.mode(), ValueRangeAll)))
+            left = consumeLengthOrPercent(args, context.mode(), ValueRangeAll);
+    }
+    if (left)
+        shape->updateShapeSize4Values(top.get(), right.get(), bottom.get(), left.get());
+    else if (bottom)
+        shape->updateShapeSize3Values(top.get(), right.get(), bottom.get());
+    else if (right)
+        shape->updateShapeSize2Values(top.get(), right.get());
+    else
+        shape->updateShapeSize1Value(top.get());
+
+    if (consumeIdent<CSSValueRound>(args)) {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRadii[4];
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRadii[4];
+        if (!consumeRadii(horizontalRadii, verticalRadii, args, context.mode(), false))
+            return nullptr;
+        shape->setTopLeftRadius(CSSValuePair::create(horizontalRadii[0].release(), verticalRadii[0].release(), CSSValuePair::DropIdenticalValues));
+        shape->setTopRightRadius(CSSValuePair::create(horizontalRadii[1].release(), verticalRadii[1].release(), CSSValuePair::DropIdenticalValues));
+        shape->setBottomRightRadius(CSSValuePair::create(horizontalRadii[2].release(), verticalRadii[2].release(), CSSValuePair::DropIdenticalValues));
+        shape->setBottomLeftRadius(CSSValuePair::create(horizontalRadii[3].release(), verticalRadii[3].release(), CSSValuePair::DropIdenticalValues));
+    }
+    return shape.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBasicShape(CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSValue> shape = nullptr;
+    if (range.peek().type() != FunctionToken)
+        return nullptr;
+    CSSValueID id = range.peek().functionId();
+    CSSParserTokenRange rangeCopy = range;
+    CSSParserTokenRange args = consumeFunction(rangeCopy);
+    if (id == CSSValueCircle)
+        shape = consumeBasicShapeCircle(args, context);
+    else if (id == CSSValueEllipse)
+        shape = consumeBasicShapeEllipse(args, context);
+    else if (id == CSSValuePolygon)
+        shape = consumeBasicShapePolygon(args, context);
+    else if (id == CSSValueInset)
+        shape = consumeBasicShapeInset(args, context);
+    if (!shape || !args.atEnd())
+        return nullptr;
+    range = rangeCopy;
+    return shape.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeClipPath(CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    String url = consumeUrl(range);
+    if (!url.isNull())
+        return CSSURIValue::create(url);
+    return consumeBasicShape(range, context);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeShapeOutside(CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    if (RefPtrWillBeRawPtr<CSSValue> imageValue = consumeImage(range, context))
+        return imageValue.release();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    if (RefPtrWillBeRawPtr<CSSValue> boxValue = consumeIdent<CSSValueContentBox, CSSValuePaddingBox, CSSValueBorderBox, CSSValueMarginBox>(range))
+        list->append(boxValue.release());
+    if (RefPtrWillBeRawPtr<CSSValue> shapeValue = consumeBasicShape(range, context)) {
+        list->append(shapeValue.release());
+        if (list->length() < 2) {
+            if (RefPtrWillBeRawPtr<CSSValue> boxValue = consumeIdent<CSSValueContentBox, CSSValuePaddingBox, CSSValueBorderBox, CSSValueMarginBox>(range))
+                list->append(boxValue.release());
+        }
+    }
+    if (!list->length())
+        return nullptr;
+    return list.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
@@ -3231,6 +3444,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeIdent<CSSValueAuto, CSSValueUnder>(m_range);
     case CSSPropertyVerticalAlign:
         return consumeVerticalAlign(m_range, m_context.mode());
+    case CSSPropertyShapeOutside:
+        return consumeShapeOutside(m_range, m_context);
+    case CSSPropertyWebkitClipPath:
+        return consumeClipPath(m_range, m_context);
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {
@@ -3747,49 +3964,6 @@ bool CSSPropertyParser::consume4Values(const StylePropertyShorthand& shorthand, 
     addProperty(longhands[3], left.release(), important);
 
     return m_range.atEnd();
-}
-
-static bool consumeRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRadii[4], RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRadii[4], CSSParserTokenRange& range, CSSParserMode cssParserMode, bool useLegacyParsing)
-{
-#if ENABLE(OILPAN)
-    // Unconditionally zero initialize the arrays of raw pointers.
-    memset(horizontalRadii, 0, 4 * sizeof(horizontalRadii[0]));
-    memset(verticalRadii, 0, 4 * sizeof(verticalRadii[0]));
-#endif
-    unsigned i = 0;
-    for (; i < 4 && !range.atEnd() && range.peek().type() != DelimiterToken; ++i) {
-        horizontalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-        if (!horizontalRadii[i])
-            return false;
-    }
-    if (!horizontalRadii[0])
-        return false;
-    if (range.atEnd()) {
-        // Legacy syntax: -webkit-border-radius: l1 l2; is equivalent to border-radius: l1 / l2;
-        if (useLegacyParsing && i == 2) {
-            verticalRadii[0] = horizontalRadii[1];
-            horizontalRadii[1] = nullptr;
-        } else {
-            completeBorderRadii(horizontalRadii);
-            for (unsigned i = 0; i < 4; ++i)
-                verticalRadii[i] = horizontalRadii[i];
-            return true;
-        }
-    } else {
-        if (range.peek().type() != DelimiterToken || range.peek().delimiter() != '/')
-            return false;
-        range.consumeIncludingWhitespace();
-        for (i = 0; i < 4 && !range.atEnd(); ++i) {
-            verticalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-            if (!verticalRadii[i])
-                return false;
-        }
-        if (!verticalRadii[0] || !range.atEnd())
-            return false;
-    }
-    completeBorderRadii(horizontalRadii);
-    completeBorderRadii(verticalRadii);
-    return true;
 }
 
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)

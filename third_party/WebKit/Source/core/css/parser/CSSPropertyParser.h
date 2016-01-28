@@ -35,11 +35,6 @@ namespace blink {
 
 class BorderImageParseContext;
 class CSSBorderImageSliceValue;
-class CSSBasicShapeValue;
-class CSSBasicShapeEllipseValue;
-class CSSBasicShapeCircleValue;
-class CSSBasicShapeInsetValue;
-class CSSBasicShapePolygonValue;
 class CSSCustomIdentValue;
 class CSSFunctionValue;
 class CSSGradientValue;
@@ -191,16 +186,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseItemPositionOverflowPosition();
     PassRefPtrWillBeRawPtr<CSSValue> parseContentDistributionOverflowPosition();
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);
-    PassRefPtrWillBeRawPtr<CSSValue> parseBasicShapeAndOrBox();
-    PassRefPtrWillBeRawPtr<CSSValue> parseBasicShape();
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
-
-    PassRefPtrWillBeRawPtr<CSSBasicShapeCircleValue> parseBasicShapeCircle(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShapeEllipseValue> parseBasicShapeEllipse(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShapePolygonValue> parseBasicShapePolygon(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> parseBasicShapeInset(CSSParserValueList* args);
-
     bool consumeFont(bool important);
     bool consumeSystemFont(bool important);
 
@@ -329,9 +314,6 @@ private:
 
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
-
-// TODO(rwlbuis): move to CSSPropertyParser.cpp once CSSParserToken conversion is done.
-void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4]);
 
 } // namespace blink
 
