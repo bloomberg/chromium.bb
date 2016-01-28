@@ -44,9 +44,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
                        const GetRegistrationCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;
-  void GetPermissionStatus(
-      int64_t sw_registration_id,
-      const GetPermissionStatusCallback& callback) override;
   void DuplicateRegistrationHandle(
       BackgroundSyncRegistrationHandle::HandleId handle_id,
       const DuplicateRegistrationHandleCallback& callback) override;

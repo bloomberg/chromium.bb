@@ -249,7 +249,6 @@
       "platform/modules/app_banner/WebAppBannerPromptResult.h",
       "platform/modules/background_sync/WebSyncClient.h",
       "platform/modules/background_sync/WebSyncError.h",
-      "platform/modules/background_sync/WebSyncPermissionStatus.h",
       "platform/modules/background_sync/WebSyncProvider.h",
       "platform/modules/background_sync/WebSyncRegistration.h",
       "platform/modules/bluetooth/WebBluetooth.h",

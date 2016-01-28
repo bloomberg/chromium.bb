@@ -16,7 +16,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/public/common/background_sync.mojom.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncError.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 
@@ -159,25 +158,6 @@ void BackgroundSyncProvider::getRegistrations(
   GetBackgroundSyncServicePtr()->GetRegistrations(
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetRegistrationsCallback,
-                 base::Unretained(this),
-                 base::Passed(std::move(callbacksPtr))));
-}
-
-void BackgroundSyncProvider::getPermissionStatus(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebSyncGetPermissionStatusCallbacks* callbacks) {
-  DCHECK(service_worker_registration);
-  DCHECK(callbacks);
-  int64_t service_worker_registration_id =
-      GetServiceWorkerRegistrationId(service_worker_registration);
-  scoped_ptr<blink::WebSyncGetPermissionStatusCallbacks> callbacksPtr(
-      callbacks);
-
-  // base::Unretained is safe here, as the mojo channel will be deleted (and
-  // will wipe its callbacks) before 'this' is deleted.
-  GetBackgroundSyncServicePtr()->GetPermissionStatus(
-      service_worker_registration_id,
-      base::Bind(&BackgroundSyncProvider::GetPermissionStatusCallback,
                  base::Unretained(this),
                  base::Passed(std::move(callbacksPtr))));
 }
@@ -333,44 +313,6 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
     case BackgroundSyncError::NOT_ALLOWED:
       // These errors should never be returned from
       // BackgroundSyncManager::GetRegistrations
-      NOTREACHED();
-      break;
-    case BackgroundSyncError::STORAGE:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "Background Sync is disabled."));
-      break;
-    case BackgroundSyncError::NO_SERVICE_WORKER:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "No service worker is active."));
-      break;
-  }
-}
-
-void BackgroundSyncProvider::GetPermissionStatusCallback(
-    scoped_ptr<blink::WebSyncGetPermissionStatusCallbacks> callbacks,
-    BackgroundSyncError error,
-    PermissionStatus status) {
-  // TODO(iclelland): Determine the correct error message to return in each case
-  switch (error) {
-    case BackgroundSyncError::NONE:
-      switch (status) {
-        case PermissionStatus::GRANTED:
-          callbacks->onSuccess(blink::WebSyncPermissionStatusGranted);
-          break;
-        case PermissionStatus::DENIED:
-          callbacks->onSuccess(blink::WebSyncPermissionStatusDenied);
-          break;
-        case PermissionStatus::ASK:
-          callbacks->onSuccess(blink::WebSyncPermissionStatusPrompt);
-          break;
-      }
-      break;
-    case BackgroundSyncError::NOT_FOUND:
-    case BackgroundSyncError::NOT_ALLOWED:
-      // These errors should never be returned from
-      // BackgroundSyncManager::GetPermissionStatus
       NOTREACHED();
       break;
     case BackgroundSyncError::STORAGE:

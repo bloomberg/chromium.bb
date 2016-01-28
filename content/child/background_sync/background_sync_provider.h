@@ -61,9 +61,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
   void getRegistrations(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetRegistrationsCallbacks* callbacks) override;
-  void getPermissionStatus(
-      blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebSyncGetPermissionStatusCallbacks* callbacks) override;
   // TODO(jkarlin): Rename to releaseRegistrationHandle.
   void releaseRegistration(int64_t handle_id) override;
   void notifyWhenFinished(
@@ -95,10 +92,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
       BackgroundSyncError error,
       const mojo::Array<SyncRegistrationPtr>& registrations);
-  void GetPermissionStatusCallback(
-      scoped_ptr<blink::WebSyncGetPermissionStatusCallbacks> callbacks,
-      BackgroundSyncError error,
-      PermissionStatus status);
   void NotifyWhenFinishedCallback(
       scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks,
       BackgroundSyncError error,

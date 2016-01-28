@@ -11,7 +11,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/background_sync/WebSyncError.h"
-#include "public/platform/modules/background_sync/WebSyncPermissionStatus.h"
 #include "public/platform/modules/background_sync/WebSyncRegistration.h"
 
 namespace blink {
@@ -21,7 +20,6 @@ using WebSyncRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebSyncRegistrat
 using WebSyncNotifyWhenFinishedCallbacks = WebCallbacks<void, const WebSyncError&>;
 using WebSyncUnregistrationCallbacks = WebCallbacks<bool, const WebSyncError&>;
 using WebSyncGetRegistrationsCallbacks = WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
-using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus, const WebSyncError&>;
 
 class WebSyncProvider {
 public:
@@ -42,10 +40,6 @@ public:
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getRegistrations(WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
-
-    // Takes ownership of the WebSyncGetPermissionStatusCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getPermissionStatus(WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
 
     // Takes ownership of the WebSyncNotifyWhenFinishedCallbacks.
     virtual void notifyWhenFinished(int64_t handleId, WebSyncNotifyWhenFinishedCallbacks*) = 0;

@@ -156,16 +156,6 @@ void BackgroundSyncServiceImpl::GetRegistrations(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void BackgroundSyncServiceImpl::GetPermissionStatus(
-    int64_t sw_registration_id,
-    const GetPermissionStatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // TODO(iclelland): Implement a real policy. This is a stub implementation.
-  // See https://crbug.com/482091.
-  callback.Run(BackgroundSyncError::NONE, PermissionStatus::GRANTED);
-}
-
 void BackgroundSyncServiceImpl::DuplicateRegistrationHandle(
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     const DuplicateRegistrationHandleCallback& callback) {

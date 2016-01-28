@@ -5,7 +5,6 @@
 module content;
 
 import "content/public/common/background_sync.mojom";
-import "content/public/common/permission_status.mojom";
 import "content/public/common/service_worker_event_status.mojom";
 
 enum BackgroundSyncError {
@@ -42,8 +41,6 @@ interface BackgroundSyncService {
       => (BackgroundSyncError err, array<SyncRegistration> registrations);
   Unregister(int64 handle_id, int64 service_worker_registration_id)
       => (BackgroundSyncError err);
-  GetPermissionStatus(int64 service_worker_registration_id)
-      => (BackgroundSyncError err, PermissionStatus status);
   DuplicateRegistrationHandle(int64 handle_id)
       => (BackgroundSyncError err, SyncRegistration? registration);
   ReleaseRegistration(int64 handle_id);
