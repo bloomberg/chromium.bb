@@ -9120,10 +9120,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   GLsizei height = c.height;
   GLenum format = c.format;
   GLenum type = c.type;
-  uint32 pixels_shm_id = c.pixels_shm_id;
-  uint32 pixels_shm_offset = c.pixels_shm_offset;
-  uint32 result_shm_id = c.result_shm_id;
-  uint32 result_shm_offset = c.result_shm_offset;
+  uint32_t pixels_shm_id = c.pixels_shm_id;
+  uint32_t pixels_shm_offset = c.pixels_shm_offset;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
   GLboolean async = static_cast<GLboolean>(c.async);
   if (width < 0 || height < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadPixels", "dimensions < 0");
