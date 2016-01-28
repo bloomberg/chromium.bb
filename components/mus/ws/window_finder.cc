@@ -98,7 +98,6 @@ ServerWindow* FindDeepestVisibleWindowForEvents(
           ->GetSurfacesState()
           ->hit_tester()
           ->GetTargetSurfaceAtPoint(display_surface_id, *location, &transform);
-  // TODO(sky): this is now wrong, needs mapping from client to window.
   WindowId id = WindowIdFromTransportId(
       cc::SurfaceIdAllocator::NamespaceForId(target_surface));
   // TODO(fsamuel): This should be a DCHECK but currently we use stale

@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 
 namespace mus {
 
@@ -14,6 +15,7 @@ class SurfacesState;
 
 namespace ws {
 
+struct ClientWindowId;
 class ServerWindow;
 struct WindowId;
 
@@ -31,6 +33,17 @@ class ServerWindowDelegate {
   // Schedules a callback to DestroySurfacesScheduledForDestruction() at the
   // appropriate time, which may be synchronously.
   virtual void ScheduleSurfaceDestruction(ServerWindow* window) = 0;
+
+  // Used to resolve a reference to a Window by ClientWindowId in submitted
+  // frames. When the client owning |ancestor| (or the client embedded at
+  // |ancestor|) submits a frame the frame may referenced child windows. The
+  // reference is done using an id that is only known to the client. This
+  // function resolves the id into the appropriate window, or null if a window
+  // can't be found.
+  virtual ServerWindow* FindWindowForSurface(
+      const ServerWindow* ancestor,
+      mojom::SurfaceType surface_type,
+      const ClientWindowId& client_window_id) = 0;
 
  protected:
   virtual ~ServerWindowDelegate() {}

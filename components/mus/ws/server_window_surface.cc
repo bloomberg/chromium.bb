@@ -99,13 +99,15 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
     const mojom::CompositorFrameMetadataPtr& metadata,
     cc::SharedQuadState* sqs,
     cc::RenderPass* render_pass) {
-  Id id = static_cast<Id>(
+  // Surface ids originate from the client, meaning they are ClientWindowIds
+  // and can only be resolved by the client that submitted the frame.
+  const ClientWindowId other_client_window_id(
       input->surface_quad_state->surface.To<cc::SurfaceId>().id);
-  // TODO(sky): this is now wrong, needs mapping from client to window.
-  WindowId other_window_id = WindowIdFromTransportId(id);
-  ServerWindow* other_window = window()->GetChildWindow(other_window_id);
+  ServerWindow* other_window = window()->delegate()->FindWindowForSurface(
+      window(), mojom::SurfaceType::DEFAULT, other_client_window_id);
   if (!other_window) {
-    DVLOG(2) << "The window ID '" << id << "' does not exist.";
+    DVLOG(2) << "The window ID '" << other_client_window_id.id
+             << "' does not exist.";
     // TODO(fsamuel): We return true here so that the CompositorFrame isn't
     // entirely rejected. We just drop this SurfaceDrawQuad. This failure
     // can happen if the client has an out of date view of the window tree.
@@ -113,7 +115,7 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
     return true;
   }
 
-  referenced_window_ids_.insert(other_window_id);
+  referenced_window_ids_.insert(other_window->id());
 
   ServerWindowSurface* default_surface =
       other_window->GetOrCreateSurfaceManager()->GetDefaultSurface();

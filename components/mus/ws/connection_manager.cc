@@ -535,6 +535,22 @@ void ConnectionManager::ScheduleSurfaceDestruction(ServerWindow* window) {
   }
 }
 
+ServerWindow* ConnectionManager::FindWindowForSurface(
+    const ServerWindow* ancestor,
+    mojom::SurfaceType surface_type,
+    const ClientWindowId& client_window_id) {
+  WindowTreeImpl* window_tree = GetConnection(ancestor->id().connection_id);
+  if (!window_tree)
+    return nullptr;
+  if (surface_type == mojom::SurfaceType::DEFAULT) {
+    // At embed points the default surface comes from the embedded app.
+    WindowTreeImpl* connection_with_root = GetConnectionWithRoot(ancestor);
+    if (connection_with_root)
+      window_tree = connection_with_root;
+  }
+  return window_tree->GetWindowByClientId(client_window_id);
+}
+
 void ConnectionManager::OnWindowDestroyed(ServerWindow* window) {
   if (!in_destructor_)
     ProcessWindowDeleted(window);
