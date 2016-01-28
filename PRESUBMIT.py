@@ -1081,6 +1081,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^sandbox[\\\/]linux[\\\/].*",
                  r"^tools[\\\/]",
                  r"^ui[\\\/]aura[\\\/]bench[\\\/]bench_main\.cc$",
+                 r"^ui[\\\/]ozone[\\\/]platform[\\\/]cast[\\\/]",
                  r"^storage[\\\/]browser[\\\/]fileapi[\\\/]" +
                      r"dump_file_system.cc$",))
   source_file_filter = lambda x: input_api.FilterSourceFile(
