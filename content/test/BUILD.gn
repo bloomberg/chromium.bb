@@ -178,7 +178,7 @@ source_set("test_support") {
     ]
   }
 
-  if (is_android && !use_aura) {
+  if (is_android) {
     deps += [
       "//ui/android",
       "//ui/shell_dialogs",
