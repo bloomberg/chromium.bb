@@ -59,7 +59,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -88,7 +87,6 @@
 #include "url/url_constants.h"
 
 using blink::WebFrame;
-using blink::WebHeap;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
@@ -171,13 +169,6 @@ class RenderViewImplTest : public RenderViewTest {
     WebRuntimeFeatures::enableExperimentalFeatures(true);
     WebRuntimeFeatures::enableTestOnlyFeatures(true);
     RenderViewTest::SetUp();
-  }
-
-  // To avoid flaky leak reports, insist on GCing
-  // Blink upon shutdown to clear out garbage.
-  void TearDown() override {
-    WebHeap::collectGarbageForTesting();
-    RenderViewTest::TearDown();
   }
 
   RenderViewImpl* view() {

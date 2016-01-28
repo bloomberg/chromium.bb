@@ -409,6 +409,8 @@ void RenderViewTest::TearDown() {
 
   leak_detector->collectGarbageAndReport();
 
+  base::RunLoop().RunUntilIdle();
+
   blink_platform_impl_.Shutdown();
   blink::shutdown();
 
