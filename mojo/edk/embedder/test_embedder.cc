@@ -9,7 +9,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_support.h"
-#include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/handle_table.h"
 
