@@ -3485,3 +3485,16 @@
    fun:_ZN5blink14LocalDOMWindow18installNewDocumentERKN3WTF6StringERKNS_12DocumentInitEb
    fun:_ZN5blink14DocumentLoader15createWriterForEPKNS_*
 }
+{
+   bug_581959
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIPN10disk_cache20SimpleEntryOperationEE8allocateEmPKv
+   fun:_ZNSt11_Deque_baseIN10disk_cache20SimpleEntryOperationESaIS1_EE15_M_allocate_mapEm
+   fun:_ZNSt11_Deque_baseIN10disk_cache20SimpleEntryOperationESaIS1_EE17_M_initialize_mapEm
+   fun:_ZNSt11_Deque_baseIN10disk_cache20SimpleEntryOperationESaIS1_EEC2Ev
+   fun:_ZNSt5dequeIN10disk_cache20SimpleEntryOperationESaIS1_EEC2Ev
+   fun:_ZN10disk_cache15SimpleEntryImplC1EN3net9CacheTypeERKN4base8FilePathEmNS0_14OperationsModeEPNS_17SimpleBackendImplEPNS1_6NetLogE
+   fun:_ZN10disk_cache17SimpleBackendImpl23CreateOrFindActiveEntryEmRKSs
+   fun:_ZN10disk_cache17SimpleBackendImpl11CreateEntryERKSsPPNS_5EntryERKN4base8CallbackIFviEEE
+}
