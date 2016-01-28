@@ -25,6 +25,8 @@ const char kJingleNamespace[] = "urn:xmpp:jingle:1";
 // Namespace for transport messages when using standard ICE.
 const char kIceTransportNamespace[] = "google:remoting:ice";
 
+const char kWebrtcTransportNamespace[] = "google:remoting:webrtc";
+
 const char kEmptyNamespace[] = "";
 const char kXmlNamespace[] = "http://www.w3.org/XML/1998/namespace";
 
@@ -332,11 +334,15 @@ scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
                          ContentDescription::kChromotingContentName);
     content_tag->AddAttr(QName(kEmptyNamespace, "creator"), "initiator");
 
-    if (description.get())
+    if (description)
       content_tag->AddElement(description->ToXml());
 
-    if (transport_info)
+    if (transport_info) {
       content_tag->AddElement(new XmlElement(*transport_info));
+    } else if (description && description->config()->webrtc_supported()) {
+      content_tag->AddElement(
+          new XmlElement(QName(kWebrtcTransportNamespace, "transport")));
+    }
   }
 
   return root;

@@ -15,11 +15,11 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/ice_connection_to_host.h"
-#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
+#include "remoting/protocol/webrtc_connection_to_host.h"
 
 namespace remoting {
 
@@ -27,9 +27,7 @@ ChromotingClient::ChromotingClient(ClientContext* client_context,
                                    ClientUserInterface* user_interface,
                                    protocol::VideoRenderer* video_renderer,
                                    scoped_ptr<AudioPlayer> audio_player)
-    : user_interface_(user_interface),
-      video_renderer_(video_renderer),
-      connection_(new protocol::IceConnectionToHost()) {
+    : user_interface_(user_interface), video_renderer_(video_renderer) {
   DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
@@ -65,17 +63,30 @@ void ChromotingClient::Start(
   host_jid_ = host_jid;
   local_capabilities_ = capabilities;
 
+  if (!protocol_config_)
+    protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
+  if (!audio_decode_scheduler_)
+    protocol_config_->DisableAudioChannel();
+
+  if (!connection_) {
+    if (protocol_config_->webrtc_supported()) {
+      DCHECK(!protocol_config_->ice_supported());
+#if defined(OS_NACL)
+      LOG(FATAL) << "WebRTC is not supported in webapp.";
+#else   // defined(OS_NACL)
+      connection_.reset(new protocol::WebrtcConnectionToHost());
+#endif  // !defined(OS_NACL)
+    } else {
+      DCHECK(protocol_config_->ice_supported());
+      connection_.reset(new protocol::IceConnectionToHost());
+    }
+  }
   connection_->set_client_stub(this);
   connection_->set_clipboard_stub(this);
   connection_->set_video_renderer(video_renderer_);
   connection_->set_audio_stub(audio_decode_scheduler_.get());
 
   session_manager_.reset(new protocol::JingleSessionManager(signal_strategy));
-
-  if (!protocol_config_)
-    protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
-  if (!audio_decode_scheduler_)
-    protocol_config_->DisableAudioChannel();
   session_manager_->set_protocol_config(std::move(protocol_config_));
 
   authenticator_ = std::move(authenticator);
