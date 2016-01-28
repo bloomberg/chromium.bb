@@ -63,6 +63,11 @@ class Range;
 
 // Functions returning Node
 
+// highestEditableRoot returns the highest editable node. If the
+// rootEditableElement of the speicified Position is <body>, this returns the
+// <body>. Otherwise, this searches ancestors for the highest editable node in
+// defiance of editing boundaries. This returns a Document if designMode="on"
+// and the specified Position is not in the <body>.
 CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
 ContainerNode* highestEditableRoot(const PositionInComposedTree&, EditableType = ContentIsEditable);
 
@@ -79,6 +84,9 @@ Element* enclosingTableCell(const Position&);
 Element* associatedElementOf(const Position&);
 Node* enclosingEmptyListItem(const VisiblePosition&);
 Element* enclosingAnchorElement(const Position&);
+// Returns the lowest ancestor with the specified QualifiedName. If the
+// specified Position is editable, this function returns an editable
+// Element. Otherwise, editability doesn't matter.
 Element* enclosingElementWithTag(const Position&, const QualifiedName&);
 CORE_EXPORT Node* enclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT Node* enclosingNodeOfType(const PositionInComposedTree&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
