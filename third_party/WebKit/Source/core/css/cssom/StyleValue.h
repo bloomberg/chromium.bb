@@ -30,11 +30,8 @@ public:
     static StyleValue* create(const CSSValue&);
     static ScriptValue parse(ScriptState*, const String& property, const String& cssText);
 
+    virtual String cssString() const = 0;
     virtual PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const = 0;
-    virtual String cssString() const
-    {
-        return toCSSValue()->cssText();
-    }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

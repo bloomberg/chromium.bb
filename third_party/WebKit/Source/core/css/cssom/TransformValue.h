@@ -39,6 +39,8 @@ public:
 
     size_t size() { return m_transformComponents.size(); }
 
+    String cssString() const override { return String(); }
+
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_transformComponents);

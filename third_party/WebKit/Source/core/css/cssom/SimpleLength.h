@@ -39,6 +39,7 @@ public:
 
     StyleValueType type() const override { return StyleValueType::SimpleLengthType; }
 
+    String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
 protected:

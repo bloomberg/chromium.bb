@@ -44,6 +44,7 @@ public:
 
 #undef GETTER_MACRO
 
+    String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
     StyleValueType type() const override { return CalcLengthType; }
