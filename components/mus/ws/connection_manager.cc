@@ -539,7 +539,11 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
     const ServerWindow* ancestor,
     mojom::SurfaceType surface_type,
     const ClientWindowId& client_window_id) {
-  WindowTreeImpl* window_tree = GetConnection(ancestor->id().connection_id);
+  WindowTreeImpl* window_tree;
+  if (ancestor->id().connection_id == kInvalidConnectionId)
+    window_tree = GetWindowTreeHostByWindow(ancestor)->GetWindowTree();
+  else
+    window_tree = GetConnection(ancestor->id().connection_id);
   if (!window_tree)
     return nullptr;
   if (surface_type == mojom::SurfaceType::DEFAULT) {
