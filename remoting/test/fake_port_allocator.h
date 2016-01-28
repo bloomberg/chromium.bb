@@ -20,8 +20,10 @@ class FakePacketSocketFactory;
 
 class FakePortAllocator : public cricket::BasicPortAllocator {
  public:
-  FakePortAllocator(rtc::NetworkManager* network_manager,
-                    rtc::PacketSocketFactory* socket_factory);
+  FakePortAllocator(
+      rtc::NetworkManager* network_manager,
+      rtc::PacketSocketFactory* socket_factory,
+      scoped_refptr<protocol::TransportContext> transport_context_);
   ~FakePortAllocator() override;
 
   // cricket::BasicPortAllocator overrides.
@@ -32,6 +34,8 @@ class FakePortAllocator : public cricket::BasicPortAllocator {
       const std::string& ice_password) override;
 
  private:
+  scoped_refptr<protocol::TransportContext> transport_context_;
+
   DISALLOW_COPY_AND_ASSIGN(FakePortAllocator);
 };
 
