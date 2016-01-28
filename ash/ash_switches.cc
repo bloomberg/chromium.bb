@@ -91,6 +91,8 @@ const char kAshHideNotificationsForFactory[] =
 // "1024x768" creates a window of size 1024x768.
 // "100+200-1024x768" positions the window at 100,200.
 // "1024x768*2" sets the scale factor to 2 for a high DPI display.
+// "800,0+800-800x800" for two displays at 800x800 resolution.
+// "800,0+800-800x800,0+1600-800x800" for three displays at 800x800 resolution.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
 // Specifies the layout mode and offsets for the secondary display for
