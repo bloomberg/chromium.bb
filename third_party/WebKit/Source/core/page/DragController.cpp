@@ -46,6 +46,7 @@
 #include "core/events/TextEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -776,7 +777,7 @@ static IntPoint dragLocationForSelectionDrag(LocalFrame* sourceFrame)
     return IntPoint(xpos, ypos);
 }
 
-static const IntSize& maxDragImageSize()
+static const IntSize maxDragImageSize(float deviceScaleFactor)
 {
 #if OS(MACOSX)
     // Match Safari's drag image size.
@@ -784,10 +785,12 @@ static const IntSize& maxDragImageSize()
 #else
     static const IntSize maxDragImageSize(200, 200);
 #endif
-    return maxDragImageSize;
+    IntSize maxSizeInPixels = maxDragImageSize;
+    maxSizeInPixels.scale(deviceScaleFactor);
+    return maxSizeInPixels;
 }
 
-static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, const IntPoint& dragOrigin, const IntPoint& imageLocation, const IntSize& imageSizeInDIP, IntPoint& dragLocation)
+static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, float deviceScaleFactor, const IntPoint& dragOrigin, const IntPoint& imageElementLocation, const IntSize& imageElementSizeInPixels, IntPoint& dragLocation)
 {
     OwnPtr<DragImage> dragImage;
     IntPoint origin;
@@ -799,12 +802,15 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
     if (shouldRespectImageOrientation == RespectImageOrientation && image->isBitmapImage())
         orientation = toBitmapImage(image)->currentFrameOrientation();
 
-    if (image->size().height() * image->size().width() <= MaxOriginalImageArea
+    IntSize imageSize = orientation.usesWidthAsHeight() ? image->size().transposedSize() : image->size();
+
+    FloatSize imageScale = DragImage::clampedImageScale(imageSize, imageElementSizeInPixels, maxDragImageSize(deviceScaleFactor));
+
+    if (imageSize.area() <= MaxOriginalImageArea
         && (dragImage = DragImage::create(image, shouldRespectImageOrientation,
-            1 /* deviceScaleFactor */, interpolationQuality, DragImageAlpha,
-            DragImage::clampedImageScale(orientation.usesWidthAsHeight() ? image->size().transposedSize() : image->size(), imageSizeInDIP, maxDragImageSize())))) {
-        IntSize originalSize = imageSizeInDIP;
-        origin = imageLocation;
+            deviceScaleFactor, interpolationQuality, DragImageAlpha, imageScale))) {
+        IntSize originalSize = imageElementSizeInPixels;
+        origin = imageElementLocation;
 
         IntSize newSize = dragImage->size();
 
@@ -884,12 +890,17 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
         ASSERT(!image->filenameExtension().isEmpty());
         if (!dragImage) {
             const IntRect& imageRect = hitTestResult.imageRect();
-            const IntSize& imageSizeInDIP = src->page()->chromeClient().viewportToScreen(imageRect).size();
+            IntSize imageSizeInPixels = imageRect.size();
+            // TODO(oshima): Remove this scaling and simply pass imageRect to dragImageForImage
+            // once all platforms are migrated to use zoom for dsf.
+            imageSizeInPixels.scale(src->host()->deviceScaleFactor());
+
+            float screenDeviceScaleFactor = src->page()->chromeClient().screenInfo().deviceScaleFactor;
             // Pass the selected image size in DIP becasue dragImageForImage clips the image in DIP.
             // The coordinates of the locations are in Viewport coordinates, and they're converted in the Blink client.
             // TODO(oshima): Currently, the dragged image on high DPI is scaled and can be blurry because of this.
             // Consider to clip in the screen coordinates to use high resolution image on high DPI screens.
-            dragImage = dragImageForImage(element, image, dragOrigin, imageRect.location(), imageSizeInDIP, dragLocation);
+            dragImage = dragImageForImage(element, image, screenDeviceScaleFactor, dragOrigin, imageRect.location(), imageSizeInPixels, dragLocation);
         }
         doSystemDrag(dragImage.get(), dragLocation, dragOrigin, dataTransfer, src, false);
     } else if (state.m_dragType == DragSourceActionLink) {
