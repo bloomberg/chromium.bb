@@ -6965,7 +6965,11 @@
     { "name": "zehntner.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "znation.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "zocken.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "zwerimex.com", "include_subdomains": true, "mode": "force-https" }
+    { "name": "zwerimex.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "united.com", "include_subdomains": false, "mode": "force-https" },
+    { "name": "www.united.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "mobile.united.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "smartphone.continental.com ", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
