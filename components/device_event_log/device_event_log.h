@@ -40,6 +40,9 @@
 #define LOGIN_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_LOGIN, \
              ::device_event_log::LOG_LEVEL_##level)
+#define BLUETOOTH_LOG(level)                         \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_BLUETOOTH, \
+             ::device_event_log::LOG_LEVEL_##level)
 #define USB_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_USB, \
              ::device_event_log::LOG_LEVEL_##level)
@@ -86,6 +89,8 @@ enum LogType {
   LOG_TYPE_POWER,
   // Login related events.
   LOG_TYPE_LOGIN,
+  // Bluetooth device related events (i.e. device/bluetooth).
+  LOG_TYPE_BLUETOOTH,
   // USB device related events (i.e. device/usb).
   LOG_TYPE_USB,
   // Human-interface device related events (i.e. device/hid).

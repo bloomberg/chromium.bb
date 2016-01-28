@@ -31,6 +31,7 @@ const char* kLogLevelName[] = {"Error", "User", "Event", "Debug"};
 const char* kLogTypeNetworkDesc = "Network";
 const char* kLogTypePowerDesc = "Power";
 const char* kLogTypeLoginDesc = "Login";
+const char* kLogTypeBluetoothDesc = "Bluetooth";
 const char* kLogTypeUsbDesc = "USB";
 const char* kLogTypeHidDesc = "HID";
 
@@ -42,6 +43,8 @@ std::string GetLogTypeString(LogType type) {
       return kLogTypePowerDesc;
     case LOG_TYPE_LOGIN:
       return kLogTypeLoginDesc;
+    case LOG_TYPE_BLUETOOTH:
+      return kLogTypeBluetoothDesc;
     case LOG_TYPE_USB:
       return kLogTypeUsbDesc;
     case LOG_TYPE_HID:

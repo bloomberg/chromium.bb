@@ -14330,6 +14330,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DEVICE_LOG_TYPE_POWER" desc="Checkbox to enable showing events of type POWER">
         Power
       </message>
+      <message name="IDS_DEVICE_LOG_TYPE_BLUETOOTH" desc="Checkbox to enable showing events of type BLUETOOTH">
+        Bluetooth
+      </message>
       <message name="IDS_DEVICE_LOG_TYPE_USB" desc="Checkbox to enable showing events of type USB">
         USB
       </message>
