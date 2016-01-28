@@ -2859,9 +2859,9 @@ GapRects LayoutBlockFlow::blockSelectionGaps(const LayoutBlock* rootBlock, const
             getSelectionGapInfo(childState, leftGap, rightGap);
 
             if (leftGap)
-                result.uniteLeft(logicalLeftSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, this, curr->logicalLeft(), curr->logicalTop(), curr->logicalHeight(), paintInfo));
+                result.uniteLeft(logicalLeftSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, LineLayoutItem(const_cast<LayoutBlockFlow*>(this)), curr->logicalLeft(), curr->logicalTop(), curr->logicalHeight(), paintInfo));
             if (rightGap)
-                result.uniteRight(logicalRightSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, this, curr->logicalRight(), curr->logicalTop(), curr->logicalHeight(), paintInfo));
+                result.uniteRight(logicalRightSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, LineLayoutItem(const_cast<LayoutBlockFlow*>(this)), curr->logicalRight(), curr->logicalTop(), curr->logicalHeight(), paintInfo));
 
             // Update lastLogicalTop to be just underneath the object.  lastLogicalLeft and lastLogicalRight extend as far as
             // they can without bumping into floating or positioned objects.  Ideally they will go right up
@@ -2879,7 +2879,7 @@ GapRects LayoutBlockFlow::blockSelectionGaps(const LayoutBlock* rootBlock, const
 }
 
 LayoutRect LayoutBlockFlow::logicalLeftSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-    const LayoutObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
+    const LineLayoutItem selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
 {
     LayoutUnit rootBlockLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalTop;
     LayoutUnit rootBlockLogicalLeft = std::max(logicalLeftSelectionOffset(rootBlock, logicalTop), logicalLeftSelectionOffset(rootBlock, logicalTop + logicalHeight));
@@ -2891,13 +2891,13 @@ LayoutRect LayoutBlockFlow::logicalLeftSelectionGap(const LayoutBlock* rootBlock
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        paintInfo->context.fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+        paintInfo->context.fillRect(selectionGapRect, selObj.selectionBackgroundColor());
     }
     return gapRect;
 }
 
 LayoutRect LayoutBlockFlow::logicalRightSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-    const LayoutObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
+    const LineLayoutItem selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
 {
     LayoutUnit rootBlockLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalTop;
     LayoutUnit rootBlockLogicalLeft = std::max(rootBlock->inlineDirectionOffset(offsetFromRootBlock) + logicalRight, max(logicalLeftSelectionOffset(rootBlock, logicalTop), logicalLeftSelectionOffset(rootBlock, logicalTop + logicalHeight)));
@@ -2909,7 +2909,7 @@ LayoutRect LayoutBlockFlow::logicalRightSelectionGap(const LayoutBlock* rootBloc
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        paintInfo->context.fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+        paintInfo->context.fillRect(selectionGapRect, selObj.selectionBackgroundColor());
     }
     return gapRect;
 }

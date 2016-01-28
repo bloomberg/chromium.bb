@@ -292,11 +292,11 @@ GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const Lay
     InlineBox* lastBox = lastSelectedBox();
     if (leftGap) {
         result.uniteLeft(block().logicalLeftSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock,
-            &firstBox->parent()->layoutObject(), firstBox->logicalLeft(), selTop, selHeight, paintInfo));
+            firstBox->parent()->lineLayoutItem(), firstBox->logicalLeft(), selTop, selHeight, paintInfo));
     }
     if (rightGap) {
         result.uniteRight(block().logicalRightSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock,
-            &lastBox->parent()->layoutObject(), lastBox->logicalRight(), selTop, selHeight, paintInfo));
+            lastBox->parent()->lineLayoutItem(), lastBox->logicalRight(), selTop, selHeight, paintInfo));
     }
 
     // When dealing with bidi text, a non-contiguous selection region is possible.
