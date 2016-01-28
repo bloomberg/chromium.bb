@@ -35,25 +35,3 @@ function mojo_test(func, name, properties) {
     });
   }, name, properties);
 }
-
-// Polls aggressively for a message to become available on a pipe.
-function mojo_wait_for_incoming_message(mojo, pipe) {
-  return new Promise((resolve, reject) => {
-    let wait = () => {
-      let result = mojo.core.readMessage(pipe, 0);
-      if (result.result === mojo.core.RESULT_SHOULD_WAIT) {
-        setTimeout(wait);
-        return;
-      }
-
-      if (result.result !== mojo.core.RESULT_OK) {
-        reject(result.result);
-        return;
-      }
-
-      resolve({ buffer: result.buffer, handles: result.handles });
-    };
-
-    wait();
-  });
-};
