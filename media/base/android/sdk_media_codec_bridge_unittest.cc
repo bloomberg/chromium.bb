@@ -90,6 +90,7 @@ unsigned char test_mp3[] = {
     0x8a, 0xb3, 0x52, 0xd1, 0x3d, 0x79, 0x81, 0x4d, 0x31, 0x24, 0xf9, 0x38,
     0x96, 0xbc, 0xf4, 0x8c, 0x25, 0xe9, 0xf2, 0x73, 0x94, 0x85, 0xc2, 0x61,
     0x6a, 0x34, 0x68, 0x65, 0x78, 0x87, 0xa6, 0x4f};
+static const size_t kDecodedAudioLengthInBytes = 9216u;
 
 }  // namespace
 
@@ -105,6 +106,7 @@ namespace media {
   } while (0)
 
 static const int kPresentationTimeBase = 100;
+static const int kMaxInputPts = kPresentationTimeBase + 2;
 
 static inline const base::TimeDelta InfiniteTimeOut() {
   return base::TimeDelta::FromMicroseconds(-1);
@@ -181,6 +183,7 @@ TEST(SdkMediaCodecBridgeTest, DoNormal) {
 
   input_pts = kPresentationTimeBase;
   bool eos = false;
+  size_t total_size = 0;
   while (!eos) {
     size_t unused_offset = 0;
     size_t size = 0;
@@ -205,11 +208,10 @@ TEST(SdkMediaCodecBridgeTest, DoNormal) {
     }
     ASSERT_GE(output_buf_index, 0);
     EXPECT_LE(1u, size);
-    if (!eos)
-      EXPECT_EQ(++input_pts, timestamp.InMicroseconds());
-    ASSERT_LE(input_pts, kPresentationTimeBase + 2);
+    total_size += size;
   }
-  ASSERT_EQ(input_pts, kPresentationTimeBase + 2);
+  EXPECT_EQ(kDecodedAudioLengthInBytes, total_size);
+  ASSERT_LE(input_pts, kMaxInputPts);
 }
 
 TEST(SdkMediaCodecBridgeTest, InvalidVorbisHeader) {
