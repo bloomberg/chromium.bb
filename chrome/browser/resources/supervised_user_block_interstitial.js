@@ -71,7 +71,7 @@ function initialize() {
       sendCommand('feedback');
     };
   } else {
-    $('feedback-link').style.display = 'none';
+    $('feedback').hidden = true;
   }
 }
 

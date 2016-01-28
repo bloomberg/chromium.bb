@@ -7738,7 +7738,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Blocked
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK" desc="The text for a link to submit feedback about a blocked site.">
-        Was this unexpected? Tell us about it!
+        Was this unexpected? <ph name="BEGIN_LINK">&lt;a is="action-link" id="feedback-link"&gt;</ph>Let us know<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_SHOW_DETAILS" desc="The text for the link to show details about the interstitial.">
         Details

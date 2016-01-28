@@ -33,9 +33,12 @@ h1 {
   position: relative;
 }
 
+#feedback {
+  margin-top: 50px;
+}
+
 #feedback-link {
-  font-size: 80%;
-  margin-top: 10px;
+  color: rgb(66, 133, 244);
 }
 
 #request-access-button {
@@ -137,5 +140,9 @@ h1 {
   #main-frame-blocked {
     display: flex;
     flex-flow: column;
+  }
+
+  #feedback {
+    margin-top: 35px;
   }
 }
