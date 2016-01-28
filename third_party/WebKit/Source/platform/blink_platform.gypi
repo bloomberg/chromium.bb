@@ -521,6 +521,8 @@
       'graphics/Color.h',
       'graphics/ColorSpace.cpp',
       'graphics/ColorSpace.h',
+      'graphics/ColorSpaceProfileData.cpp',
+      'graphics/ColorSpaceProfileData.h',
       'graphics/CompositingReasons.cpp',
       'graphics/CompositingReasons.h',
       'graphics/CompositorMutableState.cpp',
