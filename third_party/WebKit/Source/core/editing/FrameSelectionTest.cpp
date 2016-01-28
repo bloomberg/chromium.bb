@@ -214,4 +214,12 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
     EXPECT_EQ(PositionInComposedTree(bottom, 3), visibleSelectionInComposedTree().end());
 }
 
+TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot)
+{
+    RefPtrWillBeRawPtr<Element> select = document().createElement("select", ASSERT_NO_EXCEPTION);
+    document().replaceChild(select.get(), document().documentElement());
+    selection().selectAll();
+    EXPECT_TRUE(selection().isNone()) << "Nothing should be selected if the content of the documentElement is not selctable.";
+}
+
 } // namespace blink

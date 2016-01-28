@@ -842,7 +842,7 @@ void FrameSelection::selectAll()
             selectStartTarget = document->body();
         }
     }
-    if (!root)
+    if (!root || editingIgnoresContent(root))
         return;
 
     if (selectStartTarget && !selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart)))
