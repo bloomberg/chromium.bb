@@ -1949,9 +1949,11 @@ void RenderViewImpl::startDragging(WebLocalFrame* frame,
                                    WebDragOperationsMask mask,
                                    const WebImage& image,
                                    const WebPoint& webImageOffset) {
+  blink::WebRect offset_in_window(webImageOffset.x, webImageOffset.y, 0, 0);
+  convertViewportToWindow(&offset_in_window);
   DropData drop_data(DropDataBuilder::Build(data));
   drop_data.referrer_policy = frame->document().referrerPolicy();
-  gfx::Vector2d imageOffset(webImageOffset.x, webImageOffset.y);
+  gfx::Vector2d imageOffset(offset_in_window.x, offset_in_window.y);
   Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask,
                                      image.getSkBitmap(), imageOffset,
                                      possible_drag_event_info_));

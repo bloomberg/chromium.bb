@@ -58,6 +58,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/DragClient.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
@@ -73,6 +74,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebScreenInfo.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -785,7 +787,7 @@ static const IntSize& maxDragImageSize()
     return maxDragImageSize;
 }
 
-static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, const IntPoint& dragOrigin, const IntRect& imageRect, IntPoint& dragLocation)
+static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, const IntPoint& dragOrigin, const IntPoint& imageLocation, const IntSize& imageSizeInDIP, IntPoint& dragLocation)
 {
     OwnPtr<DragImage> dragImage;
     IntPoint origin;
@@ -800,9 +802,9 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
     if (image->size().height() * image->size().width() <= MaxOriginalImageArea
         && (dragImage = DragImage::create(image, shouldRespectImageOrientation,
             1 /* deviceScaleFactor */, interpolationQuality, DragImageAlpha,
-            DragImage::clampedImageScale(orientation.usesWidthAsHeight() ? image->size().transposedSize() : image->size(), imageRect.size(), maxDragImageSize())))) {
-        IntSize originalSize = imageRect.size();
-        origin = imageRect.location();
+            DragImage::clampedImageScale(orientation.usesWidthAsHeight() ? image->size().transposedSize() : image->size(), imageSizeInDIP, maxDragImageSize())))) {
+        IntSize originalSize = imageSizeInDIP;
+        origin = imageLocation;
 
         IntSize newSize = dragImage->size();
 
@@ -881,7 +883,13 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
         // This is an early detection for problems encountered later upon drop.
         ASSERT(!image->filenameExtension().isEmpty());
         if (!dragImage) {
-            dragImage = dragImageForImage(element, image, dragOrigin, hitTestResult.imageRect(), dragLocation);
+            const IntRect& imageRect = hitTestResult.imageRect();
+            const IntSize& imageSizeInDIP = src->page()->chromeClient().viewportToScreen(imageRect).size();
+            // Pass the selected image size in DIP becasue dragImageForImage clips the image in DIP.
+            // The coordinates of the locations are in Viewport coordinates, and they're converted in the Blink client.
+            // TODO(oshima): Currently, the dragged image on high DPI is scaled and can be blurry because of this.
+            // Consider to clip in the screen coordinates to use high resolution image on high DPI screens.
+            dragImage = dragImageForImage(element, image, dragOrigin, imageRect.location(), imageSizeInDIP, dragLocation);
         }
         doSystemDrag(dragImage.get(), dragLocation, dragOrigin, dataTransfer, src, false);
     } else if (state.m_dragType == DragSourceActionLink) {
@@ -897,8 +905,8 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
 
         if (!dragImage) {
             ASSERT(src->page());
-            float deviceScaleFactor = src->page()->deviceScaleFactor();
-            dragImage = dragImageForLink(linkURL, hitTestResult.textContent(), deviceScaleFactor, mouseDraggedPoint, dragLocation);
+            float screenDeviceScaleFactor = src->page()->chromeClient().screenInfo().deviceScaleFactor;
+            dragImage = dragImageForLink(linkURL, hitTestResult.textContent(), screenDeviceScaleFactor, mouseDraggedPoint, dragLocation);
         }
         doSystemDrag(dragImage.get(), dragLocation, mouseDraggedPoint, dataTransfer, src, true);
     } else if (state.m_dragType == DragSourceActionDHTML) {

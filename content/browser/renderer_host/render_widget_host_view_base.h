@@ -75,6 +75,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
  public:
   ~RenderWidgetHostViewBase() override;
 
+  float current_device_scale_factor() const {
+    return current_device_scale_factor_;
+  }
+
   // RenderWidgetHostView implementation.
   void SetBackgroundColor(SkColor color) override;
   void SetBackgroundColorToDefault() final;

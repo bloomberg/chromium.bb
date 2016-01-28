@@ -508,6 +508,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   bool renderer_initialized() const { return renderer_initialized_; }
 
+  bool scale_input_to_viewport() const { return scale_input_to_viewport_; }
   void set_scale_input_to_viewport(bool scale_input_to_viewport) {
     scale_input_to_viewport_ = scale_input_to_viewport;
   }

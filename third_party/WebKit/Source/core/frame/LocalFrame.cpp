@@ -57,6 +57,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/NavigationScheduler.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -76,6 +77,7 @@
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/WebFrameScheduler.h"
+#include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -129,8 +131,10 @@ public:
         RespectImageOrientationEnum imageOrientation = DoNotRespectImageOrientation;
         if (m_draggedNode && m_draggedNode->layoutObject())
             imageOrientation = LayoutObject::shouldRespectImageOrientation(m_draggedNode->layoutObject());
-        return DragImage::create(image.get(), imageOrientation,
-            m_localFrame->host()->deviceScaleFactor(), InterpolationHigh, m_opacity);
+
+        float screenDeviceScaleFactor = m_localFrame->page()->chromeClient().screenInfo().deviceScaleFactor;
+
+        return DragImage::create(image.get(), imageOrientation, screenDeviceScaleFactor, InterpolationHigh, m_opacity);
     }
 
 private:
