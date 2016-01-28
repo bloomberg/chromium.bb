@@ -1,10 +1,6 @@
+# App-y stuff
 benwells@chromium.org
 
-per-file extension_action*=finnur@chromium.org
-per-file extension_action*=rdevlin.cronin@chromium.org
-per-file extension_installed_bubble*=finnur@chromium.org
-per-file extension_installed_bubble*=rdevlin.cronin@chromium.org
-per-file extension_message_bubble*=finnur@chromium.org
-per-file extension_message_bubble*=rdevlin.cronin@chromium.org
-per-file extension_toolbar*=finnur@chromium.org
-per-file extension_toolbar*=rdevlin.cronin@chromium.org
+# Extension-y stuff
+finnur@chromium.org
+rdevlin.cronin@chromium.org
