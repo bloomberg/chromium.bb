@@ -95,7 +95,12 @@ var DeviceLogUI = (function() {
    * @param {Object} data A JSON structure of event log entries.
    */
   var getLogCallback = function(data) {
-    createEventLog(JSON.parse(data));
+    try {
+      createEventLog(JSON.parse(data));
+    } catch(e) {
+      var container = $('log-container');
+      container.textContent = 'No log entries';
+    }
   };
 
   /**
