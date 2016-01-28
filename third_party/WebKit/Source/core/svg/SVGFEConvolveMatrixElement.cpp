@@ -21,8 +21,6 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
-#include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
@@ -56,17 +54,25 @@ protected:
         : SVGAnimatedIntegerOptionalInteger(contextElement, SVGNames::orderAttr, 0, 0)
     {
     }
+
+    static SVGParsingError checkValue(SVGParsingError parseStatus, int value)
+    {
+        if (parseStatus != SVGParseStatus::NoError)
+            return parseStatus;
+        if (value < 0)
+            return SVGParseStatus::NegativeValue;
+        if (value == 0)
+            return SVGParseStatus::ZeroValue;
+        return SVGParseStatus::NoError;
+    }
 };
 
 SVGParsingError SVGAnimatedOrder::setBaseValueAsString(const String& value)
 {
     SVGParsingError parseStatus = SVGAnimatedIntegerOptionalInteger::setBaseValueAsString(value);
-
-    ASSERT(contextElement());
-    if (parseStatus == SVGParseStatus::NoError && (firstInteger()->baseValue()->value() < 1 || secondInteger()->baseValue()->value() < 1)) {
-        contextElement()->document().accessSVGExtensions().reportWarning(
-            "feConvolveMatrix: problem parsing order=\"" + value + "\".");
-    }
+    // Check for semantic errors.
+    parseStatus = checkValue(parseStatus, firstInteger()->baseValue()->value());
+    parseStatus = checkValue(parseStatus, secondInteger()->baseValue()->value());
     return parseStatus;
 }
 

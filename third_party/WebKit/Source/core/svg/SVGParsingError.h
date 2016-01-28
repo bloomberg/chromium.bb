@@ -49,6 +49,7 @@ enum class SVGParseStatus {
 
     // Semantic errors
     NegativeValue,
+    ZeroValue,
 
     // Generic error
     ParsingFailed,

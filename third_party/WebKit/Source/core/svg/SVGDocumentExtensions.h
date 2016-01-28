@@ -61,7 +61,6 @@ public:
     void pauseAnimations();
     void dispatchSVGLoadEventToOutermostSVGElements();
 
-    void reportWarning(const String&);
     void reportError(const String&);
 
     SVGResourcesCache& resourcesCache() { return m_resourcesCache; }

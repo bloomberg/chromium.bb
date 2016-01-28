@@ -44,6 +44,8 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
         return std::make_pair("Expected path command, ", ".");
     case SVGParseStatus::NegativeValue:
         return std::make_pair("A negative value is not valid. (", ")");
+    case SVGParseStatus::ZeroValue:
+        return std::make_pair("A value of zero is not valid. (", ")");
     case SVGParseStatus::ParsingFailed:
     default:
         ASSERT_NOT_REACHED();
@@ -56,6 +58,7 @@ bool disableLocus(SVGParseStatus status)
 {
     // Disable locus for semantic errors and generic errors (see TODO below).
     return status == SVGParseStatus::NegativeValue
+        || status == SVGParseStatus::ZeroValue
         || status == SVGParseStatus::ParsingFailed;
 }
 
