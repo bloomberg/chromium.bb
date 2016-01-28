@@ -42,7 +42,7 @@ Local Modifications:
 - patches/extended_master_secret.patch: Add server support for extended
   master secret.
 - patches/token_binding_negotiation.patch: Add server support for token
-  binding negotiation TLS extension (draft-ietf-tokbind-negotiation-00)
+  binding negotiation TLS extension (draft-ietf-tokbind-negotiation-02)
 - patches/disable_channel_id.patch: Add flag to HandshakeSettings to allow
   for disabling channel id.
 - patches/exported_keying_material.patch: Add method to Session to get

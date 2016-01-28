@@ -87,9 +87,9 @@ const unsigned int kTbExtNum = 30033;
 
 // Token Binding ProtocolVersions supported.
 const uint8_t kTbProtocolVersionMajor = 0;
-const uint8_t kTbProtocolVersionMinor = 3;
+const uint8_t kTbProtocolVersionMinor = 4;
 const uint8_t kTbMinProtocolVersionMajor = 0;
-const uint8_t kTbMinProtocolVersionMinor = 2;
+const uint8_t kTbMinProtocolVersionMinor = 3;
 
 void FreeX509Stack(STACK_OF(X509)* ptr) {
   sk_X509_pop_free(ptr, X509_free);

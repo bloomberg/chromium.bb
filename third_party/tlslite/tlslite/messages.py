@@ -194,7 +194,7 @@ class ClientHello(HandshakeMsg):
                         p2 = Parser(tokenBindingBytes)
                         ver_minor = p2.get(1)
                         ver_major = p2.get(1)
-                        if (ver_major, ver_minor) >= (0, 2):
+                        if (ver_major, ver_minor) >= (0, 3):
                             p2.startLengthCheck(1)
                             while not p2.atLengthCheck():
                                 self.tb_client_params.append(p2.get(1))
@@ -382,7 +382,7 @@ class ServerHello(HandshakeMsg):
             w2.add(4, 2)
             # version
             w2.add(0, 1)
-            w2.add(2, 1)
+            w2.add(4, 1)
             # length of params (defined as variable length <1..2^8-1>, but in
             # this context the server can only send a single value.
             w2.add(1, 1)

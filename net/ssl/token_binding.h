@@ -16,7 +16,7 @@
 namespace net {
 
 // Given a vector of serialized TokenBinding structs (as defined in
-// draft-ietf-tokbind-protocol-02), this function combines them to form the
+// draft-ietf-tokbind-protocol-04), this function combines them to form the
 // serialized TokenBindingMessage struct in |*out|. This function returns a net
 // error.
 //

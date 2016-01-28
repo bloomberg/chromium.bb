@@ -23,11 +23,9 @@ enum TokenBindingType {
   TB_TYPE_REFERRED = 1,
 };
 
-bool BuildTokenBindingID(TokenBindingType type,
-                         crypto::ECPrivateKey* key,
-                         CBB* out) {
+bool BuildTokenBindingID(crypto::ECPrivateKey* key, CBB* out) {
   CBB ec_point;
-  if (!CBB_add_u8(out, type) || !CBB_add_u8(out, TB_PARAM_ECDSAP256) ||
+  if (!CBB_add_u8(out, TB_PARAM_ECDSAP256) ||
       !CBB_add_u8_length_prefixed(out, &ec_point)) {
     return false;
   }
@@ -44,6 +42,28 @@ bool BuildTokenBindingID(TokenBindingType type,
     return false;
   }
   return true;
+}
+
+Error BuildTokenBinding(TokenBindingType type,
+                        crypto::ECPrivateKey* key,
+                        const std::vector<uint8_t>& signed_ekm,
+                        std::string* out) {
+  uint8_t* out_data;
+  size_t out_len;
+  CBB token_binding;
+  if (!CBB_init(&token_binding, 0) || !CBB_add_u8(&token_binding, type) ||
+      !BuildTokenBindingID(key, &token_binding) ||
+      !CBB_add_u16(&token_binding, signed_ekm.size()) ||
+      !CBB_add_bytes(&token_binding, signed_ekm.data(), signed_ekm.size()) ||
+      // 0-length extensions
+      !CBB_add_u16(&token_binding, 0) ||
+      !CBB_finish(&token_binding, &out_data, &out_len)) {
+    CBB_cleanup(&token_binding);
+    return ERR_FAILED;
+  }
+  out->assign(reinterpret_cast<char*>(out_data), out_len);
+  OPENSSL_free(out_data);
+  return OK;
 }
 
 }  // namespace
@@ -80,22 +100,7 @@ Error BuildTokenBindingMessageFromTokenBindings(
 Error BuildProvidedTokenBinding(crypto::ECPrivateKey* key,
                                 const std::vector<uint8_t>& signed_ekm,
                                 std::string* out) {
-  uint8_t* out_data;
-  size_t out_len;
-  CBB token_binding;
-  if (!CBB_init(&token_binding, 0) ||
-      !BuildTokenBindingID(TB_TYPE_PROVIDED, key, &token_binding) ||
-      !CBB_add_u16(&token_binding, signed_ekm.size()) ||
-      !CBB_add_bytes(&token_binding, signed_ekm.data(), signed_ekm.size()) ||
-      // 0-length extensions
-      !CBB_add_u16(&token_binding, 0) ||
-      !CBB_finish(&token_binding, &out_data, &out_len)) {
-    CBB_cleanup(&token_binding);
-    return ERR_FAILED;
-  }
-  out->assign(reinterpret_cast<char*>(out_data), out_len);
-  OPENSSL_free(out_data);
-  return OK;
+  return BuildTokenBinding(TB_TYPE_PROVIDED, key, signed_ekm, out);
 }
 
 bool ParseTokenBindingMessage(base::StringPiece token_binding_message,
