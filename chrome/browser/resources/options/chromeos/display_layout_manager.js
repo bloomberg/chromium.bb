@@ -105,11 +105,11 @@ cr.define('options', function() {
   }
 
   /**
-   * @param {number} visualScale
    * @constructor
    */
-  function DisplayLayoutManager(visualScale) {
-    this.visualScale_ = visualScale;
+  function DisplayLayoutManager() {
+    this.displayLayoutMap_ = {};
+    this.displayAreaOffset_ = {x: 0, y: 0};
   }
 
   // Helper class for display layout management. Implements logic for laying
@@ -118,18 +118,25 @@ cr.define('options', function() {
     /**
      * An object containing DisplayLayout objects for each entry in
      * |displays_|.
-     * @type {!Object<!options.DisplayLayout>}
+     * @type {?Object<!options.DisplayLayout>}
      * @private
      */
-    displayLayoutMap_: {},
+    displayLayoutMap_: null,
 
     /**
      * The scale factor of the actual display size to the drawn display
-     * rectangle size. Set to the correct value for the UI in the constructor.
+     * rectangle size. Set in calculateDisplayArea_.
      * @type {number}
      * @private
      */
     visualScale_: 1,
+
+    /**
+     * The offset to the center of the display area div.
+     * @type {?options.DisplayPosition}
+     * @private
+     */
+    displayAreaOffset_: null,
 
     /**
      * Adds a display to the layout map.
@@ -140,19 +147,46 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns the layout type for |id|.
+     * Returns the display layout for |id|.
      * @param {string} id
      * @return {options.DisplayLayout}
      */
     getDisplayLayout: function(id) { return this.displayLayoutMap_[id]; },
 
     /**
-     * Creates a div for each entry in displayLayoutMap_.
-     * @param {!Element} parentElement The parent element to contain the divs.
-     * @param {!options.DisplayPosition} offset The offset to the center of
-     *     the display area.
+     * Returns the number of display layout entries.
+     * @return {number}
      */
-    createDisplayLayoutDivs: function(parentElement, offset) {
+    getDisplayLayoutCount: function() {
+      return Object.keys(/** @type {!Object} */ (this.displayLayoutMap_))
+          .length;
+    },
+
+    /**
+     * Returns the display layout corresponding to |div|.
+     * @param {!HTMLElement} div
+     * @return {?options.DisplayLayout}
+     */
+    getFocusedLayoutForDiv: function(div) {
+      for (var id in this.displayLayoutMap_) {
+        var layout = this.displayLayoutMap_[id];
+        if (layout.div == div ||
+            (div.offsetParent && layout.div == div.offsetParent)) {
+          return layout;
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Sets the display area div size and creates a div for each entry in
+     * displayLayoutMap_.
+     * @param {!Element} displayAreaDiv The display area div element.
+     * @param {number} minVisualScale The minimum visualScale value.
+     * @return {number} The calculated visual scale.
+     */
+    createDisplayArea: function(displayAreaDiv, minVisualScale) {
+      this.calculateDisplayArea_(displayAreaDiv, minVisualScale);
       for (var id in this.displayLayoutMap_) {
         var layout = this.displayLayoutMap_[id];
         if (layout.div) {
@@ -160,7 +194,33 @@ cr.define('options', function() {
           // entry may have already been created.
           continue;
         }
-        this.createDisplayLayoutDiv_(id, parentElement, offset);
+        this.createDisplayLayoutDiv_(id, displayAreaDiv);
+      }
+      return this.visualScale_;
+    },
+
+    /**
+     * Sets the display layout div corresponding to |id| to focused and
+     * sets all other display layouts to unfocused.
+     * @param {string} focusedId
+     */
+    setFocusedId: function(focusedId) {
+      for (var id in this.displayLayoutMap_) {
+        var layout = this.displayLayoutMap_[id];
+        layout.div.classList.toggle('displays-focused', layout.id == focusedId);
+      }
+    },
+
+    /**
+     * Sets the mouse event callbacks for each div.
+     * @param {function (Event)} onMouseDown
+     * @param {function (Event)} onTouchStart
+     */
+    setDivCallbacks: function(onMouseDown, onTouchStart) {
+      for (var id in this.displayLayoutMap_) {
+        var layout = this.displayLayoutMap_[id];
+        layout.div.onmousedown = onMouseDown;
+        layout.div.ontouchstart = onTouchStart;
       }
     },
 
@@ -327,21 +387,67 @@ cr.define('options', function() {
     },
 
     /**
+     * Calculates the display area offset and scale.
+     * @param {!Element} displayAreaDiv The containing display area div.
+     * @param {number} minVisualScale The minimum visualScale value.
+     */
+    calculateDisplayArea_(displayAreaDiv, minVisualScale) {
+      var maxWidth = 0;
+      var maxHeight = 0;
+      var boundingBox = {left: 0, right: 0, top: 0, bottom: 0};
+
+      for (var id in this.displayLayoutMap_) {
+        var layout = this.displayLayoutMap_[id];
+        var bounds = layout.bounds;
+        boundingBox.left = Math.min(boundingBox.left, bounds.left);
+        boundingBox.right =
+            Math.max(boundingBox.right, bounds.left + bounds.width);
+        boundingBox.top = Math.min(boundingBox.top, bounds.top);
+        boundingBox.bottom =
+            Math.max(boundingBox.bottom, bounds.top + bounds.height);
+        maxWidth = Math.max(maxWidth, bounds.width);
+        maxHeight = Math.max(maxHeight, bounds.height);
+      }
+
+      // Make the margin around the bounding box.
+      var areaWidth = boundingBox.right - boundingBox.left + maxWidth;
+      var areaHeight = boundingBox.bottom - boundingBox.top + maxHeight;
+
+      // Calculates the scale by the width since horizontal size is more strict.
+      // TODO(mukai): Adds the check of vertical size in case.
+      this.visualScale_ =
+          Math.min(minVisualScale, displayAreaDiv.offsetWidth / areaWidth);
+
+      // Prepare enough area for displays_view by adding the maximum height.
+      displayAreaDiv.style.height =
+          Math.ceil(areaHeight * this.visualScale_) + 'px';
+
+      // Centering the bounding box of the display rectangles.
+      this.displayAreaOffset_ = {
+        x: Math.floor(
+            displayAreaDiv.offsetWidth / 2 -
+            (boundingBox.right + boundingBox.left) * this.visualScale_ / 2),
+        y: Math.floor(
+            displayAreaDiv.offsetHeight / 2 -
+            (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2)
+      };
+    },
+
+    /**
      * Creates a div element and assigns it to |displayLayout|. Returns the
      * created div for additional decoration.
      * @param {string} id
-     * @param {!Element} parentElement The parent element to contain the div.
-     * @param {!options.DisplayPosition} offset The offset to the center of
-     *     the display area.
+     * @param {!Element} displayAreaDiv The containing display area div.
      */
-    createDisplayLayoutDiv_: function(id, parentElement, offset) {
+    createDisplayLayoutDiv_: function(id, displayAreaDiv) {
       var displayLayout = this.displayLayoutMap_[id];
       var parentId = displayLayout.parentId;
+      var offset = this.displayAreaOffset_;
       if (parentId) {
         // Ensure the parent div is created first.
         var parentLayout = this.displayLayoutMap_[parentId];
         if (!parentLayout.div)
-          this.createDisplayLayoutDiv_(parentId, parentElement, offset);
+          this.createDisplayLayoutDiv_(parentId, displayAreaDiv);
       }
 
       var div = /** @type {!HTMLElement} */ (document.createElement('div'));
@@ -349,7 +455,7 @@ cr.define('options', function() {
 
       // div needs to be added to the DOM tree first, otherwise offsetHeight for
       // nameContainer below cannot be computed.
-      parentElement.appendChild(div);
+      displayAreaDiv.appendChild(div);
 
       var nameContainer = document.createElement('div');
       nameContainer.textContent = displayLayout.name;

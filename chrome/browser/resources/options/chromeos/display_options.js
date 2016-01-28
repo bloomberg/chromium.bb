@@ -206,7 +206,9 @@ cr.define('options', function() {
         chrome.send('setPrimary', [this.focusedId_]);
       }).bind(this);
       $('display-options-resolution-selection').onchange = (function(ev) {
-        var display = this.getDisplayInfoFromId(this.focusedId_);
+        var display = this.getDisplayInfoFromId_(this.focusedId_);
+        if (!display)
+          return;
         var resolution = display.resolutions[ev.target.value];
         chrome.send('setDisplayMode', [this.focusedId_, resolution]);
       }).bind(this);
@@ -346,7 +348,7 @@ cr.define('options', function() {
      * @param {string} id
      * @return {options.DisplayInfo}
      */
-    getDisplayInfoFromId(id) {
+    getDisplayInfoFromId_(id) {
       return this.displays_.find(function(display) {
         return display.id == id;
       });
@@ -396,7 +398,7 @@ cr.define('options', function() {
       };
 
       this.displayLayoutManager_.updatePosition(
-          this.dragInfo_.displayId, newPosition);
+          dragInfo.displayId, newPosition);
 
       return false;
     },
@@ -408,46 +410,28 @@ cr.define('options', function() {
      * @private
      */
     startDragging_: function(target, eventLocation) {
-      var oldFocusedId = this.focusedId_;
-      var newFocusedId;
-      var willUpdateDisplayDescription = false;
-      for (var i = 0; i < this.displays_.length; i++) {
-        var displayLayout =
-            this.displayLayoutManager_.getDisplayLayout(this.displays_[i].id);
-        if (displayLayout.div == target ||
-            (target.offsetParent && target.offsetParent == displayLayout.div)) {
-          newFocusedId = displayLayout.id;
-          break;
-        }
-      }
-      if (!newFocusedId)
+      var focused = this.displayLayoutManager_.getFocusedLayoutForDiv(target);
+      if (!focused)
         return false;
 
-      this.focusedId_ = newFocusedId;
-      willUpdateDisplayDescription = newFocusedId != oldFocusedId;
+      var updateDisplayDescription = focused.id != this.focusedId_;
+      this.focusedId_ = focused.id;
+      this.displayLayoutManager_.setFocusedId(focused.id);
 
-      for (var i = 0; i < this.displays_.length; i++) {
-        var displayLayout =
-            this.displayLayoutManager_.getDisplayLayout(this.displays_[i].id);
-        displayLayout.div.className = 'displays-display';
-        if (displayLayout.id != this.focusedId_)
-          continue;
-
-        displayLayout.div.classList.add('displays-focused');
-        if (this.displays_.length > 1) {
-          this.dragInfo_ = {
-            displayId: displayLayout.id,
-            originalLocation: {
-              x: displayLayout.div.offsetLeft,
-              y: displayLayout.div.offsetTop
-            },
-            eventLocation: {x: eventLocation.x, y: eventLocation.y}
-          };
-        }
+      if (this.displayLayoutManager_.getDisplayLayoutCount() > 1) {
+        this.dragInfo_ = {
+          displayId: focused.id,
+          originalLocation: {
+            x: focused.div.offsetLeft,
+            y: focused.div.offsetTop
+          },
+          eventLocation: {x: eventLocation.x, y: eventLocation.y}
+        };
       }
 
-      if (willUpdateDisplayDescription)
+      if (updateDisplayDescription)
         this.updateSelectedDisplayDescription_();
+
       return false;
     },
 
@@ -612,8 +596,9 @@ cr.define('options', function() {
       } else if (this.focusedId_ == '') {
         this.updateSelectedDisplaySectionNoSelected_();
       } else {
-        this.updateSelectedDisplaySectionForDisplay_(
-            this.getDisplayInfoFromId(this.focusedId_));
+        var focusedDisplay = this.getDisplayInfoFromId_(this.focusedId_);
+        if (focusedDisplay)
+          this.updateSelectedDisplaySectionForDisplay_(focusedDisplay);
       }
     },
 
@@ -701,56 +686,19 @@ cr.define('options', function() {
      * @private
      */
     layoutDisplays_: function(layoutType) {
-      var maxWidth = 0;
-      var maxHeight = 0;
-      var boundingBox = {left: 0, right: 0, top: 0, bottom: 0};
+      // Create the layout manager.
+      this.displayLayoutManager_ = new options.DisplayLayoutManager();
+
+      // Create the display layouts. Child displays are parented to the primary.
+      // TODO(stevenjb): DisplayInfo should provide the parent id for displays.
       var primaryDisplayId = '';
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
-        if (display.isPrimary && primaryDisplayId == '')
+        if (display.isPrimary) {
           primaryDisplayId = display.id;
-
-        var bounds = display.bounds;
-        boundingBox.left = Math.min(boundingBox.left, bounds.left);
-        boundingBox.right =
-            Math.max(boundingBox.right, bounds.left + bounds.width);
-        boundingBox.top = Math.min(boundingBox.top, bounds.top);
-        boundingBox.bottom =
-            Math.max(boundingBox.bottom, bounds.top + bounds.height);
-        maxWidth = Math.max(maxWidth, bounds.width);
-        maxHeight = Math.max(maxHeight, bounds.height);
+          break;
+        }
       }
-      if (primaryDisplayId == '')
-        return;
-
-      // Make the margin around the bounding box.
-      var areaWidth = boundingBox.right - boundingBox.left + maxWidth;
-      var areaHeight = boundingBox.bottom - boundingBox.top + maxHeight;
-
-      // Calculates the scale by the width since horizontal size is more strict.
-      // TODO(mukai): Adds the check of vertical size in case.
-      this.visualScale_ = Math.min(
-          VISUAL_SCALE, this.displaysView_.offsetWidth / areaWidth);
-
-      // Prepare enough area for thisplays_view by adding the maximum height.
-      this.displaysView_.style.height =
-          Math.ceil(areaHeight * this.visualScale_) + 'px';
-
-      // Centering the bounding box of the display rectangles.
-      var offset = {
-        x: Math.floor(
-            this.displaysView_.offsetWidth / 2 -
-            (boundingBox.right + boundingBox.left) * this.visualScale_ / 2),
-        y: Math.floor(
-            this.displaysView_.offsetHeight / 2 -
-            (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2)
-      };
-
-      // Create the layout manager.
-      this.displayLayoutManager_ =
-          new options.DisplayLayoutManager(this.visualScale_);
-
-      // Create the display layouts.
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         var parentId = display.isPrimary ? '' : primaryDisplayId;
@@ -758,18 +706,13 @@ cr.define('options', function() {
         this.displayLayoutManager_.addDisplayLayout(layout);
       }
 
-      // Create the display divs.
-      this.displayLayoutManager_.createDisplayLayoutDivs(
-          this.displaysView_, offset);
+      // Calculate the display area bounds and create the divs for each display.
+      this.visualScale_ = this.displayLayoutManager_.createDisplayArea(
+          /** @type {!Element} */(this.displaysView_), VISUAL_SCALE);
 
-      // Set the div callbacks and highlight the focused div.
-      for (var i = 0; i < this.displays_.length; i++) {
-        var id = this.displays_[i].id;
-        var div = this.displayLayoutManager_.getDisplayLayout(id).div;
-        div.onmousedown = this.onMouseDown_.bind(this);
-        div.ontouchstart = this.onTouchStart_.bind(this);
-        div.classList.toggle('displays-focused', id == this.focusedId_);
-      }
+      this.displayLayoutManager_.setFocusedId(this.focusedId_);
+      this.displayLayoutManager_.setDivCallbacks(
+          this.onMouseDown_.bind(this), this.onTouchStart_.bind(this));
     },
 
     /**
@@ -786,8 +729,6 @@ cr.define('options', function() {
       if (!this.visible)
         return;
 
-      this.displays_ = displays;
-
       var mirroring = mode == options.MultiDisplayMode.MIRRORING;
       var unifiedDesktopEnabled = mode == options.MultiDisplayMode.UNIFIED;
 
@@ -802,6 +743,7 @@ cr.define('options', function() {
         this.focusedId_ = displays.length > 0 ? displays[0].id : '';
       }
 
+      this.displays_ = displays;
       this.mirroring_ = mirroring;
       this.unifiedDesktopEnabled_ = unifiedDesktopEnabled;
 
@@ -821,9 +763,8 @@ cr.define('options', function() {
           this.unifiedDesktopEnabled_;
 
       var disableUnifiedDesktopOption =
-           (this.mirroring_ ||
-            (!this.unifiedDesktopEnabled_ &&
-              this.displays_.length == 1));
+          (this.mirroring_ ||
+           (!this.unifiedDesktopEnabled_ && this.displays_.length == 1));
 
       $('display-options-toggle-unified-desktop').disabled =
           disableUnifiedDesktopOption;
