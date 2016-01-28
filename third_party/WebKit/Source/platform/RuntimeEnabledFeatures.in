@@ -108,7 +108,7 @@ KeyboardEventCode status=stable
 KeyboardEventKey status=experimental
 LangAttributeAwareFormControlUI
 LinkPreconnect status=stable
-LinkPreload status=experimental
+LinkPreload status=stable
 LinkHeader status=stable
 FractionalScrollOffsets status=experimental
 Media status=stable
