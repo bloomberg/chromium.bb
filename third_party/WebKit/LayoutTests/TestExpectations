@@ -965,7 +965,7 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ Failure ]
-#crbug.com/463358 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
+crbug.com/463358 [ Mac10.7 Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
