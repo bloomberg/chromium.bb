@@ -645,11 +645,6 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
     return skia::RefPtr<SkImage>();
   }
 
-  // The origin of the filter is top-left and the origin of the source is
-  // bottom-left, but the orientation is the same, so we must translate the
-  // filter so that it renders at the bottom of the texture to avoid
-  // misregistration.
-  float y_offset = source_texture_resource->size().height() - src_rect.height();
   SkMatrix local_matrix;
   local_matrix.setScale(scale.x(), scale.y());
   skia::RefPtr<SkImageFilter> filter_with_local_scale =
@@ -658,8 +653,8 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   SkPaint paint;
   paint.setImageFilter(filter_with_local_scale.get());
   surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
-  surface->getCanvas()->drawImage(srcImage.get(), src_rect.x(),
-                                  src_rect.y() - y_offset, &paint);
+  surface->getCanvas()->drawImage(srcImage.get(), src_rect.x(), src_rect.y(),
+                                  &paint);
 
   skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
   if (!image || !image->isTextureBacked()) {
@@ -1143,7 +1138,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // Flip the content vertically in the shader, as the RenderPass input
   // texture is already oriented the same way as the framebuffer, but the
   // projection transform does a flip.
-  gl_->Uniform4f(locations.tex_transform, 0.0f, tex_scale_y, tex_scale_x,
+  gl_->Uniform4f(locations.tex_transform, 0.0f, 1.0f, tex_scale_x,
                  -tex_scale_y);
 
   GLint last_texture_unit = 0;
@@ -1162,7 +1157,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     // and the RenderPass contents texture, so we flip the tex coords from the
     // RenderPass texture to find the mask texture coords.
     gl_->Uniform2f(locations.mask_tex_coord_offset, mask_uv_rect.x(),
-                   mask_uv_rect.bottom());
+                   mask_uv_rect.height() / tex_scale_y + mask_uv_rect.y());
     gl_->Uniform2f(locations.mask_tex_coord_scale,
                    mask_uv_rect.width() / tex_scale_x,
                    -mask_uv_rect.height() / tex_scale_y);

@@ -550,7 +550,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   if (BindFramebufferToTexture(frame, texture)) {
     InitializeViewport(frame, render_pass->output_rect,
                        gfx::Rect(render_pass->output_rect.size()),
-                       render_pass->output_rect.size());
+                       texture->size());
     return true;
   }
 
