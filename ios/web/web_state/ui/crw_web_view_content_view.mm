@@ -25,21 +25,19 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   base::scoped_nsobject<UIView> _webView;
   // The web view's scroll view.
   base::scoped_nsobject<UIScrollView> _scrollView;
-  // Backs up property of the same name if |_requiresContentInsetWorkaround| is
-  // YES.
+  // Backs up property of the same name if |_webView| is a WKWebView.
   CGFloat _topContentPadding;
-  // YES if UIScrollView.contentInset does not work and |_topContentPadding|
-  // should be used as a workaround.
-  BOOL _requiresContentInsetWorkaround;
 }
 
 // Changes web view frame to match |self.bounds| and optionally accomodates for
-// |_topContentPadding| (iff |_requiresContentInsetWorkaround| is YES).
+// |_topContentPadding| (iff |_webView| is a WKWebView).
 - (void)updateWebViewFrame;
 
 @end
 
 @implementation CRWWebViewContentView
+
+@synthesize webViewType = _webViewType;
 
 - (instancetype)initWithWebView:(UIView*)webView
                      scrollView:(UIScrollView*)scrollView {
@@ -50,7 +48,9 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
     DCHECK([scrollView isDescendantOfView:webView]);
     _webView.reset([webView retain]);
     _scrollView.reset([scrollView retain]);
-    _requiresContentInsetWorkaround = [webView isKindOfClass:[WKWebView class]];
+    _webViewType = [webView isKindOfClass:[WKWebView class]]
+                       ? web::WK_WEB_VIEW_TYPE
+                       : web::UI_WEB_VIEW_TYPE;
   }
   return self;
 }
@@ -79,6 +79,17 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
                                            green:kBackgroundRGBComponents[1]
                                             blue:kBackgroundRGBComponents[2]
                                            alpha:1.0];
+    // The frame needs to be set immediately after the web view is added
+    // as a subview. The change in the frame triggers drawing operations and
+    // if not done after it's added as a subview, the web view exhibits
+    // strange behavior where clicks from certain web sites are not triggered.
+    // The actual value of the frame doesn't matter as long as it's not
+    // CGRectZero.  The CRWWebViewContentView's frame will be reset to a correct
+    // value in a subsequent layout pass.
+    // TODO(crbug.com/577793): This is an undocumented and not-well-understood
+    // workaround for this issue.
+    const CGRect kDummyRect = CGRectMake(10, 20, 30, 50);
+    self.frame = kDummyRect;
   }
 }
 
@@ -108,12 +119,13 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 }
 
 - (CGFloat)topContentPadding {
-  return (_requiresContentInsetWorkaround) ? _topContentPadding
-                                           : [_scrollView contentInset].top;
+  return self.webViewType == web::WK_WEB_VIEW_TYPE
+             ? _topContentPadding
+             : [_scrollView contentInset].top;
 }
 
 - (void)setTopContentPadding:(CGFloat)newTopPadding {
-  if (_requiresContentInsetWorkaround) {
+  if (self.webViewType == web::WK_WEB_VIEW_TYPE) {
     if (_topContentPadding != newTopPadding) {
       _topContentPadding = newTopPadding;
       // Update web view frame immediately to make |topContentPadding|

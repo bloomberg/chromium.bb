@@ -282,9 +282,6 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 
   // The receiver of JavaScripts.
   base::scoped_nsobject<CRWJSInjectionReceiver> _jsInjectionReceiver;
-
-  // The last recorded content offset of |webScrollView|.
-  CGPoint _lastContentOffset;
 }
 
 // The container view.  The container view should be accessed through this
@@ -2664,7 +2661,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   self.userInteractionRegistered = NO;
   _pageHasZoomed = NO;
-  _lastContentOffset = CGPointZero;
 
   [[self sessionController] commitPendingEntry];
   _webStateImpl->GetRequestTracker()->StartPageLoad(
@@ -3338,19 +3334,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark -
 #pragma mark CRWWebViewScrollViewProxyObserver
 
-- (void)webViewScrollViewDidScroll:
-    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  BOOL isRendererInitiated =
-      !webViewScrollViewProxy.updatingThroughProxy && !_applyingPageState;
-  if (isRendererInitiated && !self.userInteractionRegistered) {
-    // Ignore renderer-initiated scrolling that does not correspond with a user
-    // interaction.
-    webViewScrollViewProxy.contentOffset = _lastContentOffset;
-  } else {
-    _lastContentOffset = webViewScrollViewProxy.contentOffset;
-  }
-}
-
 - (void)webViewScrollViewDidZoom:
         (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   _pageHasZoomed = YES;
@@ -3365,13 +3348,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (contentSize.width < CGRectGetWidth(webViewScrollViewProxy.frame)) {
     // The renderer incorrectly resized the content area.  Resetting the scroll
     // view's zoom scale will force a re-rendering.  rdar://23963992
-    web::PageDisplayState displayState = currentItem->GetPageDisplayState();
-    displayState.set_scroll_state(
-        web::PageScrollState(_lastContentOffset.x, _lastContentOffset.y));
-    const web::PageZoomState& zoomState = displayState.zoom_state();
+    _applyingPageState = YES;
+    web::PageZoomState zoomState =
+        currentItem->GetPageDisplayState().zoom_state();
     if (!zoomState.IsValid() || zoomState.IsLegacyFormat())
-      displayState.set_zoom_state(web::PageZoomState(1.0, 1.0, 1.0));
-    [self applyPageDisplayState:displayState];
+      zoomState = web::PageZoomState(1.0, 1.0, 1.0);
+    [self applyWebViewScrollZoomScaleFromZoomState:zoomState];
+    _applyingPageState = NO;
   }
 }
 #pragma mark -

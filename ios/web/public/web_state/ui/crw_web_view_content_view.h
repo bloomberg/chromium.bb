@@ -6,12 +6,22 @@
 #define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_CONTENT_VIEW_H_
 
 #import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_view_type.h"
 
 // Wraps a web vew in a CRWContentView.
 @interface CRWWebViewContentView : CRWContentView
 
 // The webView passed to |-initWithWebView|.
 @property(nonatomic, retain, readonly) UIView* webView;
+
+// The type of web view passed on initialization.
+// TODO(crbug.com/579697):  Remove this property once UIWebView cleanup occurs.
+// This is only exposed due to undocumented behavior involving when
+// CRWWebViewContentViews are added to the view hierarchy.  Both UIWebViews and
+// WKWebViews exhibit idiosyncratic rendering issues, and rather than
+// investigating a unified codepath, |webViewType| can be used to add each type
+// of web view in a manner that doesn't trigger any rendering bugs.
+@property(nonatomic, readonly) web::WebViewType webViewType;
 
 // Initializes the CRWWebViewContentView to display |webView|.
 - (instancetype)initWithWebView:(UIView*)webView
