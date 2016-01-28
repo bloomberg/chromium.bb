@@ -90,13 +90,17 @@ enum ParseResultType {
   // A match in the response had an unexpected PLATFORM_TYPE.
   UNEXPECTED_PLATFORM_TYPE_ERROR = 3,
 
-  // A match in teh response contained no metadata where metadata was
+  // A match in the response contained no metadata where metadata was
   // expected.
   NO_METADATA_ERROR = 4,
 
+  // A match in the response contained a ThreatType that was inconsistent
+  // with the other matches.
+  INCONSISTENT_THREAT_TYPE_ERROR = 5,
+
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
-  PARSE_GET_HASH_RESULT_MAX = 5
+  PARSE_GET_HASH_RESULT_MAX = 6
 };
 
 // Record parsing errors of a GetHash result.
@@ -374,14 +378,14 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
     }
 
     if (!match.has_threat_type()) {
-      // TODO(kcarattini): Add UMA.
+      RecordParseGetHashResult(UNEXPECTED_THREAT_TYPE_ERROR);
       return false;
     }
 
     if (expected_threat_type == THREAT_TYPE_UNSPECIFIED) {
       expected_threat_type = match.threat_type();
     } else if (match.threat_type() != expected_threat_type) {
-      // TODO(kcarattini): Add UMA.
+      RecordParseGetHashResult(INCONSISTENT_THREAT_TYPE_ERROR);
       return false;
     }
 
@@ -396,7 +400,7 @@ bool SafeBrowsingProtocolManager::ParseV4HashResponse(
     }
 
     // Different threat types will handle the metadata differently.
-    if (match.has_threat_type() && match.threat_type() == API_ABUSE) {
+    if (match.threat_type() == API_ABUSE) {
       if (match.has_platform_type() &&
           match.platform_type() == CHROME_PLATFORM) {
         if (match.has_threat_entry_metadata()) {
