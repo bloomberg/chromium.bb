@@ -4,3 +4,5 @@
 # This list isn't comprehensive yet, and Leak Detector bots are not tree closers atm.
 # Gardeners are welcome to touch this file, but you can ignore the failures
 # and wait for kouhei@ or hajimehoshi@ to maintain this file.
+
+crbug.com/581987 harness-tests/mojo-helpers.html [ Leak Failure ]
