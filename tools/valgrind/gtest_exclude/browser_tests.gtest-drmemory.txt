@@ -114,5 +114,8 @@ SearchEngineManagerWebUITest.testOpenSearchEngineManager
 # https://crbug.com/580668
 ZoomControllerBrowserTest.SettingsZoomAfterSigninWorks
 
+# https://crbug.com/581368
+TracingBrowserTest.TestMemoryInfra
+
 # https://crbug.com/581575
 PredictorBrowserTest.PreconnectCORSAndFetchNonCORS

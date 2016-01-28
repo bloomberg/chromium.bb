@@ -42,6 +42,7 @@ LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime.RunMultiThread_DirectRenderer
 # https://crbug.com/567439
 LayerTreeHostCopyRequestCompletionCausesCommit.RunMultiThread_DirectRenderer
 LayerTreeHostCopyRequestTestLostOutputSurface.RunMultiThread_DirectRenderer
+LayerTreeHostTestStartPageScaleAnimation.RunMultiThread_DelegatingRenderer
 
 # https://crbug.com/571268
 LayerTreeHostTestGpuRasterDeviceSizeChanged.*
