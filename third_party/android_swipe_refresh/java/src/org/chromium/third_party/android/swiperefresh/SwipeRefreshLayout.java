@@ -88,6 +88,7 @@ public class SwipeRefreshLayout extends ViewGroup {
     private static final int DEFAULT_CIRCLE_TARGET = 64;
 
     private OnRefreshListener mListener;
+    private OnResetListener mResetListener;
     private boolean mRefreshing = false;
     private float mTotalDragDistance = -1;
     private int mMediumAnimationDuration;
@@ -312,6 +313,13 @@ public class SwipeRefreshLayout extends ViewGroup {
      */
     public void setOnRefreshListener(OnRefreshListener listener) {
         mListener = listener;
+    }
+
+    /**
+     * Set the reset listener to be notified when a reset is triggered.
+     */
+    public void setOnResetListener(OnResetListener listener) {
+        mResetListener = listener;
     }
 
     /**
@@ -692,6 +700,9 @@ public class SwipeRefreshLayout extends ViewGroup {
                     true /* requires update */);
         }
         mCurrentTargetOffsetTop = mCircleView.getTop();
+        if (mResetListener != null) {
+            mResetListener.onReset();
+        }
     }
 
     private void animateOffsetToCorrectPosition(int from, AnimationListener listener) {
@@ -795,5 +806,13 @@ public class SwipeRefreshLayout extends ViewGroup {
      */
     public interface OnRefreshListener {
         public void onRefresh();
+    }
+
+    /**
+     * Classes that wish to be notified when a reset is triggered should
+     * implement this interface.
+     */
+    public interface OnResetListener {
+        public void onReset();
     }
 }

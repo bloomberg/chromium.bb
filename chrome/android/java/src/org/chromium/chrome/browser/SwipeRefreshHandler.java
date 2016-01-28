@@ -97,6 +97,13 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
                 RecordUserAction.record("MobilePullGestureReload");
             }
         });
+        mSwipeRefreshLayout.setOnResetListener(new SwipeRefreshLayout.OnResetListener() {
+            @Override
+            public void onReset() {
+                detachSwipeRefreshLayoutIfNecessary();
+            }
+        });
+
         contentViewCore.setOverscrollRefreshHandler(this);
     }
 
@@ -136,7 +143,6 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
     public void reset() {
         cancelStopRefreshingRunnable();
         mSwipeRefreshLayout.reset();
-        detachSwipeRefreshLayoutIfNecessary();
     }
 
     @Override
@@ -173,7 +179,6 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
     }
 
     private void detachSwipeRefreshLayoutIfNecessary() {
-        // TODO(jdduke): Also detach the effect when its animation ends.
         if (mContentViewCore == null) return;
         if (mSwipeRefreshLayout.getParent() != null) {
             mContentViewCore.getContainerView().removeView(mSwipeRefreshLayout);

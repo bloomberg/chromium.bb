@@ -19,3 +19,5 @@ SwipeRefreshLayout
   * Target View semantics have been removed, allowing it to operate on
     a parent View rather than a child View.
   * All ViewCompat and MotionEventCompat dependencies removed.
+  * Added OnResetListener interface to notify SwipeRefreshHandler to detach
+    this view.
