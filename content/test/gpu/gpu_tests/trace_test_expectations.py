@@ -11,7 +11,10 @@ class TraceTestExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('TraceTest.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    pass
+
+    # TODO(ccameron): Continue investigating this.
+    self.Fail('TraceTest.CSS3DBlueBox', ['mac'], bug=577121)
+    self.Fail('TraceTest.Canvas2DRedBox', ['mac'], bug=577121)
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
   def SetExpectations(self):
