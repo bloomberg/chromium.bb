@@ -129,10 +129,13 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     }
 
     Color combinedBackgroundColor = shouldDrawBackgroundInSeparateBuffer ? rootBackgroundColor : baseBackgroundColor.blend(rootBackgroundColor);
-    if (combinedBackgroundColor.alpha())
+    if (combinedBackgroundColor.alpha()) {
+        if (!combinedBackgroundColor.hasAlpha() && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            recorder.setKnownToBeOpaque();
         context.fillRect(backgroundRect, combinedBackgroundColor, (shouldDrawBackgroundInSeparateBuffer || shouldClearCanvas) ? SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode);
-    else if (shouldClearCanvas && !shouldDrawBackgroundInSeparateBuffer)
+    } else if (shouldClearCanvas && !shouldDrawBackgroundInSeparateBuffer) {
         context.fillRect(backgroundRect, Color(), SkXfermode::kClear_Mode);
+    }
 
     for (auto it = reversedPaintList.rbegin(); it != reversedPaintList.rend(); ++it) {
         ASSERT((*it)->clip() == BorderFillBox);

@@ -140,6 +140,8 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         layer->SetBounds(combinedBounds.size());
         layer->SetTransform(transformToRoot(paintChunk.properties.transform.get()));
         layer->SetIsDrawable(true);
+        if (paintChunk.knownToBeOpaque)
+            layer->SetContentsOpaque(true);
         layer->SetNeedsDisplay();
 
         m_contentLayerClients.append(contentLayerClient.release());

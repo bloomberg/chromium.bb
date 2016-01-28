@@ -6,6 +6,7 @@
 #define DrawingDisplayItem_h
 
 #include "platform/PlatformExport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -25,12 +26,14 @@ public:
     DrawingDisplayItem(const DisplayItemClient& client
         , Type type
         , PassRefPtr<const SkPicture> picture
+        , bool knownToBeOpaque = false
 #if ENABLE(ASSERT)
         , UnderInvalidationCheckingMode underInvalidationCheckingMode = CheckPicture
 #endif
         )
         : DisplayItem(client, type, sizeof(*this))
         , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
+        , m_knownToBeOpaque(knownToBeOpaque)
 #if ENABLE(ASSERT)
         , m_underInvalidationCheckingMode(underInvalidationCheckingMode)
 #endif
@@ -44,6 +47,8 @@ public:
 
     const SkPicture* picture() const { return m_picture.get(); }
 
+    bool knownToBeOpaque() const { ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); return m_knownToBeOpaque; }
+
 #if ENABLE(ASSERT)
     UnderInvalidationCheckingMode underInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
     bool equals(const DisplayItem& other) const final;
@@ -55,6 +60,9 @@ private:
 #endif
 
     RefPtr<const SkPicture> m_picture;
+
+    // True if there are no transparent areas. Only used for SlimmingPaintV2.
+    const bool m_knownToBeOpaque;
 
 #if ENABLE(ASSERT)
     UnderInvalidationCheckingMode m_underInvalidationCheckingMode;

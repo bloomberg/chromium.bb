@@ -36,6 +36,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     : m_context(context)
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
+    , m_knownToBeOpaque(false)
 #if ENABLE(ASSERT)
     , m_displayItemPosition(m_context.paintController().newDisplayItemList().size())
     , m_underInvalidationCheckingMode(DrawingDisplayItem::CheckPicture)
@@ -90,6 +91,7 @@ DrawingRecorder::~DrawingRecorder()
     m_context.paintController().createAndAppend<DrawingDisplayItem>(m_displayItemClient
         , m_displayItemType
         , m_context.endRecording()
+        , m_knownToBeOpaque
 #if ENABLE(ASSERT)
         , m_underInvalidationCheckingMode
 #endif

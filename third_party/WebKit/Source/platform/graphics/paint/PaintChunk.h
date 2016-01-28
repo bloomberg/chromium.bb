@@ -20,9 +20,9 @@ namespace blink {
 // This is a Slimming Paint v2 class.
 struct PaintChunk {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    PaintChunk() : beginIndex(0), endIndex(0) { }
+    PaintChunk() : beginIndex(0), endIndex(0), knownToBeOpaque(false) { }
     PaintChunk(unsigned begin, unsigned end, const PaintChunkProperties& props)
-        : beginIndex(begin), endIndex(end), properties(props) { }
+        : beginIndex(begin), endIndex(end), properties(props), knownToBeOpaque(false) { }
 
     // Index of the first drawing in this chunk.
     unsigned beginIndex;
@@ -36,6 +36,9 @@ struct PaintChunk {
 
     // The total bounds of this paint chunk's contents.
     FloatRect bounds;
+
+    // True if the bounds are filled entirely with opaque contents.
+    bool knownToBeOpaque;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b)
@@ -43,7 +46,8 @@ inline bool operator==(const PaintChunk& a, const PaintChunk& b)
     return a.beginIndex == b.beginIndex
         && a.endIndex == b.endIndex
         && a.properties == b.properties
-        && a.bounds == b.bounds;
+        && a.bounds == b.bounds
+        && a.knownToBeOpaque == b.knownToBeOpaque;
 }
 
 inline bool operator!=(const PaintChunk& a, const PaintChunk& b)

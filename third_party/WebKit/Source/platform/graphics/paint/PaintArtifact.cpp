@@ -7,23 +7,36 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 namespace blink {
 
 namespace {
 
-void computeChunkBounds(const DisplayItemList& displayItems, Vector<PaintChunk>& paintChunks)
+void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems, Vector<PaintChunk>& paintChunks)
 {
     for (PaintChunk& chunk : paintChunks) {
         FloatRect bounds;
+        SkRegion knownToBeOpaqueRegion;
         for (const DisplayItem& item : displayItems.itemsInPaintChunk(chunk)) {
             if (!item.isDrawing())
                 continue;
             const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
-            if (const SkPicture* picture = drawing.picture())
-                bounds.unite(picture->cullRect());
+            if (const SkPicture* picture = drawing.picture()) {
+                const SkRect& pictureRect = picture->cullRect();
+                bounds.unite(pictureRect);
+                if (drawing.knownToBeOpaque()) {
+                    // TODO(pdr): This may be too conservative and fail due to
+                    // floating point precision issues.
+                    SkIRect conservativelyRoundedPictureRect;
+                    pictureRect.roundIn(&conservativelyRoundedPictureRect);
+                    knownToBeOpaqueRegion.op(conservativelyRoundedPictureRect, SkRegion::kUnion_Op);
+                }
+            }
         }
         chunk.bounds = bounds;
+        if (knownToBeOpaqueRegion.contains(enclosingIntRect(bounds)))
+            chunk.knownToBeOpaque = true;
     }
 }
 
@@ -38,7 +51,7 @@ PaintArtifact::PaintArtifact(DisplayItemList displayItems, Vector<PaintChunk> pa
     : m_displayItemList(std::move(displayItems))
     , m_paintChunks(std::move(paintChunks))
 {
-    computeChunkBounds(m_displayItemList, m_paintChunks);
+    computeChunkBoundsAndOpaqueness(m_displayItemList, m_paintChunks);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)
