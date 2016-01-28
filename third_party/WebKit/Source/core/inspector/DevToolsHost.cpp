@@ -50,6 +50,7 @@
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/HostWindow.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/ResourceError.h"
@@ -137,6 +138,8 @@ DEFINE_TRACE(DevToolsHost)
 
 void DevToolsHost::evaluateScript(const String& expression)
 {
+    if (ScriptForbiddenScope::isScriptForbidden())
+        return;
     if (!m_frontendFrame)
         return;
     ScriptState* scriptState = ScriptState::forMainWorld(m_frontendFrame);
