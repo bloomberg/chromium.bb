@@ -106,6 +106,27 @@ TEST_F(PointerTest, OnPointerMotion) {
   generator.MoveMouseTo(surface->GetBoundsInScreen().origin() +
                         gfx::Vector2d(1, 1));
 
+  scoped_ptr<Surface> sub_surface(new Surface);
+  surface->AddSubSurface(sub_surface.get());
+  surface->SetSubSurfacePosition(sub_surface.get(), gfx::Point(5, 5));
+  gfx::Size sub_buffer_size(5, 5);
+  scoped_ptr<Buffer> sub_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(sub_buffer_size),
+                 GL_TEXTURE_2D));
+  sub_surface->Attach(sub_buffer.get());
+  sub_surface->Commit();
+  surface->Commit();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(sub_surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
+  EXPECT_CALL(delegate, OnPointerEnter(sub_surface.get(), gfx::Point(), 0));
+  generator.MoveMouseTo(sub_surface->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::Point(1, 1)));
+  generator.MoveMouseTo(sub_surface->GetBoundsInScreen().origin() +
+                        gfx::Vector2d(1, 1));
+
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
 }

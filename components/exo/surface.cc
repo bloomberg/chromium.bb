@@ -70,7 +70,7 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
   bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) override {
-    return false;
+    return true;
   }
   bool CanFocus() override { return true; }
   void OnCaptureLost() override {}
