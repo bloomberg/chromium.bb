@@ -34,7 +34,6 @@ class FileImpl : public File {
             int64_t offset,
             Whence whence,
             const ReadCallback& callback) override;
-  void ReadEntireFile(const ReadEntireFileCallback& callback) override;
   void Write(mojo::Array<uint8_t> bytes_to_write,
              int64_t offset,
              Whence whence,

@@ -55,6 +55,11 @@ class DirectoryImpl : public Directory {
   void IsWritable(const mojo::String& path,
                   const IsWritableCallback& callback) override;
   void Flush(const FlushCallback& callback) override;
+  void ReadEntireFile(const mojo::String& path,
+                      const ReadEntireFileCallback& callback) override;
+  void WriteFile(const mojo::String& path,
+                 mojo::Array<uint8_t> data,
+                 const WriteFileCallback& callback) override;
 
  private:
   mojo::StrongBinding<Directory> binding_;

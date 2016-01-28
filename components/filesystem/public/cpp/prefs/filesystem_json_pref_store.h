@@ -140,14 +140,11 @@ class FilesystemJsonPrefStore
 
   // Asynchronous implementation details of PerformWrite().
   void OnTempFileWriteStart();
-  void OnTempFileOpened(FileError err);
-  void OnTempFileWrite(FileError err, uint32_t num_bytes_written);
-  void OnTempFileClosed(FileError err);
+  void OnTempFileWrite(FileError err);
   void OnTempFileRenamed(FileError err);
 
   // Asynchronous implementation details of ReadPrefsAsync().
   void OnPreferencesReadStart();
-  void OnPreferencesFileOpened(FileError err);
   void OnPreferencesFileRead(FileError err, mojo::Array<uint8_t> contents);
 
   const std::string path_;
@@ -157,9 +154,6 @@ class FilesystemJsonPrefStore
   // |directory_| is only bound after the first attempt to access the
   // |filesystem. See OpenFilesystem().
   DirectoryPtr directory_;
-
-  FilePtr preferences_file_;
-  FilePtr temporary_file_;
 
   scoped_ptr<base::DictionaryValue> prefs_;
 

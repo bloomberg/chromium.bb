@@ -348,17 +348,6 @@ void FilesystemJsonPrefStore::OnOpenFilesystem(base::Closure callback,
 }
 
 void FilesystemJsonPrefStore::OnTempFileWriteStart() {
-  // Open up a temporary file and truncate it.
-  directory_->OpenFile(
-      "tmp", GetProxy(&temporary_file_), kFlagWrite | kFlagCreate,
-      Bind(&FilesystemJsonPrefStore::OnTempFileOpened, AsWeakPtr()));
-}
-
-void FilesystemJsonPrefStore::OnTempFileOpened(FileError err) {
-  // TODO(erg): Error handling. The JsonPrefStore code assumes that writing the
-  // file can never fail.
-  CHECK_EQ(FileError::OK, err);
-
   // Calculate what we want to write, and then write to the temporary file.
   pending_lossy_write_ = false;
 
@@ -370,50 +359,29 @@ void FilesystemJsonPrefStore::OnTempFileOpened(FileError err) {
   serializer.set_pretty_print(false);
   serializer.Serialize(*prefs_);
 
-  temporary_file_->Write(
-      mojo::Array<uint8_t>::From(output), 0, Whence::FROM_CURRENT,
+  directory_->WriteFile(
+      "tmp",
+      mojo::Array<uint8_t>::From(output),
       Bind(&FilesystemJsonPrefStore::OnTempFileWrite, AsWeakPtr()));
 }
 
-void FilesystemJsonPrefStore::OnTempFileWrite(FileError err,
-                                              uint32_t num_bytes_written) {
+void FilesystemJsonPrefStore::OnTempFileWrite(FileError err) {
   // TODO(erg): Error handling. The JsonPrefStore code assumes that writing the
   // file can never fail.
   CHECK_EQ(FileError::OK, err);
 
-  // Now that we've written the file, close it.
-  temporary_file_->Close(
-      Bind(&FilesystemJsonPrefStore::OnTempFileClosed, AsWeakPtr()));
-}
-
-void FilesystemJsonPrefStore::OnTempFileClosed(FileError err) {
-  // TODO(erg): Error handling. The JsonPrefStore code assumes that writing the
-  // file can never fail.
-  CHECK_EQ(FileError::OK, err);
-
-  temporary_file_.reset();
   directory_->Rename(
       "tmp", path_,
       Bind(&FilesystemJsonPrefStore::OnTempFileRenamed, AsWeakPtr()));
 }
 
-void FilesystemJsonPrefStore::OnTempFileRenamed(FileError err) {}
-
-void FilesystemJsonPrefStore::OnPreferencesReadStart() {
-  // TODO(erg): implement me.
-  directory_->OpenFile(
-      path_, GetProxy(&preferences_file_), kFlagRead | kFlagOpen,
-      Bind(&FilesystemJsonPrefStore::OnPreferencesFileOpened, AsWeakPtr()));
+void FilesystemJsonPrefStore::OnTempFileRenamed(FileError err) {
 }
 
-void FilesystemJsonPrefStore::OnPreferencesFileOpened(FileError err) {
-  // TODO(erg): Error handling.
-  if (err == FileError::OK) {
-    preferences_file_->ReadEntireFile(
-        Bind(&FilesystemJsonPrefStore::OnPreferencesFileRead, AsWeakPtr()));
-  } else {
-    OnPreferencesFileRead(err, mojo::Array<uint8_t>());
-  }
+void FilesystemJsonPrefStore::OnPreferencesReadStart() {
+  directory_->ReadEntireFile(
+      path_,
+      Bind(&FilesystemJsonPrefStore::OnPreferencesFileRead, AsWeakPtr()));
 }
 
 void FilesystemJsonPrefStore::OnPreferencesFileRead(
@@ -424,7 +392,8 @@ void FilesystemJsonPrefStore::OnPreferencesFileRead(
   // TODO(erg): Needs even better error handling.
   switch (err) {
     case FileError::IN_USE:
-    case FileError::ACCESS_DENIED: {
+    case FileError::ACCESS_DENIED:
+    case FileError::NOT_A_FILE: {
       read_only_ = true;
       break;
     }
@@ -444,8 +413,6 @@ void FilesystemJsonPrefStore::OnPreferencesFileRead(
       read_result->error = HandleReadErrors(read_result->value.get());
     }
   }
-
-  preferences_file_.reset();
 
   OnFileRead(std::move(read_result));
 }
