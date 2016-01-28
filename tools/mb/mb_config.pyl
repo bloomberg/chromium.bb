@@ -72,6 +72,8 @@
     'libfuzzer_upload_bot': ['gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs'],
     'libfuzzer_upload_bot_asan': ['gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs'],
     'libfuzzer_upload_bot_msan': ['gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs'],
+    'drfuzz_upload_bot_win32': ['gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs'],
+    'drfuzz_upload_bot_win64': ['gn', 'release', 'drmemory', 'drfuzz', 'x64', 'proprietary_codecs'],
 
     # This is just for completeness; any bot that uses this config
     # should never actually run MB.
@@ -407,6 +409,13 @@
       'gn_args': 'target_cpu="x86"',
       'gyp_defines': 'target_arch=ia32',
     },
+
+    'drfuzz': { 'gn_args': 'use_drfuzz=true' },
+
+    'drmemory': {
+      'gn_args': 'is_component_build=true enable_iterator_debugging=false',
+      'gyp_defines': 'component=shared_library build_for_tool=drmemory',
+    }
   },
 
   # This is a map of buildbot master names -> buildbot builder names ->
@@ -546,6 +555,8 @@
       'CFI Linux': 'gn_cfi_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
+      'Win LKGR (DrM)': 'drfuzz_upload_bot_win32',
+      'Win LKGR (DrM 64)': 'drfuzz_upload_bot_win64',
       'Libfuzzer Upload Linux': 'libfuzzer_upload_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_upload_bot_asan',
       'Libfuzzer Upload Linux MSan': 'libfuzzer_upload_bot_msan',
