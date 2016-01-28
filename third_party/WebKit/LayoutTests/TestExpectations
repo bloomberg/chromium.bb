@@ -1113,6 +1113,8 @@ crbug.com/509025 [ Mac10.10 ] http/tests/security/contentTypeOptions/nosniff-scr
 
 crbug.com/569643 compositing/iframes/invisible-nested-iframe-hide.html [ NeedsRebaseline ]
 
+crbug.com/240845 css3/filters/effect-reference-hidpi.html [ NeedsRebaseline ]
+
 crbug.com/545140 [ Mac10.10 ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 crbug.com/545141 [ Mac10.10 ] fast/writing-mode/text-orientation-basic.html [ Failure ]
 
