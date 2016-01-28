@@ -33,6 +33,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
 #include <inttypes.h>
+#include <v8-profiler.h>
 #include <v8.h>
 
 namespace blink {
@@ -52,9 +53,12 @@ void setCallStack(TracedValue* value)
         traceCategoryEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"));
     if (!*traceCategoryEnabled)
         return;
-    RefPtr<ScriptCallStack> scriptCallStack = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
-    if (scriptCallStack)
+    // The CPU profiler stack trace does not include call site line numbers.
+    // So we collect the top frame with the currentScriptCallStack to get the
+    // binding call site info.
+    if (RefPtr<ScriptCallStack> scriptCallStack = currentScriptCallStack(1))
         scriptCallStack->toTracedValue(value, "stackTrace");
+    v8::Isolate::GetCurrent()->GetCpuProfiler()->CollectSample();
 }
 
 namespace {

@@ -5,9 +5,7 @@ JSFrame: 211.000 / 0.226 b
 JSFrame: 211.000 / 0.226 c
 JSFrame: 219.875 / 8.155 a
 JSFrame: 219.875 / 8.155 b
-JSFrame: 219.875 / 0.125 c
-JSFrame: 220.000 / 7.713 a
-JSFrame: 220.000 / 7.713 b
+JSFrame: 219.875 / 7.250 c
 InvalidateLayout: 220.000 / 7.000 
 InvalidateLayout: 221.000 / 3.000 
 JSFrame: 227.125 / 0.905 e
@@ -15,16 +13,11 @@ JSFrame: 227.125 / 0.905 g
 JSFrame: 230.000 / 0.833 f
 JSFrame: 230.000 / 0.833 l
 JSFrame: 230.000 / 0.833 a
-JSFrame: 230.010 / 0.808 f
-JSFrame: 230.010 / 0.808 l
-JSFrame: 230.010 / 0.808 a
 Layout: 230.010 / 0.100 
 FunctionCall: 250.000 / 10.000 
-JSFrame: 251.000 / 1.513 x
-JSFrame: 251.000 / 1.513 y
-JSFrame: 251.000 / 1.482 x
-JSFrame: 251.000 / 1.482 y
 FunctionCall: 251.000 / 1.000 
+JSFrame: 251.000 / 0.882 x
+JSFrame: 251.000 / 0.882 y
 JSFrame: 251.000 / 0.200 z
 JSFrame: 251.000 / 0.200 w
 JSFrame: 251.200 / 0.200 w

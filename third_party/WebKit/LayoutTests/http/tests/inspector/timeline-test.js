@@ -76,11 +76,10 @@ InspectorTest.startTimeline = function(callback)
     var panel = WebInspector.panels.timeline;
     function onRecordingStarted()
     {
-        panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
+        panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this);
         callback();
     }
-    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
-    panel._captureJSProfileSetting.set(false);
+    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this);
     panel._toggleRecording();
 };
 

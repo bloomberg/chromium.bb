@@ -13,6 +13,7 @@ function performActions()
 
 function test() 
 {
+    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.startTimeline(step1);
     function step1()
     {

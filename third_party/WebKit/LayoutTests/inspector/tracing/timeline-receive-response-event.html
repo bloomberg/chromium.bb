@@ -22,6 +22,7 @@ function test()
 {
     WebInspector.TimelinePanel.show();
     WebInspector.panels.timeline._model._currentTarget = WebInspector.targetManager.mainTarget();
+    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()

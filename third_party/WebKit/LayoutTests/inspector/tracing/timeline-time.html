@@ -86,7 +86,8 @@ function test()
             InspectorTest.walkTimelineEventTree(dumpName);
             next();
         }
-        InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback));
+        WebInspector.panels.timeline._captureJSProfileSetting.set(false);
+        InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback), true);
     }
 }
 
