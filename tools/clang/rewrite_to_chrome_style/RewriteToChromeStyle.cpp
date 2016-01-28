@@ -241,20 +241,21 @@ class RewriterBase : public MatchFinder::MatchCallback {
       : replacements_(replacements) {}
 
   void run(const MatchFinder::MatchResult& result) override {
-    std::string name;
+    std::string new_name;
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
     clang::ASTContext* context = result.Context;
-    if (!GetNameForDecl(*decl, *context, name))
+    if (!GetNameForDecl(*decl, *context, new_name))
       return;
-    auto r = replacements_->emplace(
-        *result.SourceManager, TargetNodeTraits<TargetNode>::GetRange(
-                                   *result.Nodes.getNodeAs<TargetNode>(
-                                       TargetNodeTraits<TargetNode>::kName)),
-        name);
-    auto from = decl->getNameAsString();
-    auto to = r.first->getReplacementText().str();
-    if (from != to)
-      replacement_names_.emplace(std::move(from), std::move(to));
+    llvm::StringRef old_name = decl->getName();
+    if (old_name == new_name)
+      return;
+    clang::CharSourceRange range = TargetNodeTraits<TargetNode>::GetRange(
+        *result.Nodes.getNodeAs<TargetNode>(
+            TargetNodeTraits<TargetNode>::kName));
+    if (range.getBegin().isMacroID() || range.getEnd().isMacroID())
+      return;
+    replacements_->emplace(*result.SourceManager, range, new_name);
+    replacement_names_.emplace(old_name.str(), std::move(new_name));
   }
 
   const std::unordered_map<std::string, std::string>& replacement_names()
