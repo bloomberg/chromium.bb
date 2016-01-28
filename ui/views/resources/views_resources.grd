@@ -159,8 +159,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_MENU_RADIO_EMPTY" file="common/menu_radio_empty.png" />
-      <structure type="chrome_scaled_image" name="IDR_MENU_RADIO_SELECTED" file="common/menu_radio_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_LEFT" file="slider_left_active.png" />
       <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_RIGHT" file="slider_right_active.png" />
       <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_CENTER" file="slider_center_active.png" />

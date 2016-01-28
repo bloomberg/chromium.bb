@@ -815,8 +815,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     AdjustBoundsForRTLUI(&check_bounds);
     canvas->DrawImageInt(check, check_bounds.x(), check_bounds.y());
   } else if (type_ == RADIO) {
-    gfx::ImageSkia image =
-        GetRadioButtonImage(delegate->IsItemChecked(GetCommand()));
+    gfx::ImageSkia image = GetRadioButtonImage(
+        delegate->IsItemChecked(GetCommand()), render_selection, icon_color);
     gfx::Rect radio_bounds(icon_x,
                            top_margin + (available_height - image.height()) / 2,
                            image.width(),

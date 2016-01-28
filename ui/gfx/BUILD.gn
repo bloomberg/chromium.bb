@@ -496,6 +496,8 @@ action("aggregate_vector_icons") {
     "vector_icons/location_on.icon",
     "vector_icons/menu_check.1x.icon",
     "vector_icons/menu_check.icon",
+    "vector_icons/menu_radio_empty.icon",
+    "vector_icons/menu_radio_selected.icon",
     "vector_icons/midi.icon",
     "vector_icons/mixed_content.icon",
     "vector_icons/mode_edit.icon",

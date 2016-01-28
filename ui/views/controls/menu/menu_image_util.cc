@@ -5,10 +5,9 @@
 #include "ui/views/controls/menu/menu_image_util.h"
 
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/resources/grit/views_resources.h"
 
 namespace views {
 
@@ -17,10 +16,14 @@ gfx::ImageSkia GetMenuCheckImage(SkColor icon_color) {
                                icon_color);
 }
 
-gfx::ImageSkia GetRadioButtonImage(bool selected) {
-  int image_id = selected ? IDR_MENU_RADIO_SELECTED : IDR_MENU_RADIO_EMPTY;
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(image_id).
-      AsImageSkia();
+gfx::ImageSkia GetRadioButtonImage(bool toggled,
+                                   bool hovered,
+                                   SkColor default_icon_color) {
+  gfx::VectorIconId id = toggled ? gfx::VectorIconId::MENU_RADIO_SELECTED
+                                 : gfx::VectorIconId::MENU_RADIO_EMPTY;
+  SkColor color =
+      toggled && !hovered ? gfx::kGoogleBlue500 : default_icon_color;
+  return gfx::CreateVectorIcon(id, kMenuCheckSize, color);
 }
 
 gfx::ImageSkia GetSubmenuArrowImage(SkColor icon_color) {
