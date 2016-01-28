@@ -53,6 +53,11 @@ class InterstitialPage {
   CONTENT_EXPORT static InterstitialPage* GetInterstitialPage(
       WebContents* web_contents);
 
+  // Retrieves the InterstitialPage that hosts the RenderFrameHost, or nullptr
+  // if |rfh| is not a part of any InterstitialPage.
+  CONTENT_EXPORT static InterstitialPage* FromRenderFrameHost(
+      RenderFrameHost* rfh);
+
   virtual ~InterstitialPage() {}
 
   // Shows the interstitial page in the tab.
@@ -78,6 +83,13 @@ class InterstitialPage {
 
   // Sets the focus to the interstitial.
   virtual void Focus() = 0;
+
+  // Get the WebContents in which this interstitial is shown. Warning: Frames
+  // in the intersitital are NOT visible through WebContentObservers' normal
+  // notifications (e.g. RenderFrameDeleted). The only sensible use of this
+  // returned WebContents is to add a WebContentObserver and listen for the
+  // DidAttachInterstitialPage or DidDetachInterstitialPage notifications.
+  virtual WebContents* GetWebContents() const = 0;
 
   // Gets the RenderFrameHost associated with
   // the interstitial page's main frame.

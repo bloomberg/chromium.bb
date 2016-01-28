@@ -64,6 +64,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   void Hide() override;
   void DontProceed() override;
   void Proceed() override;
+  WebContents* GetWebContents() const override;
   RenderFrameHost* GetMainFrame() const override;
   InterstitialPageDelegate* GetDelegateForTesting() override;
   void DontCreateViewForTesting() override;
@@ -107,6 +108,7 @@ class CONTENT_EXPORT InterstitialPageImpl
                    int32_t page_id,
                    const base::string16& title,
                    base::i18n::TextDirection title_direction) override;
+  InterstitialPage* GetAsInterstitialPage() override;
   AccessibilityMode GetAccessibilityMode() const override;
   void Cut() override;
   void Copy() override;

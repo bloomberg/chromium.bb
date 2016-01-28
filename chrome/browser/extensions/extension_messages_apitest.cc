@@ -167,6 +167,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingBackgroundOnly) {
   ASSERT_TRUE(RunExtensionTest("messaging/background_only")) << message_;
 }
 
+// Tests whether an extension in an interstitial page can send messages to the
+// background page.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingInterstitial) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  ASSERT_TRUE(https_server.Start());
+
+  ASSERT_TRUE(RunExtensionSubtest("messaging/interstitial_component",
+                                  https_server.base_url().spec(),
+                                  kFlagLoadAsComponent)) << message_;
+}
+
 // Tests connecting from a panel to its extension.
 class PanelMessagingTest : public ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -148,6 +148,14 @@ InterstitialPage* InterstitialPage::GetInterstitialPage(
   return iter->second;
 }
 
+InterstitialPage* InterstitialPage::FromRenderFrameHost(RenderFrameHost* rfh) {
+  if (!rfh)
+    return nullptr;
+  return static_cast<RenderFrameHostImpl*>(rfh)
+      ->delegate()
+      ->GetAsInterstitialPage();
+}
+
 InterstitialPageImpl::InterstitialPageImpl(
     WebContents* web_contents,
     RenderWidgetHostDelegate* render_widget_host_delegate,
@@ -424,6 +432,10 @@ void InterstitialPageImpl::UpdateTitle(
   controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
 }
 
+InterstitialPage* InterstitialPageImpl::GetAsInterstitialPage() {
+  return this;
+}
+
 AccessibilityMode InterstitialPageImpl::GetAccessibilityMode() const {
   if (web_contents_)
     return static_cast<WebContentsImpl*>(web_contents_)->GetAccessibilityMode();
@@ -473,6 +485,10 @@ void InterstitialPageImpl::SelectAll() {
 
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
   return rvh_delegate_view_.get();
+}
+
+WebContents* InterstitialPageImpl::GetWebContents() const {
+  return web_contents();
 }
 
 const GURL& InterstitialPageImpl::GetMainFrameLastCommittedURL() const {
