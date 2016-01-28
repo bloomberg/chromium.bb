@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
@@ -131,6 +132,83 @@ TEST_P(NativeWidgetMacInteractiveUITest, ShowInactiveIgnoresKeyStatus) {
   EXPECT_TRUE([widget->GetNativeWindow() isKeyWindow]);
 
   widget->CloseNow();
+}
+
+namespace {
+
+// Show |widget| and wait for it to become the key window.
+void ShowKeyWindow(Widget* widget) {
+  base::scoped_nsobject<WindowedNSNotificationObserver> waiter(
+      [[WindowedNSNotificationObserver alloc]
+          initForNotification:NSWindowDidBecomeKeyNotification
+                       object:widget->GetNativeWindow()]);
+  widget->Show();
+  EXPECT_TRUE([waiter wait]);
+  EXPECT_TRUE([widget->GetNativeWindow() isKeyWindow]);
+}
+
+NSData* ViewAsTIFF(NSView* view) {
+  NSBitmapImageRep* bitmap =
+      [view bitmapImageRepForCachingDisplayInRect:[view bounds]];
+  [view cacheDisplayInRect:[view bounds] toBitmapImageRep:bitmap];
+  return [bitmap TIFFRepresentation];
+}
+
+}  // namespace
+
+// Test that parent windows keep their traffic lights enabled when showing
+// dialogs.
+TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
+  // Snow leopard doesn't have -[NSWindow _sharesParentKeyState].
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  Widget* parent_widget = CreateTopLevelPlatformWidget();
+  parent_widget->SetBounds(gfx::Rect(100, 100, 100, 100));
+  ShowKeyWindow(parent_widget);
+
+  NSWindow* parent = parent_widget->GetNativeWindow();
+  EXPECT_TRUE([parent isMainWindow]);
+
+  NSButton* button = [parent standardWindowButton:NSWindowCloseButton];
+  EXPECT_TRUE(button);
+  NSData* active_button_image = ViewAsTIFF(button);
+  EXPECT_TRUE(active_button_image);
+
+  // Create an activatable frameless child. Frameless so that it doesn't have
+  // traffic lights of its own, and activatable so that it can take key status.
+  Widget* child_widget = new Widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.native_widget = new NativeWidgetMac(child_widget);
+  params.bounds = gfx::Rect(130, 130, 100, 100);
+  params.parent = parent_widget->GetNativeView();
+  child_widget->Init(params);
+  ShowKeyWindow(child_widget);
+
+  // Ensure the button instance is still valid.
+  EXPECT_EQ(button, [parent standardWindowButton:NSWindowCloseButton]);
+
+  // Parent window should still be main, and have its traffic lights active.
+  EXPECT_TRUE([parent isMainWindow]);
+  EXPECT_FALSE([parent isKeyWindow]);
+
+  // Enabled status doesn't actually change, but check anyway.
+  EXPECT_TRUE([button isEnabled]);
+  NSData* button_image_with_child = ViewAsTIFF(button);
+  EXPECT_TRUE([active_button_image isEqualToData:button_image_with_child]);
+
+  // Verify that activating some other random window does change the button.
+  Widget* other_widget = CreateTopLevelPlatformWidget();
+  other_widget->SetBounds(gfx::Rect(200, 200, 100, 100));
+  ShowKeyWindow(other_widget);
+  EXPECT_FALSE([parent isMainWindow]);
+  EXPECT_FALSE([parent isKeyWindow]);
+  EXPECT_TRUE([button isEnabled]);
+  NSData* inactive_button_image = ViewAsTIFF(button);
+  EXPECT_FALSE([active_button_image isEqualToData:inactive_button_image]);
+
+  other_widget->CloseNow();
+  parent_widget->CloseNow();
 }
 
 INSTANTIATE_TEST_CASE_P(NativeWidgetMacInteractiveUITestInstance,

@@ -293,11 +293,7 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
 }
 
 BridgedNativeWidget::~BridgedNativeWidget() {
-  RemoveOrDestroyChildren();
-  DCHECK(child_windows_.empty());
-  SetFocusManager(NULL);
-  SetRootView(NULL);
-  DestroyCompositor();
+  bool close_window = false;
   if ([window_ delegate]) {
     // If the delegate is still set on a modal dialog, it means it was not
     // closed via [NSApplication endSheet:]. This is probably OK if the widget
@@ -308,12 +304,31 @@ BridgedNativeWidget::~BridgedNativeWidget() {
     // So ban it. Modal dialogs should be closed via Widget::Close().
     DCHECK(!native_widget_mac_->IsWindowModalSheet());
 
-    // If the delegate is still set, it means OnWindowWillClose has not been
-    // called and the window is still open. Calling -[NSWindow close] will
-    // synchronously call OnWindowWillClose and notify NativeWidgetMac.
+    // If the delegate is still set, it means OnWindowWillClose() has not been
+    // called and the window is still open. Usually, -[NSWindow close] would
+    // synchronously call OnWindowWillClose() which removes the delegate and
+    // notifies NativeWidgetMac, which then calls this with a nil delegate.
+    // For other teardown flows (e.g. Widget::WIDGET_OWNS_NATIVE_WIDGET or
+    // Widget::CloseNow()) the delegate must first be cleared to avoid AppKit
+    // calling back into the bridge. This means OnWindowWillClose() needs to be
+    // invoked manually, which is done below.
+    // Note that if the window has children it can't be closed until the
+    // children are gone, but removing child windows calls into AppKit for the
+    // parent window, so the delegate must be cleared first.
+    [window_ setDelegate:nil];
+    close_window = true;
+  }
+
+  RemoveOrDestroyChildren();
+  DCHECK(child_windows_.empty());
+  SetFocusManager(nullptr);
+  SetRootView(nullptr);
+  DestroyCompositor();
+
+  if (close_window) {
+    OnWindowWillClose();
     [window_ close];
   }
-  DCHECK(![window_ delegate]);
 }
 
 void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,

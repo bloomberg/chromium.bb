@@ -5,6 +5,7 @@
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 
 #include "base/mac/foundation_util.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -83,9 +84,17 @@
   if (![self delegate])
     return NO;
 
-  // Dialogs shouldn't take large shadows away from their parent window.
+  // Dialogs and bubbles shouldn't take large shadows away from their parent.
   views::Widget* widget = [self viewsWidget];
-  return widget->CanActivate() && !widget->IsDialogBox();
+  return widget->CanActivate() &&
+         !views::NativeWidgetMac::GetBridgeForNativeWindow(self)->parent();
+}
+
+// Lets the traffic light buttons on the parent window keep their active state.
+- (BOOL)_sharesParentKeyState {
+  // Follow -canBecomeMainWindow unless the window provides its own buttons.
+  return ([self styleMask] & NSClosableWindowMask) == 0 &&
+         ![self canBecomeMainWindow];
 }
 
 // Override sendEvent to allow key events to be forwarded to a toolkit-views
