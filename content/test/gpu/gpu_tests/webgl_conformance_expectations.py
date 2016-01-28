@@ -85,6 +85,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / OpenGL / NVIDIA failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['win', 'nvidia', 'opengl'], bug=1007) # angle bug ID
+    # Mark ANGLE's OpenGL as flaky on Windows Nvidia
+    self.Flaky('conformance/*', ['win', 'nvidia', 'opengl'], bug=582083)
 
     # Win / OpenGL / AMD failures
     self.Skip('conformance/glsl/misc/shader-struct-scope.html',
