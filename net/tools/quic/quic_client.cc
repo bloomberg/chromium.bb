@@ -29,6 +29,9 @@
 #define SO_RXQ_OVFL 40
 #endif
 
+// TODO(rtenneti): Add support for MMSG_MORE.
+#define MMSG_MORE 0
+
 using std::string;
 using std::vector;
 
@@ -73,7 +76,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
       packets_dropped_(0),
       overflow_supported_(false),
       store_response_(false),
-      latest_response_code_(-1) {}
+      latest_response_code_(-1),
+      packet_reader_(CreateQuicPacketReader()) {}
 
 QuicClient::~QuicClient() {
   if (connected()) {
@@ -392,7 +396,16 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, GetLatestFD());
 
   if (event->in_events & EPOLLIN) {
-    while (connected() && ReadAndProcessPacket()) {
+    while (connected()) {
+      if (
+#if MMSG_MORE
+          !ReadAndProcessPackets()
+#else
+          !ReadAndProcessPacket()
+#endif
+              ) {
+        break;
+      }
     }
   }
   if (connected() && (event->in_events & EPOLLOUT)) {
@@ -448,6 +461,12 @@ const string& QuicClient::latest_response_trailers() const {
 
 QuicPacketWriter* QuicClient::CreateQuicPacketWriter() {
   return new QuicDefaultPacketWriter(GetLatestFD());
+}
+
+QuicPacketReader* QuicClient::CreateQuicPacketReader() {
+  // TODO(rtenneti): Add support for QuicPacketReader.
+  //  return new QuicPacketReader();
+  return nullptr;
 }
 
 int QuicClient::ReadPacket(char* buffer,
@@ -506,6 +525,12 @@ int QuicClient::GetLatestFD() const {
   }
 
   return fd_address_map_.back().first;
+}
+
+void QuicClient::ProcessPacket(const IPEndPoint& self_address,
+                               const IPEndPoint& peer_address,
+                               const QuicEncryptedPacket& packet) {
+  session()->connection()->ProcessUdpPacket(self_address, peer_address, packet);
 }
 
 }  // namespace tools

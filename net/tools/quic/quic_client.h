@@ -22,6 +22,7 @@
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_base.h"
+#include "net/tools/quic/quic_process_packet_interface.h"
 
 namespace net {
 
@@ -30,6 +31,7 @@ class QuicServerId;
 namespace tools {
 
 class QuicEpollConnectionHelper;
+class QuicPacketReader;
 
 namespace test {
 class QuicClientPeer;
@@ -37,7 +39,8 @@ class QuicClientPeer;
 
 class QuicClient : public QuicClientBase,
                    public EpollCallbackInterface,
-                   public QuicSpdyStream::Visitor {
+                   public QuicSpdyStream::Visitor,
+                   public ProcessPacketInterface {
  public:
   class ResponseListener {
    public:
@@ -174,8 +177,15 @@ class QuicClient : public QuicClientBase,
   const std::string& latest_response_body() const;
   const std::string& latest_response_trailers() const;
 
+  // Implements ProcessPacketInterface. This will be called for each received
+  // packet.
+  void ProcessPacket(const IPEndPoint& self_address,
+                     const IPEndPoint& peer_address,
+                     const QuicEncryptedPacket& packet) override;
+
  protected:
   virtual QuicPacketWriter* CreateQuicPacketWriter();
+  virtual QuicPacketReader* CreateQuicPacketReader();
 
   virtual int ReadPacket(char* buffer,
                          int buffer_len,
@@ -231,6 +241,11 @@ class QuicClient : public QuicClientBase,
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
 
+  // Read available UDP packets up to kNumPacketsPerReadCall
+  // and hand them to the connection.
+  // TODO(rtenneti): Add support for ReadAndProcessPackets().
+  // bool ReadAndProcessPackets();
+
   // Address of the server.
   const IPEndPoint server_address_;
 
@@ -277,6 +292,13 @@ class QuicClient : public QuicClientBase,
   // Once the client receives a stateless reject, keeps track of any data that
   // must be resent upon a subsequent successful connection.
   std::vector<QuicDataToResend*> data_to_resend_on_connect_;
+
+  // Point to a QuicPacketReader object on the heap. The reader allocates more
+  // space than allowed on the stack.
+  //
+  // TODO(rtenneti): Chromium code doesn't use |packet_reader_|. Add support for
+  // QuicPacketReader
+  QuicPacketReader* packet_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

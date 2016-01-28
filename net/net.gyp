@@ -1322,6 +1322,7 @@
             'tools/quic/quic_packet_reader.h',
             'tools/quic/quic_packet_writer_wrapper.cc',
             'tools/quic/quic_packet_writer_wrapper.h',
+            'tools/quic/quic_process_packet_interface.h',
             'tools/quic/quic_server.cc',
             'tools/quic/quic_server.h',
             'tools/quic/quic_socket_utils.cc',

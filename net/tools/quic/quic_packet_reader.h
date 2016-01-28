@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "net/quic/quic_protocol.h"
+#include "net/tools/quic/quic_process_packet_interface.h"
 
 namespace net {
 
@@ -27,7 +28,6 @@ namespace test {
 class QuicServerPeer;
 }  // namespace test
 
-class ProcessPacketInterface;
 class QuicDispatcher;
 
 class QuicPacketReader {

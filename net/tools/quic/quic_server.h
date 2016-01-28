@@ -30,7 +30,6 @@ namespace test {
 class QuicServerPeer;
 }  // namespace test
 
-class ProcessPacketInterface;
 class QuicDispatcher;
 class QuicPacketReader;
 

@@ -17,6 +17,7 @@
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/tools/quic/quic_dispatcher.h"
+#include "net/tools/quic/quic_process_packet_interface.h"
 #include "net/tools/quic/quic_socket_utils.h"
 
 #define MMSG_MORE 0
@@ -57,6 +58,8 @@ void QuicPacketReader::Initialize() {
 
 QuicPacketReader::~QuicPacketReader() {}
 
+// TODO(danzh): write a public method to wrap ReadAndDispatchPackets() and
+// ReadAndDispatchSinglePacket() based on MMSG_MORE.
 bool QuicPacketReader::ReadAndDispatchPackets(
     int fd,
     int port,
