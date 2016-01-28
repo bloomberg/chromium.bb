@@ -207,7 +207,7 @@ void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)
     case Resource::Media:
     case Resource::TextTrack:
     case Resource::Raw:
-    case Resource::LinkSubresource:
+    case Resource::LinkPreload:
         m_linkPreloadResourceClient = LinkPreloadRawResourceClient::create(this, toRawResource(resource.get()));
         break;
     default:
@@ -286,21 +286,15 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttri
         released();
 
     // FIXME(crbug.com/323096): Should take care of import.
-    if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document.frame()) {
+    if (relAttribute.isLinkPrefetch() && href.isValid() && document.frame()) {
         if (!m_client->shouldLoadLink())
             return false;
-        Resource::Type type = Resource::LinkPrefetch;
-        if (relAttribute.isLinkSubresource()) {
-            type = Resource::LinkSubresource;
-            UseCounter::count(document, UseCounter::LinkRelSubresource);
-        } else {
-            UseCounter::count(document, UseCounter::LinkRelPrefetch);
-        }
+        UseCounter::count(document, UseCounter::LinkRelPrefetch);
 
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
         if (crossOrigin != CrossOriginAttributeNotSet)
             linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOrigin);
-        setResource(LinkFetchResource::fetch(type, linkRequest, document.fetcher()));
+        setResource(LinkFetchResource::fetch(Resource::LinkPrefetch, linkRequest, document.fetcher()));
     }
 
     if (const unsigned prerenderRelTypes = prerenderRelTypesFromRelAttribute(relAttribute, document)) {

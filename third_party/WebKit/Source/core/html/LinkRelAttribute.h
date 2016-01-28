@@ -50,7 +50,6 @@ public:
     bool isDNSPrefetch() const { return m_isDNSPrefetch; }
     bool isPreconnect() const { return m_isPreconnect; }
     bool isLinkPrefetch() const { return m_isLinkPrefetch; }
-    bool isLinkSubresource() const { return m_isLinkSubresource; }
     bool isLinkPreload() const { return m_isLinkPreload; }
     bool isLinkPrerender() const { return m_isLinkPrerender; }
     bool isLinkNext() const { return m_isLinkNext; }
@@ -64,7 +63,6 @@ private:
     bool m_isDNSPrefetch : 1;
     bool m_isPreconnect : 1;
     bool m_isLinkPrefetch : 1;
-    bool m_isLinkSubresource : 1;
     bool m_isLinkPreload : 1;
     bool m_isLinkPrerender : 1;
     bool m_isLinkNext : 1;

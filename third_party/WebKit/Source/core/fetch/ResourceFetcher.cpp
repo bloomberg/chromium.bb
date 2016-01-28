@@ -88,7 +88,6 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
     case Resource::ImportResource:
     case Resource::Manifest:
         return ResourceLoadPriorityMedium;
-    case Resource::LinkSubresource:
     case Resource::LinkPreload:
     case Resource::TextTrack:
     case Resource::Media:
@@ -153,8 +152,6 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
     case Resource::LinkPrefetch:
         return WebURLRequest::RequestContextPrefetch;
     case Resource::LinkPreload:
-        return WebURLRequest::RequestContextSubresource;
-    case Resource::LinkSubresource:
         return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
         return WebURLRequest::RequestContextTrack;
@@ -502,7 +499,7 @@ void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resour
         request.setCachePolicy(context().resourceRequestCachePolicy(request, type));
     if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
         determineRequestContext(request, type);
-    if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
+    if (type == Resource::LinkPrefetch)
         request.setHTTPHeaderField(HTTPNames::Purpose, "prefetch");
 
     context().addAdditionalRequestHeaders(request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);

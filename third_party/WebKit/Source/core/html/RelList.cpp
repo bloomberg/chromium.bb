@@ -60,7 +60,6 @@ static RelList::SupportedTokens& supportedTokens()
         supportedValuesMap.add("icon");
         supportedValuesMap.add("alternate");
         supportedValuesMap.add("prefetch");
-        supportedValuesMap.add("subresource");
         supportedValuesMap.add("prerender");
         supportedValuesMap.add("next");
         supportedValuesMap.add("manifest");

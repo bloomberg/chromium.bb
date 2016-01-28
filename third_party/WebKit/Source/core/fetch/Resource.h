@@ -76,7 +76,6 @@ public:
         SVGDocument,
         XSLStyleSheet,
         LinkPrefetch,
-        LinkSubresource,
         LinkPreload,
         TextTrack,
         ImportResource,

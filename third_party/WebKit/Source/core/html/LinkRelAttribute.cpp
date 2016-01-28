@@ -42,7 +42,6 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isDNSPrefetch(false)
     , m_isPreconnect(false)
     , m_isLinkPrefetch(false)
-    , m_isLinkSubresource(false)
     , m_isLinkPreload(false)
     , m_isLinkPrerender(false)
     , m_isLinkNext(false)
@@ -76,8 +75,6 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         } else if (equalIgnoringCase(linkType, "preconnect")) {
             if (RuntimeEnabledFeatures::linkPreconnectEnabled())
                 m_isPreconnect = true;
-        } else if (equalIgnoringCase(linkType, "subresource")) {
-            m_isLinkSubresource = true;
         } else if (equalIgnoringCase(linkType, "preload")) {
             if (RuntimeEnabledFeatures::linkPreloadEnabled())
                 m_isLinkPreload = true;
@@ -92,6 +89,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         } else if (equalIgnoringCase(linkType, "manifest")) {
             m_isManifest = true;
         }
+        // Adding or removing a value here requires you to update RelList::supportedTokens()
     }
 }
 

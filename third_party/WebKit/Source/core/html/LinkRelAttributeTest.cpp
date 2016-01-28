@@ -36,14 +36,13 @@
 
 namespace blink {
 
-static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender, bool isImport = false, bool isPreconnect = false)
+static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkPrerender, bool isImport = false, bool isPreconnect = false)
 {
     LinkRelAttribute linkRelAttribute(value);
     ASSERT_EQ(isStyleSheet, linkRelAttribute.isStyleSheet()) << value.utf8().data();
     ASSERT_EQ(iconType, linkRelAttribute.iconType()) << value.utf8().data();
     ASSERT_EQ(isAlternate, linkRelAttribute.isAlternate()) << value.utf8().data();
     ASSERT_EQ(isDNSPrefetch, linkRelAttribute.isDNSPrefetch()) << value.utf8().data();
-    ASSERT_EQ(isLinkSubresource, linkRelAttribute.isLinkSubresource()) << value.utf8().data();
     ASSERT_EQ(isLinkPrerender, linkRelAttribute.isLinkPrerender()) << value.utf8().data();
     ASSERT_EQ(isImport, linkRelAttribute.isImport()) << value.utf8().data();
     ASSERT_EQ(isPreconnect, linkRelAttribute.isPreconnect()) << value.utf8().data();
@@ -51,38 +50,37 @@ static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconTyp
 
 TEST(LinkRelAttributeTest, Constructor)
 {
-    testLinkRelAttribute("stylesheet", true, InvalidIcon, false, false, false, false);
-    testLinkRelAttribute("sTyLeShEeT", true, InvalidIcon, false, false, false, false);
+    testLinkRelAttribute("stylesheet", true, InvalidIcon, false, false, false);
+    testLinkRelAttribute("sTyLeShEeT", true, InvalidIcon, false, false, false);
 
-    testLinkRelAttribute("icon", false, Favicon, false, false, false, false);
-    testLinkRelAttribute("iCoN", false, Favicon, false, false, false, false);
-    testLinkRelAttribute("shortcut icon", false, Favicon, false, false, false, false);
-    testLinkRelAttribute("sHoRtCuT iCoN", false, Favicon, false, false, false, false);
+    testLinkRelAttribute("icon", false, Favicon, false, false, false);
+    testLinkRelAttribute("iCoN", false, Favicon, false, false, false);
+    testLinkRelAttribute("shortcut icon", false, Favicon, false, false, false);
+    testLinkRelAttribute("sHoRtCuT iCoN", false, Favicon, false, false, false);
 
-    testLinkRelAttribute("dns-prefetch", false, InvalidIcon, false, true, false, false);
-    testLinkRelAttribute("dNs-pReFeTcH", false, InvalidIcon, false, true, false, false);
-    testLinkRelAttribute("alternate dNs-pReFeTcH", false, InvalidIcon, true, true, false, false);
+    testLinkRelAttribute("dns-prefetch", false, InvalidIcon, false, true, false);
+    testLinkRelAttribute("dNs-pReFeTcH", false, InvalidIcon, false, true, false);
+    testLinkRelAttribute("alternate dNs-pReFeTcH", false, InvalidIcon, true, true, false);
 
-    testLinkRelAttribute("apple-touch-icon", false, TouchIcon, false, false, false, false);
-    testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, TouchIcon, false, false, false, false);
-    testLinkRelAttribute("apple-touch-icon-precomposed", false, TouchPrecomposedIcon, false, false, false, false);
-    testLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false, TouchPrecomposedIcon, false, false, false, false);
+    testLinkRelAttribute("apple-touch-icon", false, TouchIcon, false, false, false);
+    testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, TouchIcon, false, false, false);
+    testLinkRelAttribute("apple-touch-icon-precomposed", false, TouchPrecomposedIcon, false, false, false);
+    testLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false, TouchPrecomposedIcon, false, false, false);
 
-    testLinkRelAttribute("alternate stylesheet", true, InvalidIcon, true, false, false, false);
-    testLinkRelAttribute("stylesheet alternate", true, InvalidIcon, true, false, false, false);
-    testLinkRelAttribute("aLtErNaTe sTyLeShEeT", true, InvalidIcon, true, false, false, false);
-    testLinkRelAttribute("sTyLeShEeT aLtErNaTe", true, InvalidIcon, true, false, false, false);
+    testLinkRelAttribute("alternate stylesheet", true, InvalidIcon, true, false, false);
+    testLinkRelAttribute("stylesheet alternate", true, InvalidIcon, true, false, false);
+    testLinkRelAttribute("aLtErNaTe sTyLeShEeT", true, InvalidIcon, true, false, false);
+    testLinkRelAttribute("sTyLeShEeT aLtErNaTe", true, InvalidIcon, true, false, false);
 
-    testLinkRelAttribute("stylesheet icon prerender aLtErNaTe", true, Favicon, true, false, false, true);
-    testLinkRelAttribute("alternate subresource", false, InvalidIcon, true, false, true, false);
-    testLinkRelAttribute("alternate icon stylesheet", true, Favicon, true, false, false, false);
+    testLinkRelAttribute("stylesheet icon prerender aLtErNaTe", true, Favicon, true, false, true);
+    testLinkRelAttribute("alternate icon stylesheet", true, Favicon, true, false, false);
 
-    testLinkRelAttribute("import", false, InvalidIcon, false, false, false, false, true);
-    testLinkRelAttribute("alternate import", false, InvalidIcon, true, false, false, false, true);
-    testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false, false);
+    testLinkRelAttribute("import", false, InvalidIcon, false, false, false, true);
+    testLinkRelAttribute("alternate import", false, InvalidIcon, true, false, false, true);
+    testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false);
 
-    testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false, false, false, true);
-    testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false, false, false, true);
+    testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false, false, true);
+    testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false, false, true);
 }
 
 } // namespace blink

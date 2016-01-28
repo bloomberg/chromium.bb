@@ -12,7 +12,7 @@ namespace blink {
 
 ResourcePtr<Resource> LinkFetchResource::fetch(Resource::Type type, FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(type == LinkPrefetch || type == LinkSubresource);
+    ASSERT(type == LinkPrefetch);
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     fetcher->determineRequestContext(request.mutableResourceRequest(), type);
     return fetcher->requestResource(request, LinkResourceFactory(type));

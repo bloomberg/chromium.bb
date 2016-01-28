@@ -1117,8 +1117,6 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
         return "Link prefetch resource";
     case Resource::LinkPreload:
         return "Link preload resource";
-    case Resource::LinkSubresource:
-        return "Link subresource";
     case Resource::TextTrack:
         return "Text track";
     case Resource::ImportResource:
@@ -1152,7 +1150,6 @@ bool Resource::isLoadEventBlockingResourceType() const
     case Resource::Raw:
     case Resource::LinkPrefetch:
     case Resource::LinkPreload:
-    case Resource::LinkSubresource:
     case Resource::TextTrack:
     case Resource::Media:
     case Resource::Manifest:
@@ -1187,8 +1184,6 @@ const char* Resource::resourceTypeName(Resource::Type type)
         return "LinkPrefetch";
     case Resource::LinkPreload:
         return "LinkPreload";
-    case Resource::LinkSubresource:
-        return "LinkSubresource";
     case Resource::TextTrack:
         return "TextTrack";
     case Resource::ImportResource:
