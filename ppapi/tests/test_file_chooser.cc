@@ -35,6 +35,7 @@ void TestFileChooser::RunTests(const std::string& filter) {
   RUN_TEST(SaveAsCancel, filter);
   RUN_TEST(SaveAsDangerousExecutableAllowed, filter);
   RUN_TEST(SaveAsDangerousExecutableDisallowed, filter);
+  RUN_TEST(SaveAsDangerousExtensionListDisallowed, filter);
 }
 
 bool TestFileChooser::WriteDefaultContentsToFile(const pp::FileRef& file_ref) {
@@ -186,6 +187,27 @@ std::string TestFileChooser::TestSaveAsDangerousExecutableDisallowed() {
   pp::FileChooser_Trusted file_chooser(instance(), PP_FILECHOOSERMODE_OPEN,
                                        ".exe", true /* save_as */,
                                        "dangerous.exe");
+  ASSERT_FALSE(file_chooser.is_null());
+
+  TestCompletionCallbackWithOutput<std::vector<pp::FileRef>>
+      filechooser_callback(instance_->pp_instance(), callback_type());
+  filechooser_callback.WaitForResult(
+      file_chooser.Show(filechooser_callback.GetCallback()));
+
+  const std::vector<pp::FileRef>& output_ref = filechooser_callback.output();
+  ASSERT_EQ(0u, output_ref.size());
+  PASS();
+}
+
+// Checks that a dangerous file is not allowed to be downloaded via the
+// FileChooser_Trusted API. Chrome should delegate the decision of which files
+// are allowed over to SafeBrowsing (if enabled), and the current SafeBrowsing
+// configuration should disallow downloading of dangerous files for this test to
+// work.
+std::string TestFileChooser::TestSaveAsDangerousExtensionListDisallowed() {
+  pp::FileChooser_Trusted file_chooser(instance(), PP_FILECHOOSERMODE_OPEN,
+                                       ".txt,.exe", true /* save_as */,
+                                       "innocuous.txt");
   ASSERT_FALSE(file_chooser.is_null());
 
   TestCompletionCallbackWithOutput<std::vector<pp::FileRef>>

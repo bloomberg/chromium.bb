@@ -457,13 +457,21 @@ void FileSelectHelper::GetSanitizedFilenameOnUIThread(
       GetSanitizedFileName(params->default_file_name));
 
 #if defined(FULL_SAFE_BROWSING)
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  if (select_file_types_) {
+    for (const auto& extensions : select_file_types_->extensions) {
+      alternate_extensions.insert(alternate_extensions.end(),
+                                  extensions.begin(), extensions.end());
+    }
+  }
+
   // Note that FileChooserParams::requestor is not considered a trusted field
   // since it's provided by the renderer and not validated browserside.
   if (params->mode == FileChooserParams::Save &&
-      !params->default_file_name.empty()) {
+      (!params->default_file_name.empty() || !alternate_extensions.empty())) {
     GURL requestor = params->requestor;
     safe_browsing::CheckUnverifiedDownloadPolicy(
-        requestor, default_file_path,
+        requestor, default_file_path, alternate_extensions,
         base::Bind(&FileSelectHelper::ApplyUnverifiedDownloadPolicy, this,
                    default_file_path, base::Passed(&params)));
     return;

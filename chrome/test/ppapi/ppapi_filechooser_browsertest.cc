@@ -309,6 +309,16 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
   RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableDisallowed");
 }
 
+IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
+                       FileChooser_SaveAs_DangerousExtensionList_Disallowed) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisallowUncheckedDangerousDownloads);
+  TestSelectFileDialogFactory test_dialog_factory(
+      TestSelectFileDialogFactory::NOT_REACHED,
+      TestSelectFileDialogFactory::SelectedFileInfoList());
+  RunTestViaHTTP("FileChooser_SaveAsDangerousExtensionListDisallowed");
+}
+
 // The kDisallowUncheckedDangerousDownloads switch (whose behavior is verified
 // by the FileChooser_SaveAs_DangerousExecutable_Disallowed test above) should
 // block the file being downloaded. However, the FakeDatabaseManager reports

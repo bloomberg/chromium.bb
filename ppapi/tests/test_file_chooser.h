@@ -31,6 +31,7 @@ class TestFileChooser : public TestCase {
   std::string TestSaveAsCancel();
   std::string TestSaveAsDangerousExecutableAllowed();
   std::string TestSaveAsDangerousExecutableDisallowed();
+  std::string TestSaveAsDangerousExtensionListDisallowed();
 };
 
 #endif  // PPAPI_TESTS_TEST_FILE_CHOOSER_H_

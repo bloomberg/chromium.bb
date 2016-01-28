@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/unverified_download_policy.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -60,23 +62,38 @@ void RespondWithPolicy(
                        uma_file_type, requestor);
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, policy));
+                          base::Bind(callback, policy));
 }
 
 void CheckFieldTrialOnAnyThread(
     const base::FilePath& file,
+    const std::vector<base::FilePath::StringType>& alternate_extensions,
     const GURL& requestor,
     const UnverifiedDownloadCheckCompletionCallback& callback) {
-  bool is_allowed = IsUnverifiedDownloadAllowedByFieldTrial(file);
-  RespondWithPolicy(file, callback, requestor, is_allowed
-                                        ? UnverifiedDownloadPolicy::ALLOWED
-                                        : UnverifiedDownloadPolicy::DISALLOWED);
+  if (!IsUnverifiedDownloadAllowedByFieldTrial(file)) {
+    RespondWithPolicy(file, callback, requestor,
+                      UnverifiedDownloadPolicy::DISALLOWED);
+    return;
+  }
+
+  for (const auto& extension : alternate_extensions) {
+    base::FilePath alternate_filename = file.AddExtension(extension);
+    if (!IsUnverifiedDownloadAllowedByFieldTrial(alternate_filename)) {
+      RespondWithPolicy(alternate_filename, callback, requestor,
+                        UnverifiedDownloadPolicy::DISALLOWED);
+      return;
+    }
+  }
+
+  RespondWithPolicy(file, callback, requestor,
+                    UnverifiedDownloadPolicy::ALLOWED);
 }
 
 void CheckWhitelistOnIOThread(
     scoped_refptr<SafeBrowsingService> service,
     const GURL& requestor,
     const base::FilePath& file,
+    const std::vector<base::FilePath::StringType>& alternate_extensions,
     const UnverifiedDownloadCheckCompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int uma_file_type =
@@ -104,7 +121,7 @@ void CheckWhitelistOnIOThread(
     return;
   }
 
-  CheckFieldTrialOnAnyThread(file, requestor, callback);
+  CheckFieldTrialOnAnyThread(file, alternate_extensions, requestor, callback);
 }
 
 }  // namespace
@@ -112,18 +129,27 @@ void CheckWhitelistOnIOThread(
 void CheckUnverifiedDownloadPolicy(
     const GURL& requestor,
     const base::FilePath& file,
+    const std::vector<base::FilePath::StringType>& alternate_extensions,
     const UnverifiedDownloadCheckCompletionCallback& callback) {
+  // Record a count of alternate extensions. The count is capped so that it
+  // won't be unbounded. In practice, it's expected that numbers above 3 are
+  // rare.
+  int alternate_extension_count =
+      std::min<int>(alternate_extensions.size(), 16);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "SafeBrowsing.UnverifiedDownloads.AlternateExtensionCount",
+      alternate_extension_count);
   if (requestor.is_valid()) {
     scoped_refptr<SafeBrowsingService> service =
         g_browser_process->safe_browsing_service();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&CheckWhitelistOnIOThread, service, requestor, file,
-                   callback));
+                   alternate_extensions, callback));
     return;
   }
 
-  CheckFieldTrialOnAnyThread(file, GURL(), callback);
+  CheckFieldTrialOnAnyThread(file, alternate_extensions, GURL(), callback);
 }
 
 }  // namespace safe_browsing

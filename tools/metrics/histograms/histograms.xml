@@ -40768,6 +40768,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.UnverifiedDownloads.AlternateExtensionCount">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Count of alternate extensions that were supplied when attempting to download
+    a file without verifying their content nor their source URLs with Safe
+    Browsing.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.UnverifiedDownloads.Blocked"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
