@@ -1201,7 +1201,7 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     boundsRect.moveBy(adjustedLocation);
     if (visibleToHitTestRequest(result.hitTestRequest()) && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
         updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
-        if (!result.addNodeToListBasedTestResult(node(), locationInContainer, boundsRect))
+        if (result.addNodeToListBasedTestResult(node(), locationInContainer, boundsRect) == StopHitTesting)
             return true;
     }
 

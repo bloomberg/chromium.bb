@@ -1046,11 +1046,11 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     flipForWritingMode(rect);
     rect.moveBy(accumulatedOffset);
 
-    //  Pixel snap hit testing.
+    // Pixel snap hit testing.
     rect = LayoutRect(pixelSnappedIntRect(rect));
     if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(rect)) {
         lineLayoutItem().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_topLeft here, we want coords in the containing block's space.
-        if (!result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, rect))
+        if (result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, rect) == StopHitTesting)
             return true;
     }
 

@@ -174,7 +174,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
         if (child->nodeAtFloatPoint(result, localPoint, hitTestAction)) {
             const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
             updateHitTestResult(result, localLayoutPoint);
-            if (!result.addNodeToListBasedTestResult(child->node(), localLayoutPoint))
+            if (result.addNodeToListBasedTestResult(child->node(), localLayoutPoint) == StopHitTesting)
                 return true;
         }
     }
@@ -185,7 +185,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
         if (objectBoundingBox().contains(localPoint)) {
             const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
             updateHitTestResult(result, localLayoutPoint);
-            if (!result.addNodeToListBasedTestResult(element(), localLayoutPoint))
+            if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) == StopHitTesting)
                 return true;
         }
     }

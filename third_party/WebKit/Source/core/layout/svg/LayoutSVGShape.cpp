@@ -222,7 +222,7 @@ bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& p
     if (nodeAtFloatPointInternal(result.hitTestRequest(), localPoint, hitRules)) {
         const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
         updateHitTestResult(result, localLayoutPoint);
-        if (!result.addNodeToListBasedTestResult(element(), localLayoutPoint))
+        if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) == StopHitTesting)
             return true;
     }
 

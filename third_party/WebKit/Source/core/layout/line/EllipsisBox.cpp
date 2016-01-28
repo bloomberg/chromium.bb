@@ -53,9 +53,7 @@ bool EllipsisBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     LayoutRect boundsRect(boxOrigin, size());
     if (visibleToHitTestRequest(result.hitTestRequest()) && boundsRect.intersects(LayoutRect(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0)))) {
         lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
-        // FIXME: the call to rawValue() below is temporary and should be removed once the transition
-        // to LayoutUnit-based types is complete (crbug.com/321237)
-        if (!result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, boundsRect))
+        if (result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, boundsRect) == StopHitTesting)
             return true;
     }
 

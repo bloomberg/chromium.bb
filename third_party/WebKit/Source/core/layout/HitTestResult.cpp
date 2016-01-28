@@ -42,6 +42,7 @@
 #include "core/layout/LayoutTextFragment.h"
 #include "core/page/FrameTree.h"
 #include "core/svg/SVGElement.h"
+#include "platform/geometry/Region.h"
 #include "platform/scroll/Scrollbar.h"
 
 namespace blink {
@@ -430,23 +431,38 @@ bool HitTestResult::isContentEditable() const
     return m_innerNode->hasEditableStyle();
 }
 
-bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& locationInContainer, const LayoutRect& rect)
+ListBasedHitTestBehavior HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& location, const LayoutRect& rect)
 {
-    // If not a list-based test, this function should be a no-op.
+    // If not a list-based test, stop testing because the hit has been found.
     if (!hitTestRequest().listBased())
-        return false;
+        return StopHitTesting;
 
-    // If node is null, return true so the hit test can continue.
     if (!node)
-        return true;
+        return ContinueHitTesting;
 
     mutableListBasedTestResult().add(node);
 
     if (hitTestRequest().penetratingList())
-        return true;
+        return ContinueHitTesting;
 
-    bool regionFilled = rect.contains(LayoutRect(locationInContainer.boundingBox()));
-    return !regionFilled;
+    return rect.contains(LayoutRect(location.boundingBox())) ? StopHitTesting : ContinueHitTesting;
+}
+
+ListBasedHitTestBehavior HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& location, const Region& region)
+{
+    // If not a list-based test, stop testing because the hit has been found.
+    if (!hitTestRequest().listBased())
+        return StopHitTesting;
+
+    if (!node)
+        return ContinueHitTesting;
+
+    mutableListBasedTestResult().add(node);
+
+    if (hitTestRequest().penetratingList())
+        return ContinueHitTesting;
+
+    return region.contains(location.boundingBox()) ? StopHitTesting : ContinueHitTesting;
 }
 
 void HitTestResult::append(const HitTestResult& other)

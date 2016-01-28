@@ -28,7 +28,6 @@
 #include "core/layout/HitTestRequest.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
@@ -47,11 +46,19 @@ class Image;
 class KURL;
 class Node;
 class LayoutObject;
+class Region;
 class Scrollbar;
+
+// List-based hit test testing can continue even after a hit has been found.
+// This is used to support fuzzy matching with rect-based hit tests as well as
+// penetrating tests which collect all nodes (see: HitTestRequest::RequestType).
+enum ListBasedHitTestBehavior {
+    ContinueHitTesting,
+    StopHitTesting
+};
 
 class CORE_EXPORT HitTestResult {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
 public:
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node>> NodeSet;
 
@@ -137,8 +144,13 @@ public:
     bool isCacheable() const { return m_cacheable; }
     void setCacheable(bool cacheable) { m_cacheable = cacheable; }
 
-    // Return true if the test is a list-based test and we should continue testing.
-    bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
+    // TODO(pdr): When using the default rect argument, this function does not
+    // check if the tapped area is entirely contained by the HitTestLocation's
+    // bounding box. Callers should pass a LayoutRect as the third parameter so
+    // hit testing can early-out when a tapped area is covered.
+    ListBasedHitTestBehavior addNodeToListBasedTestResult(Node*, const HitTestLocation&, const LayoutRect& = LayoutRect());
+    ListBasedHitTestBehavior addNodeToListBasedTestResult(Node*, const HitTestLocation&, const Region&);
+
     void append(const HitTestResult&);
 
     // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return *m_listBasedTestResult. Lazy allocation makes

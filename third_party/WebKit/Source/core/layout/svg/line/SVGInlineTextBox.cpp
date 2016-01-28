@@ -266,7 +266,7 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result, const HitTestLocation&
                     FloatQuad fragmentQuad = fragment.boundingQuad(baseline);
                     if (fragmentQuad.containsPoint(floatLocation)) {
                         lineLayoutItem.updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-                        if (!result.addNodeToListBasedTestResult(lineLayoutItem.node(), locationInContainer, rect))
+                        if (result.addNodeToListBasedTestResult(lineLayoutItem.node(), locationInContainer, rect) == StopHitTesting)
                             return true;
                     }
                 }
