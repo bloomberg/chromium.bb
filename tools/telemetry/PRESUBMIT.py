@@ -28,8 +28,9 @@ def _TemporarilyReadOnly(input_api, output_api):
   changed_files = input_api.AffectedSourceFiles(other_files)
   if changed_files:
     return [output_api.PresubmitError(
-        'tools/telemetry/ is temporarily read-only while it moves to catapult.'
-        '\nPlease make your changes to telemetry/ '
+        'tools/telemetry/ has moved to the catapult repo. It is deprecated and '
+        'scheduled for deletion on 1/29/16.'
+        '\nPlease instead make your changes to telemetry/ '
         'in https://github.com/catapult-project/catapult/tree/master/telemetry.'
         '\nContact aiolos@ for further questions. Changed files:\n',
         items=changed_files)]
