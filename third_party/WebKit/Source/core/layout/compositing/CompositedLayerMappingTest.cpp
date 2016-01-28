@@ -109,6 +109,23 @@ TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect)
     EXPECT_RECT_EQ(IntRect(0, 0, 200, 10000), computeInterestRect(paintLayer->compositedLayerMapping(), paintLayer->graphicsLayerBacking(), IntRect()));
 }
 
+TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument)
+{
+    setBodyInnerHTML("<style>html,body { margin: 0px } html { -webkit-writing-mode: vertical-rl}</style> <div id='target' style='width: 10000px; height: 200px;'></div>");
+
+    document().settings()->setMainFrameClipsContent(false);
+
+    document().view()->updateAllLifecyclePhases();
+    document().view()->scrollTo(DoublePoint(-5000, 0));
+    document().view()->updateAllLifecyclePhases();
+
+    PaintLayer* paintLayer = document().layoutView()->layer();
+    ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+    ASSERT_TRUE(paintLayer->compositedLayerMapping());
+    // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px = 4200px in non-RTL mode. Expanding
+    // the resulting rect by 4000px in each direction yields this result.
+    EXPECT_RECT_EQ(IntRect(200, 0, 8800, 600), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
+}
 
 TEST_F(CompositedLayerMappingTest, RotatedInterestRect)
 {

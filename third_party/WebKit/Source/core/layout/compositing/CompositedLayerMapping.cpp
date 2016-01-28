@@ -2256,6 +2256,9 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     // Start with the bounds of the graphics layer in the space of the anchor LayoutObject.
     FloatRect graphicsLayerBoundsInObjectSpace(graphicsLayerBounds);
     graphicsLayerBoundsInObjectSpace.move(offsetFromAnchorLayoutObject);
+    // The object space means including writing mode flip.
+    if (anchorLayoutObject->isBox())
+        toLayoutBox(anchorLayoutObject)->flipForWritingMode(graphicsLayerBoundsInObjectSpace);
 
     // Now map the bounds to its visible content rect in screen space, including applying clips along the way.
     LayoutRect visibleContentRect(graphicsLayerBoundsInObjectSpace);
