@@ -9837,5 +9837,157 @@ TEST_F(LayerTreeHostCommonTest, SerializeScrollAndScale) {
   EXPECT_TRUE(scroll_and_scale_set.EqualsForTesting(new_scroll_and_scale_set));
 }
 
+TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
+  // Test the behavior of scroll tree builder
+  // Topology:
+  // +root1(1)
+  // +--parent2(2)[should_scroll_on_main_thread & scrollable]
+  // +----child6(6)[should_scroll_on_main_thread]
+  // +------grand_child10(10)[should_scroll_on_main_thread]
+  // +--parent3(3)
+  // +----child7(7)[scrollable]
+  // +----child8(8)[scroll_parent=7]
+  // +------grand_child11(11)[scrollable]
+  // +--parent4(4)
+  // +----child9(9)
+  // +------grand_child12(12)
+  // +--parent5(5)[contains_non_fast_scrollable_region]
+  //
+  // Expected scroll tree topology:
+  // +property_tree_root---owner:-1
+  // +--root---owner:1, id:1
+  // +----node---owner:2, id:2
+  // +------node---owner:6, id:3
+  // +----node---owner:7, id:4
+  // +------node---owner:11, id:5
+  // +----node---owner:5, id:6
+  //
+  // Extra check:
+  //   scroll_tree_index() of:
+  //     grand_child10:3
+  //     parent3:1
+  //     child8:4
+  //     parent4:1
+  //     child9:1
+  //     grand_child12:1
+  scoped_refptr<Layer> root1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent3 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent4 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent5 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child6 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child7 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child8 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child9 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child10 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child11 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child12 = Layer::Create(layer_settings());
+
+  root1->AddChild(parent2);
+  root1->AddChild(parent3);
+  root1->AddChild(parent4);
+  root1->AddChild(parent5);
+  parent2->AddChild(child6);
+  parent3->AddChild(child7);
+  parent3->AddChild(child8);
+  parent4->AddChild(child9);
+  child6->AddChild(grand_child10);
+  child8->AddChild(grand_child11);
+  child9->AddChild(grand_child12);
+  host()->SetRootLayer(root1);
+
+  parent2->AddMainThreadScrollingReasons(
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  parent2->SetScrollClipLayerId(root1->id());
+  child6->AddMainThreadScrollingReasons(
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  grand_child10->AddMainThreadScrollingReasons(
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+
+  child7->SetScrollClipLayerId(root1->id());
+  child8->SetScrollParent(child7.get());
+  grand_child11->SetScrollClipLayerId(root1->id());
+
+  parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root1.get());
+
+  const int kInvalidPropertyTreeNodeId = -1;
+  const int kRootPropertyTreeNodeId = 0;
+
+  // Property tree root
+  ScrollTree scroll_tree = host()->property_trees()->scroll_tree;
+  ScrollTree expected_scroll_tree;
+  ScrollNode* property_tree_root = expected_scroll_tree.Node(0);
+  property_tree_root->id = kRootPropertyTreeNodeId;
+  property_tree_root->parent_id = kInvalidPropertyTreeNodeId;
+  property_tree_root->owner_id = kInvalidPropertyTreeNodeId;
+  property_tree_root->data.scrollable = false;
+  property_tree_root->data.should_scroll_on_main_thread = false;
+  property_tree_root->data.contains_non_fast_scrollable_region = false;
+  property_tree_root->data.transform_id = kRootPropertyTreeNodeId;
+
+  // The node owned by root1
+  ScrollNode scroll_root1;
+  scroll_root1.id = 1;
+  scroll_root1.owner_id = root1->id();
+  scroll_root1.data.transform_id = root1->transform_tree_index();
+  expected_scroll_tree.Insert(scroll_root1, 0);
+
+  // The node owned by parent2
+  ScrollNode scroll_parent2;
+  scroll_parent2.id = 2;
+  scroll_parent2.owner_id = parent2->id();
+  scroll_parent2.data.scrollable = true;
+  scroll_parent2.data.should_scroll_on_main_thread = true;
+  scroll_parent2.data.transform_id = parent2->transform_tree_index();
+  expected_scroll_tree.Insert(scroll_parent2, 1);
+
+  // The node owned by child6
+  ScrollNode scroll_child6;
+  scroll_child6.id = 3;
+  scroll_child6.owner_id = child6->id();
+  scroll_child6.data.should_scroll_on_main_thread = true;
+  scroll_child6.data.transform_id = child6->transform_tree_index();
+  expected_scroll_tree.Insert(scroll_child6, 2);
+
+  // The node owned by child7, child7 also owns a transform node
+  ScrollNode scroll_child7;
+  scroll_child7.id = 4;
+  scroll_child7.owner_id = child7->id();
+  scroll_child7.data.scrollable = true;
+  scroll_child7.data.transform_id = child7->transform_tree_index();
+  expected_scroll_tree.Insert(scroll_child7, 1);
+
+  // The node owned by grand_child11, grand_child11 also owns a transform node
+  ScrollNode scroll_grand_child11;
+  scroll_grand_child11.id = 5;
+  scroll_grand_child11.owner_id = grand_child11->id();
+  scroll_grand_child11.data.scrollable = true;
+  scroll_grand_child11.data.transform_id =
+      grand_child11->transform_tree_index();
+  expected_scroll_tree.Insert(scroll_grand_child11, 4);
+
+  // The node owned by parent5
+  ScrollNode scroll_parent5;
+  scroll_parent5.id = 8;
+  scroll_parent5.owner_id = parent5->id();
+  scroll_parent5.data.contains_non_fast_scrollable_region = true;
+  scroll_parent5.data.transform_id = parent5->transform_tree_index();
+  expected_scroll_tree.Insert(scroll_parent5, 1);
+
+  expected_scroll_tree.set_needs_update(false);
+
+  EXPECT_EQ(expected_scroll_tree, scroll_tree);
+
+  // Check other layers' scroll_tree_index
+  EXPECT_EQ(scroll_child6.id, grand_child10->scroll_tree_index());
+  EXPECT_EQ(scroll_root1.id, parent3->scroll_tree_index());
+  EXPECT_EQ(scroll_child7.id, child8->scroll_tree_index());
+  EXPECT_EQ(scroll_root1.id, parent4->scroll_tree_index());
+  EXPECT_EQ(scroll_root1.id, child9->scroll_tree_index());
+  EXPECT_EQ(scroll_root1.id, grand_child12->scroll_tree_index());
+}
+
 }  // namespace
 }  // namespace cc

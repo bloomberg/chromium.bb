@@ -31,11 +31,13 @@ struct DataForRecursion {
   TransformTree* transform_tree;
   ClipTree* clip_tree;
   EffectTree* effect_tree;
+  ScrollTree* scroll_tree;
   LayerType* transform_tree_parent;
   LayerType* transform_fixed_parent;
   int render_target;
   int clip_tree_parent;
   int effect_tree_parent;
+  int scroll_tree_parent;
   const LayerType* page_scale_layer;
   const LayerType* inner_viewport_scroll_layer;
   const LayerType* outer_viewport_scroll_layer;
@@ -48,6 +50,7 @@ struct DataForRecursion {
   bool should_flatten;
   bool target_is_clipped;
   bool is_hidden;
+  bool scroll_tree_parent_created_by_uninheritable_criteria;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
   gfx::Transform compound_transform_since_render_target;
@@ -77,7 +80,7 @@ static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
 template <typename LayerType>
 static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
                                LayerType* layer) {
-  const bool inherits_clip = !layer->parent() || !layer->clip_parent();
+  const bool inherits_clip = !layer->clip_parent();
   const int id = inherits_clip ? data.clip_tree_parent
                                : layer->clip_parent()->clip_tree_index();
   return data.clip_tree->Node(id);
@@ -86,6 +89,15 @@ static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
 template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
   return layer->masks_to_bounds() || layer->mask_layer();
+}
+
+template <typename LayerType>
+static int GetScrollParentId(const DataForRecursion<LayerType>& data,
+                             LayerType* layer) {
+  const bool inherits_scroll = !layer->scroll_parent();
+  const int id = inherits_scroll ? data.scroll_tree_parent
+                                 : layer->scroll_parent()->scroll_tree_index();
+  return id;
 }
 
 template <typename LayerType>
@@ -622,6 +634,46 @@ bool AddEffectNodeIfNeeded(
 }
 
 template <typename LayerType>
+void AddScrollNodeIfNeeded(
+    const DataForRecursion<LayerType>& data_from_ancestor,
+    LayerType* layer,
+    DataForRecursion<LayerType>* data_for_children) {
+  int parent_id = GetScrollParentId(data_from_ancestor, layer);
+
+  bool is_root = !layer->parent();
+  bool scrollable = layer->scrollable();
+  bool contains_non_fast_scrollable_region =
+      !layer->non_fast_scrollable_region().IsEmpty();
+  bool should_scroll_on_main_thread = layer->should_scroll_on_main_thread();
+
+  bool scroll_node_uninheritable_criteria =
+      is_root || scrollable || contains_non_fast_scrollable_region;
+  bool requires_node =
+      scroll_node_uninheritable_criteria ||
+      (should_scroll_on_main_thread &&
+       data_from_ancestor.scroll_tree_parent_created_by_uninheritable_criteria);
+
+  if (!requires_node) {
+    data_for_children->scroll_tree_parent = parent_id;
+  } else {
+    ScrollNode node;
+    node.owner_id = layer->id();
+    node.data.scrollable = scrollable;
+    node.data.should_scroll_on_main_thread = should_scroll_on_main_thread;
+    node.data.contains_non_fast_scrollable_region =
+        contains_non_fast_scrollable_region;
+    node.data.transform_id =
+        data_for_children->transform_tree_parent->transform_tree_index();
+    data_for_children->scroll_tree_parent =
+        data_for_children->scroll_tree->Insert(node, parent_id);
+    data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
+        scroll_node_uninheritable_criteria;
+  }
+
+  layer->SetScrollTreeIndex(data_for_children->scroll_tree_parent);
+}
+
+template <typename LayerType>
 void BuildPropertyTreesInternal(
     LayerType* layer,
     const DataForRecursion<LayerType>& data_from_parent,
@@ -647,6 +699,8 @@ void BuildPropertyTreesInternal(
       data_from_parent, layer, created_render_surface, &data_for_children);
   AddClipNodeIfNeeded(data_from_parent, layer, created_render_surface,
                       created_transform_node, &data_for_children);
+
+  AddScrollNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     if (!layer->child_at(i)->scroll_parent()) {
@@ -725,11 +779,13 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.transform_tree = &property_trees->transform_tree;
   data_for_recursion.clip_tree = &property_trees->clip_tree;
   data_for_recursion.effect_tree = &property_trees->effect_tree;
+  data_for_recursion.scroll_tree = &property_trees->scroll_tree;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = kRootPropertyTreeNodeId;
   data_for_recursion.clip_tree_parent = kRootPropertyTreeNodeId;
   data_for_recursion.effect_tree_parent = kInvalidPropertyTreeNodeId;
+  data_for_recursion.scroll_tree_parent = kRootPropertyTreeNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
@@ -742,11 +798,14 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.should_flatten = false;
   data_for_recursion.target_is_clipped = false;
   data_for_recursion.is_hidden = false;
+  data_for_recursion.scroll_tree_parent_created_by_uninheritable_criteria =
+      true;
   data_for_recursion.device_transform = &device_transform;
 
   data_for_recursion.transform_tree->clear();
   data_for_recursion.clip_tree->clear();
   data_for_recursion.effect_tree->clear();
+  data_for_recursion.scroll_tree->clear();
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
   data_for_recursion.axis_align_since_render_target = true;
   data_for_recursion.sequence_number = property_trees->sequence_number;
@@ -771,6 +830,7 @@ void BuildPropertyTreesTopLevelInternal(
   property_trees->transform_tree.set_needs_update(false);
   property_trees->clip_tree.set_needs_update(true);
   property_trees->effect_tree.set_needs_update(true);
+  property_trees->scroll_tree.set_needs_update(false);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(

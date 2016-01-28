@@ -471,14 +471,12 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
 ScrollNodeData::ScrollNodeData()
     : scrollable(false),
       should_scroll_on_main_thread(false),
-      scroll_blocks_on(ScrollBlocksOn::SCROLL_BLOCKS_ON_NONE),
       contains_non_fast_scrollable_region(false),
       transform_id(0) {}
 
 bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
   return scrollable == other.scrollable &&
          should_scroll_on_main_thread == other.should_scroll_on_main_thread &&
-         scroll_blocks_on == other.scroll_blocks_on &&
          contains_non_fast_scrollable_region ==
              other.contains_non_fast_scrollable_region &&
          transform_id == other.transform_id;
@@ -489,7 +487,6 @@ void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
   proto::ScrollNodeData* data = proto->mutable_scroll_node_data();
   data->set_scrollable(scrollable);
   data->set_should_scroll_on_main_thread(should_scroll_on_main_thread);
-  data->set_scroll_blocks_on(scroll_blocks_on);
   data->set_contains_non_fast_scrollable_region(
       contains_non_fast_scrollable_region);
   data->set_transform_id(transform_id);
@@ -501,7 +498,6 @@ void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
 
   scrollable = data.scrollable();
   should_scroll_on_main_thread = data.should_scroll_on_main_thread();
-  scroll_blocks_on = (ScrollBlocksOn)data.scroll_blocks_on();
   contains_non_fast_scrollable_region =
       data.contains_non_fast_scrollable_region();
   transform_id = data.transform_id();

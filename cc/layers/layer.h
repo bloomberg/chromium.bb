@@ -483,6 +483,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetEffectTreeIndex(int index);
   int effect_tree_index() const;
 
+  void SetScrollTreeIndex(int index);
+  int scroll_tree_index() const;
+
   void set_offset_to_transform_parent(gfx::Vector2dF offset) {
     if (offset_to_transform_parent_ == offset)
       return;
@@ -716,6 +719,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int transform_tree_index_;
   int effect_tree_index_;
   int clip_tree_index_;
+  int scroll_tree_index_;
   int property_tree_sequence_number_;
   uint64_t element_id_;
   uint32_t mutable_properties_;

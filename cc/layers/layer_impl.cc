@@ -88,6 +88,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       transform_tree_index_(-1),
       effect_tree_index_(-1),
       clip_tree_index_(-1),
+      scroll_tree_index_(-1),
       draw_depth_(0.f),
       needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
@@ -274,6 +275,11 @@ void LayerImpl::SetClipTreeIndex(int index) {
 
 void LayerImpl::SetEffectTreeIndex(int index) {
   effect_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::SetScrollTreeIndex(int index) {
+  scroll_tree_index_ = index;
   SetNeedsPushProperties();
 }
 
@@ -657,6 +663,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformTreeIndex(transform_tree_index_);
   layer->SetClipTreeIndex(clip_tree_index_);
   layer->SetEffectTreeIndex(effect_tree_index_);
+  layer->SetScrollTreeIndex(scroll_tree_index_);
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   LayerImpl* scroll_parent = nullptr;

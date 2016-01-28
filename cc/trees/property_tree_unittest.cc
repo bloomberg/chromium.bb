@@ -230,7 +230,6 @@ TEST(PropertyTreeSerializationTest, ScrollNodeDataSerialization) {
   ScrollNodeData original;
   original.scrollable = true;
   original.should_scroll_on_main_thread = false;
-  original.scroll_blocks_on = SCROLL_BLOCKS_ON_WHEEL_EVENT;
   original.contains_non_fast_scrollable_region = false;
   original.transform_id = 2;
 
@@ -266,6 +265,9 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   ScrollNode third;
   third.data.transform_id = 5;
   third.data.contains_non_fast_scrollable_region = true;
+
+  original.Insert(second, 0);
+  original.Insert(third, 1);
 
   proto::PropertyTree proto;
   original.ToProtobuf(&proto);

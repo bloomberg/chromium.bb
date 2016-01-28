@@ -69,6 +69,7 @@ message LayerProperties {
   optional PictureLayerProperties picture = 6;
 }
 
+// NEXT ID: 51
 message BaseLayerProperties {
   optional Point3F transform_origin = 1;
   optional uint32 background_color = 2;
@@ -76,6 +77,7 @@ message BaseLayerProperties {
   optional int64 transform_free_index = 4;
   optional int64 effect_tree_index = 5;
   optional int64 clip_tree_index = 6;
+  optional int64 scroll_tree_index = 50;
   optional Vector2dF offset_to_transform_parent = 7;
   optional bool double_sided = 8;
   optional bool draws_content = 9;

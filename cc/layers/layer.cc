@@ -64,6 +64,7 @@ Layer::Layer(const LayerSettings& settings)
       transform_tree_index_(-1),
       effect_tree_index_(-1),
       clip_tree_index_(-1),
+      scroll_tree_index_(-1),
       property_tree_sequence_number_(-1),
       element_id_(0),
       mutable_properties_(MutableProperty::kNone),
@@ -1088,6 +1089,23 @@ int Layer::effect_tree_index() const {
   return effect_tree_index_;
 }
 
+void Layer::SetScrollTreeIndex(int index) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (scroll_tree_index_ == index)
+    return;
+  scroll_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+int Layer::scroll_tree_index() const {
+  if (!layer_tree_host_ ||
+      layer_tree_host_->property_trees()->sequence_number !=
+          property_tree_sequence_number_) {
+    return -1;
+  }
+  return scroll_tree_index_;
+}
+
 void Layer::InvalidatePropertyTreesIndices() {
   int invalid_property_tree_index = -1;
   SetTransformTreeIndex(invalid_property_tree_index);
@@ -1201,6 +1219,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformTreeIndex(transform_tree_index());
   layer->SetEffectTreeIndex(effect_tree_index());
   layer->SetClipTreeIndex(clip_tree_index());
+  layer->SetScrollTreeIndex(scroll_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawsContent(DrawsContent());
@@ -1471,6 +1490,7 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_transform_free_index(transform_tree_index_);
   base->set_effect_tree_index(effect_tree_index_);
   base->set_clip_tree_index(clip_tree_index_);
+  base->set_scroll_tree_index(scroll_tree_index_);
   Vector2dFToProto(offset_to_transform_parent_,
                    base->mutable_offset_to_transform_parent());
   base->set_double_sided(double_sided_);
@@ -1561,6 +1581,7 @@ void Layer::FromLayerSpecificPropertiesProto(
   transform_tree_index_ = base.transform_free_index();
   effect_tree_index_ = base.effect_tree_index();
   clip_tree_index_ = base.clip_tree_index();
+  scroll_tree_index_ = base.scroll_tree_index();
   offset_to_transform_parent_ =
       ProtoToVector2dF(base.offset_to_transform_parent());
   double_sided_ = base.double_sided();

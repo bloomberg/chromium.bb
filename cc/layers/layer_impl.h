@@ -170,6 +170,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetEffectTreeIndex(int index);
   int effect_tree_index() const { return effect_tree_index_; }
 
+  void SetScrollTreeIndex(int index);
+  int scroll_tree_index() const { return scroll_tree_index_; }
+
   void set_offset_to_transform_parent(const gfx::Vector2dF& offset) {
     offset_to_transform_parent_ = offset;
     SetNeedsPushProperties();
@@ -829,6 +832,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int transform_tree_index_;
   int effect_tree_index_;
   int clip_tree_index_;
+  int scroll_tree_index_;
 
   // The global depth value of the center of the layer. This value is used
   // to sort layers from back to front.

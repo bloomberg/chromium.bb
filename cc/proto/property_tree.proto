@@ -93,9 +93,8 @@ message EffectNodeData {
 message ScrollNodeData {
   optional bool scrollable = 1;
   optional bool should_scroll_on_main_thread = 2;
-  optional int32 scroll_blocks_on = 3;
-  optional bool contains_non_fast_scrollable_region = 4;
-  optional int64 transform_id = 5;
+  optional bool contains_non_fast_scrollable_region = 3;
+  optional int64 transform_id = 4;
 }
 
 // This defines the proto used for all types of struct TreeNode.
@@ -156,9 +155,9 @@ message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
   optional PropertyTree clip_tree = 3;
-  optional PropertyTree scroll_tree = 4;
+  optional PropertyTree scroll_tree = 7;
 
-  optional bool needs_rebuild = 5;
-  optional bool non_root_surfaces_enabled = 6;
-  optional int64 sequence_number = 7;
+  optional bool needs_rebuild = 4;
+  optional bool non_root_surfaces_enabled = 5;
+  optional int64 sequence_number = 6;
 }
