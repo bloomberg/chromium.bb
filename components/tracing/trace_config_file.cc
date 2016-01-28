@@ -139,7 +139,7 @@ int TraceConfigFile::GetStartupDuration() const {
   return startup_duration_;
 }
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 base::FilePath TraceConfigFile::GetResultFile() const {
   DCHECK(IsEnabled());
   return result_file_;

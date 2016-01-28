@@ -181,7 +181,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
                TracingController::GetInstance()->IsTracing()) {
       base::FilePath result_file;
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if defined(OS_ANDROID)
       TracingControllerAndroid::GenerateTracingFilePath(&result_file);
 #else
       result_file = tracing::TraceConfigFile::GetInstance()->GetResultFile();

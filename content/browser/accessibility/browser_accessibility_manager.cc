@@ -87,11 +87,7 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
 }
 
 BrowserAccessibility* BrowserAccessibilityFactory::Create() {
-#if defined(OS_ANDROID) && defined(USE_AURA)
-  return nullptr;
-#else
   return BrowserAccessibility::Create();
-#endif
 }
 
 BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()

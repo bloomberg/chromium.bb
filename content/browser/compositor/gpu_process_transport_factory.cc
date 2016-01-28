@@ -122,15 +122,11 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
-#if defined(OS_ANDROID)
-  return CreateContextCommon(scoped_refptr<GpuChannelHost>(nullptr), 0);
-#else
   CauseForGpuLaunch cause =
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
   return CreateContextCommon(gpu_channel_host, 0);
-#endif  // OS_ANDROID
 }
 
 scoped_ptr<cc::SoftwareOutputDevice>

@@ -692,11 +692,10 @@ class WebContents : public PageNavigator,
   virtual void SuspendMediaSession() = 0;
   // Requests to stop the current media session.
   virtual void StopMediaSession() = 0;
-#if !defined(USE_AURA)
+
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;
-#endif  // !USE_AURA
 #elif defined(OS_MACOSX)
   // Allowing other views disables optimizations which assume that only a single
   // WebContents is present.

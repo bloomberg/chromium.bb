@@ -59,10 +59,6 @@ source_set("child") {
 
   if (enable_plugins) {
     deps += [ "//ppapi/proxy" ]
-
-    if (is_win || is_android || !use_aura) {
-      sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
-    }
   } else {
     sources -= [
       "browser_font_resource_trusted.cc",
@@ -96,7 +92,9 @@ source_set("child") {
     } else if (is_android) {
       sources -= [ "npapi/webplugin_delegate_impl_android.cc" ]
     }
-    sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
+    if (use_aura) {
+      sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
+    }
   }
 
   configs += [
@@ -125,5 +123,9 @@ source_set("child") {
   if (use_aura && is_mac) {
     # This file is already excluded on non-Mac.
     sources -= [ "npapi/webplugin_delegate_impl_mac.mm" ]
+  }
+
+  if (is_win || !use_aura) {
+    sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
   }
 }

@@ -71,7 +71,7 @@ class TRACING_EXPORT TraceConfigFile {
   bool IsEnabled() const;
   base::trace_event::TraceConfig GetTraceConfig() const;
   int GetStartupDuration() const;
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   base::FilePath GetResultFile() const;
 #endif
 

@@ -41,7 +41,6 @@ static void SetSurfacePeer(
     base::ProcessHandle render_process_handle,
     int render_frame_id,
     int player_id) {
-#if !defined(USE_AURA)
   int render_process_id = 0;
   RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
   while (!it.IsAtEnd()) {
@@ -83,9 +82,6 @@ static void SetSurfacePeer(
     gfx::ScopedJavaSurface scoped_surface(surface);
     player->SetVideoSurface(std::move(scoped_surface));
   }
-#else
-  NOTREACHED();
-#endif
 }
 
 }  // anonymous namespace

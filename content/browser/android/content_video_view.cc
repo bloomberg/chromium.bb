@@ -7,14 +7,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
-
-#if !defined(USE_AURA)
-#include "content/browser/android/content_view_core_impl.h"
-#endif
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -162,12 +159,8 @@ void ContentVideoView::RecordExitFullscreenPlayback(
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject(
     ContentViewCore* content_view_core) {
   JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> j_content_view_core;
-
-#if !defined(USE_AURA)
-  j_content_view_core = content_view_core->GetJavaObject();
-#endif
-
+  base::android::ScopedJavaLocalRef<jobject> j_content_view_core =
+      content_view_core->GetJavaObject();
   if (j_content_view_core.is_null())
     return JavaObjectWeakGlobalRef(env, nullptr);
 

@@ -486,12 +486,8 @@ void RenderWidgetHostViewChildFrame::SetBeginFrameSource(
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate) {
-#if defined(OS_ANDROID) && defined(USE_AURA)
-  return nullptr;
-#else
   return BrowserAccessibilityManager::Create(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
-#endif
 }
 
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
