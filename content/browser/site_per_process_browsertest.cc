@@ -1321,6 +1321,50 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       DepictFrameTree(root));
 }
 
+// Ensure that the renderer process doesn't crash when the main frame navigates
+// a remote child to a page that results in a network error.
+// See https://crbug.com/558016.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load same-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
+  GURL http_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigateFrameToURL(child, http_url);
+  EXPECT_EQ(http_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Load cross-site page into iframe.
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, observer.last_navigation_url());
+
+  // Ensure that we have created a new process for the subframe.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://foo.com/",
+      DepictFrameTree(root));
+  SiteInstance* site_instance = child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site_instance);
+
+  // Stop the test server and try to navigate the remote frame.
+  url = embedded_test_server()->GetURL("bar.com", "/title3.html");
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  NavigateIframeToURL(shell()->web_contents(), "child-0", url);
+}
+
 // Verify that killing a cross-site frame's process B and then navigating a
 // frame to B correctly recreates all proxies in B.
 //

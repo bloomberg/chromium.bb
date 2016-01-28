@@ -1210,8 +1210,8 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
     ResourceError c(ResourceError::cancelledError(KURL()));
     if ((error.errorCode() != c.errorCode() || error.domain() != c.domain()) && m_frame->owner()) {
         // FIXME: For now, fallback content doesn't work cross process.
-        ASSERT(m_frame->owner()->isLocal());
-        m_frame->deprecatedLocalOwner()->renderFallbackContent();
+        if (m_frame->owner()->isLocal())
+            m_frame->deprecatedLocalOwner()->renderFallbackContent();
     }
 
     HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
