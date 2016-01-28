@@ -780,6 +780,7 @@
       'renderer/media/media_stream_video_renderer_sink_unittest.cc',
       'renderer/media/media_stream_video_source_unittest.cc',
       'renderer/media/media_stream_video_track_unittest.cc',
+      'renderer/media/mock_constraint_factory.cc',
       'renderer/media/mock_media_constraint_factory.cc',
       'renderer/media/mock_media_stream_registry.cc',
       'renderer/media/mock_media_stream_registry.h',

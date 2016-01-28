@@ -72,3 +72,21 @@ TEST(MediaTrackConstraintsTest, ConstraintName)
     blink::BooleanConstraint boolConstraint(theName);
     EXPECT_EQ(theName, boolConstraint.name());
 }
+
+TEST(MediaTrackConstraintsTest, MandatoryChecks)
+{
+    blink::WebMediaTrackConstraintSet theSet;
+    std::string foundName;
+    EXPECT_FALSE(theSet.hasMandatory());
+    EXPECT_FALSE(theSet.hasMandatoryOutsideSet({ "width" }, foundName));
+    EXPECT_FALSE(theSet.width.hasMandatory());
+    theSet.width.setMax(240);
+    EXPECT_TRUE(theSet.width.hasMandatory());
+    EXPECT_TRUE(theSet.hasMandatory());
+    EXPECT_FALSE(theSet.hasMandatoryOutsideSet({ "width" }, foundName));
+    EXPECT_TRUE(theSet.hasMandatoryOutsideSet({ "height" }, foundName));
+    EXPECT_EQ("width", foundName);
+    theSet.googPayloadPadding.setExact(true);
+    EXPECT_TRUE(theSet.hasMandatoryOutsideSet({ "width" }, foundName));
+    EXPECT_EQ("googPayloadPadding", foundName);
+}

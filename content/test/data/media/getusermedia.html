@@ -334,7 +334,7 @@
   }
 
   function failedCallback(error) {
-    failTest('GetUserMedia call failed with code ' + error.code);
+    failTest('GetUserMedia call failed with error name ' + error.name);
   }
 
   function attachMediaStream(stream, videoElement) {
@@ -502,7 +502,8 @@
         if (++attempt > maxAttempts) {
           clearInterval(detectorInterval);
           failTest("Aspect ratio corrupted. X " + maxLightGreenPixelsX  +
-                   " Y " + maxLightGreenPixelsY);
+                   " Y " + maxLightGreenPixelsY + " width " + width +
+                   " height " + height);
         }
         else {
           // We have a bad aspect ratio now; give a chance to shape up.
