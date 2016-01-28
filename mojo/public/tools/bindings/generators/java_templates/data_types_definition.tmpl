@@ -243,7 +243,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
 
     public static final class Tag {
 {%   for field in union.fields %}
-        public static final int {{field|ucc}} = {{field.ordinal}};
+        public static final int {{field|ucc}} = {{loop.index0}};
 {%   endfor %}
     };
 
@@ -265,7 +265,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
     // See http://crbug.com/570386.
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void set{{field|ucc}}({{field.kind|java_type}} {{field|name}}) {
-        mTag_ = {{field.ordinal}};
+        mTag_ = Tag.{{field|ucc}};
         m{{field|ucc}} = {{field|name}};
     }
 
@@ -273,7 +273,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
     // See http://crbug.com/570386.
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public {{field.kind|java_type}} get{{field|ucc}}() {
-        assert mTag_ == {{field.ordinal}};
+        assert mTag_ == Tag.{{field|ucc}};
         return m{{field|ucc}};
     }
 {%   endfor %}
@@ -285,7 +285,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
         encoder0.encode(mTag_, offset + 4);
         switch (mTag_) {
 {%   for field in union.fields %}
-            case {{field.ordinal}}: {
+            case Tag.{{field|ucc}}: {
 {%     if field.kind|is_union_kind %}
                 if (m{{field|ucc}} == null) {
                     encoder0.encodeNullPointer(offset + 8, {{field.kind|is_nullable_kind|java_true_false}});
@@ -316,7 +316,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
         {{union|name}} result = new {{union|name}}();
         switch (dataHeader.elementsOrVersion) {
 {%   for field in union.fields %}
-            case {{field.ordinal}}: {
+            case Tag.{{field|ucc}}: {
 {%     if field.kind|is_union_kind %}
                 org.chromium.mojo.bindings.Decoder decoder1 = decoder0.readPointer(offset + org.chromium.mojo.bindings.DataHeader.HEADER_SIZE, {{field.kind|is_nullable_kind|java_true_false}});
                 if (decoder1 != null) {
@@ -325,7 +325,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
 {%     else %}
                 {{decode('result.m'~field|ucc, field.kind, 'offset + org.chromium.mojo.bindings.DataHeader.HEADER_SIZE', 0)|indent(16)}}
 {%     endif %}
-                result.mTag_ = {{field.ordinal}};
+                result.mTag_ = Tag.{{field|ucc}};
                 break;
             }
 {%   endfor %}
@@ -352,7 +352,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
             return false;
         switch (mTag_) {
 {%   for field in union.fields %}
-            case {{field.ordinal}}:
+            case Tag.{{field|ucc}}:
                 return {{equality(field.kind, 'm'~field|ucc, 'other.m'~field|ucc)}};
 {%   endfor %}
             default:
@@ -371,7 +371,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
         result = prime * result + org.chromium.mojo.bindings.BindingsHelper.hashCode(mTag_);
         switch (mTag_) {
 {%   for field in union.fields %}
-            case {{field.ordinal}}: {
+            case Tag.{{field|ucc}}: {
                 result = prime * result + {{hash(field.kind, 'm'~field|ucc)}};
                 break;
             }
