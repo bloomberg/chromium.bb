@@ -43,7 +43,8 @@ HostContentSettingsMapFactory::BuildServiceInstanceFor(
     GetForBrowserState(browser_state->GetOriginalChromeBrowserState());
   }
   return make_scoped_refptr(new HostContentSettingsMap(
-      browser_state->GetPrefs(), browser_state->IsOffTheRecord()));
+      browser_state->GetPrefs(), browser_state->IsOffTheRecord(),
+      false /* guest_profile */));
 }
 
 web::BrowserState* HostContentSettingsMapFactory::GetBrowserStateToUse(

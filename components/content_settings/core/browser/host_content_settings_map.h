@@ -62,8 +62,11 @@ class HostContentSettingsMap : public content_settings::Observer,
   };
 
   // This should be called on the UI thread, otherwise |thread_checker_| handles
-  // CalledOnValidThread() wrongly.
-  HostContentSettingsMap(PrefService* prefs, bool incognito);
+  // CalledOnValidThread() wrongly. Only one (or neither) of
+  // |is_incognito_profile| and |is_guest_profile| should be true.
+  HostContentSettingsMap(PrefService* prefs,
+                         bool is_incognito_profile,
+                         bool is_guest_profile);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

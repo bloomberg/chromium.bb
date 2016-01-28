@@ -208,14 +208,15 @@ bool DefaultProvider::SetWebsiteSetting(
     return false;
   }
 
-  // The default settings may not be directly modified for OTR sessions.
-  // Instead, they are synced to the main profile's setting.
-  if (is_incognito_)
-    return false;
-
   // Put |in_value| in a scoped pointer to ensure that it gets cleaned up
   // properly if we don't pass on the ownership.
   scoped_ptr<base::Value> value(in_value);
+
+  // The default settings may not be directly modified for OTR sessions.
+  // Instead, they are synced to the main profile's setting.
+  if (is_incognito_)
+    return true;
+
   {
     base::AutoReset<bool> auto_reset(&updating_preferences_, true);
     // Lock the memory map access, so that values are not read by

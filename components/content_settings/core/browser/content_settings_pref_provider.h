@@ -56,6 +56,8 @@ class PrefProvider : public ObservableProvider {
 
   void ShutdownOnUIThread() override;
 
+  void ClearPrefs();
+
   // Records the last time the given pattern has used a certain content setting.
   void UpdateLastUsage(const ContentSettingsPattern& primary_pattern,
                        const ContentSettingsPattern& secondary_pattern,

@@ -112,7 +112,9 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         &fake_create_callback_);
 #endif
 
-    content_settings_ = new HostContentSettingsMap(profile_->GetPrefs(), false);
+    content_settings_ = new HostContentSettingsMap(
+        profile_->GetPrefs(), false /* incognito_profile */,
+        false /* guest_profile */);
     DownloadRequestLimiter::SetContentSettingsForTesting(
         content_settings_.get());
   }

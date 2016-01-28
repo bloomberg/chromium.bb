@@ -29,7 +29,8 @@ class CookieSettingsTest : public testing::Test {
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
-    settings_map_ = new HostContentSettingsMap(&prefs_, false);
+    settings_map_ = new HostContentSettingsMap(
+        &prefs_, false /* incognito_profile */, false /* guest_profile */);
     cookie_settings_ =
         new CookieSettings(settings_map_.get(), &prefs_, "chrome-extension");
   }

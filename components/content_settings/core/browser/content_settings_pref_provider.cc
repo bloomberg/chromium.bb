@@ -164,6 +164,14 @@ void PrefProvider::ShutdownOnUIThread() {
   prefs_ = NULL;
 }
 
+void PrefProvider::ClearPrefs() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(prefs_);
+
+  for (const auto& pref : content_settings_prefs_)
+    pref.second->ClearPref();
+}
+
 void PrefProvider::UpdateLastUsage(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,

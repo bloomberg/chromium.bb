@@ -126,7 +126,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
     signin_manager_.reset(new FakeSigninManager(
         signin_client_.get(), nullptr, &account_tracker_service_, nullptr));
     account_tracker_service_.Initialize(signin_client_.get());
-    settings_map_ = new HostContentSettingsMap(&prefs_, false);
+    settings_map_ = new HostContentSettingsMap(
+        &prefs_, false /* incognito_profile */, false /* guest_profile */);
     cookie_settings_ =
         new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
     ResetAccountConsistencyService();

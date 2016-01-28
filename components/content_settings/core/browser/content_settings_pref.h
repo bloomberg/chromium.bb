@@ -60,6 +60,8 @@ class ContentSettingsPref {
                          const ResourceIdentifier& resource_identifier,
                          base::Value* value);
 
+  void ClearPref();
+
   void ClearAllContentSettingsRules();
 
   void UpdateLastUsage(const ContentSettingsPattern& primary_pattern,

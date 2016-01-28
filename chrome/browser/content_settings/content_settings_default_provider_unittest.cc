@@ -189,8 +189,8 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(),
-      value.get());
-  EXPECT_FALSE(owned);
+      value.release());
+  EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(
                 &provider_, GURL(), GURL(), CONTENT_SETTINGS_TYPE_COOKIES,

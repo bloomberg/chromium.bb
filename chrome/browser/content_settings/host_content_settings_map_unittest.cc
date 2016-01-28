@@ -1162,3 +1162,75 @@ TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
       std::string(),
       CONTENT_SETTING_DEFAULT);
 }
+
+TEST_F(HostContentSettingsMapTest, GuestProfile) {
+  TestingProfile profile;
+  profile.SetGuestSession(true);
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+
+  // Changing content settings should not result in any prefs being stored
+  // however the value should be set in memory.
+  host_content_settings_map->SetContentSetting(
+      pattern, ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_IMAGES,
+      std::string(), CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+
+  const base::DictionaryValue* all_settings_dictionary =
+      profile.GetPrefs()->GetDictionary(
+          GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES));
+  EXPECT_TRUE(all_settings_dictionary->empty());
+}
+
+// Default settings should not be modifiable for the guest profile (there is no
+// UI to do this).
+TEST_F(HostContentSettingsMapTest, GuestProfileDefaultSetting) {
+  TestingProfile profile;
+  profile.SetGuestSession(true);
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL host("http://example.com/");
+
+  // There are no custom rules, so this should be the default.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+}
+
+// We used to incorrectly store content settings in prefs for the guest profile.
+// We need to ensure these get deleted appropriately.
+TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
+  TestingProfile profile;
+  profile.SetGuestSession(true);
+
+  // Set a pref manually in the guest profile.
+  scoped_ptr<base::Value> value =
+      base::JSONReader::Read("{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
+  profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES), *value);
+
+  // Test that during construction all the prefs get cleared.
+  HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  const base::DictionaryValue* all_settings_dictionary =
+      profile.GetPrefs()->GetDictionary(
+          GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES));
+  EXPECT_TRUE(all_settings_dictionary->empty());
+}

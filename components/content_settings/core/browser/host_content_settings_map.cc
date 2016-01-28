@@ -94,22 +94,29 @@ scoped_ptr<base::Value> CoerceSettingInheritedToIncognito(
 }  // namespace
 
 HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
-                                               bool incognito)
+                                               bool is_incognito_profile,
+                                               bool is_guest_profile)
     :
 #ifndef NDEBUG
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
-      is_off_the_record_(incognito) {
+      is_off_the_record_(is_incognito_profile || is_guest_profile) {
+  DCHECK(!(is_incognito_profile && is_guest_profile));
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
   policy_provider->AddObserver(this);
   content_settings_providers_[POLICY_PROVIDER] = policy_provider;
 
-  content_settings::ObservableProvider* pref_provider =
+  content_settings::PrefProvider* pref_provider =
       new content_settings::PrefProvider(prefs_, is_off_the_record_);
   pref_provider->AddObserver(this);
   content_settings_providers_[PREF_PROVIDER] = pref_provider;
+  // This ensures that content settings are cleared for the guest profile. This
+  // wouldn't be needed except that we used to allow settings to be stored for
+  // the guest profile and so we need to ensure those get cleared.
+  if (is_guest_profile)
+    pref_provider->ClearPrefs();
 
   content_settings::ObservableProvider* default_provider =
       new content_settings::DefaultProvider(prefs_, is_off_the_record_);
@@ -307,11 +314,12 @@ void HostContentSettingsMap::SetWebsiteSettingCustomScope(
          resource_identifier.empty());
   UsedContentSettingsProviders();
 
-  base::Value* val = value.release();
   for (auto& provider_pair : content_settings_providers_) {
-    if (provider_pair.second->SetWebsiteSetting(primary_pattern,
-                                                secondary_pattern, content_type,
-                                                resource_identifier, val)) {
+    if (provider_pair.second->SetWebsiteSetting(
+            primary_pattern, secondary_pattern, content_type,
+            resource_identifier, value.get())) {
+      // If succesful then ownership is passed to the provider.
+      ignore_result(value.release());
       return;
     }
   }
