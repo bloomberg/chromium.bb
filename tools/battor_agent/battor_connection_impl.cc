@@ -5,7 +5,8 @@
 #include "tools/battor_agent/battor_connection_impl.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/bind_helpers.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/serial/buffer.h"
 #include "device/serial/serial_io_handler.h"
 #include "net/base/io_buffer.h"
@@ -84,7 +85,9 @@ void BattOrConnectionImpl::OnOpened(bool success) {
   if (!success)
     Close();
 
-  listener_->OnConnectionOpened(success);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
+                            base::Unretained(listener_), success));
 }
 
 void BattOrConnectionImpl::Close() {
@@ -131,7 +134,10 @@ void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
   bytes->reserve(max_bytes_to_read);
 
   if (ParseMessage(&parsed_type, bytes.get())) {
-    listener_->OnMessageRead(true, parsed_type, std::move(bytes));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&Listener::OnMessageRead, base::Unretained(listener_), true,
+                   parsed_type, base::Passed(std::move(bytes))));
     return;
   }
 
@@ -197,8 +203,10 @@ void BattOrConnectionImpl::EndReadBytes(bool success,
                                         BattOrMessageType type,
                                         scoped_ptr<std::vector<char>> bytes) {
   pending_read_buffer_ = nullptr;
-
-  listener_->OnMessageRead(success, type, std::move(bytes));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&Listener::OnMessageRead, base::Unretained(listener_), success,
+                 type, base::Passed(std::move(bytes))));
 }
 
 bool BattOrConnectionImpl::ParseMessage(BattOrMessageType* type,
@@ -258,7 +266,9 @@ void BattOrConnectionImpl::OnBytesSent(int bytes_sent,
                                        device::serial::SendError error) {
   bool success = (error == device::serial::SendError::NONE) &&
                  (pending_write_length_ == static_cast<size_t>(bytes_sent));
-  listener_->OnBytesSent(success);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&Listener::OnBytesSent, base::Unretained(listener_), success));
 }
 
 }  // namespace battor

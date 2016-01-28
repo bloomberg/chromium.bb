@@ -391,10 +391,15 @@ void BattOrAgent::SendControlMessage(BattOrControlMessageType type,
 void BattOrAgent::CompleteCommand(BattOrError error) {
   switch (command_) {
     case Command::START_TRACING:
-      listener_->OnStartTracingComplete(error);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&Listener::OnStartTracingComplete,
+                                base::Unretained(listener_), error));
       break;
     case Command::STOP_TRACING: {
-      listener_->OnStopTracingComplete(SamplesToString(), error);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&Listener::OnStopTracingComplete,
+                     base::Unretained(listener_), SamplesToString(), error));
       break;
     }
     case Command::INVALID:

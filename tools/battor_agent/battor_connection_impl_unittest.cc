@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/serial/serial.mojom.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,6 +40,10 @@ class TestableBattOrConnection : public BattOrConnectionImpl {
 class BattOrConnectionImplTest : public testing::Test,
                                  public BattOrConnection::Listener {
  public:
+  BattOrConnectionImplTest()
+      : task_runner_(new base::TestSimpleTaskRunner()),
+        thread_task_runner_handle_(task_runner_) {}
+
   void OnConnectionOpened(bool success) override { open_success_ = success; };
   void OnBytesSent(bool success) override { send_success_ = success; }
   void OnMessageRead(bool success,
@@ -52,13 +58,18 @@ class BattOrConnectionImplTest : public testing::Test,
  protected:
   void SetUp() override {
     connection_.reset(new TestableBattOrConnection(this));
+    task_runner_->ClearPendingTasks();
   }
 
-  void OpenConnection() { connection_->Open(); }
+  void OpenConnection() {
+    connection_->Open();
+    task_runner_->RunUntilIdle();
+  }
 
   void ReadMessage(BattOrMessageType type) {
     is_read_complete_ = false;
     connection_->ReadMessage(type);
+    task_runner_->RunUntilIdle();
   }
 
   // Reads the specified number of bytes directly from the serial connection.
@@ -68,6 +79,7 @@ class BattOrConnectionImplTest : public testing::Test,
 
     connection_->GetIoHandler()->Read(make_scoped_ptr(new device::ReceiveBuffer(
         buffer, bytes_to_read, base::Bind(&NullReadCallback))));
+    task_runner_->RunUntilIdle();
 
     return buffer;
   }
@@ -78,6 +90,7 @@ class BattOrConnectionImplTest : public testing::Test,
     BattOrControlMessage msg{type, param1, param2};
     connection_->SendBytes(BATTOR_MESSAGE_TYPE_CONTROL,
                            reinterpret_cast<char*>(&msg), sizeof(msg));
+    task_runner_->RunUntilIdle();
   }
 
   // Writes the specified bytes directly to the serial connection.
@@ -85,6 +98,7 @@ class BattOrConnectionImplTest : public testing::Test,
     std::vector<char> data_vector(data, data + bytes_to_send);
     connection_->GetIoHandler()->Write(make_scoped_ptr(
         new device::SendBuffer(data_vector, base::Bind(&NullWriteCallback))));
+    task_runner_->RunUntilIdle();
   }
 
   bool GetOpenSuccess() { return open_success_; }
@@ -96,6 +110,9 @@ class BattOrConnectionImplTest : public testing::Test,
 
  private:
   scoped_ptr<TestableBattOrConnection> connection_;
+
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
   // Result from the last connect command.
   bool open_success_;
