@@ -55,6 +55,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/ASCIICType.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -408,9 +409,13 @@ void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lin
         } else if (field == "id") {
             m_currentlyParsedEventId = valueLength ? AtomicString(&m_receiveBuf[bufPos], valueLength) : "";
         } else if (field == "retry") {
+            bool hasOnlyDigits = true;
+            for (int i = 0; i < valueLength && hasOnlyDigits; ++i) {
+                hasOnlyDigits = isASCIIDigit(m_receiveBuf[bufPos + i]);
+            }
             if (!valueLength) {
                 m_reconnectDelay = defaultReconnectDelay;
-            } else {
+            } else if (hasOnlyDigits) {
                 String value(&m_receiveBuf[bufPos], valueLength);
                 bool ok;
                 unsigned long long retry = value.toUInt64(&ok);

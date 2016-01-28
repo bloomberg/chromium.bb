@@ -273,29 +273,19 @@ TEST_F(EventSourceTest, NonDigitRetryShouldBeIgnored)
     EXPECT_EQ(123u, source()->reconnectDelayForTest());
 
     enqueue("retry:2a\n");
-    // TODO(yhirano): Should be ignored.
-    // EXPECT_EQ(123u, source()->reconnectDelayForTest());
-    EXPECT_EQ(2u, source()->reconnectDelayForTest());
+    EXPECT_EQ(123u, source()->reconnectDelayForTest());
 
     enqueue("retry:09a\n");
-    // TODO(yhirano): Should be ignored.
-    // EXPECT_EQ(123u, source()->reconnectDelayForTest());
-    EXPECT_EQ(9u, source()->reconnectDelayForTest());
+    EXPECT_EQ(123u, source()->reconnectDelayForTest());
 
     enqueue("retry:1\b\n");
-    // TODO(yhirano): Should be ignored.
-    // EXPECT_EQ(123u, source()->reconnectDelayForTest());
-    EXPECT_EQ(1u, source()->reconnectDelayForTest());
+    EXPECT_EQ(123u, source()->reconnectDelayForTest());
 
     enqueue("retry:  1234\n");
-    // TODO(yhirano): Should be ignored.
-    // EXPECT_EQ(123u, source()->reconnectDelayForTest());
-    EXPECT_EQ(1234u, source()->reconnectDelayForTest());
+    EXPECT_EQ(123u, source()->reconnectDelayForTest());
 
     enqueue("retry:456 \n");
-    // TODO(yhirano): Should be ignored.
-    // EXPECT_EQ(123u, source()->reconnectDelayForTest());
-    EXPECT_EQ(456u, source()->reconnectDelayForTest());
+    EXPECT_EQ(123u, source()->reconnectDelayForTest());
 
     EXPECT_EQ(0u, listener->events().size());
 }
