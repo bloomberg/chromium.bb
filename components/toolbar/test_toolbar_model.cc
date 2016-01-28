@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/test_toolbar_model.h"
+#include "components/toolbar/test_toolbar_model.h"
 
-#include "grit/components_scaled_resources.h"
+#include "components/grit/components_scaled_resources.h"
 #include "ui/gfx/vector_icons_public.h"
 
 TestToolbarModel::TestToolbarModel()

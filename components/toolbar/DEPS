@@ -1,3 +1,5 @@
 include_rules = [
+  "+components/grit",
   "+components/security_state",
+  "+ui/gfx",
 ]

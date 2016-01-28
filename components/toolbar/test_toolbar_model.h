@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_MODEL_H_
-#define CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_MODEL_H_
+#ifndef COMPONENTS_TOOLBAR_TEST_TOOLBAR_MODEL_H_
+#define COMPONENTS_TOOLBAR_TEST_TOOLBAR_MODEL_H_
 
 #include <stddef.h>
 
@@ -65,4 +65,4 @@ class TestToolbarModel : public ToolbarModel {
   DISALLOW_COPY_AND_ASSIGN(TestToolbarModel);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_MODEL_H_
+#endif  // COMPONENTS_TOOLBAR_TEST_TOOLBAR_MODEL_H_
