@@ -467,14 +467,6 @@ Status ExecuteGetCurrentUrl(
         return status;
     }
   }
-  if (!session->GetCurrentFrameId().empty()) {
-    // TODO(samuong): remove this after we release ChromeDriver 2.21.
-    LOG(WARNING)
-        << "As of ChromeDriver 2.21, GetCurrentUrl now returns the "
-           "URL of the top-level browsing context, not the current frame. "
-           "See https://code.google.com/p/chromedriver/issues/detail?id=1249 "
-           "for details and workarounds.";
-  }
   value->reset(new base::StringValue(url));
   return Status(kOk);
 }
