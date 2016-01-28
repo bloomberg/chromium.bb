@@ -60,6 +60,19 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
   name = decl.getNameAsString();
+
+  if (const auto* method = clang::dyn_cast<const clang::CXXMethodDecl>(&decl)) {
+    if (!method->isStatic()) {
+      // Some methods shouldn't be renamed because reasons.
+      static const char* kBlacklist[] = {"begin", "end", "rbegin", "rend",
+                                         "trace"};
+      for (const auto& b : kBlacklist) {
+        if (name == b)
+          return false;
+      }
+    }
+  }
+
   name[0] = clang::toUppercase(name[0]);
   return true;
 }

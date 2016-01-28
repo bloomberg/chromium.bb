@@ -22,6 +22,22 @@ class Task {
 
   // Conversion functions should not be rewritten.
   explicit operator int() const { return 42; }
+
+  // These are special functions that we don't rename so that range-based
+  // for loops and STL things work.
+  void begin() {}
+  void end() {}
+  void rbegin() {}
+  void rend() {}
+  // The trace() method is used by Oilpan, we shouldn't rename it.
+  void trace() {}
+};
+
+class Other {
+  // Static begin/end/trace don't count, and should be renamed.
+  static void Begin() {}
+  static void End() {}
+  static void Trace() {}
 };
 
 // Test that the actual method definition is also updated.

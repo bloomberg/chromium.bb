@@ -15,6 +15,12 @@ int testFunctionThatTakesTwoInts(int x, int y) {
   return testFunctionThatTakesTwoInts(x - 1, y + 1);
 }
 
+// This is named like the begin() method which isn't renamed, but
+// here it's not a method so it should be.
+void begin() {}
+// Same for trace().
+void trace() {}
+
 // Note: F is already Google style and should not change.
 void F() {
   // Test referencing a function without calling it.
