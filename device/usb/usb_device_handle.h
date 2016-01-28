@@ -11,13 +11,16 @@
 #include <map>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "device/usb/usb_descriptors.h"
-#include "net/base/io_buffer.h"
+
+namespace net {
+class IOBuffer;
+}
 
 namespace device {
 

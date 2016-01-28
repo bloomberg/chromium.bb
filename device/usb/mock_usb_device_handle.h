@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {

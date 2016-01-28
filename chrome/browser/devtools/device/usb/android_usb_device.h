@@ -27,6 +27,8 @@ class RSAPrivateKey;
 }
 
 namespace net {
+class IOBuffer;
+class IOBufferWithSize;
 class StreamSocket;
 }
 

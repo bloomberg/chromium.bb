@@ -99,6 +99,7 @@ source_set("mocks") {
   deps = [
     ":usb",
     "//base",
+    "//net",
   ]
 
   public_deps = [

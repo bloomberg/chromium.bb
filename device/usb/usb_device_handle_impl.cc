@@ -22,6 +22,7 @@
 #include "device/usb/usb_device_impl.h"
 #include "device/usb/usb_error.h"
 #include "device/usb/usb_service.h"
+#include "net/base/io_buffer.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 namespace device {
