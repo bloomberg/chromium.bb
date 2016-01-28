@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -20,110 +21,72 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 
-using views::Widget;
+using OBFVL = OpaqueBrowserFrameViewLayout;
 
 namespace {
 
-const int kWidth = 500;
+const int kWindowWidth = 500;
+const int kNonClientBorderThickness = OBFVL::kFrameBorderThickness +
+    views::NonClientFrameView::kClientEdgeThickness;
+const int kMinimizeButtonWidth = 26;
+const int kMaximizeButtonWidth = 25;
+const int kCloseButtonWidth = 43;
+const int kMaximizedExtraCloseWidth = OBFVL::kFrameBorderThickness -
+    views::NonClientFrameView::kFrameShadowThickness;
+const int kCaptionButtonsWidth =
+    kMinimizeButtonWidth + kMaximizeButtonWidth + kCloseButtonWidth;
+const int kCaptionButtonHeight = 18;
 
 class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
  public:
-  enum WindowState {
-    STATE_NORMAL,
-    STATE_MAXIMIZED,
-    STATE_MINIMIZED,
-    STATE_FULLSCREEN
-  };
-
   TestLayoutDelegate()
       : show_avatar_(false),
         show_caption_buttons_(true),
-        window_state_(STATE_NORMAL) {
+        maximized_(false) {
   }
-
   ~TestLayoutDelegate() override {}
 
-  void SetWindowTitle(const base::string16& title) {
-    window_title_ = title;
-  }
-
-  void SetShouldShowAvatar(bool show_avatar) {
-    show_avatar_ = show_avatar;
-  }
-
-  void SetShouldShowCaptionButtons(bool show_caption_buttons) {
+  void set_window_title(const base::string16& title) { window_title_ = title; }
+  void set_show_avatar(bool show_avatar) { show_avatar_ = show_avatar; }
+  void set_show_caption_buttons(bool show_caption_buttons) {
     show_caption_buttons_ = show_caption_buttons;
   }
+  void set_maximized(bool maximized) { maximized_ = maximized; }
 
-  void SetWindowState(WindowState state) {
-    window_state_ = state;
-  }
-
-  // OpaqueBrowserFrameViewLayoutDelegate overrides:
-
+  // OpaqueBrowserFrameViewLayoutDelegate:
   bool ShouldShowWindowIcon() const override { return !window_title_.empty(); }
-
   bool ShouldShowWindowTitle() const override { return !window_title_.empty(); }
-
   base::string16 GetWindowTitle() const override { return window_title_; }
-
-  int GetIconSize() const override {
-    // The value on linux_aura and non-aura windows.
-    return 17;
-  }
-
+  int GetIconSize() const override { return 17; }
   gfx::Size GetBrowserViewMinimumSize() const override {
-    // Taken from a calculation in BrowserViewLayout.
     return gfx::Size(168, 64);
   }
-
   bool ShouldShowCaptionButtons() const override {
     return show_caption_buttons_;
   }
-
   bool ShouldShowAvatar() const override { return show_avatar_; }
-
   bool IsRegularOrGuestSession() const override { return true; }
-
   gfx::ImageSkia GetOTRAvatarIcon() const override {
-    // The calculations depend on the size of the OTR resource, and chromeos
-    // uses a different sized image, so hard code the size of the current
-    // windows/linux one.
-    gfx::ImageSkiaRep rep(gfx::Size(40, 29), 1.0f);
-    gfx::ImageSkia image(rep);
-    return image;
+    return gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(40, 29), 1.0f));
   }
-
-  bool IsMaximized() const override { return window_state_ == STATE_MAXIMIZED; }
-
-  bool IsMinimized() const override { return window_state_ == STATE_MINIMIZED; }
-
-  bool IsFullscreen() const override {
-    return window_state_ == STATE_FULLSCREEN;
-  }
-
+  bool IsMaximized() const override { return maximized_; }
+  bool IsMinimized() const override { return false; }
+  bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return window_title_.empty(); }
-
   int GetTabStripHeight() const override {
     return IsTabStripVisible() ? Tab::GetMinimumInactiveSize().height() : 0;
   }
-
   bool IsToolbarVisible() const override { return true; }
-
   gfx::Size GetTabstripPreferredSize() const override {
-    // Measured from Tabstrip::GetPreferredSize().
-    return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size(0, 0);
+    return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
   }
-
-  int GetToolbarLeadingCornerClientWidth() const override {
-    return 0;
-  }
+  int GetToolbarLeadingCornerClientWidth() const override { return 0; }
 
  private:
   base::string16 window_title_;
   bool show_avatar_;
   bool show_caption_buttons_;
-  WindowState window_state_;
+  bool maximized_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayoutDelegate);
 };
@@ -139,13 +102,13 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
 
     delegate_.reset(new TestLayoutDelegate);
-    layout_manager_ = new OpaqueBrowserFrameViewLayout(delegate_.get());
+    layout_manager_ = new OBFVL(delegate_.get());
     layout_manager_->set_extra_caption_y(0);
     layout_manager_->set_window_caption_spacing(0);
-    widget_ = new Widget;
-    widget_->Init(CreateParams(Widget::InitParams::TYPE_POPUP));
+    widget_ = new views::Widget;
+    widget_->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
     root_view_ = widget_->GetRootView();
-    root_view_->SetSize(gfx::Size(kWidth, kWidth));
+    root_view_->SetSize(gfx::Size(kWindowWidth, kWindowWidth));
     root_view_->SetLayoutManager(layout_manager_);
 
     // Add the caption buttons. We use fake images because we're modeling the
@@ -156,13 +119,17 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     // accessors so we can test both the windows and linux behaviours once we
     // start modifying the code.
     minimize_button_ = InitWindowCaptionButton(
-        VIEW_ID_MINIMIZE_BUTTON, gfx::Size(26, 18));
+        VIEW_ID_MINIMIZE_BUTTON,
+        gfx::Size(kMinimizeButtonWidth, kCaptionButtonHeight));
     maximize_button_ = InitWindowCaptionButton(
-        VIEW_ID_MAXIMIZE_BUTTON, gfx::Size(25, 18));
+        VIEW_ID_MAXIMIZE_BUTTON,
+        gfx::Size(kMaximizeButtonWidth, kCaptionButtonHeight));
     restore_button_ = InitWindowCaptionButton(
-        VIEW_ID_RESTORE_BUTTON, gfx::Size(25, 18));
+        VIEW_ID_RESTORE_BUTTON,
+        gfx::Size(kMaximizeButtonWidth, kCaptionButtonHeight));
     close_button_ = InitWindowCaptionButton(
-        VIEW_ID_CLOSE_BUTTON, gfx::Size(43, 18));
+        VIEW_ID_CLOSE_BUTTON,
+        gfx::Size(kCloseButtonWidth, kCaptionButtonHeight));
   }
 
   void TearDown() override {
@@ -203,18 +170,175 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
         new views::MenuButton(nullptr, base::string16(), nullptr, false);
     new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
     root_view_->AddChildView(new_avatar_button_);
+    delegate_->set_show_avatar(true);
   }
 
-  void ExpectBasicWindowBounds() {
-    EXPECT_EQ("428,1 25x18", maximize_button_->bounds().ToString());
-    EXPECT_EQ("402,1 26x18", minimize_button_->bounds().ToString());
-    EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
-    EXPECT_EQ("453,1 43x18", close_button_->bounds().ToString());
+  int CaptionY() const {
+    return delegate_->IsMaximized() ?
+        0 : views::NonClientFrameView::kFrameShadowThickness;
   }
 
-  Widget* widget_;
+  int CaptionLeft() const {
+    return kWindowWidth -
+        (delegate_->IsMaximized() ? kMaximizedExtraCloseWidth
+                                  : OBFVL::kFrameBorderThickness) -
+        kCaptionButtonsWidth - OBFVL::kCaptionSpacing;
+  }
+
+  int IconAndTitleY() const {
+    // This approximates the real positioning algorithm, which is complicated.
+    int total_vertical_padding =
+        (delegate_->IsMaximized() || !delegate_->ShouldShowCaptionButtons()) ?
+            (kCaptionButtonHeight - delegate_->GetIconSize()) :
+            (OBFVL::kFrameBorderThickness +
+                 OBFVL::kTitlebarTopAndBottomEdgeThickness);
+    return (total_vertical_padding + 1) / 2;
+  }
+
+  void ExpectCaptionButtons(bool caption_buttons_on_left, int extra_height) {
+    if (!delegate_->ShouldShowCaptionButtons()) {
+      EXPECT_FALSE(maximize_button_->visible());
+      EXPECT_FALSE(minimize_button_->visible());
+      EXPECT_FALSE(restore_button_->visible());
+      EXPECT_FALSE(close_button_->visible());
+      return;
+    }
+
+    bool maximized = delegate_->IsMaximized();
+    int frame_thickness = maximized ? 0 : OBFVL::kFrameBorderThickness;
+    int close_width =
+        kCloseButtonWidth + (maximized ? kMaximizedExtraCloseWidth : 0);
+    int close_x = caption_buttons_on_left ?
+        frame_thickness : (kWindowWidth - frame_thickness - close_width);
+    EXPECT_EQ(close_x, close_button_->x());
+    EXPECT_EQ(CaptionY(), close_button_->y());
+    EXPECT_EQ(close_width, close_button_->width());
+    EXPECT_EQ(kCaptionButtonHeight + extra_height, close_button_->height());
+    EXPECT_TRUE(close_button_->visible());
+    views::ImageButton* visible_button = maximize_button_;
+    views::ImageButton* hidden_button = restore_button_;
+    if (maximized)
+      std::swap(visible_button, hidden_button);
+    if (caption_buttons_on_left)
+      EXPECT_EQ(minimize_button_->bounds().right(), visible_button->x());
+    else
+      EXPECT_EQ(close_button_->x(), visible_button->bounds().right());
+    EXPECT_EQ(close_button_->y(), visible_button->y());
+    EXPECT_EQ(kMaximizeButtonWidth, visible_button->width());
+    EXPECT_EQ(close_button_->height(), visible_button->height());
+    EXPECT_TRUE(visible_button->visible());
+    if (caption_buttons_on_left)
+      EXPECT_EQ(close_button_->bounds().right(), minimize_button_->x());
+    else
+      EXPECT_EQ(visible_button->x(), minimize_button_->bounds().right());
+    EXPECT_EQ(visible_button->y(), minimize_button_->y());
+    EXPECT_EQ(kMinimizeButtonWidth, minimize_button_->width());
+    EXPECT_EQ(visible_button->height(), minimize_button_->height());
+    EXPECT_TRUE(minimize_button_->visible());
+    EXPECT_FALSE(hidden_button->visible());
+  }
+
+  void ExpectTabStripAndMinimumSize(bool caption_buttons_on_left) {
+    int caption_buttons_width = kCaptionButtonsWidth;
+    bool show_caption_buttons = delegate_->ShouldShowCaptionButtons();
+    bool maximized = delegate_->IsMaximized() || !show_caption_buttons;
+    if (delegate_->ShouldShowAvatar()) {
+      caption_buttons_width += new_avatar_button_->GetPreferredSize().width() +
+          (maximized ? OBFVL::kCaptionSpacing
+                     : -GetLayoutSize(NEW_TAB_BUTTON).width());
+    }
+    int tabstrip_x = GetLayoutInsets(AVATAR_ICON).right();
+    if (show_caption_buttons && caption_buttons_on_left) {
+      int right_of_close =
+          maximized ? kMaximizedExtraCloseWidth : OBFVL::kFrameBorderThickness;
+      tabstrip_x += caption_buttons_width + right_of_close;
+    } else if (!maximized) {
+      tabstrip_x += kNonClientBorderThickness;
+    }
+    gfx::Size tabstrip_min_size(delegate_->GetTabstripPreferredSize());
+    gfx::Rect tabstrip_bounds(
+        layout_manager_->GetBoundsForTabStrip(tabstrip_min_size, kWindowWidth));
+    EXPECT_EQ(tabstrip_x, tabstrip_bounds.x());
+    int maximized_top_border_height = -GetLayoutInsets(TAB).top() + 1;
+    if (maximized) {
+      EXPECT_EQ(maximized_top_border_height, tabstrip_bounds.y());
+    } else {
+      int tabstrip_nonexcluded_y = OBFVL::kFrameBorderThickness +
+          OBFVL::kNonClientRestoredExtraThickness;
+      EXPECT_LE(tabstrip_bounds.y(), tabstrip_nonexcluded_y);
+    }
+    int caption_width = (caption_buttons_on_left || !show_caption_buttons) ?
+        0 : caption_buttons_width;
+    int maximized_spacing = (show_caption_buttons && !caption_buttons_on_left) ?
+        (OBFVL::kNewTabCaptionCondensedSpacing + kMaximizedExtraCloseWidth) :
+        OBFVL::kCaptionSpacing;
+    int restored_spacing = OBFVL::kCaptionSpacing +
+        (caption_buttons_on_left ? kNonClientBorderThickness
+                                 : OBFVL::kFrameBorderThickness);
+    int spacing = maximized ? maximized_spacing : restored_spacing;
+    int tabstrip_width = kWindowWidth - tabstrip_x - caption_width - spacing;
+    EXPECT_EQ(tabstrip_width, tabstrip_bounds.width());
+    EXPECT_EQ(tabstrip_min_size.height(), tabstrip_bounds.height());
+    maximized_spacing = (show_caption_buttons && !caption_buttons_on_left) ?
+        OBFVL::kNewTabCaptionCondensedSpacing : OBFVL::kCaptionSpacing;
+    restored_spacing = 2 * kNonClientBorderThickness + OBFVL::kCaptionSpacing;
+    spacing = maximized ? maximized_spacing : restored_spacing;
+    gfx::Size browser_view_min_size(delegate_->GetBrowserViewMinimumSize());
+    int min_width =
+        browser_view_min_size.width() + tabstrip_min_size.width() + spacing;
+    gfx::Size min_size(layout_manager_->GetMinimumSize(kWindowWidth));
+    EXPECT_EQ(min_width, min_size.width());
+    int restored_border_height =
+          OBFVL::kFrameBorderThickness + kNonClientBorderThickness;
+    int top_border_height =
+        maximized ? maximized_top_border_height : restored_border_height;
+    int min_height = top_border_height + browser_view_min_size.height();
+    EXPECT_EQ(min_height, min_size.height());
+  }
+
+  void ExpectWindowIcon(bool caption_buttons_on_left) {
+    if (caption_buttons_on_left) {
+      EXPECT_TRUE(layout_manager_->IconBounds().IsEmpty());
+      return;
+    }
+
+    int border_thickness =
+        (delegate_->IsMaximized() || !delegate_->ShouldShowCaptionButtons()) ?
+            0 : OBFVL::kFrameBorderThickness;
+    gfx::Rect icon_bounds(layout_manager_->IconBounds());
+    EXPECT_EQ(border_thickness + OBFVL::kIconLeftSpacing, icon_bounds.x());
+    int icon_y =
+        delegate_->ShouldShowWindowTitle() ? IconAndTitleY() : border_thickness;
+    EXPECT_EQ(icon_y, icon_bounds.y());
+    int icon_size = delegate_->GetIconSize();
+    EXPECT_EQ(icon_size, icon_bounds.width());
+    EXPECT_EQ(icon_size, icon_bounds.height());
+  }
+
+  void ExpectWindowTitle() {
+    int icon_size = delegate_->GetIconSize();
+    int title_x =
+        (delegate_->IsMaximized() ? 0 : OBFVL::kFrameBorderThickness) +
+        OBFVL::kIconLeftSpacing + icon_size + OBFVL::kIconTitleSpacing;
+    gfx::Rect title_bounds(window_title_->bounds());
+    EXPECT_EQ(title_x, title_bounds.x());
+    EXPECT_EQ(IconAndTitleY(), title_bounds.y());
+    EXPECT_EQ(CaptionLeft() - title_x, title_bounds.width());
+    EXPECT_EQ(icon_size, title_bounds.height());
+  }
+
+  void ExpectAvatar() {
+    int avatar_width = new_avatar_button_->GetPreferredSize().width();
+    gfx::Rect avatar_bounds(new_avatar_button_->bounds());
+    EXPECT_EQ(CaptionLeft() - avatar_width, avatar_bounds.x());
+    EXPECT_EQ(CaptionY(), avatar_bounds.y());
+    EXPECT_EQ(avatar_width, avatar_bounds.width());
+    EXPECT_EQ(kCaptionButtonHeight, avatar_bounds.height());
+  }
+
+  views::Widget* widget_;
   views::View* root_view_;
-  OpaqueBrowserFrameViewLayout* layout_manager_;
+  OBFVL* layout_manager_;
   scoped_ptr<TestLayoutDelegate> delegate_;
 
   // Widgets:
@@ -235,70 +359,27 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {
   // Tests the layout of a default chrome window with no avatars, no window
   // titles, and a tabstrip.
-  root_view_->Layout();
 
-  ExpectBasicWindowBounds();
-
-  // After some visual inspection, it really does look like the tabstrip is
-  // initally positioned out of our view.
-  EXPECT_EQ("-1,13 398x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // A normal window with no window icon still produces icon bounds for
-  // Windows, which has a hidden icon that a user can double click on to close
-  // the window.
-  EXPECT_EQ("6,4 17x17", layout_manager_->IconBounds().ToString());
-}
-
-TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindowMaximized) {
-  // Tests the layout of a default chrome window with no avatars, no window
-  // titles, and a tabstrip, but maximized this time.
-  delegate_->SetWindowState(TestLayoutDelegate::STATE_MAXIMIZED);
-  root_view_->Layout();
-
-  // Note how the bounds start at the exact top of the window while maximized
-  // while they start 1 pixel below when unmaximized.
-  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
-  EXPECT_EQ("403,0 26x18", minimize_button_->bounds().ToString());
-  EXPECT_EQ("429,0 25x18", restore_button_->bounds().ToString());
-  EXPECT_EQ("454,0 46x18", close_button_->bounds().ToString());
-
-  EXPECT_EQ("-6,-3 393x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("262x61", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
-  // this rect, extended to the top left corner of the window.
-  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
+  for (int i = 0; i < 2; ++i) {
+    root_view_->Layout();
+    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
+    ExpectCaptionButtons(false, 0);
+    ExpectTabStripAndMinimumSize(false);
+    ExpectWindowIcon(false);
+    delegate_->set_maximized(true);
+  }
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithYOffset) {
   // Tests the layout of a basic chrome window with the caption buttons slightly
   // offset from the top of the screen (as they are on Linux).
   layout_manager_->set_extra_caption_y(2);
-  delegate_->SetWindowState(TestLayoutDelegate::STATE_MAXIMIZED);
+  delegate_->set_maximized(true);
   root_view_->Layout();
 
-  // Note how the bounds start at the exact top of the window, DESPITE the
-  // caption Y offset of 2. This ensures that we obey Fitts' Law (the buttons
-  // are clickable on the top edge of the screen). However, the buttons are 2
-  // pixels taller, so the images appear to be offset by 2 pixels.
-  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
-  EXPECT_EQ("403,0 26x20", minimize_button_->bounds().ToString());
-  EXPECT_EQ("429,0 25x20", restore_button_->bounds().ToString());
-  EXPECT_EQ("454,0 46x20", close_button_->bounds().ToString());
-
-  EXPECT_EQ("-6,-3 393x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("262x61", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
-  // this rect, extended to the top left corner of the window.
-  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
+  ExpectCaptionButtons(false, 2);
+  ExpectTabStripAndMinimumSize(false);
+  ExpectWindowIcon(false);
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
@@ -309,93 +390,57 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
   leading_buttons.push_back(views::FRAME_BUTTON_MINIMIZE);
   leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
   layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
-  root_view_->Layout();
 
-  EXPECT_EQ("73,1 25x18", maximize_button_->bounds().ToString());
-  EXPECT_EQ("47,1 26x18", minimize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
-  EXPECT_EQ("4,1 43x18", close_button_->bounds().ToString());
-
-  EXPECT_EQ("92,13 398x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // If the buttons are on the left, there should be no hidden icon for the user
-  // to double click.
-  EXPECT_EQ("0,0 0x0", layout_manager_->IconBounds().ToString());
+  for (int i = 0; i < 2; ++i) {
+    root_view_->Layout();
+    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
+    ExpectCaptionButtons(true, 0);
+    ExpectTabStripAndMinimumSize(true);
+    ExpectWindowIcon(true);
+    delegate_->set_maximized(true);
+  }
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
   // Tests the layout of a default chrome window with no caption buttons (which
   // should force the tab strip to be condensed).
-  delegate_->SetShouldShowCaptionButtons(false);
-  root_view_->Layout();
+  delegate_->set_show_caption_buttons(false);
 
-  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", minimize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
-
-  EXPECT_EQ("-6,-3 501x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // A normal window with no window icon still produces icon bounds for
-  // Windows, which has a hidden icon that a user can double click on to close
-  // the window.
-  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
+  for (int i = 0; i < 2; ++i) {
+    root_view_->Layout();
+    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
+    ExpectCaptionButtons(false, 0);
+    ExpectTabStripAndMinimumSize(false);
+    ExpectWindowIcon(false);
+    delegate_->set_maximized(true);
+  }
 }
 
-TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithoutCaptionButtons) {
-  // Tests the layout of a maximized chrome window with no caption buttons.
-  delegate_->SetWindowState(TestLayoutDelegate::STATE_MAXIMIZED);
-  delegate_->SetShouldShowCaptionButtons(false);
-  root_view_->Layout();
-
-  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", minimize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
-
-  EXPECT_EQ("-6,-3 501x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
-  // this rect, extended to the top left corner of the window.
-  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
-}
-
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WithWindowTitleAndIcon) {
+TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
   // Tests the layout of pop up windows.
-  delegate_->SetWindowTitle(base::ASCIIToUTF16("Window Title"));
+  delegate_->set_window_title(base::ASCIIToUTF16("Window Title"));
   AddWindowTitleIcons();
-  root_view_->Layout();
 
-  // We should have the right hand side should match the BasicWindow case.
-  ExpectBasicWindowBounds();
-
-  // Check the location of the tab icon and window title.
-  EXPECT_EQ("6,3 17x17", tab_icon_view_->bounds().ToString());
-  EXPECT_EQ("27,3 370x17", window_title_->bounds().ToString());
+  for (int i = 0; i < 2; ++i) {
+    root_view_->Layout();
+    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
+    ExpectCaptionButtons(false, 0);
+    ExpectWindowIcon(false);
+    ExpectWindowTitle();
+    delegate_->set_maximized(true);
+  }
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
   // Tests a normal tabstrip window with the new style avatar icon.
   AddNewAvatarButton();
-  root_view_->Layout();
 
-  ExpectBasicWindowBounds();
-
-  // Check the location of the avatar button.
-  EXPECT_EQ("385,1 12x18", new_avatar_button_->bounds().ToString());
-  // The new tab button is 39px wide and slides completely under the new
-  // avatar button, thus increasing the tabstrip by that amount.
-  EXPECT_EQ("-1,13 420x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+  for (int i = 0; i < 2; ++i) {
+    root_view_->Layout();
+    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
+    ExpectCaptionButtons(false, 0);
+    ExpectTabStripAndMinimumSize(false);
+    ExpectAvatar();
+    delegate_->set_maximized(true);
+  }
 }

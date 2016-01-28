@@ -18,49 +18,10 @@
 
 namespace {
 
-// Besides the frame border, there's empty space atop the window in restored
-// mode, to use to drag the window around.
-const int kNonClientRestoredExtraThickness = 11;
-
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
 const int kCaptionButtonHeight = 18;
 const int kTitleBarAdditionalPadding = 3;
-
-// There is a 5 px gap between the title text and the caption buttons.
-const int kTitleLogoSpacing = 5;
-
-// The frame border is only visible in restored mode and is hardcoded to 4 px on
-// each side regardless of the system window border size.
-const int kFrameBorderThickness = 4;
-
-// The titlebar has a 2 px 3D edge along the top and bottom.
-const int kTitlebarTopAndBottomEdgeThickness = 2;
-
-// The icon is inset 2 px from the left frame border.
-const int kIconLeftSpacing = 2;
-
-// There is a 4 px gap between the icon and the title text.
-const int kIconTitleSpacing = 4;
-
-// How far the new avatar button is from the closest caption button.
-const int kNewAvatarButtonOffset = 5;
-
-// When the title bar is in its normal two row mode (usually the case for
-// restored windows), the New Tab button isn't at the same height as the caption
-// buttons, but the space will look cluttered if it actually slides under them,
-// so we stop it when the gap between the two is down to 5 px.
-const int kNewTabCaptionNormalSpacing = 5;
-
-// When the title bar is condensed to one row (as when maximized), the New Tab
-// button and the caption buttons are at similar vertical coordinates, so we
-// need to reserve a larger, 16 px gap to avoid looking too cluttered.
-const int kNewTabCaptionCondensedSpacing = 16;
-
-// If there are no caption buttons to the right of the New Tab button, we
-// reserve a small 5px gap, regardless of whether the window is maximized. This
-// overrides the two previous constants.
-const int kNewTabNoCaptionButtonsSpacing = 5;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Default extra space between the top of the frame and the top of the window
@@ -78,6 +39,35 @@ const int kCaptionButtonSpacing = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, public:
+
+// statics
+
+// Besides the frame border, there's empty space atop the window in restored
+// mode, to use to drag the window around.
+const int OpaqueBrowserFrameViewLayout::kNonClientRestoredExtraThickness = 11;
+
+// The frame border is only visible in restored mode and is hardcoded to 4 px on
+// each side regardless of the system window border size.
+const int OpaqueBrowserFrameViewLayout::kFrameBorderThickness = 4;
+
+// The titlebar has a 2 px 3D edge along the top and bottom.
+const int OpaqueBrowserFrameViewLayout::kTitlebarTopAndBottomEdgeThickness = 2;
+
+// The icon is inset 2 px from the left frame border.
+const int OpaqueBrowserFrameViewLayout::kIconLeftSpacing = 2;
+
+// There is a 4 px gap between the icon and the title text.
+const int OpaqueBrowserFrameViewLayout::kIconTitleSpacing = 4;
+
+// The horizontal spacing to use in most cases when laying out things near the
+// caption button area.
+const int OpaqueBrowserFrameViewLayout::kCaptionSpacing = 5;
+
+// When the title bar is condensed to one row (as when maximized), the New Tab
+// button and the caption buttons are at similar vertical coordinates, so we
+// need to reserve a larger, 16 px gap to avoid looking too cluttered.
+const int OpaqueBrowserFrameViewLayout::kNewTabCaptionCondensedSpacing = 16;
+
 
 OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
     OpaqueBrowserFrameViewLayoutDelegate* delegate)
@@ -244,10 +234,8 @@ bool OpaqueBrowserFrameViewLayout::ShouldIncognitoIconBeOnRight() const {
 }
 
 int OpaqueBrowserFrameViewLayout::NewTabCaptionSpacing() const {
-  if (!has_trailing_buttons_)
-    return kNewTabNoCaptionButtonsSpacing;
-  return IsTitleBarCondensed() ?
-      kNewTabCaptionCondensedSpacing : kNewTabCaptionNormalSpacing;
+  return (has_trailing_buttons_ && IsTitleBarCondensed()) ?
+      kNewTabCaptionCondensedSpacing : kCaptionSpacing;
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
@@ -329,7 +317,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
       window_title_->SetText(delegate_->GetWindowTitle());
 
       int text_width = std::max(
-          0, host->width() - trailing_button_start_ - kTitleLogoSpacing -
+          0, host->width() - trailing_button_start_ - kCaptionSpacing -
           leading_button_start_ - kIconTitleSpacing);
       window_title_->SetBounds(leading_button_start_ + kIconTitleSpacing,
                                window_icon_bounds_.y(),
@@ -357,7 +345,7 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
     return;
 
   int button_width = new_avatar_button_->GetPreferredSize().width();
-  int button_width_with_offset = button_width + kNewAvatarButtonOffset;
+  int button_width_with_offset = button_width + kCaptionSpacing;
 
   int button_x =
       host->width() - trailing_button_start_ - button_width_with_offset;
@@ -370,7 +358,7 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
   // the avatar button.
   if (!IsTitleBarCondensed()) {
     trailing_button_start_ -=
-        GetLayoutSize(NEW_TAB_BUTTON).width() + kNewTabCaptionNormalSpacing;
+        GetLayoutSize(NEW_TAB_BUTTON).width() + kCaptionSpacing;
   }
 
   new_avatar_button_->SetBounds(button_x, button_y, button_width,
@@ -499,14 +487,14 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       // If we're the first button on the left and maximized, add width to the
       // right hand side of the screen.
       int extra_width = (title_bar_condensed && !has_leading_buttons_) ?
-        (kFrameBorderThickness -
-         views::NonClientFrameView::kFrameShadowThickness) : 0;
+          (kFrameBorderThickness -
+               views::NonClientFrameView::kFrameShadowThickness) :
+          0;
 
-      button->SetBounds(
-          leading_button_start_,
-          caption_y - extra_height,
-          button_size.width() + extra_width,
-          button_size.height() + extra_height);
+      button->SetBounds(leading_button_start_,
+                        caption_y - extra_height,
+                        button_size.width() + extra_width,
+                        button_size.height() + extra_height);
 
       leading_button_start_ += extra_width + button_size.width();
       minimum_size_for_buttons_ += extra_width + button_size.width();
