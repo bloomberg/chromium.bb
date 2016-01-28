@@ -3121,7 +3121,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="RevalidationPolicy">
   <owner>hiroshige@chromium.org</owner>
   <summary>
-    RevalidationPolicy used for each resource type. https://crbug.com/579496
+    RevalidationPolicy used for non-preloading requests for each resource type.
+    https://crbug.com/579496
+  </summary>
+</histogram>
+
+<histogram name="Blink.MemoryCache.RevalidationPolicy.Preload"
+    enum="RevalidationPolicy">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    RevalidationPolicy of used for preloading requests for each resource type.
+    https://crbug.com/579496
   </summary>
 </histogram>
 

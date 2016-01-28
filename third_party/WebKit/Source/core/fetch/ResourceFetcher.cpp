@@ -391,6 +391,8 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
 
     String histogramName = "Blink.MemoryCache.RevalidationPolicy.";
+    if (request.forPreload())
+        histogramName.append("Preload.");
     histogramName.append(Resource::resourceTypeName(factory.type()));
     Platform::current()->histogramEnumeration(histogramName.utf8().data(), policy, Load + 1);
 
