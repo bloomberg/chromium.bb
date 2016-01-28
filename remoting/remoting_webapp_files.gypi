@@ -80,6 +80,9 @@
     ],
     # The unit test cases for the webapp
     'remoting_webapp_unittests_js_files': [
+      # TODO(jrw): Move spy_promise to base.
+      'webapp/unittests/spy_promise.js',
+      'webapp/unittests/spy_promise_unittest.js',
       'webapp/base/js/base_unittest.js',
       'webapp/base/js/base_event_hook_unittest.js',
       'webapp/base/js/base_inherits_unittest.js',
