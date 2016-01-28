@@ -42,7 +42,7 @@ private:
     const IntSize m_size;
     size_t m_pixelRowStride;
     const String m_mimeType;
-    Persistent<BlobCallback> m_callback;
+    CrossThreadPersistent<BlobCallback> m_callback;
 
     RefPtr<CanvasAsyncBlobCreator> m_selfRef;
     void clearSelfReference();
