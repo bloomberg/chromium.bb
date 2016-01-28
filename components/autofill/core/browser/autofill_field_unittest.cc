@@ -265,29 +265,51 @@ TEST_F(AutofillFieldTest, FillFormField_AutocompleteOff_CreditCardField) {
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
 }
 
+// TODO(crbug.com/581514): Add support for filling only the prefix/suffix for
+// phone numbers with 10 or 11 digits.
 TEST_F(AutofillFieldTest, FillPhoneNumber) {
-  AutofillField field;
-  field.SetHtmlType(HTML_TYPE_TEL_LOCAL_PREFIX, HtmlFieldMode());
+  typedef struct {
+    HtmlFieldType field_type;
+    size_t field_max_length;
+    std::string value_to_fill;
+    std::string expected_value;
 
-  // Fill with a non-phone number; should fill normally.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Oh hai"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("Oh hai"), field.value);
+  } TestCase;
 
-  // Fill with a phone number; should fill just the prefix.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("5551234"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("555"), field.value);
+  TestCase test_cases[] = {
+      // Filling a phone type field with text should fill the text as is.
+      {HTML_TYPE_TEL, /* default value */ 0, "Oh hai", "Oh hai"},
+      // Filling a prefix type field with a phone number of 7 digits should just
+      // fill the prefix.
+      {HTML_TYPE_TEL_LOCAL_PREFIX, /* default value */ 0, "5551234", "555"},
+      // Filling a suffix type field with a phone number of 7 digits should just
+      // fill the suffix.
+      {HTML_TYPE_TEL_LOCAL_SUFFIX, /* default value */ 0, "5551234", "1234"},
+      // Filling a phone type field with a max length of 3 with a phone number
+      // of
+      // 7 digits should fill only the prefix.
+      {HTML_TYPE_TEL, 3, "5551234", "555"},
+      // Filling a phone type field with a max length of 4 with a phone number
+      // of
+      // 7 digits should fill only the suffix.
+      {HTML_TYPE_TEL, 4, "5551234", "1234"},
+      // Filling a phone type field with a max length of 10 with a phone number
+      // including the country code should fill the phone number without the
+      // country code.
+      {HTML_TYPE_TEL, 10, "15141254578", "5141254578"},
+      // Filling a phone type field with a max length of 5 with a phone number
+      // should fill with the last 5 digits of that phone number.
+      {HTML_TYPE_TEL, 5, "5141254578", "54578"}};
 
-  // Now reset the type, and set a max-length instead.
-  field.SetHtmlType(HTML_TYPE_UNSPECIFIED, HtmlFieldMode());
-  field.set_heuristic_type(PHONE_HOME_NUMBER);
-  field.max_length = 4;
+  for (TestCase test_case : test_cases) {
+    AutofillField field;
+    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+    field.max_length = test_case.field_max_length;
 
-  // Fill with a phone-number; should fill just the suffix.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("5551234"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("1234"), field.value);
+    AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
+                                 "en-US", "en-US", &field);
+    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
+  }
 }
 
 TEST_F(AutofillFieldTest, FillSelectControlByValue) {

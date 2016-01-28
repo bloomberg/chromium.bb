@@ -544,7 +544,7 @@ bool AutofillField::FillFormField(const AutofillField& field,
     return false;
   }
 
-  if (type.GetStorableType() == PHONE_HOME_NUMBER) {
+  if (type.group() == PHONE_HOME) {
     FillPhoneNumberField(field, value, field_data);
     return true;
   } else if (field_data->form_control_type == "select-one") {
@@ -563,27 +563,42 @@ bool AutofillField::FillFormField(const AutofillField& field,
   return true;
 }
 
+// TODO(crbug.com/581514): Add support for filling only the prefix/suffix for
+// phone numbers with 10 or 11 digits.
 base::string16 AutofillField::GetPhoneNumberValue(
     const AutofillField& field,
     const base::string16& number,
     const FormFieldData& field_data) {
-  // Check to see if the size field matches the "prefix" or "suffix" size.
-  // If so, return the appropriate substring.
-  if (number.length() !=
-          PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength) {
+  // TODO(crbug.com/581485): Investigate the use of libphonenumber here.
+  // Check to see if the |field| size matches the "prefix" or "suffix" size or
+  // if
+  // the field was labeled as such. If so, return the appropriate substring.
+  if (number.length() ==
+      PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength) {
+    if (field.phone_part() == AutofillField::PHONE_PREFIX ||
+        field_data.max_length == PhoneNumber::kPrefixLength) {
+      return number.substr(PhoneNumber::kPrefixOffset,
+                           PhoneNumber::kPrefixLength);
+    }
+
+    if (field.phone_part() == AutofillField::PHONE_SUFFIX ||
+        field_data.max_length == PhoneNumber::kSuffixLength) {
+      return number.substr(PhoneNumber::kSuffixOffset,
+                           PhoneNumber::kSuffixLength);
+    }
+  }
+
+  // If no max length was specified, return the complete number.
+  if (field_data.max_length == 0)
     return number;
-  }
 
-  if (field.phone_part() == AutofillField::PHONE_PREFIX ||
-      field_data.max_length == PhoneNumber::kPrefixLength) {
-    return
-        number.substr(PhoneNumber::kPrefixOffset, PhoneNumber::kPrefixLength);
-  }
-
-  if (field.phone_part() == AutofillField::PHONE_SUFFIX ||
-      field_data.max_length == PhoneNumber::kSuffixLength) {
-    return
-        number.substr(PhoneNumber::kSuffixOffset, PhoneNumber::kSuffixLength);
+  // If |number| exceeds the maximum size of the field, cut the first part to
+  // provide a valid number for the field. For example, the number 15142365264
+  // with a field with a max length of 10 would return 5142365264, thus removing
+  // the country code and remaining valid.
+  if (number.length() > field_data.max_length) {
+    return number.substr(number.length() - field_data.max_length,
+                         field_data.max_length);
   }
 
   return number;

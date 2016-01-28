@@ -2553,13 +2553,15 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
 
 // Test that we correctly fill a phone number split across multiple fields.
 TEST_F(AutofillManagerTest, FillPhoneNumber) {
-  // In one form, rely on the maxlength attribute to imply phone number parts.
-  // In the other form, rely on the autocompletetype attribute.
-  FormData form_with_maxlength;
-  form_with_maxlength.name = ASCIIToUTF16("MyMaxlengthPhoneForm");
-  form_with_maxlength.origin = GURL("http://myform.com/phone_form.html");
-  form_with_maxlength.action = GURL("http://myform.com/phone_submit.html");
-  FormData form_with_autocompletetype = form_with_maxlength;
+  // In one form, rely on the maxlength attribute to imply US phone number
+  // parts. In the other form, rely on the autocompletetype attribute.
+  FormData form_with_us_number_max_length;
+  form_with_us_number_max_length.name = ASCIIToUTF16("MyMaxlengthPhoneForm");
+  form_with_us_number_max_length.origin =
+      GURL("http://myform.com/phone_form.html");
+  form_with_us_number_max_length.action =
+      GURL("http://myform.com/phone_submit.html");
+  FormData form_with_autocompletetype = form_with_us_number_max_length;
   form_with_autocompletetype.name = ASCIIToUTF16("MyAutocompletetypePhoneForm");
 
   struct {
@@ -2582,7 +2584,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
         test_fields[i].label, test_fields[i].name, "", "text", &field);
     field.max_length = test_fields[i].max_length;
     field.autocomplete_attribute = std::string();
-    form_with_maxlength.fields.push_back(field);
+    form_with_us_number_max_length.fields.push_back(field);
 
     field.max_length = default_max_length;
     field.autocomplete_attribute = test_fields[i].autocomplete_attribute;
@@ -2590,7 +2592,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   }
 
   std::vector<FormData> forms;
-  forms.push_back(form_with_maxlength);
+  forms.push_back(form_with_us_number_max_length);
   forms.push_back(form_with_autocompletetype);
   FormsSeen(forms);
 
@@ -2606,7 +2608,8 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   int response_page_id = 0;
   FormData response_data1;
   FillAutofillFormDataAndSaveResults(
-      page_id, form_with_maxlength, *form_with_maxlength.fields.begin(),
+      page_id, form_with_us_number_max_length,
+      *form_with_us_number_max_length.fields.begin(),
       MakeFrontendID(std::string(), guid), &response_page_id, &response_data1);
   EXPECT_EQ(1, response_page_id);
 
@@ -2633,8 +2636,10 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("4567"), response_data2.fields[3].value);
   EXPECT_EQ(base::string16(), response_data2.fields[4].value);
 
-  // We should not be able to fill prefix and suffix fields for international
-  // numbers.
+  // We should not be able to fill international numbers correctly in a form
+  // containing fields with US max_length. However, the field should fill with
+  // the number of digits equal to the max length specified, starting from the
+  // right.
   work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("GB"));
   work_profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                            ASCIIToUTF16("447700954321"));
@@ -2642,15 +2647,16 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   response_page_id = 0;
   FormData response_data3;
   FillAutofillFormDataAndSaveResults(
-      page_id, form_with_maxlength, *form_with_maxlength.fields.begin(),
+      page_id, form_with_us_number_max_length,
+      *form_with_us_number_max_length.fields.begin(),
       MakeFrontendID(std::string(), guid), &response_page_id, &response_data3);
   EXPECT_EQ(3, response_page_id);
 
   ASSERT_EQ(5U, response_data3.fields.size());
-  EXPECT_EQ(ASCIIToUTF16("44"), response_data3.fields[0].value);
-  EXPECT_EQ(ASCIIToUTF16("7700"), response_data3.fields[1].value);
-  EXPECT_EQ(ASCIIToUTF16("954321"), response_data3.fields[2].value);
-  EXPECT_EQ(ASCIIToUTF16("954321"), response_data3.fields[3].value);
+  EXPECT_EQ(ASCIIToUTF16("4"), response_data3.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("700"), response_data3.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("321"), response_data3.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("4321"), response_data3.fields[3].value);
   EXPECT_EQ(base::string16(), response_data3.fields[4].value);
 
   page_id = 4;
