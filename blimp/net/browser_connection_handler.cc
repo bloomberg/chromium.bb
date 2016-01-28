@@ -51,7 +51,7 @@ void BrowserConnectionHandler::HandleConnection(
   connection_ = std::move(connection);
 
   // Hook up message streams to the connection.
-  connection_->SetIncomingMessageProcessor(demultiplexer_.get());
+  connection_->SetIncomingMessageProcessor(checkpointer_.get());
   output_buffer_->SetOutputProcessor(
       connection_->GetOutgoingMessageProcessor());
   connection_->AddConnectionErrorObserver(this);
