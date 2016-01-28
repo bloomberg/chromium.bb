@@ -187,7 +187,6 @@
       "platform/WebRenderingStats.h",
       "platform/WebScheduler.h",
       "platform/WebScreenInfo.h",
-      "platform/WebScrollBlocksOn.h",
       "platform/WebScrollOffsetAnimationCurve.h",
       "platform/WebScrollbar.h",
       "platform/WebScrollbarBehavior.h",

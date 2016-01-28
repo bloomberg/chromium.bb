@@ -142,7 +142,6 @@ class LayerSerializationTest : public testing::Test {
               dest->non_fast_scrollable_region_);
     EXPECT_EQ(src->touch_event_handler_region_,
               dest->touch_event_handler_region_);
-    EXPECT_EQ(src->scroll_blocks_on_, dest->scroll_blocks_on_);
     EXPECT_EQ(src->contents_opaque_, dest->contents_opaque_);
     EXPECT_EQ(src->opacity_, dest->opacity_);
     EXPECT_EQ(src->blend_mode_, dest->blend_mode_);
@@ -256,7 +255,6 @@ class LayerSerializationTest : public testing::Test {
     layer->have_scroll_event_handlers_ = false;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
     layer->touch_event_handler_region_ = Region(gfx::Rect(3, 14, 1, 5));
-    layer->scroll_blocks_on_ = SCROLL_BLOCKS_ON_NONE;
     layer->contents_opaque_ = true;
     layer->opacity_ = 1.f;
     layer->blend_mode_ = SkXfermode::kSrcOver_Mode;
@@ -307,7 +305,6 @@ class LayerSerializationTest : public testing::Test {
     layer->have_scroll_event_handlers_ = !layer->have_scroll_event_handlers_;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
     layer->touch_event_handler_region_ = Region(gfx::Rect(3, 14, 1, 5));
-    layer->scroll_blocks_on_ = SCROLL_BLOCKS_ON_WHEEL_EVENT;
     layer->contents_opaque_ = !layer->contents_opaque_;
     layer->opacity_ = 3.14f;
     layer->blend_mode_ = SkXfermode::kSrcIn_Mode;

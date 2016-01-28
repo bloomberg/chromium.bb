@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "cc/base/cc_export.h"
-#include "cc/layers/scroll_blocks_on.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"

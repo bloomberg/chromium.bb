@@ -28,7 +28,6 @@
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/paint_properties.h"
-#include "cc/layers/scroll_blocks_on.h"
 #include "cc/output/filter_operations.h"
 #include "cc/trees/property_tree.h"
 #include "skia/ext/refptr.h"
@@ -302,9 +301,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   const Region& touch_event_handler_region() const {
     return touch_event_handler_region_;
   }
-
-  void SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on);
-  ScrollBlocksOn scroll_blocks_on() const { return scroll_blocks_on_; }
 
   void set_did_scroll_callback(const base::Closure& callback) {
     did_scroll_callback_ = callback;
@@ -744,7 +740,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool force_render_surface_ : 1;
   bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;
-  ScrollBlocksOn scroll_blocks_on_ : 3;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;

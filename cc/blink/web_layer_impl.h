@@ -135,8 +135,6 @@ class WebLayerImpl : public blink::WebLayer {
   void setTouchEventHandlerRegion(
       const blink::WebVector<blink::WebRect>& region) override;
   blink::WebVector<blink::WebRect> touchEventHandlerRegion() const override;
-  void setScrollBlocksOn(blink::WebScrollBlocksOn) override;
-  blink::WebScrollBlocksOn scrollBlocksOn() const override;
   void setFrameTimingRequests(
       const blink::WebVector<std::pair<int64_t, blink::WebRect>>& requests)
       override;

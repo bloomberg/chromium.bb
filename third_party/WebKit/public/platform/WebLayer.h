@@ -33,7 +33,6 @@
 #include "WebFloatPoint3D.h"
 #include "WebPoint.h"
 #include "WebRect.h"
-#include "WebScrollBlocksOn.h"
 #include "WebSize.h"
 #include "WebString.h"
 #include "WebVector.h"
@@ -220,10 +219,6 @@ public:
     // See http://w3c.github.io/frame-timing/ for definition of terms.
     virtual void setFrameTimingRequests(const WebVector<std::pair<int64_t, WebRect>>&) = 0;
     virtual WebVector<std::pair<int64_t, WebRect>> frameTimingRequests() const = 0;
-
-    // FIXME: Make pure once cc is updated.  crbug.com/347272
-    virtual void setScrollBlocksOn(WebScrollBlocksOn) { }
-    virtual WebScrollBlocksOn scrollBlocksOn() const { return WebScrollBlocksOnNone; }
 
     virtual void setIsContainerForFixedPositionLayers(bool) = 0;
     virtual bool isContainerForFixedPositionLayers() const = 0;

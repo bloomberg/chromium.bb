@@ -153,23 +153,6 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     new_layer->SetTouchEventHandlerRegion(touch_region);
   }
 
-  if (dict->HasKey("ScrollBlocksOn")) {
-    success &= dict->GetList("ScrollBlocksOn", &list);
-    ScrollBlocksOn blocks;
-    std::string str;
-    for (size_t i = 0; i < list->GetSize(); i++) {
-      success &= list->GetString(i, &str);
-      if (str == "StartTouch")
-        blocks |= SCROLL_BLOCKS_ON_START_TOUCH;
-      else if (str == "WheelEvent")
-        blocks |= SCROLL_BLOCKS_ON_WHEEL_EVENT;
-      else if (str == "ScrollEvent")
-        blocks |= SCROLL_BLOCKS_ON_SCROLL_EVENT;
-      else
-        success = false;
-    }
-  }
-
   success &= dict->GetList("DrawTransform", &list);
   double transform[16];
   for (int i = 0; i < 16; ++i)

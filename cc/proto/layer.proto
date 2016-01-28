@@ -92,7 +92,6 @@ message BaseLayerProperties {
   optional bool have_scroll_event_handlers = 17;
   optional Region non_fast_scrollable_region = 18;
   optional Region touch_event_handler_region = 19;
-  optional int32 scroll_blocks_on = 20;
   optional bool contents_opaque = 21;
   optional float opacity = 22;
   optional SkXfermode.Mode blend_mode = 23;

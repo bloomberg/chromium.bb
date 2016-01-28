@@ -62,7 +62,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
           MainThreadScrollingReason::kNotScrollingOnMain),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
-      scroll_blocks_on_(SCROLL_BLOCKS_ON_NONE),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
       stacking_order_changed_(false),
@@ -512,8 +511,7 @@ void LayerImpl::ApplySentScrollDeltasFromAbortedCommit() {
 
 InputHandler::ScrollStatus LayerImpl::TryScroll(
     const gfx::PointF& screen_space_point,
-    InputHandler::ScrollInputType type,
-    ScrollBlocksOn effective_block_mode) const {
+    InputHandler::ScrollInputType type) const {
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -558,18 +556,8 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     }
   }
 
-  if (have_scroll_event_handlers() &&
-      effective_block_mode & SCROLL_BLOCKS_ON_SCROLL_EVENT) {
-    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed ScrollEventHandlers");
-    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kEventHandlers;
-    return scroll_status;
-  }
-
   if ((type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) &&
-      have_wheel_event_handlers() &&
-      effective_block_mode & SCROLL_BLOCKS_ON_WHEEL_EVENT) {
+      have_wheel_event_handlers()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
     scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
@@ -629,7 +617,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
   layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
-  layer->SetScrollBlocksOn(scroll_blocks_on_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
@@ -785,17 +772,6 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   if (!touch_event_handler_region_.IsEmpty()) {
     scoped_ptr<base::Value> region = touch_event_handler_region_.AsValue();
     result->Set("TouchRegion", region.release());
-  }
-
-  if (scroll_blocks_on_) {
-    list = new base::ListValue;
-    if (scroll_blocks_on_ & SCROLL_BLOCKS_ON_START_TOUCH)
-      list->AppendString("StartTouch");
-    if (scroll_blocks_on_ & SCROLL_BLOCKS_ON_WHEEL_EVENT)
-      list->AppendString("WheelEvent");
-    if (scroll_blocks_on_ & SCROLL_BLOCKS_ON_SCROLL_EVENT)
-      list->AppendString("ScrollEvent");
-    result->Set("ScrollBlocksOn", list);
   }
 
   list = new base::ListValue;
@@ -1773,10 +1749,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     non_fast_scrollable_region_.AsValueInto(state);
     state->EndArray();
   }
-  if (scroll_blocks_on_) {
-    state->SetInteger("scroll_blocks_on", scroll_blocks_on_);
-  }
-
   state->BeginArray("children");
   for (size_t i = 0; i < children_.size(); ++i) {
     state->BeginDictionary();

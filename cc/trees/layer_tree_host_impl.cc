@@ -591,33 +591,16 @@ static LayerImpl* NextLayerInScrollOrder(LayerImpl* layer) {
   return layer->parent();
 }
 
-static ScrollBlocksOn EffectiveScrollBlocksOn(LayerImpl* layer) {
-  ScrollBlocksOn blocks = SCROLL_BLOCKS_ON_NONE;
-  for (; layer; layer = NextLayerInScrollOrder(layer)) {
-    blocks |= layer->scroll_blocks_on();
-  }
-  return blocks;
-}
-
 bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(
     const gfx::Point& viewport_point) {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
 
-  // First check if scrolling at this point is required to block on any
-  // touch event handlers.  Note that we must start at the innermost layer
-  // (as opposed to only the layer found to contain a touch handler region
-  // below) to ensure all relevant scroll-blocks-on values are applied.
-  LayerImpl* layer_impl =
-      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
-  ScrollBlocksOn blocking = EffectiveScrollBlocksOn(layer_impl);
-  if (!(blocking & SCROLL_BLOCKS_ON_START_TOUCH))
-    return false;
-
   // Now determine if there are actually any handlers at that point.
   // TODO(rbyers): Consider also honoring touch-action (crbug.com/347272).
-  layer_impl = active_tree_->FindLayerThatIsHitByPointInTouchHandlerRegion(
-      device_viewport_point);
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          device_viewport_point);
   return layer_impl != NULL;
 }
 
@@ -2490,15 +2473,12 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   *main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
 
-  ScrollBlocksOn block_mode = EffectiveScrollBlocksOn(layer_impl);
-
   // Walk up the hierarchy and look for a scrollable layer.
   LayerImpl* potentially_scrolling_layer_impl = NULL;
   for (; layer_impl; layer_impl = NextLayerInScrollOrder(layer_impl)) {
     // The content layer can also block attempts to scroll outside the main
     // thread.
-    ScrollStatus status =
-        layer_impl->TryScroll(device_viewport_point, type, block_mode);
+    ScrollStatus status = layer_impl->TryScroll(device_viewport_point, type);
     if (status.thread == SCROLL_ON_MAIN_THREAD) {
       if (layer_impl->should_scroll_on_main_thread()) {
         DCHECK_LE(status.main_thread_scrolling_reasons,
@@ -2517,8 +2497,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     if (!scroll_layer_impl)
       continue;
 
-    status =
-        scroll_layer_impl->TryScroll(device_viewport_point, type, block_mode);
+    status = scroll_layer_impl->TryScroll(device_viewport_point, type);
 
     // If any layer wants to divert the scroll event to the main thread, abort.
     if (status.thread == SCROLL_ON_MAIN_THREAD) {

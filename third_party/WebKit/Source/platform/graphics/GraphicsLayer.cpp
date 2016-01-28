@@ -96,7 +96,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_backgroundColor(Color::transparent)
     , m_opacity(1)
     , m_blendMode(WebBlendModeNormal)
-    , m_scrollBlocksOn(WebScrollBlocksOnNone)
     , m_hasTransformOrigin(false)
     , m_contentsOpaque(false)
     , m_shouldFlattenTransform(true)
@@ -131,9 +130,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_contentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
     m_layer->layer()->setLayerClient(this);
-
-    // TODO(rbyers): Expose control over this to the web - crbug.com/489802:
-    setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
 }
 
 GraphicsLayer::~GraphicsLayer()
@@ -1008,14 +1004,6 @@ void GraphicsLayer::setBlendMode(WebBlendMode blendMode)
         return;
     m_blendMode = blendMode;
     platformLayer()->setBlendMode(blendMode);
-}
-
-void GraphicsLayer::setScrollBlocksOn(WebScrollBlocksOn scrollBlocksOn)
-{
-    if (m_scrollBlocksOn == scrollBlocksOn)
-        return;
-    m_scrollBlocksOn = scrollBlocksOn;
-    platformLayer()->setScrollBlocksOn(scrollBlocksOn);
 }
 
 void GraphicsLayer::setIsRootForIsolatedGroup(bool isolated)

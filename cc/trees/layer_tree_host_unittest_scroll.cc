@@ -1037,7 +1037,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
 
     InputHandler::ScrollStatus status = scroll_layer->TryScroll(
-        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE);
+        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE);
 
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
@@ -1046,7 +1046,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     // Set max_scroll_offset = (0, 0).
     scroll_layer->SetBounds(root->bounds());
     status = scroll_layer->TryScroll(
-        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE);
+        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE);
     EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
               status.main_thread_scrolling_reasons);
@@ -1054,7 +1054,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     // Set max_scroll_offset = (-100, -100).
     scroll_layer->SetBounds(gfx::Size());
     status = scroll_layer->TryScroll(
-        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE);
+        gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE);
     EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
               status.main_thread_scrolling_reasons);
@@ -1093,13 +1093,13 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
     // scrollable region.
 
     InputHandler::ScrollStatus status = scroll_layer->TryScroll(
-        gfx::PointF(1.f, 1.f), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE);
+        gfx::PointF(1.f, 1.f), InputHandler::GESTURE);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               status.main_thread_scrolling_reasons);
 
     status = scroll_layer->TryScroll(
-        gfx::PointF(21.f, 21.f), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE);
+        gfx::PointF(21.f, 21.f), InputHandler::GESTURE);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);

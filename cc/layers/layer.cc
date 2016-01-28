@@ -88,7 +88,6 @@ Layer::Layer(const LayerSettings& settings)
       force_render_surface_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
-      scroll_blocks_on_(SCROLL_BLOCKS_ON_NONE),
       background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -1006,14 +1005,6 @@ void Layer::SetTouchEventHandlerRegion(const Region& region) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (scroll_blocks_on_ == scroll_blocks_on)
-    return;
-  scroll_blocks_on_ = scroll_blocks_on;
-  SetNeedsCommit();
-}
-
 void Layer::SetForceRenderSurface(bool force) {
   DCHECK(IsPropertyChangeAllowed());
   if (force_render_surface_ == force)
@@ -1236,7 +1227,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
-  layer->SetScrollBlocksOn(scroll_blocks_on_);
   layer->SetContentsOpaque(contents_opaque_);
   if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating())
     layer->SetOpacity(opacity_);
@@ -1509,7 +1499,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
                 base->mutable_non_fast_scrollable_region());
   RegionToProto(touch_event_handler_region_,
                 base->mutable_touch_event_handler_region());
-  base->set_scroll_blocks_on(scroll_blocks_on_);
   base->set_contents_opaque(contents_opaque_);
   base->set_opacity(opacity_);
   base->set_blend_mode(SkXfermodeModeToProto(blend_mode_));
@@ -1596,7 +1585,6 @@ void Layer::FromLayerSpecificPropertiesProto(
       RegionFromProto(base.non_fast_scrollable_region());
   touch_event_handler_region_ =
       RegionFromProto(base.touch_event_handler_region());
-  scroll_blocks_on_ = (ScrollBlocksOn)base.scroll_blocks_on();
   contents_opaque_ = base.contents_opaque();
   opacity_ = base.opacity();
   blend_mode_ = SkXfermodeModeFromProto(base.blend_mode());
