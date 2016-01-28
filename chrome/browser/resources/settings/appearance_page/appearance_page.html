@@ -52,16 +52,18 @@
           </settings-checkbox>
         </div>
         <template is="dom-if" if="[[prefs.browser.show_home_button.value]]">
-          <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
-            <paper-radio-button name="true"
-                >[[i18n('homePageNtp')]]</paper-radio-button>
-            <paper-radio-button name="false"
-                >[[i18n('other')]]</paper-radio-button>
-          </settings-radio-group>
-          <div class="radio-extended">
-            <settings-input no-label-float pref="{{prefs.homepage}}"
-                label="[[i18n('exampleDotCom')]]">
-            </settings-input>
+          <div class="list-frame">
+            <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
+              <paper-radio-button class="list-item" name="true">
+                 [[i18n('homePageNtp')]]
+              </paper-radio-button>
+              <paper-radio-button class="list-item" name="false">
+                [[i18n('other')]]
+                <settings-input no-label-float pref="{{prefs.homepage}}"
+                    label="[[i18n('exampleDotCom')]]">
+                </settings-input>
+              </paper-radio-button>
+            </settings-radio-group>
           </div>
         </template>
         <div class="settings-box split">
