@@ -7,6 +7,8 @@ RUN apt-get update && \
   apt-get install -yq libdrm2 libfontconfig1 libfreetype6 libgraphite2-3 \
   libharfbuzz0b libnspr4 libnss3 libstdc++6
 
+RUN apt-get install -yq stunnel4
+
 RUN mkdir /engine
 
 RUN useradd -ms /bin/bash blimp_user
@@ -18,9 +20,5 @@ RUN chown -R blimp_user /engine
 USER blimp_user
 WORKDIR "/engine"
 
-ENTRYPOINT ["/engine/blimp_engine_app", \
-                "--disable-gpu", \
-                "--use-remote-compositing", \
-                # Retains display items for serialization on the engine.
-                "--disable-cached-picture-raster", \
-                "--blimp-client-token-path=/engine/data/client_token"]
+ENTRYPOINT ["/engine/start_engine.sh"]
+

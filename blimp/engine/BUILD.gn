@@ -85,6 +85,7 @@ if (is_linux) {
     # These form the arguments to the script.
     _rebased_out_dir = rebase_path(root_out_dir)
     _rebased_dockerfile = rebase_path("//blimp/engine/Dockerfile")
+    _rebased_startup_script = rebase_path("//blimp/engine/start_engine.sh")
     _rebased_manifest = rebase_path("//blimp/engine/engine-manifest.txt")
     _bundle = "$root_out_dir/blimp_engine_bundle.tar"
 
@@ -95,6 +96,7 @@ if (is_linux) {
     sources = [
       _rebased_dockerfile,
       _rebased_manifest,
+      _rebased_startup_script,
     ]
     outputs = [
       _bundle,
@@ -106,6 +108,8 @@ if (is_linux) {
       _rebased_out_dir,
       "--dockerfile",
       _rebased_dockerfile,
+      "--startup-script",
+      _rebased_startup_script,
       "--manifest",
       _rebased_manifest,
       "--output",

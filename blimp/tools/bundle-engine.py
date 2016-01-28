@@ -41,6 +41,10 @@ def main():
                       help=('Dockerfile to add to the bundle'),
                       required=True,
                       metavar='FILE')
+  parser.add_argument('--startup-script',
+                      help=('Engine startup script to add to the bundle'),
+                      required=True,
+                      metavar='FILE')
   parser.add_argument('--manifest',
                       help=('engine manifest'),
                       required=True)
@@ -55,6 +59,7 @@ def main():
   # Add the deps to the tarball along with the Dockerfile.
   with tarfile.open(args.output, 'w') as tarball:
     tarball.add(args.dockerfile, arcname='Dockerfile')
+    tarball.add(args.startup_script, arcname='start_engine.sh')
     os.chdir(args.build_dir)
     for dep in deps:
       try:
