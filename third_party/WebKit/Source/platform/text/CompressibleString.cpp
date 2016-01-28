@@ -70,16 +70,9 @@ static inline CompressibleStringTable& compressibleStringTable()
 
 static const unsigned CompressibleStringImplSizeThrehold = 100000;
 
-bool CompressibleStringImpl::s_isPageBackground = false;
-
 void CompressibleStringImpl::compressAll()
 {
     compressibleStringTable().compressAll();
-}
-
-void CompressibleStringImpl::setPageBackground(bool isPageBackground)
-{
-    s_isPageBackground = isPageBackground;
 }
 
 CompressibleStringImpl::CompressibleStringImpl(PassRefPtr<StringImpl> impl)
@@ -98,9 +91,8 @@ CompressibleStringImpl::~CompressibleStringImpl()
 
 enum CompressibleStringCountType {
     StringWasCompressedInBackgroundTab,
-    StringWasDecompressedInBackgroundTab,
-    StringWasDecompressedInForegroundTab,
-    CompressibleStringCountTypeMax = StringWasDecompressedInForegroundTab,
+    StringWasDecompressed,
+    CompressibleStringCountTypeMax = StringWasDecompressed,
 };
 
 static void recordCompressibleStringCount(CompressibleStringCountType type)
@@ -112,7 +104,6 @@ static void recordCompressibleStringCount(CompressibleStringCountType type)
 // TODO(hajimehoshi): Implement this.
 void CompressibleStringImpl::compressString()
 {
-    ASSERT(s_isPageBackground);
     recordCompressibleStringCount(StringWasCompressedInBackgroundTab);
     ASSERT(!isCompressed());
     m_isCompressed = true;
@@ -122,11 +113,14 @@ void CompressibleStringImpl::compressString()
 // TODO(hajimehoshi): Implement this.
 void CompressibleStringImpl::decompressString()
 {
-    if (s_isPageBackground)
-        recordCompressibleStringCount(StringWasDecompressedInBackgroundTab);
-    else
-        recordCompressibleStringCount(StringWasDecompressedInForegroundTab);
-
+    // TODO(hajimehoshi): We wanted to tell whether decompressing in a
+    // background tab or a foreground tab, but this was impossible. For example,
+    // one renderer process of a new tab page is used for multiple tabs.
+    // Another example is that reloading a page will re-use the process with a
+    // new Page object and updating a static variable along with reloading will
+    // be complex. See also crbug/581266. We will revisit when the situation
+    // changes.
+    recordCompressibleStringCount(StringWasDecompressed);
     ASSERT(isCompressed());
     m_isCompressed = false;
 }

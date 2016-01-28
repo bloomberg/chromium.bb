@@ -18,7 +18,6 @@ class PLATFORM_EXPORT CompressibleStringImpl final : public RefCounted<Compressi
     WTF_MAKE_NONCOPYABLE(CompressibleStringImpl);
 public:
     static void compressAll();
-    static void setPageBackground(bool);
 
     CompressibleStringImpl()
         : m_string()
@@ -69,8 +68,6 @@ public:
     void decompressString();
 
 private:
-    static bool s_isPageBackground;
-
     String m_string;
     bool m_isCompressed;
 };

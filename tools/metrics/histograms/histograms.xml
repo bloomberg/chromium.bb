@@ -59203,8 +59203,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="CompressibleStringCountType" type="int">
   <int value="0" label="Compressed in a background tab"/>
-  <int value="1" label="Decompressed in a background tab"/>
-  <int value="2" label="Decompressed in a foreground tab"/>
+  <int value="1" label="Decompressed in a background or a foreground tab"/>
 </enum>
 
 <enum name="ComputeCurrentSigninStatus" type="int">

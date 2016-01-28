@@ -355,7 +355,6 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
 {
     static const double waitingTimeBeforeCompressingString = 10;
 
-    CompressibleStringImpl::setPageBackground(visibilityState == PageVisibilityStateHidden);
     if (m_visibilityState == visibilityState)
         return;
     m_visibilityState = visibilityState;
