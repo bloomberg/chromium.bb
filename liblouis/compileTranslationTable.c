@@ -230,8 +230,7 @@ static const char *opcodeNames[CTO_None] = {
   "begcaps",
   "endcaps",
   "begcapsphrase",
-  "lastwordcapsbefore",
-  "lastwordcapsafter",
+  "lastwordcaps",
   "lencapsphrase",
   "letsign",
   "noletsignbefore",
@@ -3968,6 +3967,29 @@ compileCharDef (FileInfo * nested,
 }
 
 static int
+compileBeforeAfter(FileInfo * nested)
+{
+/* 1=before, 2=after, 0=error */
+	CharsString token;
+	CharsString tmp;
+	int ret = 0;
+	int i;
+	if (getToken(nested, &token, "lastword before or after"))
+		if (parseChars(nested, &tmp, &token)) {
+			char * s = malloc(sizeof(char) * (tmp.length + 1));
+			for (i = 0; i < tmp.length; i++)
+				s[i] = (char)tmp.chars[i];
+			s[tmp.length] = '\0';
+			if (strcmp(s, "before") == 0)
+				ret = 1;
+			else if (strcmp(s, "after") == 0)
+				ret = 2;
+			free(s);
+		}
+	return ret;
+}
+
+static int
 compileRule (FileInfo * nested)
 {
   int ok = 1;
@@ -4194,16 +4216,23 @@ doOpcode:
 	compileBrailleIndicator (nested, "first word capital sign",
 				 CTO_FirstWordCapsRule, &table->firstWordCaps);
       break;
-    case CTO_LastWordCapsBefore:
-      ok =
-	compileBrailleIndicator (nested, "capital sign before last word",
-				 CTO_LastWordCapsBeforeRule, &table->lastWordCapsBefore);
-      break;
-    case CTO_LastWordCapsAfter:
-      ok =
-	compileBrailleIndicator (nested, "capital sign after last word",
-				 CTO_LastWordCapsAfterRule,
-				 &table->lastWordCapsAfter);
+    case CTO_LastWordCaps:
+		switch (compileBeforeAfter(nested)) {
+			case 1: // before
+				ok =
+					compileBrailleIndicator (nested, "capital sign before last word",
+						CTO_LastWordCapsBeforeRule, &table->lastWordCapsBefore);
+				break;
+			case 2: // after
+				ok =
+					compileBrailleIndicator (nested, "capital sign after last word",
+						CTO_LastWordCapsAfterRule, &table->lastWordCapsAfter);
+				break;
+			default: // error
+				compileError (nested, "Invalid lastword indicator location.");
+				ok = 0;
+				break;
+		}
       break;
 	  case CTO_FirstLetterCaps:
       ok =
@@ -5284,6 +5313,7 @@ doOpcode:
       break;
     default:
       compileError (nested, "unimplemented opcode.");
+      ok = 0;
       break;
     }
   return ok;
