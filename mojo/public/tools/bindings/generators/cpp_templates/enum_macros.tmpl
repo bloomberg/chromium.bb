@@ -1,9 +1,7 @@
 {#---
   Macro for enum definition, and the declaration of associated functions.
-  `is_static` is relevant if this enum declaration is defined within a class, in
-  which case associated functions need to be static.
 ---#}
-{%- macro enum_decl(enum, is_static=false) %}
+{%- macro enum_decl(enum) %}
 enum class {{enum.name}} : int32_t {
 {%- for field in enum.fields %}
 {%-    if field.value %}
@@ -13,19 +11,35 @@ enum class {{enum.name}} : int32_t {
 {%-    endif %}
 {%- endfor %}
 };
-{{is_valid_enum_decl(enum, is_static)}}
 {%- endmacro %}
 
-{#--- macros for the declaration & definitions of enum-associated functions.
-      Namely:
-  * {enum_name}_IsValidValue:  returns true if the given enum has a valid value
-                               for this generated version of enum.
+{%- macro enum_data_decl(enum) %}
+struct {{enum.name}}_Data {
+ public:
+  // Used to identify Mojom Enum Data Classes.
+  typedef void MojomEnumDataType;
+
+  static bool const kIsExtensible = {% if enum.extensible %}true{% else %}false{% endif %};
+
+  static bool IsKnownValue(int32_t value) {
+    switch (value) {
+{%- for enum_field in enum.fields|groupby('numeric_value') %}
+      case {{enum_field[0]}}:
+{%- endfor %}
+        return true;
+    }
+    return false;
+  }
+
+  int32_t value;
+};
+{%- endmacro %}
+
+{#--- macros for enum-associated functions. Namely:
+  * operator<<(): outputs the given enum value.
+  * IsKnownEnumValue(): returns true if the given enum value exists in this
+        generated version of enum.
 ---#}
-
-{%- macro is_valid_enum_decl(enum, is_static=false) %}
-{% if is_static %}static {% endif -%}
-bool {{enum.name}}_IsValidValue({{enum.name}} value);
-{%- endmacro %}
 
 {%- macro enum_stream_operator(enum) %}
 inline std::ostream& operator<<(std::ostream& os, {{enum|get_name_for_kind}} value) {
@@ -48,20 +62,9 @@ inline std::ostream& operator<<(std::ostream& os, {{enum|get_name_for_kind}} val
 }
 {%- endmacro %}
 
-{%- macro is_valid_enum_def(enum, class_name = '') %}
-{% if class_name != '' -%}
-// static
-bool {{class_name}}::
-{%- else -%}
-{{"bool "}}
-{%- endif -%}
-{{enum.name}}_IsValidValue({{enum.name}} value) {
-  switch (static_cast<int32_t>(value)) {
-{%- for enum_field in enum.fields|groupby('numeric_value') %}
-    case {{enum_field[0]}}:
-{%- endfor %}
-      return true;
-  }
-  return false;
+{%- macro is_known_enum_value(enum) %}
+inline bool IsKnownEnumValue({{enum|get_name_for_kind}} value) {
+  return {{enum|get_qualified_name_for_kind(internal=True)}}::IsKnownValue(
+      static_cast<int32_t>(value));
 }
 {%- endmacro %}

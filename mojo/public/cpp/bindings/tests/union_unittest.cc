@@ -264,6 +264,44 @@ TEST(UnionTest, UnknownTagValidation) {
   free(raw_buf);
 }
 
+TEST(UnionTest, UnknownEnumValueValidation) {
+  PodUnionPtr pod(PodUnion::New());
+  pod->set_f_enum(static_cast<AnEnum>(0xFFFF));
+
+  size_t size = GetSerializedSize_(pod, false);
+  EXPECT_EQ(16U, size);
+
+  mojo::internal::FixedBufferForTesting buf(size);
+  internal::PodUnion_Data* data = nullptr;
+  SerializeUnion_(std::move(pod), &buf, &data, false);
+
+  void* raw_buf = buf.Leak();
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
+  EXPECT_FALSE(
+      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  free(raw_buf);
+}
+
+TEST(UnionTest, UnknownExtensibleEnumValueValidation) {
+  PodUnionPtr pod(PodUnion::New());
+  pod->set_f_extensible_enum(static_cast<AnExtensibleEnum>(0xFFFF));
+
+  size_t size = GetSerializedSize_(pod, false);
+  EXPECT_EQ(16U, size);
+
+  mojo::internal::FixedBufferForTesting buf(size);
+  internal::PodUnion_Data* data = nullptr;
+  SerializeUnion_(std::move(pod), &buf, &data, false);
+
+  void* raw_buf = buf.Leak();
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
+  EXPECT_TRUE(
+      internal::PodUnion_Data::Validate(raw_buf, &bounds_checker, false));
+  free(raw_buf);
+}
+
 TEST(UnionTest, StringGetterSetter) {
   ObjectUnionPtr pod(ObjectUnion::New());
 

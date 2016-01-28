@@ -28,7 +28,7 @@ class {{interface.name}} {
 {#--- Enums #}
 {% from "enum_macros.tmpl" import enum_decl -%}
 {%- for enum in interface.enums %}
-  {{enum_decl(enum, is_static=true)|indent(2)}}
+  {{enum_decl(enum)|indent(2)}}
 {%- endfor %}
 
 {#--- Constants #}

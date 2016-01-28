@@ -194,13 +194,17 @@ class DummyMessageReceiver : public MessageReceiver {
   }
 };
 
-using ValidationTest = testing::Test;
+class ValidationTest : public testing::Test {
+ public:
+  ValidationTest() : loop_(common::MessagePumpMojo::Create()) {}
+
+ protected:
+  base::MessageLoop loop_;
+};
 
 class ValidationIntegrationTest : public ValidationTest {
  public:
-  ValidationIntegrationTest()
-      : loop_(common::MessagePumpMojo::Create()),
-        test_message_receiver_(nullptr) {}
+  ValidationIntegrationTest() : test_message_receiver_(nullptr) {}
 
   ~ValidationIntegrationTest() override {}
 
@@ -250,7 +254,6 @@ class ValidationIntegrationTest : public ValidationTest {
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 
-  base::MessageLoop loop_;
   TestMessageReceiver* test_message_receiver_;
   ScopedMessagePipeHandle testee_endpoint_;
 };
@@ -462,37 +465,31 @@ TEST_F(ValidationTest, ValidateEncodedPointer) {
   EXPECT_FALSE(mojo::internal::ValidateEncodedPointer(&offset));
 }
 
-// Tests the IsValidValue() function generated for BasicEnum.
+// Tests the IsKnownEnumValue() function generated for BasicEnum.
 TEST(EnumValueValidationTest, BasicEnum) {
   // BasicEnum can have -3,0,1,10 as possible integral values.
-  EXPECT_FALSE(BasicEnum_IsValidValue(static_cast<BasicEnum>(-4)));
-  EXPECT_TRUE(BasicEnum_IsValidValue(static_cast<BasicEnum>(-3)));
-  EXPECT_FALSE(BasicEnum_IsValidValue(static_cast<BasicEnum>(-2)));
-  EXPECT_FALSE(BasicEnum_IsValidValue(static_cast<BasicEnum>(-1)));
-  EXPECT_TRUE(BasicEnum_IsValidValue(static_cast<BasicEnum>(0)));
-  EXPECT_TRUE(BasicEnum_IsValidValue(static_cast<BasicEnum>(1)));
-  EXPECT_FALSE(BasicEnum_IsValidValue(static_cast<BasicEnum>(2)));
-  EXPECT_FALSE(BasicEnum_IsValidValue(static_cast<BasicEnum>(9)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<BasicEnum>(-4)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<BasicEnum>(-3)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<BasicEnum>(-2)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<BasicEnum>(-1)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<BasicEnum>(0)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<BasicEnum>(1)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<BasicEnum>(2)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<BasicEnum>(9)));
   // In the mojom, we represent this value as hex (0xa).
-  EXPECT_TRUE(BasicEnum_IsValidValue(static_cast<BasicEnum>(10)));
-  EXPECT_FALSE(BasicEnum_IsValidValue(static_cast<BasicEnum>(11)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<BasicEnum>(10)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<BasicEnum>(11)));
 }
 
-// Tests the IsValidValue() method generated for StructWithEnum.
+// Tests the IsKnownEnumValue() method generated for StructWithEnum.
 TEST(EnumValueValidationTest, EnumWithin) {
   // StructWithEnum::EnumWithin can have [0,4] as possible integral values.
-  EXPECT_FALSE(StructWithEnum::EnumWithin_IsValidValue(
-      static_cast<StructWithEnum::EnumWithin>(-1)));
-  EXPECT_TRUE(StructWithEnum::EnumWithin_IsValidValue(
-      static_cast<StructWithEnum::EnumWithin>(0)));
-  EXPECT_TRUE(StructWithEnum::EnumWithin_IsValidValue(
-      static_cast<StructWithEnum::EnumWithin>(1)));
-  EXPECT_TRUE(StructWithEnum::EnumWithin_IsValidValue(
-      static_cast<StructWithEnum::EnumWithin>(2)));
-  EXPECT_TRUE(StructWithEnum::EnumWithin_IsValidValue(
-      static_cast<StructWithEnum::EnumWithin>(3)));
-  EXPECT_FALSE(StructWithEnum::EnumWithin_IsValidValue(
-      static_cast<StructWithEnum::EnumWithin>(4)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<StructWithEnum::EnumWithin>(-1)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<StructWithEnum::EnumWithin>(0)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<StructWithEnum::EnumWithin>(1)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<StructWithEnum::EnumWithin>(2)));
+  EXPECT_TRUE(IsKnownEnumValue(static_cast<StructWithEnum::EnumWithin>(3)));
+  EXPECT_FALSE(IsKnownEnumValue(static_cast<StructWithEnum::EnumWithin>(4)));
 }
 
 }  // namespace

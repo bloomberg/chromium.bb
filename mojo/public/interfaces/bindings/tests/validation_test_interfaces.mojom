@@ -44,6 +44,18 @@ struct StructG {
 interface InterfaceA {
 };
 
+enum EnumA {
+  ENUM_A_0,
+  ENUM_A_1
+};
+
+[Extensible=True]
+enum EnumB {
+  ENUM_B_0,
+  ENUM_B_1,
+  ENUM_B_2
+};
+
 // This interface is used for testing bounds-checking in the mojom
 // binding code. If you add a method please update the files
 // ./data/validation/boundscheck_*. If you add a response please update
@@ -68,6 +80,8 @@ interface ConformanceTestInterface {
   Method11(StructG param0);
   Method12(float param0) => (float param0);
   Method13(InterfaceA? param0, uint32 param1, InterfaceA? param2);
+  Method14(EnumA param0, EnumB param1);
+  Method15(array<EnumA>? param0, array<EnumB>? param1);
 };
 
 struct BasicStruct {

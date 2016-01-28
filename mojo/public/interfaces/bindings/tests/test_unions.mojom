@@ -8,6 +8,11 @@ enum AnEnum {
   FIRST, SECOND
 };
 
+[Extensible=True]
+enum AnExtensibleEnum {
+  FIRST, SECOND, THIRD
+};
+
 union PodUnion {
   int8   f_int8;
   int8   f_int8_other;
@@ -22,6 +27,7 @@ union PodUnion {
   double f_double;
   bool   f_bool;
   AnEnum f_enum;
+  AnExtensibleEnum f_extensible_enum;
 };
 
 union ObjectUnion {

@@ -127,8 +127,8 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
                                data.progress_max * 100))));
       break;
   }
-  DCHECK(ArcNotificationType_IsValidValue(data.type))
-      << "Unsupported notification type: " << data.type;
+  DCHECK(IsKnownEnumValue(data.type)) << "Unsupported notification type: "
+                                      << data.type;
 
   for (size_t i = 0; i < data.buttons.size(); i++) {
     rich_data.buttons.push_back(message_center::ButtonInfo(

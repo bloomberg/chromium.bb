@@ -407,7 +407,6 @@ void ArcAppListPrefs::OnAppIcon(const mojo::String& package,
                                 mojo::Array<uint8_t> icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(0u, icon_png_data.size());
-  DCHECK(arc::ScaleFactor_IsValidValue(scale_factor));
 
   std::string app_id = GetAppId(package, activity);
   if (!IsRegistered(app_id)) {

@@ -173,8 +173,30 @@ struct ArraySerializationHelper<T, false> {
         << "Primitive type should be non-nullable";
     MOJO_DCHECK(!validate_params->element_validate_params)
         << "Primitive type should not have array validate params";
+
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (!ValidateCaller<ElementType>::Run(elements[i]))
+        return false;
+    }
+
     return true;
   }
+
+ private:
+  template <typename U, bool is_enum = IsEnumDataType<U>::value>
+  struct ValidateCaller {};
+
+  template <typename U>
+  struct ValidateCaller<U, false> {
+    static bool Run(const ElementType& element) { return true; }
+  };
+
+  template <typename U>
+  struct ValidateCaller<U, true> {
+    static bool Run(const ElementType& element) {
+      return ValidateEnum(element);
+    }
+  };
 };
 
 template <>

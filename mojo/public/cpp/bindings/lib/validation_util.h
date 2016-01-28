@@ -124,6 +124,21 @@ bool ValidateHandle(const Handle& input, BoundsChecker* bounds_checker);
 
 bool ValidateAssociatedInterfaceId(InterfaceId input);
 
+// Checks whether the given enum value is valid. Please note that any value is
+// valid for an extensible enum, although it may be from a newer version and
+// thus unknown.
+template <typename T>
+bool ValidateEnum(const T& input) {
+  if (T::kIsExtensible)
+    return true;
+
+  if (T::IsKnownValue(input.value))
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_UNKNOWN_ENUM_VALUE);
+  return false;
+}
+
 }  // namespace internal
 }  // namespace mojo
 

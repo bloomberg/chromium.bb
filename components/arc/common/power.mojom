@@ -6,6 +6,7 @@ module arc;
 
 // Enumerates the types of wake lock the ARC instance can request from the
 // host.
+[Extensible=True]
 enum DisplayWakeLockType {
   // Does not allow the screen to dim, turn off, or lock; prevents
   // idle suspend.

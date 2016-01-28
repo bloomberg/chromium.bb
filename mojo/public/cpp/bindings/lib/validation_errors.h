@@ -59,7 +59,9 @@ enum ValidationError {
   // lengths.
   VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP,
   // Attempted to deserialize a tagged union with an unknown tag.
-  VALIDATION_ERROR_UNKNOWN_UNION_TAG
+  VALIDATION_ERROR_UNKNOWN_UNION_TAG,
+  // A value of a non-extensible enum type is unknown.
+  VALIDATION_ERROR_UNKNOWN_ENUM_VALUE
 };
 
 const char* ValidationErrorToString(ValidationError error);

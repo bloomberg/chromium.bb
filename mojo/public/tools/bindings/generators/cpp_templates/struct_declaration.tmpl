@@ -10,14 +10,18 @@ class {{class_name}} {
   void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
   void DecodePointersAndHandles(std::vector<mojo::Handle>* handles);
 
+{% from "enum_macros.tmpl" import enum_data_decl -%}
+{#--- Enums #}
+{%- for enum in struct.enums -%}
+  {{enum_data_decl(enum)|indent(2)}}
+{%- endfor %}
+
   mojo::internal::StructHeader header_;
 {%- for packed_field in struct.packed.packed_fields %}
 {%-   set name = packed_field.field.name %}
 {%-   set kind = packed_field.field.kind %}
 {%-   if kind.spec == 'b' %}
   uint8_t {{name}} : 1;
-{%-   elif kind|is_enum_kind %}
-  int32_t {{name}};
 {%-   else %}
   {{kind|cpp_field_type}} {{name}};
 {%-   endif %}

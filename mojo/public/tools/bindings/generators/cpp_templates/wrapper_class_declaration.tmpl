@@ -9,7 +9,7 @@ class {{struct.name}} {
 
 {#--- Enums #}
 {%- for enum in struct.enums -%}
-  {{enum_decl(enum, is_static=true)|indent(2)}}
+  {{enum_decl(enum)|indent(2)}}
 {%- endfor %}
 
 {#--- Constants #}

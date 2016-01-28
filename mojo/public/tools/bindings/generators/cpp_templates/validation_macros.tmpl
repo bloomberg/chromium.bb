@@ -41,6 +41,11 @@ if (!{{field.kind|cpp_wrapper_type}}::Data_::Validate(
   }
 {%- endmacro -%}
 
+{%- macro validate_enum(field_expr, field) -%}
+if (!mojo::internal::ValidateEnum(*{{field_expr}}))
+  return false;
+{%- endmacro -%}
+
 {%- macro validate_union_field(field, union) %}
 {%-   set field_expr = "(reinterpret_cast<const "
     ~ field.kind|cpp_union_field_type
@@ -60,6 +65,10 @@ if (!{{field.kind|cpp_wrapper_type}}::Data_::Validate(
 
 {%-   if field.kind|is_any_handle_kind -%}
 {{      validate_handle(field_expr, field, union.name) }}
+{%-   endif %}
+
+{%-   if field.kind|is_enum_kind -%}
+{{      validate_enum(field_expr, field) }}
 {%-   endif %}
 return true;
 {%- endmacro %}

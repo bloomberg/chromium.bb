@@ -61,24 +61,39 @@ def DefaultValue(field):
 def NamespaceToArray(namespace):
   return namespace.split(".") if namespace else []
 
-def GetNameForKind(kind, internal = False):
+def GetNamePartsForKind(kind, add_same_module_namespaces, internal):
+  def MapKindName_(kind):
+    if not internal:
+      return kind.name
+    if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
+        mojom.IsInterfaceKind(kind) or mojom.IsEnumKind(kind)):
+      return kind.name + "_Data"
+    return kind.name
+
   parts = []
   if kind.imported_from:
     parts.extend(NamespaceToArray(kind.imported_from["namespace"]))
+  elif hasattr(kind, "module") and add_same_module_namespaces:
+    parts.extend(NamespaceToArray(kind.module.namespace))
   if internal:
     parts.append("internal")
   if kind.parent_kind:
-    parts.append(kind.parent_kind.name)
-  parts.append(kind.name)
+    parts.append(MapKindName_(kind.parent_kind))
+  parts.append(MapKindName_(kind))
+  return parts
+
+def GetNameForKind(kind, internal=False):
+  parts = GetNamePartsForKind(kind, False, internal)
+  return "::".join(parts)
+
+def GetQualifiedNameForKind(kind, internal=False):
+  # Always start with an empty part to force a leading "::" on output.
+  parts = [""]
+  parts.extend(GetNamePartsForKind(kind, True, internal))
   return "::".join(parts)
 
 def GetFullMojomNameForKind(kind):
-  parts = []
-  if kind.imported_from:
-    parts.extend(NamespaceToArray(kind.imported_from["namespace"]))
-  elif hasattr(kind, "module"):
-    parts.extend(NamespaceToArray(kind.module.namespace))
-  parts.append(kind.name)
+  parts = GetNamePartsForKind(kind, True, False)
   return ".".join(parts)
 
 def IsTypemappedKind(kind):
@@ -91,13 +106,6 @@ def IsNativeOnlyKind(kind):
 def GetNativeTypeName(typemapped_kind):
   return _current_typemap[GetFullMojomNameForKind(typemapped_kind)]["typename"]
 
-def GetQualifiedNameForKind(kind):
-  # Always start with an empty part to force a leading "::" on output.
-  parts = [""]
-  parts.extend(NamespaceToArray(kind.module.namespace))
-  parts.append(kind.name)
-  return "::".join(parts)
-
 def GetCppType(kind):
   if mojom.IsStructKind(kind) and kind.native_only:
     raise Exception("Should not be reached!")
@@ -107,9 +115,9 @@ def GetCppType(kind):
     return "mojo::internal::Map_Data<%s, %s>*" % (
       GetCppType(kind.key_kind), GetCppType(kind.value_kind))
   if mojom.IsStructKind(kind):
-    return "%s_Data*" % GetNameForKind(kind, internal=True)
+    return "%s*" % GetNameForKind(kind, internal=True)
   if mojom.IsUnionKind(kind):
-    return "%s_Data" % GetNameForKind(kind, internal=True)
+    return "%s" % GetNameForKind(kind, internal=True)
   if mojom.IsInterfaceKind(kind):
     return "mojo::internal::Interface_Data"
   if mojom.IsInterfaceRequestKind(kind):
@@ -119,7 +127,7 @@ def GetCppType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::internal::AssociatedInterfaceRequest_Data"
   if mojom.IsEnumKind(kind):
-    return "int32_t"
+    return GetNameForKind(kind, internal=True)
   if mojom.IsStringKind(kind):
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
@@ -280,10 +288,10 @@ def GetCppFieldType(kind):
   if IsNativeOnlyKind(kind):
     return "mojo::internal::ArrayPointer<uint8_t>"
   if mojom.IsStructKind(kind):
-    return ("mojo::internal::StructPointer<%s_Data>" %
+    return ("mojo::internal::StructPointer<%s>" %
         GetNameForKind(kind, internal=True))
   if mojom.IsUnionKind(kind):
-    return "%s_Data" % GetNameForKind(kind, internal=True)
+    return "%s" % GetNameForKind(kind, internal=True)
   if mojom.IsArrayKind(kind):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if mojom.IsMapKind(kind):
@@ -298,7 +306,7 @@ def GetCppFieldType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::internal::AssociatedInterfaceRequest_Data"
   if mojom.IsEnumKind(kind):
-    return GetNameForKind(kind)
+    return GetNameForKind(kind, internal=True)
   if mojom.IsStringKind(kind):
     return "mojo::internal::StringPointer"
   return _kind_to_cpp_type[kind]
@@ -308,10 +316,8 @@ def GetCppUnionFieldType(kind):
     return "MojoHandle"
   if mojom.IsInterfaceKind(kind):
     return "uint64_t"
-  if mojom.IsEnumKind(kind):
-    return "int32_t"
   if mojom.IsUnionKind(kind):
-    return ("mojo::internal::UnionPointer<%s_Data>" %
+    return ("mojo::internal::UnionPointer<%s>" %
         GetNameForKind(kind, internal=True))
   return GetCppFieldType(kind)
 

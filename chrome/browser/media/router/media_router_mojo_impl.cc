@@ -730,11 +730,6 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
 
 void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
     SinkAvailability availability) {
-  if (!interfaces::MediaRouter::SinkAvailability_IsValidValue(availability)) {
-    DLOG(WARNING) << "Unknown SinkAvailability value " << availability;
-    return;
-  }
-
   if (availability_ == availability)
     return;
 
@@ -759,12 +754,6 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
 void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
     const mojo::String& route_id,
     interfaces::MediaRouter::PresentationConnectionState state) {
-  if (!interfaces::MediaRouter::PresentationConnectionState_IsValidValue(
-          state)) {
-    DLOG(WARNING) << "Unknown PresentationConnectionState value " << state;
-    return;
-  }
-
   NotifyPresentationConnectionStateChange(
       route_id, mojo::PresentationConnectionStateFromMojo(state));
 }

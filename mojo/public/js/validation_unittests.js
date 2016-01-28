@@ -227,12 +227,15 @@ define([
       // because JS numbers are limited to 53 bits.
       // TODO(yzshen) Skipping struct versioning tests (tests with "mthd11"
       // in the name) because the feature is not supported in JS yet.
+      // TODO(yzshen) Skipping enum validation tests (tests with "enum" in the
+      // name) because the feature is not supported in JS yet. crbug.com/581390
       // TODO(rudominer): Temporarily skipping 'no-such-method',
       // 'invalid_request_flags', and 'invalid_response_flags' until additional
       // logic in *RequestValidator and *ResponseValidator is ported from
       // cpp to js.
       if (testFiles[i].indexOf("overflow") != -1 ||
           testFiles[i].indexOf("mthd11") != -1 ||
+          testFiles[i].indexOf("enum") != -1 ||
           testFiles[i].indexOf("no_such_method") != -1 ||
           testFiles[i].indexOf("invalid_request_flags") != -1 ||
           testFiles[i].indexOf("invalid_response_flags") != -1) {

@@ -94,12 +94,32 @@ struct IsHandle {
 
 template <typename T>
 struct IsUnionDataType {
+ private:
   template <typename U>
   static YesType Test(const typename U::MojomUnionDataType*);
 
   template <typename U>
   static NoType Test(...);
 
+  EnsureTypeIsComplete<T> check_t_;
+
+ public:
+  static const bool value =
+      sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
+};
+
+template <typename T>
+struct IsEnumDataType {
+ private:
+  template <typename U>
+  static YesType Test(const typename U::MojomEnumDataType*);
+
+  template <typename U>
+  static NoType Test(...);
+
+  EnsureTypeIsComplete<T> check_t_;
+
+ public:
   static const bool value =
       sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
 };

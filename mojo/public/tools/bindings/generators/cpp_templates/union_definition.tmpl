@@ -34,7 +34,7 @@ bool {{class_name}}::Validate(const void* data,
   switch (object->tag) {
 {%  for field in union.fields %}
     case {{enum_name}}::{{field.name|upper}}: {
-{{ validation_macros.validate_union_field(field, union)|indent(8) }}
+      {{ validation_macros.validate_union_field(field, union)|indent(6) }}
     }
 {%- endfor %}
     default: {

@@ -50,6 +50,8 @@ const char* ValidationErrorToString(ValidationError error) {
       return "VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP";
     case VALIDATION_ERROR_UNKNOWN_UNION_TAG:
       return "VALIDATION_ERROR_UNKNOWN_UNION_TAG";
+    case VALIDATION_ERROR_UNKNOWN_ENUM_VALUE:
+      return "VALIDATION_ERROR_UNKNOWN_ENUM_VALUE";
   }
 
   return "Unknown error";

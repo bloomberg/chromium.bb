@@ -131,6 +131,7 @@ PRIMITIVES = (
 
 
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
+ATTRIBUTE_EXTENSIBLE = 'Extensible'
 
 
 class NamedValue(object):
@@ -444,6 +445,11 @@ class Enum(Kind):
     Kind.__init__(self, spec)
     self.fields = []
     self.attributes = attributes
+
+  @property
+  def extensible(self):
+    return self.attributes.get(ATTRIBUTE_EXTENSIBLE, False) \
+        if self.attributes else False
 
 
 class Module(object):

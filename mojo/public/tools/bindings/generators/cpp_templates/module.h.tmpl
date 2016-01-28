@@ -51,9 +51,11 @@ namespace {{variant}} {
 {#--- Enums #}
 {% from "enum_macros.tmpl" import enum_decl -%}
 {% from "enum_macros.tmpl" import enum_stream_operator -%}
-{%  for enum in enums %}
+{% from "enum_macros.tmpl" import is_known_enum_value -%}
+{%- for enum in enums %}
   {{enum_decl(enum)}}
   {{enum_stream_operator(enum)}}
+  {{is_known_enum_value(enum)}}
 {%- endfor %}
 
 {#--- Constants #}
@@ -161,15 +163,17 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%-   endfor %}
 {%- endif %}
 
-{%  for struct in structs %}
-{%    for enum in struct.enums %}
+{%- for struct in structs %}
+{%-   for enum in struct.enums %}
 {{enum_stream_operator(enum)}}
+{{is_known_enum_value(enum)}}
 {%-   endfor %}
 {%- endfor %}
 
-{%  for interface in interfaces %}
-{%    for enum in interface.enums %}
+{%- for interface in interfaces %}
+{%-   for enum in interface.enums %}
 {{enum_stream_operator(enum)}}
+{{is_known_enum_value(enum)}}
 {%-   endfor %}
 {%- endfor %}
 

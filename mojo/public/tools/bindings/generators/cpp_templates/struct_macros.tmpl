@@ -111,7 +111,7 @@
   {{output}}->{{name}} = mojo::internal::AssociatedInterfaceRequestHelper::PassHandle(&{{input_field}}).release();
 {%-     endif %}
 {%-   elif kind|is_enum_kind %}
-  {{output}}->{{name}} = static_cast<int32_t>({{input_field}});
+  {{output}}->{{name}}.value = static_cast<int32_t>({{input_field}});
 {%-   else %}
   {{output}}->{{name}} = {{input_field}};
 {%-   endif %}
@@ -181,7 +181,7 @@
         &{{output_field}},
         ({{context}})->router->CreateLocalEndpointHandle(mojo::internal::FetchAndReset(&{{input}}->{{name}})));
 {%-     elif kind|is_enum_kind %}
-    {{output_field}} = static_cast<{{kind|cpp_wrapper_type}}>({{input}}->{{name}});
+    {{output_field}} = static_cast<{{kind|cpp_wrapper_type}}>({{input}}->{{name}}.value);
 {%-     else %}
     {{output_field}} = {{input}}->{{name}};
 {%-     endif %}
