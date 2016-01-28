@@ -37,6 +37,7 @@
 namespace blink {
 
 class MIDIAccessInitializer;
+class MIDIOptions;
 class WebMIDIClient;
 
 class MIDIClientProxy final : public MIDIClient {
@@ -47,8 +48,8 @@ public:
     }
 
     // MIDIClient
-    void requestSysexPermission(MIDIAccessInitializer*) override;
-    void cancelSysexPermissionRequest(MIDIAccessInitializer*) override;
+    void requestPermission(MIDIAccessInitializer*, const MIDIOptions&) override;
+    void cancelPermissionRequest(MIDIAccessInitializer*) override;
 
 private:
     explicit MIDIClientProxy(WebMIDIClient*);

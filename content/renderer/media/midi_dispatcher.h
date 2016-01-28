@@ -29,13 +29,13 @@ class MidiDispatcher : public RenderFrameObserver,
 
  private:
   // blink::WebMIDIClient implementation.
-  void requestSysexPermission(
-      const blink::WebMIDIPermissionRequest& request) override;
-  void cancelSysexPermissionRequest(
+  void requestPermission(const blink::WebMIDIPermissionRequest& request,
+                         const blink::WebMIDIOptions& options) override;
+  void cancelPermissionRequest(
       const blink::WebMIDIPermissionRequest& request) override;
 
-  // Permission for using system exclusive messages has been set.
-  void OnSysExPermissionSet(int request_id, PermissionStatus status);
+  // Permission for using MIDI system has been set.
+  void OnPermissionSet(int request_id, PermissionStatus status);
 
   // Each WebMIDIPermissionRequest object is valid until
   // cancelSysexPermissionRequest() is called with the object, or used to call

@@ -524,6 +524,7 @@
       "web/modules/serviceworker/WebServiceWorkerContextProxy.h",
       "web/modules/serviceworker/WebServiceWorkerNetworkProvider.h",
       "web/modules/webmidi/WebMIDIClient.h",
+      "web/modules/webmidi/WebMIDIOptions.h",
       "web/modules/webmidi/WebMIDIPermissionRequest.h",
       "web/win/WebFontRendering.h",
     ],

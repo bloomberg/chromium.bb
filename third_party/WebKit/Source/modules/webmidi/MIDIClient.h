@@ -38,11 +38,12 @@ namespace blink {
 
 class LocalFrame;
 class MIDIAccessInitializer;
+class MIDIOptions;
 
 class MODULES_EXPORT MIDIClient {
 public:
-    virtual void requestSysexPermission(MIDIAccessInitializer*) = 0;
-    virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) = 0;
+    virtual void requestPermission(MIDIAccessInitializer*, const MIDIOptions&) = 0;
+    virtual void cancelPermissionRequest(MIDIAccessInitializer*) = 0;
 
     virtual ~MIDIClient() { }
 };

@@ -38,6 +38,7 @@ namespace blink {
 
 class MIDIAccessInitializer;
 class MIDIClient;
+class MIDIOptions;
 
 class MIDIController final : public NoBaseWillBeGarbageCollectedFinalized<MIDIController>, public WillBeHeapSupplement<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIController);
@@ -45,8 +46,8 @@ class MIDIController final : public NoBaseWillBeGarbageCollectedFinalized<MIDICo
 public:
     virtual ~MIDIController();
 
-    void requestSysexPermission(MIDIAccessInitializer*);
-    void cancelSysexPermissionRequest(MIDIAccessInitializer*);
+    void requestPermission(MIDIAccessInitializer*, const MIDIOptions&);
+    void cancelPermissionRequest(MIDIAccessInitializer*);
 
     static PassOwnPtrWillBeRawPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();

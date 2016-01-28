@@ -63,7 +63,7 @@ WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
 
 void WebMIDIPermissionRequest::setIsAllowed(bool allowed)
 {
-    m_private->resolveSysexPermission(allowed);
+    m_private->resolvePermission(allowed);
 }
 
 } // namespace blink

@@ -32,6 +32,7 @@
 
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "public/web/modules/webmidi/WebMIDIClient.h"
+#include "public/web/modules/webmidi/WebMIDIOptions.h"
 #include "public/web/modules/webmidi/WebMIDIPermissionRequest.h"
 
 namespace blink {
@@ -41,18 +42,21 @@ MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
 {
 }
 
-void MIDIClientProxy::requestSysexPermission(MIDIAccessInitializer* initializer)
+void MIDIClientProxy::requestPermission(MIDIAccessInitializer* initializer, const MIDIOptions& options)
 {
-    if (m_client)
-        m_client->requestSysexPermission(WebMIDIPermissionRequest(initializer));
-    else
-        initializer->resolveSysexPermission(false);
+    if (m_client) {
+        m_client->requestPermission(
+            WebMIDIPermissionRequest(initializer),
+            WebMIDIOptions(options.hasSysex() ? WebMIDIOptions::SysexPermission::WithSysex : WebMIDIOptions::SysexPermission::WithoutSysex));
+    } else {
+        initializer->resolvePermission(false);
+    }
 }
 
-void MIDIClientProxy::cancelSysexPermissionRequest(MIDIAccessInitializer* initializer)
+void MIDIClientProxy::cancelPermissionRequest(MIDIAccessInitializer* initializer)
 {
     if (m_client)
-        m_client->cancelSysexPermissionRequest(WebMIDIPermissionRequest(initializer));
+        m_client->cancelPermissionRequest(WebMIDIPermissionRequest(initializer));
 }
 
 } // namespace blink

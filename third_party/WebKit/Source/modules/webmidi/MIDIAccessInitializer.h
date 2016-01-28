@@ -10,13 +10,13 @@
 #include "modules/ModulesExport.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
+#include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class MIDIOptions;
 class ScriptState;
 
 class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {
@@ -61,7 +61,7 @@ public:
     void didStartSession(bool success, const String& error, const String& message) override;
     void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override { }
 
-    void resolveSysexPermission(bool allowed);
+    void resolvePermission(bool allowed);
     SecurityOrigin* securityOrigin() const;
 
 private:
@@ -75,9 +75,9 @@ private:
 
     OwnPtr<MIDIAccessor> m_accessor;
     Vector<PortDescriptor> m_portDescriptors;
-    bool m_requestSysex;
+    MIDIOptions m_options;
     bool m_hasBeenDisposed;
-    bool m_sysexPermissionResolved;
+    bool m_permissionResolved;
 };
 
 } // namespace blink

@@ -33,23 +33,24 @@
 
 namespace blink {
 
+struct WebMIDIOptions;
 class WebMIDIPermissionRequest;
 
 class WebMIDIClient {
 public:
     virtual ~WebMIDIClient() { }
 
-    // Request a permission to use system exclusive messages. Called when
-    // MIDIOptions.sysex is true.
+    // Request a permission to use MIDI system. Called when requestMIDIAccess()
+    // is called with any option.
     // Once the request is done, any WebMIDIPermissionRequest instances equal to
     // |request| must not be accessed after that.
-    virtual void requestSysexPermission(const WebMIDIPermissionRequest& /* request */) = 0;
+    virtual void requestPermission(const WebMIDIPermissionRequest& /* request */, const WebMIDIOptions& /* options */) = 0;
 
     // Cancel the request since the requesting frame may be moving to
     // a new page.
     // Once canceled, any WebMIDIPermissionRequest instances equal to
     // |request| must not be accessed after that.
-    virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest& /* request */) = 0;
+    virtual void cancelPermissionRequest(const WebMIDIPermissionRequest& /* request */) = 0;
 };
 
 } // namespace blink
