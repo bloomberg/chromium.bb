@@ -17,7 +17,7 @@
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -162,8 +162,8 @@ void StartupObserver::Start() {
 
 #if !defined(OS_ANDROID)
   WebContents* contents = nullptr;
-  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
-    contents = (*iter)->tab_strip_model()->GetActiveWebContents();
+  for (auto* browser : *BrowserList::GetInstance()) {
+    contents = browser->tab_strip_model()->GetActiveWebContents();
     if (contents && contents->GetMainFrame() &&
         contents->GetMainFrame()->GetVisibilityState() ==
             blink::WebPageVisibilityStateVisible) {

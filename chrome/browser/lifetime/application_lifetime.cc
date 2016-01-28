@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -54,8 +54,7 @@ namespace {
 // This currently checks if there is pending download, or if it needs to
 // handle unload handler.
 bool AreAllBrowsersCloseable() {
-  chrome::BrowserIterator browser_it;
-  if (browser_it.done())
+  if (BrowserList::GetInstance()->empty())
     return true;
 
   // If there are any downloads active, all browsers are not closeable.
@@ -64,8 +63,8 @@ bool AreAllBrowsersCloseable() {
     return false;
 
   // Check TabsNeedBeforeUnloadFired().
-  for (; !browser_it.done(); browser_it.Next()) {
-    if (browser_it->TabsNeedBeforeUnloadFired())
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->TabsNeedBeforeUnloadFired())
       return false;
   }
   return true;
@@ -84,8 +83,8 @@ bool g_send_stop_request_to_session_manager = false;
 
 void MarkAsCleanShutdown() {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles() instead?
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    it->profile()->SetExitType(Profile::EXIT_NORMAL);
+  for (auto* browser : *BrowserList::GetInstance())
+    browser->profile()->SetExitType(Profile::EXIT_NORMAL);
 }
 
 void AttemptExitInternal(bool try_to_quit_application) {
@@ -176,8 +175,8 @@ void AttemptUserExit() {
 #if !defined(OS_ANDROID)
 void AttemptRestart() {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    content::BrowserContext::SaveSessionState(it->profile());
+  for (auto* browser : *BrowserList::GetInstance())
+    content::BrowserContext::SaveSessionState(browser->profile());
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);

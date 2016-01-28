@@ -36,7 +36,6 @@
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -91,8 +90,7 @@ int64_t IdFromWebContents(WebContents* web_contents) {
 int FindTabStripModelById(int64_t target_web_contents_id,
                           TabStripModel** model) {
   DCHECK(model);
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     TabStripModel* local_model = browser->tab_strip_model();
     for (int idx = 0; idx < local_model->count(); idx++) {
       WebContents* web_contents = local_model->GetWebContentsAt(idx);
@@ -393,8 +391,8 @@ void TabManager::PurgeBrowserMemory() {
 
 int TabManager::GetTabCount() const {
   int tab_count = 0;
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    tab_count += it->tab_strip_model()->count();
+  for (auto* browser : *BrowserList::GetInstance())
+    tab_count += browser->tab_strip_model()->count();
   return tab_count;
 }
 

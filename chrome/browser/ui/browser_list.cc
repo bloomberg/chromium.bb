@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -112,9 +112,10 @@ void BrowserList::RemoveObserver(chrome::BrowserListObserver* observer) {
 // static
 void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
   BrowserVector browsers_to_close;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->profile()->GetOriginalProfile() == profile->GetOriginalProfile())
-      browsers_to_close.push_back(*it);
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->GetOriginalProfile() ==
+        profile->GetOriginalProfile())
+      browsers_to_close.push_back(browser);
   }
 
   for (BrowserVector::const_iterator it = browsers_to_close.begin();
@@ -127,9 +128,10 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 void BrowserList::CloseAllBrowsersWithProfile(Profile* profile,
     const base::Callback<void(const base::FilePath&)>& on_close_success) {
   BrowserVector browsers_to_close;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->profile()->GetOriginalProfile() == profile->GetOriginalProfile())
-      browsers_to_close.push_back(*it);
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->GetOriginalProfile() ==
+        profile->GetOriginalProfile())
+      browsers_to_close.push_back(browser);
   }
 
   TryToCloseBrowserList(browsers_to_close,
@@ -197,8 +199,8 @@ void BrowserList::SetLastActive(Browser* browser) {
 
 // static
 bool BrowserList::IsOffTheRecordSessionActive() {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->profile()->IsOffTheRecord())
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->IsOffTheRecord())
       return true;
   }
   return false;
@@ -206,9 +208,9 @@ bool BrowserList::IsOffTheRecordSessionActive() {
 
 // static
 bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->profile()->IsSameProfile(profile) &&
-        it->profile()->IsOffTheRecord()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->IsSameProfile(profile) &&
+        browser->profile()->IsOffTheRecord()) {
       return true;
     }
   }

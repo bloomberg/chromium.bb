@@ -1552,8 +1552,6 @@
       'browser/ui/browser_finder.h',
       'browser/ui/browser_instant_controller.cc',
       'browser/ui/browser_instant_controller.h',
-      'browser/ui/browser_iterator.cc',
-      'browser/ui/browser_iterator.h',
       'browser/ui/browser_list.cc',
       'browser/ui/browser_list.h',
       'browser/ui/browser_live_tab_context.cc',

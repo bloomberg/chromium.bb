@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 
 namespace content {
 class WebContents;
@@ -29,6 +29,7 @@ class WebContents;
 class TabContentsIterator {
  public:
   TabContentsIterator();
+  ~TabContentsIterator();
 
   // Returns true if we are past the last Browser.
   bool done() const { return cur_ == NULL; }
@@ -36,7 +37,7 @@ class TabContentsIterator {
   // Returns the Browser instance associated with the current
   // WebContents. Valid as long as !done().
   Browser* browser() const {
-    if (!browser_iterator_.done())
+    if (browser_iterator_ != BrowserList::GetInstance()->end())
       return *browser_iterator_;
     return NULL;
   }
@@ -64,7 +65,7 @@ class TabContentsIterator {
   content::WebContents* cur_;
 
   // An iterator over all the browsers.
-  chrome::BrowserIterator browser_iterator_;
+  BrowserList::const_iterator browser_iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsIterator);
 };

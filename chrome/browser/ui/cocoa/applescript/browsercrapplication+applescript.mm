@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
@@ -27,13 +27,12 @@ using bookmarks::BookmarkModel;
       arrayWithCapacity:chrome::GetTotalBrowserCount()];
   // Iterate through all browsers and check if it closing,
   // if not add it to list.
-  for (chrome::BrowserIterator browserIterator; !browserIterator.done();
-       browserIterator.Next()) {
-    if ((*browserIterator)->IsAttemptingToCloseBrowser())
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->IsAttemptingToCloseBrowser())
       continue;
 
     base::scoped_nsobject<WindowAppleScript> window(
-        [[WindowAppleScript alloc] initWithBrowser:*browserIterator]);
+        [[WindowAppleScript alloc] initWithBrowser:browser]);
     [window setContainer:NSApp
                 property:AppleScript::kWindowsProperty];
     [appleScriptWindows addObject:window];

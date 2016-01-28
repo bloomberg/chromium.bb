@@ -31,7 +31,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -66,8 +66,7 @@ RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {
 
 const std::string GetTabUrl(RenderWidgetHost* rwh) {
   RenderWidgetHostView* rwhv = rwh->GetView();
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     for (int i = 0, tab_count = browser->tab_strip_model()->count();
          i < tab_count;
          ++i) {

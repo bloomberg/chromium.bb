@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -38,8 +37,8 @@ void BrowserTabStripTracker::Init(InitWith init_with) {
       MaybeTrackBrowser(browser);
   } else {
     DCHECK(InitWith::ALL_BROWERS == init_with);
-    for (chrome::BrowserIterator it; !it.done(); it.Next())
-      MaybeTrackBrowser(*it);
+    for (auto* browser : *BrowserList::GetInstance())
+      MaybeTrackBrowser(browser);
   }
 }
 

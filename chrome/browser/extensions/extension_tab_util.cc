@@ -19,7 +19,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -77,8 +76,7 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
       include_incognito && profile->HasOffTheRecordProfile()
           ? profile->GetOffTheRecordProfile()
           : NULL;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     if ((browser->profile() == profile ||
          browser->profile() == incognito_profile) &&
         ExtensionTabUtil::GetWindowId(browser) == window_id &&
@@ -321,9 +319,9 @@ int ExtensionTabUtil::GetWindowId(const Browser* browser) {
 
 int ExtensionTabUtil::GetWindowIdOfTabStripModel(
     const TabStripModel* tab_strip_model) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->tab_strip_model() == tab_strip_model)
-      return GetWindowId(*it);
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->tab_strip_model() == tab_strip_model)
+      return GetWindowId(browser);
   }
   return -1;
 }
@@ -489,8 +487,8 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
   DCHECK(tab_strip_model);
   DCHECK(tab_index);
 
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    TabStripModel* tab_strip = it->tab_strip_model();
+  for (auto* browser : *BrowserList::GetInstance()) {
+    TabStripModel* tab_strip = browser->tab_strip_model();
     int index = tab_strip->GetIndexOfWebContents(web_contents);
     if (index != -1) {
       *tab_strip_model = tab_strip;
@@ -531,8 +529,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
           profile->GetOffTheRecordProfile() : NULL;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* target_browser = *it;
+  for (auto* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();

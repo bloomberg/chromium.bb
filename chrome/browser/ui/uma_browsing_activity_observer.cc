@@ -9,7 +9,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/search_engines/template_url_service.h"
@@ -96,9 +96,8 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   int app_window_count = 0;
   int popup_window_count = 0;
   int tabbed_window_count = 0;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     // Record how many tabs each window has open.
-    Browser* browser = *it;
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
                                 browser->tab_strip_model()->count(),
                                 1, 200, 50);

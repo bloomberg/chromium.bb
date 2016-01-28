@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 
@@ -20,10 +20,10 @@ std::set<const SyncedWindowDelegate*>
 BrowserSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
   std::set<const SyncedWindowDelegate*> synced_window_delegates;
   // Add all the browser windows.
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->profile() != profile_)
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() != profile_)
       continue;
-    synced_window_delegates.insert(it->synced_window_delegate());
+    synced_window_delegates.insert(browser->synced_window_delegate());
   }
   return synced_window_delegates;
 }

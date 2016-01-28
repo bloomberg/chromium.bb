@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 

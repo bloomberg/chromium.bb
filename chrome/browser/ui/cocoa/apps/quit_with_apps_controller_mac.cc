@@ -17,7 +17,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -169,7 +169,7 @@ bool QuitWithAppsController::ShouldQuit() {
   // quitting. If there are no browser windows, always show the notification.
   bool suppress_always = !g_browser_process->local_state()->GetBoolean(
       prefs::kNotifyWhenAppsKeepChromeAlive);
-  if (!chrome::BrowserIterator().done() &&
+  if (!BrowserList::GetInstance()->empty() &&
       (suppress_for_session_ || suppress_always)) {
     return false;
   }

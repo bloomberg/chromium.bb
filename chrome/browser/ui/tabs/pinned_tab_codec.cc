@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -90,8 +89,7 @@ void PinnedTabCodec::WritePinnedTabs(Profile* profile) {
     return;
 
   base::ListValue values;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->is_type_tabbed() &&
         browser->profile() == profile && HasPinnedTabs(browser)) {
       EncodePinnedTabs(browser, &values);

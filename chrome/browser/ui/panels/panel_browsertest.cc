@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"
@@ -1637,10 +1637,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
   EXPECT_EQ(num_browsers, chrome::GetBrowserCount(
                               browser()->profile(),
                               browser()->host_desktop_type()));
-  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
-    if (*iter == browser())
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b == browser())
       continue;
-    ASSERT_TRUE((*iter)->is_devtools());
+    ASSERT_TRUE(b->is_devtools());
   }
 
   panel->Close();
@@ -1671,10 +1671,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevToolsConsole) {
   EXPECT_EQ(num_browsers, chrome::GetBrowserCount(
                               browser()->profile(),
                               browser()->host_desktop_type()));
-  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
-    if (*iter == browser())
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b == browser())
       continue;
-    ASSERT_TRUE((*iter)->is_devtools());
+    ASSERT_TRUE(b->is_devtools());
   }
 
   panel->Close();

@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -178,8 +177,8 @@ void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       number_of_navigations);
 
   std::set<Browser*> initial_browsers;
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    initial_browsers.insert(*it);
+  for (auto* browser : *BrowserList::GetInstance())
+    initial_browsers.insert(browser);
 
   content::WindowedNotificationObserver tab_added_observer(
       chrome::NOTIFICATION_TAB_ADDED,
@@ -360,9 +359,9 @@ void SendToOmniboxAndSubmit(LocationBar* location_bar,
 }
 
 Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (excluded_browsers.find(*it) == excluded_browsers.end())
-      return *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (excluded_browsers.find(browser) == excluded_browsers.end())
+      return browser;
   }
   return nullptr;
 }
@@ -447,8 +446,8 @@ BrowserAddedObserver::BrowserAddedObserver()
     : notification_observer_(
           chrome::NOTIFICATION_BROWSER_OPENED,
           content::NotificationService::AllSources()) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    original_browsers_.insert(*it);
+  for (auto* browser : *BrowserList::GetInstance())
+    original_browsers_.insert(browser);
 }
 
 BrowserAddedObserver::~BrowserAddedObserver() {

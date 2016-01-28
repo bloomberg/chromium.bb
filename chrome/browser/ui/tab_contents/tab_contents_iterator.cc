@@ -11,9 +11,13 @@
 
 TabContentsIterator::TabContentsIterator()
     : web_view_index_(-1),
-      cur_(NULL) {
+      cur_(NULL),
+      browser_iterator_(BrowserList::GetInstance()->begin()) {
   // Load the first WebContents into |cur_|.
   Next();
+}
+
+TabContentsIterator::~TabContentsIterator() {
 }
 
 void TabContentsIterator::Next() {
@@ -21,15 +25,15 @@ void TabContentsIterator::Next() {
   DCHECK(cur_ || web_view_index_ == -1) << "Trying to advance past the end";
 
   // Update |cur_| to the next WebContents in the list.
-  while (!browser_iterator_.done()) {
-    if (++web_view_index_ >= browser_iterator_->tab_strip_model()->count()) {
+  while (browser_iterator_ != BrowserList::GetInstance()->end()) {
+    if (++web_view_index_ >= (*browser_iterator_)->tab_strip_model()->count()) {
       // Advance to the next Browser in the list.
-      browser_iterator_.Next();
+      ++browser_iterator_;
       web_view_index_ = -1;
       continue;
     }
 
-    content::WebContents* next_tab = browser_iterator_->tab_strip_model()
+    content::WebContents* next_tab = (*browser_iterator_)->tab_strip_model()
         ->GetWebContentsAt(web_view_index_);
     if (next_tab) {
       cur_ = next_tab;

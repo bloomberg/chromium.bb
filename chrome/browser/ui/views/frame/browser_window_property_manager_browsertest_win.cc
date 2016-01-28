@@ -25,7 +25,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -262,9 +262,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
 
   // Find the new browser.
   Browser* app_browser = nullptr;
-  for (chrome::BrowserIterator it; !it.done() && !app_browser; it.Next()) {
-    if (*it != browser())
-      app_browser = *it;
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b != browser())
+      app_browser = b;
   }
   ASSERT_TRUE(app_browser);
   ASSERT_TRUE(app_browser != browser());

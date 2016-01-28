@@ -14,7 +14,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -188,8 +187,7 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
 
   // Add tabs from appropriate browser windows.
   int add_index = 0;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     if (!ShouldIncludeBrowser(browser))
       continue;
 

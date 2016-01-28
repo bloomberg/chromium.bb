@@ -16,7 +16,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -36,9 +36,9 @@ Browser* FindOneOtherBrowser(Browser* browser) {
                                         browser->host_desktop_type()));
 
   // Find the new browser.
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (*it != browser)
-      return *it;
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b != browser)
+      return b;
   }
 
   return nullptr;

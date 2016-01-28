@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
@@ -153,10 +153,10 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     Profile* profile = (*it)->GetProfile();
     WebContents* active_web_contents = (*it)->GetActiveWebContents();
 #else
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Profile* profile = it->profile();
+  for (auto* browser : *BrowserList::GetInstance()) {
+    Profile* profile = browser->profile();
     WebContents* active_web_contents =
-        it->tab_strip_model()->GetActiveWebContents();
+        browser->tab_strip_model()->GetActiveWebContents();
 #endif
     if (IsTabVisible(profile, active_web_contents, origin)) {
       notification_needed = false;

@@ -14,7 +14,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_paths.h"
@@ -93,9 +93,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreBrowserWindows) {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreBrowserWindows) {
   size_t total_count = 0;
   size_t incognito_count = 0;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;
-    if (it->profile()->IsOffTheRecord())
+    if (browser->profile()->IsOffTheRecord())
       ++incognito_count;
   }
   EXPECT_EQ(2u, total_count);
@@ -118,11 +118,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreAppsV1) {
   size_t total_count = 0;
   size_t app1_count = 0;
   size_t app2_count = 0;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;
-    if (it->app_name() == test_app_popup_name1)
+    if (browser->app_name() == test_app_popup_name1)
       ++app1_count;
-    if (it->app_name() == test_app_popup_name2)
+    if (browser->app_name() == test_app_popup_name2)
       ++app2_count;
   }
   EXPECT_EQ(1u, app1_count);
@@ -156,9 +156,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreMaximized) {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMaximized) {
   size_t total_count = 0;
   size_t maximized_count = 0;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;
-    if (it->window()->IsMaximized())
+    if (browser->window()->IsMaximized())
       ++maximized_count;
   }
   EXPECT_EQ(4u, total_count);

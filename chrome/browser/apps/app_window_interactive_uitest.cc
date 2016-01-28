@@ -6,7 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -525,8 +525,8 @@ class AppWindowHiddenKeepAliveTest : public extensions::PlatformAppBrowserTest {
 // A window that becomes hidden should not keep Chrome alive.
 IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, ShownThenHidden) {
   LoadAndLaunchPlatformApp("minimal", "Launched");
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    it->window()->Close();
+  for (auto* browser : *BrowserList::GetInstance())
+    browser->window()->Close();
 
   EXPECT_TRUE(chrome::WillKeepAlive());
   GetFirstAppWindow()->Hide();
@@ -541,8 +541,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, ShownThenHiddenThenShown) {
   app_window->Show(AppWindow::SHOW_ACTIVE);
 
   EXPECT_TRUE(chrome::WillKeepAlive());
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    it->window()->Close();
+  for (auto* browser : *BrowserList::GetInstance())
+    browser->window()->Close();
   EXPECT_TRUE(chrome::WillKeepAlive());
   app_window->GetBaseWindow()->Close();
 }
@@ -554,8 +554,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, StaysHidden) {
   AppWindow* app_window = GetFirstAppWindow();
   EXPECT_TRUE(app_window->is_hidden());
 
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    it->window()->Close();
+  for (auto* browser : *BrowserList::GetInstance())
+    browser->window()->Close();
   // This will time out if the command above does not terminate Chrome.
   content::RunMessageLoop();
 }
@@ -569,8 +569,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, HiddenThenShown) {
   EXPECT_TRUE(app_window->is_hidden());
 
   // Close all browser windows.
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    it->window()->Close();
+  for (auto* browser : *BrowserList::GetInstance())
+    browser->window()->Close();
 
   // The app window will show after 3 seconds.
   ExtensionTestMessageListener shown_listener("Shown", false);

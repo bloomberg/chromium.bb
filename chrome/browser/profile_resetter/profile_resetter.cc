@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -295,9 +295,9 @@ void ProfileResetter::ResetStartupPages() {
 
 void ProfileResetter::ResetPinnedTabs() {
   // Unpin all the tabs.
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->is_type_tabbed() && it->profile() == profile_) {
-      TabStripModel* tab_model = it->tab_strip_model();
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->is_type_tabbed() && browser->profile() == profile_) {
+      TabStripModel* tab_model = browser->tab_strip_model();
       // Here we assume that indexof(any mini tab) < indexof(any normal tab).
       // If we unpin the tab, it can be moved to the right. Thus traversing in
       // reverse direction is correct.

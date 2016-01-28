@@ -42,7 +42,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -915,8 +915,7 @@ bool TabsQueryFunction::RunSync() {
   Browser* last_active_browser = chrome::FindAnyBrowser(
       GetProfile(), include_incognito(), chrome::GetActiveDesktop());
   Browser* current_browser = GetCurrentBrowser();
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     if (!GetProfile()->IsSameProfile(browser->profile()))
       continue;
 

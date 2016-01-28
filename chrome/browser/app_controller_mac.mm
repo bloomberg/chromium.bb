@@ -53,7 +53,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -490,7 +490,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
   // If there are no windows, quit immediately.
-  if (chrome::BrowserIterator().done() &&
+  if (BrowserList::GetInstance()->empty() &&
       !AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0)) {
     return NSTerminateNow;
   }
@@ -635,10 +635,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // completed, raise browser windows.
   reopenTime_ = base::TimeTicks();
   std::set<NSWindow*> browserWindows;
-  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
-    Browser* browser = *iter;
+  for (auto* browser : *BrowserList::GetInstance())
     browserWindows.insert(browser->window()->GetNativeWindow());
-  }
   if (!browserWindows.empty()) {
     ui::FocusWindowSetOnCurrentSpace(browserWindows);
   }
@@ -1191,8 +1189,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // notifications so we still need to open a new window.
   if (hasVisibleWindows) {
     std::set<NSWindow*> browserWindows;
-    for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
-      Browser* browser = *iter;
+    for (auto* browser : *BrowserList::GetInstance()) {
       // When focusing Chrome, don't focus any browser windows associated with
       // a currently running app shim, so ignore them.
       if (browser && browser->is_app()) {

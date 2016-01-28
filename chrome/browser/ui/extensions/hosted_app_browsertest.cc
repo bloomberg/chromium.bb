@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
@@ -62,14 +62,14 @@ class HostedAppTest : public ExtensionBrowserTest {
         browser()->profile(), app, extensions::LAUNCH_CONTAINER_WINDOW,
         NEW_WINDOW, extensions::SOURCE_TEST)));
 
-    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-      if (*it == browser())
+    for (auto* b : *BrowserList::GetInstance()) {
+      if (b == browser())
         continue;
 
       std::string browser_app_id =
-          web_app::GetExtensionIdFromApplicationName((*it)->app_name());
+          web_app::GetExtensionIdFromApplicationName(b->app_name());
       if (browser_app_id == app->id()) {
-        app_browser_ = *it;
+        app_browser_ = b;
         break;
       }
     }
@@ -231,16 +231,16 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, ShouldUseWebAppFrame) {
   Browser* bookmark_app_browser = nullptr;
   Browser* packaged_app_browser = nullptr;
   Browser* dev_tools_browser = nullptr;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (*it == browser()) {
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b == browser()) {
       continue;
-    } else if ((*it)->app_name() == DevToolsWindow::kDevToolsApp) {
-      dev_tools_browser = *it;
-    } else if ((*it)->tab_strip_model()->GetActiveWebContents() ==
+    } else if (b->app_name() == DevToolsWindow::kDevToolsApp) {
+      dev_tools_browser = b;
+    } else if (b->tab_strip_model()->GetActiveWebContents() ==
                bookmark_app_window) {
-      bookmark_app_browser = *it;
+      bookmark_app_browser = b;
     } else {
-      packaged_app_browser = *it;
+      packaged_app_browser = b;
     }
   }
   ASSERT_TRUE(dev_tools_browser);

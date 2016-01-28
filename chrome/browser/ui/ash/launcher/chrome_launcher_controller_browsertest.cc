@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -147,16 +146,13 @@ void ClickAllAppsButtonFromStartPage(ui::test::EventGenerator* generator,
 
 // Find the browser that associated with |app_name|.
 Browser* FindBrowserForApp(const std::string& app_name) {
-  Browser* browser = nullptr;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     std::string browser_app_name =
-        web_app::GetExtensionIdFromApplicationName((*it)->app_name());
-    if (browser_app_name == app_name) {
-      browser = *it;
-      break;
-    }
+        web_app::GetExtensionIdFromApplicationName(browser->app_name());
+    if (browser_app_name == app_name)
+      return browser;
   }
-  return browser;
+  return nullptr;
 }
 
 // Close |app_browser| and wait until it's closed.

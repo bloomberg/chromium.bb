@@ -5,7 +5,7 @@
 #include "chrome/test/base/dialog_test_browser_window.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
@@ -49,8 +49,7 @@ void DialogTestBrowserWindow::RemoveObserver(
 }
 
 Browser* DialogTestBrowserWindow::FindBrowser() const {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->window() == this)
       return browser;
   }

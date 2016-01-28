@@ -177,7 +177,7 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   if (!extension)
     return items;
 
-  for (auto& browser : *BrowserList::GetInstance()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     if (!launcher_controller()->IsBrowserFromActiveUser(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();

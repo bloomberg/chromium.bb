@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/proto/profiler_event.pb.h"
@@ -23,10 +23,9 @@
 
 // static
 void FirstWebContentsProfiler::Start() {
-  for (chrome::BrowserIterator browser_it; !browser_it.done();
-       browser_it.Next()) {
+  for (auto* browser : *BrowserList::GetInstance()) {
     content::WebContents* web_contents =
-        browser_it->tab_strip_model()->GetActiveWebContents();
+        browser->tab_strip_model()->GetActiveWebContents();
     if (web_contents) {
       // FirstWebContentsProfiler owns itself and is also bound to
       // |web_contents|'s lifetime by observing WebContentsDestroyed().

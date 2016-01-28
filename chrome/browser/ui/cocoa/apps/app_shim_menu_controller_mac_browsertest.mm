@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -158,7 +158,8 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
 
   // When a browser window is focused, the menu items for the app should be
   // removed.
-  BrowserWindow* chrome_window = chrome::BrowserIterator()->window();
+  BrowserWindow* chrome_window =
+      (*BrowserList::GetInstance()->begin())->window();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:chrome_window->GetNativeWindow()];
@@ -192,7 +193,8 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
     CheckHasAppMenus(app_1_);
 
     // Closing a background window without focusing it should not change menus.
-    BrowserWindow* chrome_window = chrome::BrowserIterator()->window();
+    BrowserWindow* chrome_window =
+        (*BrowserList::GetInstance()->begin())->window();
     chrome_window->Close();
     [[NSNotificationCenter defaultCenter]
         postNotificationName:NSWindowWillCloseNotification
@@ -245,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   SetUpApps(PACKAGED_1 | PACKAGED_2);
 
   FirstWindowForApp(app_2_)->GetBaseWindow()->Close();
-  chrome::BrowserIterator()->window()->Close();
+  (*BrowserList::GetInstance()->begin())->window()->Close();
   NSWindow* app_1_window = FirstWindowForApp(app_1_)->GetNativeWindow();
 
   ui::test::ScopedFakeNSWindowFocus fake_focus;

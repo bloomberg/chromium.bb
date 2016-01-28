@@ -19,7 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -1507,10 +1506,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Should be two windows and not dragging.
   ASSERT_FALSE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    EXPECT_FALSE(GetIsDragged(*it));
+  for (auto* browser : *BrowserList::GetInstance()) {
+    EXPECT_FALSE(GetIsDragged(browser));
     // Should not be maximized
-    EXPECT_FALSE(it->window()->IsMaximized());
+    EXPECT_FALSE(browser->window()->IsMaximized());
   }
 }
 

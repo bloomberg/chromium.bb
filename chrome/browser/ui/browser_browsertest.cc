@@ -45,7 +45,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1410,9 +1410,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
 
   // Find the new browser.
   Browser* app_browser = NULL;
-  for (chrome::BrowserIterator it; !it.done() && !app_browser; it.Next()) {
-    if (*it != browser())
-      app_browser = *it;
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b != browser())
+      app_browser = b;
   }
   ASSERT_TRUE(app_browser);
 
@@ -1590,13 +1590,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   // Find the new browsers.
   Browser* app_browser = NULL;
   Browser* dev_tools_browser = NULL;
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (*it == browser()) {
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b == browser()) {
       continue;
-    } else if ((*it)->app_name() == DevToolsWindow::kDevToolsApp) {
-      dev_tools_browser = *it;
+    } else if (b->app_name() == DevToolsWindow::kDevToolsApp) {
+      dev_tools_browser = b;
     } else {
-      app_browser = *it;
+      app_browser = b;
     }
   }
   ASSERT_TRUE(dev_tools_browser);
@@ -1655,9 +1655,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Find the new browser.
   Browser* new_browser = NULL;
-  for (chrome::BrowserIterator it; !it.done() && !new_browser; it.Next()) {
-    if (*it != browser())
-      new_browser = *it;
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b != browser())
+      new_browser = b;
   }
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());
@@ -1717,9 +1717,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 
   // Find the new browser.
   Browser* new_browser = NULL;
-  for (chrome::BrowserIterator it; !it.done() && !new_browser; it.Next()) {
-    if (*it != browser())
-      new_browser = *it;
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b != browser())
+      new_browser = b;
   }
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());

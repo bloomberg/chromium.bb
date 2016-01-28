@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -92,9 +91,9 @@ Browser* FindOneOtherBrowser(Browser* browser) {
 
   // Find the new browser.
   Browser* other_browser = NULL;
-  for (chrome::BrowserIterator it; !it.done() && !other_browser; it.Next()) {
-    if (*it != browser)
-      other_browser = *it;
+  for (auto* b : *BrowserList::GetInstance()) {
+    if (b != browser)
+      other_browser = b;
   }
   return other_browser;
 }
@@ -190,9 +189,9 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
 
   Browser* FindOneOtherBrowserForProfile(Profile* profile,
                                          Browser* not_this_browser) {
-    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-      if (*it != not_this_browser && it->profile() == profile)
-        return *it;
+    for (auto* browser : *BrowserList::GetInstance()) {
+      if (browser != not_this_browser && browser->profile() == profile)
+        return browser;
     }
     return NULL;
   }

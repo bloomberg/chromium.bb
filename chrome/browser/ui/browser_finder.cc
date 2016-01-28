@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -176,9 +175,9 @@ Browser* FindBrowserWithProfile(Profile* profile,
 }
 
 Browser* FindBrowserWithID(SessionID::id_type desired_id) {
-  for (BrowserIterator it; !it.done(); it.Next()) {
-    if (it->session_id().id() == desired_id)
-      return *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->session_id().id() == desired_id)
+      return browser;
   }
   return NULL;
 }
@@ -186,8 +185,7 @@ Browser* FindBrowserWithID(SessionID::id_type desired_id) {
 Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
   if (!window)
     return NULL;
-  for (BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
+  for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->window() && browser->window()->GetNativeWindow() == window)
       return browser;
   }
