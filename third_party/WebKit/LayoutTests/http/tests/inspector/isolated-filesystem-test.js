@@ -7,7 +7,7 @@ InspectorFrontendHost.isolatedFileSystem = function(name)
 
 InspectorTest.TestFileSystem = function(fileSystemPath)
 {
-    this.root = new InspectorTest.TestFileSystem.Entry("", true, null);
+    this.root = new InspectorTest.TestFileSystem.Entry(this, "", true, null);
     this.fileSystemPath = fileSystemPath;
 }
 
@@ -50,8 +50,9 @@ InspectorTest.TestFileSystem.prototype = {
     }
 }
 
-InspectorTest.TestFileSystem.Entry = function(name, isDirectory, parent)
+InspectorTest.TestFileSystem.Entry = function(fileSystem, name, isDirectory, parent)
 {
+    this._fileSystem = fileSystem;
     this.name = name;
     this._children = [];
     this._childrenMap = {};
@@ -66,9 +67,29 @@ InspectorTest.TestFileSystem.Entry.prototype = {
         return this.parent ? this.parent.fullPath  + "/" + this.name : "";
     },
 
+    remove: function(success, failure)
+    {
+        this._parent._removeChild(this, success, failure);
+    },
+
+    _removeChild: function(child, success, failure)
+    {
+        var index = this._children.indexOf(child);
+        if (index === -1) {
+            failure("Failed to remove file: file not found.");
+            return;
+        }
+        var fullPath = this._fileSystem.fileSystemPath + child.fullPath;
+        this._children.splice(index, 1);
+        delete this._childrenMap[child.name];
+        child.parent = null;
+        InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChanged, [fullPath]);
+        success();
+    },
+
     mkdir: function(name)
     {
-        var child = new InspectorTest.TestFileSystem.Entry(name, true, this);
+        var child = new InspectorTest.TestFileSystem.Entry(this._fileSystem, name, true, this);
         this._childrenMap[name] = child;
         this._children.push(child);
         child.parent = this;
@@ -77,11 +98,12 @@ InspectorTest.TestFileSystem.Entry.prototype = {
 
     addFile: function(name, content)
     {
-        var child = new InspectorTest.TestFileSystem.Entry(name, false, this);
+        var child = new InspectorTest.TestFileSystem.Entry(this._fileSystem, name, false, this);
         this._childrenMap[name] = child;
         this._children.push(child);
         child.parent = this;
         child.content = new Blob([content], {type: 'text/plain'});
+        return child;
     },
 
     createReader: function()
