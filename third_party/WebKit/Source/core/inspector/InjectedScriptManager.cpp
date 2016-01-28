@@ -30,12 +30,14 @@
 
 #include "core/inspector/InjectedScriptManager.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptNative.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
+#include "core/inspector/v8/V8InjectedScriptHost.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
@@ -119,12 +121,6 @@ void InjectedScriptManager::setCustomObjectFormatterEnabled(bool enabled)
     }
 }
 
-String InjectedScriptManager::injectedScriptSource()
-{
-    const WebData& injectedScriptSourceResource = Platform::current()->loadResource("InjectedScriptSource.js");
-    return String(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
-}
-
 InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> context)
 {
     v8::Context::Scope scope(context);
@@ -139,13 +135,54 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
         return nullptr;
 
     RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(context->GetIsolate()));
-    v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource(), context, contextId, injectedScriptNative.get());
+
+    const WebData& injectedScriptSourceResource = Platform::current()->loadResource("InjectedScriptSource.js");
+    String injectedScriptSource(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
+
+    v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource, context, contextId, injectedScriptNative.get());
     OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(this, context, object, m_client, injectedScriptNative.release(), contextId));
     InjectedScript* resultPtr = result.get();
     if (m_customObjectFormatterEnabled)
         result->setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
     m_idToInjectedScript.set(contextId, result.release());
     return resultPtr;
+}
+
+v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& scriptSource, v8::Local<v8::Context> context, int id, InjectedScriptNative* injectedScriptNative)
+{
+    v8::Isolate* isolate = context->GetIsolate();
+    v8::Context::Scope scope(context);
+
+    v8::Local<v8::FunctionTemplate> wrapperTemplate = m_injectedScriptHost->wrapperTemplate(isolate);
+    if (wrapperTemplate.IsEmpty()) {
+        wrapperTemplate = V8InjectedScriptHost::createWrapperTemplate(isolate);
+        m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
+    }
+
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, context, m_injectedScriptHost);
+    if (scriptHostWrapper.IsEmpty())
+        return v8::Local<v8::Object>();
+
+    injectedScriptNative->setOnInjectedScriptHost(scriptHostWrapper);
+
+    // Inject javascript into the context. The compiled script is supposed to evaluate into
+    // a single anonymous function(it's anonymous to avoid cluttering the global object with
+    // inspector's stuff) the function is called a few lines below with InjectedScriptHost wrapper,
+    // injected script id and explicit reference to the inspected global object. The function is expected
+    // to create and configure InjectedScript instance that is going to be used by the inspector.
+    v8::Local<v8::Value> value;
+    if (!m_client->compileAndRunInternalScript(scriptSource).ToLocal(&value))
+        return v8::Local<v8::Object>();
+    ASSERT(value->IsFunction());
+
+    v8::Local<v8::Object> windowGlobal = context->Global();
+    v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(context->GetIsolate(), id) };
+    v8::Local<v8::Value> injectedScriptValue;
+    if (!m_client->callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
+        return v8::Local<v8::Object>();
+    if (!injectedScriptValue->IsObject())
+        return v8::Local<v8::Object>();
+    return injectedScriptValue.As<v8::Object>();
 }
 
 } // namespace blink

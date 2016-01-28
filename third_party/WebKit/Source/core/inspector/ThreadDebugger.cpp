@@ -7,9 +7,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
-
 
 namespace blink {
 
@@ -23,26 +20,24 @@ ThreadDebugger::~ThreadDebugger()
 {
 }
 
-v8::Local<v8::Object> ThreadDebugger::compileDebuggerScript()
-{
-    const WebData& debuggerScriptSourceResource = Platform::current()->loadResource("DebuggerScriptSource.js");
-    v8::Local<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
-    v8::Local<v8::Value> value;
-    if (!V8ScriptRunner::compileAndRunInternalScript(source, m_isolate).ToLocal(&value))
-        return v8::Local<v8::Object>();
-    ASSERT(value->IsObject());
-    return value.As<v8::Object>();
-}
-
 void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, EventListenerInfoMap& result)
 {
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
 }
 
+v8::MaybeLocal<v8::Value> ThreadDebugger::compileAndRunInternalScript(const String& script)
+{
+    return V8ScriptRunner::compileAndRunInternalScript(v8String(m_isolate, script), m_isolate);
+}
+
 v8::MaybeLocal<v8::Value> ThreadDebugger::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
 {
-    ScriptState* scriptState = ScriptState::from(context);
-    return V8ScriptRunner::callFunction(function, scriptState->executionContext(), receiver, argc, info, m_isolate);
+    return V8ScriptRunner::callFunction(function, toExecutionContext(context), receiver, argc, info, m_isolate);
+}
+
+v8::MaybeLocal<v8::Value> ThreadDebugger::callInternalFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
+{
+    return V8ScriptRunner::callInternalFunction(function, receiver, argc, info, m_isolate);
 }
 
 } // namespace blink
