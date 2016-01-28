@@ -560,6 +560,7 @@ gfx::NativeViewId RenderWidgetHostViewGuest::GetParentForWindowlessPlugin()
 #endif
 
 void RenderWidgetHostViewGuest::DestroyGuestView() {
+  UnregisterSurfaceNamespaceId();
   host_->SetView(NULL);
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
