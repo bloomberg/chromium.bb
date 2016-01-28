@@ -675,8 +675,10 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-005.xht [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-001.html [ Failure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-003.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-004.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-001.html [ Failure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-003.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
 
 # Test sometimes flakes on most platforms
