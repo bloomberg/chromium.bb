@@ -1,10 +1,7 @@
 # Mojo in Chromium
 
 This document is intended to serve as a Mojo primer for Chromium developers. No
-prior knowledge of Mojo is assumed, but you should have a decent grasp of C++
-and be familiar with Chromium's multi-process architecture as well as common
-concepts used throughout Chromium such as smart pointers, message loops,
-callback binding, and so on.
+prior knowledge of Mojo is assumed.
 
 [TOC]
 
