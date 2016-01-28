@@ -107,12 +107,10 @@ cr.define('site_details', function() {
 
       test('empty state', function() {
         testElement.prefs = prefsEmpty;
-        testElement.origin = "http://www.google.com";
+        testElement.origin = 'http://www.google.com';
 
-        // Once actual storage numbers are shown (instead of hard-coded), these
-        // two will become hidden by default.
-        assertFalse(testElement.$.usage.hidden);
-        assertFalse(testElement.$.storage.hidden);
+        assertTrue(testElement.$.usage.hidden);
+        assertTrue(testElement.$.storage.hidden);
 
         // TODO(finnur): Check for the Permission heading hiding when no
         // permissions are showing.
@@ -130,7 +128,7 @@ cr.define('site_details', function() {
 
       test('all categories visible', function() {
         testElement.prefs = prefs;
-        testElement.origin = "https://foo-allow.com:443";
+        testElement.origin = 'https://foo-allow.com:443';
 
         var msg = 'All categories should be showing';
         assertNotEquals(0, testElement.$.camera.offsetHeight, msg);
@@ -141,6 +139,30 @@ cr.define('site_details', function() {
         assertNotEquals(0, testElement.$.mic.offsetHeight, msg);
         assertNotEquals(0, testElement.$.notification.offsetHeight, msg);
         assertNotEquals(0, testElement.$.popups.offsetHeight, msg);
+      });
+
+      test('usage heading shows on storage available', function() {
+        // Remove the current website-usage-private-api element.
+        var parent = testElement.$.usageApi.parentNode;
+        testElement.$.usageApi.remove();
+
+        // Replace it with a mock version.
+        Polymer({
+          is: 'mock-website-usage-private-api',
+
+          fetchUsageTotal: function(origin) {
+            testElement.storedData_ = '1 KB';
+          },
+        });
+        var api = document.createElement('mock-website-usage-private-api');
+        testElement.$.usageApi = api;
+        Polymer.dom(parent).appendChild(api);
+
+        testElement.prefs = prefs;
+        testElement.origin = 'https://foo-allow.com:443';
+
+        assertFalse(testElement.$.usage.hidden);
+        assertFalse(testElement.$.storage.hidden);
       });
     });
   }

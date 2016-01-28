@@ -14,6 +14,7 @@
           'constants.js',
           'site_settings_behavior.js',
           'site_details_permission.js',
+          'website_usage_private_api.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js',

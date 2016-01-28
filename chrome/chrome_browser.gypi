@@ -563,6 +563,8 @@
       'browser/storage/durable_storage_permission_context.h',
       'browser/storage/durable_storage_permission_context_factory.cc',
       'browser/storage/durable_storage_permission_context_factory.h',
+      'browser/storage/storage_info_fetcher.cc',
+      'browser/storage/storage_info_fetcher.h',
       'browser/tab_contents/navigation_metrics_recorder.cc',
       'browser/tab_contents/navigation_metrics_recorder.h',
       'browser/tab_contents/retargeting_details.h',

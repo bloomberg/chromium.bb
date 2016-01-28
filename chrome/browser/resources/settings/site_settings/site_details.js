@@ -31,14 +31,17 @@ Polymer({
     /**
      * The origin that this widget is showing details for.
      */
-    origin: String,
+    origin: {
+      type: String,
+      observer: 'onOriginChanged_',
+    },
 
     /**
      * The amount of data stored for the origin.
      */
     storedData_: {
       type: String,
-      observer: 'onStoredDataChanged_',
+      value: '',
     },
   },
 
@@ -51,19 +54,26 @@ Polymer({
     this.$.fullscreen.category = settings.ContentSettingsTypes.FULLSCREEN;
     this.$.camera.category = settings.ContentSettingsTypes.CAMERA;
     this.$.mic.category = settings.ContentSettingsTypes.MIC;
-
-    this.storedData_ = '1337 MB';  // TODO(finnur): Fetch actual data.
   },
 
-  onStoredDataChanged_: function() {
-    this.$.usage.hidden = false;
-    this.$.storage.hidden = false;
+  /**
+   * Handler for when the origin changes.
+   */
+  onOriginChanged_: function() {
+    var url = /** @type {{hostname: string}} */(new URL(this.origin));
+    this.$.usageApi.fetchUsageTotal(url.hostname);
   },
 
+  /**
+   * Clears all data stored for the current origin.
+   */
   onClearStorage_: function() {
     // TODO(finnur): Implement.
   },
 
+  /**
+   * Resets all permissions and clears all data stored for the current origin.
+   */
   onClearAndReset_: function() {
     Array.prototype.forEach.call(
         this.root.querySelectorAll('site-details-permission'),

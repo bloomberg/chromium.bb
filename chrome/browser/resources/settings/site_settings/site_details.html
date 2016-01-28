@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_details_permission.html">
+<link rel="import" href="chrome://md-settings/site_settings/website_usage_private_api.html">
 
 <dom-module id="site-details">
   <link rel="import" type="css"
@@ -11,8 +12,9 @@
   <template>
     <div class="settings-box">
       <div class="origin">[[origin]]</div>
-      <h2 i18n-content="siteSettingsUsage" id="usage" hidden></h2>
-      <paper-item id="storage" hidden>
+      <h2 i18n-content="siteSettingsUsage" id="usage"
+          hidden$="[[!storedData_]]"></h2>
+      <paper-item id="storage" hidden$="[[!storedData_]]">
         <div class="flex">[[storedData_]]</div>
         <paper-icon-button icon="delete"
             on-tap="onClearStorage_"
@@ -48,6 +50,9 @@
           raised i18n-content="siteSettingsClearAndReset"
           class="reset-button"></paper-button>
     </div>
+    <website-usage-private-api id="usageApi"
+        website-data-usage="{{storedData_}}">
+    </website-usage-private-api>
   </template>
   <script src="site_details.js"></script>
 </dom-module>
