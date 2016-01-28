@@ -49,8 +49,8 @@ class MODULES_EXPORT RTCDataChannel final
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDataChannel);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RTCDataChannel* create(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
-    static RTCDataChannel* create(ExecutionContext*, WebRTCPeerConnectionHandler*, const String& label, const WebRTCDataChannelInit&, ExceptionState&);
+    static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<WebRTCDataChannelHandler>);
+    static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, WebRTCPeerConnectionHandler*, const String& label, const WebRTCDataChannelInit&, ExceptionState&);
     ~RTCDataChannel() override;
 
     ReadyState getHandlerState() const;
@@ -88,9 +88,13 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
+    void stop();
+
     // EventTarget
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
+
+    void clearWeakMembers(Visitor*);
 
     // Oilpan: need to eagerly finalize m_handler
     EAGERLY_FINALIZE();
@@ -104,7 +108,7 @@ public:
     void didDetectError() override;
 
 private:
-    RTCDataChannel(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
+    RTCDataChannel(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<WebRTCDataChannelHandler>);
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
@@ -112,6 +116,8 @@ private:
     RawPtrWillBeMember<ExecutionContext> m_executionContext;
 
     OwnPtr<WebRTCDataChannelHandler> m_handler;
+
+    bool m_stopped;
 
     WebRTCDataChannelHandlerClient::ReadyState m_readyState;
 
@@ -123,6 +129,8 @@ private:
 
     Timer<RTCDataChannel> m_scheduledEventTimer;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
+
+    WeakMember<RTCPeerConnection> m_connection;
 
     unsigned m_bufferedAmountLowThreshold;
 
