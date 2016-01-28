@@ -303,12 +303,13 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
 void MediaDrmBridge::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << "(" << certificate.size() << " bytes)";
 
   DCHECK(!certificate.empty());
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_certificate;
+  ScopedJavaLocalRef<jbyteArray> j_certificate = base::android::ToJavaByteArray(
+      env, certificate.data(), certificate.size());
   if (Java_MediaDrmBridge_setServerCertificate(env, j_media_drm_.obj(),
                                                j_certificate.obj())) {
     promise->resolve();
