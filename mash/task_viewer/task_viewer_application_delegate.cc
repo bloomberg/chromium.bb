@@ -38,8 +38,9 @@ class TaskViewer : public views::WidgetDelegateView,
                    public views::ButtonListener,
                    public mojo::shell::mojom::ApplicationManagerListener {
  public:
-  explicit TaskViewer(ListenerRequest request)
+  TaskViewer(ListenerRequest request, scoped_ptr<mojo::AppRefCount> app)
       : binding_(this, std::move(request)),
+        app_(std::move(app)),
         table_view_(nullptr),
         table_view_parent_(nullptr),
         kill_button_(
@@ -199,6 +200,7 @@ class TaskViewer : public views::WidgetDelegateView,
   }
 
   mojo::Binding<mojo::shell::mojom::ApplicationManagerListener> binding_;
+  scoped_ptr<mojo::AppRefCount> app_;
 
   views::TableView* table_view_;
   views::View* table_view_parent_;
@@ -229,7 +231,8 @@ void TaskViewerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   ListenerRequest request = GetProxy(&listener);
   application_manager->AddListener(std::move(listener));
 
-  TaskViewer* task_viewer = new TaskViewer(std::move(request));
+  TaskViewer* task_viewer = new TaskViewer(
+      std::move(request), app->app_lifetime_helper()->CreateAppRefCount());
   views::Widget* window = views::Widget::CreateWindowWithBounds(
       task_viewer, gfx::Rect(10, 10, 500, 500));
   window->Show();
