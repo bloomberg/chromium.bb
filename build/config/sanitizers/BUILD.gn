@@ -231,10 +231,12 @@ config("default_sanitizer_flags") {
     }
 
     if (use_custom_libcxx) {
-      cflags_cc += [ "-nostdinc++" ]
-      include_dirs = [
-        "//buildtools/third_party/libc++/trunk/include",
-        "//buildtools/third_party/libc++abi/trunk/include",
+      prefix = "//buildtools/third_party"
+      include = "trunk/include"
+      cflags_cc += [
+        "-nostdinc++",
+        "-isystem" + rebase_path("$prefix/libc++/$include", root_build_dir),
+        "-isystem" + rebase_path("$prefix/libc++abi/$include", root_build_dir),
       ]
     }
   }
