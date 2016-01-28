@@ -911,7 +911,7 @@ PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(
     if (list.length() >= 2)
         ty = convertLength(state, *list.item(1));
     if (list.length() == 3)
-        tz = toCSSPrimitiveValue(list.item(2))->getDoubleValue();
+        tz = toCSSPrimitiveValue(list.item(2))->computeLength<double>(state.cssToLengthConversionData());
 
     return TranslateTransformOperation::create(tx, ty, tz, TransformOperation::Translate3D);
 }
