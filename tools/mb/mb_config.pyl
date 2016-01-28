@@ -316,7 +316,7 @@
     },
 
     'msan': {
-      'gn_args': 'is_msan=true',
+      'gn_args': 'is_msan=true msan_track_origins=2 use_prebuilt_instrumented_libraries=true',
       'gyp_defines': 'msan=1 msan_track_origins=2 use_prebuilt_instrumented_libraries=1',
     },
 
