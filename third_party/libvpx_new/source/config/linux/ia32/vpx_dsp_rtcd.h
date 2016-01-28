@@ -601,7 +601,7 @@ void vpx_sad4x4x3_sse3(const uint8_t *src_ptr, int src_stride, const uint8_t *re
 RTCD_EXTERN void (*vpx_sad4x4x3)(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 
 void vpx_sad4x4x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
-void vpx_sad4x4x4d_sse(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
+void vpx_sad4x4x4d_sse2(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 RTCD_EXTERN void (*vpx_sad4x4x4d)(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 
 void vpx_sad4x4x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
@@ -617,7 +617,7 @@ unsigned int vpx_sad4x8_avg_sse2(const uint8_t *src_ptr, int src_stride, const u
 RTCD_EXTERN unsigned int (*vpx_sad4x8_avg)(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
 
 void vpx_sad4x8x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
-void vpx_sad4x8x4d_sse(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
+void vpx_sad4x8x4d_sse2(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 RTCD_EXTERN void (*vpx_sad4x8x4d)(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 
 void vpx_sad4x8x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
@@ -1271,7 +1271,7 @@ static void setup_rtcd_internal(void)
     vpx_sad4x4x3 = vpx_sad4x4x3_c;
     if (flags & HAS_SSE3) vpx_sad4x4x3 = vpx_sad4x4x3_sse3;
     vpx_sad4x4x4d = vpx_sad4x4x4d_c;
-    if (flags & HAS_SSE) vpx_sad4x4x4d = vpx_sad4x4x4d_sse;
+    if (flags & HAS_SSE2) vpx_sad4x4x4d = vpx_sad4x4x4d_sse2;
     vpx_sad4x4x8 = vpx_sad4x4x8_c;
     if (flags & HAS_SSE4_1) vpx_sad4x4x8 = vpx_sad4x4x8_sse4_1;
     vpx_sad4x8 = vpx_sad4x8_c;
@@ -1279,7 +1279,7 @@ static void setup_rtcd_internal(void)
     vpx_sad4x8_avg = vpx_sad4x8_avg_c;
     if (flags & HAS_SSE2) vpx_sad4x8_avg = vpx_sad4x8_avg_sse2;
     vpx_sad4x8x4d = vpx_sad4x8x4d_c;
-    if (flags & HAS_SSE) vpx_sad4x8x4d = vpx_sad4x8x4d_sse;
+    if (flags & HAS_SSE2) vpx_sad4x8x4d = vpx_sad4x8x4d_sse2;
     vpx_sad64x32 = vpx_sad64x32_c;
     if (flags & HAS_SSE2) vpx_sad64x32 = vpx_sad64x32_sse2;
     if (flags & HAS_AVX2) vpx_sad64x32 = vpx_sad64x32_avx2;
