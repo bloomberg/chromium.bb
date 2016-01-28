@@ -78,3 +78,7 @@ Current patches:
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
+
+  Changes to libavformat/riffdec.c
+    Work around VC++ 2015 Update 1 compiler bug, crbug.com/581768 and
+    https://connect.microsoft.com/VisualStudio/feedback/details/2291638
