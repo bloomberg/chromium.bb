@@ -310,7 +310,7 @@ void MockWebRtcVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
 }
 
 void MockWebRtcVideoTrack::RemoveRenderer(VideoRendererInterface* renderer) {
-  DCHECK_EQ(renderer_, renderer);
+  DCHECK(renderer_ == renderer);
   renderer_ = NULL;
 }
 
