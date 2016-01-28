@@ -49,10 +49,10 @@ either endpoint may be transferred over another message pipe.
 
 Because we bootstrap a primordial message pipe between the browser process and
 each child process, this in turn means that you can create a new pipe and
-ultimately send either end to any any process, and the two ends will still be
+ultimately send either end to any process, and the two ends will still be
 able to talk to each other seamlessly and exclusively. Goodbye, routing IDs!
 
-While message pipes can carry arbitrary packets of unstructured data, we
+While message pipes can carry arbitrary packets of unstructured data we
 generally use them in conjunction with generated bindings to ensure a
 consistent, well-defined, versioned message structure on all endpoints.
 
@@ -177,7 +177,7 @@ frobinator->Frobinate();
 ```
 
 Behind the scenes this serializes a message corresponding to the `Frobinate`
-request and writes it to one end of the pipe. Eventually (and, incidentally,
+request and writes it to one end of the pipe. Eventually (and incidentally,
 very soon after), `impl`'s internal `mojo::Binding` will decode this message and
 dispatch a call to `impl.Frobinate()`.
 
