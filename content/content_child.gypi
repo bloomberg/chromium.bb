@@ -98,6 +98,8 @@
       'child/fileapi/webfilewriter_base.h',
       'child/fileapi/webfilewriter_impl.cc',
       'child/fileapi/webfilewriter_impl.h',
+      'child/font_warmup_win.cc',
+      'child/font_warmup_win.h',
       'child/ftp_directory_listing_response_delegate.cc',
       'child/ftp_directory_listing_response_delegate.h',
       'child/geofencing/geofencing_dispatcher.cc',

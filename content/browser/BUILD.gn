@@ -192,10 +192,10 @@ source_set("browser") {
     sources += rebase_path(content_browser_gypi_values.webrtc_browser_sources,
                            ".",
                            "//content")
-    deps += [ "//jingle:jingle_glue" ]
-    if (is_linux) {
-      deps += [ "//third_party/libjingle:libjingle_webrtc" ]
-    }
+    deps += [
+      "//jingle:jingle_glue",
+      "//third_party/libjingle:libjingle_webrtc",
+    ]
     if (is_linux || is_mac || is_win) {
       sources += [
         "media/capture/desktop_capture_device.cc",

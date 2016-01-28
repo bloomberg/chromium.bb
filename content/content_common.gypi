@@ -273,8 +273,6 @@
       'common/font_list_ozone.cc',
       'common/font_list_pango.cc',
       'common/font_list_win.cc',
-      'common/font_warmup_win.cc',
-      'common/font_warmup_win.h',
       'common/frame_message_enums.h',
       'common/frame_messages.h',
       'common/frame_param.cc',

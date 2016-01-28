@@ -12,7 +12,7 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
-#include "content/common/font_warmup_win.h"
+#include "content/child/font_warmup_win.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"

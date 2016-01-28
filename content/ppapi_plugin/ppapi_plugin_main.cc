@@ -29,7 +29,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
-#include "content/common/font_warmup_win.h"
+#include "content/child/font_warmup_win.h"
 #include "content/public/common/dwrite_font_platform_win.h"
 #include "sandbox/win/src/sandbox.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
