@@ -468,7 +468,7 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
 void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                           const RenderPassDrawQuad* quad) {
   ScopedResource* content_texture =
-      render_pass_textures_.get(quad->render_pass_id);
+      render_pass_textures_[quad->render_pass_id].get();
   DCHECK(content_texture);
   DCHECK(content_texture->id());
   DCHECK(IsSoftwareResource(content_texture->id()));

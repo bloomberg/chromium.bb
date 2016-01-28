@@ -5,7 +5,8 @@
 #ifndef CC_SURFACES_SURFACE_RESOURCE_HOLDER_H_
 #define CC_SURFACES_SURFACE_RESOURCE_HOLDER_H_
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "cc/base/resource_id.h"
 #include "cc/resources/returned_resource.h"
@@ -40,7 +41,7 @@ class CC_SURFACES_EXPORT SurfaceResourceHolder {
   // Keeps track of the number of users currently in flight for each resource
   // ID we've received from the client. When this counter hits zero for a
   // particular resource, that ID is available to return to the client.
-  typedef base::hash_map<ResourceId, ResourceRefs> ResourceIdCountMap;
+  using ResourceIdCountMap = std::unordered_map<ResourceId, ResourceRefs>;
   ResourceIdCountMap resource_id_use_count_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceResourceHolder);

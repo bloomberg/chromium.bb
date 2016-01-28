@@ -8,7 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/resource_format.h"
@@ -29,8 +30,7 @@ struct TestTexture : public base::RefCounted<TestTexture> {
   ResourceFormat format;
   scoped_ptr<uint8_t[]> data;
 
-  typedef base::hash_map<GLenum, GLint>
-      TextureParametersMap;
+  using TextureParametersMap = std::unordered_map<GLenum, GLint>;
   TextureParametersMap params;
 
  private:

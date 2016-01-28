@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+#include <unordered_set>
+
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
@@ -18,7 +20,6 @@
 #include "cc/playback/draw_image.h"
 #include "cc/raster/tile_task_runner.h"
 #include "skia/ext/refptr.h"
-
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -70,13 +71,9 @@ class CC_EXPORT ImageDecodeControllerKey {
   SkFilterQuality filter_quality_;
 };
 
-}  // namespace cc
-
 // Hash function for the above ImageDecodeControllerKey.
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::ImageDecodeControllerKey> {
-  size_t operator()(const cc::ImageDecodeControllerKey& key) const {
+struct ImageDecodeControllerKeyHash {
+  size_t operator()(const ImageDecodeControllerKey& key) const {
     // TODO(vmpstr): This is a mess. Maybe it's faster to just search the vector
     // always (forwards or backwards to account for LRU).
     uint64_t src_rect_hash =
@@ -92,9 +89,6 @@ struct hash<cc::ImageDecodeControllerKey> {
                           base::HashInts(key.image_id(), key.filter_quality()));
   }
 };
-}  // namespace BASE_HASH_NAMESPACE
-
-namespace cc {
 
 // ImageDecodeController is responsible for generating decode tasks, decoding
 // images, storing images in cache, and being able to return the decoded images
@@ -117,6 +111,7 @@ namespace cc {
 class CC_EXPORT ImageDecodeController {
  public:
   using ImageKey = ImageDecodeControllerKey;
+  using ImageKeyHash = ImageDecodeControllerKeyHash;
 
   ImageDecodeController();
   ~ImageDecodeController();
@@ -236,22 +231,24 @@ class CC_EXPORT ImageDecodeController {
 
   bool is_using_gpu_rasterization_;
 
-  base::hash_map<ImageKey, scoped_refptr<ImageDecodeTask>> pending_image_tasks_;
+  std::unordered_map<ImageKey, scoped_refptr<ImageDecodeTask>, ImageKeyHash>
+      pending_image_tasks_;
 
   // The members below this comment can only be accessed if the lock is held to
   // ensure that they are safe to access on multiple threads.
   base::Lock lock_;
 
   std::deque<AnnotatedDecodedImage> decoded_images_;
-  base::hash_map<ImageKey, int> decoded_images_ref_counts_;
+  std::unordered_map<ImageKey, int, ImageKeyHash> decoded_images_ref_counts_;
   std::deque<AnnotatedDecodedImage> at_raster_decoded_images_;
-  base::hash_map<ImageKey, int> at_raster_decoded_images_ref_counts_;
+  std::unordered_map<ImageKey, int, ImageKeyHash>
+      at_raster_decoded_images_ref_counts_;
   MemoryBudget locked_images_budget_;
 
   // Note that this is used for cases where the only thing we do is preroll the
   // image the first time we see it. This mimics the previous behavior and
   // should over time change as the compositor starts to handle more cases.
-  base::hash_set<uint32_t> prerolled_images_;
+  std::unordered_set<uint32_t> prerolled_images_;
 };
 
 }  // namespace cc

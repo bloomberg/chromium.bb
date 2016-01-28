@@ -4,6 +4,8 @@
 
 #include "cc/surfaces/surface_factory.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"

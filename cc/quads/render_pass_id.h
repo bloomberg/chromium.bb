@@ -9,6 +9,7 @@
 
 #include <tuple>
 
+#include "base/hash.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -30,6 +31,12 @@ class CC_EXPORT RenderPassId {
   bool operator!=(const RenderPassId& other) const { return !(*this == other); }
   bool operator<(const RenderPassId& other) const {
     return std::tie(layer_id, index) < std::tie(other.layer_id, other.index);
+  }
+};
+
+struct RenderPassIdHash {
+  size_t operator()(RenderPassId key) const {
+    return base::HashInts(key.layer_id, static_cast<int>(key.index));
   }
 };
 

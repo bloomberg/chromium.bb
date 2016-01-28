@@ -166,8 +166,8 @@ void Surface::AddDestructionDependency(SurfaceSequence sequence) {
 }
 
 void Surface::SatisfyDestructionDependencies(
-    base::hash_set<SurfaceSequence>* sequences,
-    base::hash_set<uint32_t>* valid_id_namespaces) {
+    std::unordered_set<SurfaceSequence, SurfaceSequenceHash>* sequences,
+    std::unordered_set<uint32_t>* valid_id_namespaces) {
   destruction_dependencies_.erase(
       std::remove_if(destruction_dependencies_.begin(),
                      destruction_dependencies_.end(),

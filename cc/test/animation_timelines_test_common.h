@@ -5,7 +5,8 @@
 #ifndef CC_TEST_ANIMATION_TIMELINES_TEST_COMMON_H_
 #define CC_TEST_ANIMATION_TIMELINES_TEST_COMMON_H_
 
-#include "base/containers/scoped_ptr_hash_map.h"
+#include <unordered_map>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
@@ -134,7 +135,7 @@ class TestHostClient : public MutatorHostClient {
  private:
   scoped_ptr<AnimationHost> host_;
 
-  typedef base::ScopedPtrHashMap<int, scoped_ptr<TestLayer>> LayerIdToTestLayer;
+  using LayerIdToTestLayer = std::unordered_map<int, scoped_ptr<TestLayer>>;
   LayerIdToTestLayer layers_in_active_tree_;
   LayerIdToTestLayer layers_in_pending_tree_;
 

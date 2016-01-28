@@ -9,9 +9,9 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -706,8 +706,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool ScrollAnimationUpdateTarget(LayerImpl* layer_impl,
                                    const gfx::Vector2dF& scroll_delta);
 
-  typedef base::hash_map<UIResourceId, UIResourceData>
-      UIResourceMap;
+  using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
 
   // Resources that were evicted by EvictAllUIResources. Resources are removed
@@ -809,7 +808,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Map from scroll layer ID to scrollbar animation controller.
   // There is one animation controller per pair of overlay scrollbars.
-  base::ScopedPtrHashMap<int, scoped_ptr<ScrollbarAnimationController>>
+  std::unordered_map<int, scoped_ptr<ScrollbarAnimationController>>
       scrollbar_animation_controllers_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;

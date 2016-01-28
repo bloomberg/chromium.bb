@@ -11,10 +11,10 @@
 #include <limits>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/cancelable_callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -439,12 +439,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     gfx::Size size;
   };
 
-  typedef base::hash_map<UIResourceId, UIResourceClientData>
-      UIResourceClientMap;
+  using UIResourceClientMap =
+      std::unordered_map<UIResourceId, UIResourceClientData>;
   UIResourceClientMap ui_resource_client_map_;
   int next_ui_resource_id_;
 
-  typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
+  using UIResourceRequestQueue = std::vector<UIResourceRequest>;
   UIResourceRequestQueue ui_resource_request_queue_;
 
   void CalculateLCDTextMetricsCallback(Layer* layer);
@@ -533,7 +533,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   PropertyTrees property_trees_;
 
-  typedef base::hash_map<int, Layer*> LayerIdMap;
+  using LayerIdMap = std::unordered_map<int, Layer*>;
   LayerIdMap layer_id_map_;
 
   uint32_t surface_id_namespace_;

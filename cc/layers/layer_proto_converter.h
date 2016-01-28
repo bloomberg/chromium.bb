@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_LAYER_PROTO_CONVERTER_H_
 #define CC_LAYERS_LAYER_PROTO_CONVERTER_H_
 
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
@@ -64,7 +66,7 @@ class CC_EXPORT LayerProtoConverter {
       Layer* root_layer,
       proto::LayerUpdate* layer_update);
 
-  using LayerIdMap = base::hash_map<int, scoped_refptr<Layer>>;
+  using LayerIdMap = std::unordered_map<int, scoped_refptr<Layer>>;
   // Start at |layer| and recursively add |layer| and all its children and
   // special layers to |layer_id_map|.
   static void RecursivelyFindAllLayers(const scoped_refptr<Layer>& layer,

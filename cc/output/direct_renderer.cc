@@ -6,11 +6,10 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -149,7 +148,8 @@ void DirectRenderer::SetEnlargePassTextureAmountForTesting(
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
-  base::hash_map<RenderPassId, gfx::Size> render_passes_in_frame;
+  std::unordered_map<RenderPassId, gfx::Size, RenderPassIdHash>
+      render_passes_in_frame;
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
     render_passes_in_frame.insert(std::pair<RenderPassId, gfx::Size>(
         render_passes_in_draw_order[i]->id,
@@ -158,15 +158,14 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   std::vector<RenderPassId> passes_to_delete;
   for (auto pass_iter = render_pass_textures_.begin();
        pass_iter != render_pass_textures_.end(); ++pass_iter) {
-    base::hash_map<RenderPassId, gfx::Size>::const_iterator it =
-        render_passes_in_frame.find(pass_iter->first);
+    auto it = render_passes_in_frame.find(pass_iter->first);
     if (it == render_passes_in_frame.end()) {
       passes_to_delete.push_back(pass_iter->first);
       continue;
     }
 
     gfx::Size required_size = it->second;
-    ScopedResource* texture = pass_iter->second;
+    ScopedResource* texture = pass_iter->second.get();
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
@@ -181,11 +180,11 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     render_pass_textures_.erase(passes_to_delete[i]);
 
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
-    if (!render_pass_textures_.contains(render_passes_in_draw_order[i]->id)) {
+    if (render_pass_textures_.count(render_passes_in_draw_order[i]->id) == 0) {
       scoped_ptr<ScopedResource> texture =
           ScopedResource::Create(resource_provider_);
-      render_pass_textures_.set(render_passes_in_draw_order[i]->id,
-                                std::move(texture));
+      render_pass_textures_[render_passes_in_draw_order[i]->id] =
+          std::move(texture);
     }
   }
 }
@@ -534,7 +533,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
     return true;
   }
 
-  ScopedResource* texture = render_pass_textures_.get(render_pass->id);
+  ScopedResource* texture = render_pass_textures_[render_pass->id].get();
   DCHECK(texture);
 
   gfx::Size size = RenderPassTextureSize(render_pass);
@@ -558,8 +557,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPassId id) const {
-  ScopedResource* texture = render_pass_textures_.get(id);
-  return texture && texture->id();
+  auto iter = render_pass_textures_.find(id);
+  return iter != render_pass_textures_.end() && iter->second->id();
 }
 
 // static

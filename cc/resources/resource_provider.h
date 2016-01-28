@@ -11,11 +11,12 @@
 #include <deque>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -68,9 +69,9 @@ class CC_EXPORT ResourceProvider
   struct Resource;
 
  public:
-  typedef std::vector<ResourceId> ResourceIdArray;
-  typedef base::hash_set<ResourceId> ResourceIdSet;
-  typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
+  using ResourceIdArray = std::vector<ResourceId>;
+  using ResourceIdSet = std::unordered_set<ResourceId>;
+  using ResourceIdMap = std::unordered_map<ResourceId, ResourceId>;
   enum TextureHint {
     TEXTURE_HINT_DEFAULT = 0x0,
     TEXTURE_HINT_IMMUTABLE = 0x1,
@@ -501,7 +502,7 @@ class CC_EXPORT ResourceProvider
     SharedBitmap* shared_bitmap;
     gfx::GpuMemoryBuffer* gpu_memory_buffer;
   };
-  typedef base::hash_map<ResourceId, Resource> ResourceMap;
+  using ResourceMap = std::unordered_map<ResourceId, Resource>;
 
   struct Child {
     Child();
@@ -513,7 +514,7 @@ class CC_EXPORT ResourceProvider
     bool marked_for_deletion;
     bool needs_sync_tokens;
   };
-  typedef base::hash_map<int, Child> ChildMap;
+  using ChildMap = std::unordered_map<int, Child>;
 
   bool ReadLockFenceHasPassed(const Resource* resource) {
     return !resource->read_lock_fence.get() ||

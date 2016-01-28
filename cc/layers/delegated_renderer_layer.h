@@ -5,7 +5,6 @@
 #ifndef CC_LAYERS_DELEGATED_RENDERER_LAYER_H_
 #define CC_LAYERS_DELEGATED_RENDERER_LAYER_H_
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

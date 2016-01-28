@@ -225,8 +225,8 @@ void AnimationHost::RegisterPlayerForLayer(int layer_id,
     auto new_element_animations = ElementAnimations::Create(this);
     element_animations = new_element_animations.get();
 
-    layer_to_element_animations_map_.add(layer_id,
-                                         std::move(new_element_animations));
+    layer_to_element_animations_map_[layer_id] =
+        std::move(new_element_animations);
     element_animations->CreateLayerAnimationController(layer_id);
   }
 
@@ -312,7 +312,7 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
 
   // Secondly, sync properties for created layer animation controllers.
   for (auto& kv : layer_to_element_animations_map_) {
-    ElementAnimations* element_animations = kv.second;
+    ElementAnimations* element_animations = kv.second.get();
     ElementAnimations* element_animations_impl =
         host_impl->GetElementAnimationsForLayerId(kv.first);
     if (element_animations_impl)
@@ -335,7 +335,7 @@ ElementAnimations* AnimationHost::GetElementAnimationsForLayerId(
   DCHECK(layer_id);
   auto iter = layer_to_element_animations_map_.find(layer_id);
   return iter == layer_to_element_animations_map_.end() ? nullptr
-                                                        : iter->second;
+                                                        : iter->second.get();
 }
 
 void AnimationHost::SetSupportsScrollAnimations(

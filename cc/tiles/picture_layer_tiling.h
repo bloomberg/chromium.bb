@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
@@ -67,21 +67,14 @@ struct TileMapKey {
   int index_y;
 };
 
-}  // namespace cc
-
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::TileMapKey> {
-  size_t operator()(const cc::TileMapKey& key) const {
+struct TileMapKeyHash {
+  size_t operator()(const TileMapKey& key) const {
     uint16_t value1 = static_cast<uint16_t>(key.index_x);
     uint16_t value2 = static_cast<uint16_t>(key.index_y);
     uint32_t value1_32 = value1;
     return (value1_32 << 16) | value2;
   }
 };
-}  // namespace BASE_HASH_NAMESPACE
-
-namespace cc {
 
 class CC_EXPORT PictureLayerTiling {
  public:
@@ -140,7 +133,7 @@ class CC_EXPORT PictureLayerTiling {
 
   Tile* TileAt(int i, int j) const {
     TileMap::const_iterator iter = tiles_.find(TileMapKey(i, j));
-    return iter == tiles_.end() ? nullptr : iter->second;
+    return iter == tiles_.end() ? nullptr : iter->second.get();
   }
 
   bool has_tiles() const { return !tiles_.empty(); }
@@ -152,9 +145,9 @@ class CC_EXPORT PictureLayerTiling {
 
   void VerifyNoTileNeedsRaster() const {
 #if DCHECK_IS_ON()
-    for (const auto tile_pair : tiles_) {
+    for (const auto& tile_pair : tiles_) {
       DCHECK(!tile_pair.second->draw_info().NeedsRaster() ||
-             IsTileOccluded(tile_pair.second));
+             IsTileOccluded(tile_pair.second.get()));
     }
 #endif  // DCHECK_IS_ON()
   }
@@ -167,13 +160,13 @@ class CC_EXPORT PictureLayerTiling {
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> all_tiles;
     for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-      all_tiles.push_back(it->second);
+      all_tiles.push_back(it->second.get());
     return all_tiles;
   }
 
   void UpdateAllRequiredStateForTesting() {
     for (const auto& key_tile_pair : tiles_)
-      UpdateRequiredStatesOnTile(key_tile_pair.second);
+      UpdateRequiredStatesOnTile(key_tile_pair.second.get());
   }
   std::map<const Tile*, PrioritizedTile>
   UpdateAndGetAllPrioritizedTilesForTesting() const;
@@ -274,7 +267,7 @@ class CC_EXPORT PictureLayerTiling {
     EVENTUALLY_RECT
   };
 
-  using TileMap = base::ScopedPtrHashMap<TileMapKey, ScopedTilePtr>;
+  using TileMap = std::unordered_map<TileMapKey, ScopedTilePtr, TileMapKeyHash>;
 
   struct FrameVisibleRect {
     gfx::Rect visible_rect_in_content_space;
@@ -413,7 +406,7 @@ class CC_EXPORT PictureLayerTiling {
   bool all_tiles_done_;
 
  private:
-  DISALLOW_ASSIGN(PictureLayerTiling);
+  DISALLOW_COPY_AND_ASSIGN(PictureLayerTiling);
 };
 
 }  // namespace cc

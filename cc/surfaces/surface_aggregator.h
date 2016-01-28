@@ -9,8 +9,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/quads/draw_quad.h"
@@ -90,7 +88,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
       const SharedQuadStateList& source_shared_quad_state_list,
-      const base::hash_map<ResourceId, ResourceId>& resource_to_child_map,
+      const std::unordered_map<ResourceId, ResourceId>& resource_to_child_map,
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       RenderPass* dest_pass,
@@ -133,7 +131,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // This is the set of surfaces referenced in the aggregation so far, used to
   // detect cycles.
-  typedef std::set<SurfaceId> SurfaceSet;
+  using SurfaceSet = std::set<SurfaceId>;
   SurfaceSet referenced_surfaces_;
 
   // For each Surface used in the last aggregation, gives the frame_index at

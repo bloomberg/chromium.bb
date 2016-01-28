@@ -5,9 +5,9 @@
 #ifndef CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 #define CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 
+#include <unordered_set>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -175,7 +175,7 @@ class CC_EXPORT LayerAnimationController
   virtual ~LayerAnimationController();
 
  private:
-  typedef base::hash_set<int> TargetProperties;
+  using TargetProperties = std::unordered_set<int>;
 
   void PushNewAnimationsToImplThread(
       LayerAnimationController* controller_impl) const;

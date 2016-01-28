@@ -866,7 +866,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const RenderPassDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   ScopedResource* contents_texture =
-      render_pass_textures_.get(quad->render_pass_id);
+      render_pass_textures_[quad->render_pass_id].get();
   DCHECK(contents_texture);
   DCHECK(contents_texture->id());
 

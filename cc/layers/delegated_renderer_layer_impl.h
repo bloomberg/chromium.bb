@@ -7,11 +7,13 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/quads/render_pass_id.h"
 
 namespace cc {
 class DelegatedFrameData;
@@ -90,7 +92,8 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   float inverse_device_scale_factor_;
   RenderPassList render_passes_in_draw_order_;
 
-  using RenderPassToIndexMap = base::hash_map<RenderPassId, size_t>;
+  using RenderPassToIndexMap =
+      std::unordered_map<RenderPassId, size_t, RenderPassIdHash>;
   RenderPassToIndexMap render_passes_index_by_id_;
   ResourceProvider::ResourceIdSet resources_;
 

@@ -5,9 +5,9 @@
 #ifndef CC_ANIMATION_ANIMATION_HOST_H_
 #define CC_ANIMATION_ANIMATION_HOST_H_
 
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -167,8 +167,8 @@ class CC_EXPORT AnimationHost {
   // TODO(loyso): For now AnimationPlayers share LayerAnimationController object
   // if they are attached to the same element(layer). Note that Element can
   // contain many Layers.
-  typedef base::ScopedPtrHashMap<int, scoped_ptr<ElementAnimations>>
-      LayerToElementAnimationsMap;
+  using LayerToElementAnimationsMap =
+      std::unordered_map<int, scoped_ptr<ElementAnimations>>;
   LayerToElementAnimationsMap layer_to_element_animations_map_;
 
   AnimationTimelineList timelines_;

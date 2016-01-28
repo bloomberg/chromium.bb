@@ -5,7 +5,8 @@
 #ifndef CC_LAYERS_DELEGATED_FRAME_RESOURCE_COLLECTION_H_
 #define CC_LAYERS_DELEGATED_FRAME_RESOURCE_COLLECTION_H_
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -56,7 +57,7 @@ class CC_EXPORT DelegatedFrameResourceCollection
     int refs_to_return;
     int refs_to_wait_for;
   };
-  typedef base::hash_map<unsigned, RefCount> ResourceIdRefCountMap;
+  using ResourceIdRefCountMap = std::unordered_map<unsigned, RefCount>;
   ResourceIdRefCountMap resource_id_ref_count_map_;
 
   base::ThreadChecker main_thread_checker_;

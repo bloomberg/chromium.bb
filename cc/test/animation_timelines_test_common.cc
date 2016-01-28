@@ -111,7 +111,7 @@ void TestHostClient::RegisterLayer(int layer_id, LayerTreeType tree_type) {
                                            ? layers_in_active_tree_
                                            : layers_in_pending_tree_;
   DCHECK(layers_in_tree.find(layer_id) == layers_in_tree.end());
-  layers_in_tree.add(layer_id, TestLayer::Create());
+  layers_in_tree[layer_id] = TestLayer::Create();
 
   DCHECK(host_);
   host_->RegisterLayer(layer_id, tree_type);
@@ -171,7 +171,7 @@ TestLayer* TestHostClient::FindTestLayer(int layer_id,
   auto kv = layers_in_tree.find(layer_id);
   DCHECK(kv != layers_in_tree.end());
   DCHECK(kv->second);
-  return kv->second;
+  return kv->second.get();
 }
 
 TestAnimationDelegate::TestAnimationDelegate()

@@ -10,8 +10,6 @@
 
 #include <functional>
 
-#include "base/containers/hash_tables.h"
-
 namespace cc {
 
 struct SurfaceId {

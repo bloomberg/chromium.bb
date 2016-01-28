@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -34,8 +34,8 @@ class OrderedTextureMap {
   GLuint IdAt(size_t index);
 
  private:
-  typedef base::hash_map<GLuint, scoped_refptr<TestTexture>> TextureMap;
-  typedef std::vector<GLuint> TextureList;
+  using TextureMap = std::unordered_map<GLuint, scoped_refptr<TestTexture>>;
+  using TextureList = std::vector<GLuint>;
 
   TextureMap textures_;
   TextureList ordered_textures_;

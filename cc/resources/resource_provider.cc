@@ -9,9 +9,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <unordered_map>
 
 #include "base/atomic_sequence_num.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
@@ -1281,7 +1281,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
 
-  base::hash_map<int, ResourceIdArray> resources_for_child;
+  std::unordered_map<int, ResourceIdArray> resources_for_child;
 
   for (const ReturnedResource& returned : resources) {
     ResourceId local_id = returned.id;

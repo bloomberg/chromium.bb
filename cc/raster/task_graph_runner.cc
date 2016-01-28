@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
-#include "base/containers/hash_tables.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 

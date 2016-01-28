@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
@@ -134,20 +134,10 @@ class CC_EXPORT RenderPass {
   DISALLOW_COPY_AND_ASSIGN(RenderPass);
 };
 
-}  // namespace cc
+using RenderPassList = std::vector<scoped_ptr<RenderPass>>;
+using RenderPassIdHashMap =
+    std::unordered_map<RenderPassId, RenderPass*, RenderPassIdHash>;
 
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::RenderPassId> {
-  size_t operator()(cc::RenderPassId key) const {
-    return base::HashInts(key.layer_id, static_cast<int>(key.index));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-
-namespace cc {
-typedef std::vector<scoped_ptr<RenderPass>> RenderPassList;
-typedef base::hash_map<RenderPassId, RenderPass*> RenderPassIdHashMap;
 }  // namespace cc
 
 #endif  // CC_QUADS_RENDER_PASS_H_

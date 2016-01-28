@@ -5,7 +5,8 @@
 #ifndef CC_ANIMATION_ANIMATION_REGISTRAR_H_
 #define CC_ANIMATION_ANIMATION_REGISTRAR_H_
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,7 +20,8 @@ class LayerAnimationController;
 
 class CC_EXPORT AnimationRegistrar {
  public:
-  typedef base::hash_map<int, LayerAnimationController*> AnimationControllerMap;
+  using AnimationControllerMap =
+      std::unordered_map<int, LayerAnimationController*>;
 
   static scoped_ptr<AnimationRegistrar> Create() {
     return make_scoped_ptr(new AnimationRegistrar());

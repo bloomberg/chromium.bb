@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -107,7 +106,7 @@ class SurfaceAggregator::RenderPassIdAllocator {
   }
 
  private:
-  base::hash_map<RenderPassId, int> id_to_index_map_;
+  std::unordered_map<RenderPassId, int, RenderPassIdHash> id_to_index_map_;
   int* next_index_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderPassIdAllocator);

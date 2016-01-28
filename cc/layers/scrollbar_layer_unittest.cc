@@ -4,7 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layers/append_quads_data.h"
@@ -109,7 +110,8 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
   }
 
  private:
-  using UIResourceBitmapMap = base::hash_map<UIResourceId, UIResourceBitmap>;
+  using UIResourceBitmapMap =
+      std::unordered_map<UIResourceId, UIResourceBitmap>;
   UIResourceBitmapMap ui_resource_bitmap_map_;
 
   int next_id_;

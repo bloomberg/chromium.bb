@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -293,7 +293,7 @@ class CC_EXPORT TileManager {
   const bool use_partial_raster_;
   bool use_gpu_rasterization_;
 
-  typedef base::hash_map<Tile::Id, Tile*> TileMap;
+  using TileMap = std::unordered_map<Tile::Id, Tile*>;
   TileMap tiles_;
 
   bool all_tiles_that_need_to_be_rasterized_are_scheduled_;
@@ -337,7 +337,7 @@ class CC_EXPORT TileManager {
   uint64_t prepare_tiles_count_;
   uint64_t next_tile_id_;
 
-  base::hash_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
+  std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
 

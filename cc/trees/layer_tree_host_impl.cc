@@ -11,9 +11,10 @@
 #include <limits>
 #include <map>
 #include <set>
+#include <unordered_map>
+#include <utility>
 
 #include "base/auto_reset.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
@@ -1189,7 +1190,8 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
   std::set<RenderPassId> pass_exists;
   // A set of RenderPassDrawQuads that we have seen (stored by the RenderPasses
   // they refer to).
-  base::SmallMap<base::hash_map<RenderPassId, int>> pass_references;
+  base::SmallMap<std::unordered_map<RenderPassId, int, RenderPassIdHash>>
+      pass_references;
 
   // Iterate RenderPasses in draw order, removing empty render passes (except
   // the root RenderPass).
@@ -3404,9 +3406,8 @@ void LayerTreeHostImpl::RegisterScrollbarAnimationController(
     return;
   if (ScrollbarAnimationControllerForId(scroll_layer_id))
     return;
-  scrollbar_animation_controllers_.add(
-      scroll_layer_id,
-      active_tree_->CreateScrollbarAnimationController(scroll_layer_id));
+  scrollbar_animation_controllers_[scroll_layer_id] =
+      active_tree_->CreateScrollbarAnimationController(scroll_layer_id);
 }
 
 void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
@@ -3423,7 +3424,7 @@ LayerTreeHostImpl::ScrollbarAnimationControllerForId(
   auto i = scrollbar_animation_controllers_.find(scroll_layer_id);
   if (i == scrollbar_animation_controllers_.end())
     return nullptr;
-  return i->second;
+  return i->second.get();
 }
 
 void LayerTreeHostImpl::PostDelayedScrollbarAnimationTask(

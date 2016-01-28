@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
@@ -283,7 +284,7 @@ void TaskGraphWorkQueue::CollectCompletedTasks(NamespaceToken token,
 
 bool TaskGraphWorkQueue::DependencyMismatch(const TaskGraph* graph) {
   // Value storage will be 0-initialized.
-  base::hash_map<const Task*, size_t> dependents;
+  std::unordered_map<const Task*, size_t> dependents;
   for (const TaskGraph::Edge& edge : graph->edges)
     dependents[edge.dependent]++;
 

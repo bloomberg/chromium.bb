@@ -8,9 +8,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
@@ -482,15 +482,15 @@ class CC_EXPORT LayerTreeImpl {
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 
-  typedef base::hash_map<int, LayerImpl*> LayerIdMap;
+  using LayerIdMap = std::unordered_map<int, LayerImpl*>;
   LayerIdMap layer_id_map_;
 
-  base::hash_map<uint64_t, ElementLayers> element_layers_map_;
+  std::unordered_map<uint64_t, ElementLayers> element_layers_map_;
 
   // Maps from clip layer ids to scroll layer ids.  Note that this only includes
   // the subset of clip layers that act as scrolling containers.  (This is
   // derived from LayerImpl::scroll_clip_layer_ and exists to avoid O(n) walks.)
-  base::hash_map<int, int> clip_scroll_map_;
+  std::unordered_map<int, int> clip_scroll_map_;
 
   // Maps scroll layer ids to scrollbar layer ids.  For each scroll layer, there
   // may be 1 or 2 scrollbar layers (for vertical and horizontal).  (This is

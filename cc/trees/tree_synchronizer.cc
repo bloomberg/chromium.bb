@@ -7,9 +7,8 @@
 #include <stddef.h>
 
 #include <set>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
@@ -17,9 +16,8 @@
 
 namespace cc {
 
-typedef base::ScopedPtrHashMap<int, scoped_ptr<LayerImpl>>
-    ScopedPtrLayerImplMap;
-typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
+using ScopedPtrLayerImplMap = std::unordered_map<int, scoped_ptr<LayerImpl>>;
+using RawPtrLayerImplMap = std::unordered_map<int, LayerImpl*>;
 
 void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,
                                        scoped_ptr<LayerImpl> layer_impl) {
@@ -34,7 +32,7 @@ void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,
   CollectExistingLayerImplRecursive(old_layers, layer_impl->TakeReplicaLayer());
 
   int id = layer_impl->id();
-  old_layers->set(id, std::move(layer_impl));
+  (*old_layers)[id] = std::move(layer_impl);
 }
 
 template <typename LayerType>
@@ -78,7 +76,7 @@ scoped_ptr<LayerImpl> ReuseOrCreateLayerImpl(RawPtrLayerImplMap* new_layers,
                                              ScopedPtrLayerImplMap* old_layers,
                                              LayerType* layer,
                                              LayerTreeImpl* tree_impl) {
-  scoped_ptr<LayerImpl> layer_impl = old_layers->take(layer->id());
+  scoped_ptr<LayerImpl> layer_impl = std::move((*old_layers)[layer->id()]);
 
   if (!layer_impl)
     layer_impl = layer->CreateLayerImpl(tree_impl);

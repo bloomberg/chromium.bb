@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_DIRECT_RENDERER_H_
 #define CC_OUTPUT_DIRECT_RENDERER_H_
 
+#include <unordered_map>
+
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
@@ -18,7 +19,6 @@
 #include "ui/gfx/geometry/quad_f.h"
 
 namespace cc {
-
 class DrawPolygon;
 class ResourceProvider;
 
@@ -141,7 +141,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       scoped_ptr<CopyOutputRequest> request) = 0;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
-  base::ScopedPtrHashMap<RenderPassId, scoped_ptr<ScopedResource>>
+  std::unordered_map<RenderPassId, scoped_ptr<ScopedResource>, RenderPassIdHash>
       render_pass_textures_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;

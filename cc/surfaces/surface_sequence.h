@@ -10,7 +10,6 @@
 
 #include <tuple>
 
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 
 namespace cc {
@@ -41,15 +40,12 @@ inline bool operator<(const SurfaceSequence& a, const SurfaceSequence& b) {
          std::tie(b.id_namespace, b.sequence);
 }
 
-}  // namespace cc
-
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::SurfaceSequence> {
-  size_t operator()(cc::SurfaceSequence key) const {
+struct SurfaceSequenceHash {
+  size_t operator()(SurfaceSequence key) const {
     return base::HashInts(key.id_namespace, key.sequence);
   }
 };
-}  // namespace BASE_HASH_NAMESPACE
+
+}  // namespace cc
 
 #endif  // CC_SURFACES_SURFACE_SEQUENCE_H_

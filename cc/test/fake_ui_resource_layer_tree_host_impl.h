@@ -5,7 +5,8 @@
 #ifndef CC_TEST_FAKE_UI_RESOURCE_LAYER_TREE_HOST_IMPL_H_
 #define CC_TEST_FAKE_UI_RESOURCE_LAYER_TREE_HOST_IMPL_H_
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "cc/test/fake_layer_tree_host_impl.h"
 
 namespace cc {
@@ -29,8 +30,8 @@ class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
   bool IsUIResourceOpaque(UIResourceId uid) const override;
 
  private:
-  typedef base::hash_map<UIResourceId, LayerTreeHostImpl::UIResourceData>
-      UIResourceMap;
+  using UIResourceMap =
+      std::unordered_map<UIResourceId, LayerTreeHostImpl::UIResourceData>;
   UIResourceMap fake_ui_resource_map_;
 };
 

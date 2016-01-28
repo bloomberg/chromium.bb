@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/nine_patch_layer_impl.h"
 #include "cc/quads/texture_draw_quad.h"

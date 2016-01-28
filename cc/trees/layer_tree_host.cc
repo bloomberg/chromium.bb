@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <stack>
 #include <string>
+#include <unordered_map>
 
 #include "base/atomic_sequence_num.h"
 #include "base/auto_reset.h"
@@ -64,7 +65,7 @@ namespace {
 
 Layer* UpdateAndGetLayer(Layer* current_layer,
                          int layer_id,
-                         const base::hash_map<int, Layer*>& layer_id_map) {
+                         const std::unordered_map<int, Layer*>& layer_id_map) {
   if (layer_id == Layer::INVALID_ID) {
     if (current_layer)
       current_layer->SetLayerTreeHost(nullptr);
