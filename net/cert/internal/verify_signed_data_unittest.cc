@@ -211,9 +211,7 @@ TEST(VerifySignedDataTest, EcdsaPrime256v1Sha512SpkiParamsNull) {
 }
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256UsingIdEaRsa) {
-  // TODO(eroman): This should fail! (shouldn't recognize this weird OID).
-  // See https://crbug.com/522228
-  RunTestCase(SUCCESS, "rsa-pkcs1-sha256-using-id-ea-rsa.pem");
+  RunTestCase(FAILURE, "rsa-pkcs1-sha256-using-id-ea-rsa.pem");
 }
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256SpkiNonNullParams) {
