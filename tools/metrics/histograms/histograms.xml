@@ -54748,6 +54748,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebFont.FontDisplayValue" enum="FontDisplayValue">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The value of font-display @font-face descriptor. Counted only when
+    explicitly specified in the @font-face rule.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.HadBlankText" enum="BooleanHadBlankText">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
@@ -66750,6 +66759,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Started browser process">
     Total number of browser processes.
   </int>
+</enum>
+
+<enum name="FontDisplayValue" type="int">
+  <int value="0" label="auto"/>
+  <int value="1" label="block"/>
+  <int value="2" label="swap"/>
+  <int value="3" label="fallback"/>
+  <int value="4" label="optional"/>
 </enum>
 
 <enum name="FormDataDeserializationStatus" type="int">

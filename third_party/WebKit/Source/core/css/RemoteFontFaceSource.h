@@ -19,7 +19,8 @@ enum FontDisplay {
     FontDisplayBlock,
     FontDisplaySwap,
     FontDisplayFallback,
-    FontDisplayOptional
+    FontDisplayOptional,
+    FontDisplayEnumMax
 };
 
 class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResourceClient {

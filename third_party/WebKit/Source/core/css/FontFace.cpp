@@ -59,6 +59,7 @@
 #include "core/frame/UseCounter.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -600,6 +601,9 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
         if (source)
             m_cssFontFace->addSource(source.release());
     }
+
+    if (m_display)
+        Platform::current()->histogramEnumeration("WebFont.FontDisplayValue", CSSValueToFontDisplay(m_display.get()), FontDisplayEnumMax);
 }
 
 void FontFace::initCSSFontFace(const unsigned char* data, size_t size)
