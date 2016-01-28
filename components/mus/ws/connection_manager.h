@@ -149,7 +149,11 @@ class ConnectionManager : public ServerWindowDelegate,
                                     bool success);
   void WindowManagerCreatedTopLevelWindow(WindowTreeImpl* wm_connection,
                                           uint32_t window_manager_change_id,
-                                          Id transport_window_id);
+                                          const ServerWindow* window);
+
+  // Called when we get an unexpected message from the WindowManager.
+  // TODO(sky): decide what we want to do here.
+  void WindowManagerSentBogusMessage() {}
 
   // These functions trivially delegate to all WindowTreeImpls, which in
   // term notify their clients.
@@ -199,10 +203,6 @@ class ConnectionManager : public ServerWindowDelegate,
   bool GetAndClearInFlightWindowManagerChange(
       uint32_t window_manager_change_id,
       InFlightWindowManagerChange* change);
-
-  // Called when we get an unexpected message from the WindowManager.
-  // TODO(sky): decide what we want to do here.
-  void WindowManagerSentBogusMessage(WindowTreeImpl* connection) {}
 
   // Invoked when a connection is about to execute a window server operation.
   // Subsequently followed by FinishOperation() once the change is done.

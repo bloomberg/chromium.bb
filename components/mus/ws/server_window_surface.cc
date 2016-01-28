@@ -101,6 +101,7 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
     cc::RenderPass* render_pass) {
   Id id = static_cast<Id>(
       input->surface_quad_state->surface.To<cc::SurfaceId>().id);
+  // TODO(sky): this is now wrong, needs mapping from client to window.
   WindowId other_window_id = WindowIdFromTransportId(id);
   ServerWindow* other_window = window()->GetChildWindow(other_window_id);
   if (!other_window) {

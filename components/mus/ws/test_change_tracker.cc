@@ -149,9 +149,12 @@ std::string SingleChangeToDescription(const std::vector<Change>& changes) {
 }
 
 std::string SingleWindowDescription(const std::vector<TestWindow>& windows) {
-  if (windows.size() != 1u)
-    return "more than one changes and expected only one";
-  return windows[0].ToString();
+  if (windows.empty())
+    return "no windows";
+  std::string result;
+  for (const TestWindow& window : windows)
+    result += window.ToString();
+  return result;
 }
 
 std::string ChangeWindowDescription(const std::vector<Change>& changes) {

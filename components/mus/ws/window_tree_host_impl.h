@@ -157,7 +157,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
     scoped_ptr<ProcessedEventTarget> processed_target;
   };
 
-  WindowId MapWindowIdFromClient(Id transport_window_id) const;
+  // Returns the ServerWindow with the specified transport id. Use this *only*
+  // if the call originates WindowTreeImpl associated with GetWindowTree().
+  ServerWindow* GetWindowFromWindowTreeHost(Id transport_window_id);
 
   void OnClientClosed();
 

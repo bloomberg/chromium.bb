@@ -249,15 +249,13 @@ void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {
 }
 
 void WindowTreeHostImpl::AddActivationParent(Id transport_window_id) {
-  ServerWindow* window = connection_manager_->GetWindow(
-      MapWindowIdFromClient(transport_window_id));
+  ServerWindow* window = GetWindowFromWindowTreeHost(transport_window_id);
   if (window)
     activation_parents_.insert(window->id());
 }
 
 void WindowTreeHostImpl::RemoveActivationParent(Id transport_window_id) {
-  ServerWindow* window = connection_manager_->GetWindow(
-      MapWindowIdFromClient(transport_window_id));
+  ServerWindow* window = GetWindowFromWindowTreeHost(transport_window_id);
   if (window)
     activation_parents_.erase(window->id());
 }
@@ -271,8 +269,7 @@ void WindowTreeHostImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     int32_t x_offset,
     int32_t y_offset,
     mojo::InsetsPtr hit_area) {
-  ServerWindow* window =
-      connection_manager_->GetWindow(WindowIdFromTransportId(window_id));
+  ServerWindow* window = GetWindowFromWindowTreeHost(window_id);
   if (!window)
     return;
 
@@ -280,11 +277,12 @@ void WindowTreeHostImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
   window->set_extended_hit_test_region(hit_area.To<gfx::Insets>());
 }
 
-WindowId WindowTreeHostImpl::MapWindowIdFromClient(
-    Id transport_window_id) const {
-  const WindowTreeImpl* connection = GetWindowTree();
-  return connection ? connection->MapWindowIdFromClient(transport_window_id)
-                    : WindowIdFromTransportId(transport_window_id);
+ServerWindow* WindowTreeHostImpl::GetWindowFromWindowTreeHost(
+    Id transport_window_id) {
+  WindowTreeImpl* connection = GetWindowTree();
+  if (!connection)
+    return nullptr;
+  return connection->GetWindowByClientId(ClientWindowId(transport_window_id));
 }
 
 void WindowTreeHostImpl::OnClientClosed() {
