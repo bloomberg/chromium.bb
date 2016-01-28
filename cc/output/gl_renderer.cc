@@ -988,23 +988,13 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       } else {
         gfx::RectF src_rect = rect;
         gfx::Vector2dF scale = quad->filters_scale;
-        // Compute the destination rect for the filtered output.
-        // Note that we leave the dest rect equal to the src rect when
-        // a filter chain cannot compute its bounds. This is correct
-        // behaviour, but Skia is a little conservative at the moment.
-        // Once Skia makes the fast-bounds traversal crop-rect aware
-        // (http://skbug.com/4627), this won't be a problem
-        // for Chrome since Blink always sets a crop rect on the leaf nodes
-        // of the DAG, making it always computable.
-        // TODO(senorblanco): remove this comment when http://skbug.com/4627
-        // is fixed.
-        if (filter->canComputeFastBounds()) {
-          SkRect result_rect;
-          rect.Scale(1.0f / scale.x(), 1.0f / scale.y());
-          filter->computeFastBounds(gfx::RectFToSkRect(rect), &result_rect);
-          rect = gfx::SkRectToRectF(result_rect);
-          rect.Scale(scale.x(), scale.y());
-        }
+        SkMatrix scale_matrix;
+        scale_matrix.setScale(scale.x(), scale.y());
+        SkIRect result_rect;
+        filter->filterBounds(gfx::RectToSkIRect(quad->rect), scale_matrix,
+                             &result_rect,
+                             SkImageFilter::kForward_MapDirection);
+        rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
         filter_image = ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
                                         resource_provider_, src_rect, rect,
                                         scale, filter.get(), contents_texture);
