@@ -322,11 +322,6 @@
                 },
               },
             }],
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
           ],
         },
         {
@@ -369,13 +364,6 @@
             'installer/setup/setup_util_unittest.cc',
             'installer/setup/setup_util_unittest.h',
             'installer/setup/update_active_setup_version_work_item_unittest.cc',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],

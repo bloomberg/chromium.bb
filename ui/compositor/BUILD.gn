@@ -190,7 +190,6 @@ test("compositor_unittests") {
     ":compositor",
     ":test_support",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//cc",
     "//cc:test_support",

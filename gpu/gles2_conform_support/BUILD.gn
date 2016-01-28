@@ -33,7 +33,6 @@ config("gles2_conform_test_warnings") {
   }
 }
 
-import("//build/config/allocator.gni")
 import("//testing/test.gni")
 
 # GYP version: gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support
@@ -63,10 +62,6 @@ executable("gles2_conform_support") {
       "native/egl_native_aura.cc",
       "native/egl_native_x11.cc",
     ]
-  }
-  if (use_allocator != "none") {
-    # See http://crbug.com/162998#c4 for why this is needed.
-    deps += [ "//base/allocator" ]
   }
 }
 

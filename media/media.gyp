@@ -1388,16 +1388,6 @@
             'filters/ffmpeg_demuxer_unittest.cc',
           ],
         }],
-
-        ['(os_posix==1 and OS!="mac") or (OS=="win" and component!="shared_library" and win_use_allocator_shim==1)', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
         ['OS=="android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
@@ -2031,17 +2021,6 @@
             'base/run_all_unittests.cc',
             'ffmpeg/ffmpeg_regression_tests.cc',
             'test/pipeline_integration_test_base.cc',
-          ],
-          'conditions': [
-            ['os_posix==1 and OS!="mac"', {
-              'conditions': [
-                ['use_allocator!="none"', {
-                  'dependencies': [
-                    '../base/allocator/allocator.gyp:allocator',
-                  ],
-                }],
-              ],
-            }],
           ],
         },
       ],

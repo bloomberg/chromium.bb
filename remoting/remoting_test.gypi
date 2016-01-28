@@ -406,11 +406,6 @@
             ['exclude', '^host/'],
           ]
         }],
-        [ 'OS == "linux" and use_allocator!="none"', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['configuration_policy == 1', {
           'dependencies': [
             '../components/components.gyp:policy',
@@ -574,11 +569,6 @@
             [ 'OS=="android"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
-              ],
-            }],
-            [ 'OS == "linux" and use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
               ],
             }],
           ],  # end of 'conditions'

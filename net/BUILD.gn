@@ -1403,7 +1403,6 @@ test("net_unittests") {
     "//base",
     "//base:i18n",
     "//base:prefs_test_support",
-    "//base/allocator",
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",

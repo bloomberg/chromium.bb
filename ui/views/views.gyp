@@ -884,17 +884,6 @@
             },
           },
         }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-        ['OS=="linux" and use_allocator!="none"', {
-           # See http://crbug.com/162998#c4 for why this is needed.
-          'dependencies': [
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['use_x11==1', {
           'dependencies': [
             '../../build/linux/system.gyp:x11',

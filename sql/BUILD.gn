@@ -107,7 +107,6 @@ test("sql_unittests") {
     ":redirection_header",
     ":sql",
     ":test_support",
-    "//base/allocator",
     "//base/test:test_support",
     "//testing/gtest",
     "//third_party/sqlite",

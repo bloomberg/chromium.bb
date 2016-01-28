@@ -22,7 +22,6 @@
       'common',
       '../sync/sync.gyp:sync',
     ],
-    'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
     'conditions': [

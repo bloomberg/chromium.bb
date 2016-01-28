@@ -351,7 +351,6 @@ test("blink_heap_unittests") {
   deps = [
     ":platform",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//content/test:test_support",
     "//testing/gmock",
@@ -407,7 +406,6 @@ test("blink_platform_unittests") {
     ":platform",
     ":test_support",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//cc",
     "//cc:test_support",

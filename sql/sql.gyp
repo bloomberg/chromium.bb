@@ -109,15 +109,6 @@
         '..',
       ],
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="ios"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
         ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',

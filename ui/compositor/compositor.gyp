@@ -192,15 +192,6 @@
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
         ['OS == "android"', {
           'dependencies': [
             '../../testing/android/native_test.gyp:native_test_native_code',

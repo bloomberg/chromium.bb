@@ -47,12 +47,6 @@
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [4127, 4510, 4512, 4610, 4706, 4068, 4267],
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['OS=="android"', {
           'type': 'shared_library',
           'dependencies': [

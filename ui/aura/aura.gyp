@@ -312,12 +312,6 @@
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
           ],
         }],
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-           # See http://crbug.com/162998#c4 for why this is needed.
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
       ],
     },
   ],

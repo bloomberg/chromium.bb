@@ -178,7 +178,6 @@ if (!is_android) {
         ":browser_dependencies",
         ":child_dependencies",
         ":manpage",
-        "//base/allocator",
 
         # Needed to use the master_preferences functions
         "//chrome/installer/util:with_no_strings",
@@ -293,7 +292,6 @@ if (is_mac || is_win) {
 
     deps = [
       ":browser_dependencies",
-      "//base/allocator",
       "//build/config/sanitizers:deps",
     ]
     if (is_win) {
@@ -394,7 +392,6 @@ if (is_mac || is_win) {
         ":child_dependencies",
         ":chrome_child_manifest",
         ":chrome_dll_version",
-        "//base/allocator",
         "//build/config/sanitizers:deps",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",

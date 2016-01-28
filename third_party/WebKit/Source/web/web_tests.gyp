@@ -99,13 +99,6 @@
                             },
                         },
                     },
-                    'conditions': [
-                        ['win_use_allocator_shim==1', {
-                            'dependencies': [
-                                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-                            ],
-                        }],
-                    ],
                 }],
                 ['OS=="android"', {
                     'type': 'shared_library',
@@ -117,11 +110,6 @@
                 ['OS=="mac"', {
                     'include_dirs': [
                         '../../public/web/mac',
-                    ],
-                }],
-                [ 'os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and use_allocator!="none"', {
-                    'dependencies': [
-                        '<(DEPTH)/base/allocator/allocator.gyp:allocator',
                     ],
                 }],
             ],

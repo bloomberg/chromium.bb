@@ -37,15 +37,6 @@
           'sources': [
             'test/cast_benchmarks.cc',
           ], # source
-          'conditions': [
-            ['os_posix==1 and OS!="mac" and OS!="ios" and use_allocator!="none"',
-             {
-               'dependencies': [
-                 '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-               ],
-             }
-            ],
-          ],
         },
         {
           # GN version: //media/cast:cast_receiver_app

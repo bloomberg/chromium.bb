@@ -129,7 +129,6 @@ test("courgette_unittests") {
     ":courgette_lib",
     "//base",
     "//base:i18n",
-    "//base/allocator",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gtest",

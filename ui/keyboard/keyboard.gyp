@@ -149,21 +149,6 @@
         'keyboard_util_unittest.cc',
         'test/run_all_unittests.cc',
       ],
-      'conditions': [
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-          'link_settings': {
-            'ldflags': ['-rdynamic'],
-          },
-        }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-      ],
     },
   ],
 }

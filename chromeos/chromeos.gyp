@@ -671,12 +671,6 @@
         '..',
       ],
       'conditions': [
-        [ 'use_allocator!="none"', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-          },
-        ],
         ['use_binder == 1', {
           'sources': [ '<@(chromeos_binder_test_sources)' ],
           'conditions': [

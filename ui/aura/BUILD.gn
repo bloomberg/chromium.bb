@@ -301,7 +301,6 @@ test("aura_unittests") {
 
   deps = [
     ":test_support",
-    "//base/allocator",
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",

@@ -360,7 +360,6 @@ test("content_browsertests") {
   deps = [
     ":browsertest_support",
     ":web_ui_test_mojo_bindings",
-    "//base/allocator",
     "//base/test:test_support",
     "//content:resources",
     "//content/browser/background_sync:background_sync_proto",
@@ -558,7 +557,6 @@ test("content_unittests") {
 
   deps = [
     ":test_support",
-    "//base/allocator",
     "//base/test:test_support",
     "//content/browser/background_sync:background_sync_proto",
     "//content/browser/cache_storage:cache_storage_proto",
@@ -783,7 +781,6 @@ test("content_perftests") {
     "../test/run_all_perftests.cc",
   ]
   deps = [
-    "//base/allocator",
     "//base/test:test_support",
     "//cc",
     "//content/public/browser",
@@ -818,7 +815,6 @@ test("content_gl_tests") {
 
   deps = [
     ":test_support",
-    "//base/allocator",
     "//base/test:test_support",
     "//content/public/common",
     "//gpu/blink",
@@ -854,7 +850,6 @@ test("content_gl_benchmark") {
 
   deps = [
     ":test_support",
-    "//base/allocator",
     "//base/test:test_support",
     "//content/public/common",
     "//gpu/blink",

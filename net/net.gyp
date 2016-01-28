@@ -222,15 +222,6 @@
             }],
           ],
         }],
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
         [ 'use_kerberos==1', {
           'defines': [
             'USE_KERBEROS',
@@ -644,15 +635,6 @@
                 '../third_party/nss/nss.gyp:nspr',
                 '../third_party/nss/nss.gyp:nss',
                 'third_party/nss/ssl.gyp:libssl',
-              ],
-            }],
-          ],
-        }],
-        ['os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
               ],
             }],
           ],

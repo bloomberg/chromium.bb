@@ -125,7 +125,6 @@ test("wtf_unittests") {
     ":test_support",
     ":wtf",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

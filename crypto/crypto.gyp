@@ -195,14 +195,6 @@
       ],
       'conditions': [
         [ 'use_nss_certs == 1', {
-          'conditions': [
-            [ 'use_allocator!="none"', {
-                'dependencies': [
-                  '../base/allocator/allocator.gyp:allocator',
-                ],
-              },
-            ],
-          ],
           'dependencies': [
             '../build/linux/system.gyp:ssl',
           ],

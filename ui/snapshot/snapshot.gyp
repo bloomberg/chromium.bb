@@ -90,12 +90,6 @@
             '../wm/wm.gyp:wm',
           ],
         }],
-        # See http://crbug.com/162998#c4 for why this is needed.
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
       ],
     },
   ],

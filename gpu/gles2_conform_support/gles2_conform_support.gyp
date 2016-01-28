@@ -96,17 +96,10 @@
       'type': 'executable',
       'dependencies': [
         'egl_native',
+        '../../base/allocator/allocator.gyp:allocator',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../gpu/gpu.gyp:gles2_c_lib_nocheck',
         '../../third_party/expat/expat.gyp:expat',
-      ],
-      'conditions': [
-        # See http://crbug.com/162998#c4 for why this is needed.
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
       ],
       'defines': [
         'GLES2_CONFORM_SUPPORT_ONLY',

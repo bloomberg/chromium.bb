@@ -254,15 +254,6 @@
                     '../build/linux/system.gyp:glib',
                   ],
                 }],
-                ['os_posix == 1 and OS != "mac"', {
-                  'conditions': [
-                    ['use_allocator!="none"', {
-                      'dependencies': [
-                        '../base/allocator/allocator.gyp:allocator',
-                      ],
-                    }],
-                  ],
-                }],
                 ['use_seccomp_bpf == 0', {
                   'sources!': [
                     '../content/common/sandbox_linux/sandbox_bpf_base_policy_linux.cc',

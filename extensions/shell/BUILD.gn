@@ -132,7 +132,6 @@ if (!(is_chromeos && !use_ozone)) {
     if (is_win) {
       configs += [ "//build/config/win:windowed" ]
       configs -= [ "//build/config/win:console" ]
-      deps += [ "//base/allocator" ]
     }
 
     if (is_mac) {
@@ -212,10 +211,6 @@ test("app_shell_unittests") {
                       "//extensions/shell")
       sources += nacl_sources
     }
-  }
-
-  if (is_win) {
-    deps += [ "//base/allocator" ]
   }
 }
 

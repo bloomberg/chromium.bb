@@ -1828,13 +1828,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
           ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                 '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
           'msvs_settings': {
             'VCLinkerTool': {
               'conditions': [
@@ -2419,13 +2412,6 @@
           'dependencies': [
             'chrome_version_resources',
           ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
         }, { # else: OS != "win"
           'sources!': [
             'app/chrome_command_ids.h',
@@ -2522,15 +2508,6 @@
             'browser/policy/cloud/component_cloud_policy_browsertest.cc',
             'browser/prefs/pref_hash_browsertest.cc',
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
-          ],
-        }],
-        ['os_posix == 1 and OS != "mac" and OS != "android"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
           ],
         }],
         ['chromeos == 1', {
@@ -2749,13 +2726,6 @@
           'dependencies': [
             'chrome_version_resources',
           ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -2802,20 +2772,6 @@
         }, {  # OS!="mac"
           'sources!': [
             'test/perf/mach_ports_performancetest.cc',
-          ],
-        }],
-        ['os_posix == 1 and OS != "mac" and OS != "android"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
-        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
       ],  # conditions
@@ -2954,13 +2910,6 @@
           'dependencies': [
             'chrome_version_resources',
           ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
           'configurations': {
             'Debug': {
               'msvs_settings': {
@@ -3060,13 +3009,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
           ],
           'configurations': {
             'Debug': {

@@ -215,13 +215,6 @@
           ],
         }],
         ['OS=="win"', {
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:*',
-              ],
-            }],
-          ],
           'dependencies': [
             '../chrome/tools/crash_service/caps/caps.gyp:*',
             '../chrome_elf/chrome_elf.gyp:*',

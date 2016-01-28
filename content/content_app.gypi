@@ -40,12 +40,6 @@
     'public/app/content_main_runner.h',
   ],
   'conditions': [
-    ['((OS=="linux" and os_posix==1 and use_aura==1) or OS=="android") and use_allocator!="none"', {
-      'dependencies': [
-        # This is needed by app/content_main_runner.cc
-        '../base/allocator/allocator.gyp:allocator',
-      ],
-    }],
     ['OS=="android"', {
       'sources!': [
         'app/content_main.cc',

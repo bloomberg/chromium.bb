@@ -337,7 +337,6 @@ if (!is_android) {
     deps = [
       ":test_support",
       ":test_support_ui",
-      "//base/allocator",
       "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
       "//chrome:resources",
@@ -850,7 +849,6 @@ if (!is_android) {
       ":test_support_ui",
       "//base",
       "//base:i18n",
-      "//base/allocator",
       "//base/test:test_support",
       "//chrome:browser_tests_pak",
       "//chrome:packed_extra_resources",
@@ -1316,7 +1314,6 @@ if (!is_android) {
       ":sync_integration_test_support",
       ":test_support",
       ":test_support_ui",
-      "//base/allocator",
       "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
       "//chrome:resources",
@@ -1400,7 +1397,6 @@ if (!is_android) {
     deps = [
       ":sync_integration_test_support",
       ":test_support_ui",
-      "//base/allocator",
       "//crypto:platform",
       "//sync",
       "//testing/gmock",
@@ -1563,7 +1559,6 @@ test("unit_tests") {
     "//testing/gtest",
 
     # 3) anything tests directly depend on
-    "//base/allocator",
     "//chrome:resources",
     "//chrome:strings",
     "//components/safe_browsing_db:test_database_manager",
@@ -2131,7 +2126,6 @@ if (is_win || (is_linux && !is_chromeos)) {
     ]
     deps = [
       ":test_support",
-      "//base/allocator",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
       "//breakpad:client",
@@ -2161,7 +2155,6 @@ if (is_win || (is_linux && !is_chromeos)) {
       ":test_support_ui",
       "//base",
       "//base:i18n",
-      "//base/allocator",
       "//base/test:test_support",
       "//chrome/browser",
       "//chrome/renderer",

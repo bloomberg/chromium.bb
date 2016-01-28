@@ -354,14 +354,6 @@
         'util/protobuf_unittest.cc',
       ],
       'conditions': [
-        # TODO(akalin): This is needed because histogram.cc uses
-        # leak_annotations.h, which pulls this in.  Make 'base'
-        # propagate this dependency.
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',

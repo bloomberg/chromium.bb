@@ -802,11 +802,6 @@
         'renderer/webscrollbarbehavior_impl_mac.mm',
       ],
     }],
-    ['OS=="win" and win_use_allocator_shim==1', {
-      'dependencies': [
-          '../base/allocator/allocator.gyp:allocator',
-      ],
-    }],
     ['OS=="android"', {
       'sources': [
         'renderer/external_popup_menu.cc',

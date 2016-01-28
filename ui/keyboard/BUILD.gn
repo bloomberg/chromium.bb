@@ -136,7 +136,6 @@ test("keyboard_unittests") {
   deps = [
     ":keyboard",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",

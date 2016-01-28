@@ -724,7 +724,6 @@ test("sync_unit_tests") {
     ":test_support_sync_core",
     ":test_support_sync_internal_api",
     "//base",
-    "//base/allocator",
     "//base/test:run_all_unittests",
     "//google_apis",
     "//google_apis:test_support",

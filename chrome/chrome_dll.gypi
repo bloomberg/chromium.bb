@@ -248,11 +248,6 @@
                 },
               },
               'conditions': [
-                ['win_use_allocator_shim==1', {
-                  'dependencies': [
-                    '<(allocator_target)',
-                  ],
-                }],
                 ['enable_basic_printing==1 or enable_print_preview==1', {
                   'dependencies': [
                     '../printing/printing.gyp:printing',
@@ -365,11 +360,6 @@
             'app/chrome_main_delegate.h',
           ],
           'conditions': [
-            ['OS=="win" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
             ['OS=="win"', {
               'conditions': [
                 ['chrome_pgo_phase!=0', {

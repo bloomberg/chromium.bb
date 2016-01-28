@@ -1155,11 +1155,6 @@
             'components.gyp:browser_watcher_client',
           ]
         }],
-        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         [ 'cld_version==2', {
           'dependencies': [
             # Unit tests should always use statically-linked CLD data.
@@ -1457,19 +1452,6 @@
             ['exclude', '^storage_monitor/'],
           ],
         }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-        ['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-          'link_settings': {
-            'ldflags': ['-rdynamic'],
-          },
-        }],
         ['configuration_policy==1', {
           'dependencies': [
             'components.gyp:policy_component',
@@ -1723,11 +1705,6 @@
                '../testing/android/native_test.gyp:native_test_native_code',
              ],
            }],
-           ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-             'dependencies': [
-               '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-             ],
-           }],
          ],
          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
          'msvs_disabled_warnings': [ 4267, ],
@@ -1824,11 +1801,6 @@
               },
               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
               'msvs_disabled_warnings': [ 4267, ],
-            }],
-            ['OS=="win" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
             }],
             ['OS=="mac"', {
               'dependencies': [

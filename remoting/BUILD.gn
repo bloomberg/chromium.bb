@@ -129,7 +129,6 @@ if (!is_mac) {
 
     deps = [
       ":test_support",
-      "//base/allocator",
       "//google_apis",
       "//remoting/base:unit_tests",
       "//remoting/client:unit_tests",

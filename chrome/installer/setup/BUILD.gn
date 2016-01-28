@@ -22,7 +22,6 @@ if (is_win) {
 
     deps = [
       ":lib",
-      "//base/allocator",
       "//build/config/sanitizers:deps",
       "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     ]
@@ -83,7 +82,6 @@ if (is_win) {
       ":lib",
       "//base",
       "//base:i18n",
-      "//base/allocator",
       "//base/test:test_support",
       "//chrome/installer/mini_installer:unit_tests",
       "//testing/gmock",

@@ -289,7 +289,6 @@ test("ash_unittests") {
     "//ash/resources",
     "//ash/strings",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//components/signin/core/account_id",
     "//components/user_manager",
@@ -377,10 +376,6 @@ test("ash_unittests") {
   if (!use_x11 || !is_chromeos) {
     sources -= [ "touch/touch_transformer_controller_unittest.cc" ]
   }
-
-  # TODO(GYP) is this necessary?
-  #['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
-  # ldflags = "-rdynamic"
 
   if (!is_chromeos) {
     sources -= [ "sticky_keys/sticky_keys_unittest.cc" ]

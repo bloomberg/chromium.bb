@@ -766,7 +766,6 @@ test("ui_base_unittests") {
 
   deps = [
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//net",
     "//skia",

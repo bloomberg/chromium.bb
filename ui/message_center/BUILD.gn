@@ -190,7 +190,6 @@ test("message_center_unittests") {
     ":message_center",
     ":test_support",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",

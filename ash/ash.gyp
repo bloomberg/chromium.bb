@@ -1213,11 +1213,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
@@ -1239,14 +1234,6 @@
             'touch/touch_transformer_controller_unittest.cc',
             'touch/touchscreen_util_unittest.cc',
           ],
-        }],
-        ['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-          'link_settings': {
-            'ldflags': ['-rdynamic'],
-          },
         }],
       ],
     },
@@ -1333,11 +1320,6 @@
         ['chromeos==1', {
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-          ],
-        }],
-        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
       ],

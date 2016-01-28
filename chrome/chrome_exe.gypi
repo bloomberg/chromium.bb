@@ -160,12 +160,6 @@
             },
           ],
           'conditions': [
-            ['use_allocator!="none"', {
-                'dependencies': [
-                  '<(allocator_target)',
-                ],
-              },
-            ],
             ['profiling==0 and linux_disable_pie==0', {
               'ldflags': [
                 '-pie',

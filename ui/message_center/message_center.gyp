@@ -239,12 +239,6 @@
             ['include', '^test/run_all_unittests\\.cc$'],
           ],
         }],
-        # See http://crbug.com/162998#c4 for why this is needed.
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
       ],
     },  # target_name: message_center_unittests
   ],

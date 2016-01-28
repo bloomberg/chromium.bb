@@ -316,7 +316,6 @@ test("chromevox_tests") {
     ":chromevox_unitjs_tests",
     "//base",
     "//base:i18n",
-    "//base/allocator",
     "//base/test:test_support",
     "//chrome:browser_tests_pak",
     "//chrome:packed_extra_resources",

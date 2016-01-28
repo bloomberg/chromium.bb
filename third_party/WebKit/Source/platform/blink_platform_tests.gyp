@@ -53,17 +53,6 @@
         '<@(platform_heap_test_files)',
       ],
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ]
-        }],
-        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ]
-        }],
         ['OS=="android"', {
           'type': 'shared_library',
           'dependencies': [
@@ -104,12 +93,6 @@
         '<@(platform_test_files)',
       ],
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ]
-        }],
         ['OS=="android" and gtest_target_type == "shared_library"', {
           'type': 'shared_library',
           'dependencies': [

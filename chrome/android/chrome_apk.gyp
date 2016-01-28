@@ -127,11 +127,6 @@
             }],
           ],
         }],  # order_profiling!=0
-        ['use_allocator!="none"', {
-          'dependencies': [
-            '../../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
       ],
     },
     {

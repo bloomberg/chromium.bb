@@ -2603,15 +2603,6 @@
             },
           },
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
         ['OS=="mac"', {
           # The test fetches resources which means Mac need the app bundle to
           # exist on disk so it can pull from it.
@@ -2699,11 +2690,6 @@
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
           'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
             ['branding!="Chrome"', {
               'sources!': [
                 'browser/google/google_update_win_unittest.cc',
@@ -2924,13 +2910,6 @@
             # breakpad is currently only tested on Windows.
             '../breakpad/breakpad.gyp:*',
             '../components/components.gyp:crash_component',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
           ],
         }],
       ],

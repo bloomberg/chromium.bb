@@ -205,10 +205,6 @@ test("extensions_unittests") {
     "//third_party/mesa:osmesa",
   ]
 
-  if (is_win) {
-    deps += [ "//base/allocator" ]
-  }
-
   if (is_chromeos) {
     sources += [
       "browser/api/webcam_private/visca_webcam_unittest.cc",
@@ -276,8 +272,6 @@ test("extensions_browsertests") {
   ]
 
   if (is_win) {
-    deps += [ "//base/allocator" ]
-
     if (target_cpu == "x86") {
       data_deps += [
         # "$root_out_dir/wow_helper.exe"  # TODO(GYP)
@@ -309,7 +303,6 @@ source_set("chrome_extensions_browsertests") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base/allocator",
     "//base/test:test_support",
     "//chrome/browser",
     "//chrome/browser/resources:extension_resource_demo",
@@ -376,7 +369,6 @@ source_set("chrome_extensions_interactive_uitests") {
   # These are the deps from interactive_uitests minus some internal Chrome
   # ones that aren't allowed to be included here and that aren't needed.
   deps = [
-    "//base/allocator",
     "//chrome/browser",
     "//chrome/browser/devtools",
     "//chrome/renderer",

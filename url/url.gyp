@@ -55,15 +55,6 @@
         'url_test_utils.h',
         'url_util_unittest.cc',
       ],
-      'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="ios" and use_allocator!="none"',
-          {
-            'dependencies': [
-              '../base/allocator/allocator.gyp:allocator',
-            ],
-          }
-        ],
-      ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },

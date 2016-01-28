@@ -189,13 +189,6 @@ test("ipc_tests") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}
 
-  # TODO(brettw) hook up tcmalloc to this target.
-  #if (is_posix && !is_mac && !is_android) {
-  #  if (use_allocator!="none") {
-  #    deps += "/base/allocator"
-  #  }
-  #}
-
   deps = [
     ":ipc",
     ":test_support",
@@ -218,12 +211,6 @@ test("ipc_perftests") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}
 
-  # TODO(brettw) hook up tcmalloc to this target.
-  #if (is_posix && !is_mac && !is_android) {
-  #  if (use_allocator!="none") {
-  #    deps += "//base/allocator"
-  #  }
-  #}
   deps = [
     ":ipc",
     ":test_support",

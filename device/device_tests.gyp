@@ -149,15 +149,6 @@
             ],
           },
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
         ['use_udev==1', {
           'dependencies': [
             'udev_linux/udev.gyp:udev_linux',

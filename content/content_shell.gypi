@@ -235,11 +235,6 @@
         },
       },
       'conditions': [
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['OS=="win"', {
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/content/app/strings',
@@ -284,12 +279,6 @@
         ['debug_devtools==1', {
           'defines': [
             'DEBUG_DEVTOOLS=1',
-          ],
-        }],
-        ['(OS=="linux" or OS=="android") and use_allocator!="none"', {
-          'dependencies': [
-            # This is needed by content/app/content_main_runner.cc
-            '../base/allocator/allocator.gyp:allocator',
           ],
         }],
         ['use_aura==1', {
@@ -492,11 +481,6 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
             ['win_console_app==1', {
               'defines': ['WIN_CONSOLE_APP'],
             }, { # else win_console_app==0

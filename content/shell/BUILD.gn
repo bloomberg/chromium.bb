@@ -195,7 +195,6 @@ static_library("content_shell_lib") {
     ":resources",
     "//base",
     "//base:base_static",
-    "//base/allocator",
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
@@ -420,7 +419,6 @@ if (!is_android && !is_mac) {
     deps = [
       ":content_shell_lib",
       ":pak",
-      "//base/allocator",
       "//build/config/sanitizers:deps",
       "//build/win:default_exe_manifest",
     ]

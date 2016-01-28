@@ -70,7 +70,6 @@ test("snapshot_unittests") {
   deps = [
     ":snapshot",
     "//base",
-    "//base/allocator",
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",

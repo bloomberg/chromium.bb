@@ -209,7 +209,6 @@ test("views_unittests") {
     ":test_support",
     "//base",
     "//base:i18n",
-    "//base/allocator",
     "//base/test:test_support",
     "//cc",
     "//skia",

@@ -133,11 +133,6 @@
             '<(DEPTH)/sandbox/sandbox.gyp:sandbox',
           ],
         }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['OS=="mac"', {
           'product_name': '<(app_shell_product_name)',
           'dependencies!': [
@@ -221,11 +216,6 @@
           ],
           'sources': [
             '<@(app_shell_unittests_sources_chromeos)',
-          ],
-        }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
       ],

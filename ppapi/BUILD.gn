@@ -119,7 +119,6 @@ test("ppapi_unittests") {
   ]
 
   deps = [
-    "//base/allocator",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//gpu/ipc",
@@ -144,7 +143,6 @@ test("ppapi_perftests") {
   ]
 
   deps = [
-    "//base/allocator",
     "//base/test:test_support",
     "//ppapi/proxy",
     "//ppapi/proxy:test_support",

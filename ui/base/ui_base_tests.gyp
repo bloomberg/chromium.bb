@@ -165,13 +165,6 @@
           'dependencies': [
             '../../build/linux/system.gyp:pangocairo',
           ],
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
         }],
         ['use_x11==1', {
           'dependencies': [

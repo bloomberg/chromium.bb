@@ -102,11 +102,6 @@
             'gestures/motion_event_aura_unittest.cc',
           ],
         }],
-        ['OS=="linux" and use_allocator!="none"', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         # Exclude tests that rely on event_utils.h for platforms that do not
         # provide native cracking, i.e., platforms that use events_stub.cc.
         ['OS!="win" and use_x11!=1 and use_ozone!=1', {

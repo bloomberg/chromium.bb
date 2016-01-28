@@ -54,11 +54,6 @@
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
       'conditions': [
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['chromeos==1', {
           'dependencies': [
             '<(DEPTH)/chromeos/chromeos.gyp:chromeos_test_support',
@@ -98,11 +93,6 @@
         '<@(extensions_browsertests_sources)',
       ],
       'conditions': [
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['OS=="mac"', {
           'dependencies': [
             'shell/app_shell.gyp:app_shell',  # Needed for App Shell.app's Helper.

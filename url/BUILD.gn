@@ -139,12 +139,6 @@ if (!is_android) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-    #if (is_posix && !is_mac && !is_ios) {
-    #  if (use_allocator!="none") {
-    #    deps += "//base/allocator"
-    #  }
-    #}
-
     deps = [
       ":url",
       "//base",

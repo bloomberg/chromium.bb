@@ -25,11 +25,6 @@ content_app_sources = [
 content_app_deps = [
   "//base",
   "//base:i18n",
-
-  # This is needed by app/content_main_runner.cc
-  # TODO(brettw) this shouldn't be here, only final executables should be
-  # picking the allocator. http://crbug.com/571731
-  "//base/allocator",
   "//content:export",
   "//content:sandbox_helper_win",
   "//content/public/common:common_sources",

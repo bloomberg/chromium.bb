@@ -1227,11 +1227,6 @@
                 '../dbus/dbus.gyp:dbus_test_support',
               ],
             }],
-            ['OS=="win" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
             ['OS=="win"', {
               'dependencies': [
                 '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
@@ -1363,11 +1358,6 @@
             ['OS == "android"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
-              ],
-            }],
-            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
               ],
             }],
           ],
@@ -1533,11 +1523,6 @@
               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
               'msvs_disabled_warnings': [ 4267, ],
             }],
-            ['OS=="win" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
             ['OS=="android"', {
               'sources': [ '<@(content_browsertests_android_sources)' ],
               'sources!': [
@@ -1637,11 +1622,6 @@
                 '../third_party/mesa/mesa.gyp:osmesa',
               ],
             }],
-            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
           ],
         },
         {
@@ -1665,13 +1645,6 @@
           ],
           'sources': [
             'common/gpu/client/gl_helper_benchmark.cc',
-          ],
-          'conditions': [
-            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
           ],
         },
       ],
@@ -1727,13 +1700,6 @@
                 'dependencies': [
                   '<(angle_path)/src/angle.gyp:libEGL',
                   '<(angle_path)/src/angle.gyp:libGLESv2',
-                ],
-              }],
-              ['(OS=="win" and win_use_allocator_shim==1) or '
-               '(os_posix == 1 and OS != "android" and '
-               ' use_allocator!="none")', {
-                'dependencies': [
-                  '../base/allocator/allocator.gyp:allocator',
                 ],
               }],
               ['target_arch != "arm" and (OS=="linux" or chromeos == 1)', {
