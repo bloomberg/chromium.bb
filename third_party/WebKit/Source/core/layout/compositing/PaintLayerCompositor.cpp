@@ -767,6 +767,11 @@ void PaintLayerCompositor::updateDirectCompositingReasons(PaintLayer* layer)
 
 bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const
 {
+    FrameView* frameView = layer->layoutObject()->frameView();
+    // Elements within an invisible frame must not be composited because they are not drawn.
+    if (frameView && !frameView->isVisible())
+        return false;
+
     const bool hasCompositorAnimation = m_compositingReasonFinder.requiresCompositingForAnimation(*layer->layoutObject()->style());
     return m_hasAcceleratedCompositing && (hasCompositorAnimation || !layer->subtreeIsInvisible()) && layer->isSelfPaintingLayer() && !layer->layoutObject()->isLayoutFlowThread();
 }

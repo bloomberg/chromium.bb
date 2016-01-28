@@ -90,6 +90,8 @@ protected:
     {
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
         FrameViewTestBase::SetUp();
+        document().view()->setParentVisible(true);
+        document().view()->setSelfVisible(true);
     }
 
     void TearDown() override

@@ -1110,6 +1110,8 @@ crbug.com/509025 [ Mac10.10 ] fast/text/large-text-composed-char.html [ Failure 
 crbug.com/509025 [ Mac10.10 ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
+crbug.com/569643 compositing/iframes/invisible-nested-iframe-hide.html [ NeedsRebaseline ]
+
 crbug.com/545140 [ Mac10.10 ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 crbug.com/545141 [ Mac10.10 ] fast/writing-mode/text-orientation-basic.html [ Failure ]
 

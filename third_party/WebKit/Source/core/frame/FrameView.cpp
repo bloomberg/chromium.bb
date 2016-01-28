@@ -3801,6 +3801,10 @@ void FrameView::setParentVisible(bool visible)
     if (isParentVisible() == visible)
         return;
 
+    // As parent visibility changes, we may need to recomposite this frame view and potentially child frame views.
+    if (PaintLayerCompositor* compositor = layoutView() ? layoutView()->compositor() : nullptr)
+        compositor->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+
     Widget::setParentVisible(visible);
 
     if (!isSelfVisible())

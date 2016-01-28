@@ -45,6 +45,8 @@ protected:
     void enableCompositing()
     {
         m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
+        document().view()->setParentVisible(true);
+        document().view()->setSelfVisible(true);
         document().view()->updateAllLifecyclePhases();
     }
 
