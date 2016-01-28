@@ -34,8 +34,7 @@ void BrowserTabStripTracker::Init(InitWith init_with) {
 
   base::AutoReset<bool> restter(&is_processing_initial_browsers_, true);
   if (init_with == InitWith::BROWSERS_IN_ACTIVE_DESKTOP) {
-    for (Browser* browser :
-         *BrowserList::GetInstance(chrome::GetActiveDesktop()))
+    for (Browser* browser : *BrowserList::GetInstance())
       MaybeTrackBrowser(browser);
   } else {
     DCHECK(InitWith::ALL_BROWERS == init_with);

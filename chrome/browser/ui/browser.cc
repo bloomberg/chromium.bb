@@ -2655,7 +2655,7 @@ bool Browser::ShouldHideUIForFullscreen() const {
 }
 
 bool Browser::ShouldStartShutdown() const {
-  return BrowserList::GetInstance(host_desktop_type())->size() <= 1;
+  return BrowserList::GetInstance()->size() <= 1;
 }
 
 bool Browser::MaybeCreateBackgroundContents(

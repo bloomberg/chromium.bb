@@ -80,8 +80,7 @@ void InstallChromeApp(const std::string& app_id) {
   // At the moment InstallChromeApp() is called immediately after handling
   // startup URLs, so a browser is guaranteed to be created. If that changes we
   // may need to start a browser or browser session here.
-  Browser* browser =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->get(0);
+  Browser* browser = BrowserList::GetInstance()->get(0);
   DCHECK(browser);
 
   content::OpenURLParams params(GetAppInstallUrl(app_id),

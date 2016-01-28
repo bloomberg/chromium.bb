@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
 // Flakes http://crbug.com/471953
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
                        DISABLED_NewAvatarMenuEnabledInGuestMode) {
-  EXPECT_EQ(1U, BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
   // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()
   // does incomplete initialization that would lead to
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // listen for the notification.
   base::MessageLoop::current()->RunUntilIdle();
   browser_creation_observer.Wait();
-  EXPECT_EQ(2U, BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
+  EXPECT_EQ(2U, BrowserList::GetInstance()->size());
 
   // Access the browser that was created for the new Guest Profile.
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(

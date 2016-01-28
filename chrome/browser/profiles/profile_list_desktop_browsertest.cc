@@ -69,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&cache);
   menu->RebuildMenu();
 
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
   content::WindowedNotificationObserver window_close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -126,8 +125,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
 
   scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&cache);
   menu->RebuildMenu();
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 

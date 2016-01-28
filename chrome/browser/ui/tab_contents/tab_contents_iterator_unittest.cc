@@ -39,8 +39,7 @@ size_t CountAllTabs() {
 
 TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   // Make sure we have 1 window to start with.
-  EXPECT_EQ(1U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
   EXPECT_EQ(0U, CountAllTabs());
 
@@ -58,16 +57,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
       chrome::CreateBrowserWithTestWindowForParams(&ash_params));
 
   // Sanity checks.
-#if defined(OS_CHROMEOS)
-  // The ash desktop is the native desktop on Chrome OS.
-  EXPECT_EQ(4U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
-#else
-  EXPECT_EQ(2U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
-  EXPECT_EQ(2U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->size());
-#endif
+  EXPECT_EQ(4U, BrowserList::GetInstance()->size());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser2->tab_strip_model()->count());
   EXPECT_EQ(0, browser3->tab_strip_model()->count());
@@ -98,8 +88,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
 
 TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   // Make sure we have 1 window to start with.
-  EXPECT_EQ(1U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
   // Create more browsers/windows.
   Browser::CreateParams native_params(profile(),
@@ -113,16 +102,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
       chrome::CreateBrowserWithTestWindowForParams(&ash_params));
 
   // Sanity checks.
-#if defined(OS_CHROMEOS)
-  // The ash desktop is the native desktop on Chrome OS.
-  EXPECT_EQ(3U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
-#else
-  EXPECT_EQ(2U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
-  EXPECT_EQ(1U,
-            BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->size());
-#endif
+  EXPECT_EQ(3U, BrowserList::GetInstance()->size());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser2->tab_strip_model()->count());
   EXPECT_EQ(0, browser3->tab_strip_model()->count());

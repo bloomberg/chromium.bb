@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
   SetupProfilesForLock(browser()->profile());
-  EXPECT_EQ(1U, BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
   AvatarMenu* menu = GetProfileChooserViewAvatarMenu();
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
   EXPECT_TRUE(menu->GetItemAt(menu->GetActiveProfileIndex()).signin_required);
 
   window_close_observer()->Wait();
-  EXPECT_TRUE(BrowserList::GetInstance(chrome::GetActiveDesktop())->empty());
+  EXPECT_TRUE(BrowserList::GetInstance()->empty());
 
   WaitForUserManager();
   // We need to hide the User Manager or else the process can't die.
@@ -309,12 +309,12 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   SetupProfilesForLock(signed_in);
   extensions::ExtensionSystem::Get(signed_in)->InitForRegularProfile(true);
   Browser* browser_to_lock = CreateBrowser(signed_in);
-  EXPECT_EQ(2U, BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
+  EXPECT_EQ(2U, BrowserList::GetInstance()->size());
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser_to_lock));
   ClickProfileChooserViewLockButton();
   window_close_observer()->Wait();
-  EXPECT_EQ(1U, BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
   WaitForUserManager();
   // Assert that the first profile's extensions are not blocked.

@@ -93,38 +93,6 @@ namespace {
 // Passed as value of kTestType.
 const char kBrowserTestType[] = "browser";
 
-// A BrowserListObserver that makes sure that all browsers created are on the
-// |allowed_desktop_|.
-class SingleDesktopTestObserver : public chrome::BrowserListObserver,
-                                  public base::NonThreadSafe {
- public:
-  explicit SingleDesktopTestObserver(chrome::HostDesktopType allowed_desktop);
-  ~SingleDesktopTestObserver() override;
-
-  // chrome::BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override;
-
- private:
-  chrome::HostDesktopType allowed_desktop_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleDesktopTestObserver);
-};
-
-SingleDesktopTestObserver::SingleDesktopTestObserver(
-    chrome::HostDesktopType allowed_desktop)
-        : allowed_desktop_(allowed_desktop) {
-  BrowserList::AddObserver(this);
-}
-
-SingleDesktopTestObserver::~SingleDesktopTestObserver() {
-  BrowserList::RemoveObserver(this);
-}
-
-void SingleDesktopTestObserver::OnBrowserAdded(Browser* browser) {
-  CHECK(CalledOnValidThread());
-  CHECK_EQ(browser->host_desktop_type(), allowed_desktop_);
-}
-
 }  // namespace
 
 // Library used for testing accessibility.
@@ -550,16 +518,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
 
-  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
-  // Self-adds/removes itself from the BrowserList observers.
-  scoped_ptr<SingleDesktopTestObserver> single_desktop_test_observer;
-  if (!multi_desktop_test_) {
-    single_desktop_test_observer.reset(
-        new SingleDesktopTestObserver(active_desktop));
-  }
-
-  const BrowserList* active_browser_list =
-      BrowserList::GetInstance(active_desktop);
+  const BrowserList* active_browser_list = BrowserList::GetInstance();
   if (!active_browser_list->empty()) {
     browser_ = active_browser_list->get(0);
 #if defined(USE_ASH)
@@ -628,12 +587,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   content::RunAllPendingInMessageLoop();
 
   QuitBrowsers();
-  // All BrowserLists should be empty at this point.
-  for (chrome::HostDesktopType t = chrome::HOST_DESKTOP_TYPE_FIRST;
-       t < chrome::HOST_DESKTOP_TYPE_COUNT;
-       t = static_cast<chrome::HostDesktopType>(t + 1)) {
-    CHECK(BrowserList::GetInstance(t)->empty()) << t;
-  }
+  // BrowserList should be empty at this point.
+  CHECK(BrowserList::GetInstance()->empty());
 }
 
 void InProcessBrowserTest::QuitBrowsers() {

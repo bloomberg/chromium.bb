@@ -102,12 +102,12 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   }
 
   if (browser_status == ash::STATUS_CLOSED) {
-    const BrowserList* ash_browser_list =
-        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+    const BrowserList* browser_list = BrowserList::GetInstance();
     for (BrowserList::const_reverse_iterator it =
-             ash_browser_list->begin_last_active();
-         it != ash_browser_list->end_last_active() &&
-         browser_status == ash::STATUS_CLOSED; ++it) {
+             browser_list->begin_last_active();
+         it != browser_list->end_last_active() &&
+         browser_status == ash::STATUS_CLOSED;
+         ++it) {
       if (IsBrowserRepresentedInBrowserList(*it))
         browser_status = ash::STATUS_RUNNING;
     }
@@ -136,10 +136,9 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
 }
 
 bool BrowserShortcutLauncherItemController::IsOpen() const {
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator it = ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
     if (launcher_controller()->IsBrowserFromActiveUser(*it))
       return true;
   }
@@ -189,10 +188,9 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator it = ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
     Browser* browser = *it;
     // Make sure that the browser is from the current user, has a proper window,
     // and the window was already shown.
@@ -313,11 +311,9 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   std::vector<Browser*> items;
   // We use the list in the order of how the browsers got created - not the LRU
   // order.
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator it =
-           ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
     if (IsBrowserRepresentedInBrowserList(*it))
       items.push_back(*it);
   }

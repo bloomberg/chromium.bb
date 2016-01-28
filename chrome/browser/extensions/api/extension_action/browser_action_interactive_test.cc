@@ -145,8 +145,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
   EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
 #endif
   // Incognito window should have a popup.
-  EXPECT_TRUE(BrowserActionTestUtil(BrowserList::GetInstance(
-      chrome::GetActiveDesktop())->GetLastActive()).HasPopup());
+  EXPECT_TRUE(BrowserActionTestUtil(BrowserList::GetInstance()->GetLastActive())
+                  .HasPopup());
 }
 
 // Tests that an extension can open a popup in the last active incognito window

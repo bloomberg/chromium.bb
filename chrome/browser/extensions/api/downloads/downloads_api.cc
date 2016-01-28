@@ -1429,7 +1429,7 @@ bool DownloadsSetShelfEnabledFunction::RunSync() {
         extension(), params->enabled);
   }
 
-  BrowserList* browsers = BrowserList::GetInstance(chrome::GetActiveDesktop());
+  BrowserList* browsers = BrowserList::GetInstance();
   if (browsers) {
     for (BrowserList::const_iterator iter = browsers->begin();
         iter != browsers->end(); ++iter) {

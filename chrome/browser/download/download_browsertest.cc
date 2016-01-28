@@ -1394,8 +1394,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   // Setup an incognito window.
   Browser* incognito = CreateIncognitoBrowser();
   ASSERT_TRUE(incognito);
-  int window_count = BrowserList::GetInstance(
-      browser()->host_desktop_type())->size();
+  int window_count = BrowserList::GetInstance()->size();
   EXPECT_EQ(2, window_count);
   incognito->profile()->GetPrefs()->SetFilePath(
       prefs::kDownloadDefaultDirectory,

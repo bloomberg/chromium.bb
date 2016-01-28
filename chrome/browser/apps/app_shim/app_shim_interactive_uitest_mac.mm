@@ -228,9 +228,7 @@ base::FilePath GetAppShimPath(Profile* profile,
 }
 
 Browser* GetFirstHostedAppWindow() {
-  BrowserList* browsers =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  for (Browser* browser : *browsers) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     const extensions::Extension* extension =
         apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension && extension->is_hosted_app())

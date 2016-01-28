@@ -68,8 +68,7 @@ void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(
 void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {
   LogIn(kAccountId, kAccountPassword);
 
-  const BrowserList* const browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  const BrowserList* const browser_list = BrowserList::GetInstance();
   ASSERT_EQ(1U, browser_list->size());
   const Browser* const browser = browser_list->get(0);
   ASSERT_TRUE(browser);

@@ -177,11 +177,7 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   if (!extension)
     return items;
 
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator it = ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it) {
-    Browser* browser = *it;
+  for (auto& browser : *BrowserList::GetInstance()) {
     if (!launcher_controller()->IsBrowserFromActiveUser(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
@@ -250,11 +246,10 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   if (!extension)
     return NULL;
 
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_reverse_iterator
-       it = ash_browser_list->begin_last_active();
-       it != ash_browser_list->end_last_active(); ++it) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_reverse_iterator it =
+           browser_list->begin_last_active();
+       it != browser_list->end_last_active(); ++it) {
     Browser* browser = *it;
     if (!CanBrowserBeUsedForDirectActivation(browser, launcher_controller()))
       continue;
@@ -272,8 +267,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   // Coming here our application was not in the LRU list. This could have
   // happened because it did never get activated yet. So check the browser list
   // as well.
-  for (BrowserList::const_iterator it = ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it) {
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
     Browser* browser = *it;
     if (!CanBrowserBeUsedForDirectActivation(browser, launcher_controller()))
       continue;

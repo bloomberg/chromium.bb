@@ -205,19 +205,8 @@ TabStatsList TabManager::GetTabStats() {
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open
 
-  // Go through each window to get all the tabs. Depending on the platform,
-  // windows are either native or ash or both. The goal is to make sure to go
-  // through them all, starting with the active window first (use
-  // chrome::GetActiveDesktop to get the current used type).
-  AddTabStats(BrowserList::GetInstance(chrome::GetActiveDesktop()), true,
-              &stats_list);
-  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_NATIVE) {
-    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE),
-                false, &stats_list);
-  } else if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH) {
-    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH), false,
-                &stats_list);
-  }
+  // Go through each window to get all the tabs.
+  AddTabStats(&stats_list);
 
   // Sort the collected data so that least desirable to be killed is first, most
   // desirable is last.
@@ -409,12 +398,10 @@ int TabManager::GetTabCount() const {
   return tab_count;
 }
 
-void TabManager::AddTabStats(BrowserList* browser_list,
-                             bool active_desktop,
-                             TabStatsList* stats_list) {
-  // If it's the active desktop, the first window will be the active one.
-  // Otherwise, assume no active windows.
-  bool browser_active = active_desktop;
+void TabManager::AddTabStats(TabStatsList* stats_list) {
+  BrowserList* browser_list = BrowserList::GetInstance();
+  // The first window will be the active one.
+  bool browser_active = true;
   for (BrowserList::const_reverse_iterator browser_iterator =
            browser_list->begin_last_active();
        browser_iterator != browser_list->end_last_active();
@@ -460,8 +447,7 @@ void TabManager::UpdateTimerCallback() {
   if (g_browser_process->IsShuttingDown())
     return;
 
-  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty() &&
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty())
+  if (BrowserList::GetInstance()->empty())
     return;
 
   // Check for a discontinuity in time caused by the machine being suspended.

@@ -73,8 +73,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
       GURL(url::kAboutBlankURL),
       NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  BrowserList* active_browser_list =
-      BrowserList::GetInstance(browser()->host_desktop_type());
+  BrowserList* active_browser_list = BrowserList::GetInstance();
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the first browser.
@@ -109,8 +108,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
       GURL(url::kAboutBlankURL),
       NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  BrowserList* active_browser_list =
-      BrowserList::GetInstance(browser()->host_desktop_type());
+  BrowserList* active_browser_list = BrowserList::GetInstance();
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the first browser.

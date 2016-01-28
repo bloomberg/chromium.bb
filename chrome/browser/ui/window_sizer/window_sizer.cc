@@ -110,16 +110,15 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     if (browser_ && browser_->window()) {
       window = browser_->window();
     } else {
-      // This code is only ran on the native desktop (on the ash
+      // This code is only run on the native desktop (on the ash
       // desktop, GetTabbedBrowserBoundsAsh should take over below
       // before this is reached).  TODO(gab): This code should go in a
       // native desktop specific window sizer as part of fixing
       // crbug.com/175812.
-      const BrowserList* native_browser_list =
-          BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      const BrowserList* browser_list = BrowserList::GetInstance();
       for (BrowserList::const_reverse_iterator it =
-               native_browser_list->begin_last_active();
-           it != native_browser_list->end_last_active(); ++it) {
+               browser_list->begin_last_active();
+           it != browser_list->end_last_active(); ++it) {
         Browser* last_active = *it;
         if (last_active && last_active->is_type_tabbed()) {
           window = last_active->window();

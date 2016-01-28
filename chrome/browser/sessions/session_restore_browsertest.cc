@@ -83,7 +83,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
 #endif
 
   void SetUpOnMainThread() override {
-    active_browser_list_ = BrowserList::GetInstance(chrome::GetActiveDesktop());
+    active_browser_list_ = BrowserList::GetInstance();
 
     SessionStartupPref pref(SessionStartupPref::LAST);
     SessionStartupPref::SetStartupPref(browser()->profile(), pref);

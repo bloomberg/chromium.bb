@@ -1811,12 +1811,9 @@ gfx::NativeWindow TabDragController::GetLocalProcessWindow(
   // window which was used for dragging is not hidden once all of its tabs are
   // attached to another browser window in DragBrowserToNewTabStrip().
   // TODO(pkotwicz): Fix this properly (crbug.com/358482)
-  BrowserList* browser_list = BrowserList::GetInstance(
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
-  for (BrowserList::const_iterator it = browser_list->begin();
-       it != browser_list->end(); ++it) {
-    if ((*it)->tab_strip_model()->empty())
-      exclude.insert((*it)->window()->GetNativeWindow());
+  for (auto& browser : *BrowserList::GetInstance()) {
+    if (browser->tab_strip_model()->empty())
+      exclude.insert(browser->window()->GetNativeWindow());
   }
 #endif
   return GetLocalProcessWindowAtPoint(host_desktop_type_,

@@ -376,7 +376,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // It's possible for there to be no browser window, e.g. if someone
     // specified a non-sensical combination of options
     // ("--kiosk --no_startup_window"); do nothing in that case.
-    Browser* browser = BrowserList::GetInstance(desktop_type)->GetLastActive();
+    Browser* browser = BrowserList::GetInstance()->GetLastActive();
     if (browser)
       chrome::ToggleFullscreenMode(browser);
   }

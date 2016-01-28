@@ -110,8 +110,7 @@ void BrowserCloseManager::CheckForDownloadsInProgress() {
 void BrowserCloseManager::ConfirmCloseWithPendingDownloads(
     int download_count,
     const base::Callback<void(bool)>& callback) {
-  Browser* browser =
-      BrowserList::GetInstance(chrome::GetActiveDesktop())->GetLastActive();
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
   DCHECK(browser);
   browser->window()->ConfirmBrowserCloseWithPendingDownloads(
       download_count,

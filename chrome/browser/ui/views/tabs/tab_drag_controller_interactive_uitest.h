@@ -45,9 +45,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
   // side by side.
   Browser* CreateAnotherWindowBrowserAndRelayout();
 
-  // The tab drag controller interactive ui tests only use the native desktop
-  // for now.
-  const BrowserList* native_browser_list;
+  const BrowserList* browser_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);

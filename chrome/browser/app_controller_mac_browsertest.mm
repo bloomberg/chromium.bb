@@ -114,9 +114,7 @@ class AppControllerPlatformAppBrowserTest
     : public extensions::PlatformAppBrowserTest {
  protected:
   AppControllerPlatformAppBrowserTest()
-      : active_browser_list_(BrowserList::GetInstance(
-                                chrome::GetActiveDesktop())) {
-  }
+      : active_browser_list_(BrowserList::GetInstance()) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
@@ -172,9 +170,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
 class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerWebAppBrowserTest()
-      : active_browser_list_(BrowserList::GetInstance(
-                                chrome::GetActiveDesktop())) {
-  }
+      : active_browser_list_(BrowserList::GetInstance()) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kApp, GetAppURL());
@@ -233,9 +229,7 @@ class AppControllerNewProfileManagementBrowserTest
     : public InProcessBrowserTest {
  protected:
   AppControllerNewProfileManagementBrowserTest()
-      : active_browser_list_(BrowserList::GetInstance(
-                                chrome::GetActiveDesktop())) {
-  }
+      : active_browser_list_(BrowserList::GetInstance()) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     switches::EnableNewProfileManagementForTesting(command_line);
@@ -665,8 +659,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerHandoffBrowserTest, TestHandoffURLs) {
   EXPECT_EQ(g_handoff_url, test_url3);
 
   // Check that there are exactly 2 browsers.
-  BrowserList* active_browser_list =
-      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  BrowserList* active_browser_list = BrowserList::GetInstance();
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the second browser window (which only has 1 tab left).

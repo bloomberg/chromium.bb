@@ -432,7 +432,7 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
     account_id_to_app_observer_[account_id]->OnAppWindowAdded(*it);
 
   // Account all existing browser windows of this user accordingly.
-  BrowserList* browser_list = BrowserList::GetInstance(HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list = BrowserList::GetInstance();
   BrowserList::const_iterator browser_it = browser_list->begin();
   for (; browser_it != browser_list->end(); ++browser_it) {
     if ((*browser_it)->profile()->GetOriginalProfile() == profile)

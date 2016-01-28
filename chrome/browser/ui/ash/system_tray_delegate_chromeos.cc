@@ -1039,8 +1039,7 @@ void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
   if (!user_profile_)
     return;
 
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list = BrowserList::GetInstance();
   for (BrowserList::const_iterator it = browser_list->begin();
        it != browser_list->end();
        ++it) {

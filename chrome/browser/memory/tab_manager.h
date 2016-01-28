@@ -133,11 +133,8 @@ class TabManager : public TabStripModelObserver {
   // Returns the number of tabs open in all browser instances.
   int GetTabCount() const;
 
-  // Adds all the stats of the tabs in |browser_list| into |stats_list|. If
-  // |active_desktop| is true, consider its first window as being active.
-  void AddTabStats(BrowserList* browser_list,
-                   bool active_desktop,
-                   TabStatsList* stats_list);
+  // Adds all the stats of the tabs to |stats_list|.
+  void AddTabStats(TabStatsList* stats_list);
 
   // Callback for when |update_timer_| fires. Takes care of executing the tasks
   // that need to be run periodically (see comment in implementation).

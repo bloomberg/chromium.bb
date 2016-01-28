@@ -135,9 +135,7 @@ bool QuitWithAppsController::ShouldQuit() {
 
   if (hosted_app_quit_notification_) {
     bool hosted_apps_open = false;
-    const BrowserList* browser_list =
-        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
-    for (Browser* browser : *browser_list) {
+    for (Browser* browser : *BrowserList::GetInstance()) {
       if (!browser->is_app())
         continue;
 

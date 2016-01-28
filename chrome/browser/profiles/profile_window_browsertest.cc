@@ -102,8 +102,7 @@ class ProfileWindowBrowserTest : public InProcessBrowserTest {
 };
 
 Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
-  size_t num_browsers =
-      BrowserList::GetInstance(chrome::GetActiveDesktop())->size();
+  size_t num_browsers = BrowserList::GetInstance()->size();
 
   // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()
   // does incomplete initialization that would lead to
@@ -118,8 +117,7 @@ Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
   DCHECK_NE(static_cast<Profile*>(nullptr),
             g_browser_process->profile_manager()->GetProfileByPath(
                 ProfileManager::GetGuestProfilePath()));
-  EXPECT_EQ(num_browsers + 1,
-            BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
+  EXPECT_EQ(num_browsers + 1, BrowserList::GetInstance()->size());
 
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
       ProfileManager::GetGuestProfilePath());

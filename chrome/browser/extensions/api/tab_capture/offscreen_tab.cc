@@ -92,8 +92,7 @@ class WindowAdoptionAgent : protected aura::WindowObserver {
   }
 
   void FindNewParent() {
-    BrowserList* const browsers =
-        BrowserList::GetInstance(chrome::GetActiveDesktop());
+    BrowserList* const browsers = BrowserList::GetInstance();
     Browser* const active_browser =
         browsers ? browsers->GetLastActive() : nullptr;
     BrowserWindow* const active_window =

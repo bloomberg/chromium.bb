@@ -1528,7 +1528,6 @@
       'browser/ui/browser_close_unittest.cc',
       'browser/ui/browser_command_controller_unittest.cc',
       'browser/ui/browser_instant_controller_unittest.cc',
-      'browser/ui/browser_iterator_unittest.cc',
       'browser/ui/browser_unittest.cc',
       'browser/ui/chrome_bubble_manager_unittest.cc',
       'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',

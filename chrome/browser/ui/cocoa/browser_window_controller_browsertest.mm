@@ -535,8 +535,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
   // Open application mode window.
   OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"));
-  Browser* popup_browser = BrowserList::GetInstance(
-      chrome::GetActiveDesktop())->GetLastActive();
+  Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
   NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* popupController =
       [BrowserWindowController browserWindowControllerForWindow:popupWindow];
@@ -567,8 +566,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
       [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
 
   OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"));
-  Browser* popup_browser = BrowserList::GetInstance(
-      chrome::HOST_DESKTOP_TYPE_NATIVE)->GetLastActive();
+  Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
   NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* popupController =
       [BrowserWindowController browserWindowControllerForWindow:popupWindow];

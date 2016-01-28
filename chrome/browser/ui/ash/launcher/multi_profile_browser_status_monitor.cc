@@ -42,8 +42,7 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
   }
 
   // Handle apps in browser tabs: Add the new applications.
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list = BrowserList::GetInstance();
 
   // Remove old (tabbed V1) applications.
   for (BrowserList::const_iterator it = browser_list->begin();

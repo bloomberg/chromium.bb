@@ -13,6 +13,8 @@ class Browser;
 
 namespace chrome {
 
+// TODO(scottmg): Remove this file entirely. http://crbug.com/558054.
+
 // Iterates over all existing browsers (potentially across multiple desktops).
 // Note: to iterate only over the browsers of a specific desktop, use the
 // const_iterator of a given BrowserList instead.
@@ -31,39 +33,25 @@ class BrowserIterator {
 
   // Returns true if this iterator is past the last Browser.
   bool done() const {
-    // |current_iterator_| is never at the end of a list unless it is done (it
+    // |iterator_| is never at the end of a list unless it is done (it
     // immediately moves to the next browser list upon hitting the end of the
     // current list unless there are no remaining empty browser lists).
-    return current_iterator_ == current_browser_list_->end();
+    return iterator_ == browser_list_->end();
   }
 
   // Returns the current Browser, valid as long as !done().
-  Browser* operator->() const {
-    return *current_iterator_;
-  }
-  Browser* operator*() const {
-    return *current_iterator_;
-  }
+  Browser* operator->() const { return *iterator_; }
+  Browser* operator*() const { return *iterator_; }
 
-  // Advances |current_iterator_| to the next browser.
+  // Advances |iterator_| to the next browser.
   void Next();
 
  private:
-  // If |current_iterator_| is at |current_browser_list_->end()|, advance to the
-  // next non-empty browser list. After a call to this method: either
-  // |current_iterator_| is valid or done().
-  void NextBrowserListIfAtEnd();
+  // The BrowserList being iterated over.
+  BrowserList* browser_list_;
 
-  // The BrowserList currently being iterated over. Instances of this class do
-  // not own this pointer.
-  BrowserList* current_browser_list_;
-
-  // The underlying iterator over browsers in |current_browser_list_|.
-  BrowserList::const_iterator current_iterator_;
-
-  // The next HostDesktopType to iterate over when |current_iterator_| reaches
-  // |current_browser_list_->end()|.
-  HostDesktopType next_desktop_type_;
+  // The underlying iterator over browsers in |browser_list_|.
+  BrowserList::const_iterator iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserIterator);
 };

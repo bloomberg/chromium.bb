@@ -38,9 +38,7 @@ void GetBrowserMediaCaptureState(
     const MediaStreamCaptureIndicator* indicator,
     const content::BrowserContext* context,
     int* media_state_out) {
-
-  const BrowserList* desktop_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  const BrowserList* desktop_list = BrowserList::GetInstance();
 
   for (BrowserList::BrowserVector::const_iterator iter = desktop_list->begin();
        iter != desktop_list->end();

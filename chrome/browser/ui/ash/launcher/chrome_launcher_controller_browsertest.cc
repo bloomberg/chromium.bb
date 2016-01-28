@@ -1633,13 +1633,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
   EXPECT_EQ(chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow()),
             browser());
   // Check that the LRU browser list does only contain the original browser.
-  BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  BrowserList::const_reverse_iterator it =
-      ash_browser_list->begin_last_active();
+  BrowserList* browser_list = BrowserList::GetInstance();
+  BrowserList::const_reverse_iterator it = browser_list->begin_last_active();
   EXPECT_EQ(*it, browser());
   ++it;
-  EXPECT_EQ(it, ash_browser_list->end_last_active());
+  EXPECT_EQ(it, browser_list->end_last_active());
 
   // Now request to either activate an existing app or create a new one.
   LauncherItemController* item_controller =
@@ -2150,11 +2148,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
 
   // Find the browser which holds our app.
   Browser* app_browser = NULL;
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  const BrowserList* browser_list = BrowserList::GetInstance();
   for (BrowserList::const_reverse_iterator it =
-           ash_browser_list->begin_last_active();
-       it != ash_browser_list->end_last_active() && !app_browser; ++it) {
+           browser_list->begin_last_active();
+       it != browser_list->end_last_active() && !app_browser; ++it) {
     if ((*it)->is_app()) {
       app_browser = *it;
       break;

@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   run_loop.Run();
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
+  BrowserList* browser_list = BrowserList::GetInstance();
   ASSERT_EQ(initial_profile_count + 1, cache.GetNumberOfProfiles());
   EXPECT_EQ(1U, browser_list->size());
 
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   content::RunMessageLoop();
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
+  BrowserList* browser_list = BrowserList::GetInstance();
   ASSERT_EQ(initial_profile_count + 1, cache.GetNumberOfProfiles());
   EXPECT_EQ(1U, browser_list->size());
 

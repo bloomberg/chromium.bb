@@ -16,10 +16,7 @@ AppModalDialogHelper::AppModalDialogHelper(content::WebContents* dialog_host)
   // If the WebContents that triggered this dialog is not currently focused, we
   // want to store a potential popup here to restore it after the dialog was
   // closed.
-  chrome::HostDesktopType desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(dialog_host->GetNativeView());
-  Browser* active_browser =
-      BrowserList::GetInstance(desktop_type)->GetLastActive();
+  Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
   if (active_browser) {
     content::WebContents* active_web_contents =
         active_browser->tab_strip_model()->GetActiveWebContents();

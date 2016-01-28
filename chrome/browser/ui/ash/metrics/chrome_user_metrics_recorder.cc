@@ -19,7 +19,7 @@ ChromeUserMetricsRecorder::ChromeUserMetricsRecorder()
 }
 
 ChromeUserMetricsRecorder::~ChromeUserMetricsRecorder() {
-  DCHECK(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty());
+  DCHECK(BrowserList::GetInstance()->empty());
 }
 
 void ChromeUserMetricsRecorder::ActiveTabChanged(

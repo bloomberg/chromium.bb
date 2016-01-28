@@ -43,8 +43,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
   LogIn(kAccountId, kAccountPassword);
 
   // Check that the startup pages specified in policy were opened.
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
   Browser* browser = browser_list->get(0);
   ASSERT_TRUE(browser);

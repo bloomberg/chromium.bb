@@ -89,8 +89,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest,
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list = BrowserList::GetInstance();
 
   EXPECT_EQ(1u, browser_list->size());
   // Close the browser window so that clicking icon will create a new window.
@@ -178,8 +177,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list = BrowserList::GetInstance();
 
   ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
