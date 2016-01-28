@@ -223,9 +223,9 @@ static bool shouldRepaintSubsequence(PaintLayer& paintLayer, const PaintLayerPai
         needsRepaint = true;
 
     // Repaint if layer's clip changes.
-    ClipRects* clipRects = paintLayer.clipper().paintingClipRects(paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
+    ClipRects& clipRects = paintLayer.clipper().paintingClipRects(paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
     ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
-    if (!needsRepaint && clipRects != previousClipRects && (!clipRects || !previousClipRects || *clipRects != *previousClipRects))
+    if (!needsRepaint && &clipRects != previousClipRects && (!previousClipRects || clipRects != *previousClipRects))
         needsRepaint = true;
     paintLayer.setPreviousPaintingClipRects(clipRects);
 

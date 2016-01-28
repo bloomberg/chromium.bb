@@ -99,7 +99,7 @@ static CompositingQueryMode gCompositingQueryMode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
     int bitFields;
-    void* pointers[8];
+    void* pointers[9];
     LayoutUnit layoutUnits[4];
     IntSize size;
     OwnPtrWillBePersistent<PaintLayerScrollableArea> scrollableArea;
@@ -107,9 +107,6 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
         IntRect rect;
         void* pointers[2];
     } ancestorCompositingInputs;
-    struct {
-        void* pointers[2];
-    } clipper;
     struct {
         IntSize size;
         void* pointer;
@@ -174,7 +171,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     , m_last(0)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
-    , m_clipper(*layoutObject)
 {
     updateStackingNode();
 
@@ -292,7 +288,7 @@ void PaintLayer::updateLayerPositionsAfterLayout()
 {
     TRACE_EVENT0("blink,benchmark", "PaintLayer::updateLayerPositionsAfterLayout");
 
-    m_clipper.clearClipRectsIncludingDescendants();
+    clipper().clearClipRectsIncludingDescendants();
     updateLayerPositionRecursive();
 
     {
@@ -369,7 +365,7 @@ bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const
 
 void PaintLayer::updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta)
 {
-    m_clipper.clearClipRectsIncludingDescendants();
+    clipper().clearClipRectsIncludingDescendants();
     updateLayerPositionsAfterScrollRecursive(scrollDelta, isPaintInvalidationContainer());
 }
 
@@ -419,9 +415,9 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedSt
             m_rareData->transform.clear();
 
         // PaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
-        m_clipper.clearClipRectsIncludingDescendants();
+        clipper().clearClipRectsIncludingDescendants();
     } else if (hasTransform) {
-        m_clipper.clearClipRectsIncludingDescendants(AbsoluteClipRects);
+        clipper().clearClipRectsIncludingDescendants(AbsoluteClipRects);
     }
 
     updateTransformationMatrix();
@@ -1270,7 +1266,7 @@ void PaintLayer::removeOnlyThisLayer()
         }
     }
 
-    m_clipper.clearClipRectsIncludingDescendants();
+    clipper().clearClipRectsIncludingDescendants();
 
     PaintLayer* nextSib = nextSibling();
 
@@ -1312,7 +1308,7 @@ void PaintLayer::insertOnlyThisLayer()
         curr->moveLayers(m_parent, this);
 
     // Clear out all the clip rects.
-    m_clipper.clearClipRectsIncludingDescendants();
+    clipper().clearClipRectsIncludingDescendants();
 }
 
 // Returns the layer reached on the walk up towards the ancestor.

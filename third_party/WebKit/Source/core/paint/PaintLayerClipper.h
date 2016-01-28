@@ -149,9 +149,8 @@ private:
 // a layout tree walk and cache them for painting.
 class CORE_EXPORT PaintLayerClipper {
     DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(PaintLayerClipper);
 public:
-    explicit PaintLayerClipper(const LayoutBoxModelObject&);
+    explicit PaintLayerClipper(const PaintLayer& layer) : m_layer(layer) { }
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -168,37 +167,20 @@ public:
     void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
         ClipRect& backgroundRect, ClipRect& foregroundRect, const LayoutPoint* offsetFromRoot = 0) const;
 
-    ClipRects* paintingClipRects(const PaintLayer* rootLayer, ShouldRespectOverflowClip, const LayoutSize& subpixelAccumulation) const;
+    ClipRects& paintingClipRects(const PaintLayer* rootLayer, ShouldRespectOverflowClip, const LayoutSize& subpixelAccumulation) const;
 
 private:
-    ClipRects* getClipRects(const ClipRectsContext&) const;
+    ClipRects& getClipRects(const ClipRectsContext&) const;
 
     void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
     ClipRects* clipRectsIfCached(const ClipRectsContext&) const;
-    ClipRects* storeClipRectsInCache(const ClipRectsContext&, ClipRects* parentClipRects, const ClipRects&) const;
+    ClipRects& storeClipRectsInCache(const ClipRectsContext&, ClipRects* parentClipRects, const ClipRects&) const;
 
-    // cachedClipRects looks buggy: It doesn't check whether context.rootLayer and entry.root match.
-    // FIXME: Move callers to clipRectsIfCached, which does the proper checks.
-    ClipRects* cachedClipRects(const ClipRectsContext& context) const
-    {
-        return m_cache ? m_cache->get(context.cacheSlot()).clipRects.get() : 0;
-    }
     void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
-
-    ClipRectsCache& cache() const
-    {
-        if (!m_cache)
-            m_cache = adoptPtr(new ClipRectsCache);
-        return *m_cache;
-    }
 
     bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
-    // FIXME: Could this be a LayoutBox?
-    const LayoutBoxModelObject& m_layoutObject;
-
-    // Lazily created by 'cache() const'.
-    mutable OwnPtr<ClipRectsCache> m_cache;
+    const PaintLayer& m_layer;
 };
 
 } // namespace blink

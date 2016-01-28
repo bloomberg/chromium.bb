@@ -46,6 +46,7 @@
 #define PaintLayer_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintLayerClipper.h"
 #include "core/paint/PaintLayerFilterInfo.h"
@@ -502,8 +503,8 @@ public:
 
     // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
     PaintLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
-    PaintLayerClipper& clipper() { return m_clipper; }
-    const PaintLayerClipper& clipper() const { return m_clipper; }
+
+    PaintLayerClipper clipper() const { return PaintLayerClipper(*this); }
 
     bool scrollsOverflow() const;
 
@@ -655,7 +656,7 @@ public:
     void setPreviousScrollOffsetAccumulationForPainting(const IntSize& s) { m_previousScrollOffsetAccumulationForPainting = s; }
 
     ClipRects* previousPaintingClipRects() const { return m_previousPaintingClipRects.get(); }
-    void setPreviousPaintingClipRects(ClipRects* clipRects) { m_previousPaintingClipRects = clipRects; }
+    void setPreviousPaintingClipRects(ClipRects& clipRects) { m_previousPaintingClipRects = &clipRects; }
 
     LayoutRect previousPaintDirtyRect() const { return m_previousPaintDirtyRect; }
     void setPreviousPaintDirtyRect(const LayoutRect& rect) { m_previousPaintDirtyRect = rect; }
@@ -673,6 +674,15 @@ public:
     void setNeedsPaintPhaseFloat() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseFloat = true; }
 
     PaintTiming* paintTiming();
+
+    ClipRectsCache* clipRectsCache() const { return m_clipRectsCache.get(); }
+    ClipRectsCache& ensureClipRectsCache() const
+    {
+        if (!m_clipRectsCache)
+            m_clipRectsCache = adoptPtr(new ClipRectsCache);
+        return *m_clipRectsCache;
+    }
+    void clearClipRectsCache() const { m_clipRectsCache.clear(); }
 
 private:
     // Bounding box in the coordinates of this layer.
@@ -845,7 +855,8 @@ private:
 
     OwnPtrWillBePersistent<PaintLayerScrollableArea> m_scrollableArea;
 
-    PaintLayerClipper m_clipper; // FIXME: Lazily allocate?
+    mutable OwnPtr<ClipRectsCache> m_clipRectsCache;
+
     OwnPtr<PaintLayerStackingNode> m_stackingNode;
 
     IntSize m_previousScrollOffsetAccumulationForPainting;
