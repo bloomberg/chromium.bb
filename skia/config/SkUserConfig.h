@@ -245,10 +245,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
  */
 #define SK_ALLOW_STATIC_GLOBAL_INITIALIZERS 0
 
-/* Don't include the xfermodes deprecated in Skia
- */
-#define SK_INCLUDE_DEPRECATED_XFERMODES 0
-
 /* This flag forces Skia not to use typographic metrics with GDI.
  */
 #define SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS
