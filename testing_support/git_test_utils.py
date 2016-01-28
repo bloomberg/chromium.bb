@@ -93,6 +93,24 @@ class OrderedSet(collections.MutableSet):
     return key
 
 
+class UTC(datetime.tzinfo):
+  """UTC time zone.
+
+  from https://docs.python.org/2/library/datetime.html#tzinfo-objects
+  """
+  def utcoffset(self, dt):
+    return datetime.timedelta(0)
+
+  def tzname(self, dt):
+    return "UTC"
+
+  def dst(self, dt):
+    return datetime.timedelta(0)
+
+
+UTC = UTC()
+
+
 class GitRepoSchema(object):
   """A declarative git testing repo.
 
@@ -267,7 +285,7 @@ class GitRepo(object):
     """
     self.repo_path = tempfile.mkdtemp(dir=self.BASE_TEMP_DIR)
     self.commit_map = {}
-    self._date = datetime.datetime(1970, 1, 1)
+    self._date = datetime.datetime(1970, 1, 1, tzinfo=UTC)
 
     self.to_schema_refs = ['--branches']
 
@@ -359,6 +377,11 @@ class GitRepo(object):
       return self.COMMAND_OUTPUT(0, output)
     except subprocess.CalledProcessError as e:
       return self.COMMAND_OUTPUT(e.returncode, e.output)
+
+  def show_commit(self, commit_name, format_string):
+    """Shows a commit (by its schema name) with a given format string."""
+    return self.git('show', '-q', '--pretty=format:%s' % format_string,
+                    self[commit_name]).stdout
 
   def git_commit(self, message):
     return self.git('commit', '-am', message, env=self.get_git_commit_env())

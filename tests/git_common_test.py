@@ -772,6 +772,33 @@ class GitMakeWorkdir(git_test_utils.GitRepoReadOnlyTestBase, GitCommonTestBase):
     self.assertFalse(os.path.islink(os.path.join(workdir, '.git', 'HEAD')))
 
 
+class GitTestUtilsTest(git_test_utils.GitRepoReadOnlyTestBase):
+  REPO_SCHEMA = """
+  A B
+  """
+
+  COMMIT_A = {
+    'file1': {'data': 'file1'},
+  }
+
+  COMMIT_B = {
+    'file1': {'data': 'file1 changed'},
+  }
+
+  def testAutomaticCommitDates(self):
+    # The dates should start from 1970-01-01 and automatically increment. They
+    # must be in UTC (otherwise the tests are system-dependent, and if your
+    # local timezone is positive, timestamps will be <0 which causes bizarre
+    # behaviour in Git; http://crbug.com/581895).
+    self.assertEquals('Author McAuthorly 1970-01-01 00:00:00 +0000',
+                      self.repo.show_commit('A', format_string='%an %ai'))
+    self.assertEquals('Charles Committish 1970-01-02 00:00:00 +0000',
+                      self.repo.show_commit('A', format_string='%cn %ci'))
+    self.assertEquals('Author McAuthorly 1970-01-03 00:00:00 +0000',
+                      self.repo.show_commit('B', format_string='%an %ai'))
+    self.assertEquals('Charles Committish 1970-01-04 00:00:00 +0000',
+                      self.repo.show_commit('B', format_string='%cn %ci'))
+
 
 if __name__ == '__main__':
   sys.exit(coverage_utils.covered_main(
