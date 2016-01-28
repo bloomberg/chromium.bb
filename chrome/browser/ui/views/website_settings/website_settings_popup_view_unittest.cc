@@ -22,7 +22,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 
-const char* kUrl = "http://www.example.com";
+const char* kUrl = "http://www.example.com/index.html";
 
 namespace test {
 
@@ -42,7 +42,6 @@ class WebsiteSettingsPopupViewTestApi {
     if (view_)
       view_->GetWidget()->CloseNow();
 
-    GURL url("http://www.example.com");
     security_state::SecurityStateModel::SecurityInfo security_info;
     views::View* anchor_view = nullptr;
     view_ =
@@ -213,13 +212,13 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
 TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
   EXPECT_EQ(0, api_->permissions_content()->child_count());
 
-  GURL url(kUrl);
+  const GURL origin = GURL(kUrl).GetOrigin();
   scoped_refptr<device::UsbDevice> device =
       new device::MockUsbDevice(0, 0, "Google", "Gizmo", "1234567890");
   device_client_.usb_service().AddDevice(device);
   UsbChooserContext* store =
       UsbChooserContextFactory::GetForProfile(web_contents_helper_.profile());
-  store->GrantDevicePermission(url, url, device->guid());
+  store->GrantDevicePermission(origin, origin, device->guid());
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);
@@ -245,5 +244,5 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
   EXPECT_EQ(0, api_->permissions_content()->child_count());
-  EXPECT_FALSE(store->HasDevicePermission(url, url, device->guid()));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device->guid()));
 }

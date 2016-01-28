@@ -39,6 +39,9 @@ ChooserContextBase::Object::~Object() = default;
 std::vector<scoped_ptr<base::DictionaryValue>>
 ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
                                       const GURL& embedding_origin) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
+
   std::vector<scoped_ptr<base::DictionaryValue>> results;
   scoped_ptr<base::DictionaryValue> setting =
       GetWebsiteSetting(requesting_origin, embedding_origin);
@@ -104,6 +107,8 @@ void ChooserContextBase::GrantObjectPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     scoped_ptr<base::DictionaryValue> object) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
   DCHECK(object);
   DCHECK(IsValidObject(*object));
   scoped_ptr<base::DictionaryValue> setting =
@@ -121,6 +126,8 @@ void ChooserContextBase::RevokeObjectPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const base::DictionaryValue& object) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
   DCHECK(IsValidObject(object));
   scoped_ptr<base::DictionaryValue> setting =
       GetWebsiteSetting(requesting_origin, embedding_origin);

@@ -309,7 +309,8 @@ void WebsiteSettings::OnSiteChosenObjectDeleted(
     const base::DictionaryValue& object) {
   // TODO(reillyg): Create metrics for revocations. crbug.com/556845
   ChooserContextBase* context = ui_info.get_context(profile_);
-  context->RevokeObjectPermission(site_url_, site_url_, object);
+  const GURL origin = site_url_.GetOrigin();
+  context->RevokeObjectPermission(origin, origin, object);
 
   show_info_bar_ = true;
 
@@ -705,7 +706,8 @@ void WebsiteSettings::PresentSitePermissions() {
 
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
     ChooserContextBase* context = ui_info.get_context(profile_);
-    auto chosen_objects = context->GetGrantedObjects(site_url_, site_url_);
+    const GURL origin = site_url_.GetOrigin();
+    auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (scoped_ptr<base::DictionaryValue>& object : chosen_objects) {
       chosen_object_info_list.push_back(
           new WebsiteSettingsUI::ChosenObjectInfo(ui_info, std::move(object)));
