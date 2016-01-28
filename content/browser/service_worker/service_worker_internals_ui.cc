@@ -22,10 +22,12 @@
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 
 using base::DictionaryValue;
@@ -89,6 +91,20 @@ void CallServiceWorkerVersionMethodWithVersionID(
   (*version.get().*method)(callback);
 }
 
+base::ProcessId GetRealProcessId(int process_host_id) {
+  if (process_host_id == ChildProcessHost::kInvalidUniqueID)
+    return base::kNullProcessId;
+
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_host_id);
+  if (!rph)
+    return base::kNullProcessId;
+
+  base::ProcessHandle handle = rph->GetHandle();
+  if (handle == base::kNullProcessHandle)
+    return base::kNullProcessId;
+  return base::Process(handle).Pid();
+}
+
 void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
                        DictionaryValue* info) {
   switch (version.running_status) {
@@ -128,7 +144,8 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   }
   info->SetString("script_url", version.script_url.spec());
   info->SetString("version_id", base::Int64ToString(version.version_id));
-  info->SetInteger("process_id", version.process_id);
+  info->SetInteger("process_id",
+                   static_cast<int>(GetRealProcessId(version.process_id)));
   info->SetInteger("thread_id", version.thread_id);
   info->SetInteger("devtools_agent_route_id", version.devtools_agent_route_id);
 }
