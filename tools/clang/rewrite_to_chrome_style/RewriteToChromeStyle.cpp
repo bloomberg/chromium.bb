@@ -159,7 +159,8 @@ bool GetNameForDecl(const clang::VarDecl& decl,
   else if (original_name.startswith(kBlinkFieldPrefix))
     original_name = original_name.substr(strlen(kBlinkFieldPrefix));
 
-  if (IsProbablyConst(decl, context)) {
+  bool is_const = IsProbablyConst(decl, context);
+  if (is_const) {
     // Don't try to rename constants that already conform to Chrome style.
     if (original_name.size() >= 2 && original_name[0] == 'k' &&
         clang::isUppercase(original_name[1]))
@@ -171,7 +172,9 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     name = CamelCaseToUnderscoreCase(original_name);
   }
 
-  if (decl.isStaticDataMember()) {
+  // Static members end with _ just like other members, but constants should
+  // not.
+  if (!is_const && decl.isStaticDataMember()) {
     name += '_';
   }
 

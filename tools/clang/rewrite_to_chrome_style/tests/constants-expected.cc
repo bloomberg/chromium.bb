@@ -17,11 +17,11 @@ const float kPi = 3.141592654;
 class C {
  public:
   // Static class constants.
-  static const int kUsefulConstant_ = 8;
+  static const int kUsefulConstant = 8;
   // Note: s_ prefix should not be retained.
-  static const int kStaticConstant_ = 9;
+  static const int kStaticConstant = 9;
   // Note: m_ prefix should not be retained even though the proper prefix is s_.
-  static const int kSuperNumber_ = 42;
+  static const int kSuperNumber = 42;
 
   // Not a constant even though it has static storage duration.
   static const char* current_event_;
