@@ -52,8 +52,6 @@
 #include <stddef.h>
 #include <windows.h>
 #include <winnt.h>
-#elif defined(__GLIBC__)
-extern "C" void* __libc_stack_end;  // NOLINT
 #endif
 
 #if defined(MEMORY_SANITIZER)
