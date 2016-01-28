@@ -156,7 +156,8 @@ void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
       base::Bind(&BattOrConnectionImpl::OnBytesRead, AsWeakPtr());
 
   io_handler_->Read(make_scoped_ptr(new device::ReceiveBuffer(
-      pending_read_buffer_, max_bytes_to_read, on_receive_buffer_filled)));
+      pending_read_buffer_, static_cast<uint32_t>(max_bytes_to_read),
+      on_receive_buffer_filled)));
 }
 
 void BattOrConnectionImpl::OnBytesRead(int bytes_read,
