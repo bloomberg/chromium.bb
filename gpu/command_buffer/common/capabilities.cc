@@ -76,6 +76,7 @@ Capabilities::Capabilities()
       blend_equation_advanced_coherent(false),
       texture_rg(false),
       image_ycbcr_422(false),
+      image_ycbcr_420v(false),
       render_buffer_format_bgra8888(false),
       occlusion_query_boolean(false),
       timer_queries(false),

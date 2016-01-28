@@ -3155,6 +3155,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
   caps.image_ycbcr_422 =
       feature_info_->feature_flags().chromium_image_ycbcr_422;
+  caps.image_ycbcr_420v =
+      feature_info_->feature_flags().chromium_image_ycbcr_420v;
   caps.max_copy_texture_chromium_size =
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
