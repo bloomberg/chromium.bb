@@ -53,6 +53,7 @@ class TracingHandler {
   Response End(DevToolsCommandId command_id);
   Response GetCategories(DevToolsCommandId command);
   Response RequestMemoryDump(DevToolsCommandId command_id);
+  Response RecordClockSyncMarker(const std::string& sync_id);
 
   bool did_initiate_recording() { return did_initiate_recording_; }
 

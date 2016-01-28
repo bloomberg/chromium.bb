@@ -14,8 +14,10 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/tracing_agent.h"
 #include "components/tracing/trace_config_file.h"
 #include "content/browser/devtools/devtools_io_context.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 
 namespace content {
 namespace devtools {
@@ -231,6 +233,17 @@ void TracingHandler::OnMemoryDumpFinished(DevToolsCommandId command_id,
       RequestMemoryDumpResponse::Create()
           ->set_dump_guid(base::StringPrintf("0x%" PRIx64, dump_guid))
           ->set_success(success));
+}
+
+Response TracingHandler::RecordClockSyncMarker(const std::string& sync_id) {
+  if (!IsTracing())
+    return Response::InternalError("Tracing is not started");
+
+  TracingControllerImpl::GetInstance()->RecordClockSyncMarker(
+      sync_id,
+      base::trace_event::TracingAgent::RecordClockSyncMarkerCallback());
+
+  return Response::OK();
 }
 
 void TracingHandler::SetupTimer(double usage_reporting_interval) {
