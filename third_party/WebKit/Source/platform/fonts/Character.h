@@ -32,7 +32,6 @@
 #define Character_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/CharacterProperty.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"
@@ -62,6 +61,7 @@ public:
             || isInRange(character, 0xE0100, 0xE01EF); // VARIATION SELECTOR-17 to 256
     }
 
+    static bool isCJKIdeograph(UChar32);
     static bool isCJKIdeographOrSymbol(UChar32);
 
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
@@ -132,8 +132,6 @@ public:
 
     static bool isCommonOrInheritedScript(UChar32);
 
-private:
-    static bool hasProperty(UChar32, CharacterProperty);
 };
 
 } // namespace blink

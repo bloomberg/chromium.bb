@@ -177,7 +177,6 @@
       '<@(platform_heap_files)',
 
       # Additional .cpp files from platform_generated.gyp:make_platform_generated actions.
-      '<(blink_platform_output_dir)/CharacterData.cpp',
       '<(blink_platform_output_dir)/ColorData.cpp',
       '<(blink_platform_output_dir)/FontFamilyNames.cpp',
       '<(blink_platform_output_dir)/HTTPNames.cpp',
