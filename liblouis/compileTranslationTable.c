@@ -4219,7 +4219,7 @@ doOpcode:
     case CTO_LastWordCaps:
 		switch (compileBeforeAfter(nested)) {
 			case 1: // before
-				if (&table->lastWordCapsAfter) {
+				if (table->lastWordCapsAfter) {
 					compileError (nested, "Capital sign after last word already defined.");
 					ok = 0;
 					break;
@@ -4229,7 +4229,7 @@ doOpcode:
 						CTO_LastWordCapsBeforeRule, &table->lastWordCapsBefore);
 				break;
 			case 2: // after
-				if (&table->lastWordCapsBefore) {
+				if (table->lastWordCapsBefore) {
 					compileError (nested, "Capital sign before last word already defined.");
 					ok = 0;
 					break;
