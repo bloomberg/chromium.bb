@@ -430,22 +430,22 @@ TEST_F(BridgedNativeWidgetTest, InputContext) {
 
 // Test getting complete string using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_GetCompleteString) {
-  const std::string kTestString = "foo bar baz";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo bar baz";
+  InstallTextField(test_string);
 
-  NSRange range = NSMakeRange(0, kTestString.size());
+  NSRange range = NSMakeRange(0, test_string.size());
   NSRange actual_range;
   NSAttributedString* text =
       [ns_view_ attributedSubstringForProposedRange:range
                                         actualRange:&actual_range];
-  EXPECT_EQ(kTestString, SysNSStringToUTF8([text string]));
+  EXPECT_EQ(test_string, SysNSStringToUTF8([text string]));
   EXPECT_EQ_RANGE(range, actual_range);
 }
 
 // Test getting middle substring using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_GetMiddleSubstring) {
-  const std::string kTestString = "foo bar baz";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo bar baz";
+  InstallTextField(test_string);
 
   NSRange range = NSMakeRange(4, 3);
   NSRange actual_range;
@@ -458,8 +458,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_GetMiddleSubstring) {
 
 // Test getting ending substring using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_GetEndingSubstring) {
-  const std::string kTestString = "foo bar baz";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo bar baz";
+  InstallTextField(test_string);
 
   NSRange range = NSMakeRange(8, 100);
   NSRange actual_range;
@@ -473,8 +473,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_GetEndingSubstring) {
 
 // Test getting empty substring using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_GetEmptySubstring) {
-  const std::string kTestString = "foo bar baz";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo bar baz";
+  InstallTextField(test_string);
 
   NSRange range = EmptyRange();
   NSRange actual_range;
@@ -487,21 +487,21 @@ TEST_F(BridgedNativeWidgetTest, TextInput_GetEmptySubstring) {
 
 // Test inserting text using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_InsertText) {
-  const std::string kTestString = "foo";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo";
+  InstallTextField(test_string);
 
-  [ns_view_ insertText:SysUTF8ToNSString(kTestString)
+  [ns_view_ insertText:SysUTF8ToNSString(test_string)
       replacementRange:EmptyRange()];
-  gfx::Range range(0, kTestString.size());
+  gfx::Range range(0, test_string.size());
   base::string16 text;
   EXPECT_TRUE([ns_view_ textInputClient]->GetTextFromRange(range, &text));
-  EXPECT_EQ(ASCIIToUTF16(kTestString), text);
+  EXPECT_EQ(ASCIIToUTF16(test_string), text);
 }
 
 // Test replacing text using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_ReplaceText) {
-  const std::string kTestString = "foo bar";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo bar";
+  InstallTextField(test_string);
 
   [ns_view_ insertText:@"baz" replacementRange:NSMakeRange(4, 3)];
   EXPECT_EQ("foo baz", GetText());
@@ -509,8 +509,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_ReplaceText) {
 
 // Test IME composition using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_Compose) {
-  const std::string kTestString = "foo ";
-  InstallTextField(kTestString);
+  const std::string test_string = "foo ";
+  InstallTextField(test_string);
 
   EXPECT_FALSE([ns_view_ hasMarkedText]);
   EXPECT_EQ_RANGE(EmptyRange(), [ns_view_ markedRange]);
@@ -522,9 +522,9 @@ TEST_F(BridgedNativeWidgetTest, TextInput_Compose) {
             selectedRange:NSMakeRange(0, 2)
          replacementRange:EmptyRange()];
   EXPECT_TRUE([ns_view_ hasMarkedText]);
-  EXPECT_EQ_RANGE(NSMakeRange(kTestString.size(), compositionLength),
+  EXPECT_EQ_RANGE(NSMakeRange(test_string.size(), compositionLength),
                   [ns_view_ markedRange]);
-  EXPECT_EQ_RANGE(NSMakeRange(kTestString.size(), 2), [ns_view_ selectedRange]);
+  EXPECT_EQ_RANGE(NSMakeRange(test_string.size(), 2), [ns_view_ selectedRange]);
 
   // Confirm composition.
   [ns_view_ unmarkText];
@@ -653,16 +653,16 @@ TEST_F(BridgedNativeWidgetTest, TextInput_FirstRectForCharacterRange) {
   InstallTextField("");
   ui::TextInputClient* client = [ns_view_ textInputClient];
 
-  const base::string16 kTestString = base::ASCIIToUTF16("test_str");
+  const base::string16 test_string = base::ASCIIToUTF16("test_str");
   const size_t kTextLength = 8;
-  SetCompositionText(client, kTestString, 1, nullptr);
+  SetCompositionText(client, test_string, 1, nullptr);
 
   // Query bounds for the whole composition string.
   NSRange query_range = NSMakeRange(0, kTextLength);
   NSRange actual_range;
   NSRect rect = [ns_view_ firstRectForCharacterRange:query_range
                                          actualRange:&actual_range];
-  EXPECT_EQ(GetExpectedBoundsForRange(client, kTestString, query_range),
+  EXPECT_EQ(GetExpectedBoundsForRange(client, test_string, query_range),
             gfx::ScreenRectFromNSRect(rect));
   EXPECT_EQ_RANGE(query_range, actual_range);
 
@@ -670,7 +670,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_FirstRectForCharacterRange) {
   query_range = NSMakeRange(1, 4);
   rect = [ns_view_ firstRectForCharacterRange:query_range
                                   actualRange:&actual_range];
-  EXPECT_EQ(GetExpectedBoundsForRange(client, kTestString, query_range),
+  EXPECT_EQ(GetExpectedBoundsForRange(client, test_string, query_range),
             gfx::ScreenRectFromNSRect(rect));
   EXPECT_EQ_RANGE(query_range, actual_range);
 }
