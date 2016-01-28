@@ -128,9 +128,6 @@ component("views") {
         sources += gypi_values.views_desktop_aura_linux_sources
       }
     }
-    if (is_android) {
-      sources += gypi_values.views_android_sources
-    }
   }
 
   if (is_mac) {

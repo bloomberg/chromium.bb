@@ -410,13 +410,6 @@
       'widget/window_reorderer.cc',
       'widget/window_reorderer.h',
     ],
-    'views_android_sources': [
-      'controls/menu/menu_config_android.cc',
-      'widget/android/android_focus_rules.cc',
-      'widget/android/android_focus_rules.h',
-      'widget/android/native_widget_android.cc',
-      'widget/android/native_widget_android.h',
-    ],
     'views_desktop_aura_sources': [
       'widget/desktop_aura/desktop_capture_client.cc',
       'widget/desktop_aura/desktop_capture_client.h',
