@@ -4219,11 +4219,21 @@ doOpcode:
     case CTO_LastWordCaps:
 		switch (compileBeforeAfter(nested)) {
 			case 1: // before
+				if (&table->lastWordCapsAfter) {
+					compileError (nested, "Capital sign after last word already defined.");
+					ok = 0;
+					break;
+				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign before last word",
 						CTO_LastWordCapsBeforeRule, &table->lastWordCapsBefore);
 				break;
 			case 2: // after
+				if (&table->lastWordCapsBefore) {
+					compileError (nested, "Capital sign before last word already defined.");
+					ok = 0;
+					break;
+				}
 				ok =
 					compileBrailleIndicator (nested, "capital sign after last word",
 						CTO_LastWordCapsAfterRule, &table->lastWordCapsAfter);
