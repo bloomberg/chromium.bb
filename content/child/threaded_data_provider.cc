@@ -112,6 +112,7 @@ void DataProviderMessageFilter::OnReceivedData(int request_id,
                                                int data_offset,
                                                int data_length,
                                                int encoded_data_length) {
+  TRACE_EVENT0("loader", "DataProviderMessageFilter::OnReceivedData");
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   background_thread_.TaskRunner()->PostTask(
       FROM_HERE,
@@ -303,6 +304,8 @@ void ThreadedDataProvider::OnReceivedDataOnBackgroundThread(
 void ThreadedDataProvider::OnReceivedDataOnForegroundThread(
     const char* data, int data_length, int encoded_data_length) {
   DCHECK(ChildThreadImpl::current());
+  TRACE_EVENT0("loader",
+               "ThreadedDataProvider::OnReceivedDataOnForegroundThread");
 
   background_thread_.TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ThreadedDataProvider::ForwardAndACKData,
