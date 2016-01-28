@@ -17,7 +17,7 @@ struct PaintInfo;
 enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class BoxClipper {
-    STACK_ALLOCATED();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     BoxClipper(const LayoutBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
     ~BoxClipper();

@@ -26,11 +26,6 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
     if (m_layoutTableSection.needsLayout())
         return;
 
-    // Table sections don't paint self background. The cells paint table section's background
-    // behind them when needed during PaintPhaseBlockBackground or PaintPhaseDescendantBlockBackgroundOnly.
-    if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
-        return;
-
     unsigned totalRows = m_layoutTableSection.numRows();
     unsigned totalCols = m_layoutTableSection.table()->columns().size();
 
@@ -40,7 +35,9 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableSection.location();
 
     if (paintInfo.phase != PaintPhaseSelfOutlineOnly) {
-        BoxClipper boxClipper(m_layoutTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
+        Optional<BoxClipper> boxClipper;
+        if (paintInfo.phase != PaintPhaseSelfBlockBackgroundOnly)
+            boxClipper.emplace(m_layoutTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
         paintObject(paintInfo, adjustedPaintOffset);
     }
 
@@ -125,7 +122,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
                 const LayoutTableCell* cell = current.primaryCell();
                 if (!cell || (r > dirtiedRows.start() && m_layoutTableSection.primaryCellAt(r - 1, c) == cell) || (c > dirtiedColumns.start() && m_layoutTableSection.primaryCellAt(r, c - 1) == cell))
                     continue;
-                paintCell(*cell, paintInfoForCells, paintOffset);
+                paintCell(*cell, paintInfo.phase, paintInfoForCells, paintOffset);
             }
         }
     } else {
@@ -172,18 +169,19 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
             std::sort(cells.begin(), cells.end(), compareCellPositionsWithOverflowingCells);
 
         for (unsigned i = 0; i < cells.size(); ++i)
-            paintCell(*cells[i], paintInfoForCells, paintOffset);
+            paintCell(*cells[i], paintInfo.phase, paintInfoForCells, paintOffset);
     }
 }
 
-void TableSectionPainter::paintCell(const LayoutTableCell& cell, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableSectionPainter::paintCell(const LayoutTableCell& cell, PaintPhase originalPaintPhase, const PaintInfo& paintInfoForCells, const LayoutPoint& paintOffset)
 {
     LayoutPoint cellPoint = m_layoutTableSection.flipForWritingModeForChild(&cell, paintOffset);
-    PaintPhase paintPhase = paintInfo.phase;
     const LayoutTableRow* row = toLayoutTableRow(cell.parent());
 
-    if (shouldPaintSelfBlockBackground(paintPhase)
-        && BlockPainter(cell).intersectsPaintRect(paintInfo, paintOffset + cell.location())) {
+    if (!BlockPainter(cell).intersectsPaintRect(paintInfoForCells, paintOffset + cell.location()))
+        return;
+
+    if (shouldPaintSelfBlockBackground(originalPaintPhase)) {
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
 
@@ -198,21 +196,24 @@ void TableSectionPainter::paintCell(const LayoutTableCell& cell, const PaintInfo
         // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
         // cell.
         if (columnGroup && columnGroup->hasBackground())
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, columnGroup, DisplayItem::TableCellBackgroundFromColumnGroup);
+            tableCellPainter.paintBackgroundsBehindCell(paintInfoForCells, cellPoint, columnGroup, DisplayItem::TableCellBackgroundFromColumnGroup);
         if (column && column->hasBackground())
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, column, DisplayItem::TableCellBackgroundFromColumn);
+            tableCellPainter.paintBackgroundsBehindCell(paintInfoForCells, cellPoint, column, DisplayItem::TableCellBackgroundFromColumn);
 
         // Paint the row group next.
         if (m_layoutTableSection.hasBackground())
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_layoutTableSection, DisplayItem::TableCellBackgroundFromSection);
+            tableCellPainter.paintBackgroundsBehindCell(paintInfoForCells, cellPoint, &m_layoutTableSection, DisplayItem::TableCellBackgroundFromSection);
+    }
 
+    if (shouldPaintDescendantBlockBackgrounds(originalPaintPhase)) {
         // Paint the row next, but only if it doesn't have a layer. If a row has a layer, it will be responsible for
         // painting the row background for the cell.
         if (row->hasBackground() && !row->hasSelfPaintingLayer())
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, row, DisplayItem::TableCellBackgroundFromRow);
+            TableCellPainter(cell).paintBackgroundsBehindCell(paintInfoForCells, cellPoint, row, DisplayItem::TableCellBackgroundFromRow);
     }
-    if ((!cell.hasSelfPaintingLayer() && !row->hasSelfPaintingLayer()))
-        cell.paint(paintInfo, cellPoint);
+
+    if (originalPaintPhase != PaintPhaseSelfBlockBackgroundOnly && !cell.hasSelfPaintingLayer() && !row->hasSelfPaintingLayer())
+        cell.paint(paintInfoForCells, cellPoint);
 }
 
 } // namespace blink

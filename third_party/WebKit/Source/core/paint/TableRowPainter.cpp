@@ -17,25 +17,18 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 {
     ASSERT(m_layoutTableRow.hasSelfPaintingLayer());
 
-    // Table rows don't paint self background. The cells paint table section's background
-    // behind them when needed during PaintPhaseBlockBackground or PaintPhaseDescendantBlockBackgroundOnly.
-    if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
-        return;
-
     // TODO(wangxianzhu): This painting order is inconsistent with other outlines. crbug.com/577282.
     paintOutlineForRowIfNeeded(paintInfo, paintOffset);
     if (paintInfo.phase == PaintPhaseSelfOutlineOnly)
         return;
 
     PaintInfo paintInfoForCells = paintInfo.forDescendants();
+    bool shouldPaintRowBackground = shouldPaintSelfBlockBackground(paintInfo.phase) && m_layoutTableRow.hasBackground();
+    bool shouldPaintCells = paintInfo.phase != PaintPhaseSelfBlockBackgroundOnly;
     for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell()) {
-        // Paint the row background behind the cell.
-        if (shouldPaintSelfBlockBackground(paintInfoForCells.phase)) {
-            if (m_layoutTableRow.hasBackground())
-                TableCellPainter(*cell).paintBackgroundsBehindCell(paintInfoForCells, paintOffset, &m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
-        }
-
-        if (!cell->hasSelfPaintingLayer())
+        if (shouldPaintRowBackground)
+            TableCellPainter(*cell).paintBackgroundsBehindCell(paintInfoForCells, paintOffset, &m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
+        if (shouldPaintCells && !cell->hasSelfPaintingLayer())
             cell->paint(paintInfoForCells, paintOffset);
     }
 }

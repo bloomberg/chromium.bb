@@ -5,6 +5,7 @@
 #ifndef TableSectionPainter_h
 #define TableSectionPainter_h
 
+#include "core/paint/PaintPhase.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -25,7 +26,7 @@ public:
 
 private:
     void paintObject(const PaintInfo&, const LayoutPoint&);
-    void paintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
+    void paintCell(const LayoutTableCell&, PaintPhase originalPaintPhase, const PaintInfo&, const LayoutPoint&);
 
     const LayoutTableSection& m_layoutTableSection;
 };
