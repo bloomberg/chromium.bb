@@ -68,6 +68,7 @@ private:
 
     WebViewImpl* m_webViewImpl;
 
+    bool m_haveEnteredFullscreen;
     float m_exitFullscreenPageScaleFactor;
     IntSize m_exitFullscreenScrollOffset;
     FloatPoint m_exitFullscreenVisualViewportOffset;

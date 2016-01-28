@@ -58,7 +58,8 @@ class FullscreenObserver : public WebContentsObserver {
     [controller_ toggleFullscreenWidget:NO];
   }
 
-  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override {
     [controller_ toggleFullscreenWidget:YES];
   }
 

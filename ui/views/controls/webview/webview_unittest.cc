@@ -281,13 +281,13 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   // WebView like before.
   delegate.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
-      DidToggleFullscreenModeForTab(true);
+      DidToggleFullscreenModeForTab(true, false);
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), holder()->bounds());
 
   // ...and transition back out of fullscreen mode.
   delegate.set_is_fullscreened(false);
   static_cast<content::WebContentsObserver*>(web_view())->
-      DidToggleFullscreenModeForTab(false);
+      DidToggleFullscreenModeForTab(false, false);
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), holder()->bounds());
 
   // Now, begin screen capture of the WebContents and then enter fullscreen
@@ -297,7 +297,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   web_contents->IncrementCapturerCount(capture_size);
   delegate.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
-      DidToggleFullscreenModeForTab(true);
+      DidToggleFullscreenModeForTab(true, false);
   EXPECT_EQ(gfx::Rect(18, 26, 64, 48), holder()->bounds());
 
   // Resize the WebView so that its width is smaller than the capture width.
@@ -309,7 +309,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   // of the holder fill the entire WebView once again.
   delegate.set_is_fullscreened(false);
   static_cast<content::WebContentsObserver*>(web_view())->
-      DidToggleFullscreenModeForTab(false);
+      DidToggleFullscreenModeForTab(false, false);
   EXPECT_EQ(gfx::Rect(0, 0, 32, 32), holder()->bounds());
 }
 
@@ -340,7 +340,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Switching) {
   web_contents1->IncrementCapturerCount(capture_size);
   delegate1.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
-      DidToggleFullscreenModeForTab(true);
+      DidToggleFullscreenModeForTab(true, false);
   EXPECT_EQ(web_contents1->GetNativeView(), holder()->native_view());
   EXPECT_EQ(gfx::Rect(18, 26, 64, 48), holder()->bounds());
 
@@ -393,7 +393,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   web_contents->IncrementCapturerCount(capture_size);
   delegate.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
-      DidToggleFullscreenModeForTab(true);
+      DidToggleFullscreenModeForTab(true, false);
   EXPECT_EQ(gfx::Rect(18, 21, 64, 48), holder()->bounds());
 
   // Focus the other widget.

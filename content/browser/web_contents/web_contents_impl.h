@@ -377,7 +377,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool WasRecentlyAudible() override;
   void GetManifest(const GetManifestCallback& callback) override;
   void HasManifest(const HasManifestCallback& callback) override;
-  void ExitFullscreen() override;
+  void ExitFullscreen(bool will_cause_resize) override;
   void ResumeLoadingCreatedWebContents() override;
 #if defined(OS_ANDROID)
   void OnMediaSessionStateChanged();
@@ -440,7 +440,7 @@ class CONTENT_EXPORT WebContentsImpl
   GeolocationServiceContext* GetGeolocationServiceContext() override;
   WakeLockServiceContext* GetWakeLockServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
-  void ExitFullscreenMode() override;
+  void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const override;

@@ -158,7 +158,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void EnterFullscreenMode(const GURL& origin) {}
 
   // Notification that the frame wants to go out of fullscreen mode.
-  virtual void ExitFullscreenMode() {}
+  // |will_cause_resize| indicates whether the fullscreen change causes a
+  // view resize. e.g. This will be false when going from tab fullscreen to
+  // browser fullscreen.
+  virtual void ExitFullscreenMode(bool will_cause_resize) {}
 
   // Let the delegate decide whether postMessage should be delivered to
   // |target_rfh| from a source frame in the given SiteInstance.  This defaults

@@ -113,7 +113,7 @@ void ScreenOrientationProvider::SetDelegate(
 }
 
 void ScreenOrientationProvider::DidToggleFullscreenModeForTab(
-    bool entered_fullscreen) {
+    bool entered_fullscreen, bool will_cause_resize) {
   if (!lock_applied_ || !delegate_)
     return;
 

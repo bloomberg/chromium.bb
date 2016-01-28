@@ -1684,7 +1684,7 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   if (enter_fullscreen)
     delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin());
   else
-    delegate_->ExitFullscreenMode();
+    delegate_->ExitFullscreenMode(/* will_cause_resize */ true);
 
   // The previous call might change the fullscreen state. We need to make sure
   // the renderer is aware of that, which is done via the resize message.

@@ -578,7 +578,7 @@ void BlinkTestController::OnTestFinished() {
     printer_->PrintImageFooter();
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
-  main_window_->web_contents()->ExitFullscreen();
+  main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();

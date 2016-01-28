@@ -133,7 +133,8 @@ class WEBVIEW_EXPORT WebView : public View,
   void WebContentsDestroyed() override;
   void DidShowFullscreenWidget(int routing_id) override;
   void DidDestroyFullscreenWidget(int routing_id) override;
-  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   // Workaround for MSVC++ linker bug/feature that requires

@@ -407,7 +407,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Invoked when the renderer process has toggled the tab into/out of
   // fullscreen mode.
-  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) {}
+  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                             bool will_cause_resize) {}
 
   // Invoked when an interstitial page is attached or detached.
   virtual void DidAttachInterstitialPage() {}

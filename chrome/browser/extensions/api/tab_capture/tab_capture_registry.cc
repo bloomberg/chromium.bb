@@ -116,7 +116,8 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
       registry_->DispatchStatusChangeEvent(this);
   }
 
-  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override {
     is_fullscreened_ = entered_fullscreen;
     if (capture_state_ == tab_capture::TAB_CAPTURE_STATE_ACTIVE)
       registry_->DispatchStatusChangeEvent(this);

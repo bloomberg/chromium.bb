@@ -1682,11 +1682,13 @@ void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
     delegate_->EnterFullscreenModeForTab(this, origin);
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(
-                        GetRenderViewHost()->GetWidget())));
+                    DidToggleFullscreenModeForTab(
+                        IsFullscreenForCurrentTab(
+                            GetRenderViewHost()->GetWidget()),
+                        false));
 }
 
-void WebContentsImpl::ExitFullscreenMode() {
+void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   // This method is being called to leave renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
@@ -1704,20 +1706,26 @@ void WebContentsImpl::ExitFullscreenMode() {
   if (delegate_)
     delegate_->ExitFullscreenModeForTab(this);
 
-  // Ensure web contents exit fullscreen state by sending a resize message,
-  // which includes the fullscreen state. This is required for the situation
-  // of the browser moving the view into a fullscreen state "browser fullscreen"
-  // and then the contents entering "tab fullscreen". Exiting the contents
-  // "tab fullscreen" then won't have the side effect of the view resizing,
-  // hence the explicit call here is required.
-  if (RenderWidgetHostView* rwh_view = GetRenderWidgetHostView()) {
-    if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
-      render_widget_host->WasResized();
+  // The fullscreen state is communicated to the renderer through a resize
+  // message. If the change in fullscreen state doesn't cause a view resize
+  // then we must ensure web contents exit the fullscreen state by explicitly
+  // sending a resize message. This is required for the situation of the browser
+  // moving the view into a "browser fullscreen" state and then the contents
+  // entering "tab fullscreen". Exiting the contents "tab fullscreen" then won't
+  // have the side effect of the view resizing, hence the explicit call here is
+  // required.
+  if (!will_cause_resize) {
+    if (RenderWidgetHostView* rwhv = GetRenderWidgetHostView()) {
+        if (RenderWidgetHost* render_widget_host = rwhv->GetRenderWidgetHost())
+          render_widget_host->WasResized();
+    }
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(
-                        GetRenderViewHost()->GetWidget())));
+                    DidToggleFullscreenModeForTab(
+                        IsFullscreenForCurrentTab(
+                            GetRenderViewHost()->GetWidget()),
+                        will_cause_resize));
 }
 
 bool WebContentsImpl::IsFullscreenForCurrentTab(
@@ -2882,10 +2890,10 @@ void WebContentsImpl::HasManifest(const HasManifestCallback& callback) {
   manifest_manager_host_->HasManifest(GetMainFrame(), callback);
 }
 
-void WebContentsImpl::ExitFullscreen() {
+void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
   // Clean up related state and initiate the fullscreen exit.
   GetRenderViewHost()->GetWidget()->RejectMouseLockOrUnlockIfNecessary();
-  ExitFullscreenMode();
+  ExitFullscreenMode(will_cause_resize);
 }
 
 void WebContentsImpl::ResumeLoadingCreatedWebContents() {
@@ -3068,7 +3076,7 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
     return;
   }
   if (IsFullscreenForCurrentTab(GetRenderViewHost()->GetWidget()))
-    ExitFullscreen();
+    ExitFullscreen(false);
   DCHECK(!IsFullscreenForCurrentTab(GetRenderViewHost()->GetWidget()));
 }
 
@@ -3940,7 +3948,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   // Ensure fullscreen mode is exited in the |delegate_| since a crashed
   // renderer may not have made a clean exit.
   if (IsFullscreenForCurrentTab(GetRenderViewHost()->GetWidget()))
-    ExitFullscreenMode();
+    ExitFullscreenMode(false);
 
   // Cancel any visible dialogs so they are not left dangling over the sad tab.
   CancelActiveAndPendingDialogs();

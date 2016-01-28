@@ -294,7 +294,8 @@ void WebView::DidDestroyFullscreenWidget(int routing_id) {
     ReattachForFullscreenChange(false);
 }
 
-void WebView::DidToggleFullscreenModeForTab(bool entered_fullscreen) {
+void WebView::DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                            bool will_cause_resize) {
   if (embed_fullscreen_widget_mode_enabled_)
     ReattachForFullscreenChange(entered_fullscreen);
 }

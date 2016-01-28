@@ -13,6 +13,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The FullscreenControllerStateUnitTest unit test suite exhastively tests
@@ -747,6 +748,65 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser());
+}
+
+class FullscreenChangeObserver : public content::WebContentsObserver {
+ public:
+  explicit FullscreenChangeObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {
+  }
+
+  MOCK_METHOD2(DidToggleFullscreenModeForTab, void(bool, bool));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FullscreenChangeObserver);
+};
+
+// Tests that going from tab fullscreen -> browser fullscreen causes an explicit
+// WasResized to be called on ExitFullscreen while going from tab fullscreen ->
+// Normal does not. This ensures that the Resize message we get in the renderer
+// will have both the fullscreen change and size change in the same message.
+// crbug.com/142427.
+TEST_F(FullscreenControllerStateUnitTest, TabToBrowserFullscreenCausesResize) {
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  FullscreenChangeObserver fullscreenObserver(tab);
+
+  // Go into browser fullscreen, then tab fullscreen. Exiting tab fullscreen
+  // should call WasResized since the fullscreen change won't cause a size
+  // change itself.
+  ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+
+  // The second parameter in DidToggleFullscreenModeForTab should be false,
+  // indicating that the fullscreen change will *not* cause a resize.
+  EXPECT_CALL(fullscreenObserver,
+              DidToggleFullscreenModeForTab(false, false));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  testing::Mock::VerifyAndClearExpectations(&fullscreenObserver);
+
+  ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+
+  // Go into tab fullscreen only. Exiting tab fullscreen should *not* cause
+  // a call to WasResized since the window will change size and we want the
+  // fullscreen change and size change to be in one Resize message.
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+
+  // The second parameter in DidToggleFullscreenModeForTab should now be true,
+  // indicating that the fullscreen change *will* cause a resize.
+  EXPECT_CALL(fullscreenObserver,
+              DidToggleFullscreenModeForTab(false, true));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  testing::Mock::VerifyAndClearExpectations(&fullscreenObserver);
 }
 
 // Tests that the state of a fullscreened, screen-captured tab is preserved if

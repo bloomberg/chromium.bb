@@ -41,7 +41,8 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
   static void SetDelegate(ScreenOrientationDelegate* delegate_);
 
   // WebContentsObserver
-  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
 
  private:
   struct LockInformation {

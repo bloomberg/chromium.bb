@@ -140,7 +140,7 @@ void ChromeBubbleManager::ActiveTabChanged(content::WebContents* old_contents,
 }
 
 void ChromeBubbleManager::DidToggleFullscreenModeForTab(
-    bool entered_fullscreen) {
+    bool entered_fullscreen, bool will_cause_resize) {
   CloseAllBubbles(BUBBLE_CLOSE_FULLSCREEN_TOGGLED);
   // Any bubble that didn't close should update its anchor position.
   UpdateAllBubbleAnchors();
