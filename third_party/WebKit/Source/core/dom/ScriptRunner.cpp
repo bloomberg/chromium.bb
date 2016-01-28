@@ -204,22 +204,12 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
         // to detach).
-        bool foundLoader = m_pendingAsyncScripts.contains(scriptLoader);
-#if !ENABLE(OILPAN)
-        // If the ScriptRunner has been disposed of, no pending scripts remain.
-        // Verify that the ScriptLoader is in a detached state, if so.
-        foundLoader = foundLoader || (scriptLoader->isDetached() && m_pendingAsyncScripts.isEmpty());
-#endif
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
         m_pendingAsyncScripts.remove(scriptLoader);
         break;
     }
     case IN_ORDER_EXECUTION:
-        bool foundLoader = removePendingInOrderScript(scriptLoader);
-#if !ENABLE(OILPAN)
-        foundLoader = foundLoader || (scriptLoader->isDetached() && m_pendingInOrderScripts.isEmpty());
-#endif
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(removePendingInOrderScript(scriptLoader));
         break;
     }
     scriptLoader->detach();
