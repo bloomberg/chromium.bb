@@ -16,13 +16,11 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/crw_test_js_injection_receiver.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/crw_web_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -379,9 +377,6 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
       [inputAccessoryView addSubview:_customAccessoryView];
     }
   }
-  UIAccessibilityPostNotification(
-      UIAccessibilityScreenChangedNotification,
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD));
 }
 
 - (void)restoreDefaultInputAccessoryView {

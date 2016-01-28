@@ -135,9 +135,6 @@ all other OS specific variables will be false.
         Platform
       </message>
 
-      <message name="IDS_IOS_AUTOFILL_ACCNAME_SUGGESTIONS_AVAILABLE" desc="The description of the event provided when an accessibility notification is posted upon showing form suggestions. [Length: unlimited] [iOS only]">
-        Suggestions available
-      </message>
       <message name="IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD" desc="The accessible name for the hide keyboard button in the keyboard accessory shown when filling out forms. [Length: unlimited] [iOS only]">
         Hide keyboard
       </message>
