@@ -121,11 +121,11 @@ enum RTCIceConnectionState {
     attribute EventHandler ondatachannel;
 
     // Non-standard or removed from the spec:
-    [RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
+    [CallWith=ExecutionContext, RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
     sequence<MediaStream> getLocalStreams();
     sequence<MediaStream> getRemoteStreams();
     MediaStream getStreamById(DOMString streamId);
-    [RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
+    [CallWith=ExecutionContext, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
     [RaisesException] void removeStream(MediaStream? stream);
     [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
     attribute EventHandler onaddstream;

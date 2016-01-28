@@ -44,8 +44,8 @@ class MediaTrackConstraintSet;
 namespace MediaConstraintsImpl {
 
 WebMediaConstraints create();
-WebMediaConstraints create(const Dictionary&, MediaErrorState&);
-WebMediaConstraints create(const MediaTrackConstraintSet&, MediaErrorState&);
+WebMediaConstraints create(const ExecutionContext*, const Dictionary&, MediaErrorState&);
+WebMediaConstraints create(const ExecutionContext*, const MediaTrackConstraintSet&, MediaErrorState&);
 
 }
 

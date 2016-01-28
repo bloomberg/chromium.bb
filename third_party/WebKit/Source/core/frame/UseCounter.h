@@ -1003,6 +1003,9 @@ public:
         NotificationAPIInsecureOriginIframe = 1147,
         NotificationAPISecureOriginIframe = 1148,
         WebSocket = 1149,
+        MediaStreamConstraintsNameValue = 1150,
+        MediaStreamConstraintsFromDictionary = 1151,
+        MediaStreamConstraintsConformant = 1152,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

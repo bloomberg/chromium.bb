@@ -34,6 +34,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -385,7 +386,7 @@ static WebMediaConstraints createFromNamedConstraints(WebVector<WebMediaConstrai
 }
 
 // Deprecated.
-WebMediaConstraints create(const Dictionary& constraintsDictionary, MediaErrorState& errorState)
+WebMediaConstraints create(const ExecutionContext* context, const Dictionary& constraintsDictionary, MediaErrorState& errorState)
 {
     WebVector<WebMediaConstraint> optional;
     WebVector<WebMediaConstraint> mandatory;
@@ -393,6 +394,7 @@ WebMediaConstraints create(const Dictionary& constraintsDictionary, MediaErrorSt
         errorState.throwTypeError("Malformed constraints object.");
         return WebMediaConstraints();
     }
+    UseCounter::count(context, UseCounter::MediaStreamConstraintsFromDictionary);
     return createFromNamedConstraints(mandatory, optional, errorState);
 }
 
@@ -491,7 +493,7 @@ void copyConstraints(const MediaTrackConstraintSet& constraintsIn, WebMediaTrack
     }
 }
 
-WebMediaConstraints create(const MediaTrackConstraintSet& constraintsIn, MediaErrorState& errorState)
+WebMediaConstraints create(const ExecutionContext* context, const MediaTrackConstraintSet& constraintsIn, MediaErrorState& errorState)
 {
     WebMediaConstraints constraints;
     WebMediaTrackConstraintSet constraintBuffer;
@@ -510,8 +512,10 @@ WebMediaConstraints create(const MediaTrackConstraintSet& constraintsIn, MediaEr
             errorState.throwTypeError("Malformed constraints object.");
             return WebMediaConstraints();
         }
+        UseCounter::count(context, UseCounter::MediaStreamConstraintsNameValue);
         return createFromNamedConstraints(mandatory, optional, errorState);
     }
+    UseCounter::count(context, UseCounter::MediaStreamConstraintsConformant);
     constraints.initialize(constraintBuffer, advancedBuffer);
     return constraints;
 }

@@ -80,7 +80,7 @@ public:
 
     String signalingState() const;
 
-    void updateIce(const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
+    void updateIce(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
 
     // Certificate management
     // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
@@ -101,7 +101,7 @@ public:
 
     MediaStream* getStreamById(const String& streamId);
 
-    void addStream(MediaStream*, const Dictionary& mediaConstraints, ExceptionState&);
+    void addStream(ExecutionContext*, MediaStream*, const Dictionary& mediaConstraints, ExceptionState&);
 
     void removeStream(MediaStream*, ExceptionState&);
 
