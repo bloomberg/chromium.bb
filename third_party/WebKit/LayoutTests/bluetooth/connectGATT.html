@@ -149,7 +149,6 @@ promise_test(() => {
 }, 'Device will connect');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('');
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => {

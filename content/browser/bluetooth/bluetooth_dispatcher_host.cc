@@ -323,6 +323,7 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     characteristic_id_to_notify_session_.clear();
     active_characteristic_threads_.clear();
     device_id_to_connection_map_.clear();
+    allowed_devices_map_ = BluetoothAllowedDevicesMap();
   }
 
   set_adapter(std::move(mock_adapter));

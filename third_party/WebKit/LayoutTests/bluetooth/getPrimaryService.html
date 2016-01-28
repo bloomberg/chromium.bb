@@ -5,15 +5,6 @@
 <script>
 'use strict'
 
-// Services Discovered
-// We use a connection to trigger a service discovered event and test
-// getPrimaryService. Sometimes the previous test left a connection to the
-// device open, so the event doesn't get triggered. To avoid this some tests
-// clean the state before starting the test.
-// In the future we will avoid this by
-// (1) Separating each test into it's own file. http://crbug.com/554240
-// (2) Implementing Dynamic mocks so that we can trigger the
-//     discovery event manually. http://crbug.com/569709
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
@@ -32,8 +23,6 @@ promise_test(() => {
 }, 'Device goes out of range. Reject with NetworkError.');
 
 promise_test(() => {
-  // See Services Discovered note above.
-  testRunner.setBluetoothMockDataSet('');
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Service not found in device.',
                                   'NotFoundError');
@@ -49,8 +38,6 @@ promise_test(() => {
 }, 'Request for wrong service. Reject with NotFoundError.');
 
 promise_test(() => {
-  // See services discovered note above.
-  testRunner.setBluetoothMockDataSet('');
   testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
@@ -61,14 +48,6 @@ promise_test(() => {
 }, 'Request for service. Must return even when the services are not immediately discovered');
 
 promise_test(() => {
-  // Because state doesn't get cleaned after each test in a file, we need to
-  // clean it ourselves. In this case, the services for a HeartRateDevice had
-  // been discovered in the previous test, since the state doesn't get cleaned
-  // it appears as if the services had been discovered for the device in this
-  // test.
-  // TODO(ortuno): split tests into different files.
-  // http://crbug.com/554240
-  testRunner.setBluetoothMockDataSet('');
   testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
