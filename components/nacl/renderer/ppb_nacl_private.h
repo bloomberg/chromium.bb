@@ -228,6 +228,10 @@ struct PPB_NaCl_Private {
                        scoped_ptr<IPC::SyncChannel>* translator_channel,
                        base::ProcessId* process_id,
                        struct PP_CompletionCallback callback);
+  /* On POSIX systems, this function returns the file descriptor of
+   * /dev/urandom.  On non-POSIX systems, this function returns 0.
+   */
+  int32_t (*UrandomFD)(void);
   /* Returns a read-only (but executable) file descriptor / file info for
    * a url for pnacl translator tools. Returns an invalid handle on failure.
    */

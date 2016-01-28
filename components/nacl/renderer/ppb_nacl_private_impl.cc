@@ -22,6 +22,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -617,6 +618,14 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
                                   "could not create instance.");
   }
   return PP_FALSE;
+}
+
+int UrandomFD(void) {
+#if defined(OS_POSIX)
+  return base::GetUrandomFD();
+#else
+  return -1;
+#endif
 }
 
 // Convert a URL to a filename for GetReadonlyPnaclFd.
@@ -1691,6 +1700,7 @@ void StreamPexe(PP_Instance instance,
 
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
+  &UrandomFD,
   &GetReadExecPnaclFd,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
