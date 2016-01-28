@@ -980,12 +980,13 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
     if (!checkEnabled(errorString))
         return;
     InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript || !injectedScript->scriptState()->contextIsValid()) {
+    if (!injectedScript) {
         *errorString = "Inspected frame has gone";
         return;
     }
 
-    ScriptState::Scope scope(injectedScript->scriptState());
+    v8::HandleScope handles(injectedScript->isolate());
+    v8::Context::Scope scope(injectedScript->context());
     v8::Local<v8::String> source = v8String(m_isolate, expression);
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Script> script;
@@ -1025,11 +1026,12 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
         return;
     }
 
-    ScriptState* scriptState = injectedScript->scriptState();
-    ScriptState::Scope scope(scriptState);
+    v8::HandleScope handles(m_isolate);
+    v8::Context::Scope scope(injectedScript->context());
     v8::Local<v8::Script> script = v8::Local<v8::Script>::New(m_isolate, m_compiledScripts.Remove(scriptId));
+    ScriptState* scriptState = ScriptState::from(injectedScript->context());
 
-    if (script.IsEmpty() || !scriptState->contextIsValid()) {
+    if (script.IsEmpty() || !scriptState) {
         *errorString = "Script execution failed";
         return;
     }

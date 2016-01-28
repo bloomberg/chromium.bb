@@ -367,7 +367,12 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
         *errorString = "Inspected frame has gone";
         return;
     }
-    ScriptState* state = injectedScript->scriptState();
+    v8::HandleScope handles(injectedScript->isolate());
+    ScriptState* state = ScriptState::from(injectedScript->context());
+    if (!state) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
     ScriptState::Scope scope(state);
     v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
     if (value.IsEmpty()) {
@@ -382,9 +387,8 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
 
 void InspectorDOMDebuggerAgent::eventListeners(InjectedScript* injectedScript, v8::Local<v8::Value> object, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
 {
-    ScriptState* state = injectedScript->scriptState();
     EventListenerInfoMap eventInformation;
-    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(state->isolate(), object, eventInformation);
+    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(injectedScript->isolate(), object, eventInformation);
     for (const auto& it : eventInformation) {
         for (const auto& it2 : *it.value) {
             if (!it2.useCapture)
@@ -408,8 +412,7 @@ PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::b
     if (info.handler.IsEmpty())
         return nullptr;
 
-    ScriptState* scriptState = injectedScript->scriptState();
-    v8::Isolate* isolate = scriptState->isolate();
+    v8::Isolate* isolate = injectedScript->isolate();
     v8::Local<v8::Function> function = eventListenerEffectiveFunction(isolate, info.handler);
     if (function.IsEmpty())
         return nullptr;

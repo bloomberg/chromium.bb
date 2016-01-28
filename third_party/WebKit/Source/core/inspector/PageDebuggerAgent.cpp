@@ -137,7 +137,13 @@ void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& ex
         *errorString = "Inspected frame has gone";
         return;
     }
-    ExecutionContext* executionContext = injectedScript->scriptState()->executionContext();
+    v8::HandleScope handles(injectedScript->isolate());
+    ExecutionContext* executionContext = toExecutionContext(injectedScript->context());
+    if (!executionContext) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+
     RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
     InspectorDebuggerAgent::compileScript(errorString, expression, sourceURL, persistScript, executionContextId, scriptId, exceptionDetails);
     if (!scriptId->isAssigned())
@@ -155,7 +161,12 @@ void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scri
         *errorString = "Inspected frame has gone";
         return;
     }
-    ExecutionContext* executionContext = injectedScript->scriptState()->executionContext();
+    v8::HandleScope handles(injectedScript->isolate());
+    ExecutionContext* executionContext = toExecutionContext(injectedScript->context());
+    if (!executionContext) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
 
     String sourceURL = m_compiledScriptURLs.take(scriptId);
     LocalFrame* frame = toDocument(executionContext)->frame();

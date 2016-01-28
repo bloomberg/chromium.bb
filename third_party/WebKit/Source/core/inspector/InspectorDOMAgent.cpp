@@ -1220,13 +1220,13 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
         *errorString = "Cannot find context for specified object id";
         return nullptr;
     }
-    ScriptState::Scope scope(injectedScript->scriptState());
+    v8::HandleScope handles(injectedScript->isolate());
     v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
     if (value.IsEmpty()) {
         *errorString = "Node for given objectId not found";
         return nullptr;
     }
-    v8::Isolate* isolate = injectedScript->scriptState()->isolate();
+    v8::Isolate* isolate = injectedScript->isolate();
     if (!V8Node::hasInstance(value, isolate)) {
         *errorString = "Object id doesn't reference a Node";
         return nullptr;

@@ -135,10 +135,10 @@ private:
     using AgentsMap = HashMap<int, V8DebuggerAgentImpl*>;
     AgentsMap m_agentsMap;
     bool m_breakpointsActivated;
-    v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
-    v8::UniquePersistent<v8::Object> m_debuggerScript;
-    v8::UniquePersistent<v8::Context> m_debuggerContext;
-    v8::UniquePersistent<v8::FunctionTemplate> m_callFrameWrapperTemplate;
+    v8::Global<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
+    v8::Global<v8::Object> m_debuggerScript;
+    v8::Global<v8::Context> m_debuggerContext;
+    v8::Global<v8::FunctionTemplate> m_callFrameWrapperTemplate;
     v8::Local<v8::Object> m_executionState;
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;

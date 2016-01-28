@@ -78,7 +78,7 @@ void WorkerThreadDebugger::quitMessageLoopOnPause()
     m_paused = false;
 }
 
-bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> context)
+bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
 {
     return true;
 }

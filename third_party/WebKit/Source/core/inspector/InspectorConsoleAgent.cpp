@@ -25,6 +25,7 @@
 
 #include "core/inspector/InspectorConsoleAgent.h"
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"

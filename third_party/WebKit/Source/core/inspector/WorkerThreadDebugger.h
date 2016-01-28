@@ -49,7 +49,7 @@ public:
     // V8DebuggerClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
-    bool callingContextCanAccessContext(v8::Local<v8::Context>) override;
+    bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
 
 private:
     WorkerThread* m_workerThread;

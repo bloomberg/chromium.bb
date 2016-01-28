@@ -30,7 +30,6 @@
 
 #include "core/inspector/InjectedScriptManager.h"
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptNative.h"
@@ -91,8 +90,13 @@ void InjectedScriptManager::discardInjectedScripts()
 int InjectedScriptManager::discardInjectedScriptFor(v8::Local<v8::Context> context)
 {
     int contextId = V8Debugger::contextId(context);
-    m_idToInjectedScript.remove(contextId);
+    discardInjectedScript(contextId);
     return contextId;
+}
+
+void InjectedScriptManager::discardInjectedScript(int contextId)
+{
+    m_idToInjectedScript.remove(contextId);
 }
 
 void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
@@ -130,12 +134,13 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
     if (it != m_idToInjectedScript.end())
         return it->value.get();
 
-    if (!m_client->callingContextCanAccessContext(context))
+    v8::Local<v8::Context> callingContext = context->GetIsolate()->GetCallingContext();
+    if (!callingContext.IsEmpty() && !m_client->callingContextCanAccessContext(callingContext, context))
         return nullptr;
 
     RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(context->GetIsolate()));
-    v8::Local<v8::Object> injectedScriptValue = createInjectedScript(injectedScriptSource(), context, contextId, injectedScriptNative.get());
-    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(injectedScriptValue, m_client, injectedScriptNative.release(), contextId));
+    v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource(), context, contextId, injectedScriptNative.get());
+    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(this, context, object, m_client, injectedScriptNative.release(), contextId));
     InjectedScript* resultPtr = result.get();
     if (m_customObjectFormatterEnabled)
         result->setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);

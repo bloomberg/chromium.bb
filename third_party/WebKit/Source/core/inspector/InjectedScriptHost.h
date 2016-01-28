@@ -46,7 +46,6 @@ class EventTarget;
 class InjectedScriptHostClient;
 class InspectorConsoleAgent;
 class JSONValue;
-class ScriptValue;
 class V8DebuggerAgent;
 class V8Debugger;
 

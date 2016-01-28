@@ -31,7 +31,6 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InjectedScriptNative.h"
@@ -41,6 +40,7 @@
 
 namespace blink {
 
+class InjectedScriptManager;
 class JSONValue;
 class RemoteObjectId;
 class ScriptFunctionCall;
@@ -52,11 +52,6 @@ class InjectedScript final {
     USING_FAST_MALLOC(InjectedScript);
 public:
     ~InjectedScript();
-
-    ScriptState* scriptState() const
-    {
-        return m_injectedScriptObject.scriptState();
-    }
 
     void evaluate(
         ErrorString*,
@@ -112,20 +107,25 @@ public:
     void setCustomObjectFormatterEnabled(bool);
     int contextId() { return m_contextId; }
 
+    v8::Isolate* isolate() { return m_isolate; }
+    v8::Local<v8::Context> context() const;
+    void dispose();
+
 private:
     friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
-    InjectedScript(v8::Local<v8::Object>, V8DebuggerClient*, PassRefPtr<InjectedScriptNative>, int contextId);
+    InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, V8DebuggerClient*, PassRefPtr<InjectedScriptNative>, int contextId);
 
     bool canAccessInspectedWindow() const;
-    v8::Local<v8::Context> v8Context() const;
     v8::Local<v8::Value> v8Value() const;
     v8::Local<v8::Value> callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
     void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
     void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
     void makeCallWithExceptionDetails(ScriptFunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
 
+    InjectedScriptManager* m_manager;
     v8::Isolate* m_isolate;
-    ScriptValue m_injectedScriptObject;
+    v8::Global<v8::Context> m_context;
+    v8::Global<v8::Value> m_value;
     V8DebuggerClient* m_client;
     RefPtr<InjectedScriptNative> m_native;
     int m_contextId;

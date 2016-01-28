@@ -60,6 +60,7 @@ public:
     InjectedScript* findInjectedScript(RemoteObjectIdBase*) const;
     void discardInjectedScripts();
     int discardInjectedScriptFor(v8::Local<v8::Context>);
+    void discardInjectedScript(int);
     void releaseObjectGroup(const String& objectGroup);
     void setCustomObjectFormatterEnabled(bool);
 
