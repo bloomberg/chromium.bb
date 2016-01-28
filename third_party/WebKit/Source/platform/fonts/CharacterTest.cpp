@@ -143,13 +143,17 @@ TEST(CharacterTest, TestCharacterRangeCodePathString)
     EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c6, 3));
 }
 
-static void TestSpecificUChar32RangeIdeograph(UChar32 rangeStart, UChar32 rangeEnd)
+static void TestSpecificUChar32RangeIdeograph(UChar32 rangeStart,
+    UChar32 rangeEnd,
+    bool before = true)
 {
-    EXPECT_FALSE(Character::isCJKIdeograph(rangeStart - 1));
-    EXPECT_TRUE(Character::isCJKIdeograph(rangeStart));
-    EXPECT_TRUE(Character::isCJKIdeograph((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
-    EXPECT_TRUE(Character::isCJKIdeograph(rangeEnd));
-    EXPECT_FALSE(Character::isCJKIdeograph(rangeEnd + 1));
+    if (before)
+        EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeStart - 1));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(rangeStart));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(
+        (UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(rangeEnd));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeEnd + 1));
 }
 
 TEST(CharacterTest, TestIsCJKIdeograph)
@@ -157,11 +161,11 @@ TEST(CharacterTest, TestIsCJKIdeograph)
     // The basic CJK Unified Ideographs block.
     TestSpecificUChar32RangeIdeograph(0x4E00, 0x9FFF);
     // CJK Unified Ideographs Extension A.
-    TestSpecificUChar32RangeIdeograph(0x3400, 0x4DBF);
+    TestSpecificUChar32RangeIdeograph(0x3400, 0x4DBF, false);
     // CJK Unified Ideographs Extension A and Kangxi Radicals.
     TestSpecificUChar32RangeIdeograph(0x2E80, 0x2FDF);
     // CJK Strokes.
-    TestSpecificUChar32RangeIdeograph(0x31C0, 0x31EF);
+    TestSpecificUChar32RangeIdeograph(0x31C0, 0x31EF, false);
     // CJK Compatibility Ideographs.
     TestSpecificUChar32RangeIdeograph(0xF900, 0xFAFF);
     // CJK Unified Ideographs Extension B.

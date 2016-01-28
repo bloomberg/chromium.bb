@@ -34,12 +34,31 @@
     '../build/scripts/scripts.gypi',
     'platform_generated.gypi',
   ],
+  'variables': {
+    'conditions': [
+      # TODO(kojii): The character_data_generator fails when cross-compile, so
+      # we use a pre-generated copy in the tree until we fix or until we move
+      # to gn. See crbug.com/581555
+      ['OS=="android" or chromeos==1 or (target_arch!="ia32" and target_arch!="x64")', {
+        'generate_character_data%': 0,
+      }, {
+        'generate_character_data%': 1,
+      }],
+    ],
+  },
 
   'targets': [
     {
       'target_name': 'make_platform_generated',
       'type': 'none',
       'hard_dependency': 1,
+      'conditions': [
+        ['generate_character_data==1', {
+          'dependencies': [
+            'character_data_generator#host',
+          ],
+        }]
+      ],
       'actions': [
         {
           'action_name': 'FontFamilyNames',
@@ -114,7 +133,41 @@
             '--output-file=<(blink_platform_output_dir)/ColorData.cpp',
           ],
         },
+        {
+          'action_name': 'CharacterData',
+          'inputs': [
+            'fonts/CharacterDataGenerator.cpp',
+          ],
+          'outputs': [
+            '<(blink_platform_output_dir)/CharacterData.cpp',
+          ],
+          'conditions': [
+            ['generate_character_data==1', {
+              'action': [
+                '<(PRODUCT_DIR)/character_data_generator',
+                '<(blink_platform_output_dir)/CharacterData.cpp',
+              ],
+            }, {
+              'action': [
+                'cp',
+                'fonts/CharacterData.cpp',
+                '<(blink_platform_output_dir)/CharacterData.cpp',
+              ],
+            }]
+          ],
+        },
       ]
+    },
+    {
+      'target_name': 'character_data_generator',
+      'type': 'executable',
+      'toolsets': ['host'],
+      'sources': [
+        'fonts/CharacterDataGenerator.cpp',
+      ],
+      'dependencies': [
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc#host',
+      ],
     },
   ],
 }
