@@ -33,6 +33,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -643,7 +644,7 @@ void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
   // Delete most of root window related objects, but don't delete
   // root window itself yet because the stack may be using it.
   controller->Shutdown();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, controller);
 }
 
 void WindowTreeHostManager::OnDisplayRemoved(const gfx::Display& display) {

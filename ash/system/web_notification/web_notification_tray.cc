@@ -22,6 +22,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -445,7 +446,7 @@ void WebNotificationTray::OnMessageCenterTrayChanged() {
   // consecutively, and calling Update in the middle of those events will show
   // intermediate unread counts for a moment.
   should_update_tray_content_ = true;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&WebNotificationTray::UpdateTrayContent, AsWeakPtr()));
 }

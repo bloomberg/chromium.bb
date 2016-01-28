@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/shell.h"
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_dispatcher.h"
@@ -37,7 +37,7 @@ void PostPressedEvent(ui::KeyEvent* event) {
   scoped_ptr<aura::WindowTracker> tracker(new aura::WindowTracker);
   tracker->Add(static_cast<aura::Window*>(event->target()));
 
-  base::MessageLoopForUI::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DispatchPressedEvent, pressed_event, base::Passed(&tracker)));
 }

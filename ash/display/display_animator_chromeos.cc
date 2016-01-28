@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -40,9 +41,9 @@ class CallbackRunningObserver {
   void OnSingleTaskCompleted() {
     completed_counter_++;
     if (completed_counter_ >= observer_list_.size()) {
-      base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
       if (!animation_aborted_)
-        base::MessageLoopForUI::current()->PostTask(FROM_HERE, callback_);
+        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback_);
     }
   }
 

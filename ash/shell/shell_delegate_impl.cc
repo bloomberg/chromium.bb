@@ -172,7 +172,7 @@ void ShellDelegateImpl::PreShutdown() {
 }
 
 void ShellDelegateImpl::Exit() {
-  base::MessageLoopForUI::current()->QuitWhenIdle();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {

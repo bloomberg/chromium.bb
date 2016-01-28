@@ -18,8 +18,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "grit/ash_resources.h"
@@ -180,10 +180,9 @@ TrayBrightness::TrayBrightness(SystemTray* system_tray)
       weak_ptr_factory_(this) {
   // Post a task to get the initial brightness; the BrightnessControlDelegate
   // isn't created yet.
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TrayBrightness::GetInitialBrightness,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&TrayBrightness::GetInitialBrightness,
+                            weak_ptr_factory_.GetWeakPtr()));
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       AddObserver(this);
 }

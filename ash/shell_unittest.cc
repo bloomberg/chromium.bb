@@ -23,6 +23,7 @@
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -361,9 +362,9 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   // When MenuRunner runs a nested loop the LockScreenAndVerifyMenuClosed
   // command will fire, check the menu state and ensure the nested menu loop
   // is exited so that the test will terminate.
-  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
-      base::Bind(&ShellTest::LockScreenAndVerifyMenuClosed,
-                 base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ShellTest::LockScreenAndVerifyMenuClosed,
+                            base::Unretained(this)));
 
   EXPECT_EQ(views::MenuRunner::NORMAL_EXIT,
             menu_runner->RunMenuAt(widget,

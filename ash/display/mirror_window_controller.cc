@@ -26,6 +26,7 @@
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
@@ -379,7 +380,7 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
   // was deleted as a result of input event (e.g. shortcut), so don't delete
   // now.
   if (delay_host_deletion)
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, host_info);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host_info);
   else
     delete host_info;
 }

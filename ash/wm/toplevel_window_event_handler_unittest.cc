@@ -14,7 +14,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -718,11 +717,10 @@ TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
 
   aura::client::WindowMoveClient* move_client =
       aura::client::GetWindowMoveClient(window->GetRootWindow());
-  base::MessageLoopForUI::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SendMouseReleaseAndReleaseCapture,
-                 base::Unretained(&generator),
-                 base::Unretained(window.get())));
+                 base::Unretained(&generator), base::Unretained(window.get())));
   EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
                 aura::client::WINDOW_MOVE_SOURCE_MOUSE));

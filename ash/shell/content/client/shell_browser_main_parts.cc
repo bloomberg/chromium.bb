@@ -168,7 +168,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  base::MessageLoopForUI::current()->Run();
+  base::MessageLoop::current()->Run();
   return true;
 }
 

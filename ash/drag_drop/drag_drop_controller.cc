@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -222,7 +223,7 @@ int DragDropController::StartDragAndDrop(
   if (should_block_during_drag_drop_) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop* loop = base::MessageLoop::current();
     base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
     run_loop.Run();
   }
@@ -501,10 +502,9 @@ void DragDropController::AnimationEnded(const gfx::Animation* animation) {
       ForwardPendingLongTap();
     } else {
       // See comment about this in OnGestureEvent().
-      base::MessageLoopForUI::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&DragDropController::ForwardPendingLongTap,
-                     weak_factory_.GetWeakPtr()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&DragDropController::ForwardPendingLongTap,
+                                weak_factory_.GetWeakPtr()));
     }
   }
 }

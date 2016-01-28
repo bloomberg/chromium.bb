@@ -27,9 +27,9 @@
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
@@ -820,7 +820,7 @@ void NetworkStateListDetailedView::CallRequestScan() {
   VLOG(1) << "Requesting Network Scan.";
   NetworkHandler::Get()->network_state_handler()->RequestScan();
   // Periodically request a scan while this UI is open.
-  base::MessageLoopForUI::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));

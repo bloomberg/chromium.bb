@@ -10,7 +10,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window.h"
@@ -326,7 +326,7 @@ void ShelfTooltipManager::CancelHidingAnimation() {
 }
 
 void ShelfTooltipManager::CloseSoon() {
-  base::MessageLoopForUI::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ShelfTooltipManager::Close, weak_factory_.GetWeakPtr()));
 }

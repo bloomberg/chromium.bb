@@ -37,6 +37,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/user_action_tester.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -1192,10 +1193,11 @@ TEST_F(WindowSelectorTest, DISABLED_DragDropInProgress) {
   ash::DragDropController* drag_drop_controller =
       shell_test_api.drag_drop_controller();
   ui::OSExchangeData data;
-  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
-      base::Bind(&WindowSelectorTest::ToggleOverview,
-                 base::Unretained(this)));
-  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&WindowSelectorTest::ToggleOverview, base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::Bind(&CancelDrag, drag_drop_controller, &drag_canceled_by_test));
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
   drag_drop_controller->StartDragAndDrop(data, window->GetRootWindow(),

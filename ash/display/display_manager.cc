@@ -29,6 +29,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
@@ -1046,10 +1047,9 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
   // ash::Shell::Init() will call this after the compositor is initialized.
   if (software_mirroring_display_list_.empty() || !delegate_)
     return;
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DisplayManager::CreateMirrorWindowIfAny,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DisplayManager::CreateMirrorWindowIfAny,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 scoped_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(

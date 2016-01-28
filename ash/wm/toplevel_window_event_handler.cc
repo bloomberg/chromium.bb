@@ -421,7 +421,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   in_move_loop_ = true;
   bool destroyed = false;
   destroyed_ = &destroyed;
-  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
