@@ -110,11 +110,11 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
 
   switch (data.type) {
     case ArcNotificationType::BASIC:
-      type = message_center::NOTIFICATION_TYPE_SIMPLE;
+      type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
       break;
     case ArcNotificationType::IMAGE:
       // TODO(yoshiki): Implement this types.
-      type = message_center::NOTIFICATION_TYPE_SIMPLE;
+      type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
       LOG(ERROR) << "Unsupported notification type: image";
       break;
     case ArcNotificationType::PROGRESS:
