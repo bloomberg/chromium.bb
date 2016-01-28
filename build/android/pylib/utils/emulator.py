@@ -190,6 +190,7 @@ def LaunchTempEmulators(emulator_count, abi, api_level, enable_kvm=False,
   if wait_for_boot:
     for emulator in emulators:
       emulator.ConfirmLaunch(True)
+    logging.info('All emulators are fully booted')
   return emulators
 
 
@@ -465,6 +466,7 @@ class Emulator(object):
       # Now that we checked for obvious problems, wait for a boot complete.
       # Waiting for the package manager is sometimes problematic.
       device.WaitUntilFullyBooted(timeout=self._WAITFORBOOT_TIMEOUT)
+      logging.info('%s is now fully booted', self.avd_name)
 
   def Shutdown(self):
     """Shuts down the process started by launch."""

@@ -138,6 +138,8 @@ def main(argv):
         wait_for_boot=True,
         headless=arguments.headless
     )
+  logging.info('Emulator launch completed')
+  return 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
