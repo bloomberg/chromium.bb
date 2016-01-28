@@ -24,7 +24,6 @@
 #include "core/css/parser/MediaQueryParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/BitArray.h"
@@ -720,11 +719,8 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     if (important && (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframe))
         return;
 
-    if (unresolvedProperty != CSSPropertyInvalid) {
-        if (m_styleSheet && m_styleSheet->singleOwnerDocument())
-            Deprecation::warnOnDeprecatedProperties(m_styleSheet->singleOwnerDocument()->frame(), unresolvedProperty);
+    if (unresolvedProperty != CSSPropertyInvalid)
         consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
-    }
 
     if (m_observerWrapper && (ruleType == StyleRule::Style || ruleType == StyleRule::Keyframe)) {
         m_observerWrapper->observer().observeProperty(

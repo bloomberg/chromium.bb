@@ -23,7 +23,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/SettingsDelegate.h"
@@ -164,7 +163,6 @@ public:
     Settings& settings() const { return *m_settings; }
 
     UseCounter& useCounter() { return m_useCounter; }
-    Deprecation& deprecation() { return m_deprecation; }
     OriginsUsingFeatures& originsUsingFeatures() { return m_originsUsingFeatures; }
 
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
@@ -270,7 +268,6 @@ private:
     OwnPtrWillBeMember<ValidationMessageClient> m_validationMessageClient;
 
     UseCounter m_useCounter;
-    Deprecation m_deprecation;
     OriginsUsingFeatures m_originsUsingFeatures;
 
     bool m_openedByDOM;

@@ -742,14 +742,11 @@ void UseCounter::countCrossOriginIframe(const Document& document, Feature featur
         count(frame, feature);
 }
 
-// TODO (nainar): Migrate all console message functions to Deprecation
 static const char* milestoneString(int milestone)
 {
     switch (milestone) {
     case 50:
         return "M50, around April 2016";
-    case 51:
-        return "M51, around June 2016";
     case 53:
         return "M53, around September 2016";
     }
@@ -763,7 +760,7 @@ static String replacedBy(const char* feature, const char* replacement)
     return String::format("%s is deprecated. Please use %s instead.", feature, replacement);
 }
 
-String UseCounter::willBeRemoved(const char* feature, int milestone, const char* details)
+static String willBeRemoved(const char* feature, int milestone, const char* details)
 {
     return String::format("%s is deprecated and will be removed in %s. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
 }

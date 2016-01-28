@@ -1049,9 +1049,6 @@ public:
     // have script access into the top level document.
     static void countCrossOriginIframe(const Document&, Feature);
 
-    // TODO (nainar): Migrate all console message functions to Deprecation
-    static String willBeRemoved(const char* feature, int milestone, const char* details);
-
     // Return whether the Feature was previously counted for this document.
     // NOTE: only for use in testing.
     static bool isCounted(Document&, Feature);
