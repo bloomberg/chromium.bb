@@ -53,11 +53,14 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
       dir_exe.AppendASCII("resources/inspector/inspector.html");
 
   GURL result = net::FilePathToFileURL(dev_tools_path);
+  std::string url_string =
+      base::StringPrintf("%s?experiments=true", result.spec().c_str());
+#if defined(DEBUG_DEVTOOLS)
+  url_string += "&debugFrontend=true";
+#endif  // defined(DEBUG_DEVTOOLS)
   if (!settings.empty())
-    result = GURL(base::StringPrintf("%s?settings=%s&experiments=true",
-                                     result.spec().c_str(),
-                                     settings.c_str()));
-  return result;
+    url_string += "&settings=" + settings;
+  return GURL(url_string);
 }
 
 void LayoutTestDevToolsFrontend::ReuseFrontend(const std::string& settings,

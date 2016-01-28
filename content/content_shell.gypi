@@ -281,6 +281,11 @@
             '../components/components.gyp:breakpad_host',
           ],
         }],
+        ['debug_devtools==1', {
+          'defines': [
+            'DEBUG_DEVTOOLS=1',
+          ],
+        }],
         ['(OS=="linux" or OS=="android") and use_allocator!="none"', {
           'dependencies': [
             # This is needed by content/app/content_main_runner.cc
