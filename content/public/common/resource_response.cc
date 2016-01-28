@@ -51,6 +51,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
       head.service_worker_start_time;
   new_response->head.service_worker_ready_time =
       head.service_worker_ready_time;
+  new_response->head.is_using_lofi = head.is_using_lofi;
   return new_response;
 }
 
