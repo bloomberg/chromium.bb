@@ -222,6 +222,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // is the sample containing the frame to be copied.
   void CopyTexture(ID3D11Texture2D* src_texture,
                    ID3D11Texture2D* dest_texture,
+                   base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
+                   uint64_t keyed_mutex_value,
                    IMFSample* video_frame,
                    int picture_buffer_id,
                    int input_buffer_id);
@@ -372,6 +374,10 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Defaults to false. Indicates if we should use D3D or DX11 interfaces for
   // H/W decoding.
   bool use_dx11_;
+
+  // True if we should use DXGI keyed mutexes to synchronize between the two
+  // contexts.
+  bool use_keyed_mutex_;
 
   // Set to true if the DX11 video format converter input media types need to
   // be initialized. Defaults to true.
