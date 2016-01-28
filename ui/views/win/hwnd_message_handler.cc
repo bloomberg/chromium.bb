@@ -1330,6 +1330,8 @@ void HWNDMessageHandler::OnDestroy() {
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
                                          const gfx::Size& screen_size) {
   delegate_->HandleDisplayChange();
+  // Force a WM_NCCALCSIZE to occur to ensure that we handle auto hide
+  // taskbars correctly.
   SendFrameChanged();
 }
 
@@ -1974,6 +1976,13 @@ void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
       delegate_->HandleWorkAreaChanged();
     SetMsgHandled(FALSE);
   }
+
+  // If the work area is changing, then it could be as a result of the taskbar
+  // broadcasting the WM_SETTINGCHANGE message due to changes in auto hide
+  // settings, etc. Force a WM_NCCALCSIZE to occur to ensure that we handle
+  // this correctly.
+  if (flags == SPI_SETWORKAREA)
+    SendFrameChanged();
 }
 
 void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
