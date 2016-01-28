@@ -97,7 +97,7 @@ doesn't work well for Chromium:
 Synopsis:
 
 ```shell
-tools/clang/scripts/update.py --force-local-build --without-android \
+tools/clang/scripts/update.py --bootstrap --force-local-build --without-android \
   --tools blink_gc_plugin plugins rewrite_to_chrome_style
 ```
 
@@ -108,6 +108,9 @@ and the [Blink to Chrome style rewriter](https://chromium.googlesource.com/chrom
 subdirectories in
 [//tools/clang](https://chromium.googlesource.com/chromium/src/+/master/tools/clang).
 Generally, `--tools` should always include `blink_gc_plugin` and `plugins`: otherwise, Chromium won't build.
+
+It is important to use --bootstrap as there appear to be [bugs](https://crbug.com/580745)
+in the clang library this script produces if you build it with gcc, which is the default.
 
 ## Running
 First, build all chromium targets to avoid failures due to missing dependecies

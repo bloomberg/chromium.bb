@@ -111,7 +111,10 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
       original_name.substr(strlen(kBlinkFieldPrefix)));
   // The few examples I could find used struct-style naming with no `_` suffix
   // for unions.
-  if (decl.getParent()->isClass())
+  bool c = decl.getParent()->isClass();
+  // There appears to be a GCC bug that makes this branch incorrectly if we
+  // don't use a temp variable!! Clang works right. crbug.com/580745
+  if (c)
     name += '_';
   return true;
 }
