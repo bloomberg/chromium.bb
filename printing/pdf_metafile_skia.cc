@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "printing/print_settings.h"
 #include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -114,7 +115,7 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
                                            NULL, 0);
 }
 
-skia::PlatformCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
+SkCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const float& scale_factor) {

@@ -3004,7 +3004,7 @@ PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
   if (!mapper.is_valid())
     return 0;
 
-  skia::PlatformCanvas* canvas = image_data->GetPlatformCanvas();
+  SkCanvas* canvas = image_data->GetPlatformCanvas();
   // Note: Do not SkBitmap::copyTo the canvas bitmap directly because it will
   // ignore the allocated pixels in shared memory and re-allocate a new buffer.
   canvas->writePixels(image_skia_rep.sk_bitmap(), 0, 0);

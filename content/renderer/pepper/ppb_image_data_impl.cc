@@ -18,6 +18,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -112,7 +113,7 @@ int32_t PPB_ImageData_Impl::GetSharedMemory(base::SharedMemory** shm,
   return backend_->GetSharedMemory(shm, byte_count);
 }
 
-skia::PlatformCanvas* PPB_ImageData_Impl::GetPlatformCanvas() {
+SkCanvas* PPB_ImageData_Impl::GetPlatformCanvas() {
   return backend_->GetPlatformCanvas();
 }
 
@@ -197,7 +198,7 @@ int32_t ImageDataPlatformBackend::GetSharedMemory(base::SharedMemory** shm,
   return PP_OK;
 }
 
-skia::PlatformCanvas* ImageDataPlatformBackend::GetPlatformCanvas() {
+SkCanvas* ImageDataPlatformBackend::GetPlatformCanvas() {
   return mapped_canvas_.get();
 }
 
@@ -258,7 +259,7 @@ int32_t ImageDataSimpleBackend::GetSharedMemory(base::SharedMemory** shm,
   return PP_OK;
 }
 
-skia::PlatformCanvas* ImageDataSimpleBackend::GetPlatformCanvas() {
+SkCanvas* ImageDataSimpleBackend::GetPlatformCanvas() {
   return NULL;
 }
 

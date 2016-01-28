@@ -409,7 +409,7 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
-  skia::PlatformCanvas* platform_canvas() { return owned_canvas_.get(); }
+  SkCanvas* platform_canvas() { return owned_canvas_.get(); }
   SkCanvas* sk_canvas() { return canvas_; }
   float image_scale() const { return image_scale_; }
 
@@ -439,7 +439,7 @@ class GFX_EXPORT Canvas {
   // Canvas::Scale() does not affect |image_scale_|.
   float image_scale_;
 
-  skia::RefPtr<skia::PlatformCanvas> owned_canvas_;
+  skia::RefPtr<SkCanvas> owned_canvas_;
   SkCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);

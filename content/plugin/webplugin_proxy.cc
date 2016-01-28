@@ -305,7 +305,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 #else
   // See above comment about windowless_context_ changing.
   // http::/crbug.com/139462
-  skia::RefPtr<skia::PlatformCanvas> saved_canvas = windowless_canvas();
+  skia::RefPtr<SkCanvas> saved_canvas = windowless_canvas();
 
   saved_canvas->save();
 
@@ -376,7 +376,7 @@ void WebPluginProxy::UpdateGeometry(
 void WebPluginProxy::CreateCanvasFromHandle(
     const TransportDIB::Handle& dib_handle,
     const gfx::Rect& window_rect,
-    skia::RefPtr<skia::PlatformCanvas>* canvas) {
+    skia::RefPtr<SkCanvas>* canvas) {
   *canvas = skia::AdoptRef(skia::CreatePlatformCanvas(
       window_rect.width(), window_rect.height(), true, dib_handle.GetHandle(),
       skia::RETURN_NULL_ON_FAILURE));

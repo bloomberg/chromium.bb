@@ -49,6 +49,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebPreferences;
@@ -1772,7 +1773,7 @@ void PrintWebViewHelper::PrintPageInternal(
   float platform_scale_factor = css_scale_factor;
 #endif  // defined(OS_WIN)
 
-  skia::PlatformCanvas* canvas = metafile->GetVectorCanvasForNewPage(
+  SkCanvas* canvas = metafile->GetVectorCanvasForNewPage(
       page_size, canvas_area, platform_scale_factor);
   if (!canvas)
     return;

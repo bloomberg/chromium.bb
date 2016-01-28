@@ -555,7 +555,7 @@ static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
 
 bool WebPluginDelegateProxy::CreateLocalBitmap(
     std::vector<uint8_t>* memory,
-    scoped_ptr<skia::PlatformCanvas>* canvas) {
+    scoped_ptr<SkCanvas>* canvas) {
   const size_t size = BitmapSizeForPluginRect(plugin_rect_);
   memory->resize(size);
   if (memory->size() != size)
@@ -569,7 +569,7 @@ bool WebPluginDelegateProxy::CreateLocalBitmap(
 
 bool WebPluginDelegateProxy::CreateSharedBitmap(
     scoped_ptr<SharedMemoryBitmap>* memory,
-    scoped_ptr<skia::PlatformCanvas>* canvas) {
+    scoped_ptr<SkCanvas>* canvas) {
   *memory = ChildThreadImpl::current()
                 ->shared_bitmap_manager()
                 ->AllocateSharedMemoryBitmap(plugin_rect_.size());

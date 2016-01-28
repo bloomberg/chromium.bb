@@ -21,7 +21,7 @@ namespace {
 //   0x00000000 0x01010101
 //   0x12121212 0xFFFFFFFF
 template <int w, int h>
-void SetToCanvas(skia::PlatformCanvas* canvas, uint8_t values[h][w]) {
+void SetToCanvas(SkCanvas* canvas, uint8_t values[h][w]) {
   ASSERT_EQ(w, canvas->imageInfo().width());
   ASSERT_EQ(h, canvas->imageInfo().height());
 
@@ -44,7 +44,7 @@ void SetToCanvas(skia::PlatformCanvas* canvas, uint8_t values[h][w]) {
 // values, where each value has been duplicated into each channel of the given
 // bitmap (see SetToCanvas above).
 template <int w, int h>
-void VerifyCanvasValues(skia::PlatformCanvas* canvas, uint8_t values[h][w]) {
+void VerifyCanvasValues(SkCanvas* canvas, uint8_t values[h][w]) {
   SkBitmap bitmap = skia::ReadPixels(canvas);
   SkAutoLockPixels lock(bitmap);
   ASSERT_EQ(w, bitmap.width());
