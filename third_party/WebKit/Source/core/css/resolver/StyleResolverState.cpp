@@ -38,7 +38,7 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_hasDirAutoAttribute(false)
     , m_fontBuilder(document)
-    , m_elementStyleResources(document, document.frameHost()->deviceScaleFactor())
+    , m_elementStyleResources(document, document.devicePixelRatio())
 {
     if (!m_parentStyle) {
         // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
