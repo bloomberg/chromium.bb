@@ -229,7 +229,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -344,7 +344,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -459,7 +459,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -574,7 +574,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -689,7 +689,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -804,7 +804,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -919,7 +919,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
@@ -1034,7 +1034,7 @@
       },
       {
         "args": [
-          "--isolate_file_path=src/ui/base/ui_base_unittests.isolate"
+          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
         ],
         "test": "ui_base_unittests"
       },
