@@ -2,16 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Used by libc++ and libc++abi.
 config("config") {
+  defines = [ "LIBCXX_BUILDING_LIBCXXABI" ]
   cflags = [
-    "-isystem" + rebase_path("trunk/include", root_build_dir),
-    "-isystem" + rebase_path("../libc++abi/trunk/include", root_build_dir),
     "-fPIC",
     "-fstrict-aliasing",
-    "-nostdinc++",
     "-pthread",
+  ]
+  cflags_cc = [
+    "-nostdinc++",
+    "-isystem" + rebase_path("trunk/include", root_build_dir),
+    "-isystem" + rebase_path("../libc++abi/trunk/include", root_build_dir),
     "-std=c++11",
-    "-DLIBCXX_BUILDING_LIBCXXABI",
   ]
 }
 
@@ -58,7 +61,6 @@ shared_library("libc++") {
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
 
-  defines = [ "LIBCXX_BUILDING_LIBCXXABI" ]
   ldflags = [ "-nodefaultlibs" ]
 
   # TODO(GYP): Remove "-pthread" from ldflags.
@@ -88,6 +90,9 @@ group("libcxx_proxy") {
   public_configs = [ ":link_helper" ]
 }
 
+# This config is only used by binaries and shared library targets.
+# //build/config/sanitizers:default_sanitizer_flags sets the include paths for
+# everything else.
 config("link_helper") {
   ldflags = [
     "-stdlib=libc++",

@@ -26,12 +26,10 @@
       'all_dependent_settings': {
         'target_conditions': [
           ['_type!="none"', {
-            'cflags': [
-              '-isystem<(libcxx_root)/trunk/include',
-              '-isystem<(libcxx_root)/../libc++abi/trunk/include',
-            ],
             'cflags_cc': [
               '-nostdinc++',
+              '-isystem<(libcxx_root)/trunk/include',
+              '-isystem<(libcxx_root)/../libc++abi/trunk/include',
             ],
             'ldflags': [
               '-stdlib=libc++',
@@ -88,12 +86,14 @@
         'trunk/src/valarray.cpp',
       ],
       'cflags': [
-        '-isystem<(libcxx_root)/trunk/include',
-        '-isystem<(libcxx_root)/../libc++abi/trunk/include',
         '-fPIC',
         '-fstrict-aliasing',
-        '-nostdinc++',
         '-pthread',
+      ],
+      'cflags_cc': [
+        '-nostdinc++',
+        '-isystem<(libcxx_root)/trunk/include',
+        '-isystem<(libcxx_root)/../libc++abi/trunk/include',
         '-std=c++11',
       ],
       'cflags_cc!': [
