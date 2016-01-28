@@ -44,21 +44,18 @@ emphclass italic
 emphclass underline
 emphclass bold
 
-lastwordemphbefore italic 456
 lastwordemphafter italic 6-3
 lenemphphrase italic 1
 firstletteremph italic 6-456
 lastletteremph italic 6-3
 singleletteremph italic 456
 
-lastwordemphbefore bold 456
 lastwordemphafter bold 6-3
 lenemphphrase bold 1
 firstletteremph bold 6-456
 lastletteremph bold 6-3
 singleletteremph bold 456
 
-lastwordemphbefore underline 456
 lastwordemphafter underline 6-3
 lenemphphrase underline 1
 firstletteremph underline 6-456
