@@ -7,7 +7,7 @@
 }
 
 #autofill-options list {
-  min-height: 172px;
+  height: 192px;  /* This is the min-height for lists from WebUI.*/
 }
 
 .autofill-list-item {
@@ -38,7 +38,7 @@
 
 #autofill-add-address,
 #autofill-add-creditcard {
-  margin: 5px 5px;
+  margin: 5px 0;
 }
 
 #autofill-options .list-inline-button {
@@ -55,4 +55,14 @@
 #autofill-options div[role='listitem']:-webkit-any(:hover,[selected])
     .hides-on-hover {
   display: none;
+}
+
+.settings-list + .autofill-section-header {
+  margin-top: 20px;
+}
+
+#autofill-options .autofill-section-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
 }
