@@ -39,7 +39,7 @@ hw.cpu.arch={hw.cpu.arch}
 hw.device.hash=-708107041
 hw.camera.back=none
 disk.dataPartition.size=800M
-hw.gpu.enabled=yes
+hw.gpu.enabled={gpu}
 skin.path=720x1280
 skin.dynamic=yes
 hw.keyboard=yes
@@ -331,6 +331,7 @@ class Emulator(object):
       custom_config = custom_config.replace(key, replacements[key])
     custom_config = custom_config.replace('{api.level}', str(api_level))
     custom_config = custom_config.replace('{sdcard.size}', self.sdcard_size)
+    custom_config.replace('{gpu}', 'no' if self.headless else 'yes')
 
     with open(new_config_ini, 'w') as new_config_ini:
       new_config_ini.write(custom_config)
@@ -388,12 +389,14 @@ class Emulator(object):
         '-no-audio',
         '-no-window'
         ])
+    else:
+      emulator_command.extend([
+          '-gpu', 'on'
+        ])
     emulator_command.extend([
         # Use a familiar name and port.
         '-avd', self.avd_name,
         '-port', str(port),
-        # Enable GPU by default.
-        '-gpu', 'on',
         # all the argument after qemu are sub arguments for qemu
         '-qemu', '-m', '1024',
         ])
