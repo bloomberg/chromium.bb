@@ -186,4 +186,4 @@ use_gconf = is_linux && !is_chromeos && !is_chromecast && !is_headless
 # Still requires command line flag to access API
 enable_webvr = is_android
 
-use_gio = is_desktop_linux && !is_headless
+use_gio = is_linux && !is_chromeos && !is_chromecast && !is_headless
