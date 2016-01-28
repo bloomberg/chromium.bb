@@ -387,7 +387,7 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   int min_button_width = NonClientBorderThickness();
   // In non-MD, the toolbar has a rounded corner that we don't want the tabstrip
   // to overlap.
-  if (!md && !avatar_button_)
+  if (!md && !avatar_button_ && delegate_->IsToolbarVisible())
     min_button_width += delegate_->GetToolbarLeadingCornerClientWidth();
   leading_button_start_ = std::max(leading_button_start_, min_button_width);
   // The trailing corner is a mirror of the leading one.
