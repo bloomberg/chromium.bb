@@ -191,15 +191,7 @@ class SingleShotMultiThreadedProxyResolverFactory
   scoped_ptr<ProxyResolverFactory> factory_;
 };
 
-// Disabled on Android to investigate http://crbug.com/568282
-#if defined(OS_ANDROID)
-#define MAYBE_MultiThreadedProxyResolverTest \
-  DISABLED_MultiThreadedProxyResolverTest
-#else
-#define MAYBE_MultiThreadedProxyResolverTest MultiThreadedProxyResolverTest
-#endif  // defined(OS_ANDROID)
-
-class MAYBE_MultiThreadedProxyResolverTest : public testing::Test {
+class MultiThreadedProxyResolverTest : public testing::Test {
  public:
   void Init(size_t num_threads) {
     scoped_ptr<BlockableProxyResolverFactory> factory_owner(
@@ -239,7 +231,7 @@ class MAYBE_MultiThreadedProxyResolverTest : public testing::Test {
   scoped_ptr<ProxyResolver> resolver_;
 };
 
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, SingleThread_Basic) {
+TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   const size_t kNumThreads = 1u;
   ASSERT_NO_FATAL_FAILURE(Init(kNumThreads));
 
@@ -305,7 +297,7 @@ TEST_F(MAYBE_MultiThreadedProxyResolverTest, SingleThread_Basic) {
 
 // Tests that the NetLog is updated to include the time the request was waiting
 // to be scheduled to a thread.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest,
+TEST_F(MultiThreadedProxyResolverTest,
        SingleThread_UpdatesNetLogWithThreadWait) {
   const size_t kNumThreads = 1u;
   ASSERT_NO_FATAL_FAILURE(Init(kNumThreads));
@@ -391,7 +383,7 @@ TEST_F(MAYBE_MultiThreadedProxyResolverTest,
 
 // Cancel a request which is in progress, and then cancel a request which
 // is pending.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
+TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
   const size_t kNumThreads = 1u;
   ASSERT_NO_FATAL_FAILURE(Init(kNumThreads));
 
@@ -461,8 +453,7 @@ TEST_F(MAYBE_MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
 
 // Test that deleting MultiThreadedProxyResolver while requests are
 // outstanding cancels them (and doesn't leak anything).
-TEST_F(MAYBE_MultiThreadedProxyResolverTest,
-       SingleThread_CancelRequestByDeleting) {
+TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
   const size_t kNumThreads = 1u;
   ASSERT_NO_FATAL_FAILURE(Init(kNumThreads));
 
@@ -519,7 +510,7 @@ TEST_F(MAYBE_MultiThreadedProxyResolverTest,
 
 // Tests setting the PAC script once, lazily creating new threads, and
 // cancelling requests.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
+TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
   const size_t kNumThreads = 3u;
   ASSERT_NO_FATAL_FAILURE(Init(kNumThreads));
 
@@ -629,7 +620,7 @@ TEST_F(MAYBE_MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
 // Tests using two threads. The first request hangs the first thread. Checks
 // that other requests are able to complete while this first request remains
 // stalled.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, OneThreadBlocked) {
+TEST_F(MultiThreadedProxyResolverTest, OneThreadBlocked) {
   const size_t kNumThreads = 2u;
   ASSERT_NO_FATAL_FAILURE(Init(kNumThreads));
 
@@ -699,7 +690,7 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
 
 // Test that an error when creating the synchronous resolver causes the
 // MultiThreadedProxyResolverFactory create request to fail with that error.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, ProxyResolverFactoryError) {
+TEST_F(MultiThreadedProxyResolverTest, ProxyResolverFactoryError) {
   const size_t kNumThreads = 1u;
   SingleShotMultiThreadedProxyResolverFactory resolver_factory(
       kNumThreads, make_scoped_ptr(new FailingProxyResolverFactory));
@@ -720,7 +711,7 @@ void Fail(int error) {
 }
 
 // Test that cancelling an in-progress create request works correctly.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, CancelCreate) {
+TEST_F(MultiThreadedProxyResolverTest, CancelCreate) {
   const size_t kNumThreads = 1u;
   {
     SingleShotMultiThreadedProxyResolverFactory resolver_factory(
@@ -748,7 +739,7 @@ void DeleteRequest(const CompletionCallback& callback,
 }
 
 // Test that delete the Request during the factory callback works correctly.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest, DeleteRequestInFactoryCallback) {
+TEST_F(MultiThreadedProxyResolverTest, DeleteRequestInFactoryCallback) {
   const size_t kNumThreads = 1u;
   SingleShotMultiThreadedProxyResolverFactory resolver_factory(
       kNumThreads, make_scoped_ptr(new BlockableProxyResolverFactory));
@@ -766,8 +757,7 @@ TEST_F(MAYBE_MultiThreadedProxyResolverTest, DeleteRequestInFactoryCallback) {
 }
 
 // Test that deleting the factory with a request in-progress works correctly.
-TEST_F(MAYBE_MultiThreadedProxyResolverTest,
-       DestroyFactoryWithRequestsInProgress) {
+TEST_F(MultiThreadedProxyResolverTest, DestroyFactoryWithRequestsInProgress) {
   const size_t kNumThreads = 1u;
   scoped_ptr<ProxyResolverFactory::Request> request;
   scoped_ptr<ProxyResolver> resolver;
