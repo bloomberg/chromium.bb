@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InjectedScriptNative.h"
+#include "core/inspector/v8/InjectedScriptNative.h"
 
 #include "platform/JSONValues.h"
 #include "wtf/Vector.h"

@@ -28,7 +28,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/v8/InjectedScriptHost.h"
 
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/v8/V8Debugger.h"

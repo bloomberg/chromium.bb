@@ -32,8 +32,6 @@
 
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
@@ -46,6 +44,8 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerRuntimeAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/inspector/v8/InjectedScriptHost.h"
+#include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"

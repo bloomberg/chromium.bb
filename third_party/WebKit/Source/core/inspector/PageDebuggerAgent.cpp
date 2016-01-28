@@ -36,12 +36,12 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/AsyncCallTracker.h"
-#include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/inspector/v8/InjectedScript.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 

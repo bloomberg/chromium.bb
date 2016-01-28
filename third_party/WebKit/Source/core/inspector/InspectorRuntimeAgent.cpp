@@ -31,10 +31,10 @@
 #include "core/inspector/InspectorRuntimeAgent.h"
 
 #include "bindings/core/v8/ScriptState.h"
-#include "core/inspector/InjectedScript.h"
-#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/MuteConsoleScope.h"
 #include "core/inspector/RemoteObjectId.h"
+#include "core/inspector/v8/InjectedScript.h"
+#include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8RuntimeAgent.h"
 #include "platform/JSONValues.h"

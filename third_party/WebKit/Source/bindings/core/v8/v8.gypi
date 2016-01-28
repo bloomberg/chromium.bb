@@ -64,8 +64,6 @@
             'ScriptEventListener.h',
             'ScriptFunction.cpp',
             'ScriptFunction.h',
-            'ScriptFunctionCall.cpp',
-            'ScriptFunctionCall.h',
             'ScriptPromise.cpp',
             'ScriptPromise.h',
             'ScriptPromiseProperties.h',

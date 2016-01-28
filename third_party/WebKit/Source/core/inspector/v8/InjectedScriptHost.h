@@ -32,7 +32,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorTypeBuilder.h"
-#include "core/inspector/InjectedScriptHostClient.h"
+#include "core/inspector/v8/InjectedScriptHostClient.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

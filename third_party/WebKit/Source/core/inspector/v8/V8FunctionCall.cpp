@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ScriptFunctionCall.h"
+#include "core/inspector/v8/V8FunctionCall.h"
 
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "wtf/PassOwnPtr.h"
@@ -45,7 +45,7 @@ static v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string
     return result;
 }
 
-ScriptFunctionCall::ScriptFunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& name)
+V8FunctionCall::V8FunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& name)
     : m_client(client)
     , m_context(context)
     , m_name(v8String(context->GetIsolate(), name))
@@ -53,32 +53,32 @@ ScriptFunctionCall::ScriptFunctionCall(V8DebuggerClient* client, v8::Local<v8::C
 {
 }
 
-void ScriptFunctionCall::appendArgument(v8::Local<v8::Value> value)
+void V8FunctionCall::appendArgument(v8::Local<v8::Value> value)
 {
     m_arguments.append(value);
 }
 
-void ScriptFunctionCall::appendArgument(const String& argument)
+void V8FunctionCall::appendArgument(const String& argument)
 {
     m_arguments.append(v8String(m_context->GetIsolate(), argument));
 }
 
-void ScriptFunctionCall::appendArgument(int argument)
+void V8FunctionCall::appendArgument(int argument)
 {
     m_arguments.append(v8::Number::New(m_context->GetIsolate(), argument));
 }
 
-void ScriptFunctionCall::appendArgument(bool argument)
+void V8FunctionCall::appendArgument(bool argument)
 {
     m_arguments.append(argument ? v8::True(m_context->GetIsolate()) : v8::False(m_context->GetIsolate()));
 }
 
-void ScriptFunctionCall::appendUndefinedArgument()
+void V8FunctionCall::appendUndefinedArgument()
 {
     m_arguments.append(v8::Undefined(m_context->GetIsolate()));
 }
 
-v8::Local<v8::Value> ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
+v8::Local<v8::Value> V8FunctionCall::call(bool& hadException, bool reportExceptions)
 {
     v8::TryCatch tryCatch(m_context->GetIsolate());
     tryCatch.SetVerbose(reportExceptions);
@@ -88,13 +88,13 @@ v8::Local<v8::Value> ScriptFunctionCall::call(bool& hadException, bool reportExc
     return result;
 }
 
-v8::Local<v8::Value> ScriptFunctionCall::call()
+v8::Local<v8::Value> V8FunctionCall::call()
 {
     bool hadException = false;
     return call(hadException);
 }
 
-v8::Local<v8::Value> ScriptFunctionCall::callWithoutExceptionHandling()
+v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
 {
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);
     v8::Local<v8::Value> value;
@@ -116,7 +116,7 @@ v8::Local<v8::Value> ScriptFunctionCall::callWithoutExceptionHandling()
     return result;
 }
 
-v8::Local<v8::Function> ScriptFunctionCall::function()
+v8::Local<v8::Function> V8FunctionCall::function()
 {
     v8::TryCatch tryCatch(m_context->GetIsolate());
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);

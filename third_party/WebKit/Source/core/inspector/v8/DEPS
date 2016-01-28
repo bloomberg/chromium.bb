@@ -9,6 +9,7 @@ include_rules = [
     "+bindings/core/v8/V8Binding.h",
     "+bindings/core/v8/V8DOMException.h",
     "+bindings/core/v8/V8DOMTokenList.h",
+    "+bindings/core/v8/V8GlobalValueMap.h",
     "+bindings/core/v8/V8HiddenValue.h",
     "+bindings/core/v8/V8HTMLAllCollection.h",
     "+bindings/core/v8/V8HTMLCollection.h",

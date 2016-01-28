@@ -28,13 +28,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/v8/InjectedScriptManager.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/InjectedScript.h"
-#include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InjectedScriptNative.h"
 #include "core/inspector/RemoteObjectId.h"
+#include "core/inspector/v8/InjectedScript.h"
+#include "core/inspector/v8/InjectedScriptHost.h"
+#include "core/inspector/v8/InjectedScriptNative.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8InjectedScriptHost.h"

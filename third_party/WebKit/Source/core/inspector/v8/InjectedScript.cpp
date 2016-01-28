@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InjectedScript.h"
+#include "core/inspector/v8/InjectedScript.h"
 
-#include "bindings/core/v8/ScriptFunctionCall.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/JSONParser.h"
 #include "core/inspector/RemoteObjectId.h"
+#include "core/inspector/v8/InjectedScriptHost.h"
+#include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
+#include "core/inspector/v8/V8FunctionCall.h"
 #include "platform/JSONValues.h"
 #include "platform/JSONValuesForV8.h"
 #include "wtf/text/WTFString.h"
@@ -132,7 +132,7 @@ InjectedScript::~InjectedScript()
 void InjectedScript::evaluate(ErrorString* errorString, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "evaluate");
+    V8FunctionCall function(m_client, context(), v8Value(), "evaluate");
     function.appendArgument(expression);
     function.appendArgument(objectGroup);
     function.appendArgument(includeCommandLineAPI);
@@ -144,7 +144,7 @@ void InjectedScript::evaluate(ErrorString* errorString, const String& expression
 void InjectedScript::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const String& arguments, bool returnByValue, bool generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "callFunctionOn");
+    V8FunctionCall function(m_client, context(), v8Value(), "callFunctionOn");
     function.appendArgument(objectId);
     function.appendArgument(expression);
     function.appendArgument(arguments);
@@ -156,7 +156,7 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
 void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "evaluateOnCallFrame");
+    V8FunctionCall function(m_client, context(), v8Value(), "evaluateOnCallFrame");
     function.appendArgument(callFrames);
     function.appendArgument(isAsyncCallStack);
     function.appendArgument(callFrameId);
@@ -171,7 +171,7 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8:
 void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "restartFrame");
+    V8FunctionCall function(m_client, context(), v8Value(), "restartFrame");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
     RefPtr<JSONValue> resultValue;
@@ -191,7 +191,7 @@ void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object
 void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location>>& positions)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "getStepInPositions");
+    V8FunctionCall function(m_client, context(), v8Value(), "getStepInPositions");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
     RefPtr<JSONValue> resultValue;
@@ -212,7 +212,7 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
 void InjectedScript::setVariableValue(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "setVariableValue");
+    V8FunctionCall function(m_client, context(), v8Value(), "setVariableValue");
     if (callFrameIdOpt) {
         function.appendArgument(callFrames);
         function.appendArgument(*callFrameIdOpt);
@@ -243,7 +243,7 @@ void InjectedScript::setVariableValue(ErrorString* errorString, v8::Local<v8::Ob
 void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& functionId, RefPtr<FunctionDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "getFunctionDetails");
+    V8FunctionCall function(m_client, context(), v8Value(), "getFunctionDetails");
     function.appendArgument(functionId);
     RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
@@ -258,7 +258,7 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
 void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, RefPtr<GeneratorObjectDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "getGeneratorObjectDetails");
+    V8FunctionCall function(m_client, context(), v8Value(), "getGeneratorObjectDetails");
     function.appendArgument(objectId);
     RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
@@ -270,10 +270,10 @@ void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const S
     *result = GeneratorObjectDetails::runtimeCast(resultValue);
 }
 
-void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<Array<CollectionEntry> >* result)
+void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<Array<CollectionEntry>>* result)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "getCollectionEntries");
+    V8FunctionCall function(m_client, context(), v8Value(), "getCollectionEntries");
     function.appendArgument(objectId);
     RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
@@ -288,7 +288,7 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
 void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<Array<PropertyDescriptor>>* properties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "getProperties");
+    V8FunctionCall function(m_client, context(), v8Value(), "getProperties");
     function.appendArgument(objectId);
     function.appendArgument(ownProperties);
     function.appendArgument(accessorPropertiesOnly);
@@ -311,7 +311,7 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
 void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, RefPtr<Array<InternalPropertyDescriptor>>* properties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "getInternalProperties");
+    V8FunctionCall function(m_client, context(), v8Value(), "getInternalProperties");
     function.appendArgument(objectId);
 
     RefPtr<JSONValue> result;
@@ -322,7 +322,7 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
         *errorString = "Internal error";
         return;
     }
-    RefPtr<Array<InternalPropertyDescriptor> > array = Array<InternalPropertyDescriptor>::runtimeCast(result);
+    RefPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::runtimeCast(result);
     if (array->length() > 0)
         *properties = array;
 }
@@ -344,7 +344,7 @@ void InjectedScript::releaseObject(const String& objectId)
 PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames, int asyncOrdinal)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "wrapCallFrames");
+    V8FunctionCall function(m_client, context(), v8Value(), "wrapCallFrames");
     function.appendArgument(callFrames);
     function.appendArgument(asyncOrdinal);
     bool hadException = false;
@@ -359,7 +359,7 @@ PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String& groupName, bool generatePreview) const
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "wrapObject");
+    V8FunctionCall function(m_client, context(), v8Value(), "wrapObject");
     function.appendArgument(value);
     function.appendArgument(groupName);
     function.appendArgument(canAccessInspectedWindow());
@@ -375,7 +375,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Lo
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "wrapTable");
+    V8FunctionCall function(m_client, context(), v8Value(), "wrapTable");
     function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(table);
     if (columns.IsEmpty())
@@ -414,7 +414,7 @@ void InjectedScript::releaseObjectGroup(const String& objectGroup)
     v8::HandleScope handles(m_isolate);
     m_native->releaseObjectGroup(objectGroup);
     if (objectGroup == "console") {
-        ScriptFunctionCall function(m_client, context(), v8Value(), "clearLastEvaluationResult");
+        V8FunctionCall function(m_client, context(), v8Value(), "clearLastEvaluationResult");
         bool hadException = false;
         callFunctionWithEvalEnabled(function, hadException);
         ASSERT(!hadException);
@@ -424,7 +424,7 @@ void InjectedScript::releaseObjectGroup(const String& objectGroup)
 void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
 {
     v8::HandleScope handles(m_isolate);
-    ScriptFunctionCall function(m_client, context(), v8Value(), "setCustomObjectFormatterEnabled");
+    V8FunctionCall function(m_client, context(), v8Value(), "setCustomObjectFormatterEnabled");
     function.appendArgument(enabled);
     RefPtr<JSONValue> result;
     makeCall(function, &result);
@@ -448,7 +448,7 @@ v8::Local<v8::Value> InjectedScript::v8Value() const
     return m_value.Get(m_isolate);
 }
 
-v8::Local<v8::Value> InjectedScript::callFunctionWithEvalEnabled(ScriptFunctionCall& function, bool& hadException) const
+v8::Local<v8::Value> InjectedScript::callFunctionWithEvalEnabled(V8FunctionCall& function, bool& hadException) const
 {
     v8::Local<v8::Context> localContext = context();
     v8::Context::Scope scope(localContext);
@@ -463,7 +463,7 @@ v8::Local<v8::Value> InjectedScript::callFunctionWithEvalEnabled(ScriptFunctionC
     return resultValue;
 }
 
-void InjectedScript::makeCall(ScriptFunctionCall& function, RefPtr<JSONValue>* result)
+void InjectedScript::makeCall(V8FunctionCall& function, RefPtr<JSONValue>* result)
 {
     if (!canAccessInspectedWindow()) {
         *result = JSONString::create("Can not access given context.");
@@ -483,7 +483,7 @@ void InjectedScript::makeCall(ScriptFunctionCall& function, RefPtr<JSONValue>* r
     }
 }
 
-void InjectedScript::makeEvalCall(ErrorString* errorString, ScriptFunctionCall& function, RefPtr<TypeBuilder::Runtime::RemoteObject>* objectResult, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
+void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, RefPtr<TypeBuilder::Runtime::RemoteObject>* objectResult, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     RefPtr<JSONValue> result;
     makeCall(function, &result);
@@ -516,7 +516,7 @@ void InjectedScript::makeEvalCall(ErrorString* errorString, ScriptFunctionCall& 
     *wasThrown = wasThrownVal;
 }
 
-void InjectedScript::makeCallWithExceptionDetails(ScriptFunctionCall& function, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
+void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();

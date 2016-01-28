@@ -30,10 +30,10 @@
 
 #include "core/inspector/v8/V8RuntimeAgentImpl.h"
 
-#include "core/inspector/InjectedScript.h"
-#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
+#include "core/inspector/v8/InjectedScript.h"
+#include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "platform/JSONValues.h"

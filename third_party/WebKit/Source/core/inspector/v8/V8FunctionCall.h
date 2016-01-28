@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptFunctionCall_h
-#define ScriptFunctionCall_h
+#ifndef V8FunctionCall_h
+#define V8FunctionCall_h
 
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -39,10 +39,10 @@ namespace blink {
 
 class V8DebuggerClient;
 
-class ScriptFunctionCall {
+class V8FunctionCall {
     STACK_ALLOCATED();
 public:
-    ScriptFunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String& name);
+    V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String& name);
 
     void appendArgument(v8::Local<v8::Value>);
     void appendArgument(const String&);
@@ -66,4 +66,4 @@ protected:
 
 } // namespace blink
 
-#endif // ScriptFunctionCall
+#endif // V8FunctionCall

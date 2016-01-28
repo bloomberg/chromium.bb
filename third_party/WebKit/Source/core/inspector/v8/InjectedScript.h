@@ -32,8 +32,8 @@
 #define InjectedScript_h
 
 #include "core/InspectorTypeBuilder.h"
-#include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InjectedScriptNative.h"
+#include "core/inspector/v8/InjectedScriptManager.h"
+#include "core/inspector/v8/InjectedScriptNative.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include <v8.h>
@@ -43,7 +43,7 @@ namespace blink {
 class InjectedScriptManager;
 class JSONValue;
 class RemoteObjectId;
-class ScriptFunctionCall;
+class V8FunctionCall;
 class V8DebuggerClient;
 
 typedef String ErrorString;
@@ -90,7 +90,7 @@ public:
     void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);
     void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>* result);
     void getGeneratorObjectDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::GeneratorObjectDetails>* result);
-    void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry> >* result);
+    void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry>>* result);
     void getProperties(ErrorString*, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
     void getInternalProperties(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
     void releaseObject(const String& objectId);
@@ -117,10 +117,10 @@ private:
 
     bool canAccessInspectedWindow() const;
     v8::Local<v8::Value> v8Value() const;
-    v8::Local<v8::Value> callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
-    void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
-    void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
-    void makeCallWithExceptionDetails(ScriptFunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
+    v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
+    void makeCall(V8FunctionCall&, RefPtr<JSONValue>* result);
+    void makeEvalCall(ErrorString*, V8FunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
+    void makeCallWithExceptionDetails(V8FunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
 
     InjectedScriptManager* m_manager;
     v8::Isolate* m_isolate;
