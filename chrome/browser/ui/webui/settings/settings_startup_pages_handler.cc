@@ -26,22 +26,6 @@ void StartupPagesHandler::RegisterMessages() {
   if (Profile::FromWebUI(web_ui())->IsOffTheRecord())
     return;
 
-  startup_custom_pages_table_model_.SetObserver(this);
-
-  PrefService* prefService = Profile::FromWebUI(web_ui())->GetPrefs();
-  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
-      prefService);
-  startup_custom_pages_table_model_.SetURLs(pref.urls);
-
-  if (pref.urls.empty())
-    pref.type = SessionStartupPref::DEFAULT;
-
-  pref_change_registrar_.Init(prefService);
-  pref_change_registrar_.Add(
-      prefs::kURLsToRestoreOnStartup,
-      base::Bind(&StartupPagesHandler::UpdateStartupPages,
-                 base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback("addStartupPage",
       base::Bind(&StartupPagesHandler::AddStartupPage,
                  base::Unretained(this)));
@@ -109,6 +93,22 @@ void StartupPagesHandler::AddStartupPage(const base::ListValue* args) {
 }
 
 void StartupPagesHandler::OnStartupPrefsPageLoad(const base::ListValue* args) {
+  startup_custom_pages_table_model_.SetObserver(this);
+
+  PrefService* prefService = Profile::FromWebUI(web_ui())->GetPrefs();
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
+      prefService);
+  startup_custom_pages_table_model_.SetURLs(pref.urls);
+
+  if (pref.urls.empty())
+    pref.type = SessionStartupPref::DEFAULT;
+
+  pref_change_registrar_.Init(prefService);
+  pref_change_registrar_.Add(
+      prefs::kURLsToRestoreOnStartup,
+      base::Bind(&StartupPagesHandler::UpdateStartupPages,
+                 base::Unretained(this)));
+
   const SessionStartupPref startup_pref = SessionStartupPref::GetStartupPref(
       Profile::FromWebUI(web_ui())->GetPrefs());
   startup_custom_pages_table_model_.SetURLs(startup_pref.urls);
