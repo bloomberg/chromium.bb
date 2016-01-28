@@ -34,7 +34,7 @@ class PowerTracingAgent : public base::trace_event::TracingAgent {
 
   bool SupportsExplicitClockSync() override;
   void RecordClockSyncMarker(
-      int sync_id,
+      const std::string& sync_id,
       const RecordClockSyncMarkerCallback& callback) override;
 
  private:
@@ -52,7 +52,7 @@ class PowerTracingAgent : public base::trace_event::TracingAgent {
   void TraceOnThread();
   void FlushOnThread(const StopAgentTracingCallback& callback);
   void RecordClockSyncMarkerOnThread(
-      int sync_id,
+      const std::string& sync_id,
       const RecordClockSyncMarkerCallback& callback);
 
   base::Thread thread_;

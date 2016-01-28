@@ -20,7 +20,7 @@ class BattorPowerTraceProvider {
   bool IsConnected();
   bool StartTracing();
   bool StopTracing();
-  void RecordClockSyncMarker(int sync_id);
+  void RecordClockSyncMarker(const std::string& sync_id);
   void GetLog(std::string* log_str);
   ~BattorPowerTraceProvider();
 

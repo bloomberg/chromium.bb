@@ -22,7 +22,8 @@ bool BattorPowerTraceProvider::StopTracing() {
   return false;
 }
 
-void BattorPowerTraceProvider::RecordClockSyncMarker(int sync_id) {}
+void BattorPowerTraceProvider::RecordClockSyncMarker(
+    const std::string& sync_id) {}
 
 void BattorPowerTraceProvider::GetLog(std::string* log_str) {
   // Get logs from battor.

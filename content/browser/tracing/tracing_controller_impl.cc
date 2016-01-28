@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -157,7 +158,6 @@ TracingControllerImpl::TracingControllerImpl()
       approximate_event_count_(0),
       pending_memory_dump_ack_count_(0),
       failed_memory_dump_count_(0),
-      clock_sync_id_(0),
       pending_clock_sync_ack_count_(0),
       is_tracing_(false),
       is_monitoring_(false) {
@@ -1027,17 +1027,11 @@ bool TracingControllerImpl::SupportsExplicitClockSync() {
 }
 
 void TracingControllerImpl::RecordClockSyncMarker(
-    int sync_id,
+    const std::string& sync_id,
     const RecordClockSyncMarkerCallback& callback) {
   DCHECK(SupportsExplicitClockSync());
 
   TRACE_EVENT_CLOCK_SYNC_RECEIVER(sync_id);
-}
-
-int TracingControllerImpl::GetUniqueClockSyncID() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // There is no need to lock because this function only runs on UI thread.
-  return ++clock_sync_id_;
 }
 
 void TracingControllerImpl::IssueClockSyncMarker() {
@@ -1047,7 +1041,7 @@ void TracingControllerImpl::IssueClockSyncMarker() {
   for (const auto& it : additional_tracing_agents_) {
     if (it->SupportsExplicitClockSync()) {
       it->RecordClockSyncMarker(
-          GetUniqueClockSyncID(),
+          base::GenerateGUID(),
           base::Bind(&TracingControllerImpl::OnClockSyncMarkerRecordedByAgent,
                      base::Unretained(this)));
       pending_clock_sync_ack_count_++;
@@ -1066,7 +1060,7 @@ void TracingControllerImpl::IssueClockSyncMarker() {
 }
 
 void TracingControllerImpl::OnClockSyncMarkerRecordedByAgent(
-    int sync_id,
+    const std::string& sync_id,
     const base::TimeTicks& issue_ts,
     const base::TimeTicks& issue_end_ts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

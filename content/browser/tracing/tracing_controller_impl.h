@@ -70,7 +70,7 @@ class TracingControllerImpl
   void StopAgentTracing(const StopAgentTracingCallback& callback) override;
   bool SupportsExplicitClockSync() override;
   void RecordClockSyncMarker(
-      int sync_id,
+      const std::string& sync_id,
       const RecordClockSyncMarkerCallback& callback) override;
 
   // base::trace_event::MemoryDumpManagerDelegate implementation.
@@ -182,11 +182,10 @@ class TracingControllerImpl
 
   void OnMonitoringStateChanged(bool is_monitoring);
 
-  int GetUniqueClockSyncID();
   // Issue clock sync markers to the tracing agents.
   void IssueClockSyncMarker();
   void OnClockSyncMarkerRecordedByAgent(
-      int sync_id,
+      const std::string& sync_id,
       const base::TimeTicks& issue_ts,
       const base::TimeTicks& issue_end_ts);
 

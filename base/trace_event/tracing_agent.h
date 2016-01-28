@@ -35,7 +35,7 @@ class BASE_EXPORT TracingAgent {
       const std::string& events_label,
       const scoped_refptr<base::RefCountedString>& events_str_ptr)>;
   using RecordClockSyncMarkerCallback = base::Callback<void(
-      int sync_id,
+      const std::string& sync_id,
       const TimeTicks& issue_ts,
       const TimeTicks& issue_end_ts)>;
 
@@ -87,7 +87,7 @@ class BASE_EXPORT TracingAgent {
   // The assumption is that the receiver thread knows the issuer's clock, which
   // is true in Chrome because all agent threads' clocks are Chrome clock.
   virtual void RecordClockSyncMarker(
-      int sync_id,
+      const std::string& sync_id,
       const RecordClockSyncMarkerCallback& callback);
 };
 

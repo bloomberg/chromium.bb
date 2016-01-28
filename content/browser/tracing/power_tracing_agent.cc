@@ -115,7 +115,7 @@ bool PowerTracingAgent::SupportsExplicitClockSync() {
 }
 
 void PowerTracingAgent::RecordClockSyncMarker(
-    int sync_id,
+    const std::string& sync_id,
     const RecordClockSyncMarkerCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(SupportsExplicitClockSync());
@@ -129,7 +129,7 @@ void PowerTracingAgent::RecordClockSyncMarker(
 }
 
 void PowerTracingAgent::RecordClockSyncMarkerOnThread(
-    int sync_id,
+    const std::string& sync_id,
     const RecordClockSyncMarkerCallback& callback) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(SupportsExplicitClockSync());
