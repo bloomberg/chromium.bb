@@ -104,6 +104,24 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
       const std::string& session_index,
       const std::string& device_id);
 
+  // Start a request to exchange the cookies of a signed-in user session
+  // and for specified client for an OAuthLogin-scoped oauth2 token. Client is
+  // determined by its |client_id|. In the case of a session with multiple
+  // accounts signed in, |session_index| indicate the which of accounts
+  // within the session. If |fetch_token_from_auth_code| is not set fetching
+  // process stops after receiving an auth code and ClientOAuthSuccess won't be
+  // called.
+  // Resulting refresh token is annotated on the server with |device_id|. Format
+  // of device_id on the server is at most 64 unicode characters.
+  //
+  // Either OnClientOAuthCode or ClientOAuthSuccess or OnClientOAuthFailure
+  // will be called on the consumer on the original thread.
+  void StartCookieForOAuthLoginTokenExchange(
+      bool fetch_token_from_auth_code,
+      const std::string& session_index,
+      const std::string& client_id,
+      const std::string& device_id);
+
   // Start a request to exchange the authorization code for an OAuthLogin-scoped
   // oauth2 token.
   //
@@ -432,7 +450,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   GURL client_login_to_oauth2_gurl_;
   std::string request_body_;
   std::string requested_service_;
-  bool fetch_pending_;
+  bool fetch_pending_ = false;
+  bool fetch_token_from_auth_code_ = false;
 
   // Headers used during the Logout call.
   std::string logout_headers_;

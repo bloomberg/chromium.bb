@@ -171,6 +171,7 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
   MOCK_METHOD1(OnClientLoginSuccess, void(const ClientLoginResult& result));
   MOCK_METHOD2(OnIssueAuthTokenSuccess, void(const std::string& service,
       const std::string& token));
+  MOCK_METHOD1(OnClientOAuthCode, void(const std::string& data));
   MOCK_METHOD1(OnClientOAuthSuccess,
                void(const GaiaAuthConsumer::ClientOAuthResult& result));
   MOCK_METHOD1(OnMergeSessionSuccess, void(const std::string& data));
@@ -395,6 +396,7 @@ TEST_F(GaiaAuthFetcherTest, FullTokenFailure) {
 
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(0);
   EXPECT_CALL(consumer, OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600))).Times(1);
 
@@ -426,6 +428,37 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
       net::HTTP_OK, cookies_, kGetTokenPairValidResponse,
       net::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher2);
+  EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccessNoTokenFetch) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(1);
+  EXPECT_CALL(consumer, OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("", "", 0))).Times(0);
+
+  net::TestURLFetcherFactory factory;
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
+  auth.StartCookieForOAuthLoginTokenExchange(
+      false, "0", "ABCDE_12345", "");
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  EXPECT_TRUE(NULL != fetcher);
+  EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());
+  EXPECT_EQ(std::string::npos,
+            fetcher->GetOriginalURL().query().find("device_type=chrome"));
+
+  net::ResponseCookies cookies;
+  cookies.push_back(kGetAuthCodeValidCookie);
+  EXPECT_TRUE(auth.HasPendingFetch());
+  MockFetcher mock_fetcher1(
+      client_login_to_oauth2_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      net::HTTP_OK,
+      cookies,
+      std::string(),
+      net::URLFetcher::POST,
+      &auth);
+  auth.OnURLFetchComplete(&mock_fetcher1);
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 

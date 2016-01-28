@@ -182,8 +182,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(source)),
       oauth2_iframe_url_(GaiaUrls::GetInstance()->oauth2_iframe_url()),
       client_login_to_oauth2_gurl_(
-          GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
-      fetch_pending_(false) {
+          GaiaUrls::GetInstance()->client_login_to_oauth2_url()) {
 }
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
@@ -526,14 +525,25 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
 void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchangeWithDeviceId(
     const std::string& session_index,
     const std::string& device_id) {
+  StartCookieForOAuthLoginTokenExchange(
+      true,
+      session_index,
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+      device_id);
+}
+
+void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
+    bool fetch_token_from_auth_code,
+    const std::string& session_index,
+    const std::string& client_id,
+    const std::string& device_id) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   VLOG(1) << "Starting OAuth login token fetch with cookie jar";
 
   std::string encoded_scope = net::EscapeUrlEncodedData(
       GaiaConstants::kOAuth1LoginScope, true);
-  std::string encoded_client_id = net::EscapeUrlEncodedData(
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
+  std::string encoded_client_id = net::EscapeUrlEncodedData(client_id, true);
   std::string query_string =
       base::StringPrintf(kClientLoginToOAuth2URLFormat, encoded_scope.c_str(),
                          encoded_client_id.c_str());
@@ -548,6 +558,7 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchangeWithDeviceId(
         base::StringPrintf(kDeviceIdHeaderFormat, device_id.c_str());
   }
 
+  fetch_token_from_auth_code_ = fetch_token_from_auth_code;
   CreateAndStartGaiaFetcher(std::string(), device_id_header,
                             client_login_to_oauth2_gurl_.Resolve(query_string),
                             net::LOAD_NORMAL);
@@ -738,7 +749,10 @@ void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     std::string auth_code;
     if (ParseClientLoginToOAuth2Response(cookies, &auth_code)) {
-      StartAuthCodeForOAuth2TokenExchange(auth_code);
+      if (fetch_token_from_auth_code_)
+        StartAuthCodeForOAuth2TokenExchange(auth_code);
+      else
+        consumer_->OnClientOAuthCode(auth_code);
     } else {
       GoogleServiceAuthError auth_error(
           GoogleServiceAuthError::FromUnexpectedServiceResponse(
