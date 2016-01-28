@@ -116,7 +116,7 @@ bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr, int blockEdge, int line
 LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth)
 {
     // Create an ellipsis box.
-    EllipsisBox* ellipsisBox = new EllipsisBox(layoutObject(), ellipsisStr, this,
+    EllipsisBox* ellipsisBox = new EllipsisBox(this, ellipsisStr, this,
         ellipsisWidth, logicalHeight().toFloat(), x(), y(), !prevRootBox(), isHorizontal());
 
     if (!gEllipsisBoxMap)

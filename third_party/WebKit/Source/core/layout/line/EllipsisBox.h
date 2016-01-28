@@ -30,9 +30,9 @@ class HitTestResult;
 
 class EllipsisBox final : public InlineBox {
 public:
-    EllipsisBox(LayoutObject& obj, const AtomicString& ellipsisStr, InlineFlowBox* parent,
+    EllipsisBox(InlineBox* inlineBox, const AtomicString& ellipsisStr, InlineFlowBox* parent,
         int width, int height, int x, int y, bool firstLine, bool isVertical)
-        : InlineBox(obj, LayoutPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
+        : InlineBox(inlineBox, LayoutPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
         , m_height(height)
         , m_str(ellipsisStr)
         , m_selectionState(SelectionNone)

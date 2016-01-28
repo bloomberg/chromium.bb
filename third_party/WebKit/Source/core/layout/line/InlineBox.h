@@ -54,12 +54,12 @@ public:
     {
     }
 
-    InlineBox(LayoutObject& obj, LayoutPoint topLeft, LayoutUnit logicalWidth, bool firstLine, bool constructed,
+    InlineBox(InlineBox* inlineBoxForLayoutObject, LayoutPoint topLeft, LayoutUnit logicalWidth, bool firstLine, bool constructed,
         bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
         : m_next(next)
         , m_prev(prev)
         , m_parent(parent)
-        , m_layoutObject(obj)
+        , m_layoutObject(inlineBoxForLayoutObject->layoutObject())
         , m_topLeft(topLeft)
         , m_logicalWidth(logicalWidth)
         , m_bitfields(firstLine, constructed, dirty, extracted, isHorizontal)
