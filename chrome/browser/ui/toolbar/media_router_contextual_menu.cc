@@ -31,10 +31,6 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
                                   IDS_MEDIA_ROUTER_ABOUT);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-#if defined(GOOGLE_CHROME_BUILD)
-  menu_model_.AddCheckItemWithStringId(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
-                                       IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
-#endif  // defined(GOOGLE_CHROME_BUILD)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE,
                                   IDS_MEDIA_ROUTER_LEARN_MORE);
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
@@ -42,6 +38,10 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION,
                                   IDS_EXTENSIONS_UNINSTALL);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+#if defined(GOOGLE_CHROME_BUILD)
+  menu_model_.AddCheckItemWithStringId(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
+                                       IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
+#endif  // defined(GOOGLE_CHROME_BUILD)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
                                   IDS_MEDIA_ROUTER_REPORT_ISSUE);
 }
