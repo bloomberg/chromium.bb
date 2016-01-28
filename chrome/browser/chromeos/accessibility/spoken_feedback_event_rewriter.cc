@@ -53,6 +53,9 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
 
   content::RenderViewHost* rvh = host->render_view_host();
 
+  // Always capture the Search key.
+  capture |= key_event.IsCommandDown();
+
   // Listen for any unhandled keyboard events from ChromeVox's background page
   // when capturing keys to reinject.
   if (capture)

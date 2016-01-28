@@ -116,6 +116,7 @@ Background = function() {
   cvox.ExtensionBridge.addMessageListener(this.onMessage_);
 
   document.addEventListener('keydown', this.onKeyDown.bind(this), true);
+  document.addEventListener('keyup', this.onKeyUp.bind(this), true);
   cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);
 
   // Classic keymap.
@@ -123,6 +124,9 @@ Background = function() {
 
   // Live region handler.
   this.liveRegions_ = new LiveRegions(this);
+
+  /** @type {number} @private */
+  this.passThroughKeyUpCount_ = 0;
 
   if (!chrome.accessibilityPrivate.setKeyboardListener)
     chrome.accessibilityPrivate.setKeyboardListener = function() {};
@@ -476,6 +480,11 @@ Background.prototype = {
         else
           chrome.accessibilityPrivate.setKeyboardListener(true, false);
         return false;
+      case 'passThroughMode':
+        cvox.ChromeVox.passThroughMode = true;
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
+        return true;
       default:
         return true;
     }
@@ -525,13 +534,33 @@ Background.prototype = {
    */
   onKeyDown: function(evt) {
     evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
+    if (cvox.ChromeVox.passThroughMode)
+      return false;
+
     if (this.mode_ != ChromeVoxMode.CLASSIC &&
         !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();
       evt.stopPropagation();
     }
-
     Output.flushNextSpeechUtterance();
+  },
+
+  /**
+   * Handles key up events.
+   * @param {Event} evt The key down event to process.
+   * @return {boolean} True if the default action should be performed.
+   */
+  onKeyUp: function(evt) {
+    // Reset pass through mode once a keyup (not involving the pass through key)
+    // is seen. The pass through command involves three keys.
+    if (cvox.ChromeVox.passThroughMode) {
+      if (this.passThroughKeyUpCount_ >= 3) {
+        cvox.ChromeVox.passThroughMode = false;
+        this.passThroughKeyUpCount_ = 0;
+      } else {
+        this.passThroughKeyUpCount_++;
+      }
+    }
   },
 
   /**

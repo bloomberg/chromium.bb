@@ -339,6 +339,16 @@
         },
         "platformFilter": 10
       }
+    },
+    {
+      "command": "passThroughMode",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [27],
+          "shiftKey": [true]
+        }
+      }
     }
   ]
 }
