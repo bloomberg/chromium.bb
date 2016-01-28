@@ -55,9 +55,6 @@ class ShellSurface : public SurfaceDelegate,
     configure_callback_ = configure_callback;
   }
 
-  // Initialize shell surface as a toplevel window.
-  void Init();
-
   // Maximizes the shell surface.
   void Maximize();
 
@@ -109,6 +106,9 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Size GetPreferredSize() const override;
 
  private:
+  // Creates the |widget_| for |surface_|.
+  void CreateShellSurfaceWidget();
+
   scoped_ptr<views::Widget> widget_;
   Surface* surface_;
   base::string16 title_;

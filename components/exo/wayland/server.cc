@@ -638,7 +638,7 @@ void shell_surface_resize(wl_client* client,
 }
 
 void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Init();
+  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
 }
 
 void shell_surface_set_transient(wl_client* client,
@@ -655,7 +655,7 @@ void shell_surface_set_fullscreen(wl_client* client,
                                   uint32_t method,
                                   uint32_t framerate,
                                   wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->Init();
+  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
   GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
 }
 
@@ -673,7 +673,7 @@ void shell_surface_set_popup(wl_client* client,
 void shell_surface_set_maximized(wl_client* client,
                                  wl_resource* resource,
                                  wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->Init();
+  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
   GetUserDataAs<ShellSurface>(resource)->Maximize();
 }
 
@@ -724,6 +724,10 @@ void shell_get_shell_surface(wl_client* client,
     wl_resource_post_no_memory(resource);
     return;
   }
+
+  // Shell surfaces are initially disabled and needs to be explicitly mapped
+  // before they are enabled and can become visible.
+  shell_surface->SetEnabled(false);
 
   shell_surface->set_surface_destroyed_callback(base::Bind(
       &wl_resource_destroy, base::Unretained(shell_surface_resource)));
@@ -951,9 +955,6 @@ void xdg_shell_get_xdg_surface(wl_client* client,
     wl_resource_post_no_memory(resource);
     return;
   }
-
-  // An XdgSurface is a toplevel shell surface.
-  shell_surface->Init();
 
   shell_surface->set_close_callback(base::Bind(
       &xdg_surface_send_close, base::Unretained(xdg_surface_resource)));

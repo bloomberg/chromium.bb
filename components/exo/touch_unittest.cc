@@ -42,7 +42,6 @@ TEST_F(TouchTest, OnTouchDown) {
   scoped_ptr<Surface> bottom_surface(new Surface);
   scoped_ptr<ShellSurface> bottom_shell_surface(
       new ShellSurface(bottom_surface.get()));
-  bottom_shell_surface->Init();
   gfx::Size bottom_buffer_size(10, 10);
   scoped_ptr<Buffer> bottom_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(bottom_buffer_size),
@@ -54,7 +53,6 @@ TEST_F(TouchTest, OnTouchDown) {
   scoped_ptr<Surface> top_surface(new Surface);
   scoped_ptr<ShellSurface> top_shell_surface(
       new ShellSurface(top_surface.get()));
-  top_shell_surface->Init();
   gfx::Size top_buffer_size(8, 8);
   scoped_ptr<Buffer> top_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(top_buffer_size),
@@ -89,7 +87,6 @@ TEST_F(TouchTest, OnTouchDown) {
 TEST_F(TouchTest, OnTouchUp) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -121,7 +118,6 @@ TEST_F(TouchTest, OnTouchUp) {
 TEST_F(TouchTest, OnTouchMotion) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -159,7 +155,6 @@ TEST_F(TouchTest, OnTouchMotion) {
 TEST_F(TouchTest, OnTouchCancel) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));

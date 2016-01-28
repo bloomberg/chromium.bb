@@ -86,39 +86,12 @@ ShellSurface::~ShellSurface() {
     widget_->CloseNow();
 }
 
-void ShellSurface::Init() {
-  TRACE_EVENT0("exo", "ShellSurface::Init");
-
-  if (widget_) {
-    DLOG(WARNING) << "Shell surface already initialized";
-    return;
-  }
-
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = this;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.show_state = ui::SHOW_STATE_NORMAL;
-  params.parent = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
-  widget_.reset(new ShellSurfaceWidget(this));
-  widget_->Init(params);
-  widget_->GetNativeWindow()->set_owned_by_parent(false);
-  widget_->GetNativeWindow()->SetName("ExoShellSurface");
-  widget_->GetNativeWindow()->AddChild(surface_);
-  SetApplicationId(widget_->GetNativeWindow(), &application_id_);
-
-  // The position of a top-level shell surface is managed by Ash.
-  ash::wm::GetWindowState(widget_->GetNativeWindow())
-      ->set_window_position_managed(true);
-}
-
 void ShellSurface::Maximize() {
   TRACE_EVENT0("exo", "ShellSurface::Maximize");
 
-  DCHECK(widget_);
+  if (!widget_)
+    CreateShellSurfaceWidget();
+
   widget_->Maximize();
 
   if (!configure_callback_.is_null())
@@ -128,7 +101,9 @@ void ShellSurface::Maximize() {
 void ShellSurface::SetFullscreen(bool fullscreen) {
   TRACE_EVENT1("exo", "ShellSurface::SetFullscreen", "fullscreen", fullscreen);
 
-  DCHECK(widget_);
+  if (!widget_)
+    CreateShellSurfaceWidget();
+
   widget_->SetFullscreen(fullscreen);
 
   if (!configure_callback_.is_null())
@@ -202,7 +177,11 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 // SurfaceDelegate overrides:
 
 void ShellSurface::OnSurfaceCommit() {
+  if (enabled() && !widget_)
+    CreateShellSurfaceWidget();
+
   surface_->CommitSurfaceHierarchy();
+
   if (widget_) {
     // Update surface bounds and widget size.
     gfx::Point origin;
@@ -268,6 +247,34 @@ gfx::Size ShellSurface::GetPreferredSize() const {
     return geometry_.size();
 
   return surface_ ? surface_->GetPreferredSize() : gfx::Size();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, private:
+
+void ShellSurface::CreateShellSurfaceWidget() {
+  DCHECK(enabled());
+  DCHECK(!widget_);
+
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.delegate = this;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.show_state = ui::SHOW_STATE_NORMAL;
+  params.parent = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
+  widget_.reset(new ShellSurfaceWidget(this));
+  widget_->Init(params);
+  widget_->GetNativeWindow()->set_owned_by_parent(false);
+  widget_->GetNativeWindow()->SetName("ExoShellSurface");
+  widget_->GetNativeWindow()->AddChild(surface_);
+  SetApplicationId(widget_->GetNativeWindow(), &application_id_);
+
+  // The position of a top-level shell surface is managed by Ash.
+  ash::wm::GetWindowState(widget_->GetNativeWindow())
+      ->set_window_position_managed(true);
 }
 
 }  // namespace exo

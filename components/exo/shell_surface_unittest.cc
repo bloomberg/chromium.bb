@@ -19,34 +19,6 @@ namespace {
 
 using ShellSurfaceTest = test::ExoTestBase;
 
-TEST_F(ShellSurfaceTest, Init) {
-  gfx::Size small_buffer_size(64, 64);
-  scoped_ptr<Buffer> small_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(small_buffer_size),
-                 GL_TEXTURE_2D));
-  gfx::Size large_buffer_size(256, 256);
-  scoped_ptr<Buffer> large_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(large_buffer_size),
-                 GL_TEXTURE_2D));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-
-  shell_surface->Init();
-  ASSERT_TRUE(shell_surface->GetWidget());
-
-  surface->Attach(small_buffer.get());
-  surface->Commit();
-  EXPECT_EQ(
-      small_buffer_size.ToString(),
-      shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
-
-  surface->Attach(large_buffer.get());
-  surface->Commit();
-  EXPECT_EQ(
-      large_buffer_size.ToString(),
-      shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
-}
-
 TEST_F(ShellSurfaceTest, Maximize) {
   gfx::Size buffer_size(256, 256);
   scoped_ptr<Buffer> buffer(new Buffer(
@@ -54,7 +26,6 @@ TEST_F(ShellSurfaceTest, Maximize) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->Init();
   surface->Attach(buffer.get());
   shell_surface->Maximize();
   surface->Commit();
@@ -69,7 +40,6 @@ TEST_F(ShellSurfaceTest, SetFullscreen) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->Init();
   shell_surface->SetFullscreen(true);
   surface->Attach(buffer.get());
   surface->Commit();
@@ -89,7 +59,6 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->Init();
   surface->Commit();
   EXPECT_EQ("", ShellSurface::GetApplicationId(
                     shell_surface->GetWidget()->GetNativeWindow()));
@@ -107,7 +76,6 @@ TEST_F(ShellSurfaceTest, Move) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   // Map shell surface.
-  shell_surface->Init();
   surface->Commit();
 
   // Post a task that will destroy the shell surface and then start an
@@ -126,7 +94,6 @@ TEST_F(ShellSurfaceTest, SetGeometry) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->Init();
   gfx::Rect geometry(16, 16, 32, 32);
   shell_surface->SetGeometry(geometry);
   surface->Attach(buffer.get());
@@ -151,7 +118,6 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   shell_surface->set_close_callback(
       base::Bind(&Close, base::Unretained(&close_call_count)));
 
-  shell_surface->Init();
   surface->Commit();
 
   EXPECT_EQ(0, close_call_count);
@@ -166,7 +132,6 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   shell_surface->set_surface_destroyed_callback(
       base::Bind(&DestroyShellSurface, base::Unretained(&shell_surface)));
 
-  shell_surface->Init();
   surface->Commit();
 
   EXPECT_TRUE(shell_surface.get());
@@ -181,8 +146,6 @@ void Configure(gfx::Size* suggested_size, const gfx::Size& size) {
 TEST_F(ShellSurfaceTest, ConfigureCallback) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-
-  shell_surface->Init();
 
   gfx::Size suggested_size;
   shell_surface->set_configure_callback(
