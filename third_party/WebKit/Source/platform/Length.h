@@ -322,8 +322,6 @@ private:
     bool m_isFloat;
 };
 
-PLATFORM_EXPORT Vector<Length> parseHTMLAreaElementCoords(const String&);
-
 } // namespace blink
 
 #endif // Length_h

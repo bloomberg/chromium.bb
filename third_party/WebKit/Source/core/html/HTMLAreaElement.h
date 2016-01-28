@@ -64,7 +64,7 @@ private:
     void invalidateCachedRegion();
 
     OwnPtr<Path> m_region;
-    Vector<Length> m_coords;
+    Vector<double> m_coords;
     LayoutSize m_lastSize;
     Shape m_shape;
 };

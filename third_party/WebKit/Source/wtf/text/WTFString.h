@@ -70,6 +70,8 @@ WTF_EXPORT uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // i
 // consistent with the above functions instead.
 WTF_EXPORT double charactersToDouble(const LChar*, size_t, bool* ok = 0);
 WTF_EXPORT double charactersToDouble(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT double charactersToDouble(const LChar*, size_t, size_t& parsedLength);
+WTF_EXPORT double charactersToDouble(const UChar*, size_t, size_t& parsedLength);
 WTF_EXPORT float charactersToFloat(const LChar*, size_t, bool* ok = 0);
 WTF_EXPORT float charactersToFloat(const UChar*, size_t, bool* ok = 0);
 WTF_EXPORT float charactersToFloat(const LChar*, size_t, size_t& parsedLength);

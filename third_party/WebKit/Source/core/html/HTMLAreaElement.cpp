@@ -25,6 +25,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMapElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutView.h"
@@ -35,11 +36,10 @@ namespace blink {
 
 namespace {
 
-// Adapt a Length to the allowed range of a LayoutUnit.
-float clampCoordinate(const Length& length)
+// Adapt a double to the allowed range of a LayoutUnit and narrow it to float precision.
+float clampCoordinate(double value)
 {
-    ASSERT(length.isFixed());
-    return LayoutUnit(length.value()).toFloat();
+    return LayoutUnit(value).toFloat();
 }
 
 }
@@ -80,7 +80,7 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
         }
         invalidateCachedRegion();
     } else if (name == coordsAttr) {
-        m_coords = parseHTMLAreaElementCoords(value.string());
+        m_coords = parseHTMLListOfFloatingPointNumbers(value.string());
         invalidateCachedRegion();
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.
@@ -152,7 +152,7 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
         }
         break;
     case Circle:
-        if (m_coords.size() >= 3 && m_coords[2].value() > 0) {
+        if (m_coords.size() >= 3 && m_coords[2] > 0) {
             float r = clampCoordinate(m_coords[2]);
             path.addEllipse(FloatRect(clampCoordinate(m_coords[0]) - r, clampCoordinate(m_coords[1]) - r, 2 * r, 2 * r));
         }

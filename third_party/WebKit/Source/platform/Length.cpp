@@ -26,84 +26,10 @@
 
 #include "platform/CalculationValue.h"
 #include "platform/animation/AnimationUtilities.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/WTFString.h"
 
 using namespace WTF;
 
 namespace blink {
-
-template<typename CharType>
-static unsigned splitLength(const CharType* data, unsigned length, unsigned& intLength, unsigned& doubleLength)
-{
-    ASSERT(length);
-
-    unsigned i = 0;
-    while (i < length && isSpaceOrNewline(data[i]))
-        ++i;
-    if (i < length && (data[i] == '+' || data[i] == '-'))
-        ++i;
-    while (i < length && isASCIIDigit(data[i]))
-        ++i;
-    intLength = i;
-    while (i < length && (isASCIIDigit(data[i]) || data[i] == '.'))
-        ++i;
-    doubleLength = i;
-
-    // IE quirk: Skip whitespace between the number and the % character (20 % => 20%).
-    while (i < length && isSpaceOrNewline(data[i]))
-        ++i;
-
-    return i;
-}
-
-template<typename CharType>
-static Length parseHTMLAreaCoordinate(const CharType* data, unsigned length)
-{
-    unsigned intLength;
-    unsigned doubleLength;
-    splitLength(data, length, intLength, doubleLength);
-
-    return Length(charactersToIntStrict(data, intLength), Fixed);
-}
-
-// FIXME: Per HTML5, this should follow the "rules for parsing a list of integers".
-Vector<Length> parseHTMLAreaElementCoords(const String& string)
-{
-    unsigned length = string.length();
-    StringBuffer<LChar> spacified(length);
-    for (unsigned i = 0; i < length; i++) {
-        UChar cc = string[i];
-        if (cc > '9' || (cc < '0' && cc != '-' && cc != '.'))
-            spacified[i] = ' ';
-        else
-            spacified[i] = cc;
-    }
-    RefPtr<StringImpl> str = spacified.release();
-    str = str->simplifyWhiteSpace();
-    ASSERT(str->is8Bit());
-
-    if (!str->length())
-        return Vector<Length>();
-
-    unsigned len = str->count(' ') + 1;
-    Vector<Length> r(len);
-
-    unsigned i = 0;
-    unsigned pos = 0;
-    size_t pos2;
-
-    while ((pos2 = str->find(' ', pos)) != kNotFound) {
-        r[i++] = parseHTMLAreaCoordinate(str->characters8() + pos, pos2 - pos);
-        pos = pos2 + 1;
-    }
-    r[i] = parseHTMLAreaCoordinate(str->characters8() + pos, str->length() - pos);
-
-    ASSERT(i == len - 1);
-
-    return r;
-}
 
 class CalculationValueHandleMap {
     USING_FAST_MALLOC(CalculationValueHandleMap);

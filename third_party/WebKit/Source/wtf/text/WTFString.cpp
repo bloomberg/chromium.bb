@@ -1139,6 +1139,16 @@ double charactersToDouble(const UChar* data, size_t length, bool* ok)
     return toDoubleType<UChar, DisallowTrailingJunk>(data, length, ok, parsedLength);
 }
 
+double charactersToDouble(const LChar* data, size_t length, size_t& parsedLength)
+{
+    return toDoubleType<LChar, AllowTrailingJunk>(data, length, nullptr, parsedLength);
+}
+
+double charactersToDouble(const UChar* data, size_t length, size_t& parsedLength)
+{
+    return toDoubleType<UChar, AllowTrailingJunk>(data, length, nullptr, parsedLength);
+}
+
 float charactersToFloat(const LChar* data, size_t length, bool* ok)
 {
     // FIXME: This will return ok even when the string fits into a double but
