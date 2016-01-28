@@ -8,3 +8,4 @@ Description: Userspace interface to kernel DRM services for radeon
 Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -ldrm_radeon
 Cflags: -I${includedir} -I${includedir}/libdrm
+Requires.private: libdrm
