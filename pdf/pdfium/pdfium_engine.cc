@@ -606,6 +606,10 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = NULL;
   IFSDK_PAUSE::NeedToPauseNow = Pause_NeedToPauseNow;
+
+#if defined(OS_LINUX)
+  g_last_instance_id = client_->GetPluginInstance()->pp_instance();
+#endif
 }
 
 PDFiumEngine::~PDFiumEngine() {
