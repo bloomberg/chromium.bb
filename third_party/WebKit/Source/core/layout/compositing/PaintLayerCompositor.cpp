@@ -344,7 +344,6 @@ static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendan
     }
 }
 
-
 void PaintLayerCompositor::updateIfNeeded()
 {
     CompositingUpdateType updateType = m_pendingUpdateType;

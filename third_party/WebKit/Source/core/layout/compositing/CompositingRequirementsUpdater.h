@@ -59,7 +59,8 @@ private:
     class OverlapMap;
     class RecursionData;
 
-    void updateRecursive(PaintLayer* ancestorLayer, PaintLayer* currentLayer, OverlapMap&, RecursionData&, bool& descendantHas3DTransform, Vector<PaintLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
+    void updateRecursive(PaintLayer* ancestorLayer, PaintLayer* currentLayer, OverlapMap&, RecursionData&,
+        bool& descendantHas3DTransform, Vector<PaintLayer*>& unclippedDescendants, IntRect& absoluteDescendantBoundingBox);
 
     LayoutView& m_layoutView;
     CompositingReasonFinder& m_compositingReasonFinder;
