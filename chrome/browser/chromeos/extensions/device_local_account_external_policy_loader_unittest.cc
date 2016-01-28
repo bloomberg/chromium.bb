@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/updater/extension_downloader.h"
@@ -48,9 +49,13 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif  // defined(OS_CHROMEOS)
 
+using ::testing::Field;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
+using ::testing::StrEq;
 using ::testing::_;
+using extensions::ExternalInstallInfoFile;
+using extensions::ExternalInstallInfoUpdateUrl;
 
 namespace chromeos {
 
@@ -70,23 +75,17 @@ class MockExternalPolicyProviderVisitor
   MockExternalPolicyProviderVisitor();
   virtual ~MockExternalPolicyProviderVisitor();
 
-  MOCK_METHOD7(OnExternalExtensionFileFound,
-               bool(const std::string&,
-                    const base::Version*,
-                    const base::FilePath&,
-                    extensions::Manifest::Location,
-                    int,
-                    bool,
-                    bool));
-  MOCK_METHOD6(OnExternalExtensionUpdateUrlFound,
-               bool(const std::string&,
-                    const std::string&,
-                    const GURL&,
-                    extensions::Manifest::Location,
-                    int,
-                    bool));
+  MOCK_METHOD1(OnExternalExtensionFileFound,
+               bool(const ExternalInstallInfoFile&));
+  MOCK_METHOD2(OnExternalExtensionUpdateUrlFound,
+               bool(const ExternalInstallInfoUpdateUrl&, bool));
   MOCK_METHOD1(OnExternalProviderReady,
                void(const extensions::ExternalProviderInterface* provider));
+  MOCK_METHOD4(OnExternalProviderUpdateComplete,
+               void(const extensions::ExternalProviderInterface*,
+                    const ScopedVector<ExternalInstallInfoUpdateUrl>&,
+                    const ScopedVector<ExternalInstallInfoFile>&,
+                    const std::set<std::string>& removed_extensions));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockExternalPolicyProviderVisitor);
@@ -168,12 +167,11 @@ void DeviceLocalAccountExternalPolicyLoaderTest::TearDown() {
 void DeviceLocalAccountExternalPolicyLoaderTest::
     VerifyAndResetVisitorCallExpectations() {
   Mock::VerifyAndClearExpectations(&visitor_);
-  EXPECT_CALL(visitor_, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(visitor_, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
-      .Times(0);
+  EXPECT_CALL(visitor_, OnExternalExtensionFileFound(_)).Times(0);
+  EXPECT_CALL(visitor_, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
   EXPECT_CALL(visitor_, OnExternalProviderReady(_))
       .Times(0);
+  EXPECT_CALL(visitor_, OnExternalProviderUpdateComplete(_, _, _, _)).Times(0);
 }
 
 void DeviceLocalAccountExternalPolicyLoaderTest::SetForceInstallListPolicy() {
@@ -288,14 +286,14 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   const base::FilePath cached_crx_path = cache_dir_.Append(base::StringPrintf(
       "%s-%s.crx", kExtensionId, kExtensionCRXVersion));
   base::RunLoop cache_run_loop;
-  EXPECT_CALL(visitor_, OnExternalExtensionFileFound(
-      kExtensionId,
-      _,
-      cached_crx_path,
-      extensions::Manifest::EXTERNAL_POLICY,
-      _,
-      _,
-      _));
+  EXPECT_CALL(
+      visitor_,
+      OnExternalExtensionFileFound(AllOf(
+          Field(&extensions::ExternalInstallInfoFile::extension_id,
+                StrEq(kExtensionId)),
+          Field(&extensions::ExternalInstallInfoFile::path, cached_crx_path),
+          Field(&extensions::ExternalInstallInfoFile::crx_location,
+                extensions::Manifest::EXTERNAL_POLICY))));
   EXPECT_CALL(visitor_, OnExternalProviderReady(provider_.get()))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&cache_run_loop, &base::RunLoop::Quit));

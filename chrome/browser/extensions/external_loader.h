@@ -58,6 +58,9 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   // Notifies the provider that the list of extensions has been loaded.
   virtual void LoadFinished();
 
+  // Notifies the provider that the list of extensions has been updated.
+  virtual void OnUpdated(scoped_ptr<base::DictionaryValue> updated_prefs);
+
   // Used for passing the list of extensions from the method that loads them
   // to |LoadFinished|. To ensure thread safety, the rules are the following:
   // if this value is written on another thread than the UI, then it should

@@ -26,6 +26,7 @@
 #include "components/syncable_prefs/pref_service_mock_factory.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/external_install_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "net/http/http_response_headers.h"
@@ -39,6 +40,8 @@ using ::testing::Exactly;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::_;
+using extensions::ExternalInstallInfoFile;
+using extensions::ExternalInstallInfoUpdateUrl;
 
 namespace {
 
@@ -184,23 +187,17 @@ class MockExternalProviderVisitor
  public:
   MockExternalProviderVisitor() {}
 
-  MOCK_METHOD7(OnExternalExtensionFileFound,
-               bool(const std::string&,
-                    const base::Version*,
-                    const base::FilePath&,
-                    extensions::Manifest::Location,
-                    int,
-                    bool,
-                    bool));
-  MOCK_METHOD6(OnExternalExtensionUpdateUrlFound,
-               bool(const std::string&,
-                    const std::string&,
-                    const GURL&,
-                    extensions::Manifest::Location,
-                    int,
-                    bool));
+  MOCK_METHOD1(OnExternalExtensionFileFound,
+               bool(const ExternalInstallInfoFile&));
+  MOCK_METHOD2(OnExternalExtensionUpdateUrlFound,
+               bool(const ExternalInstallInfoUpdateUrl&, bool));
   MOCK_METHOD1(OnExternalProviderReady,
                void(const extensions::ExternalProviderInterface* provider));
+  MOCK_METHOD4(OnExternalProviderUpdateComplete,
+               void(const extensions::ExternalProviderInterface*,
+                    const ScopedVector<ExternalInstallInfoUpdateUrl>&,
+                    const ScopedVector<ExternalInstallInfoFile>&,
+                    const std::set<std::string>& removed_extensions));
 };
 
 class ServicesCustomizationDocumentTest : public testing::Test {
@@ -362,12 +359,11 @@ TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
-      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
+  EXPECT_CALL(visitor, OnExternalProviderUpdateComplete(_, _, _, _)).Times(0);
 
   // Manually request a load.
   RunUntilIdle();
@@ -407,23 +403,21 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
-      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
+  EXPECT_CALL(visitor, OnExternalProviderUpdateComplete(_, _, _, _)).Times(0);
 
   // Manually request a load.
   loader->StartLoading();
   Mock::VerifyAndClearExpectations(&visitor);
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
-      .Times(2);
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(2);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
+  EXPECT_CALL(visitor, OnExternalProviderUpdateComplete(_, _, _, _)).Times(0);
 
   RunUntilIdle();
   EXPECT_TRUE(doc->IsReady());
@@ -457,23 +451,21 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
-      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
+  EXPECT_CALL(visitor, OnExternalProviderUpdateComplete(_, _, _, _)).Times(0);
 
   // Manually request a load.
   loader->StartLoading();
   Mock::VerifyAndClearExpectations(&visitor);
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
-      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_)).Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _)).Times(0);
   EXPECT_CALL(visitor, OnExternalProviderReady(_))
       .Times(1);
+  EXPECT_CALL(visitor, OnExternalProviderUpdateComplete(_, _, _, _)).Times(0);
 
   RunUntilIdle();
   EXPECT_TRUE(doc->IsReady());

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/common/manifest.h"
@@ -55,6 +56,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // owned ExternalLoader instance.
   virtual void SetPrefs(base::DictionaryValue* prefs);
 
+  // Updates the underlying prefs and notifies provider.
+  // Only to be called by the owned ExternalLoader instance.
+  void UpdatePrefs(base::DictionaryValue* prefs);
+
   // ExternalProvider implementation:
   void ServiceShutdown() override;
   void VisitRegisteredExtension() override;
@@ -95,6 +100,12 @@ class ExternalProviderImpl : public ExternalProviderInterface {
       const base::DictionaryValue* extension,
       const std::string& extension_id,
       std::set<std::string>* unsupported_extensions);
+
+  // Retrieves the extensions that were found in this provider.
+  void RetrieveExtensionsFromPrefs(
+      ScopedVector<ExternalInstallInfoUpdateUrl>*
+          external_update_url_extensions,
+      ScopedVector<ExternalInstallInfoFile>* external_file_extensions);
 
   // Location for external extensions that are provided by this provider from
   // local crx files.

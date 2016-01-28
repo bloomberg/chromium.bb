@@ -61,9 +61,9 @@ void ExternalRegistryLoader::StartLoading() {
       base::Bind(&ExternalRegistryLoader::LoadOnFileThread, this));
 }
 
-void ExternalRegistryLoader::LoadOnFileThread() {
+scoped_ptr<base::DictionaryValue>
+ExternalRegistryLoader::LoadPrefsOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
@@ -182,12 +182,67 @@ void ExternalRegistryLoader::LoadOnFileThread() {
         true);
   }
 
-  prefs_.reset(prefs.release());
+  return prefs;
+}
+
+void ExternalRegistryLoader::LoadOnFileThread() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  scoped_ptr<base::DictionaryValue> initial_prefs = LoadPrefsOnFileThread();
+  prefs_.reset(initial_prefs.release());
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
                         base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalRegistryLoader::LoadFinished, this));
+      base::Bind(&ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry,
+                 this));
+}
+
+void ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LoadFinished();
+
+  // Start watching registry.
+  if (hklm_key_.Create(HKEY_LOCAL_MACHINE, kRegistryExtensions,
+                       KEY_NOTIFY | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
+    base::win::RegKey::ChangeCallback callback =
+        base::Bind(&ExternalRegistryLoader::OnRegistryKeyChanged,
+                   base::Unretained(this), base::Unretained(&hklm_key_));
+    hklm_key_.StartWatching(callback);
+  } else {
+    LOG(WARNING) << "Error observing HKLM.";
+  }
+
+  if (hkcu_key_.Create(HKEY_CURRENT_USER, kRegistryExtensions, KEY_NOTIFY) ==
+      ERROR_SUCCESS) {
+    base::win::RegKey::ChangeCallback callback =
+        base::Bind(&ExternalRegistryLoader::OnRegistryKeyChanged,
+                   base::Unretained(this), base::Unretained(&hkcu_key_));
+    hkcu_key_.StartWatching(callback);
+  } else {
+    LOG(WARNING) << "Error observing HKCU.";
+  }
+}
+
+void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
+  // |OnRegistryKeyChanged| is removed as an observer when the ChangeCallback is
+  // called, so we need to re-register.
+  key->StartWatching(base::Bind(&ExternalRegistryLoader::OnRegistryKeyChanged,
+                                base::Unretained(this), base::Unretained(key)));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ExternalRegistryLoader::UpdatePrefsOnFileThread, this));
+}
+
+void ExternalRegistryLoader::UpdatePrefsOnFileThread() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  scoped_ptr<base::DictionaryValue> prefs = LoadPrefsOnFileThread();
+  LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWinUpdate",
+                        base::TimeTicks::Now() - start_time);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ExternalRegistryLoader::OnUpdated, this,
+                                     base::Passed(&prefs)));
 }
 
 }  // namespace extensions

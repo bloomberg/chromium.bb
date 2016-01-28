@@ -228,24 +228,22 @@ class ExtensionService
   bool is_ready() override;
   base::SequencedTaskRunner* GetFileTaskRunner() override;
 
-  // ExternalProvider::Visitor implementation.
+  // ExternalProvider::VisitorInterface implementation.
   // Exposed for testing.
-  bool OnExternalExtensionFileFound(const std::string& id,
-                                    const base::Version* version,
-                                    const base::FilePath& path,
-                                    extensions::Manifest::Location location,
-                                    int creation_flags,
-                                    bool mark_acknowledged,
-                                    bool install_immediately) override;
+  bool OnExternalExtensionFileFound(
+      const extensions::ExternalInstallInfoFile& info) override;
   bool OnExternalExtensionUpdateUrlFound(
-      const std::string& id,
-      const std::string& install_parameter,
-      const GURL& update_url,
-      extensions::Manifest::Location location,
-      int creation_flags,
-      bool mark_acknowledged) override;
+      const extensions::ExternalInstallInfoUpdateUrl& info,
+      bool is_initial_load) override;
   void OnExternalProviderReady(
       const extensions::ExternalProviderInterface* provider) override;
+  void OnExternalProviderUpdateComplete(
+      const extensions::ExternalProviderInterface* provider,
+      const ScopedVector<extensions::ExternalInstallInfoUpdateUrl>&
+          external_update_url_extensions,
+      const ScopedVector<extensions::ExternalInstallInfoFile>&
+          external_file_extensions,
+      const std::set<std::string>& removed_extensions) override;
 
   // ExtensionManagement::Observer implementation:
   void OnExtensionManagementSettingsChanged() override;

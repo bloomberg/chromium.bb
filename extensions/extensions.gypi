@@ -636,6 +636,8 @@
       'browser/extension_zoom_request_client.h',
       'browser/extensions_browser_client.cc',
       'browser/extensions_browser_client.h',
+      'browser/external_install_info.cc',
+      'browser/external_install_info.h',
       'browser/external_provider_interface.h',
       'browser/file_highlighter.cc',
       'browser/file_highlighter.h',

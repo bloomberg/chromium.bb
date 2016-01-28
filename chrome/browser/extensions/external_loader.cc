@@ -44,4 +44,11 @@ void ExternalLoader::LoadFinished() {
   }
 }
 
+void ExternalLoader::OnUpdated(
+    scoped_ptr<base::DictionaryValue> updated_prefs) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (owner_)
+    owner_->UpdatePrefs(updated_prefs.release());
+}
+
 }  // namespace extensions

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/win/registry.h"
 #include "chrome/browser/extensions/external_loader.h"
 
 namespace extensions {
@@ -23,7 +24,14 @@ class ExternalRegistryLoader : public ExternalLoader {
 
   ~ExternalRegistryLoader() override {}
 
+  scoped_ptr<base::DictionaryValue> LoadPrefsOnFileThread();
   void LoadOnFileThread();
+  void CompleteLoadAndStartWatchingRegistry();
+  void UpdatePrefsOnFileThread();
+  void OnRegistryKeyChanged(base::win::RegKey* key);
+
+  base::win::RegKey hklm_key_;
+  base::win::RegKey hkcu_key_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalRegistryLoader);
 };

@@ -74,6 +74,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/external_install_info.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -114,6 +115,9 @@ using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
+using extensions::ExternalInstallInfoFile;
+using extensions::ExternalInstallInfoUpdateUrl;
+using extensions::ExternalProviderInterface;
 using extensions::FeatureSwitch;
 using extensions::InstallVerifier;
 using extensions::ManagementPolicy;
@@ -174,10 +178,10 @@ void ExtensionService::ClearProvidersForTesting() {
 }
 
 void ExtensionService::AddProviderForTesting(
-    extensions::ExternalProviderInterface* test_provider) {
+    ExternalProviderInterface* test_provider) {
   CHECK(test_provider);
   external_extension_providers_.push_back(
-      linked_ptr<extensions::ExternalProviderInterface>(test_provider));
+      linked_ptr<ExternalProviderInterface>(test_provider));
 }
 
 void ExtensionService::BlacklistExtensionForTest(
@@ -189,47 +193,78 @@ void ExtensionService::BlacklistExtensionForTest(
 }
 
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
-    const std::string& id,
-    const std::string& install_parameter,
-    const GURL& update_url,
-    Manifest::Location location,
-    int creation_flags,
-    bool mark_acknowledged) {
+    const ExternalInstallInfoUpdateUrl& info,
+    bool is_initial_load) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(crx_file::id_util::IdIsValid(id));
+  CHECK(crx_file::id_util::IdIsValid(info.extension_id));
 
-  if (Manifest::IsExternalLocation(location)) {
+  if (Manifest::IsExternalLocation(info.download_location)) {
     // All extensions that are not user specific can be cached.
-    extensions::ExtensionsBrowserClient::Get()->GetExtensionCache()
-        ->AllowCaching(id);
+    extensions::ExtensionsBrowserClient::Get()
+        ->GetExtensionCache()
+        ->AllowCaching(info.extension_id);
   }
 
-  const Extension* extension = GetExtensionById(id, true);
+  const Extension* extension = GetExtensionById(info.extension_id, true);
   if (extension) {
     // Already installed. Skip this install if the current location has
-    // higher priority than |location|.
+    // higher priority than |info.download_location|.
     Manifest::Location current = extension->location();
-    if (current == Manifest::GetHigherPriorityLocation(current, location))
+    if (current ==
+        Manifest::GetHigherPriorityLocation(current, info.download_location)) {
       return false;
+    }
     // Otherwise, overwrite the current installation.
   }
 
-  // Add |id| to the set of pending extensions.  If it can not be added,
-  // then there is already a pending record from a higher-priority install
-  // source.  In this case, signal that this extension will not be
+  // Add |info.extension_id| to the set of pending extensions.  If it can not
+  // be added, then there is already a pending record from a higher-priority
+  // install source.  In this case, signal that this extension will not be
   // installed by returning false.
   if (!pending_extension_manager()->AddFromExternalUpdateUrl(
-          id,
-          install_parameter,
-          update_url,
-          location,
-          creation_flags,
-          mark_acknowledged)) {
+          info.extension_id, info.install_parameter, *info.update_url,
+          info.download_location, info.creation_flags,
+          info.mark_acknowledged)) {
     return false;
   }
 
-  update_once_all_providers_are_ready_ = true;
+  if (is_initial_load)
+    update_once_all_providers_are_ready_ = true;
   return true;
+}
+
+void ExtensionService::OnExternalProviderUpdateComplete(
+    const ExternalProviderInterface* provider,
+    const ScopedVector<ExternalInstallInfoUpdateUrl>& update_url_extensions,
+    const ScopedVector<ExternalInstallInfoFile>& file_extensions,
+    const std::set<std::string>& removed_extensions) {
+  // Update pending_extension_manager() with the new extensions first.
+  for (const auto& extension : update_url_extensions)
+    OnExternalExtensionUpdateUrlFound(*extension, false);
+  for (const auto& extension : file_extensions)
+    OnExternalExtensionFileFound(*extension);
+
+#if DCHECK_IS_ON()
+  for (const std::string& id : removed_extensions) {
+    for (const auto& extension : update_url_extensions)
+      DCHECK_NE(id, extension->extension_id);
+    for (const auto& extension : file_extensions)
+      DCHECK_NE(id, extension->extension_id);
+  }
+#endif
+
+  // Then uninstall before running |updater_|.
+  for (const std::string& id : removed_extensions)
+    CheckExternalUninstall(id);
+
+  if (!update_url_extensions.empty() && updater_) {
+    // Empty params will cause pending extensions to be updated.
+    extensions::ExtensionUpdater::CheckParams empty_params;
+    updater_->CheckNow(empty_params);
+  }
+
+  error_controller_->ShowErrorIfNeeded();
+  external_install_manager_->UpdateExternalExtensionAlert();
 }
 
 // static
@@ -370,7 +405,7 @@ ExtensionService::~ExtensionService() {
   extensions::ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
-    extensions::ExternalProviderInterface* provider = i->get();
+    ExternalProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
 }
@@ -1274,7 +1309,7 @@ void ExtensionService::CheckForExternalUpdates() {
   extensions::ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
-    extensions::ExternalProviderInterface* provider = i->get();
+    ExternalProviderInterface* provider = i->get();
     provider->VisitRegisteredExtension();
   }
 
@@ -1285,7 +1320,7 @@ void ExtensionService::CheckForExternalUpdates() {
 }
 
 void ExtensionService::OnExternalProviderReady(
-    const extensions::ExternalProviderInterface* provider) {
+    const ExternalProviderInterface* provider) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(provider->IsReady());
 
@@ -2008,22 +2043,16 @@ const Extension* ExtensionService::GetInstalledExtension(
 }
 
 bool ExtensionService::OnExternalExtensionFileFound(
-         const std::string& id,
-         const Version* version,
-         const base::FilePath& path,
-         Manifest::Location location,
-         int creation_flags,
-         bool mark_acknowledged,
-         bool install_immediately) {
+    const ExternalInstallInfoFile& info) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(crx_file::id_util::IdIsValid(id));
-  if (extension_prefs_->IsExternalExtensionUninstalled(id))
+  CHECK(crx_file::id_util::IdIsValid(info.extension_id));
+  if (extension_prefs_->IsExternalExtensionUninstalled(info.extension_id))
     return false;
 
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
-  const Extension* existing = GetExtensionById(id, true);
+  const Extension* existing = GetExtensionById(info.extension_id, true);
 
   if (existing) {
     // The default apps will have the location set as INTERNAL. Since older
@@ -2031,22 +2060,23 @@ bool ExtensionService::OnExternalExtensionFileFound(
     // app is already installed as internal, then do the version check.
     // TODO(grv) : Remove after Q1-2013.
     bool is_default_apps_migration =
-        (location == Manifest::INTERNAL &&
+        (info.crx_location == Manifest::INTERNAL &&
          Manifest::IsExternalLocation(existing->location()));
 
     if (!is_default_apps_migration) {
-      DCHECK(version);
+      DCHECK(info.version.get());
 
-      switch (existing->version()->CompareTo(*version)) {
+      switch (existing->version()->CompareTo(*info.version)) {
         case -1:  // existing version is older, we should upgrade
           break;
         case 0:  // existing version is same, do nothing
           return false;
         case 1:  // existing version is newer, uh-oh
-          LOG(WARNING) << "Found external version of extension " << id
+          LOG(WARNING) << "Found external version of extension "
+                       << info.extension_id
                        << "that is older than current version. Current version "
                        << "is: " << existing->VersionString() << ". New "
-                       << "version is: " << version->GetString()
+                       << "version is: " << info.version->GetString()
                        << ". Keeping current version.";
           return false;
       }
@@ -2055,30 +2085,31 @@ bool ExtensionService::OnExternalExtensionFileFound(
 
   // If the extension is already pending, don't start an install.
   if (!pending_extension_manager()->AddFromExternalFile(
-          id, location, *version, creation_flags, mark_acknowledged)) {
+          info.extension_id, info.crx_location, *info.version,
+          info.creation_flags, info.mark_acknowledged)) {
     return false;
   }
 
   // no client (silent install)
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
-  installer->set_install_source(location);
-  installer->set_expected_id(id);
-  installer->set_expected_version(*version,
+  installer->set_install_source(info.crx_location);
+  installer->set_expected_id(info.extension_id);
+  installer->set_expected_version(*info.version,
                                   true /* fail_install_if_unexpected */);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
-  installer->set_install_immediately(install_immediately);
-  installer->set_creation_flags(creation_flags);
+  installer->set_install_immediately(info.install_immediately);
+  installer->set_creation_flags(info.creation_flags);
 #if defined(OS_CHROMEOS)
-  extensions::InstallLimiter::Get(profile_)->Add(installer, path);
+  extensions::InstallLimiter::Get(profile_)->Add(installer, info.path);
 #else
-  installer->InstallCrx(path);
+  installer->InstallCrx(info.path);
 #endif
 
   // Depending on the source, a new external extension might not need a user
   // notification on installation. For such extensions, mark them acknowledged
   // now to suppress the notification.
-  if (mark_acknowledged)
-    external_install_manager_->AcknowledgeExternalExtension(id);
+  if (info.mark_acknowledged)
+    external_install_manager_->AcknowledgeExternalExtension(info.extension_id);
 
   return true;
 }
