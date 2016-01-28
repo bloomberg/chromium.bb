@@ -381,6 +381,8 @@
           'dependencies': [
             'cronet_java',
             '../net/net.gyp:net_java_test_support',
+            '../third_party/netty-tcnative/netty-tcnative.gyp:netty-tcnative',
+            '../third_party/netty4/netty.gyp:netty_all',
           ],
           'variables': {
             'apk_name': 'CronetTest',
@@ -389,6 +391,9 @@
             'asset_location': 'cronet/android/test/assets',
             'native_lib_target': 'libcronet_tests',
             'run_findbugs': 1,
+            'additional_bundled_libs': [
+              '>(netty_tcnative_so_file_location)',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

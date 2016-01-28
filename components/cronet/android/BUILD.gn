@@ -452,6 +452,7 @@ android_apk("cronet_test_apk") {
   apk_name = "CronetTest"
   android_manifest = "test/AndroidManifest.xml"
   native_libs = [ "libcronet_tests.so" ]
+  loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
 
   deps = [
     ":cronet_test_apk_assets",
@@ -459,6 +460,8 @@ android_apk("cronet_test_apk") {
     ":cronet_test_apk_resources",
     ":cronet_tests",
     "//base:base_java",
+    "//third_party/netty-tcnative:netty-tcnative_all",
+    "//third_party/netty4:netty_all",
   ]
 
   run_findbugs = true
