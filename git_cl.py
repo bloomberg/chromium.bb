@@ -3529,6 +3529,8 @@ def CMDformat(parser, args):
   changed_files_cmd = BuildGitDiffCmd('--name-only', upstream_commit, args)
   diff_output = RunGit(changed_files_cmd)
   diff_files = diff_output.splitlines()
+  # Filter out files deleted by this CL
+  diff_files = [x for x in diff_files if os.path.isfile(x)]
 
   clang_diff_files = [x for x in diff_files if MatchingFileType(x, CLANG_EXTS)]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
