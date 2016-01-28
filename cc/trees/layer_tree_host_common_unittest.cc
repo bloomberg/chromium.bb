@@ -6390,29 +6390,48 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   LayerImpl* root = root_layer();
-  LayerImpl* render_surface = AddChild<LayerImpl>(root);
-  LayerImpl* child = AddChild<LayerImpl>(render_surface);
-  child->SetDrawsContent(true);
+  LayerImpl* back_facing = AddChild<LayerImpl>(root);
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(back_facing);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(back_facing);
+  LayerImpl* child1 = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* child2 = AddChild<LayerImpl>(render_surface2);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
 
   gfx::Transform identity_transform;
   SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
-  SetLayerPropertiesForTesting(render_surface, identity_transform,
+  SetLayerPropertiesForTesting(back_facing, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+  SetLayerPropertiesForTesting(render_surface1, identity_transform,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
                                false, true, true);
-  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(render_surface2, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               false, true, true);
+  SetLayerPropertiesForTesting(child1, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child2, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(20, 20), true, false,
                                false);
 
   root->SetShouldFlattenTransform(false);
   root->Set3dSortingContextId(1);
-  render_surface->SetDoubleSided(false);
+  back_facing->Set3dSortingContextId(1);
+  back_facing->SetShouldFlattenTransform(false);
+  render_surface1->SetDoubleSided(false);
+  render_surface2->Set3dSortingContextId(2);
+  render_surface2->SetDoubleSided(false);
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(1u, render_surface_layer_list_impl()
+  EXPECT_EQ(render_surface1->sorting_context_id(), root->sorting_context_id());
+  EXPECT_NE(render_surface2->sorting_context_id(), root->sorting_context_id());
+  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(2u, render_surface_layer_list_impl()
                     ->at(0)
                     ->render_surface()
                     ->layer_list()
@@ -6426,13 +6445,17 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   gfx::Transform rotation_transform = identity_transform;
   rotation_transform.RotateAboutXAxis(180.0);
 
-  render_surface->SetTransform(rotation_transform);
+  back_facing->SetTransform(rotation_transform);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(0u, render_surface_layer_list_impl()
+  // render_surface1 is in the same 3d rendering context as back_facing and is
+  // not double sided, so it should not be in RSLL. render_surface2 is also not
+  // double-sided, but will still be in RSLL as it's in a different 3d rendering
+  // context.
+  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(1u, render_surface_layer_list_impl()
                     ->at(0)
                     ->render_surface()
                     ->layer_list()

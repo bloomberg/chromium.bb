@@ -58,6 +58,7 @@ message TranformNodeData {
   optional Vector2dF scroll_snap = 36;
   optional Vector2dF source_offset = 37;
   optional Vector2dF source_to_parent = 38;
+  optional int64 sorting_context_id = 39;
 }
 
 // Proto for struct ClipNodeData.

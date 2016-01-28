@@ -244,10 +244,15 @@ bool AddTransformNodeIfNeeded(
       layer->parent()->effect_tree_index() !=
           layer->scroll_parent()->effect_tree_index();
 
+  const bool is_at_boundary_of_3d_rendering_context =
+      layer->parent()
+          ? layer->parent()->sorting_context_id() != layer->sorting_context_id()
+          : layer->Is3dSorted();
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
-                       scroll_child_has_different_target;
+                       scroll_child_has_different_target ||
+                       is_at_boundary_of_3d_rendering_context;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
   DCHECK(is_root || transform_parent);
@@ -323,6 +328,8 @@ bool AddTransformNodeIfNeeded(
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;
+
+  node->data.sorting_context_id = layer->sorting_context_id();
 
   if (layer == data_from_ancestor.page_scale_layer)
     data_for_children->in_subtree_of_page_scale_layer = true;

@@ -204,20 +204,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
 }
 
 template <typename LayerType>
-static bool IsRootLayerOfNewRenderingContext(LayerType* layer) {
-  if (layer->parent())
-    return !layer->parent()->Is3dSorted() && layer->Is3dSorted();
-  return layer->Is3dSorted();
-}
-
-template <typename LayerType>
-static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  return layer->Is3dSorted() && layer->parent() &&
-         layer->parent()->Is3dSorted() &&
-         layer->parent()->sorting_context_id() == layer->sorting_context_id();
-}
-
-template <typename LayerType>
 static bool TransformToScreenIsKnown(LayerType* layer,
                                      const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
@@ -242,8 +228,17 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
   // rendering context" or not. For Chromium code, we can determine whether we
   // are in a 3d rendering context by checking if the parent preserves 3d.
 
-  if (LayerIsInExisting3DRenderingContext(layer))
+  const TransformNode* node = tree.Node(layer->transform_tree_index());
+  const TransformNode* parent_node = tree.parent(node);
+  const bool is_3d_sorted = (node->data.sorting_context_id != 0);
+  const bool no_transfrom_node_created = (layer->id() != node->owner_id);
+  const bool parent_also_in_same_rendering_context =
+      parent_node &&
+      parent_node->data.sorting_context_id == node->data.sorting_context_id;
+  if (is_3d_sorted &&
+      (no_transfrom_node_created || parent_also_in_same_rendering_context)) {
     return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
+  }
 
   // In this case, either the layer establishes a new 3d rendering context, or
   // is not in a 3d rendering context at all.
@@ -255,8 +250,16 @@ static bool IsSurfaceBackFaceVisible(LayerType* layer,
                                      const TransformTree& tree) {
   if (HasSingularTransform(layer, tree))
     return false;
-  if (LayerIsInExisting3DRenderingContext(layer)) {
-    const TransformNode* node = tree.Node(layer->transform_tree_index());
+  const TransformNode* node = tree.Node(layer->transform_tree_index());
+  // If the render_surface is not part of a new or existing rendering context,
+  // then the layers that contribute to this surface will decide back-face
+  // visibility for themselves.
+  if (!node->data.sorting_context_id)
+    return false;
+
+  const TransformNode* parent_node = tree.parent(node);
+  if (parent_node &&
+      parent_node->data.sorting_context_id == node->data.sorting_context_id) {
     // Draw transform as a contributing render surface.
     // TODO(enne): we shouldn't walk the tree during a tree walk.
     gfx::Transform surface_draw_transform;
@@ -265,13 +268,9 @@ static bool IsSurfaceBackFaceVisible(LayerType* layer,
     return surface_draw_transform.IsBackFaceVisible();
   }
 
-  if (IsRootLayerOfNewRenderingContext(layer))
-    return layer->transform().IsBackFaceVisible();
-
-  // If the render_surface is not part of a new or existing rendering context,
-  // then the layers that contribute to this surface will decide back-face
-  // visibility for themselves.
-  return false;
+  // We use layer's transform to determine back face visibility when its the
+  // root of a new rendering context.
+  return layer->transform().IsBackFaceVisible();
 }
 
 template <typename LayerType>

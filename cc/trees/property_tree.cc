@@ -125,6 +125,7 @@ TransformNodeData::TransformNodeData()
     : target_id(-1),
       content_target_id(-1),
       source_node_id(-1),
+      sorting_context_id(0),
       needs_local_transform_update(true),
       is_invertible(true),
       ancestors_are_invertible(true),
@@ -159,6 +160,7 @@ bool TransformNodeData::operator==(const TransformNodeData& other) const {
          target_id == other.target_id &&
          content_target_id == other.content_target_id &&
          source_node_id == other.source_node_id &&
+         sorting_context_id == other.sorting_context_id &&
          needs_local_transform_update == other.needs_local_transform_update &&
          is_invertible == other.is_invertible &&
          ancestors_are_invertible == other.ancestors_are_invertible &&
@@ -236,6 +238,7 @@ void TransformNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_target_id(target_id);
   data->set_content_target_id(content_target_id);
   data->set_source_node_id(source_node_id);
+  data->set_sorting_context_id(sorting_context_id);
 
   data->set_needs_local_transform_update(needs_local_transform_update);
 
@@ -300,6 +303,7 @@ void TransformNodeData::FromProtobuf(const proto::TreeNode& proto) {
   target_id = data.target_id();
   content_target_id = data.content_target_id();
   source_node_id = data.source_node_id();
+  sorting_context_id = data.sorting_context_id();
 
   needs_local_transform_update = data.needs_local_transform_update();
 

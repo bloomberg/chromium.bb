@@ -91,6 +91,11 @@ struct CC_EXPORT TransformNodeData {
   // tree.
   int source_node_id;
 
+  // This id determines which 3d rendering context the node is in. 0 is a
+  // special value and indicates that the node is not in any 3d rendering
+  // context.
+  int sorting_context_id;
+
   // TODO(vollick): will be moved when accelerated effects are implemented.
   bool needs_local_transform_update : 1;
 
