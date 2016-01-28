@@ -284,4 +284,41 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
     EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), outlineDiv, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 }
 
+// TODO(wangxianzhu): This test weirdly caused memory leaks of a chromium content_browsertests test.
+// Figure out the issue and enable this test.
+TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
+{
+    AtomicString styleWithoutFloat = "width: 50px; height: 50px; background-color: green";
+    AtomicString styleWithFloat = "float: left; " + styleWithoutFloat;
+    setBodyInnerHTML(
+        "<div id='self-painting-layer' style='position: absolute'>"
+        "  <div id='non-self-painting-layer' style='overflow: hidden'>"
+        "    <div>"
+        "      <div id='float' style='width: 10px; height: 10px; background-color: blue'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>");
+    LayoutObject& floatDiv = *document().getElementById("float")->layoutObject();
+    toHTMLElement(floatDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithoutFloat);
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock& selfPaintingLayerObject = *toLayoutBlock(document().getElementById("self-painting-layer")->layoutObject());
+    PaintLayer& selfPaintingLayer = *selfPaintingLayerObject.layer();
+    ASSERT_TRUE(selfPaintingLayer.isSelfPaintingLayer());
+    PaintLayer& nonSelfPaintingLayer = *toLayoutBoxModelObject(document().getElementById("non-self-painting-layer")->layoutObject())->layer();
+    ASSERT_FALSE(nonSelfPaintingLayer.isSelfPaintingLayer());
+    ASSERT_TRUE(&nonSelfPaintingLayer == floatDiv.enclosingLayer());
+
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseFloat());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
+
+    // needsPaintPhaseFloat should be set when any descendant on the same layer has float.
+    toHTMLElement(floatDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithFloat);
+    updateLifecyclePhasesBeforePaint();
+    EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
+    paint();
+    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
+}
+
 } // namespace blink
