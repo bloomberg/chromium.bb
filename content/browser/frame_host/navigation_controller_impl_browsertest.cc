@@ -2605,8 +2605,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "bar.com", "/navigation_controller/simple_page_1.html"));
   NavigateFrameToURL(foo_subframe, bar_url);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_NE(main_site_instance,
-            foo_subframe->current_frame_host()->GetSiteInstance());
+
+  // When run just with subframe navigation entries enabled and not in
+  // site-per-process-mode the subframe should be in the same SiteInstance as
+  // its parent.
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    EXPECT_EQ(main_site_instance,
+              foo_subframe->current_frame_host()->GetSiteInstance());
+  } else {
+    EXPECT_NE(main_site_instance,
+              foo_subframe->current_frame_host()->GetSiteInstance());
+  }
+
   foo_subframe_entry =
       controller.GetLastCommittedEntry()->GetFrameEntry(foo_subframe);
   EXPECT_EQ(named_subframe_name, foo_subframe_entry->frame_unique_name());
