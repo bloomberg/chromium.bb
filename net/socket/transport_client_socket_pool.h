@@ -50,12 +50,10 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   TransportSocketParams(
       const HostPortPair& host_port_pair,
       bool disable_resolver_cache,
-      bool ignore_limits,
       const OnHostResolutionCallback& host_resolution_callback,
       CombineConnectAndWritePolicy combine_connect_and_write);
 
   const HostResolver::RequestInfo& destination() const { return destination_; }
-  bool ignore_limits() const { return ignore_limits_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
   }
@@ -69,7 +67,6 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   ~TransportSocketParams();
 
   HostResolver::RequestInfo destination_;
-  bool ignore_limits_;
   const OnHostResolutionCallback host_resolution_callback_;
   CombineConnectAndWritePolicy combine_connect_and_write_;
 
@@ -158,6 +155,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
  public:
   TransportConnectJob(const std::string& group_name,
                       RequestPriority priority,
+                      ClientSocketPool::RespectLimits respect_limits,
                       const scoped_refptr<TransportSocketParams>& params,
                       base::TimeDelta timeout_duration,
                       ClientSocketFactory* client_socket_factory,
@@ -241,6 +239,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   int RequestSocket(const std::string& group_name,
                     const void* resolve_info,
                     RequestPriority priority,
+                    RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
                     const BoundNetLog& net_log) override;

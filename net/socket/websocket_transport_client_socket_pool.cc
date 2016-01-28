@@ -39,6 +39,7 @@ const int kTransportConnectJobTimeoutInSeconds = 240;  // 4 minutes.
 WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     const std::string& group_name,
     RequestPriority priority,
+    ClientSocketPool::RespectLimits respect_limits,
     const scoped_refptr<TransportSocketParams>& params,
     TimeDelta timeout_duration,
     const CompletionCallback& callback,
@@ -51,6 +52,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     : ConnectJob(group_name,
                  timeout_duration,
                  priority,
+                 respect_limits,
                  delegate,
                  BoundNetLog::Make(pool_net_log, NetLog::SOURCE_CONNECT_JOB)),
       helper_(params, client_socket_factory, host_resolver, &connect_timing_),
@@ -272,6 +274,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
     const std::string& group_name,
     const void* params,
     RequestPriority priority,
+    RespectLimits respect_limits,
     ClientSocketHandle* handle,
     const CompletionCallback& callback,
     const BoundNetLog& request_net_log) {
@@ -286,7 +289,8 @@ int WebSocketTransportClientSocketPool::RequestSocket(
 
   request_net_log.BeginEvent(NetLog::TYPE_SOCKET_POOL);
 
-  if (ReachedMaxSocketsLimit() && !casted_params->ignore_limits()) {
+  if (ReachedMaxSocketsLimit() &&
+      respect_limits == ClientSocketPool::RespectLimits::ENABLED) {
     request_net_log.AddEvent(NetLog::TYPE_SOCKET_POOL_STALLED_MAX_SOCKETS);
     // TODO(ricea): Use emplace_back when C++11 becomes allowed.
     StalledRequest request(
@@ -306,17 +310,10 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   }
 
   scoped_ptr<WebSocketTransportConnectJob> connect_job(
-      new WebSocketTransportConnectJob(group_name,
-                                       priority,
-                                       casted_params,
-                                       ConnectionTimeout(),
-                                       callback,
-                                       client_socket_factory_,
-                                       host_resolver_,
-                                       handle,
-                                       &connect_job_delegate_,
-                                       pool_net_log_,
-                                       request_net_log));
+      new WebSocketTransportConnectJob(
+          group_name, priority, respect_limits, casted_params,
+          ConnectionTimeout(), callback, client_socket_factory_, host_resolver_,
+          handle, &connect_job_delegate_, pool_net_log_, request_net_log));
 
   int rv = connect_job->Connect();
   // Regardless of the outcome of |connect_job|, it will always be bound to
@@ -589,12 +586,11 @@ void WebSocketTransportClientSocketPool::ActivateStalledRequest() {
     StalledRequest request(stalled_request_queue_.front());
     stalled_request_queue_.pop_front();
     stalled_request_map_.erase(request.handle);
-    int rv = RequestSocket("ignored",
-                           &request.params,
-                           request.priority,
-                           request.handle,
-                           request.callback,
-                           request.net_log);
+    int rv = RequestSocket("ignored", &request.params, request.priority,
+                           // Stalled requests can't have |respect_limits|
+                           // DISABLED.
+                           RespectLimits::ENABLED, request.handle,
+                           request.callback, request.net_log);
     // ActivateStalledRequest() never returns synchronously, so it is never
     // called re-entrantly.
     if (rv != ERR_IO_PENDING)

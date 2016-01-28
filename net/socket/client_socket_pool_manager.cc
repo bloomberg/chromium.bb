@@ -14,6 +14,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
@@ -148,7 +149,10 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     connection_group = prefix + connection_group;
   }
 
-  bool ignore_limits = (request_load_flags & LOAD_IGNORE_LIMITS) != 0;
+  ClientSocketPool::RespectLimits respect_limits =
+      ClientSocketPool::RespectLimits::ENABLED;
+  if ((request_load_flags & LOAD_IGNORE_LIMITS) != 0)
+    respect_limits = ClientSocketPool::RespectLimits::DISABLED;
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
     proxy_host_port.reset(new HostPortPair(proxy_server.host_port_pair()));
@@ -156,7 +160,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
         new TransportSocketParams(
             *proxy_host_port,
             disable_resolver_cache,
-            ignore_limits,
             resolution_callback,
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
 
@@ -175,7 +178,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                     TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
         proxy_tcp_params = new TransportSocketParams(*proxy_host_port,
                                                      disable_resolver_cache,
-                                                     ignore_limits,
                                                      resolution_callback,
                                                      combine_connect_and_write);
         // Set ssl_params, and unset proxy_tcp_params
@@ -229,7 +231,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                   TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
       ssl_tcp_params = new TransportSocketParams(origin_host_port,
                                                  disable_resolver_cache,
-                                                 ignore_limits,
                                                  resolution_callback,
                                                  combine_connect_and_write);
     }
@@ -250,9 +251,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       return OK;
     }
 
-    return socket_handle->Init(connection_group, ssl_params,
-                               request_priority, callback, ssl_pool,
-                               net_log);
+    return socket_handle->Init(connection_group, ssl_params, request_priority,
+                               respect_limits, callback, ssl_pool, net_log);
   }
 
   // Finally, get the connection started.
@@ -267,8 +267,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     }
 
     return socket_handle->Init(connection_group, http_proxy_params,
-                               request_priority, callback,
-                               pool, net_log);
+                               request_priority, respect_limits, callback, pool,
+                               net_log);
   }
 
   if (proxy_info.is_socks()) {
@@ -280,9 +280,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       return OK;
     }
 
-    return socket_handle->Init(connection_group, socks_params,
-                               request_priority, callback, pool,
-                               net_log);
+    return socket_handle->Init(connection_group, socks_params, request_priority,
+                               respect_limits, callback, pool, net_log);
   }
 
   DCHECK(proxy_info.is_direct());
@@ -290,7 +289,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       new TransportSocketParams(
           origin_host_port,
           disable_resolver_cache,
-          ignore_limits,
           resolution_callback,
           TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
   TransportClientSocketPool* pool =
@@ -301,9 +299,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     return OK;
   }
 
-  return socket_handle->Init(connection_group, tcp_params,
-                             request_priority, callback,
-                             pool, net_log);
+  return socket_handle->Init(connection_group, tcp_params, request_priority,
+                             respect_limits, callback, pool, net_log);
 }
 
 }  // namespace

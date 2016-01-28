@@ -503,7 +503,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   scoped_refptr<TransportSocketParams> transport_params(
       new TransportSocketParams(
-          key.host_port_pair(), false, false, OnHostResolutionCallback(),
+          key.host_port_pair(), false, OnHostResolutionCallback(),
           TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
 
   scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
@@ -521,17 +521,14 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
                             key.privacy_mode(),
                             0,
                             false));
-    rv = connection->Init(key.host_port_pair().ToString(),
-                          ssl_params,
-                          MEDIUM,
-                          callback.callback(),
-                          http_session->GetSSLSocketPool(
-                              HttpNetworkSession::NORMAL_SOCKET_POOL),
-                          net_log);
+    rv = connection->Init(
+        key.host_port_pair().ToString(), ssl_params, MEDIUM,
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        http_session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
+        net_log);
   } else {
-    rv = connection->Init(key.host_port_pair().ToString(),
-                          transport_params,
-                          MEDIUM,
+    rv = connection->Init(key.host_port_pair().ToString(), transport_params,
+                          MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                           callback.callback(),
                           http_session->GetTransportSocketPool(
                               HttpNetworkSession::NORMAL_SOCKET_POOL),

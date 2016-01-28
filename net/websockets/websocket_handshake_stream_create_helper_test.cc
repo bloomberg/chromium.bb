@@ -41,13 +41,9 @@ class MockClientSocketHandleFactory {
       const std::string& return_to_read) {
     socket_factory_maker_.SetExpectations(expect_written, return_to_read);
     scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-    socket_handle->Init(
-        "a",
-        scoped_refptr<MockTransportSocketParams>(),
-        MEDIUM,
-        CompletionCallback(),
-        &pool_,
-        BoundNetLog());
+    socket_handle->Init("a", scoped_refptr<MockTransportSocketParams>(), MEDIUM,
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        CompletionCallback(), &pool_, BoundNetLog());
     return socket_handle;
   }
 

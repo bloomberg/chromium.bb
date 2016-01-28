@@ -27,10 +27,6 @@ SOCKSSocketParams::SOCKSSocketParams(
     : transport_params_(proxy_server),
       destination_(host_port_pair),
       socks_v5_(socks_v5) {
-  if (transport_params_.get())
-    ignore_limits_ = transport_params_->ignore_limits();
-  else
-    ignore_limits_ = false;
 }
 
 SOCKSSocketParams::~SOCKSSocketParams() {}
@@ -42,20 +38,24 @@ static const int kSOCKSConnectJobTimeoutInSeconds = 30;
 SOCKSConnectJob::SOCKSConnectJob(
     const std::string& group_name,
     RequestPriority priority,
+    ClientSocketPool::RespectLimits respect_limits,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
     const base::TimeDelta& timeout_duration,
     TransportClientSocketPool* transport_pool,
     HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
-    : ConnectJob(group_name, timeout_duration, priority, delegate,
+    : ConnectJob(group_name,
+                 timeout_duration,
+                 priority,
+                 respect_limits,
+                 delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       socks_params_(socks_params),
       transport_pool_(transport_pool),
       resolver_(host_resolver),
-      callback_(base::Bind(&SOCKSConnectJob::OnIOComplete,
-                           base::Unretained(this))) {
-}
+      callback_(
+          base::Bind(&SOCKSConnectJob::OnIOComplete, base::Unretained(this))) {}
 
 SOCKSConnectJob::~SOCKSConnectJob() {
   // We don't worry about cancelling the tcp socket since the destructor in
@@ -118,12 +118,9 @@ int SOCKSConnectJob::DoLoop(int result) {
 int SOCKSConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(group_name(),
-                                        socks_params_->transport_params(),
-                                        priority(),
-                                        callback_,
-                                        transport_pool_,
-                                        net_log());
+  return transport_socket_handle_->Init(
+      group_name(), socks_params_->transport_params(), priority(),
+      respect_limits(), callback_, transport_pool_, net_log());
 }
 
 int SOCKSConnectJob::DoTransportConnectComplete(int result) {
@@ -174,14 +171,10 @@ SOCKSClientSocketPool::SOCKSConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  return scoped_ptr<ConnectJob>(new SOCKSConnectJob(group_name,
-                                                    request.priority(),
-                                                    request.params(),
-                                                    ConnectionTimeout(),
-                                                    transport_pool_,
-                                                    host_resolver_,
-                                                    delegate,
-                                                    net_log_));
+  return scoped_ptr<ConnectJob>(new SOCKSConnectJob(
+      group_name, request.priority(), request.respect_limits(),
+      request.params(), ConnectionTimeout(), transport_pool_, host_resolver_,
+      delegate, net_log_));
 }
 
 base::TimeDelta
@@ -212,15 +205,18 @@ SOCKSClientSocketPool::SOCKSClientSocketPool(
 SOCKSClientSocketPool::~SOCKSClientSocketPool() {
 }
 
-int SOCKSClientSocketPool::RequestSocket(
-    const std::string& group_name, const void* socket_params,
-    RequestPriority priority, ClientSocketHandle* handle,
-    const CompletionCallback& callback, const BoundNetLog& net_log) {
+int SOCKSClientSocketPool::RequestSocket(const std::string& group_name,
+                                         const void* socket_params,
+                                         RequestPriority priority,
+                                         RespectLimits respect_limits,
+                                         ClientSocketHandle* handle,
+                                         const CompletionCallback& callback,
+                                         const BoundNetLog& net_log) {
   const scoped_refptr<SOCKSSocketParams>* casted_socket_params =
       static_cast<const scoped_refptr<SOCKSSocketParams>*>(socket_params);
 
   return base_.RequestSocket(group_name, *casted_socket_params, priority,
-                             handle, callback, net_log);
+                             respect_limits, handle, callback, net_log);
 }
 
 void SOCKSClientSocketPool::RequestSockets(

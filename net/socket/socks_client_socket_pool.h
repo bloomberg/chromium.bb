@@ -34,7 +34,6 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
   }
   const HostResolver::RequestInfo& destination() const { return destination_; }
   bool is_socks_v5() const { return socks_v5_; }
-  bool ignore_limits() const { return ignore_limits_; }
 
  private:
   friend class base::RefCounted<SOCKSSocketParams>;
@@ -45,7 +44,6 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
   // This is the HTTP destination.
   HostResolver::RequestInfo destination_;
   const bool socks_v5_;
-  bool ignore_limits_;
 
   DISALLOW_COPY_AND_ASSIGN(SOCKSSocketParams);
 };
@@ -56,6 +54,7 @@ class SOCKSConnectJob : public ConnectJob {
  public:
   SOCKSConnectJob(const std::string& group_name,
                   RequestPriority priority,
+                  ClientSocketPool::RespectLimits respect_limits,
                   const scoped_refptr<SOCKSSocketParams>& params,
                   const base::TimeDelta& timeout_duration,
                   TransportClientSocketPool* transport_pool,
@@ -121,6 +120,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
   int RequestSocket(const std::string& group_name,
                     const void* connect_params,
                     RequestPriority priority,
+                    RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
                     const BoundNetLog& net_log) override;

@@ -235,7 +235,6 @@ SequencedSocketDataTest::SequencedSocketDataTest()
       tcp_params_(new TransportSocketParams(
           endpoint_,
           false,
-          false,
           OnHostResolutionCallback(),
           TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
       socket_pool_(10, 10, &socket_factory_),
@@ -262,7 +261,8 @@ void SequencedSocketDataTest::Initialize(MockRead* reads,
 
   EXPECT_EQ(OK,
             connection_.Init(
-                endpoint_.ToString(), tcp_params_, LOWEST, CompletionCallback(),
+                endpoint_.ToString(), tcp_params_, LOWEST,
+                ClientSocketPool::RespectLimits::ENABLED, CompletionCallback(),
                 reinterpret_cast<TransportClientSocketPool*>(&socket_pool_),
                 BoundNetLog()));
   sock_ = connection_.socket();

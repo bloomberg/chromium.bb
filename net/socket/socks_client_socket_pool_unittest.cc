@@ -43,7 +43,7 @@ void TestLoadTimingInfo(const ClientSocketHandle& handle) {
 
 scoped_refptr<TransportSocketParams> CreateProxyHostParams() {
   return new TransportSocketParams(
-      HostPortPair("proxy", 80), false, false, OnHostResolutionCallback(),
+      HostPortPair("proxy", 80), false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
 }
 
@@ -102,7 +102,8 @@ class SOCKSClientSocketPoolTest : public testing::Test {
 
   int StartRequestV5(const std::string& group_name, RequestPriority priority) {
     return test_base_.StartRequestUsingPool(
-        &pool_, group_name, priority, CreateSOCKSv5Params());
+        &pool_, group_name, priority, ClientSocketPool::RespectLimits::ENABLED,
+        CreateSOCKSv5Params());
   }
 
   int GetOrderOfRequest(size_t index) const {
@@ -127,8 +128,9 @@ TEST_F(SOCKSClientSocketPoolTest, Simple) {
   transport_client_socket_factory_.AddSocketDataProvider(data.data_provider());
 
   ClientSocketHandle handle;
-  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, CompletionCallback(),
-                       &pool_, BoundNetLog());
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       CompletionCallback(), &pool_, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -146,9 +148,9 @@ TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
         data.data_provider());
 
     ClientSocketHandle handle;
-    EXPECT_EQ(OK,
-              handle.Init("a", CreateSOCKSv5Params(), priority,
-                          CompletionCallback(), &pool_, BoundNetLog()));
+    EXPECT_EQ(OK, handle.Init("a", CreateSOCKSv5Params(), priority,
+                              ClientSocketPool::RespectLimits::ENABLED,
+                              CompletionCallback(), &pool_, BoundNetLog()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
     handle.socket()->Disconnect();
   }
@@ -167,6 +169,7 @@ TEST_F(SOCKSClientSocketPoolTest, SetResolvePriorityOnInit) {
     ClientSocketHandle handle;
     EXPECT_EQ(ERR_IO_PENDING,
               handle.Init("a", CreateSOCKSv4Params(), priority,
+                          ClientSocketPool::RespectLimits::ENABLED,
                           CompletionCallback(), &pool_, BoundNetLog()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
     EXPECT_EQ(priority, host_resolver_.last_request_priority());
@@ -180,8 +183,9 @@ TEST_F(SOCKSClientSocketPoolTest, Async) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, callback.callback(),
-                       &pool_, BoundNetLog());
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       callback.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -199,8 +203,9 @@ TEST_F(SOCKSClientSocketPoolTest, TransportConnectError) {
   transport_client_socket_factory_.AddSocketDataProvider(&socket_data);
 
   ClientSocketHandle handle;
-  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, CompletionCallback(),
-                       &pool_, BoundNetLog());
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       CompletionCallback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -213,8 +218,9 @@ TEST_F(SOCKSClientSocketPoolTest, AsyncTransportConnectError) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, callback.callback(),
-                       &pool_, BoundNetLog());
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       callback.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -235,8 +241,9 @@ TEST_F(SOCKSClientSocketPoolTest, SOCKSConnectError) {
 
   ClientSocketHandle handle;
   EXPECT_EQ(0, transport_socket_pool_.release_count());
-  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, CompletionCallback(),
-                       &pool_, BoundNetLog());
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       CompletionCallback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_SOCKS_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -255,8 +262,9 @@ TEST_F(SOCKSClientSocketPoolTest, AsyncSOCKSConnectError) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   EXPECT_EQ(0, transport_socket_pool_.release_count());
-  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, callback.callback(),
-                       &pool_, BoundNetLog());
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       callback.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());

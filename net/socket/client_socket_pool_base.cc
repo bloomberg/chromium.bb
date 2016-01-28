@@ -53,11 +53,13 @@ bool g_connect_backup_jobs_enabled = true;
 ConnectJob::ConnectJob(const std::string& group_name,
                        base::TimeDelta timeout_duration,
                        RequestPriority priority,
+                       ClientSocketPool::RespectLimits respect_limits,
                        Delegate* delegate,
                        const BoundNetLog& net_log)
     : group_name_(group_name),
       timeout_duration_(timeout_duration),
       priority_(priority),
+      respect_limits_(respect_limits),
       delegate_(delegate),
       net_log_(net_log),
       idle_(true) {
@@ -141,16 +143,16 @@ ClientSocketPoolBaseHelper::Request::Request(
     ClientSocketHandle* handle,
     const CompletionCallback& callback,
     RequestPriority priority,
-    bool ignore_limits,
+    ClientSocketPool::RespectLimits respect_limits,
     Flags flags,
     const BoundNetLog& net_log)
     : handle_(handle),
       callback_(callback),
       priority_(priority),
-      ignore_limits_(ignore_limits),
+      respect_limits_(respect_limits),
       flags_(flags),
       net_log_(net_log) {
-  if (ignore_limits_)
+  if (respect_limits_ == ClientSocketPool::RespectLimits::DISABLED)
     DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
 }
 
@@ -378,7 +380,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
 
   // Can we make another active socket now?
   if (!group->HasAvailableSocketSlot(max_sockets_per_group_) &&
-      !request.ignore_limits()) {
+      request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
     // TODO(willchan): Consider whether or not we need to close a socket in a
     // higher layered group. I don't think this makes sense since we would just
     // reuse that socket then if we needed one and wouldn't make it down to this
@@ -388,7 +390,8 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
     return ERR_IO_PENDING;
   }
 
-  if (ReachedMaxSocketsLimit() && !request.ignore_limits()) {
+  if (ReachedMaxSocketsLimit() &&
+      request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
     // NOTE(mmenke):  Wonder if we really need different code for each case
     // here.  Only reason for them now seems to be preconnects.
     if (idle_socket_count() > 0) {
@@ -1302,8 +1305,8 @@ void ClientSocketPoolBaseHelper::Group::InsertPendingRequest(
     scoped_ptr<const Request> request) {
   // This value must be cached before we release |request|.
   RequestPriority priority = request->priority();
-  if (request->ignore_limits()) {
-    // Put requests with ignore_limits == true (which should have
+  if (request->respect_limits() == ClientSocketPool::RespectLimits::DISABLED) {
+    // Put requests with RespectLimits::DISABLED (which should have
     // priority == MAXIMUM_PRIORITY) ahead of other requests with
     // MAXIMUM_PRIORITY.
     DCHECK_EQ(priority, MAXIMUM_PRIORITY);

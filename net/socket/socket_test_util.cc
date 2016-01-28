@@ -1611,9 +1611,13 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
 MockTransportClientSocketPool::~MockTransportClientSocketPool() {}
 
 int MockTransportClientSocketPool::RequestSocket(
-    const std::string& group_name, const void* socket_params,
-    RequestPriority priority, ClientSocketHandle* handle,
-    const CompletionCallback& callback, const BoundNetLog& net_log) {
+    const std::string& group_name,
+    const void* socket_params,
+    RequestPriority priority,
+    RespectLimits respect_limits,
+    ClientSocketHandle* handle,
+    const CompletionCallback& callback,
+    const BoundNetLog& net_log) {
   last_request_priority_ = priority;
   scoped_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
@@ -1656,12 +1660,16 @@ MockSOCKSClientSocketPool::MockSOCKSClientSocketPool(
 
 MockSOCKSClientSocketPool::~MockSOCKSClientSocketPool() {}
 
-int MockSOCKSClientSocketPool::RequestSocket(
-    const std::string& group_name, const void* socket_params,
-    RequestPriority priority, ClientSocketHandle* handle,
-    const CompletionCallback& callback, const BoundNetLog& net_log) {
-  return transport_pool_->RequestSocket(
-      group_name, socket_params, priority, handle, callback, net_log);
+int MockSOCKSClientSocketPool::RequestSocket(const std::string& group_name,
+                                             const void* socket_params,
+                                             RequestPriority priority,
+                                             RespectLimits respect_limits,
+                                             ClientSocketHandle* handle,
+                                             const CompletionCallback& callback,
+                                             const BoundNetLog& net_log) {
+  return transport_pool_->RequestSocket(group_name, socket_params, priority,
+                                        respect_limits, handle, callback,
+                                        net_log);
 }
 
 void MockSOCKSClientSocketPool::CancelRequest(

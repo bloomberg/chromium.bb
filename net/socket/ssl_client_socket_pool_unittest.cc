@@ -87,7 +87,6 @@ class SSLClientSocketPoolTest
         direct_transport_socket_params_(new TransportSocketParams(
             HostPortPair("host", 443),
             false,
-            false,
             OnHostResolutionCallback(),
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
         transport_socket_pool_(kMaxSockets,
@@ -95,7 +94,6 @@ class SSLClientSocketPoolTest
                                &socket_factory_),
         proxy_transport_socket_params_(new TransportSocketParams(
             HostPortPair("proxy", 443),
-            false,
             false,
             OnHostResolutionCallback(),
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
@@ -217,8 +215,9 @@ TEST_P(SSLClientSocketPoolTest, TCPFail) {
                                                     false);
 
   ClientSocketHandle handle;
-  int rv = handle.Init("a", params, MEDIUM, CompletionCallback(), pool_.get(),
-                       BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  CompletionCallback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -238,8 +237,9 @@ TEST_P(SSLClientSocketPoolTest, TCPFailAsync) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -265,8 +265,9 @@ TEST_P(SSLClientSocketPoolTest, BasicDirect) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -291,8 +292,9 @@ TEST_P(SSLClientSocketPoolTest, SetSocketRequestPriorityOnInitDirect) {
 
     ClientSocketHandle handle;
     TestCompletionCallback callback;
-    EXPECT_EQ(OK, handle.Init("a", params, priority, callback.callback(),
-                              pool_.get(), BoundNetLog()));
+    EXPECT_EQ(OK, handle.Init("a", params, priority,
+                              ClientSocketPool::RespectLimits::ENABLED,
+                              callback.callback(), pool_.get(), BoundNetLog()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
     handle.socket()->Disconnect();
   }
@@ -310,8 +312,9 @@ TEST_P(SSLClientSocketPoolTest, BasicDirectAsync) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -334,8 +337,9 @@ TEST_P(SSLClientSocketPoolTest, DirectCertError) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -358,8 +362,9 @@ TEST_P(SSLClientSocketPoolTest, DirectSSLError) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -383,8 +388,9 @@ TEST_P(SSLClientSocketPoolTest, DirectWithNPN) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -410,8 +416,9 @@ TEST_P(SSLClientSocketPoolTest, DirectNoSPDY) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -435,8 +442,9 @@ TEST_P(SSLClientSocketPoolTest, DirectGotSPDY) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -466,8 +474,9 @@ TEST_P(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -495,8 +504,9 @@ TEST_P(SSLClientSocketPoolTest, SOCKSFail) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -514,8 +524,9 @@ TEST_P(SSLClientSocketPoolTest, SOCKSFailAsync) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -539,8 +550,9 @@ TEST_P(SSLClientSocketPoolTest, SOCKSBasic) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -564,8 +576,9 @@ TEST_P(SSLClientSocketPoolTest, SetTransportPriorityOnInitSOCKS) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, handle.Init("a", params, HIGHEST, callback.callback(),
-                            pool_.get(), BoundNetLog()));
+  EXPECT_EQ(OK, handle.Init("a", params, HIGHEST,
+                            ClientSocketPool::RespectLimits::ENABLED,
+                            callback.callback(), pool_.get(), BoundNetLog()));
   EXPECT_EQ(HIGHEST, transport_socket_pool_.last_request_priority());
 }
 
@@ -581,8 +594,9 @@ TEST_P(SSLClientSocketPoolTest, SOCKSBasicAsync) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -606,8 +620,9 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyFail) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -625,8 +640,9 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyFailAsync) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -662,8 +678,9 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyBasic) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -697,8 +714,9 @@ TEST_P(SSLClientSocketPoolTest, SetTransportPriorityOnInitHTTP) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, handle.Init("a", params, HIGHEST, callback.callback(),
-                            pool_.get(), BoundNetLog()));
+  EXPECT_EQ(OK, handle.Init("a", params, HIGHEST,
+                            ClientSocketPool::RespectLimits::ENABLED,
+                            callback.callback(), pool_.get(), BoundNetLog()));
   EXPECT_EQ(HIGHEST, transport_socket_pool_.last_request_priority());
 }
 
@@ -726,8 +744,9 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -763,8 +782,9 @@ TEST_P(SSLClientSocketPoolTest, NeedProxyAuth) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
+  int rv =
+      handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+                  callback.callback(), pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());

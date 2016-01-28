@@ -128,12 +128,9 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
 
     scoped_ptr<ClientSocketHandle> transport_socket(new ClientSocketHandle);
     scoped_refptr<MockTransportSocketParams> params;
-    transport_socket->Init("a",
-                           params,
-                           MEDIUM,
-                           CompletionCallback(),
-                           &pool_,
-                           bound_net_log_.bound());
+    transport_socket->Init(
+        "a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
+        CompletionCallback(), &pool_, bound_net_log_.bound());
     return transport_socket;
   }
 

@@ -70,7 +70,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   }
   const HostResolver::RequestInfo& destination() const;
   bool tunnel() const { return tunnel_; }
-  bool ignore_limits() const { return ignore_limits_; }
 
   ProxyDelegate* proxy_delegate() const {
     return proxy_delegate_;
@@ -88,7 +87,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   HttpAuthCache* const http_auth_cache_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
   const bool tunnel_;
-  bool ignore_limits_;
   ProxyDelegate* proxy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxySocketParams);
@@ -100,6 +98,7 @@ class HttpProxyConnectJob : public ConnectJob {
  public:
   HttpProxyConnectJob(const std::string& group_name,
                       RequestPriority priority,
+                      ClientSocketPool::RespectLimits respect_limits,
                       const scoped_refptr<HttpProxySocketParams>& params,
                       const base::TimeDelta& timeout_duration,
                       TransportClientSocketPool* transport_pool,
@@ -152,6 +151,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
   int RequestSocket(const std::string& group_name,
                     const void* connect_params,
                     RequestPriority priority,
+                    RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
                     const BoundNetLog& net_log) override;

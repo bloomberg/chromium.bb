@@ -211,7 +211,6 @@ class HttpProxyClientSocketPoolTest
     return new TransportSocketParams(
         HostPortPair(kHttpProxyHost, 80),
         false,
-        false,
         OnHostResolutionCallback(),
         TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
   }
@@ -222,7 +221,6 @@ class HttpProxyClientSocketPoolTest
     return new SSLSocketParams(
         new TransportSocketParams(
             HostPortPair(kHttpsProxyHost, 443),
-            false,
             false,
             OnHostResolutionCallback(),
             TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT),
@@ -347,6 +345,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
 
   scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
   int rv = handle_.Init("a", CreateNoTunnelParams(proxy_delegate.get()), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         CompletionCallback(), &pool_, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle_.is_initialized());
@@ -361,9 +360,9 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
 // (non-SSL) socket request on Init.
 TEST_P(HttpProxyClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
-  EXPECT_EQ(OK,
-            handle_.Init("a", CreateNoTunnelParams(NULL), HIGHEST,
-                         CompletionCallback(), &pool_, BoundNetLog()));
+  EXPECT_EQ(OK, handle_.Init("a", CreateNoTunnelParams(NULL), HIGHEST,
+                             ClientSocketPool::RespectLimits::ENABLED,
+                             CompletionCallback(), &pool_, BoundNetLog()));
   EXPECT_EQ(HIGHEST, GetLastTransportRequestPriority());
 }
 
@@ -405,6 +404,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
              arraysize(spdy_writes));
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -454,6 +454,7 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
 
   scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
   int rv = handle_.Init("a", CreateTunnelParams(proxy_delegate.get()), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle_.is_initialized());
@@ -507,6 +508,7 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
 
   scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
   int rv = handle_.Init("a", CreateTunnelParams(proxy_delegate.get()), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -547,6 +549,7 @@ TEST_P(HttpProxyClientSocketPoolTest,
 
   EXPECT_EQ(ERR_IO_PENDING,
             handle_.Init("a", CreateTunnelParams(NULL), MEDIUM,
+                         ClientSocketPool::RespectLimits::ENABLED,
                          callback_.callback(), &pool_, BoundNetLog()));
   EXPECT_EQ(MEDIUM, GetLastTransportRequestPriority());
 
@@ -561,6 +564,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TCPError) {
   socket_factory()->AddSocketDataProvider(data_.get());
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -586,6 +590,7 @@ TEST_P(HttpProxyClientSocketPoolTest, SSLError) {
   socket_factory()->AddSSLSocketDataProvider(ssl_data_.get());
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -611,6 +616,7 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
   socket_factory()->AddSSLSocketDataProvider(ssl_data_.get());
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -650,6 +656,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
   AddAuthToCache();
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -688,6 +695,7 @@ TEST_P(HttpProxyClientSocketPoolTest, Tunnel1xxResponse) {
              NULL, 0, NULL, 0);
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -728,6 +736,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
   AddAuthToCache();
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
@@ -789,6 +798,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
   AddAuthToCache();
 
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+                        ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle_.is_initialized());
