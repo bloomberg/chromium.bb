@@ -820,17 +820,14 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                                                   device_scale_factor_);
   }
 
-
-  TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
-
-  LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
-
   gfx::Transform identity_transform;
   LayerList update_layer_list;
 
   {
+    TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+    LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
     bool can_render_to_separate_surface = true;
     BuildPropertyTreesAndComputeVisibleRects(
         root_layer, page_scale_layer, inner_viewport_scroll_layer_.get(),
