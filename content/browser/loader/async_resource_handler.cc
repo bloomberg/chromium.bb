@@ -331,10 +331,7 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   }
 
   int data_offset = buffer_->GetLastAllocationOffset();
-
-  int64_t current_transfer_size = request()->GetTotalReceivedBytes();
-  int encoded_data_length = current_transfer_size - reported_transfer_size_;
-  reported_transfer_size_ = current_transfer_size;
+  int encoded_data_length = CalculateEncodedDataLengthToReport();
 
   // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
   CHECK_LE(data_offset, kBufferSize);
@@ -355,9 +352,7 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 }
 
 void AsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  int64_t current_transfer_size = request()->GetTotalReceivedBytes();
-  int encoded_data_length = current_transfer_size - reported_transfer_size_;
-  reported_transfer_size_ = current_transfer_size;
+  int encoded_data_length = CalculateEncodedDataLengthToReport();
 
   ResourceMessageFilter* filter = GetFilter();
   if (filter) {
@@ -453,6 +448,13 @@ bool AsyncResourceHandler::CheckForSufficientResource() {
 
   controller()->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
   return false;
+}
+
+int AsyncResourceHandler::CalculateEncodedDataLengthToReport() {
+  int64_t current_transfer_size = request()->GetTotalReceivedBytes();
+  int encoded_data_length = current_transfer_size - reported_transfer_size_;
+  reported_transfer_size_ = current_transfer_size;
+  return encoded_data_length;
 }
 
 }  // namespace content

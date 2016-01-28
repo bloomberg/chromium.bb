@@ -66,6 +66,7 @@ class AsyncResourceHandler : public ResourceHandler,
   void ResumeIfDeferred();
   void OnDefer();
   bool CheckForSufficientResource();
+  int CalculateEncodedDataLengthToReport();
 
   scoped_refptr<ResourceBuffer> buffer_;
   ResourceDispatcherHostImpl* rdh_;
