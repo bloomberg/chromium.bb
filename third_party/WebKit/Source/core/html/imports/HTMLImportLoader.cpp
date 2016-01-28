@@ -66,6 +66,7 @@ void HTMLImportLoader::dispose()
         m_document->setImportsController(nullptr);
         m_document.clear();
     }
+    clearResource();
 }
 
 void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
@@ -105,6 +106,7 @@ void HTMLImportLoader::notifyFinished(Resource* resource)
 
 HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
 {
+    ASSERT(m_controller);
     ASSERT(!m_imports.isEmpty());
     DocumentInit init = DocumentInit(response.url(), 0, m_controller->master()->contextDocument(), m_controller)
         .withRegistrationContext(m_controller->master()->registrationContext());
