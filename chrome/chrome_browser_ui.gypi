@@ -1283,8 +1283,6 @@
       'browser/ui/cocoa/view_resizer.h',
       'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac.h',
       'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac.mm',
-      'browser/ui/cocoa/web_dialog_window_controller.h',
-      'browser/ui/cocoa/web_dialog_window_controller.mm',
       'browser/ui/cocoa/website_settings/chooser_bubble_ui_cocoa.h',
       'browser/ui/cocoa/website_settings/chooser_bubble_ui_cocoa.mm',
       'browser/ui/cocoa/website_settings/permission_bubble_cocoa.h',

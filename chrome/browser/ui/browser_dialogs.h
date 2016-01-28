@@ -47,6 +47,11 @@ class WebDialogDelegate;
 
 namespace chrome {
 
+// Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
+void ShowTaskManager(Browser* browser);
+void HideTaskManager();
+
+#if !defined(OS_MACOSX)
 // Creates and shows an HTML dialog with the given delegate and context.
 // The window is automatically destroyed when it is closed.
 // Returns the created window.
@@ -57,11 +62,6 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
 
-// Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
-void ShowTaskManager(Browser* browser);
-void HideTaskManager();
-
-#if !defined(OS_MACOSX)
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      content::WebContents* web_contents);
