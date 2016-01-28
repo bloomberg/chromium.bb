@@ -188,7 +188,11 @@ NON_SWARMED_GTESTS = {
 # time being. See crbug.com/574942.
 FYI_ONLY_GTESTS = {
   'audio_unittests': {'args': ['--use-gpu-in-tests']},
-  'content_unittests': {},
+  # TODO(kbr): content_unittests is killing the Linux GPU swarming
+  # bots. crbug.com/582094 . It's not useful now anyway until audio
+  # hardware is deployed on the swarming bots, so stop running it
+  # everywhere.
+  # 'content_unittests': {},
   # The gles2_conform_tests are closed-source and deliberately only run
   # on the FYI waterfall.
   'gles2_conform_test': {'args': ['--use-gpu-in-tests']},
