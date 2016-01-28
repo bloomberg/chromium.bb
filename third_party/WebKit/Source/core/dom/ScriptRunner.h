@@ -98,6 +98,7 @@ private:
 #endif
 
 #if !ENABLE(OILPAN)
+    bool m_isDisposed;
     WeakPtrFactory<ScriptRunner> m_weakPointerFactoryForTasks;
 #endif
 };
