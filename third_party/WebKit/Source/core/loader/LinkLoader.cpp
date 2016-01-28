@@ -253,13 +253,14 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
 
         LinkRelAttribute relAttribute(header.rel());
         KURL url = document->completeURL(header.url());
-        if (canLoadResources == DoNotLoadResources) {
+        if (canLoadResources != OnlyLoadResources) {
             if (RuntimeEnabledFeatures::linkHeaderEnabled())
                 dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
 
             if (RuntimeEnabledFeatures::linkPreconnectEnabled())
                 preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), networkHintsInterface, LinkCalledFromHeader);
-        } else {
+        }
+        if (canLoadResources != DoNotLoadResources) {
             if (RuntimeEnabledFeatures::linkPreloadEnabled())
                 preloadIfNeeded(relAttribute, url, *document, header.as(), LinkCalledFromHeader);
         }
