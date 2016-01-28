@@ -6,6 +6,7 @@
 
 #include "core/inspector/JSONParser.h"
 #include "platform/JSONValues.h"
+#include "platform/weborigin/KURL.h"
 
 namespace {
 
@@ -107,6 +108,12 @@ bool entryCompareWithTarget(const OwnPtr<blink::SourceMap::Entry>& a, const std:
     return a->column < b.second;
 }
 
+String completeURL(const blink::KURL& base, const String& url)
+{
+    blink::KURL completedURL(base, url);
+    return completedURL.isValid() ? completedURL.string() : url;
+}
+
 } // anonymous namespace
 
 namespace blink {
@@ -121,7 +128,7 @@ SourceMap::Entry::Entry(int line, int column, const String& sourceURL,
 {
 }
 
-PassOwnPtr<SourceMap> SourceMap::parse(const String& json, int offsetLine, int offsetColumn)
+PassOwnPtr<SourceMap> SourceMap::parse(const String& json, const String& sourceMapUrl, int offsetLine, int offsetColumn)
 {
     RefPtr<JSONValue> sourceMapValue = parseJSON(json);
     RefPtr<JSONObject> sourceMapObject;
@@ -138,10 +145,10 @@ PassOwnPtr<SourceMap> SourceMap::parse(const String& json, int offsetLine, int o
                 return nullptr;
 
             RefPtr<JSONObject> sectionObject = sectionValue->asObject();
-            if (!sectionObject || !map->parseSection(sectionObject, offsetLine, offsetColumn))
+            if (!sectionObject || !map->parseSection(sectionObject, sourceMapUrl, offsetLine, offsetColumn))
                 return nullptr;
         }
-    } else if (!map->parseMap(sourceMapObject, offsetLine, offsetColumn)) {
+    } else if (!map->parseMap(sourceMapObject, sourceMapUrl, offsetLine, offsetColumn)) {
         return nullptr;
     }
     std::sort(map->m_mappings.begin(), map->m_mappings.end(), entryCompare);
@@ -160,7 +167,7 @@ const SourceMap::Entry* SourceMap::findEntry(int line, int column)
     return (--it)->get();
 }
 
-bool SourceMap::parseSection(PassRefPtr<JSONObject> prpSectionObject, int offsetLine, int offsetColumn)
+bool SourceMap::parseSection(PassRefPtr<JSONObject> prpSectionObject, const String& sourceMapUrl, int offsetLine, int offsetColumn)
 {
     RefPtr<JSONObject> sectionObject = prpSectionObject;
     RefPtr<JSONObject> offsetObject = sectionObject->getObject(kOffsetString);
@@ -178,10 +185,10 @@ bool SourceMap::parseSection(PassRefPtr<JSONObject> prpSectionObject, int offset
     String url;
     if (!mapObject && !sectionObject->getString(kURLString, &url))
         return false;
-    return mapObject ? parseMap(mapObject, line + offsetLine, column + offsetColumn) : true;
+    return mapObject ? parseMap(mapObject, sourceMapUrl, line + offsetLine, column + offsetColumn) : true;
 }
 
-bool SourceMap::parseMap(PassRefPtr<JSONObject> prpMapObject, int line, int column)
+bool SourceMap::parseMap(PassRefPtr<JSONObject> prpMapObject, const String& sourceMapUrl, int line, int column)
 {
     RefPtr<JSONObject> mapObject = prpMapObject;
     if (!mapObject)
@@ -197,12 +204,24 @@ bool SourceMap::parseMap(PassRefPtr<JSONObject> prpMapObject, int line, int colu
     String sourceRoot;
     mapObject->getString(kSourceRootString, &sourceRoot);
 
+    if (!sourceRoot.isNull() && sourceRoot.length() > 0 && sourceRoot[sourceRoot.length() - 1] != '/')
+        sourceRoot.append('/');
+
     Vector<String> sources;
     if (!jsonStringArrayAsVector(mapObject->getArray(kSourcesString), &sources, true))
         return false;
 
     if (sources.size() == 0)
         return false;
+
+    KURL baseURL(KURL(), sourceMapUrl);
+    if (!baseURL.isValid())
+        baseURL = KURL();
+
+    // For information about resolving sources, please see:
+    // https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit#heading=h.75yo6yoyk7x5
+    for (size_t i = 0; i < sources.size(); ++i)
+        sources[i] = completeURL(baseURL, sourceRoot + sources[i]);
 
     Vector<String> sourcesContent;
     if (jsonStringArrayAsVector(mapObject->getArray(kSourcesContentString), &sourcesContent, false)) {

@@ -133,7 +133,7 @@ static PassOwnPtr<SourceMap> parseSourceMapFromDataUrl(const String& url)
     RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(sourceMapURL, mimetype, charset));
     if (!data)
         return nullptr;
-    return SourceMap::parse(String(data->data(), data->size()));
+    return SourceMap::parse(String(data->data(), data->size()), String());
 }
 
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)

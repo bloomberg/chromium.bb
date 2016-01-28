@@ -37,15 +37,15 @@ public:
         }
     };
 
-    static PassOwnPtr<SourceMap> parse(const String& json, int offsetLine = 0, int offsetColumn = 0);
+    static PassOwnPtr<SourceMap> parse(const String& json, const String& sourceMapUrl, int offsetLine = 0, int offsetColumn = 0);
 
     const Entry* findEntry(int line, int column);
 
 private:
     SourceMap() { }
 
-    bool parseSection(PassRefPtr<JSONObject> sectionObject, int offsetLine, int offsetColumn);
-    bool parseMap(PassRefPtr<JSONObject> mapObject, int offsetLine, int offsetColumn);
+    bool parseSection(PassRefPtr<JSONObject> sectionObject, const String& sourceMapUrl, int offsetLine, int offsetColumn);
+    bool parseMap(PassRefPtr<JSONObject> mapObject, const String& sourceMapUrl, int offsetLine, int offsetColumn);
 
     Vector<OwnPtr<Entry>> m_mappings;
 };
