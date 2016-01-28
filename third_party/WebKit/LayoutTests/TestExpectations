@@ -47,6 +47,10 @@ crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 crbug.com/581974 [ Win Debug ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
 crbug.com/581974 [ Linux Debug ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
 
+# See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
+crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
+crbug.com/574660 [ Win7 ] fast/text/emphasis-vertical.html [ Pass Failure ]
+
 # ====== Oilpan-only failures until here ======
 
 # Run these tests with under virtual/spv2 only.
