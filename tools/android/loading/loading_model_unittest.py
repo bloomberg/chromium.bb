@@ -192,18 +192,6 @@ class LoadingModelTestCase(unittest.TestCase):
     self.assertEqual(self.SuccessorIndicies(graph._nodes[5]), [])
     self.assertEqual(self.SortedIndicies(graph), [0, 1, 2, 3, 4, 5])
 
-  def test_AdUrl(self):
-    self.assertTrue(loading_model.ResourceGraph._IsAdUrl(
-        'http://afae61024b33032ef.profile.sfo20.cloudfront.net/test.png'))
-    self.assertFalse(loading_model.ResourceGraph._IsAdUrl(
-        'http://afae61024b33032ef.profile.sfo20.cloudfront.net/tst.png'))
-
-    self.assertTrue(loading_model.ResourceGraph._IsAdUrl(
-        'http://ums.adtechus.com/mapuser?providerid=1003;'
-        'userid=RUmecco4z3o===='))
-    self.assertTrue(loading_model.ResourceGraph._IsAdUrl(
-        'http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'))
-
 
 if __name__ == '__main__':
   unittest.main()

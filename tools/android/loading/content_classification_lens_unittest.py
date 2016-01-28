@@ -25,6 +25,13 @@ class ContentClassificationLensTestCase(unittest.TestCase):
                    'frame_id': '123.13', 'parent_frame_id': _MAIN_FRAME_ID}]
   _RULES = ['bla.com']
 
+  def testNoRules(self):
+    trace = test_utils.LoadingTraceFromEvents(
+        [self._REQUEST], self._PAGE_EVENTS)
+    lens = ContentClassificationLens(trace, [], [])
+    self.assertFalse(lens.IsAdRequest(self._REQUEST))
+    self.assertFalse(lens.IsTrackingRequest(self._REQUEST))
+
   def testAdRequest(self):
     trace = test_utils.LoadingTraceFromEvents(
         [self._REQUEST], self._PAGE_EVENTS)

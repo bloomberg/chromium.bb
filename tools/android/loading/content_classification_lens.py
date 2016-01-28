@@ -4,8 +4,8 @@
 
 """Labels requests according to the type of content they represent."""
 
-import adblockparser # Available on PyPI, through pip.
 import collections
+import logging
 import os
 
 import loading_trace
@@ -93,10 +93,23 @@ class _RulesMatcher(object):
       no_whitelist: (bool) Whether the whitelisting rules should be ignored.
     """
     self._rules = self._FilterRules(rules, no_whitelist)
-    self._matcher = adblockparser.AdblockRules(self._rules)
+    if self._rules:
+      try:
+        import adblockparser
+        self._matcher = adblockparser.AdblockRules(self._rules)
+      except ImportError:
+        logging.critical('Likely you need to install adblockparser. Try:\n'
+                         ' pip install --user adblockparser\n'
+                         'For 10-100x better performance, also try:\n'
+                         " pip install --user 're2 >= 0.2.21'")
+        raise
+    else:
+      self._matcher = None
 
   def Matches(self, request):
     """Returns whether a request matches one of the rules."""
+    if self._matcher is None:
+      return False
     url = request.url
     return self._matcher.should_block(url, self._GetOptions(request))
 

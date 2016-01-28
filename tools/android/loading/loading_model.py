@@ -202,7 +202,8 @@ class ResourceGraph(object):
     Returns:
       True if the node is not ad-related.
     """
-    return not self._IsAdUrl(self._node_info[node.Index()].Url())
+    node_info = self._node_info[node.Index()]
+    return not (node_info.IsAd() or node_info.IsTracking())
 
   def MakeGraphviz(self, output, highlight=None):
     """Output a graphviz representation of our DAG.
@@ -504,8 +505,9 @@ class ResourceGraph(object):
       node = dag.Node(next_index)
       node_info = self._NodeInfo(node, request)
       if self._content_lens:
-        node.SetRequestContent(self._content_lens.IsAdRequest(request),
-                               self._content_lens.IsTrackingRequest(request))
+        node_info.SetRequestContent(
+            self._content_lens.IsAdRequest(request),
+            self._content_lens.IsTrackingRequest(request))
       self._nodes.append(node)
       self._node_info.append(node_info)
 
@@ -640,82 +642,6 @@ class ResourceGraph(object):
                node_info.EndTime() - self._global_start,
                node_info.EndTime() - node_info.StartTime(),
                ','.join(styles), color, shape))
-
-  @classmethod
-  def _IsAdUrl(cls, url):
-    """Return true if the url is an ad.
-
-    We group content that doesn't seem to be specific to the website along with
-    ads, eg staticxx.facebook.com, as well as analytics like googletagmanager (?
-    is this correct?).
-
-    Args:
-      url: The full string url to examine.
-
-    Returns:
-      True iff the url appears to be an ad.
-
-    """
-    # See below for how these patterns are defined.
-    AD_PATTERNS = ['2mdn.net',
-                   'admarvel.com',
-                   'adnxs.com',
-                   'adobedtm.com',
-                   'adsrvr.org',
-                   'adsafeprotected.com',
-                   'adsymptotic.com',
-                   'adtech.de',
-                   'adtechus.com',
-                   'advertising.com',
-                   'atwola.com',  # brand protection from cscglobal.com?
-                   'bounceexchange.com',
-                   'betrad.com',
-                   'casalemedia.com',
-                   'cloudfront.net//test.png',
-                   'cloudfront.net//atrk.js',
-                   'contextweb.com',
-                   'crwdcntrl.net',
-                   'doubleclick.net',
-                   'dynamicyield.com',
-                   'krxd.net',
-                   'facebook.com//ping',
-                   'fastclick.net',
-                   'google.com//-ads.js',
-                   'cse.google.com',  # Custom search engine.
-                   'googleadservices.com',
-                   'googlesyndication.com',
-                   'googletagmanager.com',
-                   'lightboxcdn.com',
-                   'mediaplex.com',
-                   'meltdsp.com',
-                   'mobile.nytimes.com//ads-success',
-                   'mookie1.com',
-                   'newrelic.com',
-                   'nr-data.net',   # Apparently part of newrelic.
-                   'optnmnstr.com',
-                   'pubmatic.com',
-                   'quantcast.com',
-                   'quantserve.com',
-                   'rubiconproject.com',
-                   'scorecardresearch.com',
-                   'sekindo.com',
-                   'serving-sys.com',
-                   'sharethrough.com',
-                   'staticxx.facebook.com',  # ?
-                   'syndication.twimg.com',
-                   'tapad.com',
-                   'yieldmo.com',
-                ]
-    parts = urlparse.urlparse(url)
-    for pattern in AD_PATTERNS:
-      if '//' in pattern:
-        domain, path = pattern.split('//')
-      else:
-        domain, path = (pattern, None)
-      if parts.netloc.endswith(domain):
-        if not path or path in parts.path:
-          return True
-    return False
 
   def _ExtractImages(self):
     """Return interesting image resources.
