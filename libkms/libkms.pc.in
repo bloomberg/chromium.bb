@@ -8,3 +8,4 @@ Description: Library that abstract aways the different mm interface for kernel d
 Version: 1.0.0
 Libs: -L${libdir} -lkms
 Cflags: -I${includedir}/libkms
+Requires.private: libdrm
