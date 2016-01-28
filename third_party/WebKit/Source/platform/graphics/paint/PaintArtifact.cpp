@@ -97,8 +97,8 @@ void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
     m_displayItemList.assertDisplayItemClientsAreAlive();
 #endif
     for (const DisplayItem& displayItem : m_displayItemList) {
-        // TODO(wkorman): Pass the actual visual rect for the display item.
-        displayItem.appendToWebDisplayItemList(IntRect(), list);
+        IntRect visualRect = displayItem.client().visualRect();
+        displayItem.appendToWebDisplayItemList(visualRect, list);
     }
 }
 
