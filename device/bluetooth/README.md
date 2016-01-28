@@ -10,18 +10,17 @@ Classic and Low Energy based profiles differ substantially. Platform
 implementations may support only one or the other, even though several classes
 have interfaces for both, e.g. `BluetoothAdapter` & `BluetoothDevice`.
 
-  |          | Classic |  Low Energy |
-  |----------|:-------:|:-----------:|
-  | Android  |    no   | in progress |
-  | ChromeOS |   yes   |     yes     |
-  | Linux    |   yes   |     yes     |
-  | Mac OSX  |   yes   | in progress |
-  | Windows  |  some   | in progress |
+|          | Classic |  Low Energy |
+|----------|:-------:|:-----------:|
+| Android  |    no   | in progress |
+| ChromeOS |   yes   |     yes     |
+| Linux    |   yes   |     yes     |
+| Mac OSX  |   yes   | in progress |
+| Windows  |  some   | in progress |
 
 ChromeOS and Linux are supported via BlueZ, see `*_bluez` files.
 
 
---------------------------------------------------------------------------------
 Maintainer History
 --------------------------------------------------------------------------------
 
@@ -41,7 +40,7 @@ Active development in 2015 & 2016 is focused on enabling GATT features for:
 Known future work is tracked in the
 [Refactoring meta issue](https://crbug.com/580406).
 
---------------------------------------------------------------------------------
+
 Testing
 --------------------------------------------------------------------------------
 
@@ -93,7 +92,6 @@ https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/serve
 https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/client/cros/bluetooth/
 
 
---------------------------------------------------------------------------------
 Android
 --------------------------------------------------------------------------------
 
