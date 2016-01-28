@@ -1268,9 +1268,9 @@ crbug.com/521730 [ Win10 ] svg/as-image/svg-canvas-xhtml-tainted.html [ Failure 
 crbug.com/521730 [ Win10 ] svg/css/text-shadow-multiple.xhtml [ Failure ]
 crbug.com/521730 [ Win10 ] svg/custom/textPath-change-id2-pattern.svg [ Failure ]
 
-crbug.com/390040 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Failure ]
+crbug.com/390040 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
+crbug.com/390040 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/390040 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Failure ]
-crbug.com/390040 [ Win10 ] printing/ellipsis-printing-style.html [ Failure ]
 crbug.com/390040 [ Win10 ] printing/iframe-print.html [ Failure ]
 
 crbug.com/571233 compositing/background-color/background-color-outside-document.html [ Skip ]
