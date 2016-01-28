@@ -10,71 +10,42 @@
 
 function test()
 {
-    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
-    InspectorTest.loadSourceMap(header, onSourceMapLoaded);
-    InspectorTest.waitForScriptSource("test-mapping-good.css", onCSSLoaded);
-    InspectorTest.waitForScriptSource("test-mapping-good.scss", onSCSSLoaded);
-
-    var cssAST;
-    var sassModels = new Map();
-    var sourceMap;
     var mapping;
 
-    function onCSSLoaded(uiSourceCode)
-    {
-        uiSourceCode.requestContent()
-            .then(text => InspectorTest.parseCSS(uiSourceCode.url(), text))
-            .then(ast => cssAST = ast)
-            .then(maybeCreateMapping);
-    }
+    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
+    InspectorTest.loadASTMapping(header, onMappingLoaded);
 
-    function onSCSSLoaded(uiSourceCode)
+    function onMappingLoaded(map)
     {
-        uiSourceCode.requestContent()
-            .then(text => InspectorTest.parseSCSS(uiSourceCode.url(), text))
-            .then(ast => sassModels.set(ast.document.url, ast))
-            .then(maybeCreateMapping);
-    }
-
-    function onSourceMapLoaded(sm)
-    {
-        sourceMap = sm;
-        maybeCreateMapping();
-    }
-
-    function maybeCreateMapping()
-    {
-        if (!cssAST || !sassModels.size || !sourceMap)
-            return;
-        mapping = WebInspector.SASSLiveSourceMap.CSSToSASSMapping.fromSourceMap(sourceMap, cssAST, sassModels);
+        mapping = map;
         if (!mapping.isValid()) {
             InspectorTest.addResult("ERROR: mapping is not valid.");
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.validateMapping(mapping, cssAST, sassModels);
+        InspectorTest.validateMapping(mapping);
         InspectorTest.runTestSuite(testSuite);
     }
 
     var testSuite = [
         function testCSSRebase(next)
         {
-            var cssClone = cssAST.clone();
+            var cssClone = mapping.cssAST().clone();
             cssClone.rules[0].properties[1].remove();
-            var cssDiff = WebInspector.SASSSupport.diffModels(cssAST, cssClone);
+            var cssDiff = WebInspector.SASSSupport.diffModels(mapping.cssAST(), cssClone);
             var newMapping = mapping.rebaseForCSSDiff(cssDiff);
             if (!newMapping.isValid()) {
                 InspectorTest.addResult("ERROR: mapping is not valid.");
                 InspectorTest.completeTest();
                 return;
             }
-            InspectorTest.validateMapping(newMapping, cssClone, sassModels);
+            InspectorTest.validateMapping(newMapping);
             next();
         },
 
         function testSCSSRebase(next)
         {
-            var sassAST = sassModels.valuesArray()[0];
+            var sassAST = mapping.sassModels().valuesArray()[0];
             var sassClone = sassAST.clone();
             sassClone.rules[1].properties[2].remove();
             sassClone.rules[1].properties[1].remove();
@@ -85,9 +56,7 @@ function test()
                 InspectorTest.completeTest();
                 return;
             }
-            var sassModelsClone = new Map();
-            sassModelsClone.set(sassClone.document.url, sassClone);
-            InspectorTest.validateMapping(newMapping, cssAST, sassModelsClone);
+            InspectorTest.validateMapping(newMapping);
             next();
         },
     ];

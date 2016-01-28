@@ -1,0 +1,189 @@
+<html>
+<head>
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/isolated-filesystem-test.js"></script>
+<script src="./sass-test.js"></script>
+<script>
+
+var styles = [];
+function addStyleSheets()
+{
+    for (var i = 0; i < 2; ++i) {
+        var style = document.createElement("style");
+        style.textContent = "<all.css content>\n/*# sourceURL=all.css */";
+        document.head.appendChild(style);
+        styles.push(style);
+    }
+
+    var style = document.createElement("style");
+    style.textContent = "<print.css content>\n/*# sourceURL=print.css */";
+    document.head.appendChild(style);
+    styles.push(style);
+}
+
+function removeStyles(amount)
+{
+    for (var i = 0; i < amount; ++i)
+        styles.shift().remove();
+}
+
+function test()
+{
+    function createTracker(trackerName, cssURL, sassURLs)
+    {
+        var sources = sassURLs;
+        var fakeSourceMap = {
+            sources: () => sources,
+            compiledURL: () => cssURL
+        };
+        var tracker = InspectorTest.sassWorkspaceAdapter().trackSources(fakeSourceMap);
+        tracker.__NAME = trackerName;
+        tracker.addEventListener(WebInspector.SourceMapTracker.Events.SourceChanged, onSourceChanged);
+        tracker.addEventListener(WebInspector.SourceMapTracker.Events.TrackingStopped, onTrackingStopped);
+        return tracker;
+
+        function onSourceChanged(event)
+        {
+            InspectorTest.addResult(" -- " + event.target.__NAME + " -- SourceChanged event: " + event.data);
+        }
+
+        function onTrackingStopped(event)
+        {
+            InspectorTest.addResult(" -- " + event.target.__NAME + " -- TrackingStopped");
+        }
+    }
+
+    var fileSystemPrefix = "file:///var/www";
+    var css1 = "all.css";
+    var css2 = "print.css";
+    var sass1 = fileSystemPrefix + "/a.scss";
+    var sass2 = fileSystemPrefix + "/b.scss";
+    var sassCommon = fileSystemPrefix + "/common.scss";
+    var tracker1 = createTracker("TRACKER 1", css1, [sass1, sassCommon]);
+    var tracker2 = createTracker("TRACKER 2", css2, [sass2, sassCommon]);
+
+    InspectorTest.runTestSuite([
+        function loadFileSystemResources(next)
+        {
+            var fs = new InspectorTest.TestFileSystem(fileSystemPrefix);
+            fs.addFileMapping(fileSystemPrefix, "/");
+            fs.root.addFile("common.scss", "<common.scss content>");
+            fs.root.addFile("a.scss", "<a.scss content>");
+            fs.root.addFile("b.scss", "<b.scss content>");
+            fs.reportCreated(next);
+        },
+
+        function loadCSSResources(next)
+        {
+            InspectorTest.evaluateInPage("addStyleSheets()", next);
+        },
+
+        function mutateCSS(next)
+        {
+            InspectorTest.updateCSSText(css1, "<all.css update 1>")
+                .then(checkOutdated)
+                .then(() => InspectorTest.updateCSSText(css2, "<print.css update 1>"))
+                .then(checkOutdated)
+                .then(() => requestContent([css1], [css2]))
+                .then(checkOutdated)
+                .then(next);
+        },
+
+        function mutateSASS(next)
+        {
+            InspectorTest.updateSASSText(sass1, "<a.scss update 1>");
+            checkOutdated();
+            InspectorTest.updateSASSText(sass2, "<b.scss update 1>");
+            checkOutdated();
+            requestContent([sass1], [sass2])
+                .then(checkOutdated)
+                .then(next);
+        },
+
+        function mutateSASSCommon(next)
+        {
+            InspectorTest.updateSASSText(sassCommon, "<common.scss update 1>");
+            checkOutdated();
+            requestContent([sassCommon], [sassCommon])
+                .then(checkOutdated)
+                .then(next);
+        },
+
+        function trackerSetCSS(next)
+        {
+            var result = tracker1.setCSSText("<all.css TRACKER 1>", []);
+            InspectorTest.addResult("tracker1.setCSSText result: " + result);
+            var result = tracker2.setCSSText("<print.css TRACKER 2>", []);
+            InspectorTest.addResult("tracker2.setCSSText result: " + result);
+            requestContent([css1], [css2])
+                .then(next);
+        },
+
+        function trackerSetSASSCommon(next)
+        {
+            var result = tracker1.setSASSText(sassCommon, "<common.scss TRACKER 1>");
+            InspectorTest.addResult("tracker1.setSASSText result: " + result);
+            awaitSourceChanges(tracker2, sassCommon)
+                .then(checkOutdated)
+                .then(next);
+        },
+
+        function removeFirstTrackerStyleSheets(next)
+        {
+            InspectorTest.evaluateInPage("removeStyles(2)", next);
+        },
+
+        function removeSecondTrackerStyleSheets(next)
+        {
+            InspectorTest.evaluateInPage("removeStyles(1)", next);
+        },
+    ]);
+
+    function awaitSourceChanges(tracker, url)
+    {
+        var callback;
+        var promise = new Promise(fulfill => callback = fulfill);
+        tracker.addEventListener(WebInspector.SourceMapTracker.Events.SourceChanged, onSourceChanged);
+        return promise;
+
+        function onSourceChanged(event)
+        {
+            if (event.data !== url)
+                return;
+            tracker.removeEventListener(WebInspector.SourceMapTracker.Events.SourceChanged, onSourceChanged);
+            callback();
+        }
+    }
+
+    function checkOutdated()
+    {
+        InspectorTest.addResult("== Outdated ==");
+        InspectorTest.addResult(tracker1.__NAME + ": " + tracker1.isOutdated());
+        InspectorTest.addResult(tracker2.__NAME + ": " + tracker2.isOutdated());
+    }
+
+    function requestContent(urls1, urls2)
+    {
+        InspectorTest.addResult("== Contents ==");
+        urls1 = urls1 || [];
+        urls2 = urls2 || [];
+        var onContent = (url, content) => InspectorTest.addResult("content of " + url + ": " + content);
+        var promises = [];
+        for (var url of urls1)
+            promises.push(tracker1.content(url).then(text => onContent(url, text)));
+        for (var url of urls2)
+            promises.push(tracker2.content(url).then(text => onContent(url, text)));
+        return Promise.all(promises);
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify SourceMapTracker functionality.</p>
+</body>
+</html>

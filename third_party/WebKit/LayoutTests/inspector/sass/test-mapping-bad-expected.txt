@@ -1,1 +1,4 @@
 Verify that mapping is not valid for misaligned sources.
+
+OK: the mapping successfully reported misalignment.
+

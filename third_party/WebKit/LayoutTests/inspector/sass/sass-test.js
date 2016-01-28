@@ -2,10 +2,67 @@ var initialize_SassTest = function() {
 
 InspectorTest.preloadModule("sass");
 
-InspectorTest.loadSourceMap = function(header, callback)
+var sassWorkspaceAdapter = null;
+InspectorTest.sassWorkspaceAdapter = function()
 {
+    if (!sassWorkspaceAdapter)
+        sassWorkspaceAdapter = new WebInspector.SASSWorkspaceAdapter(InspectorTest.cssModel, WebInspector.workspace, WebInspector.networkMapping);
+    return sassWorkspaceAdapter;
+}
+
+var cssParser = null;
+
+InspectorTest.cssParser = function()
+{
+    if (!cssParser)
+        cssParser = new WebInspector.CSSParser();
+    return cssParser;
+}
+
+InspectorTest.parseCSS = function(url, text)
+{
+    return WebInspector.SASSSupport.parseCSS(InspectorTest.cssParser(), url, text);
+}
+
+InspectorTest.parseSCSS = function(url, text)
+{
+    return self.runtime.instancePromise(WebInspector.TokenizerFactory)
+        .then(onTokenizer);
+
+    function onTokenizer(tokenizer)
+    {
+        return WebInspector.SASSSupport.parseSCSS(url, text, tokenizer);
+    }
+}
+
+InspectorTest.loadASTMapping = function(header, callback)
+{
+    console.assert(header.cssModel() === InspectorTest.sassWorkspaceAdapter()._cssModel, "The header could not be processed by main target workspaceAdapter");
+    var tokenizerFactory = null;
+    var sourceMap = null;
+
     var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
-    WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL, callback);
+    WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL, onSourceMapLoaded);
+
+    self.runtime.instancePromise(WebInspector.TokenizerFactory)
+        .then(tf => tokenizerFactory = tf)
+        .then(maybeStartLoading);
+
+    function onSourceMapLoaded(sm)
+    {
+        sourceMap = sm;
+        maybeStartLoading();
+    }
+
+    function maybeStartLoading()
+    {
+        if (!sourceMap || !tokenizerFactory)
+            return;
+        var client = InspectorTest.sassWorkspaceAdapter().trackSources(sourceMap);
+        WebInspector.SASSLiveSourceMap._loadMapping(client, InspectorTest.cssParser(), tokenizerFactory, sourceMap)
+            .then(callback)
+            .then(() => client.dispose())
+    }
 }
 
 InspectorTest.dumpAST = function(ast)
@@ -140,7 +197,7 @@ InspectorTest.validateASTRanges = function(ast)
     }
 }
 
-InspectorTest.validateMapping = function(mapping, cssAST, sassModels)
+InspectorTest.validateMapping = function(mapping)
 {
     InspectorTest.addResult("Mapped CSS: " + mapping._cssToSass.size);
     InspectorTest.addResult("Mapped SCSS: " + mapping._sassToCss.size);
@@ -149,9 +206,9 @@ InspectorTest.validateMapping = function(mapping, cssAST, sassModels)
     var staleSASS = 0;
     for (var i = 0; i < cssNodes.length; ++i) {
         var cssNode = cssNodes[i];
-        staleCSS += cssNode.document !== cssAST.document ? 1 : 0;
+        staleCSS += cssNode.document !== mapping.cssAST().document ? 1 : 0;
         var sassNode = mapping.toSASSNode(cssNode);
-        var sassAST = sassModels.get(sassNode.document.url);
+        var sassAST = mapping.sassModels().get(sassNode.document.url);
         staleSASS += sassNode.document !== sassAST.document ? 1 : 0;
     }
     if (staleCSS || staleSASS) {
@@ -163,24 +220,17 @@ InspectorTest.validateMapping = function(mapping, cssAST, sassModels)
     }
 }
 
-InspectorTest.parseSCSS = function(url, text)
+InspectorTest.updateCSSText = function(url, newText)
 {
-    return self.runtime.instancePromise(WebInspector.TokenizerFactory)
-        .then(onTokenizer);
-
-    function onTokenizer(tokenizer)
-    {
-        return WebInspector.SASSSupport.parseSCSS(url, text, tokenizer);
-    }
+    var styleSheetIds = InspectorTest.cssModel.styleSheetIdsForURL(url)
+    var promises = styleSheetIds.map(id => InspectorTest.cssModel.setStyleSheetText(id, newText, true));
+    return Promise.all(promises);
 }
 
-var cssParser = null;
-
-InspectorTest.parseCSS = function(url, text)
+InspectorTest.updateSASSText = function(url, newText)
 {
-    if (!cssParser)
-        cssParser = new WebInspector.CSSParser();
-    return WebInspector.SASSSupport.parseCSS(cssParser, url, text);
+    var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
+    uiSourceCode.addRevision(newText);
 }
 
 }

@@ -1,0 +1,73 @@
+Verify SourceMapTracker functionality.
+
+
+Running: loadFileSystemResources
+
+Running: loadCSSResources
+
+Running: mutateCSS
+ -- TRACKER 1 -- SourceChanged event: all.css
+ -- TRACKER 1 -- SourceChanged event: all.css
+== Outdated ==
+TRACKER 1: true
+TRACKER 2: false
+ -- TRACKER 2 -- SourceChanged event: print.css
+== Outdated ==
+TRACKER 1: true
+TRACKER 2: true
+== Contents ==
+content of print.css: <all.css update 1>
+content of print.css: <print.css update 1>
+== Outdated ==
+TRACKER 1: false
+TRACKER 2: false
+
+Running: mutateSASS
+ -- TRACKER 1 -- SourceChanged event: file:///var/www/a.scss
+== Outdated ==
+TRACKER 1: true
+TRACKER 2: false
+ -- TRACKER 2 -- SourceChanged event: file:///var/www/b.scss
+== Outdated ==
+TRACKER 1: true
+TRACKER 2: true
+== Contents ==
+content of file:///var/www/b.scss: <a.scss update 1>
+content of file:///var/www/b.scss: <b.scss update 1>
+== Outdated ==
+TRACKER 1: false
+TRACKER 2: false
+
+Running: mutateSASSCommon
+ -- TRACKER 1 -- SourceChanged event: file:///var/www/common.scss
+ -- TRACKER 2 -- SourceChanged event: file:///var/www/common.scss
+== Outdated ==
+TRACKER 1: true
+TRACKER 2: true
+== Contents ==
+content of file:///var/www/common.scss: <common.scss update 1>
+content of file:///var/www/common.scss: <common.scss update 1>
+== Outdated ==
+TRACKER 1: false
+TRACKER 2: false
+
+Running: trackerSetCSS
+tracker1.setCSSText result: true
+tracker2.setCSSText result: true
+== Contents ==
+content of print.css: <all.css TRACKER 1>
+content of print.css: <print.css TRACKER 2>
+
+Running: trackerSetSASSCommon
+tracker1.setSASSText result: true
+ -- TRACKER 2 -- SourceChanged event: file:///var/www/common.scss
+== Outdated ==
+TRACKER 1: false
+TRACKER 2: true
+
+Running: removeFirstTrackerStyleSheets
+ -- TRACKER 1 -- TrackingStopped
+
+Running: removeSecondTrackerStyleSheets
+ -- TRACKER 2 -- TrackingStopped
+
