@@ -642,6 +642,10 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
 
         if (!node->isHTMLElement())
             continue;
+        // moveElementOutOfAncestor() in a previous iteration might have failed,
+        // and |node| might have been detached from the document tree.
+        if (!node->inDocument())
+            continue;
 
         HTMLElement& element = toHTMLElement(*node);
         if (isProhibitedParagraphChild(element.localName())) {
@@ -656,10 +660,10 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
     }
 }
 
-void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element> prpElement, PassRefPtrWillBeRawPtr<ContainerNode> prpAncestor)
+void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element> prpElement, PassRefPtrWillBeRawPtr<Element> prpAncestor)
 {
     RefPtrWillBeRawPtr<Element> element = prpElement;
-    RefPtrWillBeRawPtr<ContainerNode> ancestor = prpAncestor;
+    RefPtrWillBeRawPtr<Element> ancestor = prpAncestor;
 
     if (!ancestor->parentNode()->hasEditableStyle())
         return;

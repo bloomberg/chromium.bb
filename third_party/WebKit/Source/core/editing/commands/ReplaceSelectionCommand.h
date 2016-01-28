@@ -95,7 +95,7 @@ private:
 
     void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&);
     void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&);
-    void moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<ContainerNode> ancestor);
+    void moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element> ancestor);
     void handleStyleSpans(InsertedNodes&);
 
     VisiblePosition positionAtStartOfInsertedContent() const;
