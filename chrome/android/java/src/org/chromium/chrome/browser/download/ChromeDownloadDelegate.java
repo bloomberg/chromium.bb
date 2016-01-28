@@ -58,6 +58,7 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         @Override
         public void onInfoBarButtonClicked(boolean confirm) {
             assert mTab != null;
+            if (mPendingRequest == null) return;
             if (mPendingRequest.hasDownloadId()) {
                 nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadId(), confirm);
                 if (confirm) {
