@@ -165,6 +165,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/native_theme/native_theme_dark_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
 
@@ -180,6 +181,10 @@
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/public/common/mojo_shell_connection.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
 using base::TimeDelta;
@@ -450,8 +455,8 @@ const char BrowserView::kViewClassName[] = "BrowserView";
 
 BrowserView::BrowserView()
     : views::ClientView(nullptr, nullptr),
-      last_focused_view_storage_id_(views::ViewStorage::GetInstance()
-                                        ->CreateStorageID()),
+      last_focused_view_storage_id_(
+          views::ViewStorage::GetInstance()->CreateStorageID()),
       frame_(nullptr),
       top_container_(nullptr),
       tabstrip_(nullptr),
@@ -462,6 +467,7 @@ BrowserView::BrowserView()
       devtools_web_view_(nullptr),
       contents_container_(nullptr),
       initialized_(false),
+      handling_theme_changed_(false),
       in_process_fullscreen_(false),
 #if defined(OS_WIN)
       ticker_(0),
@@ -2010,12 +2016,33 @@ void BrowserView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_CLIENT;
 }
 
+void BrowserView::OnThemeChanged() {
+  if (!IsRegularOrGuestSession() &&
+      ui::MaterialDesignController::IsModeMaterial()) {
+    // When the theme changes, the native theme may also change (in OTR, the
+    // usage of dark or normal hinges on the browser theme), so we have to
+    // propagate both kinds of change.
+    base::AutoReset<bool> reset(&handling_theme_changed_, true);
+#if defined(OS_WIN)
+    ui::NativeThemeDarkWin::instance()->NotifyObservers();
+    ui::NativeThemeWin::instance()->NotifyObservers();
+#elif defined(OS_LINUX)
+    ui::NativeThemeDarkAura::instance()->NotifyObservers();
+    ui::NativeThemeAura::instance()->NotifyObservers();
+#endif
+  }
+
+  views::View::OnThemeChanged();
+}
+
 void BrowserView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   // Do not handle native theme changes before the browser view is initialized.
   if (!initialized_)
     return;
   ClientView::OnNativeThemeChanged(theme);
-  UserChangedTheme();
+  // Don't infinitely recurse.
+  if (!handling_theme_changed_)
+    UserChangedTheme();
   chrome::MaybeShowInvertBubbleView(this);
 }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -48,7 +49,7 @@ void DropdownBarHost::Init(views::View* host_view,
   delegate_ = delegate;
 
   // Initialize the host.
-  host_.reset(new views::Widget);
+  host_.reset(new ThemeCopyingWidget(browser_view_->GetWidget()));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();

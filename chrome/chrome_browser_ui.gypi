@@ -2442,6 +2442,8 @@
       'browser/ui/views/tabs/window_finder_mac.mm',
       'browser/ui/views/tabs/window_finder_win.cc',
       'browser/ui/views/task_manager_view.cc',
+      'browser/ui/views/theme_copying_widget.cc',
+      'browser/ui/views/theme_copying_widget.h',
       'browser/ui/views/toolbar/app_menu.cc',
       'browser/ui/views/toolbar/app_menu.h',
       'browser/ui/views/toolbar/app_menu_button.cc',

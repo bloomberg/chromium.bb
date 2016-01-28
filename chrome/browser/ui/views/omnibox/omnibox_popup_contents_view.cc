@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -31,10 +32,11 @@
 #include "ui/views/window/non_client_view.h"
 
 class OmniboxPopupContentsView::AutocompletePopupWidget
-    : public views::Widget,
+    : public ThemeCopyingWidget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
-  AutocompletePopupWidget() {}
+  explicit AutocompletePopupWidget(views::Widget* role_model)
+      : ThemeCopyingWidget(role_model) {}
   ~AutocompletePopupWidget() override {}
 
  private:
@@ -239,7 +241,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     views::Widget* popup_parent = location_bar_view_->GetWidget();
 
     // If the popup is currently closed, we need to create it.
-    popup_ = (new AutocompletePopupWidget)->AsWeakPtr();
+    popup_ = (new AutocompletePopupWidget(popup_parent))->AsWeakPtr();
 
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 #if defined(OS_WIN)
@@ -252,7 +254,6 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     params.parent = popup_parent->GetNativeView();
     params.bounds = GetPopupBounds();
     params.context = popup_parent->GetNativeWindow();
-    params.native_theme = popup_parent->GetNativeTheme();
     popup_->Init(params);
     // Third-party software such as DigitalPersona identity verification can
     // hook the underlying window creation methods and use SendMessage to

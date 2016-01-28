@@ -445,6 +445,7 @@ class BrowserView : public BrowserWindow,
       const ViewHierarchyChangedDetails& details) override;
   void ChildPreferredSizeChanged(View* child) override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Overridden from ui::AcceleratorTarget:
@@ -669,6 +670,10 @@ class BrowserView : public BrowserWindow,
 
   // True if we have already been initialized.
   bool initialized_;
+
+  // True if we're currently handling a theme change (i.e. inside
+  // OnThemeChanged()).
+  bool handling_theme_changed_;
 
   // True when in ProcessFullscreen(). The flag is used to avoid reentrance and
   // to ignore requests to layout while in ProcessFullscreen() to reduce

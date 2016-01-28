@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/theme_provider.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
@@ -52,10 +51,7 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
     : native_browser_frame_(nullptr),
       root_view_(nullptr),
       browser_frame_view_(nullptr),
-      browser_view_(browser_view),
-      theme_provider_(
-          &ThemeService::GetThemeProviderForProfile(browser_view_->browser()
-                                                        ->profile())) {
+      browser_view_(browser_view) {
   browser_view_->set_frame(this);
   set_is_secondary_widget(false);
   // Don't focus anything on creation, selecting a tab will set the focus.
@@ -83,15 +79,6 @@ void BrowserFrame::InitBrowserFrame() {
     chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                              &params.bounds,
                                              &params.show_state);
-  }
-
-  if (browser_view_->browser()->profile()->GetProfileType() ==
-      Profile::INCOGNITO_PROFILE) {
-#if defined(OS_WIN)
-    params.native_theme = ui::NativeThemeDarkWin::instance();
-#elif defined(OS_CHROMEOS)
-    params.native_theme = ui::NativeThemeDarkAura::instance();
-#endif
   }
 
   Init(params);
@@ -177,7 +164,22 @@ bool BrowserFrame::GetAccelerator(int command_id,
 }
 
 const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
-  return theme_provider_;
+  return &ThemeService::GetThemeProviderForProfile(
+      browser_view_->browser()->profile());
+}
+
+const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
+  if (browser_view_->browser()->profile()->GetProfileType() ==
+          Profile::INCOGNITO_PROFILE &&
+      ThemeServiceFactory::GetForProfile(browser_view_->browser()->profile())
+          ->UsingDefaultTheme()) {
+#if defined(OS_WIN)
+    return ui::NativeThemeDarkWin::instance();
+#elif defined(OS_CHROMEOS)
+    return ui::NativeThemeDarkAura::instance();
+#endif
+  }
+  return views::Widget::GetNativeTheme();
 }
 
 void BrowserFrame::SchedulePaintInRect(const gfx::Rect& rect) {

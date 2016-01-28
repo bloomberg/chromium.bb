@@ -19,6 +19,7 @@ class BrowserView;
 class NativeBrowserFrame;
 class NonClientFrameView;
 class SystemMenuModelBuilder;
+class ThemeService;
 
 namespace gfx {
 class FontList;
@@ -28,7 +29,6 @@ class Rect;
 namespace ui {
 class EventHandler;
 class MenuModel;
-class ThemeProvider;
 }
 
 namespace views {
@@ -102,6 +102,7 @@ class BrowserFrame
   bool GetAccelerator(int command_id,
                       ui::Accelerator* accelerator) const override;
   const ui::ThemeProvider* GetThemeProvider() const override;
+  const ui::NativeTheme* GetNativeTheme() const override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void OnNativeWidgetActivationChanged(bool active) override;
 
@@ -140,7 +141,7 @@ class BrowserFrame
   // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  const ui::ThemeProvider* theme_provider_;
+  const ThemeService* theme_service_;
 
   scoped_ptr<ui::EventHandler> browser_command_handler_;
 

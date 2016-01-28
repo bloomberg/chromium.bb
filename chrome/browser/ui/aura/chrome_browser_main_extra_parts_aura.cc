@@ -23,6 +23,8 @@
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "ui/aura/window.h"
@@ -55,25 +57,25 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
   // Window types not listed here (such as tooltips) will never use Chrome
   // theming.
   if (window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-      window->type() == ui::wm::WINDOW_TYPE_POPUP ||
-      window->type() == ui::wm::WINDOW_TYPE_CONTROL) {
+      window->type() == ui::wm::WINDOW_TYPE_POPUP) {
     profile = reinterpret_cast<Profile*>(
         window->GetNativeWindowProperty(Profile::kProfileKey));
   }
 
-  if (profile && !profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
-    // Only toplevel browser windows and CONTROL type windows (such as the find
-    // in page bar) should use special theming for off the record mode.
-    // WINDOW_TYPE_NORMAL is not enough to distinguish browser windows because
-    // it also encompasses dialogs.
-    bool eligible_for_otr = window->type() == ui::wm::WINDOW_TYPE_CONTROL ||
-                            BrowserView::GetBrowserViewForNativeWindow(window);
-    if (eligible_for_otr &&
-        profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
-      return ui::NativeThemeDarkAura::instance();
-    }
+  if (profile) {
+    ThemeService* ts = ThemeServiceFactory::GetForProfile(profile);
+    // If using the system (GTK) theme, don't use an Aura NativeTheme at all.
+    if (!ts->UsingSystemTheme()) {
+      // Use a dark theme for incognito browser windows that aren't
+      // custom-themed. Otherwise, normal Aura theme.
+      if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE &&
+          ts->UsingDefaultTheme() &&
+          BrowserView::GetBrowserViewForNativeWindow(window)) {
+        return ui::NativeThemeDarkAura::instance();
+      }
 
-    return ui::NativeThemeAura::instance();
+      return ui::NativeThemeAura::instance();
+    }
   }
 
   return nullptr;
