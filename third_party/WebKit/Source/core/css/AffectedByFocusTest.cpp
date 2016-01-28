@@ -206,14 +206,14 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate)
 
     document().view()->updateAllLifecyclePhases();
 
-    unsigned startCount = document().styleEngine().resolverAccessCount();
+    unsigned startCount = document().styleEngine().styleForElementCount();
 
     document().getElementById("d")->focus();
     document().view()->updateAllLifecyclePhases();
 
-    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document().styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(1U, accessCount);
+    ASSERT_EQ(1U, elementCount);
 }
 
 TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate)
@@ -237,14 +237,14 @@ TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate)
 
     document().view()->updateAllLifecyclePhases();
 
-    unsigned startCount = document().styleEngine().resolverAccessCount();
+    unsigned startCount = document().styleEngine().styleForElementCount();
 
     document().getElementById("d")->focus();
     document().view()->updateAllLifecyclePhases();
 
-    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document().styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(11U, accessCount);
+    ASSERT_EQ(11U, elementCount);
 }
 
 TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate)
@@ -268,14 +268,14 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate)
 
     document().view()->updateAllLifecyclePhases();
 
-    unsigned startCount = document().styleEngine().resolverAccessCount();
+    unsigned startCount = document().styleEngine().styleForElementCount();
 
     document().getElementById("d")->focus();
     document().view()->updateAllLifecyclePhases();
 
-    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document().styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(2U, accessCount);
+    ASSERT_EQ(2U, elementCount);
 }
 
 TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate)
@@ -300,14 +300,14 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate)
 
     document().view()->updateAllLifecyclePhases();
 
-    unsigned startCount = document().styleEngine().resolverAccessCount();
+    unsigned startCount = document().styleEngine().styleForElementCount();
 
     document().getElementById("d")->focus();
     document().view()->updateAllLifecyclePhases();
 
-    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document().styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(1U, accessCount);
+    ASSERT_EQ(1U, elementCount);
 }
 
 } // namespace blink

@@ -146,7 +146,6 @@ StyleResolver::StyleResolver(Document& document)
     , m_needCollectFeatures(false)
     , m_printMediaType(false)
     , m_styleSharingDepth(0)
-    , m_accessCount(0)
 {
     FrameView* view = document.view();
     if (view) {
@@ -329,7 +328,7 @@ void StyleResolver::addToStyleSharingList(Element& element)
     // otherwise we could leave stale pointers in there.
     if (!document().inStyleRecalc())
         return;
-    INCREMENT_STYLE_STATS_COUNTER(*this, sharedStyleCandidates, 1);
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleCandidates, 1);
     StyleSharingList& list = styleSharingList();
     if (list.size() >= styleSharingListSize)
         list.removeLast();
@@ -576,8 +575,8 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
         return s_styleNotYetAvailable;
     }
 
-    didAccess();
-    INCREMENT_STYLE_STATS_COUNTER(*this, elementsStyled, 1);
+    document().styleEngine().incStyleForElementCount();
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), elementsStyled, 1);
 
     StyleResolverParentScope::ensureParentStackIsPushed();
 
@@ -661,14 +660,14 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
         if (elementAnimations)
             elementAnimations->updateBaseComputedStyle(state.style());
     } else {
-        INCREMENT_STYLE_STATS_COUNTER(*this, baseStylesUsed, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), baseStylesUsed, 1);
     }
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
     // before deciding which properties to transition.
     if (applyAnimatedProperties(state, element)) {
-        INCREMENT_STYLE_STATS_COUNTER(*this, stylesAnimated, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), stylesAnimated, 1);
         adjustComputedStyle(state, element);
     }
 
@@ -819,8 +818,8 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     if (applyAnimatedProperties(state, pseudoElement))
         adjustComputedStyle(state, 0);
 
-    didAccess();
-    INCREMENT_STYLE_STATS_COUNTER(*this, pseudoElementsStyled, 1);
+    document().styleEngine().incStyleForElementCount();
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), pseudoElementsStyled, 1);
 
     if (state.style()->hasViewportUnits())
         document().setHasViewportUnits();
@@ -877,8 +876,6 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForPage(int pageIndex)
     applyMatchedProperties<LowPropertyPriority>(state, result.allRules(), false, inheritedOnly);
 
     loadPendingResources(state);
-
-    didAccess();
 
     // Now return the style.
     return state.takeStyle();
@@ -1348,21 +1345,21 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     const Element* element = state.element();
     ASSERT(element);
 
-    INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyApply, 1);
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyApply, 1);
 
     unsigned cacheHash = RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled() && matchResult.isCacheable() ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(), matchResult.matchedProperties().size()) : 0;
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult.matchedProperties()) : nullptr;
 
     if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(*state.style(), *state.parentStyle())) {
-        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyCacheHit, 1);
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
         state.style()->copyNonInheritedFromCached(*cachedMatchedProperties->computedStyle);
         if (state.parentStyle()->inheritedDataShared(*cachedMatchedProperties->parentComputedStyle) && !isAtShadowBoundary(element)
             && (!state.distributedToInsertionPoint() || state.style()->userModify() == READ_ONLY)) {
-            INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheInheritedHit, 1);
+            INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyCacheInheritedHit, 1);
 
             EInsideLink linkStatus = state.style()->insideLink();
             // If the cache item parent style has identical inherited properties to the current parent style then the
@@ -1444,7 +1441,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(*state.style(), *state.parentStyle())) {
         ASSERT(RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled());
-        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyCacheAdded, 1);
         m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult.matchedProperties());
     }
 
@@ -1492,19 +1489,6 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
         return;
     for (size_t i = 0; i < rules->size(); i++)
         state.style()->addCallbackSelector(rules->at(i)->selectorList().selectorsText());
-}
-
-void StyleResolver::setStatsEnabled(bool enabled)
-{
-    if (enabled) {
-        if (!m_styleResolverStats) {
-            m_styleResolverStats = StyleResolverStats::create();
-        } else {
-            m_styleResolverStats->reset();
-        }
-    } else {
-        m_styleResolverStats = nullptr;
-    }
 }
 
 void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& propertySet)

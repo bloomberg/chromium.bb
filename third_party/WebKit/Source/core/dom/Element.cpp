@@ -1709,7 +1709,6 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
             style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform));
     }
 
-    document().didRecalculateStyleForElement();
     return style.release();
 }
 
@@ -1790,9 +1789,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 
     StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
     if (localChange == NoChange) {
-        INCREMENT_STYLE_STATS_COUNTER(*document().styleResolver(), stylesUnchanged, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), stylesUnchanged, 1);
     } else {
-        INCREMENT_STYLE_STATS_COUNTER(*document().styleResolver(), stylesChanged, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), stylesChanged, 1);
     }
 
     if (localChange == Reattach) {

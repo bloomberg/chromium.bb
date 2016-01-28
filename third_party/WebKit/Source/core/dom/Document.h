@@ -1025,7 +1025,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     bool hasSVGFilterElementsRequiringLayerUpdate() const { return m_layerUpdateSVGFilterElements.size(); }
-    void didRecalculateStyleForElement() { ++m_styleRecalcElementCounter; }
 
     AtomicString convertLocalName(const AtomicString&);
 
@@ -1395,8 +1394,6 @@ private:
 
     using DocumentVisibilityObserverSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentVisibilityObserver>>;
     DocumentVisibilityObserverSet m_visibilityObservers;
-
-    int m_styleRecalcElementCounter;
 
     ParserSynchronizationPolicy m_parserSyncPolicy;
 

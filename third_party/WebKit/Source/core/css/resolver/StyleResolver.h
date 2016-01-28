@@ -33,7 +33,6 @@
 #include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/style/CachedUAStyle.h"
 #include "platform/heap/Handle.h"
@@ -167,12 +166,6 @@ public:
     void addToStyleSharingList(Element&);
     void clearStyleSharingList();
 
-    StyleResolverStats* stats() { return m_styleResolverStats.get(); }
-    void setStatsEnabled(bool);
-
-    unsigned accessCount() const { return m_accessCount; }
-    void didAccess() { ++m_accessCount; }
-
     void increaseStyleSharingDepth() { ++m_styleSharingDepth; }
     void decreaseStyleSharingDepth() { --m_styleSharingDepth; }
 
@@ -256,11 +249,6 @@ private:
 
     unsigned m_styleSharingDepth;
     WillBeHeapVector<OwnPtrWillBeMember<StyleSharingList>, styleSharingMaxDepth> m_styleSharingLists;
-
-    OwnPtr<StyleResolverStats> m_styleResolverStats;
-
-    // Use only for Internals::updateStyleAndReturnAffectedElementCount.
-    unsigned m_accessCount;
 };
 
 } // namespace blink

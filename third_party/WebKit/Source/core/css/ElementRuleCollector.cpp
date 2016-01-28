@@ -39,6 +39,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/style/StyleInheritedData.h"
 #include <algorithm>
@@ -170,11 +171,13 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
         didMatchRule(ruleData, result, cascadeOrder, matchRequest);
     }
 
-    if (StyleResolver* resolver = m_context.element()->document().styleResolver()) {
-        INCREMENT_STYLE_STATS_COUNTER(*resolver, rulesRejected, rejected);
-        INCREMENT_STYLE_STATS_COUNTER(*resolver, rulesFastRejected, fastRejected);
-        INCREMENT_STYLE_STATS_COUNTER(*resolver, rulesMatched, matched);
-    }
+    StyleEngine& styleEngine = m_context.element()->document().styleEngine();
+    if (!styleEngine.stats())
+        return;
+
+    INCREMENT_STYLE_STATS_COUNTER(styleEngine, rulesRejected, rejected);
+    INCREMENT_STYLE_STATS_COUNTER(styleEngine, rulesFastRejected, fastRejected);
+    INCREMENT_STYLE_STATS_COUNTER(styleEngine, rulesMatched, matched);
 }
 
 void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, CascadeOrder cascadeOrder, bool matchingTreeBoundaryRules)

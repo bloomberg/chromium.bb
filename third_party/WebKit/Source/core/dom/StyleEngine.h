@@ -32,6 +32,7 @@
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
@@ -161,7 +162,6 @@ public:
     void didDetach();
     bool shouldClearResolver() const;
     void resolverChanged(StyleResolverUpdateMode);
-    unsigned resolverAccessCount() const;
 
     void markDocumentDirty();
 
@@ -177,6 +177,12 @@ public:
     void attributeChangedForElement(const QualifiedName& attributeName, Element&);
     void idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element&);
     void pseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
+
+    unsigned styleForElementCount() const { return m_styleForElementCount; }
+    void incStyleForElementCount() { m_styleForElementCount++; }
+
+    StyleResolverStats* stats() { return m_styleResolverStats.get(); }
+    void setStatsEnabled(bool);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -227,7 +233,7 @@ private:
     // Sheets loaded using the @import directive are not included in this count.
     // We use this count of pending sheets to detect when we can begin attaching
     // elements and when it is safe to execute scripts.
-    int m_pendingStylesheets;
+    int m_pendingStylesheets = 0;
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> m_injectedAuthorStyleSheets;
 
@@ -236,21 +242,21 @@ private:
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<TreeScope>, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection>> StyleSheetCollectionMap;
     StyleSheetCollectionMap m_styleSheetCollectionMap;
 
-    bool m_documentScopeDirty;
+    bool m_documentScopeDirty = true;
     UnorderedTreeScopeSet m_dirtyTreeScopes;
     UnorderedTreeScopeSet m_activeTreeScopes;
 
     String m_preferredStylesheetSetName;
     String m_selectedStylesheetSetName;
 
-    bool m_usesSiblingRules;
-    bool m_usesFirstLineRules;
-    bool m_usesWindowInactiveSelector;
-    bool m_usesRemUnits;
-    unsigned m_maxDirectAdjacentSelectors;
+    bool m_usesSiblingRules = false;
+    bool m_usesFirstLineRules = false;
+    bool m_usesWindowInactiveSelector = false;
+    bool m_usesRemUnits = false;
+    unsigned m_maxDirectAdjacentSelectors = 0;
 
-    bool m_ignorePendingStylesheets;
-    bool m_didCalculateResolver;
+    bool m_ignorePendingStylesheets = false;
+    bool m_didCalculateResolver = false;
     OwnPtrWillBeMember<StyleResolver> m_resolver;
     StyleInvalidator m_styleInvalidator;
 
@@ -258,6 +264,9 @@ private:
 
     WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents>> m_textToSheetCache;
     WillBeHeapHashMap<RawPtrWillBeMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
+
+    OwnPtr<StyleResolverStats> m_styleResolverStats;
+    unsigned m_styleForElementCount = 0;
 };
 
 } // namespace blink

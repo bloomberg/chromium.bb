@@ -452,7 +452,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
     , m_timers(timerTaskRunner()->adoptClone())
     , m_hasViewportUnits(false)
-    , m_styleRecalcElementCounter(0)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
     , m_nodeCount(0)
 {
@@ -1775,8 +1774,8 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData", InspectorRecalculateStylesEvent::data(frame()));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateLayoutTree");
 
-    // FIXME: Remove m_styleRecalcElementCounter, we should just use the accessCount() on the resolver.
-    m_styleRecalcElementCounter = 0;
+    unsigned startElementCount = styleEngine().styleForElementCount();
+
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     DocumentAnimations::updateAnimationTimingIfNeeded(*this);
@@ -1808,8 +1807,10 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 
     ASSERT(!DocumentAnimations::needsAnimationTimingUpdate(*this));
 
-    TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree", "elementCount", m_styleRecalcElementCounter);
-    InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
+    unsigned elementCount = styleEngine().styleForElementCount() - startElementCount;
+
+    TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree", "elementCount", elementCount);
+    InspectorInstrumentation::didRecalculateStyle(cookie, elementCount);
 
 #if ENABLE(ASSERT)
     assertLayoutTreeUpdated(*this);
@@ -1822,7 +1823,7 @@ void Document::updateStyle(StyleRecalcChange change)
         return;
 
     TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
-    unsigned initialResolverAccessCount = styleEngine().resolverAccessCount();
+    unsigned initialElementCount = styleEngine().styleForElementCount();
 
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
@@ -1851,7 +1852,7 @@ void Document::updateStyle(StyleRecalcChange change)
 
     bool shouldRecordStats;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &shouldRecordStats);
-    resolver.setStatsEnabled(shouldRecordStats);
+    styleEngine().setStatsEnabled(shouldRecordStats);
 
     if (Element* documentElement = this->documentElement()) {
         inheritHtmlAndBodyElementStyles(change);
@@ -1880,11 +1881,11 @@ void Document::updateStyle(StyleRecalcChange change)
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
     if (shouldRecordStats) {
         TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
-            "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount,
-            "counters", resolver.stats()->toTracedValue());
+            "resolverAccessCount", styleEngine().styleForElementCount() - initialElementCount,
+            "counters", styleEngine().stats()->toTracedValue());
     } else {
         TRACE_EVENT_END1("blink,blink_style", "Document::updateStyle",
-            "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
+            "resolverAccessCount", styleEngine().styleForElementCount() - initialElementCount);
     }
 }
 

@@ -39,6 +39,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLElement.h"
@@ -323,7 +324,7 @@ bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
 
 ComputedStyle* SharedStyleFinder::findSharedStyle()
 {
-    INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleLookups, 1);
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleLookups, 1);
 
     if (!element().supportsStyleSharing())
         return nullptr;
@@ -334,26 +335,26 @@ ComputedStyle* SharedStyleFinder::findSharedStyle()
     Element* shareElement = findElementForStyleSharing();
 
     if (!shareElement) {
-        if (m_styleResolver->stats() && m_styleResolver->stats()->allCountersEnabled() && documentContainsValidCandidate())
-            INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleMissed, 1);
+        if (document().styleEngine().stats() && document().styleEngine().stats()->allCountersEnabled() && documentContainsValidCandidate())
+            INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleMissed, 1);
         return nullptr;
     }
 
-    INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleFound, 1);
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleFound, 1);
 
     if (matchesRuleSet(m_siblingRuleSet)) {
-        INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedBySiblingRules, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleRejectedBySiblingRules, 1);
         return nullptr;
     }
 
     if (matchesRuleSet(m_uncommonAttributeRuleSet)) {
-        INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedByUncommonAttributeRules, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleRejectedByUncommonAttributeRules, 1);
         return nullptr;
     }
 
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
     if (!element().parentElementOrShadowRoot()->childrenSupportStyleSharing()) {
-        INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedByParent, 1);
+        INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleRejectedByParent, 1);
         return nullptr;
     }
 

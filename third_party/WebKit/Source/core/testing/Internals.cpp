@@ -309,9 +309,9 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
         return 0;
     }
 
-    unsigned beforeCount = document->styleEngine().resolverAccessCount();
+    unsigned beforeCount = document->styleEngine().styleForElementCount();
     document->updateLayoutTreeIfNeeded();
-    return document->styleEngine().resolverAccessCount() - beforeCount;
+    return document->styleEngine().styleForElementCount() - beforeCount;
 }
 
 unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const

@@ -29,14 +29,14 @@ TEST(DragUpdateTest, AffectedByDragUpdate)
         "</div>", ASSERT_NO_EXCEPTION);
 
     document.view()->updateAllLifecyclePhases();
-    unsigned startCount = document.styleEngine().resolverAccessCount();
+    unsigned startCount = document.styleEngine().styleForElementCount();
 
     document.documentElement()->layoutObject()->updateDragState(true);
     document.view()->updateAllLifecyclePhases();
 
-    unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document.styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(1U, accessCount);
+    ASSERT_EQ(1U, elementCount);
 }
 
 TEST(DragUpdateTest, ChildAffectedByDragUpdate)
@@ -55,14 +55,14 @@ TEST(DragUpdateTest, ChildAffectedByDragUpdate)
         "</div>", ASSERT_NO_EXCEPTION);
 
     document.updateLayout();
-    unsigned startCount = document.styleEngine().resolverAccessCount();
+    unsigned startCount = document.styleEngine().styleForElementCount();
 
     document.documentElement()->layoutObject()->updateDragState(true);
     document.updateLayout();
 
-    unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document.styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(1U, accessCount);
+    ASSERT_EQ(1U, elementCount);
 }
 
 TEST(DragUpdateTest, SiblingAffectedByDragUpdate)
@@ -82,14 +82,14 @@ TEST(DragUpdateTest, SiblingAffectedByDragUpdate)
         "<span class='drag'></span>", ASSERT_NO_EXCEPTION);
 
     document.updateLayout();
-    unsigned startCount = document.styleEngine().resolverAccessCount();
+    unsigned startCount = document.styleEngine().styleForElementCount();
 
     document.documentElement()->layoutObject()->updateDragState(true);
     document.updateLayout();
 
-    unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
+    unsigned elementCount = document.styleEngine().styleForElementCount() - startCount;
 
-    ASSERT_EQ(1U, accessCount);
+    ASSERT_EQ(1U, elementCount);
 }
 
 } // namespace blink

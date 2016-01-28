@@ -56,16 +56,7 @@ using namespace HTMLNames;
 StyleEngine::StyleEngine(Document& document)
     : m_document(&document)
     , m_isMaster(!document.importsController() || document.importsController()->master() == &document)
-    , m_pendingStylesheets(0)
     , m_documentStyleSheetCollection(DocumentStyleSheetCollection::create(document))
-    , m_documentScopeDirty(true)
-    , m_usesSiblingRules(false)
-    , m_usesFirstLineRules(false)
-    , m_usesWindowInactiveSelector(false)
-    , m_usesRemUnits(false)
-    , m_maxDirectAdjacentSelectors(0)
-    , m_ignorePendingStylesheets(false)
-    , m_didCalculateResolver(false)
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
     , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : nullptr)
@@ -434,11 +425,6 @@ void StyleEngine::clearMasterResolver()
         master->styleEngine().clearResolver();
 }
 
-unsigned StyleEngine::resolverAccessCount() const
-{
-    return m_resolver ? m_resolver->accessCount() : 0;
-}
-
 void StyleEngine::didDetach()
 {
     clearResolver();
@@ -724,6 +710,18 @@ void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoTyp
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationLists, element, pseudoType);
     m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+}
+
+void StyleEngine::setStatsEnabled(bool enabled)
+{
+    if (!enabled) {
+        m_styleResolverStats = nullptr;
+        return;
+    }
+    if (!m_styleResolverStats)
+        m_styleResolverStats = StyleResolverStats::create();
+    else
+        m_styleResolverStats->reset();
 }
 
 DEFINE_TRACE(StyleEngine)
