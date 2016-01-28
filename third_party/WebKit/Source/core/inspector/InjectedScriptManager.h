@@ -67,7 +67,6 @@ public:
 private:
     explicit InjectedScriptManager(V8DebuggerClient*);
 
-    String injectedScriptSource();
     v8::Local<v8::Object> createInjectedScript(const String& source, v8::Local<v8::Context>, int id, InjectedScriptNative*);
 
     typedef HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
