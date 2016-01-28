@@ -27,6 +27,7 @@ crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
 
 crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
+crbug.com/420008 virtual/threaded/inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
 crbug.com/572723 inspector/sources/debugger/debugger-autocontinue-on-syntax-error.html [ Pass Failure ]
 
 crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Failure Pass ]
