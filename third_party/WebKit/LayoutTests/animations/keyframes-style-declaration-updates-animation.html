@@ -46,10 +46,9 @@
     assert_equals(parseInt(getComputedStyle(target1).left), 120, 'left offset');
     assert_equals(parseInt(getComputedStyle(target2).left), 180, 'left offset');
 
-    keyframe.style.left = '500px';
     keyframe.keyText = '20%';
-    assert_equals(parseInt(getComputedStyle(target1).left), 450, 'left offset');
-    assert_equals(parseInt(getComputedStyle(target2).left), 300, 'left offset');
+    assert_equals(parseInt(getComputedStyle(target1).left), 187, 'left offset');
+    assert_equals(parseInt(getComputedStyle(target2).left), 150, 'left offset');
 
   }, "Check that changes to keyframe style declarations update the animation accordingly");
 </script>

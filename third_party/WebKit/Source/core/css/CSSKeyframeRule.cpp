@@ -50,6 +50,8 @@ CSSKeyframeRule::~CSSKeyframeRule()
 
 void CSSKeyframeRule::setKeyText(const String& keyText, ExceptionState& exceptionState)
 {
+    CSSStyleSheet::RuleMutationScope(this);
+
     if (!m_keyframe->setKeyText(keyText))
         exceptionState.throwDOMException(SyntaxError, "The key '" + keyText + "' is invalid and cannot be parsed");
 
