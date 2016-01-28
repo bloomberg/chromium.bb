@@ -134,9 +134,6 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
 #endif
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       return "killed";
-#if defined(OS_ANDROID)
-    case base::TERMINATION_STATUS_OOM_PROTECTED:
-#endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
       return "crashed";
     case base::TERMINATION_STATUS_LAUNCH_FAILED:

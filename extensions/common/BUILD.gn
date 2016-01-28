@@ -71,15 +71,6 @@ if (enable_extensions) {
       "//url",
     ]
 
-    if (is_android) {
-      deps -= [ "//device/usb" ]
-      sources -= [
-        "api/printer_provider/usb_printer_manifest_data.cc",
-        "api/printer_provider/usb_printer_manifest_data.h",
-        "api/printer_provider/usb_printer_manifest_handler.cc",
-      ]
-    }
-
     if (enable_nacl) {
       nacl_sources =
           rebase_path(extensions_gypi_values.extensions_common_sources_nacl,

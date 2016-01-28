@@ -105,9 +105,6 @@ source_set("extensions") {
         rebase_path(gypi_values.chrome_browser_extensions_non_chromeos_sources,
                     ".",
                     "//chrome")
-    if (is_android) {
-      sources -= [ "api/messaging/native_process_launcher_posix.cc" ]
-    }
   }
 
   if (enable_service_discovery) {

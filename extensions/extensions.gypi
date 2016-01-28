@@ -30,7 +30,6 @@
       'common/api/printer_provider/usb_printer_manifest_data.cc',
       'common/api/printer_provider/usb_printer_manifest_data.h',
       'common/api/printer_provider/usb_printer_manifest_handler.cc',
-      'common/api/printer_provider/usb_printer_manifest_handler_android.cc',
       'common/api/printer_provider/usb_printer_manifest_handler.h',
       'common/api/sockets/sockets_manifest_data.cc',
       'common/api/sockets/sockets_manifest_data.h',
