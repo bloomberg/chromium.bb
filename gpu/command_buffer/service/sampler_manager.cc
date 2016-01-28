@@ -18,18 +18,21 @@
 namespace gpu {
 namespace gles2 {
 
+SamplerState::SamplerState()
+    : min_filter(GL_NEAREST_MIPMAP_LINEAR),
+      mag_filter(GL_LINEAR),
+      wrap_r(GL_REPEAT),
+      wrap_s(GL_REPEAT),
+      wrap_t(GL_REPEAT),
+      compare_func(GL_LEQUAL),
+      compare_mode(GL_NONE),
+      max_lod(1000.0f),
+      min_lod(-1000.0f) {
+}
+
 Sampler::Sampler(SamplerManager* manager, GLuint service_id)
     : manager_(manager),
       service_id_(service_id),
-      min_filter_(GL_NEAREST_MIPMAP_LINEAR),
-      mag_filter_(GL_LINEAR),
-      wrap_r_(GL_REPEAT),
-      wrap_s_(GL_REPEAT),
-      wrap_t_(GL_REPEAT),
-      compare_func_(GL_LEQUAL),
-      compare_mode_(GL_NONE),
-      max_lod_(1000.0f),
-      min_lod_(-1000.0f),
       deleted_(false) {
   DCHECK(manager);
 }
@@ -54,43 +57,43 @@ GLenum Sampler::SetParameteri(
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      min_filter_ = param;
+      sampler_state_.min_filter = param;
       break;
     case GL_TEXTURE_MAG_FILTER:
       if (!feature_info->validators()->texture_mag_filter_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      mag_filter_ = param;
+      sampler_state_.mag_filter = param;
       break;
     case GL_TEXTURE_WRAP_R:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      wrap_r_ = param;
+      sampler_state_.wrap_r = param;
       break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      wrap_s_ = param;
+      sampler_state_.wrap_s = param;
       break;
     case GL_TEXTURE_WRAP_T:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      wrap_t_ = param;
+      sampler_state_.wrap_t = param;
       break;
     case GL_TEXTURE_COMPARE_FUNC:
       if (!feature_info->validators()->texture_compare_func.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      compare_func_ = param;
+      sampler_state_.compare_func = param;
       break;
     case GL_TEXTURE_COMPARE_MODE:
       if (!feature_info->validators()->texture_compare_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      compare_mode_ = param;
+      sampler_state_.compare_mode = param;
       break;
     default:
       return GL_INVALID_ENUM;
@@ -112,10 +115,10 @@ GLenum Sampler::SetParameterf(
       return SetParameteri(feature_info, pname, iparam);
     }
     case GL_TEXTURE_MIN_LOD:
-      min_lod_ = param;
+      sampler_state_.min_lod = param;
       break;
     case GL_TEXTURE_MAX_LOD:
-      max_lod_ = param;
+      sampler_state_.max_lod = param;
       break;
     default:
       return GL_INVALID_ENUM;

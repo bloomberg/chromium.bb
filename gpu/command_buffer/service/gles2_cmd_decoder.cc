@@ -1881,6 +1881,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // will rebind all external textures to match their current service_id.
   void RestoreAllExternalTextureBindingsIfNeeded() override;
 
+  const SamplerState& GetSamplerStateForTextureUnit(GLenum target, GLuint unit);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2086,6 +2088,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool force_shader_name_hashing_for_test;
 
   GLfloat line_width_range_[2];
+
+  SamplerState default_sampler_state_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -7607,10 +7611,6 @@ void GLES2DecoderImpl::DoCopyTexImageIfNeeded(Texture* texture,
 
 bool GLES2DecoderImpl::PrepareTexturesForRender() {
   DCHECK(state_.current_program.get());
-  if (!texture_manager()->HaveUnrenderableTextures() &&
-      !texture_manager()->HaveImages()) {
-    return true;
-  }
   bool textures_set = false;
   const Program::SamplerIndices& sampler_indices =
      state_.current_program->sampler_indices();
@@ -7625,7 +7625,11 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
         TextureRef* texture_ref =
             texture_unit.GetInfoForSamplerType(uniform_info->type).get();
         GLenum textarget = GetBindTargetForSamplerType(uniform_info->type);
-        if (!texture_ref || !texture_manager()->CanRender(texture_ref)) {
+        const SamplerState& sampler_state = GetSamplerStateForTextureUnit(
+            uniform_info->type, texture_unit_index);
+        if (!texture_ref ||
+            !texture_manager()->CanRenderWithSampler(
+                texture_ref, sampler_state)) {
           textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           glBindTexture(
@@ -7681,7 +7685,11 @@ void GLES2DecoderImpl::RestoreStateForTextures() {
         TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
         TextureRef* texture_ref =
             texture_unit.GetInfoForSamplerType(uniform_info->type).get();
-        if (!texture_ref || !texture_manager()->CanRender(texture_ref)) {
+        const SamplerState& sampler_state = GetSamplerStateForTextureUnit(
+            uniform_info->type, texture_unit_index);
+        if (!texture_ref ||
+            !texture_manager()->CanRenderWithSampler(
+                texture_ref, sampler_state)) {
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           // Get the texture_ref info that was previously bound here.
           texture_ref =
@@ -15420,6 +15428,21 @@ void GLES2DecoderImpl::DoBindFragmentInputLocationCHROMIUM(
   }
 
   program->SetFragmentInputLocationBinding(name, location);
+}
+
+const SamplerState& GLES2DecoderImpl::GetSamplerStateForTextureUnit(
+    GLenum target, GLuint unit) {
+  if (features().enable_samplers) {
+    Sampler* sampler = state_.sampler_units[unit].get();
+    if (sampler)
+      return sampler->sampler_state();
+  }
+  TextureUnit& texture_unit = state_.texture_units[unit];
+  TextureRef* texture_ref = texture_unit.GetInfoForSamplerType(target).get();
+  if (texture_ref)
+    return texture_ref->texture()->sampler_state();
+
+  return default_sampler_state_;
 }
 
 error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(

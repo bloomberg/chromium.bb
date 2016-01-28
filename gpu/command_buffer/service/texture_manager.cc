@@ -71,20 +71,12 @@ struct TextureSignature {
   // of relying on compilers adhering to this deep dark corner specification.
   TextureSignature(GLenum target,
                    GLint level,
-                   GLenum min_filter,
-                   GLenum mag_filter,
-                   GLenum wrap_r,
-                   GLenum wrap_s,
-                   GLenum wrap_t,
+                   const SamplerState& sampler_state,
                    GLenum usage,
                    GLenum internal_format,
-                   GLenum compare_func,
-                   GLenum compare_mode,
                    GLsizei width,
                    GLsizei height,
                    GLsizei depth,
-                   GLfloat max_lod,
-                   GLfloat min_lod,
                    GLint base_level,
                    GLint border,
                    GLint max_level,
@@ -97,20 +89,20 @@ struct TextureSignature {
     memset(this, 0, sizeof(TextureSignature));
     target_ = target;
     level_ = level;
-    min_filter_ = min_filter;
-    mag_filter_ = mag_filter;
-    wrap_r_ = wrap_r;
-    wrap_s_ = wrap_s;
-    wrap_t_ = wrap_t;
+    min_filter_ = sampler_state.min_filter;
+    mag_filter_ = sampler_state.mag_filter;
+    wrap_r_ = sampler_state.wrap_r;
+    wrap_s_ = sampler_state.wrap_s;
+    wrap_t_ = sampler_state.wrap_t;
     usage_ = usage;
     internal_format_ = internal_format;
-    compare_func_ = compare_func;
-    compare_mode_ = compare_mode;
+    compare_func_ = sampler_state.compare_func;
+    compare_mode_ = sampler_state.compare_mode;
     width_ = width;
     height_ = height;
     depth_ = depth;
-    max_lod_ = max_lod;
-    min_lod_ = min_lod;
+    max_lod_ = sampler_state.max_lod;
+    min_lod_ = sampler_state.min_lod;
     base_level_ = base_level;
     border_ = border;
     max_level_ = max_level;
@@ -289,7 +281,6 @@ TextureManager::~TextureManager() {
   // a Texture belonging to this.
   CHECK_EQ(texture_count_, 0u);
 
-  DCHECK_EQ(0, num_unrenderable_textures_);
   DCHECK_EQ(0, num_unsafe_textures_);
   DCHECK_EQ(0, num_uncleared_mips_);
   DCHECK_EQ(0, num_images_);
@@ -321,16 +312,7 @@ Texture::Texture(GLuint service_id)
       num_uncleared_mips_(0),
       num_npot_faces_(0),
       target_(0),
-      min_filter_(GL_NEAREST_MIPMAP_LINEAR),
-      mag_filter_(GL_LINEAR),
-      wrap_r_(GL_REPEAT),
-      wrap_s_(GL_REPEAT),
-      wrap_t_(GL_REPEAT),
       usage_(GL_NONE),
-      compare_func_(GL_LEQUAL),
-      compare_mode_(GL_NONE),
-      max_lod_(1000.0f),
-      min_lod_(-1000.0f),
       base_level_(0),
       max_level_(1000),
       max_level_set_(-1),
@@ -441,39 +423,67 @@ Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
     }
   }
 
-  bool needs_mips = NeedsMips();
-  if (needs_mips) {
-    if (!texture_complete())
-      return CAN_RENDER_NEVER;
-  }
-
   if (target_ == GL_TEXTURE_CUBE_MAP && !cube_complete())
     return CAN_RENDER_NEVER;
 
-  bool is_npot_compatible = !needs_mips &&
-      wrap_s_ == GL_CLAMP_TO_EDGE &&
-      wrap_t_ == GL_CLAMP_TO_EDGE;
-
-  if (!is_npot_compatible) {
-    if (target_ == GL_TEXTURE_RECTANGLE_ARB)
-      return CAN_RENDER_NEVER;
-    else if (npot())
-      return CAN_RENDER_ONLY_IF_NPOT;
-  }
-
-  return CAN_RENDER_ALWAYS;
+  // Texture may be renderable, but it depends on the sampler it's used with,
+  // the context that's using it, and the extensions available.
+  return CAN_RENDER_NEEDS_VALIDATION;
 }
 
 bool Texture::CanRender(const FeatureInfo* feature_info) const {
+  return CanRenderWithSampler(feature_info, sampler_state());
+}
+
+bool Texture::CanRenderWithSampler(const FeatureInfo* feature_info,
+                                   const SamplerState& sampler_state) const {
   switch (can_render_condition_) {
     case CAN_RENDER_ALWAYS:
       return true;
     case CAN_RENDER_NEVER:
       return false;
-    case CAN_RENDER_ONLY_IF_NPOT:
+    case CAN_RENDER_NEEDS_VALIDATION:
       break;
   }
-  return feature_info->feature_flags().npot_ok;
+
+  bool needs_mips = sampler_state.min_filter != GL_NEAREST &&
+                    sampler_state.min_filter != GL_LINEAR;
+  if (needs_mips) {
+    if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size())
+      return false;
+
+    const Texture::LevelInfo& first_level =
+        face_infos_[0].level_infos[base_level_];
+
+    if (!texture_complete()) {
+      return false;
+    } else if (first_level.type == GL_FLOAT &&
+        !feature_info->feature_flags().enable_texture_float_linear &&
+        (sampler_state.min_filter != GL_NEAREST_MIPMAP_NEAREST ||
+         sampler_state.mag_filter != GL_NEAREST)) {
+      return false;
+    } else if (first_level.type == GL_HALF_FLOAT_OES &&
+        !feature_info->feature_flags().enable_texture_half_float_linear &&
+        (sampler_state.min_filter != GL_NEAREST_MIPMAP_NEAREST ||
+         sampler_state.mag_filter != GL_NEAREST)) {
+      return false;
+    }
+  }
+
+  if (!feature_info->IsES3Enabled()) {
+    bool is_npot_compatible = !needs_mips &&
+        sampler_state.wrap_s == GL_CLAMP_TO_EDGE &&
+        sampler_state.wrap_t == GL_CLAMP_TO_EDGE;
+
+    if (!is_npot_compatible) {
+      if (target_ == GL_TEXTURE_RECTANGLE_ARB)
+        return false;
+      else if (npot())
+        return feature_info->feature_flags().npot_ok;
+    }
+  }
+
+  return true;
 }
 
 void Texture::AddToSignature(
@@ -495,20 +505,12 @@ void Texture::AddToSignature(
 
   TextureSignature signature_data(target,
                                   level,
-                                  min_filter_,
-                                  mag_filter_,
-                                  wrap_r_,
-                                  wrap_s_,
-                                  wrap_t_,
+                                  sampler_state_,
                                   usage_,
                                   info.internal_format,
-                                  compare_func_,
-                                  compare_mode_,
                                   info.width,
                                   info.height,
                                   info.depth,
-                                  max_lod_,
-                                  min_lod_,
                                   base_level_,
                                   info.border,
                                   max_level_,
@@ -565,8 +567,8 @@ void Texture::SetTarget(
   }
 
   if (target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_RECTANGLE_ARB) {
-    min_filter_ = GL_LINEAR;
-    wrap_s_ = wrap_t_ = GL_CLAMP_TO_EDGE;
+    sampler_state_.min_filter = GL_LINEAR;
+    sampler_state_.wrap_s = sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
   }
 
   if (target == GL_TEXTURE_EXTERNAL_OES) {
@@ -750,13 +752,7 @@ void Texture::UpdateMipCleared(LevelInfo* info,
 }
 
 void Texture::UpdateCanRenderCondition() {
-  CanRenderCondition can_render_condition = GetCanRenderCondition();
-  if (can_render_condition_ == can_render_condition)
-    return;
-  for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
-    (*it)->manager()->UpdateCanRenderCondition(can_render_condition_,
-                                               can_render_condition);
-  can_render_condition_ = can_render_condition;
+  can_render_condition_ = GetCanRenderCondition();
 }
 
 void Texture::UpdateHasImages() {
@@ -995,43 +991,43 @@ GLenum Texture::SetParameteri(
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      min_filter_ = param;
+      sampler_state_.min_filter = param;
       break;
     case GL_TEXTURE_MAG_FILTER:
       if (!feature_info->validators()->texture_mag_filter_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      mag_filter_ = param;
+      sampler_state_.mag_filter = param;
       break;
     case GL_TEXTURE_WRAP_R:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      wrap_r_ = param;
+      sampler_state_.wrap_r = param;
       break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      wrap_s_ = param;
+      sampler_state_.wrap_s = param;
       break;
     case GL_TEXTURE_WRAP_T:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      wrap_t_ = param;
+      sampler_state_.wrap_t = param;
       break;
     case GL_TEXTURE_COMPARE_FUNC:
       if (!feature_info->validators()->texture_compare_func.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      compare_func_ = param;
+      sampler_state_.compare_func = param;
       break;
     case GL_TEXTURE_COMPARE_MODE:
       if (!feature_info->validators()->texture_compare_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
       }
-      compare_mode_ = param;
+      sampler_state_.compare_mode = param;
       break;
     case GL_TEXTURE_BASE_LEVEL:
       if (param < 0) {
@@ -1084,10 +1080,10 @@ GLenum Texture::SetParameterf(
         return SetParameteri(feature_info, pname, iparam);
       }
     case GL_TEXTURE_MIN_LOD:
-      min_lod_ = param;
+      sampler_state_.min_lod = param;
       break;
     case GL_TEXTURE_MAX_LOD:
-      max_lod_ = param;
+      sampler_state_.max_lod = param;
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       if (param < 1.f) {
@@ -1125,16 +1121,6 @@ void Texture::Update(const FeatureInfo* feature_info) {
                    (first_level.width > 0);
 
   if (first_level.width == 0 || first_level.height == 0) {
-    texture_complete_ = false;
-  } else if (first_level.type == GL_FLOAT &&
-      !feature_info->feature_flags().enable_texture_float_linear &&
-      (min_filter_ != GL_NEAREST_MIPMAP_NEAREST ||
-       mag_filter_ != GL_NEAREST)) {
-    texture_complete_ = false;
-  } else if (first_level.type == GL_HALF_FLOAT_OES &&
-             !feature_info->feature_flags().enable_texture_half_float_linear &&
-             (min_filter_ != GL_NEAREST_MIPMAP_NEAREST ||
-              mag_filter_ != GL_NEAREST)) {
     texture_complete_ = false;
   }
 
@@ -1456,7 +1442,6 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                         max_3d_texture_size,
                                         max_3d_texture_size)),
       use_default_textures_(use_default_textures),
-      num_unrenderable_textures_(0),
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
       num_images_(0),
@@ -1744,8 +1729,6 @@ void TextureManager::StartTracking(TextureRef* ref) {
   num_uncleared_mips_ += texture->num_uncleared_mips();
   if (!texture->SafeToRenderFrom())
     ++num_unsafe_textures_;
-  if (!texture->CanRender(feature_info_.get()))
-    ++num_unrenderable_textures_;
   if (texture->HasImages())
     ++num_images_;
 }
@@ -1764,10 +1747,6 @@ void TextureManager::StopTracking(TextureRef* ref) {
   if (texture->HasImages()) {
     DCHECK_NE(0, num_images_);
     --num_images_;
-  }
-  if (!texture->CanRender(feature_info_.get())) {
-    DCHECK_NE(0, num_unrenderable_textures_);
-    --num_unrenderable_textures_;
   }
   if (!texture->SafeToRenderFrom()) {
     DCHECK_NE(0, num_unsafe_textures_);
@@ -1834,21 +1813,6 @@ void TextureManager::UpdateSafeToRenderFrom(int delta) {
 void TextureManager::UpdateUnclearedMips(int delta) {
   num_uncleared_mips_ += delta;
   DCHECK_GE(num_uncleared_mips_, 0);
-}
-
-void TextureManager::UpdateCanRenderCondition(
-    Texture::CanRenderCondition old_condition,
-    Texture::CanRenderCondition new_condition) {
-  if (old_condition == Texture::CAN_RENDER_NEVER ||
-      (old_condition == Texture::CAN_RENDER_ONLY_IF_NPOT &&
-       !feature_info_->feature_flags().npot_ok)) {
-    DCHECK_GT(num_unrenderable_textures_, 0);
-    --num_unrenderable_textures_;
-  }
-  if (new_condition == Texture::CAN_RENDER_NEVER ||
-      (new_condition == Texture::CAN_RENDER_ONLY_IF_NPOT &&
-       !feature_info_->feature_flags().npot_ok))
-    ++num_unrenderable_textures_;
 }
 
 void TextureManager::UpdateNumImages(int delta) {
