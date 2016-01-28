@@ -26,6 +26,11 @@ import java.util.UUID;
 
 /**
  * Fake implementations of android.bluetooth.* classes for testing.
+ *
+ * Fakes are contained in a single file to simplify code. Only one C++ file may
+ * access a Java file via JNI, and all of these classes are accessed by
+ * bluetooth_test_android.cc. The alternative would be a C++ .h, .cc file for
+ * each of these classes.
  */
 @JNINamespace("device")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
