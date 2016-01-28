@@ -292,6 +292,8 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       "changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION);
   html_source->AddLocalizedString(
       "promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD);
+  html_source->AddLocalizedString(
+      "disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE);
 }
 
 void AddResetStrings(content::WebUIDataSource* html_source) {

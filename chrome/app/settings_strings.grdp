@@ -279,13 +279,16 @@
     Downloads
   </message>
   <message name="IDS_SETTINGS_DOWNLOAD_LOCATION" desc="Label for the input which allows the user to specify the default download directory.">
-    Download location:
+    Location
   </message>
   <message name="IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION" desc="Text for the button which allows the user to change the default download directory.">
     Change
   </message>
   <message name="IDS_SETTINGS_PROMPT_FOR_DOWNLOAD" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
     Ask where to save each file before downloading
+  </message>
+  <message name="IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE" desc="Label for the checkbox which enables disconnecting from Google Drive account.">
+    Disconnect Google Drive account
   </message>
 
   <!-- Date/time Page -->

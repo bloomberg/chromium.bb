@@ -10,9 +10,9 @@
   <link rel="import" type="css" href="downloads_page.css">
   <template>
     <div class="settings-box split first">
-      <div class="start layout horizontal center">
-        <div id="locationLabel" i18n-content="downloadLocation"></div>
-        <settings-input id="downloadsPath" no-label-float readonly
+      <div class="start">
+        <settings-input id="downloadsPath" always-flow-label readonly
+            i18n-values="label:downloadLocation"
             pref="{{prefs.download.default_directory}}"
             aria-labelledby="locationLabel">
         </settings-input>
@@ -25,6 +25,11 @@
       <settings-checkbox pref="{{prefs.download.prompt_for_download}}"
           i18n-values="label:promptForDownload">
       </settings-checkbox>
+<if expr="chromeos">
+      <settings-checkbox pref="{{prefs.gdata.disabled}}"
+          i18n-values="label:disconnectGoogleDriveAccount">
+      </settings-checkbox>
+</if>
     </div>
   </template>
   <script src="downloads_page.js"></script>
