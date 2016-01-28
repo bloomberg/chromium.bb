@@ -127,12 +127,15 @@ private:
     LayoutUnit crossAxisScrollbarExtent() const;
     LayoutUnit crossAxisScrollbarExtentForChild(const LayoutBox& child) const;
     LayoutPoint flowAwareLocationForChild(const LayoutBox& child) const;
+    bool useChildAspectRatio(const LayoutBox& child) const;
+    LayoutUnit computeMainSizeFromAspectRatioUsing(const LayoutBox& child, Length crossSizeLength) const;
     void setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
     void adjustAlignmentForChild(LayoutBox& child, LayoutUnit);
     ItemPosition alignmentForChild(const LayoutBox& child) const;
     LayoutUnit mainAxisBorderAndPaddingExtentForChild(const LayoutBox& child) const;
     LayoutUnit computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType = LayoutIfNeeded);
     bool mainAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const;
+    bool crossAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const;
     bool childFlexBaseSizeRequiresLayout(const LayoutBox& child) const;
     bool needToStretchChildLogicalHeight(const LayoutBox& child) const;
     bool childHasIntrinsicMainAxisSize(const LayoutBox& child) const;
@@ -154,6 +157,7 @@ private:
     LayoutUnit computeChildMarginValue(Length margin);
     void prepareOrderIteratorAndMargins();
     LayoutUnit adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize);
+    LayoutUnit adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
 

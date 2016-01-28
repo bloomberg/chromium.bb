@@ -42,6 +42,11 @@
 
 namespace blink {
 
+static bool hasAspectRatio(const LayoutBox& child)
+{
+    return child.isImage() || child.isCanvas() || child.isVideo();
+}
+
 struct LayoutFlexibleBox::LineContext {
     LineContext(LayoutUnit crossAxisOffset, LayoutUnit crossAxisExtent, size_t numberOfChildren, LayoutUnit maxAscent)
         : crossAxisOffset(crossAxisOffset)
@@ -452,7 +457,7 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
     // computeLogicalWidth always re-computes the intrinsic widths. However, when our logical width is auto,
     // we can just use our cached value. So let's do that here. (Compare code in LayoutBlock::computePreferredLogicalWidths)
     LayoutUnit borderAndPadding = child.borderAndPaddingLogicalWidth();
-    if (child.styleRef().logicalWidth().isAuto()) {
+    if (child.styleRef().logicalWidth().isAuto() && !hasAspectRatio(child)) {
         if (size.type() == MinContent)
             return child.minPreferredLogicalWidth() - borderAndPadding;
         if (size.type() == MaxContent)
@@ -625,6 +630,44 @@ LayoutPoint LayoutFlexibleBox::flowAwareLocationForChild(const LayoutBox& child)
     return isHorizontalFlow() ? child.location() : child.location().transposedPoint();
 }
 
+bool LayoutFlexibleBox::useChildAspectRatio(const LayoutBox& child) const
+{
+    if (!hasAspectRatio(child))
+        return false;
+    if (child.intrinsicSize().height() == 0) {
+        // We can't compute a ratio in this case.
+        return false;
+    }
+    Length crossSize;
+    if (isHorizontalFlow())
+        crossSize = child.styleRef().height();
+    else
+        crossSize = child.styleRef().width();
+    return crossAxisLengthIsDefinite(child, crossSize);
+}
+
+LayoutUnit LayoutFlexibleBox::computeMainSizeFromAspectRatioUsing(const LayoutBox& child, Length crossSizeLength) const
+{
+    ASSERT(hasAspectRatio(child));
+    ASSERT(child.intrinsicSize().height() != 0);
+
+    LayoutUnit crossSize;
+    if (crossSizeLength.isFixed()) {
+        crossSize = crossSizeLength.value();
+    } else {
+        ASSERT(crossSizeLength.hasPercent());
+        crossSize = hasOrthogonalFlow(child) ?
+            adjustBorderBoxLogicalWidthForBoxSizing(valueForLength(crossSizeLength, contentWidth())) :
+            child.computePercentageLogicalHeight(crossSizeLength);
+    }
+
+    const LayoutSize& childIntrinsicSize = child.intrinsicSize();
+    double ratio = childIntrinsicSize.width().toFloat() / childIntrinsicSize.height().toFloat();
+    if (isHorizontalFlow())
+        return crossSize * ratio;
+    return crossSize / ratio;
+}
+
 void LayoutFlexibleBox::setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint& location)
 {
     if (isHorizontalFlow())
@@ -648,6 +691,20 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(const LayoutBox& child, const L
             hasDefiniteLogicalWidth();
     }
     return true;
+}
+
+bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child, const Length& length) const
+{
+    if (length.isAuto())
+        return false;
+    if (length.hasPercent()) {
+        return hasOrthogonalFlow(child) ?
+            hasDefiniteLogicalWidth() :
+            child.computePercentageLogicalHeight(length) != -1;
+    }
+    // TODO(cbiesinger): Eventually we should support other types of sizes here. Requires updating
+    // computeMainSizeFromAspectRatioUsing.
+    return length.isFixed();
 }
 
 bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(const LayoutBox& child) const
@@ -919,6 +976,8 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
         // css-flexbox section 4.5
         LayoutUnit contentSize = computeMainAxisExtentForChild(child, MinSize, Length(MinContent));
         ASSERT(contentSize >= 0);
+        if (hasAspectRatio(child) && child.intrinsicSize().height() > 0)
+            contentSize = adjustChildSizeForAspectRatioCrossAxisMinAndMax(child, contentSize);
         if (maxExtent != -1 && contentSize > maxExtent)
             contentSize = maxExtent;
 
@@ -929,13 +988,36 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
             LayoutUnit specifiedSize = maxExtent != -1 ? std::min(resolvedMainSize, maxExtent) : resolvedMainSize;
 
             minExtent = std::min(specifiedSize, contentSize);
+        } else if (useChildAspectRatio(child)) {
+            Length crossSizeLength = isHorizontalFlow() ? child.styleRef().height() : child.styleRef().width();
+            LayoutUnit transferredSize = computeMainSizeFromAspectRatioUsing(child, crossSizeLength);
+            transferredSize = adjustChildSizeForAspectRatioCrossAxisMinAndMax(child, transferredSize);
+            minExtent = std::min(transferredSize, contentSize);
         } else {
             minExtent = contentSize;
         }
-        // TODO(cbiesinger): Implement aspect ratio handling (here, transferred size) - crbug.com/249112
     }
     ASSERT(minExtent >= 0);
     return std::max(childSize, minExtent);
+}
+
+LayoutUnit LayoutFlexibleBox::adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize)
+{
+    Length crossMin = isHorizontalFlow() ? child.style()->minHeight() : child.style()->minWidth();
+    Length crossMax = isHorizontalFlow() ? child.style()->maxHeight() : child.style()->maxWidth();
+
+
+    if (crossAxisLengthIsDefinite(child, crossMax)) {
+        LayoutUnit maxValue = computeMainSizeFromAspectRatioUsing(child, crossMax);
+        childSize = std::min(maxValue, childSize);
+    }
+
+    if (crossAxisLengthIsDefinite(child, crossMin)) {
+        LayoutUnit minValue = computeMainSizeFromAspectRatioUsing(child, crossMin);
+        childSize = std::max(minValue, childSize);
+    }
+
+    return childSize;
 }
 
 bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren)
@@ -1177,6 +1259,7 @@ bool LayoutFlexibleBox::needToStretchChildLogicalHeight(const LayoutBox& child) 
     if (isHorizontalFlow() != child.styleRef().isHorizontalWritingMode())
         return false;
 
+    // TODO(cbiesinger): what about indefinite percentage heights?
     return isHorizontalFlow() ? child.styleRef().height().isAuto() : child.styleRef().width().isAuto();
 }
 
@@ -1206,6 +1289,7 @@ EOverflow LayoutFlexibleBox::crossAxisOverflowForChild(const LayoutBox& child) c
         return child.styleRef().overflowY();
     return child.styleRef().overflowX();
 }
+
 void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope& layoutScope, Vector<LineContext>& lineContexts)
 {
     ASSERT(childSizes.size() == children.size());
