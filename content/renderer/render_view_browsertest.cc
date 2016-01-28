@@ -2652,7 +2652,8 @@ TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
 }
 
 #if defined(OS_MACOSX) || defined(USE_AURA)
-TEST_F(RenderViewImplScaleFactorTest, GetCompositionCharacterBoundsTest) {
+TEST_F(RenderViewImplScaleFactorTest,
+       DISABLED_GetCompositionCharacterBoundsTest) {  // http://crbug.com/582016
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableUseZoomForDSF);
   DoSetUp();
