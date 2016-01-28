@@ -18,11 +18,11 @@ DrmDisplayHost::DrmDisplayHost(DrmGpuPlatformSupportHost* sender,
     : sender_(sender),
       snapshot_(new DisplaySnapshotProxy(params)),
       is_dummy_(is_dummy) {
-  sender_->AddChannelObserver(this);
+  sender_->AddGpuThreadObserver(this);
 }
 
 DrmDisplayHost::~DrmDisplayHost() {
-  sender_->RemoveChannelObserver(this);
+  sender_->RemoveGpuThreadObserver(this);
   ClearCallbacks();
 }
 
@@ -107,7 +107,7 @@ void DrmDisplayHost::SetGammaRamp(const std::vector<GammaRampRGBEntry>& lut) {
   sender_->Send(new OzoneGpuMsg_SetGammaRamp(snapshot_->display_id(), lut));
 }
 
-void DrmDisplayHost::OnChannelEstablished() {
+void DrmDisplayHost::OnGpuThreadReady() {
   is_dummy_ = false;
 
   // Note: These responses are done here since the OnChannelDestroyed() is
@@ -115,8 +115,7 @@ void DrmDisplayHost::OnChannelEstablished() {
   ClearCallbacks();
 }
 
-void DrmDisplayHost::OnChannelDestroyed() {
-}
+void DrmDisplayHost::OnGpuThreadRetired() {}
 
 void DrmDisplayHost::ClearCallbacks() {
   if (!configure_callback_.is_null())

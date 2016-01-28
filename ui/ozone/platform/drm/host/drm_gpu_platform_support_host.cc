@@ -9,8 +9,8 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/drm/host/channel_observer.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
+#include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 
 namespace ui {
 
@@ -37,16 +37,17 @@ void DrmGpuPlatformSupportHost::UnregisterHandler(
     handlers_.erase(it);
 }
 
-void DrmGpuPlatformSupportHost::AddChannelObserver(ChannelObserver* observer) {
-  channel_observers_.AddObserver(observer);
+void DrmGpuPlatformSupportHost::AddGpuThreadObserver(
+    GpuThreadObserver* observer) {
+  gpu_thread_observers_.AddObserver(observer);
 
   if (IsConnected())
-    observer->OnChannelEstablished();
+    observer->OnGpuThreadReady();
 }
 
-void DrmGpuPlatformSupportHost::RemoveChannelObserver(
-    ChannelObserver* observer) {
-  channel_observers_.RemoveObserver(observer);
+void DrmGpuPlatformSupportHost::RemoveGpuThreadObserver(
+    GpuThreadObserver* observer) {
+  gpu_thread_observers_.RemoveObserver(observer);
 }
 
 bool DrmGpuPlatformSupportHost::IsConnected() {
@@ -66,8 +67,8 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished(
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->OnChannelEstablished(host_id, send_runner_, send_callback_);
 
-  FOR_EACH_OBSERVER(ChannelObserver, channel_observers_,
-                    OnChannelEstablished());
+  FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
+                    OnGpuThreadReady());
 
   // The cursor is special since it will process input events on the IO thread
   // and can by-pass the UI thread. This means that we need to special case it
@@ -86,8 +87,8 @@ void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
     host_id_ = -1;
     send_runner_ = nullptr;
     send_callback_.Reset();
-    FOR_EACH_OBSERVER(ChannelObserver, channel_observers_,
-                      OnChannelDestroyed());
+    FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
+                      OnGpuThreadRetired());
   }
 
   for (size_t i = 0; i < handlers_.size(); ++i)

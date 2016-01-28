@@ -20,8 +20,8 @@ class Point;
 
 namespace ui {
 
-class ChannelObserver;
 class DrmCursor;
+class GpuThreadObserver;
 
 class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                                   public IPC::Sender {
@@ -32,8 +32,8 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   void RegisterHandler(GpuPlatformSupportHost* handler);
   void UnregisterHandler(GpuPlatformSupportHost* handler);
 
-  void AddChannelObserver(ChannelObserver* observer);
-  void RemoveChannelObserver(ChannelObserver* observer);
+  void AddGpuThreadObserver(GpuThreadObserver* observer);
+  void RemoveGpuThreadObserver(GpuThreadObserver* observer);
 
   bool IsConnected();
 
@@ -58,7 +58,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
   std::vector<GpuPlatformSupportHost*> handlers_;  // Not owned.
   DrmCursor* cursor_;                              // Not owned.
-  base::ObserverList<ChannelObserver> channel_observers_;
+  base::ObserverList<GpuThreadObserver> gpu_thread_observers_;
 };
 
 }  // namespace ui

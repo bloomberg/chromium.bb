@@ -47,12 +47,12 @@ DrmWindowHost::~DrmWindowHost() {
   window_manager_->RemoveWindow(widget_);
   cursor_->OnWindowRemoved(widget_);
 
-  sender_->RemoveChannelObserver(this);
+  sender_->RemoveGpuThreadObserver(this);
   sender_->Send(new OzoneGpuMsg_DestroyWindow(widget_));
 }
 
 void DrmWindowHost::Initialize() {
-  sender_->AddChannelObserver(this);
+  sender_->AddGpuThreadObserver(this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   cursor_->OnWindowAdded(widget_, bounds_, GetCursorConfinedBounds());
   delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
@@ -188,13 +188,12 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
-void DrmWindowHost::OnChannelEstablished() {
+void DrmWindowHost::OnGpuThreadReady() {
   sender_->Send(new OzoneGpuMsg_CreateWindow(widget_));
   SendBoundsChange();
 }
 
-void DrmWindowHost::OnChannelDestroyed() {
-}
+void DrmWindowHost::OnGpuThreadRetired() {}
 
 void DrmWindowHost::SendBoundsChange() {
   // Update the cursor before the window so that the cursor stays within the

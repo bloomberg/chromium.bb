@@ -13,7 +13,7 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/drm/host/channel_observer.h"
+#include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 #include "ui/platform_window/platform_window.h"
 
 namespace ui {
@@ -38,7 +38,7 @@ class EventFactoryEvdev;
 // associated with the window (the surface is created on the GPU process).
 class DrmWindowHost : public PlatformWindow,
                       public PlatformEventDispatcher,
-                      public ChannelObserver {
+                      public GpuThreadObserver {
  public:
   DrmWindowHost(PlatformWindowDelegate* delegate,
                 const gfx::Rect& bounds,
@@ -79,8 +79,8 @@ class DrmWindowHost : public PlatformWindow,
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // ChannelObserver:
-  void OnChannelEstablished() override;
-  void OnChannelDestroyed() override;
+  void OnGpuThreadReady() override;
+  void OnGpuThreadRetired() override;
 
  private:
   void SendBoundsChange();

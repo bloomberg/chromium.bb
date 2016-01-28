@@ -17,7 +17,6 @@ class Point;
 
 namespace ui {
 
-class DrmGpuPlatformSupportHost;
 class DrmWindowHost;
 
 // Responsible for keeping the mapping between the allocated widgets and

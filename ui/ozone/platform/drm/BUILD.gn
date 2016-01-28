@@ -87,7 +87,6 @@ source_set("gbm") {
     "gpu/scanout_buffer.h",
     "gpu/screen_manager.cc",
     "gpu/screen_manager.h",
-    "host/channel_observer.h",
     "host/drm_cursor.cc",
     "host/drm_cursor.h",
     "host/drm_cursor_core.cc",
@@ -114,6 +113,7 @@ source_set("gbm") {
     "host/drm_window_host.h",
     "host/drm_window_host_manager.cc",
     "host/drm_window_host_manager.h",
+    "host/gpu_thread_observer.h",
     "ozone_platform_gbm.cc",
     "ozone_platform_gbm.h",
   ]

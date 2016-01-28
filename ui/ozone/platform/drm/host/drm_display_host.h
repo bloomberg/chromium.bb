@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_delegate.h"
-#include "ui/ozone/platform/drm/host/channel_observer.h"
+#include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ struct DisplaySnapshot_Params;
 class DisplaySnapshot;
 class DrmGpuPlatformSupportHost;
 
-class DrmDisplayHost : public ChannelObserver {
+class DrmDisplayHost : public GpuThreadObserver {
  public:
   DrmDisplayHost(DrmGpuPlatformSupportHost* sender,
                  const DisplaySnapshot_Params& params,
@@ -40,9 +40,9 @@ class DrmDisplayHost : public ChannelObserver {
   void OnHDCPStateReceived(bool status, HDCPState state);
   void OnHDCPStateUpdated(bool status);
 
-  // ChannelObserver:
-  void OnChannelEstablished() override;
-  void OnChannelDestroyed() override;
+  // GpuThreadObserver:
+  void OnGpuThreadReady() override;
+  void OnGpuThreadRetired() override;
 
  private:
   // Calls all the callbacks with failure.
