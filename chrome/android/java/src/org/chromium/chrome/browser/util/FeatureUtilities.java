@@ -173,4 +173,5 @@ public class FeatureUtilities {
 
     private static native void nativeSetDocumentModeEnabled(boolean enabled);
     private static native void nativeSetCustomTabVisible(boolean visible);
+    public static native void nativeSetSqlMmapDisabledByDefault();
 }

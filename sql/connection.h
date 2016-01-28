@@ -149,8 +149,11 @@ class SQL_EXPORT Connection {
   // other platforms.
   void set_restrict_to_user() { restrict_to_user_ = true; }
 
-  // Call to opt out of memory-mapped file I/O.
+  // Call to opt out of memory-mapped file I/O on per connection basis.
   void set_mmap_disabled() { mmap_disabled_ = true; }
+
+  // Call to opt out of memory-mapped file I/O on all connections.
+  static void set_mmap_disabled_by_default();
 
   // Set an error-handling callback.  On errors, the error number (and
   // statement, if available) will be passed to the callback.

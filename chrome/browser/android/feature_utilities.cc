@@ -6,6 +6,8 @@
 
 #include "jni/FeatureUtilities_jni.h"
 
+#include "sql/connection.h"
+
 namespace {
 bool document_mode_enabled = false;
 bool custom_tab_visible = false;
@@ -37,6 +39,11 @@ static void SetCustomTabVisible(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,
                                 jboolean visible) {
   custom_tab_visible = visible;
+}
+
+static void SetSqlMmapDisabledByDefault(JNIEnv* env,
+                                     const JavaParamRef<jclass>& clazz) {
+  sql::Connection::set_mmap_disabled_by_default();
 }
 
 bool RegisterFeatureUtilities(JNIEnv* env) {

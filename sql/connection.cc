@@ -43,6 +43,8 @@ namespace {
 // TODO(shess): Better story on this.  http://crbug.com/56559
 const int kBusyTimeoutSeconds = 1;
 
+bool g_mmap_disabled_default = false;
+
 class ScopedBusyTimeout {
  public:
   explicit ScopedBusyTimeout(sqlite3* db)
@@ -254,6 +256,12 @@ bool Connection::ShouldIgnoreSqliteCompileError(int error) {
       basic_error == SQLITE_CORRUPT;
 }
 
+// static
+void Connection::set_mmap_disabled_by_default() {
+    g_mmap_disabled_default = true;
+}
+
+
 void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
   AssertIOAllowed();
 
@@ -339,7 +347,7 @@ Connection::Connection()
       needs_rollback_(false),
       in_memory_(false),
       poisoned_(false),
-      mmap_disabled_(false),
+      mmap_disabled_(g_mmap_disabled_default),
       mmap_enabled_(false),
       total_changes_at_last_release_(0),
       stats_histogram_(NULL),
