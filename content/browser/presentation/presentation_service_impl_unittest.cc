@@ -801,7 +801,13 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
   SaveQuitClosureAndRunLoop();
 }
 
-TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
+#if defined(OS_ANDROID)
+#define MAYBE_ScreenAvailabilityNotSupported DISABLED_ScreenAvailabilityNotSupported
+#else
+#define MAYBE_ScreenAvailabilityNotSupported ScreenAvailabilityNotSupported
+#endif
+// Flaky on some android bots, see crbug.com/581878.
+TEST_F(PresentationServiceImplTest, MAYBE_ScreenAvailabilityNotSupported) {
   mock_delegate_.set_screen_availability_listening_supported(false);
   EXPECT_CALL(mock_client_,
               OnScreenAvailabilityNotSupported(Eq(kPresentationUrl)));
