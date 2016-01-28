@@ -76,6 +76,9 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line) {
 }
 
+void CastContentBrowserClient::PreCreateThreads() {
+}
+
 scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,

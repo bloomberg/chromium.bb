@@ -315,6 +315,9 @@ int CastBrowserMainParts::PreCreateThreads() {
   if (!base::CreateDirectory(home_dir))
     return 1;
 
+  // Hook for internal code
+  cast_browser_process_->browser_client()->PreCreateThreads();
+
   // AudioManager is created immediately after threads are created, requiring
   // AudioManagerFactory to be set beforehand.
   ::media::AudioManager::SetFactory(new media::CastAudioManagerFactory());
