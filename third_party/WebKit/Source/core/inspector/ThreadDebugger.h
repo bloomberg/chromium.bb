@@ -23,10 +23,9 @@ public:
     ~ThreadDebugger() override;
 
     // V8DebuggerClient implementation.
+    v8::Local<v8::Object> compileDebuggerScript() override;
     void eventListeners(v8::Local<v8::Value>, EventListenerInfoMap&) override;
-    v8::MaybeLocal<v8::Value> compileAndRunInternalScript(const String& script) override;
     v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) override;
-    v8::MaybeLocal<v8::Value> callInternalFunction(v8::Local<v8::Function>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) override;
 
     V8Debugger* debugger() const { return m_debugger.get(); }
 

@@ -4,6 +4,8 @@
 
 #include "core/inspector/InjectedScriptNative.h"
 
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8HiddenValue.h"
 #include "platform/JSONValues.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -17,26 +19,21 @@ InjectedScriptNative::InjectedScriptNative(v8::Isolate* isolate)
 {
 }
 
-static const char privateKeyName[] = "v8-inspector#injectedScript";
-
 InjectedScriptNative::~InjectedScriptNative() { }
 
 void InjectedScriptNative::setOnInjectedScriptHost(v8::Local<v8::Object> injectedScriptHost)
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::External> external = v8::External::New(m_isolate, this);
-    v8::Local<v8::Private> privateKey = v8::Private::ForApi(m_isolate, v8::String::NewFromUtf8(m_isolate, privateKeyName));
-    injectedScriptHost->SetPrivate(m_isolate->GetCurrentContext(), privateKey, external);
+    V8HiddenValue::setHiddenValue(ScriptState::current(m_isolate), injectedScriptHost, V8HiddenValue::injectedScriptNative(m_isolate), external);
 }
 
 InjectedScriptNative* InjectedScriptNative::fromInjectedScriptHost(v8::Local<v8::Object> injectedScriptObject)
 {
     v8::Isolate* isolate = injectedScriptObject->GetIsolate();
     v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, privateKeyName));
-    v8::Local<v8::Value> value;
-    RELEASE_ASSERT(injectedScriptObject->GetPrivate(context, privateKey).ToLocal(&value));
+    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(ScriptState::current(isolate), injectedScriptObject, V8HiddenValue::injectedScriptNative(isolate));
+    ASSERT(!value.IsEmpty());
     v8::Local<v8::External> external = value.As<v8::External>();
     void* ptr = external->Value();
     ASSERT(ptr);

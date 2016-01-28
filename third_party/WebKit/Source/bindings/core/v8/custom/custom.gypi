@@ -15,6 +15,7 @@
             'V8EventTargetCustom.cpp',
             'V8HTMLAllCollectionCustom.cpp',
             'V8HTMLPlugInElementCustom.cpp',
+            'V8InjectedScriptManager.cpp',
             'V8IntersectionObserverCustom.cpp',
             'V8MediaQueryListCustom.cpp',
             'V8MessageChannelCustom.cpp',

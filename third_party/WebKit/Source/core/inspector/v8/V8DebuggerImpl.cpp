@@ -38,8 +38,6 @@
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
 #include "wtf/Atomics.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -712,13 +710,10 @@ void V8DebuggerImpl::compileDebuggerScript()
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
-    const WebData& debuggerScriptSourceResource = Platform::current()->loadResource("DebuggerScriptSource.js");
-    String source(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size());
-    v8::Local<v8::Value> value;
-    if (!m_client->compileAndRunInternalScript(source).ToLocal(&value))
+    v8::Local<v8::Object> value = m_client->compileDebuggerScript();
+    if (value.IsEmpty())
         return;
-    ASSERT(value->IsObject());
-    m_debuggerScript.Reset(m_isolate, value.As<v8::Object>());
+    m_debuggerScript.Reset(m_isolate, value);
 }
 
 v8::Local<v8::Context> V8DebuggerImpl::debuggerContext() const
