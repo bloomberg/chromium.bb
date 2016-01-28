@@ -264,7 +264,7 @@
       },
       {
         "name": "setEnabled",
-        "description": "Enables or disables an app or extension.",
+        "description": "Enables or disables an app or extension. In most cases this function must be called in the context of a user gesture (e.g. an onclick handler for a button), and may present the user with a native confirmation UI as a way of preventing abuse.",
         "parameters": [
           {
             "name": "id",
