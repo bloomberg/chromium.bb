@@ -141,9 +141,8 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     }
 
     // Determine text colors.
-    const LayoutObject& textBoxLayoutObject = *LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem());
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(textBoxLayoutObject, styleToUse, paintInfo);
-    TextPainter::Style selectionStyle = TextPainter::selectionPaintingStyle(textBoxLayoutObject, haveSelection, paintInfo, textStyle);
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_inlineTextBox.lineLayoutItem(), styleToUse, paintInfo);
+    TextPainter::Style selectionStyle = TextPainter::selectionPaintingStyle(m_inlineTextBox.lineLayoutItem(), haveSelection, paintInfo, textStyle);
     bool paintSelectedTextOnly = (paintInfo.phase == PaintPhaseSelection);
     bool paintSelectedTextSeparately = !paintSelectedTextOnly && textStyle != selectionStyle;
 
@@ -157,6 +156,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && !isPrinting) {
         paintDocumentMarkers(paintInfo, boxOrigin, styleToUse, font, DocumentMarkerPaintPhase::Background);
 
+        const LayoutObject& textBoxLayoutObject = *LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem());
         if (haveSelection && !paintsCompositionMarkers(textBoxLayoutObject)) {
             if (combinedText)
                 paintSelection<InlineTextBoxPainter::PaintOptions::CombinedText>(context, boxRect, styleToUse, font, selectionStyle.fillColor, combinedText);

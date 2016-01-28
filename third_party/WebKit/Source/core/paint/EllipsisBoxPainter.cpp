@@ -5,7 +5,7 @@
 #include "core/paint/EllipsisBoxPainter.h"
 
 #include "core/layout/TextRunConstructor.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -54,9 +54,9 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     else if (paintInfo.phase == PaintPhaseSelection)
         return;
 
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.layoutObject(), style, paintInfo);
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.lineLayoutItem(), style, paintInfo);
     if (haveSelection)
-        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.layoutObject(), true, paintInfo, textStyle);
+        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.lineLayoutItem(), true, paintInfo, textStyle);
 
     TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
@@ -66,7 +66,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
 
 void EllipsisBoxPainter::paintSelection(GraphicsContext& context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font)
 {
-    Color textColor = LineLayoutAPIShim::layoutObjectFrom(m_ellipsisBox.lineLayoutItem())->resolveColor(style, CSSPropertyColor);
+    Color textColor = m_ellipsisBox.lineLayoutItem().resolveColor(style, CSSPropertyColor);
     Color c = m_ellipsisBox.lineLayoutItem().selectionBackgroundColor();
     if (!c.alpha())
         return;

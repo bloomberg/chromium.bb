@@ -324,6 +324,11 @@ public:
         return m_layoutObject->selectionBackgroundColor();
     }
 
+    Color resolveColor(const ComputedStyle& styleToUse, int colorProperty)
+    {
+        return m_layoutObject->resolveColor(styleToUse, colorProperty);
+    }
+
     bool isInFlowPositioned() const
     {
         return m_layoutObject->isInFlowPositioned();

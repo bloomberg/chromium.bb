@@ -24,6 +24,7 @@ class GraphicsContext;
 class GraphicsContextStateSaver;
 class LayoutTextCombine;
 class LayoutObject;
+class LineLayoutItem;
 struct PaintInfo;
 class ShadowList;
 class TextRun;
@@ -64,8 +65,8 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
-    static Style textPaintingStyle(const LayoutObject&, const ComputedStyle&, const PaintInfo&);
-    static Style selectionPaintingStyle(const LayoutObject&, bool haveSelection, const PaintInfo&, const Style& textStyle);
+    static Style textPaintingStyle(LineLayoutItem, const ComputedStyle&, const PaintInfo&);
+    static Style selectionPaintingStyle(LineLayoutItem, bool haveSelection, const PaintInfo&, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };
     static AffineTransform rotation(const LayoutRect& boxRect, RotationDirection);
