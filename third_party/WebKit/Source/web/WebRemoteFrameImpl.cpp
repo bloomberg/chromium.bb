@@ -813,7 +813,9 @@ void WebRemoteFrameImpl::didStopLoading()
 bool WebRemoteFrameImpl::isIgnoredForHitTest() const
 {
     HTMLFrameOwnerElement* owner = frame()->deprecatedLocalOwner();
-    return owner ? owner->layoutObject()->style()->pointerEvents() == PE_NONE : false;
+    if (!owner || !owner->layoutObject())
+        return false;
+    return owner->layoutObject()->style()->pointerEvents() == PE_NONE;
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope, WebRemoteFrameClient* client)
