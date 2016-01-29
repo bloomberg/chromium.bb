@@ -108,7 +108,8 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       io_data->basic_url_request_context_getter_.get()->GetURLRequestContext();
   const net::HttpNetworkSession::Params* http_params =
       request_context->GetNetworkSessionParams();
-  EXPECT_TRUE(http_params->use_alternative_services);
+  EXPECT_TRUE(http_params->parse_alternative_services);
+  EXPECT_TRUE(http_params->enable_alternative_service_with_different_host);
   EXPECT_FALSE(http_params->enable_quic);
   net::NextProtoVector expected_protos =
       net::NextProtosWithSpdyAndQuic(false, false);

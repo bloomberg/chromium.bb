@@ -442,7 +442,8 @@ class QuicNetworkTransactionTest
     test_network_quality_estimator_->AddRTTObserver(&rtt_observer_);
 
     if (use_next_protos) {
-      params_.use_alternative_services = true;
+      params_.parse_alternative_services = true;
+      params_.enable_alternative_service_with_different_host = true;
       params_.next_protos = NextProtosWithSpdyAndQuic(true, true);
     }
 

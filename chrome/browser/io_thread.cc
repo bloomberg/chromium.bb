@@ -160,6 +160,20 @@ const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
+// The AltSvc trial controls whether Alt-Svc headers are parsed.
+// Disabled:
+//     Alt-Svc headers are not parsed.
+//     Alternate-Protocol headers are parsed.
+// Enabled:
+//     Alt-Svc headers are parsed, but only same-host entries are used by
+//     default.  (Use "enable_alternative_service_with_different_host" QUIC
+//     parameter to enable entries with different hosts.)
+//     Alternate-Protocol headers are ignored for responses that have an Alt-Svc
+//     header.
+const char kAltSvcFieldTrialName[] = "ParseAltSvc";
+const char kAltSvcFieldTrialDisabledPrefix[] = "AltSvcDisabled";
+const char kAltSvcFieldTrialEnabledPrefix[] = "AltSvcEnabled";
+
 // Field trial for network quality estimator. Seeds RTT and downstream
 // throughput observations with values that correspond to the connection type
 // determined by the operating system.
@@ -937,6 +951,10 @@ void IOThread::InitializeNetworkOptions(const base::CommandLine& command_line) {
     ConfigureSpdyGlobals(command_line, group, params, globals_);
   }
 
+  ConfigureAltSvcGlobals(
+      command_line, base::FieldTrialList::FindFullName(kAltSvcFieldTrialName),
+      globals_);
+
   ConfigureTCPFastOpen(command_line);
 
   ConfigureNPNGlobals(base::FieldTrialList::FindFullName(kNpnTrialName),
@@ -1021,6 +1039,20 @@ void IOThread::ConfigureSpdyGlobals(
 
   // Enable HTTP/1.1 in all cases as the last protocol.
   globals->next_protos.push_back(net::kProtoHTTP11);
+}
+
+// static
+void IOThread::ConfigureAltSvcGlobals(const base::CommandLine& command_line,
+                                      base::StringPiece altsvc_trial_group,
+                                      IOThread::Globals* globals) {
+  if (command_line.HasSwitch(switches::kEnableAlternativeServices) ||
+      altsvc_trial_group.starts_with(kAltSvcFieldTrialEnabledPrefix)) {
+    globals->parse_alternative_services.set(true);
+    return;
+  }
+  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialDisabledPrefix)) {
+    globals->parse_alternative_services.set(false);
+  }
 }
 
 // static
@@ -1137,8 +1169,10 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->next_protos = globals.next_protos;
   globals.trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
-  globals.use_alternative_services.CopyToIfSet(
-      &params->use_alternative_services);
+  globals.parse_alternative_services.CopyToIfSet(
+      &params->parse_alternative_services);
+  globals.enable_alternative_service_with_different_host.CopyToIfSet(
+      &params->enable_alternative_service_with_different_host);
   globals.alternative_service_probability_threshold.CopyToIfSet(
       &params->alternative_service_probability_threshold);
 
@@ -1279,8 +1313,9 @@ void IOThread::ConfigureQuicGlobals(
   bool enable_quic_for_proxies = ShouldEnableQuicForProxies(
       command_line, quic_trial_group, quic_allowed_by_policy);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
-  globals->use_alternative_services.set(
-      ShouldQuicEnableAlternativeServices(command_line, quic_trial_params));
+  globals->enable_alternative_service_with_different_host.set(
+      ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
+                                                          quic_trial_params));
   if (enable_quic) {
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
@@ -1526,12 +1561,18 @@ bool IOThread::ShouldQuicPreferAes(
       GetVariationParam(quic_trial_params, "prefer_aes"), "true");
 }
 
-bool IOThread::ShouldQuicEnableAlternativeServices(
+bool IOThread::ShouldQuicEnableAlternativeServicesForDifferentHost(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
+  // TODO(bnc): Remove inaccurately named "use_alternative_services" parameter.
   return command_line.HasSwitch(switches::kEnableAlternativeServices) ||
          base::LowerCaseEqualsASCII(
              GetVariationParam(quic_trial_params, "use_alternative_services"),
+             "true") ||
+         base::LowerCaseEqualsASCII(
+             GetVariationParam(
+                 quic_trial_params,
+                 "enable_alternative_service_with_different_host"),
              "true");
 }
 

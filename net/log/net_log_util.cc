@@ -419,7 +419,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     status_dict->SetBoolean("spdy_enabled", HttpStreamFactory::spdy_enabled());
     status_dict->SetBoolean(
         "use_alternative_services",
-        http_network_session->params().use_alternative_services);
+        http_network_session->params().parse_alternative_services);
 
     NextProtoVector alpn_protos;
     http_network_session->GetAlpnProtos(&alpn_protos);

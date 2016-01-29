@@ -211,7 +211,8 @@ class IOThread : public content::BrowserThreadDelegate {
     net::NextProtoVector next_protos;
     Optional<std::string> trusted_spdy_proxy;
     std::set<net::HostPortPair> forced_spdy_exclusions;
-    Optional<bool> use_alternative_services;
+    Optional<bool> parse_alternative_services;
+    Optional<bool> enable_alternative_service_with_different_host;
     Optional<double> alternative_service_probability_threshold;
 
     Optional<bool> enable_npn;
@@ -324,6 +325,12 @@ class IOThread : public content::BrowserThreadDelegate {
                                    const VariationParameters& quic_trial_params,
                                    Globals* globals);
 
+  // Configures Alternative Services in |globals| based on the field trial
+  // group.
+  static void ConfigureAltSvcGlobals(const base::CommandLine& command_line,
+                                     base::StringPiece altsvc_trial_group,
+                                     IOThread::Globals* globals);
+
   // Configures NPN in |globals| based on the field trial group.
   static void ConfigureNPNGlobals(base::StringPiece npn_trial_group,
                                   Globals* globals);
@@ -430,8 +437,8 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC should prefer AES-GCN even without hardware support.
   static bool ShouldQuicPreferAes(const VariationParameters& quic_trial_params);
 
-  // Returns true if QUIC should enable alternative services.
-  static bool ShouldQuicEnableAlternativeServices(
+  // Returns true if QUIC should enable alternative services for different host.
+  static bool ShouldQuicEnableAlternativeServicesForDifferentHost(
       const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 

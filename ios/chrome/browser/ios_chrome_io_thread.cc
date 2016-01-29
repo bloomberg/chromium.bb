@@ -114,6 +114,20 @@ const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
+// The AltSvc trial controls whether Alt-Svc headers are parsed.
+// Disabled:
+//     Alt-Svc headers are not parsed.
+//     Alternate-Protocol headers are parsed.
+// Enabled:
+//     Alt-Svc headers are parsed, but only same-host entries are used by
+//     default.  (Use "enable_alternative_service_with_different_host" QUIC
+//     parameter to enable entries with different hosts.)
+//     Alternate-Protocol headers are ignored for responses that have an Alt-Svc
+//     header.
+const char kAltSvcFieldTrialName[] = "ParseAltSvc";
+const char kAltSvcFieldTrialDisabledPrefix[] = "AltSvcDisabled";
+const char kAltSvcFieldTrialEnabledPrefix[] = "AltSvcEnabled";
+
 // Field trial for network quality estimator. Seeds RTT and downstream
 // throughput observations with values that correspond to the connection type
 // determined by the operating system.
@@ -488,6 +502,9 @@ void IOSChromeIOThread::InitializeNetworkOptions() {
   }
   ConfigureSpdyGlobals(group, params, globals_);
 
+  ConfigureAltSvcGlobals(
+      base::FieldTrialList::FindFullName(kAltSvcFieldTrialName), globals_);
+
   ConfigureSSLTCPFastOpen();
 
   ConfigureNPNGlobals(base::FieldTrialList::FindFullName(kNpnTrialName),
@@ -555,6 +572,19 @@ void IOSChromeIOThread::ConfigureSpdyGlobals(
 }
 
 // static
+void IOSChromeIOThread::ConfigureAltSvcGlobals(
+    base::StringPiece altsvc_trial_group,
+    IOSChromeIOThread::Globals* globals) {
+  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialEnabledPrefix)) {
+    globals->parse_alternative_services.set(true);
+    return;
+  }
+  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialDisabledPrefix)) {
+    globals->parse_alternative_services.set(false);
+  }
+}
+
+// static
 void IOSChromeIOThread::ConfigureNPNGlobals(
     base::StringPiece npn_trial_group,
     IOSChromeIOThread::Globals* globals) {
@@ -609,8 +639,10 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->enable_spdy_ping_based_connection_checking);
   params->next_protos = globals.next_protos;
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
-  globals.use_alternative_services.CopyToIfSet(
-      &params->use_alternative_services);
+  globals.parse_alternative_services.CopyToIfSet(
+      &params->parse_alternative_services);
+  globals.enable_alternative_service_with_different_host.CopyToIfSet(
+      &params->enable_alternative_service_with_different_host);
   globals.alternative_service_probability_threshold.CopyToIfSet(
       &params->alternative_service_probability_threshold);
 
@@ -717,8 +749,8 @@ void IOSChromeIOThread::ConfigureQuicGlobals(
   globals->enable_quic.set(enable_quic);
   bool enable_quic_for_proxies = ShouldEnableQuicForProxies(quic_trial_group);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
-  globals->use_alternative_services.set(
-      ShouldQuicEnableAlternativeServices(quic_trial_params));
+  globals->enable_alternative_service_with_different_host.set(
+      ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params));
   if (enable_quic) {
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
@@ -883,10 +915,17 @@ bool IOSChromeIOThread::ShouldQuicPreferAes(
       GetVariationParam(quic_trial_params, "prefer_aes"), "true");
 }
 
-bool IOSChromeIOThread::ShouldQuicEnableAlternativeServices(
+bool IOSChromeIOThread::ShouldQuicEnableAlternativeServicesForDifferentHost(
     const VariationParameters& quic_trial_params) {
+  // TODO(bnc): Remove inaccurately named "use_alternative_services" parameter.
   return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "use_alternative_services"), "true");
+             GetVariationParam(quic_trial_params, "use_alternative_services"),
+             "true") ||
+         base::LowerCaseEqualsASCII(
+             GetVariationParam(
+                 quic_trial_params,
+                 "enable_alternative_service_with_different_host"),
+             "true");
 }
 
 int IOSChromeIOThread::GetQuicMaxNumberOfLossyConnections(

@@ -206,7 +206,8 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   NextProtoVector next_protos;
   std::string trusted_spdy_proxy;
-  bool use_alternative_services;
+  bool parse_alternative_services;
+  bool enable_alternative_service_with_different_host;
   NetLog* net_log;
 };
 

@@ -107,8 +107,11 @@ class NET_EXPORT HttpNetworkSession
     std::string trusted_spdy_proxy;
     // URLs to exclude from forced SPDY.
     std::set<HostPortPair> forced_spdy_exclusions;
-    // Process Alt-Svc headers.
-    bool use_alternative_services;
+    // Whether to parse Alt-Svc headers.
+    bool parse_alternative_services;
+    // Whether to enable Alt-Svc entries with hostname different than that of
+    // the origin.
+    bool enable_alternative_service_with_different_host;
     // Only honor alternative service entries which have a higher probability
     // than this value.
     double alternative_service_probability_threshold;

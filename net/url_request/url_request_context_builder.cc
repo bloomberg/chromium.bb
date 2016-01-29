@@ -180,7 +180,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       next_protos(NextProtosDefaults()),
-      use_alternative_services(true),
+      parse_alternative_services(true),
+      enable_alternative_service_with_different_host(true),
       enable_quic(false),
       quic_max_server_configs_stored_in_properties(0),
       quic_delay_tcp_race(false),
@@ -385,8 +386,11 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.testing_fixed_http_port;
   network_session_params.testing_fixed_https_port =
       http_network_session_params_.testing_fixed_https_port;
-  network_session_params.use_alternative_services =
-      http_network_session_params_.use_alternative_services;
+  network_session_params.parse_alternative_services =
+      http_network_session_params_.parse_alternative_services;
+  network_session_params.enable_alternative_service_with_different_host =
+      http_network_session_params_
+          .enable_alternative_service_with_different_host;
   network_session_params.trusted_spdy_proxy =
       http_network_session_params_.trusted_spdy_proxy;
   network_session_params.next_protos = http_network_session_params_.next_protos;

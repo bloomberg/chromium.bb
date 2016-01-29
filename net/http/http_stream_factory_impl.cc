@@ -221,7 +221,7 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
   bool quic_all_broken = true;
 
   const bool enable_different_host =
-      session_->params().use_alternative_services;
+      session_->params().enable_alternative_service_with_different_host;
 
   // First Alt-Svc that is not marked as broken.
   AlternativeService first_alternative_service;

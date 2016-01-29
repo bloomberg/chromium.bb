@@ -400,7 +400,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // TODO(mef): Remove this work around for crbug.com/543366 once it is fixed.
   net::URLRequestContextBuilder::HttpNetworkSessionParams
       custom_http_network_session_params;
-  custom_http_network_session_params.use_alternative_services = false;
+  custom_http_network_session_params.parse_alternative_services = false;
   context_builder.set_http_network_session_params(
       custom_http_network_session_params);
 

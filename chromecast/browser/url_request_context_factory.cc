@@ -296,7 +296,8 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   // TODO(lcwu): http://crbug.com/329681. Remove this once spdy is enabled
   // by default at the content level.
   params->next_protos = net::NextProtosSpdy31();
-  params->use_alternative_services = true;
+  params->parse_alternative_services = true;
+  params->enable_alternative_service_with_different_host = true;
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
