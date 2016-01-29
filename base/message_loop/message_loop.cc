@@ -398,7 +398,7 @@ MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
           new internal::MessageLoopTaskRunner(incoming_task_queue_)),
       task_runner_(unbound_task_runner_) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
-  DCHECK_EQ(type_ == TYPE_CUSTOM, !pump_factory_.is_null());
+  DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
 }
 
 void MessageLoop::BindToCurrentThread() {
@@ -683,6 +683,10 @@ void MessageLoop::ReleaseSoonInternal(
 #if !defined(OS_NACL)
 //------------------------------------------------------------------------------
 // MessageLoopForUI
+
+MessageLoopForUI::MessageLoopForUI(scoped_ptr<MessagePump> pump)
+    : MessageLoop(TYPE_UI, Bind(&ReturnPump, Passed(&pump))) {
+}
 
 #if defined(OS_ANDROID)
 void MessageLoopForUI::Start() {

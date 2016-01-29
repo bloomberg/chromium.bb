@@ -399,14 +399,25 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
  protected:
   scoped_ptr<MessagePump> pump_;
 
+  using MessagePumpFactoryCallback = Callback<scoped_ptr<MessagePump>()>;
+
+  // Common protected constructor. Other constructors delegate the
+  // initialization to this constructor.
+  // A subclass can invoke this constructor to create a message_loop of a
+  // specific type with a custom loop. The implementation does not call
+  // BindToCurrentThread. If this constructor is invoked directly by a subclass,
+  // then the subclass must subsequently bind the message loop.
+  MessageLoop(Type type, MessagePumpFactoryCallback pump_factory);
+
+  // Configure various members and bind this message loop to the current thread.
+  void BindToCurrentThread();
+
  private:
   friend class RunLoop;
   friend class internal::IncomingTaskQueue;
   friend class ScheduleWorkTest;
   friend class Thread;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
-
-  using MessagePumpFactoryCallback = Callback<scoped_ptr<MessagePump>()>;
 
   // Creates a MessageLoop without binding to a thread.
   // If |type| is TYPE_CUSTOM non-null |pump_factory| must be also given
@@ -422,13 +433,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   static scoped_ptr<MessageLoop> CreateUnbound(
       Type type,
       MessagePumpFactoryCallback pump_factory);
-
-  // Common private constructor. Other constructors delegate the initialization
-  // to this constructor.
-  MessageLoop(Type type, MessagePumpFactoryCallback pump_factory);
-
-  // Configure various members and bind this message loop to the current thread.
-  void BindToCurrentThread();
 
   // Sets the ThreadTaskRunnerHandle for the current thread to point to the
   // task runner for this message loop.
@@ -563,17 +567,19 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   MessageLoopForUI() : MessageLoop(TYPE_UI) {
   }
 
+  explicit MessageLoopForUI(scoped_ptr<MessagePump> pump);
+
   // Returns the MessageLoopForUI of the current thread.
   static MessageLoopForUI* current() {
     MessageLoop* loop = MessageLoop::current();
     DCHECK(loop);
-    DCHECK_EQ(MessageLoop::TYPE_UI, loop->type());
+    DCHECK(loop->IsType(MessageLoop::TYPE_UI));
     return static_cast<MessageLoopForUI*>(loop);
   }
 
   static bool IsCurrent() {
     MessageLoop* loop = MessageLoop::current();
-    return loop && loop->type() == MessageLoop::TYPE_UI;
+    return loop && loop->IsType(MessageLoop::TYPE_UI);
   }
 
 #if defined(OS_IOS)
