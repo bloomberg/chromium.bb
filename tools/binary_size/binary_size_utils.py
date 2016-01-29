@@ -35,8 +35,14 @@ def ParseNm(nm_lines):
   # Match lines with no symbol name, only addr and type
   addr_only_re = re.compile(r'^[0-9a-f]{8,} (.)$')
 
+  seen_lines = set()
   for line in nm_lines:
     line = line.rstrip()
+    if line in seen_lines:
+      # nm outputs identical lines at times. We don't want to treat
+      # those as distinct symbols because that would make no sense.
+      continue
+    seen_lines.add(line)
     match = sym_re.match(line)
     if match:
       address, size, sym_type, sym = match.groups()[0:4]
