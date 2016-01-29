@@ -53,6 +53,7 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/browser_sync/common",
@@ -90,9 +91,16 @@ source_set("test_support") {
   deps = [
     ":browser",
     "//base",
+    "//base/test:test_support",
+    "//components/pref_registry",
+    "//components/signin/core/browser:browser",
+    "//components/signin/core/browser:test_support",
     "//components/sync_driver",
     "//components/sync_driver:test_support",
+    "//components/sync_sessions:test_support",
+    "//components/syncable_prefs:test_support",
     "//google_apis",
+    "//net:test_support",
     "//testing/gmock",
   ]
 }

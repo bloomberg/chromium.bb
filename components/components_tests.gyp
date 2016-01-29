@@ -1009,6 +1009,7 @@
         'components.gyp:bookmarks_managed',
         'components.gyp:bookmarks_test_support',
         'components.gyp:browser_sync_browser',
+        'components.gyp:browser_sync_browser_test_support',
         'components.gyp:bubble',
         'components.gyp:captive_portal_test_support',
         'components.gyp:certificate_reporting',

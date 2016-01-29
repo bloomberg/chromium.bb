@@ -1533,7 +1533,7 @@ test("unit_tests") {
   defines = []
 
   deps = [
-    # NOTE: New depndencies should generally be added in the OS!="ios"
+    # NOTE: New dependencies should generally be added in the OS!="ios"
     # dependencies block below, rather than here.
     # Unit tests should only depend on:
     # 1) everything that the chrome binaries depend on:
@@ -1544,6 +1544,7 @@ test("unit_tests") {
     ":test_support_unit",
     "//base/test:test_support",
     "//chrome/test:test_support",
+    "//components/browser_sync/browser:test_support",
     "//components/content_settings/core/test:test_support",
     "//components/resources",
     "//content/public/app:both",

@@ -2220,6 +2220,7 @@
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
         '../components/components_resources.gyp:components_resources',
+        '../components/components.gyp:browser_sync_browser_test_support',
         '../components/components.gyp:content_settings_core_test_support',
         '../components/components.gyp:gcm_driver',
         '../components/components.gyp:password_manager_core_browser_test_support',
