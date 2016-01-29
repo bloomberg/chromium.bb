@@ -11,8 +11,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/persistent_pref_store.h"
-#include "base/prefs/value_map_pref_store.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
@@ -23,19 +21,6 @@ namespace net {
 
 namespace {
 
-enum PersistenceFailureReason {
-  // File didn't exist; is being created.
-  PERSISTENCE_FAILURE_REASON_NO_FILE = 1,
-
-  // Error reading in information, but should be able to write.
-  PERSISTENCE_FAILURE_REASON_READ_FAILED = 2,
-
-  // Error leading to abort on attempted persistence.
-  PERSISTENCE_FAILURE_REASON_WRITE_FAILED = 3,
-
-  PERSISTENCE_FAILURE_REASON_MAX = 4
-};
-
 // Dictionaries that haven't been touched in 24 hours may be evicted
 // to make room for new dictionaries.
 const int kFreshnessLifetimeHours = 24;
@@ -43,9 +28,11 @@ const int kFreshnessLifetimeHours = 24;
 // Dictionaries that have never been used only stay fresh for one hour.
 const int kNeverUsedFreshnessLifetimeHours = 1;
 
-void RecordPersistenceFailure(PersistenceFailureReason failure_reason) {
-  UMA_HISTOGRAM_ENUMERATION("Sdch3.PersistenceFailureReason", failure_reason,
-                            PERSISTENCE_FAILURE_REASON_MAX);
+void RecordPersistenceFailure(
+    SdchOwner::PrefStorage::ReadError failure_reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sdch3.PersistenceFailureReason", failure_reason,
+      SdchOwner::PrefStorage::PERSISTENCE_FAILURE_REASON_MAX);
 }
 
 // Schema specifications and access routines.
@@ -54,7 +41,7 @@ void RecordPersistenceFailure(PersistenceFailureReason failure_reason) {
 // stack systems that want to persist data over browser restarts, and so
 // use of it must be namespace restricted.
 // Schema:
-//      pref_store_->GetValue(kPreferenceName) -> Dictionary {
+//      pref_store_->GetValue() -> Dictionary {
 //          'version' -> 2 [int]
 //          'dictionaries' -> Dictionary {
 //              server_hash -> {
@@ -65,7 +52,6 @@ void RecordPersistenceFailure(PersistenceFailureReason failure_reason) {
 //                  'size' -> size [int]
 //          }
 //      }
-const char kPreferenceName[] = "SDCH";
 const char kVersionKey[] = "version";
 const char kDictionariesKey[] = "dictionaries";
 const char kDictionaryUrlKey[] = "url";
@@ -76,19 +62,49 @@ const char kDictionarySizeKey[] = "size";
 
 const int kVersion = 2;
 
+// A simple implementation of pref storage that just stores the value in
+// memory.
+class ValueMapPrefStorage : public SdchOwner::PrefStorage {
+ public:
+  ValueMapPrefStorage() {}
+  ~ValueMapPrefStorage() override {}
+
+  ReadError GetReadError() const override { return PERSISTENCE_FAILURE_NONE; }
+
+  bool GetValue(const base::DictionaryValue** result) const override {
+    *result = &storage_;
+    return true;
+  }
+  bool GetMutableValue(base::DictionaryValue** result) override {
+    *result = &storage_;
+    return true;
+  }
+  void SetValue(scoped_ptr<base::DictionaryValue> value) override {
+    storage_.Clear();
+    storage_.MergeDictionary(value.get());
+  }
+
+  void ReportValueChanged() override {}
+
+  // This storage class requires no special initialization.
+  bool IsInitializationComplete() override { return true; }
+  void StartObservingInit(SdchOwner* observer) override {}
+  void StopObservingInit() override {}
+
+ private:
+  base::DictionaryValue storage_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValueMapPrefStorage);
+};
+
 // This function returns store[kPreferenceName/kDictionariesKey].  The caller
 // is responsible for making sure any needed calls to
 // |store->ReportValueChanged()| occur.
 base::DictionaryValue* GetPersistentStoreDictionaryMap(
-    WriteablePrefStore* store) {
-  base::Value* result = nullptr;
-  bool success = store->GetMutableValue(kPreferenceName, &result);
-  DCHECK(success);
-
+    SdchOwner::PrefStorage* store) {
   base::DictionaryValue* preference_dictionary = nullptr;
-  success = result->GetAsDictionary(&preference_dictionary);
+  bool success = store->GetMutableValue(&preference_dictionary);
   DCHECK(success);
-  DCHECK(preference_dictionary);
 
   base::DictionaryValue* dictionary_list_dictionary = nullptr;
   success = preference_dictionary->GetDictionary(kDictionariesKey,
@@ -102,13 +118,12 @@ base::DictionaryValue* GetPersistentStoreDictionaryMap(
 // This function initializes a pref store with an empty version of the
 // above schema, removing anything previously in the store under
 // kPreferenceName.
-void InitializePrefStore(WriteablePrefStore* store) {
+void InitializePrefStore(SdchOwner::PrefStorage* store) {
   scoped_ptr<base::DictionaryValue> empty_store(new base::DictionaryValue);
   empty_store->SetInteger(kVersionKey, kVersion);
   empty_store->Set(kDictionariesKey,
                    make_scoped_ptr(new base::DictionaryValue));
-  store->SetValue(kPreferenceName, std::move(empty_store),
-                  WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  store->SetValue(std::move(empty_store));
 }
 
 // A class to allow iteration over all dictionaries in the pref store, and
@@ -122,7 +137,7 @@ void InitializePrefStore(WriteablePrefStore* store) {
 // pref store schema.
 class DictionaryPreferenceIterator {
  public:
-  explicit DictionaryPreferenceIterator(WriteablePrefStore* pref_store);
+  explicit DictionaryPreferenceIterator(SdchOwner::PrefStorage* pref_store);
 
   bool IsAtEnd() const;
   void Advance();
@@ -152,7 +167,7 @@ class DictionaryPreferenceIterator {
 };
 
 DictionaryPreferenceIterator::DictionaryPreferenceIterator(
-    WriteablePrefStore* pref_store)
+    SdchOwner::PrefStorage* pref_store)
     : use_count_(0),
       size_(0),
       dictionary_iterator_(*GetPersistentStoreDictionaryMap(pref_store)) {
@@ -215,21 +230,19 @@ bool DictionaryPreferenceIterator::TryLoadDictionary() {
   return true;
 }
 
-// Triggers a ReportValueChanged() on the specified WriteablePrefStore
-// when the object goes out of scope.
+// Triggers a ReportValueChanged() when the object goes out of scope.
 class ScopedPrefNotifier {
  public:
   // Caller must guarantee lifetime of |*pref_store| exceeds the
   // lifetime of this object.
-  ScopedPrefNotifier(WriteablePrefStore* pref_store)
-      : pref_store_(pref_store) {}
-  ~ScopedPrefNotifier() {
-    pref_store_->ReportValueChanged(
-        kPreferenceName, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  ScopedPrefNotifier(SdchOwner::PrefStorage* pref_store)
+      : pref_store_(pref_store) {
+    DCHECK(pref_store);
   }
+  ~ScopedPrefNotifier() { pref_store_->ReportValueChanged(); }
 
  private:
-  WriteablePrefStore* pref_store_;
+  SdchOwner::PrefStorage* pref_store_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPrefNotifier);
 };
@@ -244,6 +257,8 @@ const size_t SdchOwner::kMaxTotalDictionarySize = 2 * 500 * 1000;
 // static
 const size_t SdchOwner::kMaxTotalDictionarySize = 20 * 1000 * 1000;
 #endif
+
+SdchOwner::PrefStorage::~PrefStorage() {}
 
 // Somewhat arbitrary, but we assume a dictionary smaller than
 // 50K isn't going to do anyone any good.  Note that this still doesn't
@@ -287,7 +302,7 @@ SdchOwner::SdchOwner(SdchManager* sdch_manager, URLRequestContext* context)
                      // SdchOwner, the SdchOwner object will be available
                      // for the lifetime of |memory_pressure_listener_|.
                      base::Unretained(this))),
-      in_memory_pref_store_(new ValueMapPrefStore()),
+      in_memory_pref_store_(new ValueMapPrefStorage()),
       external_pref_store_(nullptr),
       pref_store_(in_memory_pref_store_.get()),
       creation_time_(clock_->Now()) {
@@ -309,8 +324,8 @@ SdchOwner::~SdchOwner() {
 
   // This object only observes the external store during loading,
   // i.e. before it's made the default preferences store.
-  if (external_pref_store_)
-    external_pref_store_->RemoveObserver(this);
+  if (external_pref_store_ && pref_store_ != external_pref_store_.get())
+    external_pref_store_->StopObservingInit();
 
   int64_t object_lifetime = (clock_->Now() - creation_time_).InMilliseconds();
   for (const auto& val : consumed_byte_seconds_) {
@@ -321,16 +336,16 @@ SdchOwner::~SdchOwner() {
                               val / object_lifetime);
     }
   }
-
 }
 
-void SdchOwner::EnablePersistentStorage(PersistentPrefStore* pref_store) {
+void SdchOwner::EnablePersistentStorage(scoped_ptr<PrefStorage> pref_store) {
   DCHECK(!external_pref_store_);
-  external_pref_store_ = pref_store;
-  external_pref_store_->AddObserver(this);
+  DCHECK(pref_store);
+  external_pref_store_ = std::move(pref_store);
+  external_pref_store_->StartObservingInit(this);
 
   if (external_pref_store_->IsInitializationComplete())
-    OnInitializationCompleted(true);
+    OnPrefStorageInitializationComplete(true);
 }
 
 void SdchOwner::SetMaxTotalDictionarySize(size_t max_total_dictionary_size) {
@@ -581,12 +596,8 @@ void SdchOwner::OnClearDictionaries() {
   InitializePrefStore(pref_store_);
 }
 
-void SdchOwner::OnPrefValueChanged(const std::string& key) {
-}
-
-void SdchOwner::OnInitializationCompleted(bool succeeded) {
-  PersistentPrefStore::PrefReadError error =
-      external_pref_store_->GetReadError();
+void SdchOwner::OnPrefStorageInitializationComplete(bool succeeded) {
+  PrefStorage::ReadError error = external_pref_store_->GetReadError();
   // Errors on load are self-correcting; if dictionaries were not
   // persisted from the last instance of the browser, they will be
   // faulted in by user action over time.  However, if a load error
@@ -594,73 +605,38 @@ void SdchOwner::OnInitializationCompleted(bool succeeded) {
   // the in memory pref store is left in place.
   if (!succeeded) {
     // Failure means a write failed, since read failures are recoverable.
-    DCHECK_NE(
-        error,
-        PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE);
-    DCHECK_NE(error,
-              PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
-
-    LOG(ERROR) << "Pref store write failed: " << error;
-    external_pref_store_->RemoveObserver(this);
+    external_pref_store_->StopObservingInit();
     external_pref_store_ = nullptr;
-    RecordPersistenceFailure(PERSISTENCE_FAILURE_REASON_WRITE_FAILED);
+    RecordPersistenceFailure(
+        PrefStorage::PERSISTENCE_FAILURE_REASON_WRITE_FAILED);
     return;
   }
-  switch (external_pref_store_->GetReadError()) {
-    case PersistentPrefStore::PREF_READ_ERROR_NONE:
-        break;
 
-    case PersistentPrefStore::PREF_READ_ERROR_NO_FILE:
-      // First time reading; the file will be created.
-      RecordPersistenceFailure(PERSISTENCE_FAILURE_REASON_NO_FILE);
-      break;
-
-    case PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE:
-    case PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE:
-    case PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER:
-    case PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED:
-    case PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT:
-      RecordPersistenceFailure(PERSISTENCE_FAILURE_REASON_READ_FAILED);
-      break;
-
-    case PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED:
-    case PersistentPrefStore::PREF_READ_ERROR_FILE_NOT_SPECIFIED:
-    case PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE:
-    case PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM:
-      // Shouldn't ever happen. ACCESS_DENIED and FILE_NOT_SPECIFIED should
-      // imply !succeeded, and TASK_INCOMPLETE should never be delivered.
-      NOTREACHED();
-      break;
-  }
-
+  if (error != PrefStorage::PERSISTENCE_FAILURE_NONE)
+    RecordPersistenceFailure(error);
 
   // Load in what was stored before chrome exited previously.
-  const base::Value* sdch_persistence_value = nullptr;
   const base::DictionaryValue* sdch_persistence_dictionary = nullptr;
 
   // The GetPersistentStore() routine above assumes data formatted
   // according to the schema described at the top of this file.  Since
   // this data comes from disk, to avoid disk corruption resulting in
   // persistent chrome errors this code avoids those assupmtions.
-  if (external_pref_store_->GetValue(kPreferenceName,
-                                     &sdch_persistence_value) &&
-      sdch_persistence_value->GetAsDictionary(&sdch_persistence_dictionary)) {
+  if (external_pref_store_->GetValue(&sdch_persistence_dictionary))
     SchedulePersistedDictionaryLoads(*sdch_persistence_dictionary);
-  }
 
   // Reset the persistent store and update it with the accumulated
   // information from the local store.
-  InitializePrefStore(external_pref_store_);
+  InitializePrefStore(external_pref_store_.get());
 
-  ScopedPrefNotifier scoped_pref_notifier(external_pref_store_);
-  GetPersistentStoreDictionaryMap(external_pref_store_)
+  ScopedPrefNotifier scoped_pref_notifier(external_pref_store_.get());
+  GetPersistentStoreDictionaryMap(external_pref_store_.get())
       ->Swap(GetPersistentStoreDictionaryMap(in_memory_pref_store_.get()));
 
   // This object can stop waiting on (i.e. observing) the external preference
   // store and switch over to using it as the primary preference store.
-  pref_store_ = external_pref_store_;
-  external_pref_store_->RemoveObserver(this);
-  external_pref_store_ = nullptr;
+  pref_store_ = external_pref_store_.get();
+  external_pref_store_->StopObservingInit();
   in_memory_pref_store_ = nullptr;
 }
 

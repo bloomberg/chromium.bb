@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -27,17 +26,16 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
 namespace {
 
-bool GetDictionaryForURL(TestingPrefStore* store,
+bool GetDictionaryForURL(SdchOwner::PrefStorage* store,
                          const GURL& url,
                          std::string* hash,
                          base::DictionaryValue** dict) {
-  base::Value* sdch_val = nullptr;
   base::DictionaryValue* sdch_dict = nullptr;
-  if (!store->GetMutableValue("SDCH", &sdch_val))
-    return false;
-  if (!sdch_val->GetAsDictionary(&sdch_dict))
+  if (!store->GetMutableValue(&sdch_dict))
     return false;
 
   base::DictionaryValue* dicts_dict = nullptr;
@@ -63,9 +61,59 @@ bool GetDictionaryForURL(TestingPrefStore* store,
   return false;
 }
 
-}  // namespace
+// This class supports copying so we can emulate persistent storage.
+class TestPrefStorage : public SdchOwner::PrefStorage {
+ public:
+  explicit TestPrefStorage(bool initialized)
+      : initialized_(initialized), initialization_observer_(nullptr) {}
+  explicit TestPrefStorage(const TestPrefStorage& other)
+      : initialized_(other.initialized_),
+        initialization_observer_(nullptr) {  // Don't copy observer.
+    storage_.MergeDictionary(&other.storage_);
+  }
 
-namespace net {
+  ~TestPrefStorage() override {}
+
+  void SetInitialized() {
+    DCHECK(!initialized_);
+    initialized_ = true;
+    if (initialization_observer_)
+      initialization_observer_->OnPrefStorageInitializationComplete(true);
+  }
+
+  ReadError GetReadError() const override { return PERSISTENCE_FAILURE_NONE; }
+
+  bool GetValue(const base::DictionaryValue** result) const override {
+    *result = &storage_;
+    return true;
+  }
+  bool GetMutableValue(base::DictionaryValue** result) override {
+    *result = &storage_;
+    return true;
+  }
+  void SetValue(scoped_ptr<base::DictionaryValue> value) override {
+    storage_.Clear();
+    storage_.MergeDictionary(value.get());
+  }
+
+  void ReportValueChanged() override {}
+
+  // This storage class requires no special initialization.
+  bool IsInitializationComplete() override { return initialized_; }
+  void StartObservingInit(SdchOwner* observer) override {
+    DCHECK(!initialization_observer_);
+    initialization_observer_ = observer;
+  }
+  void StopObservingInit() override { initialization_observer_ = nullptr; }
+
+ private:
+  bool initialized_;
+  SdchOwner* initialization_observer_;
+
+  base::DictionaryValue storage_;
+};
+
+}  // namespace
 
 static const char generic_url[] = "http://www.example.com";
 static const char generic_domain[] = "www.example.com";
@@ -263,7 +311,6 @@ class SdchOwnerTest : public testing::Test {
   SdchOwnerTest()
       : last_jobs_created_(error_jobs_created),
         dictionary_creation_index_(0),
-        pref_store_(new TestingPrefStore),
         sdch_owner_(new SdchOwner(&sdch_manager_, &url_request_context_)) {
     // Any jobs created on this context will immediately error,
     // which leaves the test in control of signals to SdchOwner.
@@ -277,7 +324,6 @@ class SdchOwnerTest : public testing::Test {
   SdchManager& sdch_manager() { return sdch_manager_; }
   SdchOwner& sdch_owner() { return *(sdch_owner_.get()); }
   BoundNetLog& bound_net_log() { return net_log_; }
-  TestingPrefStore& pref_store() { return *(pref_store_.get()); }
 
   int JobsRecentlyCreated() {
     int result = error_jobs_created - last_jobs_created_;
@@ -359,7 +405,6 @@ class SdchOwnerTest : public testing::Test {
   MockURLRequestJobFactory job_factory_;
   URLRequestContext url_request_context_;
   SdchManager sdch_manager_;
-  scoped_refptr<TestingPrefStore> pref_store_;
   scoped_ptr<SdchOwner> sdch_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchOwnerTest);
@@ -686,8 +731,10 @@ TEST_F(SdchOwnerTest, MemoryPressureReturnsSpace) {
 
 // Confirm that use of a pinned dictionary after its removal works properly.
 TEST_F(SdchOwnerTest, PinRemoveUse) {
-  pref_store().SetInitializationCompleted();
-  sdch_owner().EnablePersistentStorage(&pref_store());
+  // Pass ownership of the storage to the SdchOwner, but keep a pointer.
+  TestPrefStorage* pref_store = new TestPrefStorage(true);
+  sdch_owner().EnablePersistentStorage(
+      scoped_ptr<SdchOwner::PrefStorage>(pref_store));
 
   std::string server_hash_d1;
   EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2, base::Time::Now(),
@@ -701,15 +748,13 @@ TEST_F(SdchOwnerTest, PinRemoveUse) {
 
   const base::Value* result = nullptr;
   const base::DictionaryValue* dict_result = nullptr;
-  ASSERT_TRUE(pref_store().GetValue("SDCH", &result));
-  ASSERT_TRUE(result->GetAsDictionary(&dict_result));
+  ASSERT_TRUE(pref_store->GetValue(&dict_result));
   EXPECT_TRUE(dict_result->Get("dictionaries", &result));
   EXPECT_TRUE(dict_result->Get("dictionaries." + server_hash_d1, &result));
 
   sdch_manager().ClearData();
 
-  ASSERT_TRUE(pref_store().GetValue("SDCH", &result));
-  ASSERT_TRUE(result->GetAsDictionary(&dict_result));
+  ASSERT_TRUE(pref_store->GetValue(&dict_result));
   EXPECT_TRUE(dict_result->Get("dictionaries", &result));
   EXPECT_FALSE(dict_result->Get("dictionaries." + server_hash_d1, &result));
 
@@ -720,8 +765,7 @@ TEST_F(SdchOwnerTest, PinRemoveUse) {
 
   sdch_manager().OnDictionaryUsed(server_hash_d1);
 
-  ASSERT_TRUE(pref_store().GetValue("SDCH", &result));
-  ASSERT_TRUE(result->GetAsDictionary(&dict_result));
+  ASSERT_TRUE(pref_store->GetValue(&dict_result));
   EXPECT_TRUE(dict_result->Get("dictionaries", &result));
   EXPECT_FALSE(dict_result->Get("dictionaries." + server_hash_d1, &result));
 }
@@ -749,16 +793,16 @@ TEST_F(SdchOwnerTest, UsageIntervalMetrics) {
 
 class SdchOwnerPersistenceTest : public ::testing::Test {
  public:
-  SdchOwnerPersistenceTest() : pref_store_(new TestingPrefStore()) {
-    pref_store_->SetInitializationCompleted();
-  }
+  SdchOwnerPersistenceTest() {}
   virtual ~SdchOwnerPersistenceTest() {}
 
   void ClearOwner() {
     owner_.reset(NULL);
   }
 
-  void ResetOwner(bool delay) {
+  // If the storage points is non-null it will be saved as the persistent
+  // storage for the SdchOwner.
+  void ResetOwner(scoped_ptr<SdchOwner::PrefStorage> storage) {
     // This has to be done first, since SdchOwner may be observing SdchManager,
     // and SdchManager can't be destroyed with a live observer.
     owner_.reset(NULL);
@@ -770,8 +814,8 @@ class SdchOwnerPersistenceTest : public ::testing::Test {
     owner_->SetMinSpaceForDictionaryFetch(
         SdchOwnerTest::kMinFetchSpaceForTesting);
     owner_->SetFetcherForTesting(make_scoped_ptr(fetcher_));
-    if (!delay)
-      owner_->EnablePersistentStorage(pref_store_.get());
+    if (storage)
+      owner_->EnablePersistentStorage(std::move(storage));
   }
 
   void InsertDictionaryForURL(const GURL& url, const std::string& nonce) {
@@ -798,7 +842,6 @@ class SdchOwnerPersistenceTest : public ::testing::Test {
 
  protected:
   BoundNetLog net_log_;
-  scoped_refptr<TestingPrefStore> pref_store_;
   scoped_ptr<SdchManager> manager_;
   MockSdchDictionaryFetcher* fetcher_;
   scoped_ptr<SdchOwner> owner_;
@@ -807,15 +850,7 @@ class SdchOwnerPersistenceTest : public ::testing::Test {
 
 // Test an empty persistence store.
 TEST_F(SdchOwnerPersistenceTest, Empty) {
-  ResetOwner(false);
-  EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
-}
-
-// Test a persistence store with an empty dictionary.
-TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDict) {
-  pref_store_->SetValue("SDCH", make_scoped_ptr(new base::DictionaryValue()),
-                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  ResetOwner(false);
+  ResetOwner(make_scoped_ptr(new TestPrefStorage(true)));
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
 }
 
@@ -823,10 +858,15 @@ TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDict) {
 TEST_F(SdchOwnerPersistenceTest, Persistent_BadVersion) {
   scoped_ptr<base::DictionaryValue> sdch_dict(new base::DictionaryValue());
   sdch_dict->SetInteger("version", 2);
-  pref_store_->SetValue("SDCH", std::move(sdch_dict),
-                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
-  ResetOwner(false);
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  storage->SetValue(std::move(sdch_dict));
+
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
+
+  storage.reset(new TestPrefStorage(*old_storage));
+  ResetOwner(std::move(storage));
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
 }
 
@@ -836,21 +876,25 @@ TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDictList) {
   scoped_ptr<base::DictionaryValue> dicts(new base::DictionaryValue());
   sdch_dict->SetInteger("version", 1);
   sdch_dict->Set("dictionaries", std::move(dicts));
-  pref_store_->SetValue("SDCH", std::move(sdch_dict),
-                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
-  ResetOwner(false);
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  storage->SetValue(std::move(sdch_dict));
+  ResetOwner(std::move(storage));
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
 }
 
 TEST_F(SdchOwnerPersistenceTest, OneDict) {
   const GURL url("http://www.example.com/dict");
-  ResetOwner(false);
+
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
   InsertDictionaryForURL(url, "0");
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
 
-  ResetOwner(false);
+  storage.reset(new TestPrefStorage(*old_storage));
+  ResetOwner(std::move(storage));
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
   EXPECT_TRUE(CompleteLoadFromURL(url, "0", true));
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
@@ -859,11 +903,15 @@ TEST_F(SdchOwnerPersistenceTest, OneDict) {
 TEST_F(SdchOwnerPersistenceTest, TwoDicts) {
   const GURL url0("http://www.example.com/dict0");
   const GURL url1("http://www.example.com/dict1");
-  ResetOwner(false);
+
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
   InsertDictionaryForURL(url0, "0");
   InsertDictionaryForURL(url1, "1");
 
-  ResetOwner(false);
+  storage.reset(new TestPrefStorage(*old_storage));
+  ResetOwner(std::move(storage));
   EXPECT_TRUE(CompleteLoadFromURL(url0, "0", true));
   EXPECT_TRUE(CompleteLoadFromURL(url1, "1", true));
   EXPECT_EQ(2, owner_->GetDictionaryCountForTesting());
@@ -874,19 +922,20 @@ TEST_F(SdchOwnerPersistenceTest, TwoDicts) {
 TEST_F(SdchOwnerPersistenceTest, OneGoodDictOneBadDict) {
   const GURL url0("http://www.example.com/dict0");
   const GURL url1("http://www.example.com/dict1");
-  ResetOwner(false);
+
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));                // Takes ownership of storage.
   InsertDictionaryForURL(url0, "0");
   InsertDictionaryForURL(url1, "1");
 
-  // Mutate the pref store a bit now. Clear the owner first, to ensure that the
-  // SdchOwner doesn't observe these changes and object. The manual dictionary
-  // manipulation is a bit icky.
-  ClearOwner();
+  // Make a new storage based on the current contents of the old one.
+  storage.reset(new TestPrefStorage(*old_storage));
   base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(GetDictionaryForURL(pref_store_.get(), url1, nullptr, &dict));
+  ASSERT_TRUE(GetDictionaryForURL(storage.get(), url1, nullptr, &dict));
   dict->Remove("use_count", nullptr);
 
-  ResetOwner(false);
+  ResetOwner(std::move(storage));
   EXPECT_TRUE(CompleteLoadFromURL(url0, "0", true));
   EXPECT_FALSE(CompleteLoadFromURL(url1, "1", true));
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
@@ -896,27 +945,31 @@ TEST_F(SdchOwnerPersistenceTest, OneGoodDictOneBadDict) {
 
 TEST_F(SdchOwnerPersistenceTest, UsingDictionaryUpdatesUseCount) {
   const GURL url("http://www.example.com/dict");
-  ResetOwner(false);
+
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
   InsertDictionaryForURL(url, "0");
 
   std::string hash;
   int old_count;
+  storage.reset(new TestPrefStorage(*old_storage));
   {
     ClearOwner();
     base::DictionaryValue* dict = nullptr;
-    ASSERT_TRUE(GetDictionaryForURL(pref_store_.get(), url, &hash, &dict));
+    ASSERT_TRUE(GetDictionaryForURL(storage.get(), url, &hash, &dict));
     ASSERT_TRUE(dict->GetInteger("use_count", &old_count));
   }
 
-  ResetOwner(false);
+  old_storage = storage.get();     // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
   ASSERT_TRUE(CompleteLoadFromURL(url, "0", true));
   owner_->OnDictionaryUsed(hash);
 
   int new_count;
   {
-    ClearOwner();
     base::DictionaryValue* dict = nullptr;
-    ASSERT_TRUE(GetDictionaryForURL(pref_store_.get(), url, nullptr, &dict));
+    ASSERT_TRUE(GetDictionaryForURL(old_storage, url, nullptr, &dict));
     ASSERT_TRUE(dict->GetInteger("use_count", &new_count));
   }
 
@@ -927,13 +980,16 @@ TEST_F(SdchOwnerPersistenceTest, LoadingDictionaryMerges) {
   const GURL url0("http://www.example.com/dict0");
   const GURL url1("http://www.example.com/dict1");
 
-  ResetOwner(false);
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
   InsertDictionaryForURL(url1, "1");
 
-  ResetOwner(true);
+  storage.reset(new TestPrefStorage(*old_storage));
+  ResetOwner(scoped_ptr<SdchOwner::PrefStorage>());
   InsertDictionaryForURL(url0, "0");
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
-  owner_->EnablePersistentStorage(pref_store_.get());
+  owner_->EnablePersistentStorage(std::move(storage));
   ASSERT_TRUE(CompleteLoadFromURL(url1, "1", true));
   EXPECT_EQ(2, owner_->GetDictionaryCountForTesting());
 }
@@ -941,12 +997,16 @@ TEST_F(SdchOwnerPersistenceTest, LoadingDictionaryMerges) {
 TEST_F(SdchOwnerPersistenceTest, PersistenceMetrics) {
   const GURL url0("http://www.example.com/dict0");
   const GURL url1("http://www.example.com/dict1");
-  ResetOwner(false);
+
+  scoped_ptr<TestPrefStorage> storage(new TestPrefStorage(true));
+  TestPrefStorage* old_storage = storage.get();  // Save storage pointer.
+  ResetOwner(std::move(storage));  // Takes ownership of storage pointer.
 
   InsertDictionaryForURL(url0, "0");
   InsertDictionaryForURL(url1, "1");
 
-  ResetOwner(false);
+  storage.reset(new TestPrefStorage(*old_storage));
+  ResetOwner(std::move(storage));
 
   base::HistogramTester tester;
 

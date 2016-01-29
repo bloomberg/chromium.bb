@@ -49,6 +49,109 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
+namespace {
+
+// Connects the SdchOwner's storage to the prefs.
+class SdchOwnerPrefStorage : public net::SdchOwner::PrefStorage,
+                             public PrefStore::Observer {
+ public:
+  explicit SdchOwnerPrefStorage(PersistentPrefStore* storage)
+      : storage_(storage), storage_key_("SDCH"), init_observer_(nullptr) {}
+  ~SdchOwnerPrefStorage() override {
+    if (init_observer_)
+      storage_->RemoveObserver(this);
+  }
+
+  ReadError GetReadError() const override {
+    PersistentPrefStore::PrefReadError error = storage_->GetReadError();
+
+    DCHECK_NE(
+        error,
+        PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE);
+    DCHECK_NE(error, PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
+
+    switch (error) {
+      case PersistentPrefStore::PREF_READ_ERROR_NONE:
+        return PERSISTENCE_FAILURE_NONE;
+
+      case PersistentPrefStore::PREF_READ_ERROR_NO_FILE:
+        return PERSISTENCE_FAILURE_REASON_NO_FILE;
+
+      case PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE:
+      case PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE:
+      case PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER:
+      case PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED:
+      case PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT:
+        return PERSISTENCE_FAILURE_REASON_READ_FAILED;
+
+      case PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED:
+      case PersistentPrefStore::PREF_READ_ERROR_FILE_NOT_SPECIFIED:
+      case PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE:
+      case PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM:
+      default:
+        // We don't expect these other failures given our usage of prefs.
+        NOTREACHED();
+        return PERSISTENCE_FAILURE_REASON_OTHER;
+    }
+  }
+
+  bool GetValue(const base::DictionaryValue** result) const override {
+    const base::Value* result_value = nullptr;
+    if (!storage_->GetValue(storage_key_, &result_value))
+      return false;
+    return result_value->GetAsDictionary(result);
+  }
+
+  bool GetMutableValue(base::DictionaryValue** result) override {
+    base::Value* result_value = nullptr;
+    if (!storage_->GetMutableValue(storage_key_, &result_value))
+      return false;
+    return result_value->GetAsDictionary(result);
+  }
+
+  void SetValue(scoped_ptr<base::DictionaryValue> value) override {
+    storage_->SetValue(storage_key_, std::move(value),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  }
+
+  void ReportValueChanged() override {
+    storage_->ReportValueChanged(storage_key_,
+                                 WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  }
+
+  bool IsInitializationComplete() override {
+    return storage_->IsInitializationComplete();
+  }
+
+  void StartObservingInit(net::SdchOwner* observer) override {
+    DCHECK(!init_observer_);
+    init_observer_ = observer;
+    storage_->AddObserver(this);
+  }
+
+  void StopObservingInit() override {
+    DCHECK(init_observer_);
+    init_observer_ = nullptr;
+    storage_->RemoveObserver(this);
+  }
+
+ private:
+  // PrefStore::Observer implementation.
+  void OnPrefValueChanged(const std::string& key) override {}
+  void OnInitializationCompleted(bool succeeded) override {
+    init_observer_->OnPrefStorageInitializationComplete(succeeded);
+  }
+
+  PersistentPrefStore* storage_;  // Non-owning.
+  const std::string storage_key_;
+
+  net::SdchOwner* init_observer_;  // Non-owning.
+
+  DISALLOW_COPY_AND_ASSIGN(SdchOwnerPrefStorage);
+};
+
+}  // namespace
+
 ChromeBrowserStateImplIOData::Handle::Handle(
     ios::ChromeBrowserState* browser_state)
     : io_data_(new ChromeBrowserStateImplIOData),
@@ -341,7 +444,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   sdch_manager_.reset(new net::SdchManager);
   sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
-  sdch_policy_->EnablePersistentStorage(network_json_store_.get());
+  sdch_policy_->EnablePersistentStorage(
+      make_scoped_ptr(new SdchOwnerPrefStorage(network_json_store_.get())));
 
   lazy_params_.reset();
 }

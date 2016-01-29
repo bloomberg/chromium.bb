@@ -2048,6 +2048,8 @@
       'browser/net/safe_search_util.h',
       'browser/net/service_providers_win.cc',
       'browser/net/service_providers_win.h',
+      'browser/net/sdch_owner_pref_storage.cc',
+      'browser/net/sdch_owner_pref_storage.h',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.cc',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_settings.cc',

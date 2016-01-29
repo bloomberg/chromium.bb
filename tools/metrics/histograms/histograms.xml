@@ -77060,12 +77060,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SdchPersistenceFailureReason" type="int">
   <summary>
     Errors that can occur when reading in or writing out persisted dictionary
-    information. See enum PersistenceFailureReason in net/sdch/sdch_owner.cc for
-    more information.
+    information. See enum in net/sdch/sdch_owner.h for more information.
   </summary>
   <int value="1" label="NO_FILE"/>
   <int value="2" label="READ_FAILED"/>
   <int value="3" label="WRITE_FAILED"/>
+  <int value="4" label="OTHER"/>
 </enum>
 
 <enum name="SdchProblemCode" type="int">

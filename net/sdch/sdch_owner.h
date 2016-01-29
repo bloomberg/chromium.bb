@@ -14,14 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_store.h"
 #include "net/base/sdch_observer.h"
 #include "net/url_request/sdch_dictionary_fetcher.h"
 
 class GURL;
-class PersistentPrefStore;
-class ValueMapPrefStore;
-class WriteablePrefStore;
 
 namespace base {
 class Clock;
@@ -35,8 +31,63 @@ class URLRequestContext;
 // exposes interface for setting SDCH policy.  It should be instantiated by
 // the net/ embedder.
 // TODO(rdsmith): Implement dictionary prioritization.
-class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
+class NET_EXPORT SdchOwner : public SdchObserver {
  public:
+  // Abstact storage interface for storing settings that allows the embedder
+  // to provide the appropriate storage backend.
+  class NET_EXPORT PrefStorage {
+   public:
+    // Possible values returned by GetReadError. This is a subset of the error
+    // values of Chromium's pref storage that we care about.
+    //
+    // DO NOT CHANGE VALUES. This is logged persistently in a histogram.
+    enum ReadError {
+      PERSISTENCE_FAILURE_NONE = 0,
+
+      // File didn't exist; is being created.
+      PERSISTENCE_FAILURE_REASON_NO_FILE = 1,
+
+      // Error reading in information, but should be able to write.
+      PERSISTENCE_FAILURE_REASON_READ_FAILED = 2,
+
+      // Error leading to abort on attempted persistence.
+      PERSISTENCE_FAILURE_REASON_WRITE_FAILED = 3,
+
+      // Anything else.
+      PERSISTENCE_FAILURE_REASON_OTHER = 4,
+
+      PERSISTENCE_FAILURE_REASON_MAX = 5
+      // See RecordPersistenceFailure for UMA logging of this value if
+      // adding a value here.
+    };
+
+    virtual ~PrefStorage();
+
+    // Returns the read error if any. Valid to be called after initialization
+    // is complete (see IsInitializationComplete).
+    virtual ReadError GetReadError() const = 0;
+
+    // Gets or sets the value in the preferences store.
+    virtual bool GetValue(const base::DictionaryValue** result) const = 0;
+    virtual bool GetMutableValue(base::DictionaryValue** result) = 0;
+    virtual void SetValue(scoped_ptr<base::DictionaryValue> value) = 0;
+
+    // Notifies the storage system that a value was changed via mutating the
+    // result of GetMutableValue().
+    virtual void ReportValueChanged() = 0;
+
+    // Returns true if the store's init is complete. See the Start/Stop
+    // functions below for observing changes to this value.
+    virtual bool IsInitializationComplete() = 0;
+
+    // Starts and stops observing preferences storage init. There will only
+    // be one observer active at a time. The store should call
+    // OnPrefStorageInitializationComplete() when it transitions to initialized
+    // and there is an observer active. See also IsInitializationComplete().
+    virtual void StartObservingInit(SdchOwner* observer) = 0;
+    virtual void StopObservingInit() = 0;
+  };
+
   static const size_t kMaxTotalDictionarySize;
   static const size_t kMinSpaceForDictionaryFetch;
 
@@ -45,12 +96,9 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
   SdchOwner(SdchManager* sdch_manager, URLRequestContext* context);
   ~SdchOwner() override;
 
-  // Enables use of pref persistence.  Note that |pref_store| is owned
-  // by the caller, but must be guaranteed to outlive SdchOwner.  The
-  // actual mechanisms by which the PersistentPrefStore are persisted
-  // are the responsibility of the caller.  This routine may only be
-  // called once per SdchOwner instance.
-  void EnablePersistentStorage(PersistentPrefStore* pref_store);
+  // Enables use of pref persistence. Ownership of the storage will be passed.
+  // This routine may only be called once per SdchOwner instance.
+  void EnablePersistentStorage(scoped_ptr<PrefStorage> pref_store);
 
   // Defaults to kMaxTotalDictionarySize.
   void SetMaxTotalDictionarySize(size_t max_total_dictionary_size);
@@ -67,9 +115,9 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
                        const GURL& dictionary_url) override;
   void OnClearDictionaries() override;
 
-  // PrefStore::Observer implementation.
-  void OnPrefValueChanged(const std::string& key) override;
-  void OnInitializationCompleted(bool succeeded) override;
+  // Called by the PrefStorage implementation when initialization is complete.
+  // See PrefStorage::StartObservingInit().
+  void OnPrefStorageInitializationComplete(bool succeeded);
 
   // Implementation detail--this is the function callback by the callback passed
   // to the fetcher through which the fetcher informs the SdchOwner that it's
@@ -179,21 +227,21 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
   base::MemoryPressureListener memory_pressure_listener_;
 
   // Dictionary persistence machinery.
-  // * |in_memory_pref_store_| is created on construction and used in
-  //   the absence of any call to EnablePersistentStorage().
-  // * |external_pref_store_| holds the preference store specified
-  //   by EnablePersistentStorage() (if any), while it is being read in.
-  //   A non-null value here signals that the SdchOwner is observing
-  //   the pref store; when read-in completes and observation is no longer
-  //   needed, the pointer is set to null.  This is to avoid lots of
-  //   extra irrelevant function calls; the only observer interface this
-  //   class is interested in is OnInitializationCompleted().
+  // * |in_memory_pref_store_| is created on construction and used in the
+  //   absence of any call to EnablePersistentStorage().
+  // * |external_pref_store_| holds the preference store specified by
+  //   EnablePersistentStorage() (if any).
+  // * The external pref store is initialized asynchronously. During this time,
+  //   both pointers will be value, pref_store_ will point to the in-memory
+  //   one, and this class will be observing the initialization of the external
+  //   store.
+  // * When the external pref store is initialized, the in-memory version will
+  //   be freed, and pref_store_ will point to the external one.
   // * |pref_store_| holds an unowned pointer to the currently
   //   active pref store (one of the preceding two).
-  scoped_refptr<ValueMapPrefStore> in_memory_pref_store_;
-  PersistentPrefStore* external_pref_store_;
-
-  WriteablePrefStore* pref_store_;
+  scoped_ptr<PrefStorage> in_memory_pref_store_;
+  scoped_ptr<PrefStorage> external_pref_store_;
+  PrefStorage* pref_store_;
 
   // The use counts of dictionaries when they were loaded from the persistent
   // store, keyed by server hash. These are stored to avoid generating

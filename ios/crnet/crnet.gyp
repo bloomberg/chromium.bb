@@ -31,6 +31,8 @@
         'CrNet.mm',
         'crnet_environment.h',
         'crnet_environment.mm',
+        'sdch_owner_pref_storage.cc',
+        'sdch_owner_pref_storage.h',
       ],
       'defines': [
         # TODO(stuartmorgan): Revisit the way this is set, and the above is

@@ -26,6 +26,7 @@
 #include "base/threading/worker_pool.h"
 #import "components/webp_transcode/webp_network_client_factory.h"
 #include "crypto/nss_util.h"
+#include "ios/crnet/sdch_owner_pref_storage.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/crn_http_protocol_handler.h"
 #include "ios/net/empty_nsurlcache.h"
@@ -347,7 +348,9 @@ void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
         pref_store_worker_pool_.get(),
         scoped_ptr<PrefFilter>());
     net_pref_store_->ReadPrefsAsync(nullptr);
-    sdch_owner_->EnablePersistentStorage(net_pref_store_.get());
+    sdch_owner_->EnablePersistentStorage(
+        scoped_ptr<net::SdchOwner::PrefStorage>(
+            new SdchOwnerPrefStorage(net_pref_store_.get())));
   }
   context->set_sdch_manager(sdch_manager_.get());
 }

@@ -36,6 +36,7 @@
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
+#include "chrome/browser/net/sdch_owner_pref_storage.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -560,7 +561,8 @@ void ProfileImplIOData::InitializeInternal(
   sdch_manager_.reset(new net::SdchManager);
   sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
-  sdch_policy_->EnablePersistentStorage(network_json_store_.get());
+  sdch_policy_->EnablePersistentStorage(scoped_ptr<net::SdchOwner::PrefStorage>(
+      new chrome_browser_net::SdchOwnerPrefStorage(network_json_store_.get())));
 
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.
