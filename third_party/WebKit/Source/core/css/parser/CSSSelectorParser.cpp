@@ -62,6 +62,8 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             }
             if (feature != UseCounter::NumberOfFeatures)
                 context.useCounter()->count(feature);
+            if (current->relation() == CSSSelector::IndirectAdjacent)
+                context.useCounter()->count(UseCounter::CSSSelectorIndirectAdjacent);
             if (current->selectorList())
                 recordSelectorStats(context, *current->selectorList());
         }

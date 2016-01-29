@@ -1006,6 +1006,7 @@ public:
         MediaStreamConstraintsNameValue = 1150,
         MediaStreamConstraintsFromDictionary = 1151,
         MediaStreamConstraintsConformant = 1152,
+        CSSSelectorIndirectAdjacent = 1153,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
