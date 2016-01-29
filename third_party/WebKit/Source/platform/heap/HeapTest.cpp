@@ -4343,6 +4343,7 @@ TEST(HeapTest, HeapTerminatedArray)
     {
         HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
         builder.grow(prefixSize);
+        conservativelyCollectGarbage();
         for (size_t i = 0; i < prefixSize; i++)
             builder.append(TerminatedArrayItem(IntWrapper::create(i)));
         arr = builder.release();

@@ -21,6 +21,7 @@ public:
         if (!m_array)
             return;
         m_capacity = m_count = m_array->size();
+        ASSERT(m_array->at(m_count - 1).isLastInArray());
     }
 
     void grow(size_t count)
@@ -31,11 +32,13 @@ public:
             ASSERT(!m_capacity);
             m_capacity = count;
             m_array = ArrayType<T>::Allocator::create(m_capacity);
-            return;
+        } else {
+            ASSERT(m_array->at(m_count - 1).isLastInArray());
+            m_capacity += count;
+            m_array = ArrayType<T>::Allocator::resize(m_array.release(), m_capacity);
+            m_array->at(m_count - 1).setLastInArray(false);
         }
-        m_capacity += count;
-        m_array = ArrayType<T>::Allocator::resize(m_array.release(), m_capacity);
-        m_array->at(m_count - 1).setLastInArray(false);
+        m_array->at(m_capacity - 1).setLastInArray(true);
     }
 
     void append(const T& item)
@@ -43,13 +46,13 @@ public:
         RELEASE_ASSERT(m_count < m_capacity);
         ASSERT(!item.isLastInArray());
         m_array->at(m_count++) = item;
+        if (m_count == m_capacity)
+            m_array->at(m_capacity - 1).setLastInArray(true);
     }
 
     typename ArrayType<T>::Allocator::PassPtr release()
     {
         RELEASE_ASSERT(m_count == m_capacity);
-        if (m_array)
-            m_array->at(m_count - 1).setLastInArray(true);
         assertValid();
         return m_array.release();
     }
