@@ -10,7 +10,13 @@
 #include <iterator>
 #include <vector>
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size);
+// Libfuzzer API.
+extern "C" {
+  // User function.
+  int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size);
+  // Initialization function.
+  __attribute__((weak)) int LLVMFuzzerInitialize(int *argc, char ***argv);
+}
 
 std::vector<char> readFile(std::string path) {
   std::ifstream in(path);
@@ -23,6 +29,9 @@ int main(int argc, char **argv) {
     std::cerr << "Usage: " << argv[0] << " <file>..." << std::endl;
     exit(1);
   }
+
+  if (LLVMFuzzerInitialize)
+    LLVMFuzzerInitialize(&argc, &argv);
 
   for (int i = 1; i < argc; ++i) {
     std::cout << argv[i] << std::endl;
