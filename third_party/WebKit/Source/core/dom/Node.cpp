@@ -1533,6 +1533,10 @@ void Node::showNode(const char* prefix) const
         WTFLogAlways("%sDOCTYPE %s\t%p\n", prefix, nodeName().utf8().data(), this);
     } else if (nodeType() == PROCESSING_INSTRUCTION_NODE) {
         WTFLogAlways("%s?%s\t%p\n", prefix, nodeName().utf8().data(), this);
+    } else if (isShadowRoot()) {
+        // nodeName of ShadowRoot is #document-fragment.  It's confused with
+        // DocumentFragment.
+        WTFLogAlways("%s#shadow-root\t%p\n", prefix, this);
     } else {
         StringBuilder attrs;
         appendAttributeDesc(this, attrs, idAttr, " ID");
@@ -1540,6 +1544,8 @@ void Node::showNode(const char* prefix) const
         appendAttributeDesc(this, attrs, styleAttr, " STYLE");
         if (hasEditableStyle())
             attrs.appendLiteral(" (editable)");
+        if (document().focusedElement() == this)
+            attrs.appendLiteral(" (focused)");
         WTFLogAlways("%s%s\t%p%s\n", prefix, nodeName().utf8().data(), this, attrs.toString().utf8().data());
     }
 }
