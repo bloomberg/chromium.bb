@@ -1,6 +1,10 @@
 include_rules = [
+  "+native_client/src/include",
   "+native_client/src/public",
+  "+native_client/src/shared/imc/nacl_imc_c.h",
   "+native_client/src/shared/platform",
+  "+native_client/src/trusted/desc/nrd_all_modules.h",
+  "+native_client/src/trusted/service_runtime/include",
   "+native_client/src/trusted/service_runtime/nacl_error_code.h",
   "+ppapi/cpp",
   "+ppapi/utility",

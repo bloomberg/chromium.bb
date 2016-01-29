@@ -19,6 +19,8 @@ source_set("nacl_trusted_plugin") {
     "//base",
     "//content/public/common",
     "//media:shared_memory_support",
+    "//native_client/src/shared/platform",
+    "//native_client/src/trusted/desc:nrd_xfer",
     "//ppapi/c",
     "//ppapi/cpp:objects",
     "//ppapi/cpp/private:internal_module",
