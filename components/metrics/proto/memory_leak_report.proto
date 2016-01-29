@@ -1,0 +1,51 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metrics;
+
+// Next tag: 8
+message MemoryLeakReportProto {
+  // The call stack at which the leak was found. This is a list of offsets
+  // within the program binary. The first entry is the deepest level of the call
+  // stack.
+  //
+  // Some call stack entries may not be within the Chrome binary (e.g.
+  // JavaScript code). Those entries are given as the absolute offset in memory.
+  //
+  // The offsets within Chrome are determined by whether the original call stack
+  // address was within the executable region of the Chrome binary's mapping in
+  // memory. To symbolize these results, look up these values as offsets within
+  // the Chrome debug binary. If the value doesn't fit within the Chrome
+  // binary's offset range, then it is considered to be from another binary.
+  repeated uint64 call_stack = 1;
+
+  // Size of the memory allocation involved in the leak.
+  optional uint32 size_bytes = 2;
+
+  // The rate at which allocations are pseudorandomly sampled. Ranges from 0 to
+  // 1. A rate of 1 means all incoming allocations are sampled by the leak
+  // detector, which is the maximum possible.
+  optional float sampling_rate = 3;
+
+  // The max depth to which the call stacks were unwound by the leak detector.
+  // This may be greater than the size of |call_stack|.
+  optional uint32 max_stack_depth = 4;
+
+  // The leak analysis takes place every so often, with an interval based on the
+  // number of bytes allocated. This is independent of the sampling rate as it
+  // is computed from allocation sizes before sampling.
+  optional uint64 analysis_interval_bytes = 5;
+
+  // Suspicion thresholds used in leak analysis for size and call stacks,
+  // respectively. If an allocation size or call stack is suspected this many
+  // times in a row, the leak analysis escalates to the next level. For
+  // allocation sizes, the next level is to start analyzing by call stack. For
+  // call stacks, the next level is to generate a memory leak report.
+  optional uint32 size_suspicion_threshold = 6;
+  optional uint32 call_stack_suspicion_threshold = 7;
+}

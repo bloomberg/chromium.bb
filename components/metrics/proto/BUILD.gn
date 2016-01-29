@@ -11,6 +11,7 @@ proto_library("proto") {
     "cast_logs.proto",
     "chrome_user_metrics_extension.proto",
     "histogram_event.proto",
+    "memory_leak_report.proto",
     "omnibox_event.proto",
     "omnibox_input_type.proto",
     "perf_data.proto",

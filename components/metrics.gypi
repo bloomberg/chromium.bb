@@ -158,6 +158,7 @@
         'metrics/proto/cast_logs.proto',
         'metrics/proto/chrome_user_metrics_extension.proto',
         'metrics/proto/histogram_event.proto',
+        'metrics/proto/memory_leak_report.proto',
         'metrics/proto/omnibox_event.proto',
         'metrics/proto/omnibox_input_type.proto',
         'metrics/proto/perf_data.proto',
