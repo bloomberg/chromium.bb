@@ -23,12 +23,6 @@ if not env.Bit('windows'):
 
 nrd_xfer_obj = nrd_xfer_env.DualObject('nrd_xfer.c')
 
-# Chrome headers use variadic macros and other features incompatible with
-# -pedantic.
-wrapper_env = env.Clone()
-wrapper_env.FilterOut(CCFLAGS = ['-pedantic'])
-wrapper_obj = wrapper_env.DualObject('nacl_desc_wrapper.cc')
-
 nrd_lib_inputs = [
     'nacl_desc_base.c',
     'nacl_desc_cond.c',
@@ -47,7 +41,6 @@ nrd_lib_inputs = [
     'nacl_desc_sync_socket.c',
     'nrd_all_modules.c',
     nrd_xfer_obj,
-    wrapper_obj,
 ]
 
 if env.Bit('windows'):

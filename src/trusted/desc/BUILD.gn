@@ -19,7 +19,6 @@ static_library("nrd_xfer") {
     "nacl_desc_quota_interface.c",
     "nacl_desc_semaphore.c",
     "nacl_desc_sync_socket.c",
-    "nacl_desc_wrapper.cc",
     "nrd_all_modules.c",
     "nrd_xfer.c",
   ]
