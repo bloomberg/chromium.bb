@@ -42,6 +42,7 @@ enum class SVGParseStatus {
     ExpectedArcFlag,
     ExpectedBoolean,
     ExpectedEnumeration,
+    ExpectedInteger,
     ExpectedLength,
     ExpectedMoveToCommand,
     ExpectedNumber,

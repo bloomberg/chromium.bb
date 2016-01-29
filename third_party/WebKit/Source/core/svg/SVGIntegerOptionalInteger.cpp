@@ -81,7 +81,7 @@ SVGParsingError SVGIntegerOptionalInteger::setValueAsString(const String& value)
     float x, y;
     SVGParsingError parseStatus;
     if (!parseNumberOptionalNumber(value, x, y)) {
-        parseStatus = SVGParseStatus::ParsingFailed;
+        parseStatus = SVGParseStatus::ExpectedInteger;
         x = y = 0;
     }
 

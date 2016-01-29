@@ -52,19 +52,15 @@ String SVGInteger::valueAsString() const
 
 SVGParsingError SVGInteger::setValueAsString(const String& string)
 {
-    if (string.isEmpty()) {
-        m_value = 0;
+    m_value = 0;
+
+    if (string.isEmpty())
         return SVGParseStatus::NoError;
-    }
 
     bool valid = true;
     m_value = stripLeadingAndTrailingHTMLSpaces(string).toIntStrict(&valid);
-
-    if (!valid) {
-        m_value = 0;
-        return SVGParseStatus::ParsingFailed;
-    }
-    return SVGParseStatus::NoError;
+    // toIntStrict returns 0 if valid == false.
+    return valid ? SVGParseStatus::NoError : SVGParseStatus::ExpectedInteger;
 }
 
 void SVGInteger::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
