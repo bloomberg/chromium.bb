@@ -245,6 +245,10 @@ void ErrorScreen::PolicyLoadFailed() {
   LOG(FATAL);
 }
 
+void ErrorScreen::SetAuthFlowOffline(bool offline) {
+  LOG(FATAL);
+}
+
 ErrorScreen::ConnectRequestCallbackSubscription
 ErrorScreen::RegisterConnectRequestCallback(const base::Closure& callback) {
   return connect_request_callbacks_.Add(callback);

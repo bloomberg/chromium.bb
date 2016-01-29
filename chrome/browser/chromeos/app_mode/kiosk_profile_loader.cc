@@ -180,6 +180,10 @@ void KioskProfileLoader::PolicyLoadFailed() {
   ReportLaunchResult(KioskAppLaunchError::POLICY_LOAD_FAILED);
 }
 
+void KioskProfileLoader::SetAuthFlowOffline(bool offline) {
+  NOTREACHED();
+}
+
 void KioskProfileLoader::OnProfilePrepared(Profile* profile,
                                            bool browser_launched) {
   // This object could be deleted any time after successfully reporting

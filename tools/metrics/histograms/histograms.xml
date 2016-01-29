@@ -18239,6 +18239,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Login.OfflineFailure.IsKnownUser" enum="LoginIsKnownUser">
+  <owner>glevin@chromium.org</owner>
+  <summary>
+    On offline login failure, records whether it is for an existing user.
+  </summary>
+</histogram>
+
+<histogram name="Login.OfflineSuccess.Attempts">
+  <owner>glevin@chromium.org</owner>
+  <summary>
+    On offline login success, records number of attempts, including success.
+  </summary>
+</histogram>
+
 <histogram name="Login.PolicyFilesStatePerBoot" enum="LoginPolicyFilesState">
   <owner>cmasone@chromium.org</owner>
   <summary>The state of Chrome OS owner key and device policy files.</summary>
@@ -70483,6 +70497,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="LOGIN_TIMED_OUT">Login timed out</int>
   <int value="6" label="UNLOCK_FAILED">Unlock failed</int>
   <int value="7" label="NETWORK_AUTH_FAILED">Network auth failed</int>
+</enum>
+
+<enum name="LoginIsKnownUser" type="int">
+  <int value="0" label="Unknown user"/>
+  <int value="1" label="Known user"/>
 </enum>
 
 <enum name="LoginPolicyFilesState" type="int">

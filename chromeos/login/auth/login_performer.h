@@ -57,6 +57,7 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer {
     ~Delegate() override {}
     virtual void WhiteListCheckFailed(const std::string& email) = 0;
     virtual void PolicyLoadFailed() = 0;
+    virtual void SetAuthFlowOffline(bool offline) = 0;
   };
 
   LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,

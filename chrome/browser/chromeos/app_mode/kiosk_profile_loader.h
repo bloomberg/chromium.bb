@@ -53,6 +53,7 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void OnAuthFailure(const AuthFailure& error) override;
   void WhiteListCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
+  void SetAuthFlowOffline(bool offline) override;
 
   // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;

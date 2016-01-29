@@ -142,24 +142,18 @@ bool CanShowDebuggingFeatures() {
 }  // namespace
 
 // static
-ExistingUserController* ExistingUserController::current_controller_ = NULL;
+ExistingUserController* ExistingUserController::current_controller_ = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, public:
 
 ExistingUserController::ExistingUserController(LoginDisplayHost* host)
-    : auth_status_consumer_(NULL),
-      host_(host),
+    : host_(host),
       login_display_(host_->CreateLoginDisplay(this)),
-      num_login_attempts_(0),
       cros_settings_(CrosSettings::Get()),
-      is_login_in_progress_(false),
-      password_changed_(false),
-      auth_mode_(LoginPerformer::AUTH_MODE_EXTENSION),
-      signin_screen_ready_(false),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
-  DCHECK(current_controller_ == NULL);
+  DCHECK(current_controller_ == nullptr);
   current_controller_ = this;
 
   registrar_.Add(this,
@@ -224,7 +218,7 @@ void ExistingUserController::UpdateLoginDisplay(
         (*it)->GetType() != user_manager::USER_TYPE_SUPERVISED ||
         user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
     bool meets_whitelist_requirements =
-        CrosSettings::IsWhitelisted((*it)->email(), NULL) ||
+        CrosSettings::IsWhitelisted((*it)->email(), nullptr) ||
         !(*it)->HasGaiaAccount();
 
     // Public session accounts are always shown on login screen.
@@ -305,7 +299,7 @@ ExistingUserController::~ExistingUserController() {
   UserSessionManager::GetInstance()->DelegateDeleted(this);
 
   if (current_controller_ == this) {
-    current_controller_ = NULL;
+    current_controller_ = nullptr;
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
@@ -317,7 +311,7 @@ ExistingUserController::~ExistingUserController() {
 //
 
 void ExistingUserController::CancelPasswordChangedFlow() {
-  login_performer_.reset(NULL);
+  login_performer_.reset(nullptr);
   PerformLoginFinishedActions(true /* start public session timer */);
 }
 
@@ -365,7 +359,7 @@ void ExistingUserController::PerformLogin(
   // such as Authenticator instance.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
     // Only one instance of LoginPerformer should exist at a time.
-    login_performer_.reset(NULL);
+    login_performer_.reset(nullptr);
     login_performer_.reset(new ChromeLoginPerformer(this));
   }
 
@@ -553,6 +547,9 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
           ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
       }
     }
+    if (auth_flow_offline_)
+      UMA_HISTOGRAM_BOOLEAN("Login.OfflineFailure.IsKnownUser", is_known_user);
+
     login_display_->ClearAndEnablePassword();
     StartPublicSessionAutoLoginTimer();
   }
@@ -603,8 +600,12 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
       user_context.GetAuthFlow() != UserContext::AUTH_FLOW_EASY_BOOTSTRAP;
 
   // LoginPerformer instance will delete itself in case of successful auth.
-  login_performer_->set_delegate(NULL);
+  login_performer_->set_delegate(nullptr);
   ignore_result(login_performer_.release());
+
+  if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE)
+    UMA_HISTOGRAM_COUNTS_100("Login.OfflineSuccess.Attempts",
+                             num_login_attempts_);
 
   UserSessionManager::StartSessionType start_session_type =
       UserAddingScreen::Get()->IsRunning()
@@ -629,7 +630,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   login_display_->SetUIEnabled(true);
 
   if (browser_launched)
-    host_ = NULL;
+    host_ = nullptr;
 
   // Inform |auth_status_consumer_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
@@ -706,13 +707,17 @@ void ExistingUserController::PolicyLoadFailed() {
   display_email_.clear();
 }
 
+void ExistingUserController::SetAuthFlowOffline(bool offline) {
+  auth_flow_offline_ = offline;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
 
 void ExistingUserController::DeviceSettingsChanged() {
   // If login was already completed, we should avoid any signin screen
   // transitions, see http://crbug.com/461604 for example.
-  if (host_ != NULL && !login_display_->is_signin_completed()) {
+  if (host_ != nullptr && !login_display_->is_signin_completed()) {
     // Signed settings or user list changed. Notify views and update them.
     UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
     ConfigurePublicSessionAutoLogin();
@@ -748,7 +753,7 @@ void ExistingUserController::LoginAsGuest() {
   }
 
   // Only one instance of LoginPerformer should exist at a time.
-  login_performer_.reset(NULL);
+  login_performer_.reset(nullptr);
   login_performer_.reset(new ChromeLoginPerformer(this));
   login_performer_->LoginOffTheRecord();
   SendAccessibilityAlert(
@@ -784,7 +789,7 @@ void ExistingUserController::LoginAsPublicSession(
             ->store()
             ->policy_map()
             .Get(policy::key::kSessionLocales);
-    base::ListValue const* list = NULL;
+    base::ListValue const* list = nullptr;
     if (entry &&
         entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
         entry->value &&
@@ -956,7 +961,7 @@ void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
   UserContext new_user_context = user_context;
   std::string keyboard_layout;
   for (size_t i = 0; i < keyboard_layouts->GetSize(); ++i) {
-    base::DictionaryValue* entry = NULL;
+    base::DictionaryValue* entry = nullptr;
     keyboard_layouts->GetDictionary(i, &entry);
     bool selected = false;
     entry->GetBoolean("selected", &selected);
@@ -974,7 +979,7 @@ void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
 void ExistingUserController::LoginAsPublicSessionInternal(
     const UserContext& user_context) {
   // Only one instance of LoginPerformer should exist at a time.
-  login_performer_.reset(NULL);
+  login_performer_.reset(nullptr);
   login_performer_.reset(new ChromeLoginPerformer(this));
   login_performer_->LoginAsPublicSession(user_context);
   SendAccessibilityAlert(

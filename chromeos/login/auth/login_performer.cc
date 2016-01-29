@@ -63,6 +63,8 @@ void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
 
   last_login_failure_ = failure;
   if (delegate_) {
+    delegate_->SetAuthFlowOffline(user_context_.GetAuthFlow() ==
+                                  UserContext::AUTH_FLOW_OFFLINE);
     delegate_->OnAuthFailure(failure);
     return;
   } else {
