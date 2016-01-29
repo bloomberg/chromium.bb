@@ -56,4 +56,8 @@ void LayerAnimatorTestController::StartThreadedAnimationsIfNeeded() {
   }
 }
 
+void LayerAnimatorTestController::Step(const base::TimeDelta& duration) {
+  animator_->Step(animator_->last_step_time() + duration);
+}
+
 }  // namespace ui

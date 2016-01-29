@@ -115,6 +115,10 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   // CreateInkDropAnimation().
   scoped_ptr<InkDropAnimation> ink_drop_animation_;
 
+  // Tracks whether the InkDropAnimation can safely be destroyed when an
+  // InkDropState::HIDDEN animation completes.
+  bool can_destroy_after_hidden_animation_;
+
   // The timer used to delay the hover fade in after an ink drop animation.
   scoped_ptr<base::Timer> hover_after_animation_timer_;
 

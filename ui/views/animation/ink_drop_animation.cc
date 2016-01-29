@@ -14,7 +14,10 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/animation/ink_drop_animation_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
@@ -33,20 +36,79 @@ const float kMinimumCircleScale = 0.001f;
 // The ink drop color.
 const SkColor kInkDropColor = SK_ColorBLACK;
 
-// The opacity of the ink drop when it is visible.
-const float kVisibleOpacity = 0.14f;
+// All the sub animations that are used to animate each of the InkDropStates.
+// These are used to get time durations with
+// GetAnimationDuration(InkDropSubAnimations). Note that in general a sub
+// animation defines the duration for either a transformation animation or an
+// opacity animation but there are some exceptions where an entire InkDropState
+// animation consists of only 1 sub animation and it defines the duration for
+// both the transformation and opacity animations.
+enum InkDropSubAnimations {
+  // HIDDEN sub animations.
 
-// The opacity of the ink drop when it is not visible.
-const float kHiddenOpacity = 0.0f;
+  // The HIDDEN sub animation that is fading out to a hidden opacity.
+  HIDDEN_FADE_OUT,
 
-// Durations for the different InkDropState animations in milliseconds.
-const int kHiddenStateAnimationDurationMs = 1;
-const int kActionPendingStateAnimationDurationMs = 500;
-const int kQuickActionStateAnimationDurationMs = 250;
-const int kSlowActionPendingStateAnimationDurationMs = 500;
-const int kSlowActionStateAnimationDurationMs = 250;
-const int kActivatedStateAnimationDurationMs = 125;
-const int kDeactivatedStateAnimationDurationMs = 250;
+  // The HIDDEN sub animation that transforms the shape to a |small_size_|
+  // circle.
+  HIDDEN_TRANSFORM,
+
+  // ACTION_PENDING sub animations.
+
+  // The ACTION_PENDING sub animation that fades in to the visible opacity.
+  ACTION_PENDING_FADE_IN,
+
+  // The ACTION_PENDING sub animation that transforms the shape to a
+  // |large_size_| circle.
+  ACTION_PENDING_TRANSFORM,
+
+  // QUICK_ACTION sub animations.
+
+  // The QUICK_ACTION sub animation that is fading out to a hidden opacity.
+  QUICK_ACTION_FADE_OUT,
+
+  // The QUICK_ACTION sub animation that transforms the shape to a |large_size_|
+  // circle.
+  QUICK_ACTION_TRANSFORM,
+
+  // SLOW_ACTION_PENDING sub animations.
+
+  // The SLOW_ACTION_PENDING animation has only one sub animation which animates
+  // to a |small_size_| rounded rectangle at visible opacity.
+  SLOW_ACTION_PENDING,
+
+  // SLOW_ACTION sub animations.
+
+  // The SLOW_ACTION sub animation that is fading out to a hidden opacity.
+  SLOW_ACTION_FADE_OUT,
+
+  // The SLOW_ACTION sub animation that transforms the shape to a |large_size_|
+  // rounded rectangle.
+  SLOW_ACTION_TRANSFORM,
+
+  // ACTIVATED sub animations.
+
+  // The ACTIVATED sub animation that transforms the shape to a |large_size_|
+  // circle. This is used when the ink drop is in a HIDDEN state prior to
+  // animating to the ACTIVATED state.
+  ACTIVATED_CIRCLE_TRANSFORM,
+
+  // The ACTIVATED sub animation that transforms the shape to a |small_size_|
+  // rounded rectangle.
+  ACTIVATED_RECT_TRANSFORM,
+
+  // DEACTIVATED sub animations.
+
+  // The DEACTIVATED sub animation that is fading out to a hidden opacity.
+  DEACTIVATED_FADE_OUT,
+
+  // The DEACTIVATED sub animation that transforms the shape to a |large_size_|
+  // rounded rectangle.
+  DEACTIVATED_TRANSFORM,
+};
+
+// The scale factor used to burst the QUICK_ACTION bubble as it fades out.
+const float kQuickActionBurstScale = 1.3f;
 
 // A multiplicative factor used to slow down InkDropState animations.
 const int kSlowAnimationDurationFactor = 3;
@@ -61,35 +123,29 @@ bool UseFastAnimations() {
   return fast;
 }
 
-// Returns the InkDropState animation duration for the given |state|.
-base::TimeDelta GetAnimationDuration(views::InkDropState state) {
-  int duration = 0;
-  switch (state) {
-    case views::InkDropState::HIDDEN:
-      duration = kHiddenStateAnimationDurationMs;
-      break;
-    case views::InkDropState::ACTION_PENDING:
-      duration = kActionPendingStateAnimationDurationMs;
-      break;
-    case views::InkDropState::QUICK_ACTION:
-      duration = kQuickActionStateAnimationDurationMs;
-      break;
-    case views::InkDropState::SLOW_ACTION_PENDING:
-      duration = kSlowActionPendingStateAnimationDurationMs;
-      break;
-    case views::InkDropState::SLOW_ACTION:
-      duration = kSlowActionStateAnimationDurationMs;
-      break;
-    case views::InkDropState::ACTIVATED:
-      duration = kActivatedStateAnimationDurationMs;
-      break;
-    case views::InkDropState::DEACTIVATED:
-      duration = kDeactivatedStateAnimationDurationMs;
-      break;
-  }
+// Duration constants for InkDropStateSubAnimations. See the
+// InkDropStateSubAnimations enum documentation for more info.
+int kAnimationDurationInMs[] = {
+    150,  // HIDDEN_FADE_OUT
+    200,  // HIDDEN_TRANSFORM
+    0,    // ACTION_PENDING_FADE_IN
+    160,  // ACTION_PENDING_TRANSFORM
+    150,  // QUICK_ACTION_FADE_OUT
+    160,  // QUICK_ACTION_TRANSFORM
+    200,  // SLOW_ACTION_PENDING
+    150,  // SLOW_ACTION_FADE_OUT
+    200,  // SLOW_ACTION_TRANSFORM
+    200,  // ACTIVATED_CIRCLE_TRANSFORM
+    160,  // ACTIVATED_RECT_TRANSFORM
+    150,  // DEACTIVATED_FADE_OUT
+    200,  // DEACTIVATED_TRANSFORM
+};
 
+// Returns the InkDropState sub animation duration for the given |state|.
+base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   return base::TimeDelta::FromMilliseconds(
-      (UseFastAnimations() ? 1 : kSlowAnimationDurationFactor) * duration);
+      (UseFastAnimations() ? 1 : kSlowAnimationDurationFactor) *
+      kAnimationDurationInMs[state]);
 }
 
 // Calculates a Transform for a circle layer. The transform will be set up to
@@ -121,6 +177,9 @@ gfx::Transform CalculateRectTransform(const gfx::Point& drawn_center_point,
 }  // namespace
 
 namespace views {
+
+const float InkDropAnimation::kVisibleOpacity = 0.11f;
+const float InkDropAnimation::kHiddenOpacity = 0.0f;
 
 InkDropAnimation::InkDropAnimation(const gfx::Size& large_size,
                                    int large_corner_radius,
@@ -181,6 +240,12 @@ void InkDropAnimation::SetCenterPoint(const gfx::Point& center_point) {
   root_layer_->SetTransform(transform);
 }
 
+void InkDropAnimation::HideImmediately() {
+  AbortAllAnimations();
+  SetStateToHidden();
+  ink_drop_state_ = InkDropState::HIDDEN;
+}
+
 std::string InkDropAnimation::ToLayerName(PaintedShape painted_shape) {
   switch (painted_shape) {
     case TOP_LEFT_CIRCLE:
@@ -205,96 +270,151 @@ std::string InkDropAnimation::ToLayerName(PaintedShape painted_shape) {
 void InkDropAnimation::AnimateToStateInternal(
     InkDropState ink_drop_state,
     ui::LayerAnimationObserver* animation_observer) {
+  InkDropState previous_ink_drop_state = ink_drop_state_;
   ink_drop_state_ = ink_drop_state;
-
-  if (ink_drop_state_ == InkDropState::HIDDEN) {
-    // Animating to the HIDDEN state doesn't actually use any
-    // LayerAnimationSequences so we need to explicitly abort any running ones
-    // so that observers receive an InkDropAnimationEnded() event for the
-    // running animation prior to receiving an InkDropAnimationStarted() event
-    // for the HIDDEN 'animation'.
-    AbortAllAnimations();
-    root_layer_->SetVisible(false);
-    SetStateToHidden();
-    return;
-  }
 
   InkDropTransforms transforms;
   root_layer_->SetVisible(true);
 
   switch (ink_drop_state_) {
     case InkDropState::HIDDEN:
-      // This case is handled above in a short circuit return.
+      if (GetCurrentOpacity() == kHiddenOpacity) {
+        AbortAllAnimations();
+        break;
+      } else {
+        AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(HIDDEN_FADE_OUT),
+                         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                         gfx::Tween::EASE_IN_OUT, animation_observer);
+        CalculateCircleTransforms(small_size_, &transforms);
+        AnimateToTransforms(
+            transforms, GetAnimationDuration(HIDDEN_TRANSFORM),
+            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+            gfx::Tween::EASE_IN_OUT, animation_observer);
+      }
       break;
     case InkDropState::ACTION_PENDING:
+      DCHECK(previous_ink_drop_state == InkDropState::HIDDEN);
+      AnimateToOpacity(kVisibleOpacity,
+                       GetAnimationDuration(ACTION_PENDING_FADE_IN),
+                       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                       gfx::Tween::EASE_IN, animation_observer);
+      AnimateToOpacity(kVisibleOpacity,
+                       GetAnimationDuration(ACTION_PENDING_TRANSFORM),
+                       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                       gfx::Tween::EASE_IN, animation_observer);
       CalculateCircleTransforms(large_size_, &transforms);
-      AnimateToTransforms(transforms, kVisibleOpacity,
-                          GetAnimationDuration(InkDropState::ACTION_PENDING),
+      AnimateToTransforms(transforms,
+                          GetAnimationDuration(ACTION_PENDING_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          animation_observer);
+                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
-    case InkDropState::QUICK_ACTION:
-      CalculateCircleTransforms(large_size_, &transforms);
-      AnimateToTransforms(transforms, kHiddenOpacity,
-                          GetAnimationDuration(InkDropState::QUICK_ACTION),
-                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          animation_observer);
+    case InkDropState::QUICK_ACTION: {
+      DCHECK(previous_ink_drop_state == InkDropState::HIDDEN ||
+             previous_ink_drop_state == InkDropState::ACTION_PENDING);
+      AnimateToOpacity(kHiddenOpacity,
+                       GetAnimationDuration(QUICK_ACTION_FADE_OUT),
+                       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
+                       gfx::Tween::EASE_IN_OUT, animation_observer);
+      gfx::Size s = ScaleToRoundedSize(large_size_, kQuickActionBurstScale);
+      CalculateCircleTransforms(s, &transforms);
+      AnimateToTransforms(transforms,
+                          GetAnimationDuration(QUICK_ACTION_TRANSFORM),
+                          ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
+                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
+    }
     case InkDropState::SLOW_ACTION_PENDING:
+      DCHECK(previous_ink_drop_state == InkDropState::ACTION_PENDING);
+      AnimateToOpacity(kVisibleOpacity,
+                       GetAnimationDuration(SLOW_ACTION_PENDING),
+                       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                       gfx::Tween::EASE_IN, animation_observer);
       CalculateRectTransforms(small_size_, small_corner_radius_, &transforms);
-      AnimateToTransforms(
-          transforms, kVisibleOpacity,
-          GetAnimationDuration(InkDropState::SLOW_ACTION_PENDING),
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-          animation_observer);
-      break;
-    case InkDropState::SLOW_ACTION:
-      CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
-      AnimateToTransforms(transforms, kHiddenOpacity,
-                          GetAnimationDuration(InkDropState::SLOW_ACTION),
+      AnimateToTransforms(transforms, GetAnimationDuration(SLOW_ACTION_PENDING),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          animation_observer);
+                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
-    case InkDropState::ACTIVATED:
+    case InkDropState::SLOW_ACTION: {
+      DCHECK(previous_ink_drop_state == InkDropState::SLOW_ACTION_PENDING);
+      base::TimeDelta visible_duration =
+          GetAnimationDuration(SLOW_ACTION_TRANSFORM) -
+          GetAnimationDuration(SLOW_ACTION_FADE_OUT);
+      AnimateToOpacity(kVisibleOpacity, visible_duration,
+                       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                       gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateToOpacity(kHiddenOpacity,
+                       GetAnimationDuration(SLOW_ACTION_FADE_OUT),
+                       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
+                       gfx::Tween::EASE_IN_OUT, animation_observer);
+      CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
+      AnimateToTransforms(transforms,
+                          GetAnimationDuration(SLOW_ACTION_TRANSFORM),
+                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                          gfx::Tween::EASE_IN_OUT, animation_observer);
+      break;
+    }
+    case InkDropState::ACTIVATED: {
+      // Animate the opacity so that it cancels any opacity animations already
+      // in progress.
+      AnimateToOpacity(kVisibleOpacity, base::TimeDelta(),
+                       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                       gfx::Tween::EASE_IN_OUT, animation_observer);
+
+      ui::LayerAnimator::PreemptionStrategy rect_transform_preemption_strategy =
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;
+      if (previous_ink_drop_state == InkDropState::HIDDEN) {
+        rect_transform_preemption_strategy =
+            ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
+        CalculateCircleTransforms(large_size_, &transforms);
+        AnimateToTransforms(
+            transforms, GetAnimationDuration(ACTIVATED_CIRCLE_TRANSFORM),
+            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+            gfx::Tween::EASE_IN_OUT, animation_observer);
+      } else if (previous_ink_drop_state == InkDropState::ACTION_PENDING) {
+        rect_transform_preemption_strategy =
+            ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
+      }
+
       CalculateRectTransforms(small_size_, small_corner_radius_, &transforms);
-      AnimateToTransforms(transforms, kVisibleOpacity,
-                          GetAnimationDuration(InkDropState::ACTIVATED),
-                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          animation_observer);
+      AnimateToTransforms(transforms,
+                          GetAnimationDuration(ACTIVATED_RECT_TRANSFORM),
+                          rect_transform_preemption_strategy,
+                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
-    case InkDropState::DEACTIVATED:
+    }
+    case InkDropState::DEACTIVATED: {
+      base::TimeDelta visible_duration =
+          GetAnimationDuration(DEACTIVATED_TRANSFORM) -
+          GetAnimationDuration(DEACTIVATED_FADE_OUT);
+      AnimateToOpacity(kVisibleOpacity, visible_duration,
+                       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+                       gfx::Tween::EASE_IN_OUT, animation_observer);
       CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
-      AnimateToTransforms(transforms, kHiddenOpacity,
-                          GetAnimationDuration(InkDropState::DEACTIVATED),
+      AnimateToOpacity(kHiddenOpacity,
+                       GetAnimationDuration(DEACTIVATED_FADE_OUT),
+                       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
+                       gfx::Tween::EASE_IN_OUT, animation_observer);
+      CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
+      AnimateToTransforms(transforms,
+                          GetAnimationDuration(DEACTIVATED_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          animation_observer);
+                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
+    }
   }
 }
 
 void InkDropAnimation::AnimateToTransforms(
     const InkDropTransforms transforms,
-    float opacity,
     base::TimeDelta duration,
     ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+    gfx::Tween::Type tween,
     ui::LayerAnimationObserver* animation_observer) {
-  ui::LayerAnimator* root_animator = root_layer_->GetAnimator();
-  ui::ScopedLayerAnimationSettings root_animation(root_animator);
-  root_animation.SetPreemptionStrategy(preemption_strategy);
-  ui::LayerAnimationElement* root_element =
-      ui::LayerAnimationElement::CreateOpacityElement(opacity, duration);
-  ui::LayerAnimationSequence* root_sequence =
-      new ui::LayerAnimationSequence(root_element);
-
-  if (animation_observer)
-    root_sequence->AddObserver(animation_observer);
-
-  root_animator->StartAnimation(root_sequence);
-
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i) {
     ui::LayerAnimator* animator = painted_layers_[i]->GetAnimator();
     ui::ScopedLayerAnimationSettings animation(animator);
     animation.SetPreemptionStrategy(preemption_strategy);
+    animation.SetTweenType(tween);
     ui::LayerAnimationElement* element =
         ui::LayerAnimationElement::CreateTransformElement(transforms[i],
                                                           duration);
@@ -314,6 +434,7 @@ void InkDropAnimation::SetStateToHidden() {
   CalculateCircleTransforms(gfx::Size(1, 1), &transforms);
   SetTransforms(transforms);
   SetOpacity(kHiddenOpacity);
+  root_layer_->SetVisible(false);
 }
 
 void InkDropAnimation::SetTransforms(const InkDropTransforms transforms) {
@@ -321,8 +442,33 @@ void InkDropAnimation::SetTransforms(const InkDropTransforms transforms) {
     painted_layers_[i]->SetTransform(transforms[i]);
 }
 
+float InkDropAnimation::GetCurrentOpacity() const {
+  return root_layer_->opacity();
+}
+
 void InkDropAnimation::SetOpacity(float opacity) {
   root_layer_->SetOpacity(opacity);
+}
+
+void InkDropAnimation::AnimateToOpacity(
+    float opacity,
+    base::TimeDelta duration,
+    ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+    gfx::Tween::Type tween,
+    ui::LayerAnimationObserver* animation_observer) {
+  ui::LayerAnimator* animator = root_layer_->GetAnimator();
+  ui::ScopedLayerAnimationSettings animation_settings(animator);
+  animation_settings.SetPreemptionStrategy(preemption_strategy);
+  animation_settings.SetTweenType(tween);
+  ui::LayerAnimationElement* animation_element =
+      ui::LayerAnimationElement::CreateOpacityElement(opacity, duration);
+  ui::LayerAnimationSequence* animation_sequence =
+      new ui::LayerAnimationSequence(animation_element);
+
+  if (animation_observer)
+    animation_sequence->AddObserver(animation_observer);
+
+  animator->StartAnimation(animation_sequence);
 }
 
 void InkDropAnimation::CalculateCircleTransforms(
@@ -386,10 +532,10 @@ void InkDropAnimation::CalculateRectTransforms(
       std::max(kMinimumRectScale, size.height() / rect_delegate_height));
 }
 
-void InkDropAnimation::GetCurrentTansforms(
+void InkDropAnimation::GetCurrentTransforms(
     InkDropTransforms* transforms_out) const {
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
-    (*transforms_out)[i] = painted_layers_[i]->GetTargetTransform();
+    (*transforms_out)[i] = painted_layers_[i]->transform();
 }
 
 void InkDropAnimation::AddPaintLayer(PaintedShape painted_shape) {
@@ -440,6 +586,9 @@ void InkDropAnimation::AnimationStartedCallback(
 bool InkDropAnimation::AnimationEndedCallback(
     InkDropState ink_drop_state,
     const ui::CallbackLayerAnimationObserver& observer) {
+  if (ink_drop_state == InkDropState::HIDDEN)
+    SetStateToHidden();
+
   FOR_EACH_OBSERVER(
       InkDropAnimationObserver, observers_,
       InkDropAnimationEnded(ink_drop_state,

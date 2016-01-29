@@ -67,6 +67,7 @@ void InkDropHover::AnimateFade(HoverAnimationType animation_type,
 
   ui::LayerAnimator* animator = layer_->GetAnimator();
   ui::ScopedLayerAnimationSettings animation(animator);
+  animation.SetTweenType(gfx::Tween::EASE_IN_OUT);
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   ui::LayerAnimationElement* animation_element =

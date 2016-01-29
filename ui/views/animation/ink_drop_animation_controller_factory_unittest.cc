@@ -5,7 +5,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"

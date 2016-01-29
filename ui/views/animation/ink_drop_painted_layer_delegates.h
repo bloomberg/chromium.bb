@@ -92,7 +92,7 @@ class RoundedRectangleLayerDelegate : public BasePaintedLayerDelegate {
 
   const gfx::Size& size() const { return size_; }
 
-  // ui::LayerDelegate:
+  // BasePaintedLayerDelegate:
   gfx::PointF GetCenterPoint() const override;
   void OnPaintLayer(const ui::PaintContext& context) override;
 

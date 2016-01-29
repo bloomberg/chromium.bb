@@ -25,6 +25,9 @@ class LayerAnimatorTestController {
   // Starts threaded animations that are waiting for an effective start time.
   void StartThreadedAnimationsIfNeeded();
 
+  // Progresses all running animations by the given |duration|.
+  void Step(const base::TimeDelta& duration);
+
  private:
   scoped_refptr<LayerAnimator> animator_;
 };

@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/ink_drop_animation_controller_impl.h"
 
+#include "base/auto_reset.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/animation/ink_drop_animation.h"
@@ -28,11 +29,24 @@ const int kHoverFadeInAfterAnimationDurationInMs = 250;
 
 // The duration, in milliseconds, of the hover state fade out animation when it
 // is triggered by an ink drop ripple animation starting.
-const int kHoverFadeOutBeforeAnimationDurationInMs = 0;
+const int kHoverFadeOutBeforeAnimationDurationInMs = 300;
 
 // The amount of time in milliseconds that |hover_| should delay after a ripple
 // animation before fading in.
 const int kHoverFadeInAfterAnimationDelayInMs = 1000;
+
+// Returns true if an ink drop with the given |ink_drop_state| should
+// automatically transition to the InkDropState::HIDDEN state.
+bool ShouldAnimateToHidden(InkDropState ink_drop_state) {
+  switch (ink_drop_state) {
+    case views::InkDropState::QUICK_ACTION:
+    case views::InkDropState::SLOW_ACTION:
+    case views::InkDropState::DEACTIVATED:
+      return true;
+    default:
+      return false;
+  }
+}
 
 }  // namespace
 
@@ -42,6 +56,7 @@ InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
       ink_drop_large_corner_radius_(0),
       ink_drop_small_corner_radius_(0),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
+      can_destroy_after_hidden_animation_(true),
       hover_after_animation_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
   ink_drop_host_->AddInkDropLayer(root_layer_.get());
@@ -64,6 +79,25 @@ void InkDropAnimationControllerImpl::AnimateToState(
     InkDropState ink_drop_state) {
   if (!ink_drop_animation_)
     CreateInkDropAnimation();
+
+  // The InkDropAnimationObserver::InkDropAnimationEnded() callback needs to
+  // know if it is safe to destroy the |ink_drop_animation_| and it is not safe
+  // when the notification is raised within a call to
+  // InkDropAnimation::AnimateToState().
+  base::AutoReset<bool> auto_reset_can_destroy_after_hidden_animation(
+      &can_destroy_after_hidden_animation_, false);
+
+  if (ink_drop_state != views::InkDropState::HIDDEN) {
+    SetHoveredInternal(false, base::TimeDelta::FromMilliseconds(
+                                  kHoverFadeOutBeforeAnimationDurationInMs));
+  }
+
+  // Make sure the ink drop starts from the HIDDEN state it was going to auto
+  // transition to it.
+  if (ink_drop_animation_->ink_drop_state() == InkDropState::HIDDEN ||
+      ShouldAnimateToHidden(ink_drop_animation_->ink_drop_state())) {
+    ink_drop_animation_->HideImmediately();
+  }
   ink_drop_animation_->AnimateToState(ink_drop_state);
 }
 
@@ -159,23 +193,16 @@ void InkDropAnimationControllerImpl::InkDropAnimationEnded(
     InkDropAnimationEndedReason reason) {
   if (reason != SUCCESS)
     return;
-  switch (ink_drop_state) {
-    case views::InkDropState::QUICK_ACTION:
-    case views::InkDropState::SLOW_ACTION:
-    case views::InkDropState::DEACTIVATED:
-      ink_drop_animation_->AnimateToState(views::InkDropState::HIDDEN);
-      break;
-    case views::InkDropState::HIDDEN:
-      // TODO(bruthig): Consider only starting the timer if the InkDropHost is
-      // hovered now, as oppposed to when the timer fires.
-      StartHoverAfterAnimationTimer();
+  if (ShouldAnimateToHidden(ink_drop_state)) {
+    ink_drop_animation_->AnimateToState(views::InkDropState::HIDDEN);
+  } else if (ink_drop_state == views::InkDropState::HIDDEN) {
+    StartHoverAfterAnimationTimer();
+    if (can_destroy_after_hidden_animation_) {
       // TODO(bruthig): Investigate whether creating and destroying
       // InkDropAnimations is expensive and consider creating an
       // InkDropAnimationPool. See www.crbug.com/522175.
       DestroyInkDropAnimation();
-      break;
-    default:
-      break;
+    }
   }
 }
 

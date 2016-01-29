@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/views/animation/ink_drop_animation.h"
+#include "ui/views/animation/ink_drop_animation_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/animation/test/ink_drop_animation_test_api.h"
 
@@ -27,76 +28,264 @@ gfx::Point TransformPoint(const gfx::Transform& transform,
   return transformed_point;
 }
 
+class TestInkDropAnimationObserver : public InkDropAnimationObserver {
+ public:
+  TestInkDropAnimationObserver();
+  ~TestInkDropAnimationObserver() override;
+
+  // Resets all cached observation data.
+  void ResetObservations();
+
+  bool animation_started() const { return animation_started_; }
+
+  bool animation_ended() const { return animation_ended_; }
+
+  InkDropState last_animation_state_started() const {
+    return last_animation_state_started_;
+  }
+
+  InkDropState last_animation_state_ended() const {
+    return last_animation_state_ended_;
+  }
+
+  InkDropAnimationEndedReason last_animation_ended_reason() const {
+    return last_animation_ended_reason_;
+  }
+
+  // InkDropAnimation:
+  void InkDropAnimationStarted(InkDropState ink_drop_state) override;
+  void InkDropAnimationEnded(InkDropState ink_drop_state,
+                             InkDropAnimationEndedReason reason) override;
+
+ private:
+  // True if InkDropAnimationStarted() has been invoked.
+  bool animation_started_;
+
+  // True if InkDropAnimationEnded() has been invoked.
+  bool animation_ended_;
+
+  // The |ink_drop_state| parameter used for the last invocation of
+  // InkDropAnimationStarted(). Only valid if |animation_started_| is true.
+  InkDropState last_animation_state_started_;
+
+  // The |ink_drop_state| parameter used for the last invocation of
+  // InkDropAnimationEnded(). Only valid if |animation_ended_| is true.
+  InkDropState last_animation_state_ended_;
+
+  // The |reason| parameter used for the last invocation of
+  // InkDropAnimationEnded(). Only valid if |animation_ended_| is true.
+  InkDropAnimationEndedReason last_animation_ended_reason_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInkDropAnimationObserver);
+};
+
+TestInkDropAnimationObserver::TestInkDropAnimationObserver()
+    : animation_started_(false),
+      animation_ended_(false),
+      last_animation_state_started_(InkDropState::HIDDEN),
+      last_animation_state_ended_(InkDropState::HIDDEN),
+      last_animation_ended_reason_(InkDropAnimationEndedReason::SUCCESS) {
+  ResetObservations();
+}
+
+TestInkDropAnimationObserver::~TestInkDropAnimationObserver() {}
+
+void TestInkDropAnimationObserver::ResetObservations() {
+  animation_started_ = false;
+  animation_ended_ = false;
+  last_animation_state_ended_ = InkDropState::HIDDEN;
+  last_animation_state_started_ = InkDropState::HIDDEN;
+  last_animation_ended_reason_ = InkDropAnimationEndedReason::SUCCESS;
+}
+
+void TestInkDropAnimationObserver::InkDropAnimationStarted(
+    InkDropState ink_drop_state) {
+  animation_started_ = true;
+  last_animation_state_started_ = ink_drop_state;
+}
+
+void TestInkDropAnimationObserver::InkDropAnimationEnded(
+    InkDropState ink_drop_state,
+    InkDropAnimationEndedReason reason) {
+  animation_ended_ = true;
+  last_animation_state_ended_ = ink_drop_state;
+  last_animation_ended_reason_ = reason;
+}
+
 }  // namespace
 
 class InkDropAnimationTest : public testing::Test {
  public:
-  InkDropAnimationTest() {}
-  ~InkDropAnimationTest() override {}
+  InkDropAnimationTest();
+  ~InkDropAnimationTest() override;
 
  protected:
-  scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const;
+  TestInkDropAnimationObserver observer_;
+
+  InkDropAnimation ink_drop_animation_;
+
+  InkDropAnimationTestApi test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationTest);
 };
 
-// Returns a new InkDropAnimation with default parameters.
-scoped_ptr<InkDropAnimation> InkDropAnimationTest::CreateInkDropAnimation()
-    const {
-  return make_scoped_ptr(
-      new InkDropAnimation(gfx::Size(10, 10), 2, gfx::Size(8, 8), 1));
+InkDropAnimationTest::InkDropAnimationTest()
+    : ink_drop_animation_(gfx::Size(10, 10), 2, gfx::Size(8, 8), 1),
+      test_api_(&ink_drop_animation_) {
+  ink_drop_animation_.AddObserver(&observer_);
+  test_api_.SetDisableAnimationTimers(true);
 }
 
+InkDropAnimationTest::~InkDropAnimationTest() {}
+
 TEST_F(InkDropAnimationTest, InitialStateAfterConstruction) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_animation->ink_drop_state());
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_animation_.ink_drop_state());
+}
+
+TEST_F(InkDropAnimationTest, VerifyObserversAreNotified) {
+  ink_drop_animation_.AnimateToState(InkDropState::ACTION_PENDING);
+
+  ASSERT_TRUE(test_api_.HasActiveAnimations());
+  EXPECT_TRUE(observer_.animation_started());
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            observer_.last_animation_state_started());
+  EXPECT_FALSE(observer_.animation_ended());
+
+  observer_.ResetObservations();
+  test_api_.CompleteAnimations();
+
+  ASSERT_FALSE(test_api_.HasActiveAnimations());
+  EXPECT_FALSE(observer_.animation_started());
+  EXPECT_TRUE(observer_.animation_ended());
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            observer_.last_animation_state_ended());
+}
+
+TEST_F(InkDropAnimationTest, VerifyObserversAreNotifiedOfSuccessfulAnimations) {
+  ink_drop_animation_.AnimateToState(InkDropState::ACTION_PENDING);
+  test_api_.CompleteAnimations();
+
+  ASSERT_TRUE(observer_.animation_ended());
+  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::SUCCESS,
+            observer_.last_animation_ended_reason());
+}
+
+TEST_F(InkDropAnimationTest, VerifyObserversAreNotifiedOfPreemptedAnimations) {
+  ink_drop_animation_.AnimateToState(InkDropState::ACTION_PENDING);
+  observer_.ResetObservations();
+
+  ink_drop_animation_.AnimateToState(InkDropState::SLOW_ACTION_PENDING);
+
+  ASSERT_TRUE(observer_.animation_ended());
+  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::PRE_EMPTED,
+            observer_.last_animation_ended_reason());
+}
+
+TEST_F(InkDropAnimationTest, AnimateToHiddenFromInvisibleState) {
+  ASSERT_EQ(InkDropState::HIDDEN, ink_drop_animation_.ink_drop_state());
+
+  ink_drop_animation_.AnimateToState(InkDropState::HIDDEN);
+  EXPECT_TRUE(observer_.animation_started());
+  EXPECT_TRUE(observer_.animation_ended());
+}
+
+TEST_F(InkDropAnimationTest, AnimateToHiddenFromVisibleState) {
+  ink_drop_animation_.AnimateToState(InkDropState::ACTION_PENDING);
+  test_api_.CompleteAnimations();
+
+  observer_.ResetObservations();
+
+  ASSERT_NE(InkDropState::HIDDEN, ink_drop_animation_.ink_drop_state());
+
+  ink_drop_animation_.AnimateToState(InkDropState::HIDDEN);
+
+  EXPECT_TRUE(observer_.animation_started());
+  EXPECT_FALSE(observer_.animation_ended());
+
+  test_api_.CompleteAnimations();
+
+  EXPECT_TRUE(observer_.animation_started());
+  EXPECT_TRUE(observer_.animation_ended());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToActionPending) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  ink_drop_animation->AnimateToState(views::InkDropState::ACTION_PENDING);
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTION_PENDING);
+  test_api_.CompleteAnimations();
+
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop_animation->ink_drop_state());
+            ink_drop_animation_.ink_drop_state());
+  EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_.GetCurrentOpacity());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToQuickAction) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  ink_drop_animation->AnimateToState(views::InkDropState::QUICK_ACTION);
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTION_PENDING);
+  ink_drop_animation_.AnimateToState(views::InkDropState::QUICK_ACTION);
+  test_api_.CompleteAnimations();
+
   EXPECT_EQ(views::InkDropState::QUICK_ACTION,
-            ink_drop_animation->ink_drop_state());
+            ink_drop_animation_.ink_drop_state());
+  EXPECT_EQ(InkDropAnimation::kHiddenOpacity, test_api_.GetCurrentOpacity());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToSlowActionPending) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  ink_drop_animation->AnimateToState(views::InkDropState::SLOW_ACTION_PENDING);
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTION_PENDING);
+  ink_drop_animation_.AnimateToState(views::InkDropState::SLOW_ACTION_PENDING);
+  test_api_.CompleteAnimations();
+
   EXPECT_EQ(views::InkDropState::SLOW_ACTION_PENDING,
-            ink_drop_animation->ink_drop_state());
+            ink_drop_animation_.ink_drop_state());
+  EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_.GetCurrentOpacity());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToSlowAction) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  ink_drop_animation->AnimateToState(views::InkDropState::SLOW_ACTION);
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTION_PENDING);
+  ink_drop_animation_.AnimateToState(views::InkDropState::SLOW_ACTION_PENDING);
+  ink_drop_animation_.AnimateToState(views::InkDropState::SLOW_ACTION);
+  test_api_.CompleteAnimations();
+
   EXPECT_EQ(views::InkDropState::SLOW_ACTION,
-            ink_drop_animation->ink_drop_state());
+            ink_drop_animation_.ink_drop_state());
+  EXPECT_EQ(InkDropAnimation::kHiddenOpacity, test_api_.GetCurrentOpacity());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToActivated) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  ink_drop_animation->AnimateToState(views::InkDropState::ACTIVATED);
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTIVATED);
+  test_api_.CompleteAnimations();
+
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            ink_drop_animation->ink_drop_state());
+            ink_drop_animation_.ink_drop_state());
+  EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_.GetCurrentOpacity());
 }
 
 TEST_F(InkDropAnimationTest, AnimateToDeactivated) {
-  scoped_ptr<InkDropAnimation> ink_drop_animation = CreateInkDropAnimation();
-  ink_drop_animation->AnimateToState(views::InkDropState::DEACTIVATED);
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTIVATED);
+  ink_drop_animation_.AnimateToState(views::InkDropState::DEACTIVATED);
+  test_api_.CompleteAnimations();
+
   EXPECT_EQ(views::InkDropState::DEACTIVATED,
-            ink_drop_animation->ink_drop_state());
+            ink_drop_animation_.ink_drop_state());
+  EXPECT_EQ(InkDropAnimation::kHiddenOpacity, test_api_.GetCurrentOpacity());
 }
 
-TEST_F(InkDropAnimationTest,
-       TransformedPointsUsingTransformsFromCalculateCircleTransforms) {
+// Verifies all active animations are aborted and the InkDropState is set to
+// HIDDEN after invoking HideImmediately().
+TEST_F(InkDropAnimationTest, HideImmediately) {
+  ink_drop_animation_.AnimateToState(views::InkDropState::ACTION_PENDING);
+  ASSERT_TRUE(test_api_.HasActiveAnimations());
+  ASSERT_NE(InkDropState::HIDDEN, ink_drop_animation_.ink_drop_state());
+  ASSERT_TRUE(observer_.animation_started());
+
+  observer_.ResetObservations();
+  ink_drop_animation_.HideImmediately();
+
+  EXPECT_FALSE(test_api_.HasActiveAnimations());
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_animation_.ink_drop_state());
+  ASSERT_FALSE(observer_.animation_started());
+}
+
+TEST(InkDropAnimationTransformTest,
+     TransformedPointsUsingTransformsFromCalculateCircleTransforms) {
   const int kHalfDrawnSize = 5;
   const int kDrawnSize = 2 * kHalfDrawnSize;
 
@@ -196,8 +385,8 @@ TEST_F(InkDropAnimationTest,
             TransformPoint(kVerticalTransform, bottom_mid));
 }
 
-TEST_F(InkDropAnimationTest,
-       TransformedPointsUsingTransformsFromCalculateRectTransforms) {
+TEST(InkDropAnimationTransformTest,
+     TransformedPointsUsingTransformsFromCalculateRectTransforms) {
   const int kHalfDrawnSize = 5;
   const int kDrawnSize = 2 * kHalfDrawnSize;
 

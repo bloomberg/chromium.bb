@@ -142,7 +142,8 @@ const char* CustomButton::GetClassName() const {
 bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
   if (state_ == STATE_DISABLED)
     return true;
-  if (ShouldEnterPushedState(event) && HitTestPoint(event.location())) {
+  if (state_ != STATE_PRESSED && ShouldEnterPushedState(event) &&
+      HitTestPoint(event.location())) {
     SetState(STATE_PRESSED);
     if (ink_drop_delegate_)
       ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);

@@ -5,11 +5,15 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/gfx/animation/tween.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -36,10 +40,26 @@ class InkDropAnimationTestApi;
 // final frame for each InkDropState will be bounded by either a |large_size_|
 // rectangle or a |small_size_| rectangle.
 //
+// The valid InkDropState transitions are defined below:
+//
+//   {All InkDropStates}      => HIDDEN
+//   HIDDEN                   => ACTION_PENDING
+//   HIDDEN, ACTION_PENDING   => QUICK_ACTION
+//   ACTION_PENDING           => SLOW_ACTION_PENDING
+//   SLOW_ACTION_PENDING      => SLOW_ACTION
+//   {All InkDropStates}      => ACTIVATED
+//   {All InkDropStates}      => DEACTIVATED
+//
 // TODO(bruthig): Document the ink drop ripple on chromium.org and add a link to
 // it.
 class VIEWS_EXPORT InkDropAnimation {
  public:
+  // The opacity of the ink drop when it is visible.
+  static const float kVisibleOpacity;
+
+  // The opacity of the ink drop when it is not visible.
+  static const float kHiddenOpacity;
+
   InkDropAnimation(const gfx::Size& large_size,
                    int large_corner_radius,
                    const gfx::Size& small_size,
@@ -54,15 +74,16 @@ class VIEWS_EXPORT InkDropAnimation {
   void AddObserver(InkDropAnimationObserver* observer);
   void RemoveObserver(InkDropAnimationObserver* observer);
 
-  // Animates from the current |ink_drop_state_| to a new |ink_drop_state|. It
-  // is possible to animate from any |ink_drop_state_| to any new
-  // |ink_drop_state|. Note that some state transitions will also perform an
-  // implicit transition to the another state. e.g. AnimateToState(QUICK_ACTION)
-  // will implicitly transition to the HIDDEN state.
+  // Animates from the current |ink_drop_state_| to a new |ink_drop_state|.
   void AnimateToState(InkDropState ink_drop_state);
 
   // Sets the |center_point| of the ink drop layer relative to its parent Layer.
   void SetCenterPoint(const gfx::Point& center_point);
+
+  // Immediately aborts all in-progress animations and hides the ink drop.
+  // NOTE: This will NOT raise InkDropAnimation(Started|Ended) events for the
+  // state transition to HIDDEN!
+  void HideImmediately();
 
  private:
   friend class test::InkDropAnimationTestApi;
@@ -86,20 +107,20 @@ class VIEWS_EXPORT InkDropAnimation {
   // ink drop.
   typedef gfx::Transform InkDropTransforms[PAINTED_SHAPE_COUNT];
 
-  // Animates the ripple to |ink_drop_state| and attaches |observer| to all
-  // LayerAnimationSequence's used.
+  // Animates the ripple to |ink_drop_state|. |observer| is added to all
+  // LayerAnimationSequence's used if not null.
   void AnimateToStateInternal(InkDropState ink_drop_state,
                               ui::LayerAnimationObserver* observer);
 
-  // Animates all of the painted shape layers to the specified |transforms| and
-  // |opacity|. The animation will use the given |duration| and
-  // |preemption_strategy|, and |observer| will be added to all
-  // LayerAnimationSequences.
+  // Animates all of the painted shape layers to the specified |transforms|. The
+  // animation will be configured with the given |duration|, |tween|, and
+  // |preemption_strategy| values. The |observer| will be added to all
+  // LayerAnimationSequences if not null.
   void AnimateToTransforms(
       const InkDropTransforms transforms,
-      float opacity,
       base::TimeDelta duration,
       ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+      gfx::Tween::Type tween,
       ui::LayerAnimationObserver* observer);
 
   // Updates the Transforms and opacity to the HIDDEN state.
@@ -109,8 +130,22 @@ class VIEWS_EXPORT InkDropAnimation {
   // perform any animation.
   void SetTransforms(const InkDropTransforms transforms);
 
+  // Gets the opacity of the ink drop.
+  float GetCurrentOpacity() const;
+
   // Sets the opacity of the ink drop.
   void SetOpacity(float opacity);
+
+  // Animates all of the painted shape layers to the specified |opacity|. The
+  // animation will be configured with the given |duration|, |tween|, and
+  // |preemption_strategy| values. The |observer| will be added to all
+  // LayerAnimationSequences if not null.
+  void AnimateToOpacity(
+      float opacity,
+      base::TimeDelta duration,
+      ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+      gfx::Tween::Type tween,
+      ui::LayerAnimationObserver* observer);
 
   // Updates all of the Transforms in |transforms_out| for a circle of the given
   // |size|.
@@ -123,9 +158,9 @@ class VIEWS_EXPORT InkDropAnimation {
                                float corner_radius,
                                InkDropTransforms* transforms_out) const;
 
-  // Updates all of the Transforms in |transforms_out| to the current target
-  // Transforms of the Layers.
-  void GetCurrentTansforms(InkDropTransforms* transforms_out) const;
+  // Updates all of the Transforms in |transforms_out| to the current Transforms
+  // of the painted shape Layers.
+  void GetCurrentTransforms(InkDropTransforms* transforms_out) const;
 
   // Adds and configures a new |painted_shape| layer to |painted_layers_|.
   void AddPaintLayer(PaintedShape painted_shape);
