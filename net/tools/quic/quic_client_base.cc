@@ -42,8 +42,8 @@ ProofVerifier* QuicClientBase::proof_verifier() const {
 
 QuicClientSession* QuicClientBase::CreateQuicClientSession(
     QuicConnection* connection) {
-  session_.reset(
-      new QuicClientSession(config_, connection, server_id_, &crypto_config_));
+  session_.reset(new QuicClientSession(config_, connection, server_id_,
+                                       &crypto_config_, &promised_by_url_map_));
   if (initial_max_packet_length_ != 0) {
     session()->connection()->SetMaxPacketLength(initial_max_packet_length_);
   }

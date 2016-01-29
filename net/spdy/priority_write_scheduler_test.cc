@@ -257,6 +257,33 @@ TEST_F(PriorityWriteSchedulerTest, UnregisterRemovesStream) {
                 "No ready streams available");
 }
 
+TEST_F(PriorityWriteSchedulerTest, ShouldYield) {
+  scheduler_.RegisterStream(1, 1);
+  scheduler_.RegisterStream(4, 4);
+  scheduler_.RegisterStream(5, 4);
+  scheduler_.RegisterStream(7, 7);
+
+  // Make sure we don't yield when the list is empty.
+  EXPECT_FALSE(scheduler_.ShouldYield(1));
+
+  // Add a low priority stream.
+  scheduler_.MarkStreamReady(4, false);
+  // 4 should not yield to itself.
+  EXPECT_FALSE(scheduler_.ShouldYield(4));
+  // 7 should yield as 4 is blocked and a higher priority.
+  EXPECT_TRUE(scheduler_.ShouldYield(7));
+  // 5 should yield to 4 as they are the same priority.
+  EXPECT_TRUE(scheduler_.ShouldYield(5));
+  // 1 should not yield as 1 is higher priority.
+  EXPECT_FALSE(scheduler_.ShouldYield(1));
+
+  // Add a second stream in that priority class.
+  scheduler_.MarkStreamReady(5, false);
+  // 4 and 5 are both blocked, but 4 is at the front so should not yield.
+  EXPECT_FALSE(scheduler_.ShouldYield(4));
+  EXPECT_TRUE(scheduler_.ShouldYield(5));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

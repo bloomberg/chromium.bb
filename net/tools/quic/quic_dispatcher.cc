@@ -214,8 +214,8 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   QuicConnectionId connection_id = header.connection_id;
   SessionMap::iterator it = session_map_.find(connection_id);
   if (it != session_map_.end()) {
-    it->second->connection()->ProcessUdpPacket(
-        current_server_address_, current_client_address_, *current_packet_);
+    it->second->ProcessUdpPacket(current_server_address_,
+                                 current_client_address_, *current_packet_);
     return false;
   }
 
@@ -277,8 +277,8 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
           CreateQuicSession(connection_id, current_client_address_);
       DVLOG(1) << "Created new session for " << connection_id;
       session_map_.insert(std::make_pair(connection_id, session));
-      session->connection()->ProcessUdpPacket(
-          current_server_address_, current_client_address_, *current_packet_);
+      session->ProcessUdpPacket(current_server_address_,
+                                current_client_address_, *current_packet_);
       break;
     }
     case kFateTimeWait:

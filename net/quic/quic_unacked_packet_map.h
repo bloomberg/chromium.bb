@@ -114,6 +114,10 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   const TransmissionInfo& GetTransmissionInfo(
       QuicPacketNumber packet_number) const;
 
+  // Returns mutable TransmissionInfo associated with |packet_number|, which
+  // must be unacked.
+  TransmissionInfo* GetMutableTransmissionInfo(QuicPacketNumber packet_number);
+
   // Returns the time that the last unacked packet was sent.
   QuicTime GetLastPacketSentTime() const;
 

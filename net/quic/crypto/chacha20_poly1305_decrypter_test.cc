@@ -4,6 +4,7 @@
 
 #include "net/quic/crypto/chacha20_poly1305_decrypter.h"
 
+#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using base::StringPiece;
@@ -75,16 +76,22 @@ QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece ciphertext) {
+  QuicPathId path_id = kDefaultPathId;
   QuicPacketNumber packet_number;
   StringPiece nonce_prefix(nonce.data(), nonce.size() - sizeof(packet_number));
   decrypter->SetNoncePrefix(nonce_prefix);
   memcpy(&packet_number, nonce.data() + nonce_prefix.size(),
          sizeof(packet_number));
+  if (FLAGS_quic_include_path_id_in_iv) {
+    path_id = static_cast<QuicPathId>(
+        packet_number >> 8 * (sizeof(packet_number) - sizeof(path_id)));
+    packet_number &= UINT64_C(0x00FFFFFFFFFFFFFF);
+  }
   scoped_ptr<char[]> output(new char[ciphertext.length()]);
   size_t output_length = 0;
   const bool success = decrypter->DecryptPacket(
-      packet_number, associated_data, ciphertext, output.get(), &output_length,
-      ciphertext.length());
+      path_id, packet_number, associated_data, ciphertext, output.get(),
+      &output_length, ciphertext.length());
   if (!success) {
     return nullptr;
   }

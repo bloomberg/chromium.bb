@@ -98,16 +98,18 @@ TEST(ChaCha20Poly1305Rfc7539EncrypterTest, EncryptThenDecrypt) {
   ASSERT_TRUE(encrypter.SetNoncePrefix("abcd"));
   ASSERT_TRUE(decrypter.SetNoncePrefix("abcd"));
 
+  QuicPathId path_id = 0x42;
   QuicPacketNumber packet_number = UINT64_C(0x123456789ABC);
   string associated_data = "associated_data";
   string plaintext = "plaintext";
   char encrypted[1024];
   size_t len;
-  ASSERT_TRUE(encrypter.EncryptPacket(packet_number, associated_data, plaintext,
-                                      encrypted, &len, arraysize(encrypted)));
+  ASSERT_TRUE(encrypter.EncryptPacket(path_id, packet_number, associated_data,
+                                      plaintext, encrypted, &len,
+                                      arraysize(encrypted)));
   StringPiece ciphertext(encrypted, len);
   char decrypted[1024];
-  ASSERT_TRUE(decrypter.DecryptPacket(packet_number, associated_data,
+  ASSERT_TRUE(decrypter.DecryptPacket(path_id, packet_number, associated_data,
                                       ciphertext, decrypted, &len,
                                       arraysize(decrypted)));
 }

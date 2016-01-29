@@ -57,6 +57,26 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
     return num_blocked;
   }
 
+  bool ShouldYield(QuicStreamId id) const {
+    if (!use_new_blocked_list_) {
+      return false;  // Yielding is not supported for old code.
+    }
+    if (id == kCryptoStreamId) {
+      return false;  // The crypto stream yields to none.
+    }
+    if (crypto_stream_blocked_) {
+      return true;  // If the crypto stream is blocked, all other streams yield.
+    }
+    if (id == kHeadersStreamId) {
+      return false;  // The crypto stream isn't blocked so headers won't yield.
+    }
+    if (headers_stream_blocked_) {
+      return true;  // All data streams yield to the headers stream.
+    }
+
+    return priority_write_scheduler_.ShouldYield(id);
+  }
+
   // Pops the highest priorty stream, special casing crypto and headers streams.
   // Latches the most recently popped data stream for batch writing purposes.
   QuicStreamId PopFront() {
@@ -125,15 +145,6 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
       // bytes remaining in its batch write.
       bytes_left_for_batch_write_[last_priority_popped_] -=
           static_cast<int32_t>(bytes);
-    } else {
-      // If a batch write stream was set, it should only be preempted by the
-      // crypto or headers streams.  Any higher priority data stream would
-      // *become* the new batch write stream.
-      if (FLAGS_quic_respect_send_alarm2 && FLAGS_quic_batch_writes) {
-        DCHECK(stream_id == kCryptoStreamId || stream_id == kHeadersStreamId ||
-               batch_write_stream_id_[last_priority_popped_] == 0 ||
-               bytes == 0);
-      }
     }
   }
 

@@ -655,6 +655,8 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool ack_frame_updated() const;
 
+  QuicConnectionHelperInterface* helper() { return helper_; }
+
  protected:
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
@@ -665,8 +667,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
   virtual void SendOrQueuePacket(SerializedPacket* packet);
-
-  QuicConnectionHelperInterface* helper() { return helper_; }
 
   // On peer address changes, determine and return the change type.
   virtual PeerAddressChangeType DeterminePeerAddressChangeType();

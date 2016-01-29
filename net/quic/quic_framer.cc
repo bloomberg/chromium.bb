@@ -1052,6 +1052,7 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
 
 bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                               QuicPacketHeader* header) {
+  header->path_id = kDefaultPathId;
   if (header->public_header.multipath_flag &&
       !ProcessPathId(encrypted_reader, &header->path_id)) {
     set_detailed_error("Unable to read path id.");
@@ -1714,6 +1715,7 @@ void QuicFramer::SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter) {
 }
 
 size_t QuicFramer::EncryptPayload(EncryptionLevel level,
+                                  QuicPathId path_id,
                                   QuicPacketNumber packet_number,
                                   const QuicPacket& packet,
                                   char* buffer,
@@ -1727,7 +1729,7 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
   memmove(buffer, associated_data.data(), ad_len);
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
-  if (!encrypter_[level]->EncryptPacket(packet_number, associated_data,
+  if (!encrypter_[level]->EncryptPacket(path_id, packet_number, associated_data,
                                         packet.Plaintext(), buffer + ad_len,
                                         &output_length, buffer_len - ad_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
@@ -1767,14 +1769,14 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
       header.public_header.version_flag, header.public_header.multipath_flag,
       header.public_header.packet_number_length);
   bool success = decrypter_->DecryptPacket(
-      header.packet_number, associated_data, encrypted, decrypted_buffer,
-      decrypted_length, buffer_length);
+      header.path_id, header.packet_number, associated_data, encrypted,
+      decrypted_buffer, decrypted_length, buffer_length);
   if (success) {
     visitor_->OnDecryptedPacket(decrypter_level_);
   } else if (alternative_decrypter_.get() != nullptr) {
     success = alternative_decrypter_->DecryptPacket(
-        header.packet_number, associated_data, encrypted, decrypted_buffer,
-        decrypted_length, buffer_length);
+        header.path_id, header.packet_number, associated_data, encrypted,
+        decrypted_buffer, decrypted_length, buffer_length);
     if (success) {
       visitor_->OnDecryptedPacket(alternative_decrypter_level_);
       if (alternative_decrypter_latch_) {

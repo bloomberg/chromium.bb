@@ -107,8 +107,9 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  size_t encrypted_size = framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  size_t encrypted_size = framer.EncryptPayload(ENCRYPTION_NONE, /*path_id=*/0u,
+                                                header.packet_number, *packet,
+                                                buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_size);
   QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
   return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
@@ -159,8 +160,9 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  size_t encrypted_size = framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  size_t encrypted_size = framer.EncryptPayload(ENCRYPTION_NONE, /*path_id=*/0u,
+                                                header.packet_number, *packet,
+                                                buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_size);
   QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
   return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
@@ -229,8 +231,9 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  size_t encrypted_size = framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  size_t encrypted_size = framer.EncryptPayload(ENCRYPTION_NONE, /*path_id=*/0u,
+                                                header.packet_number, *packet,
+                                                buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_size);
   QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
   return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
@@ -465,8 +468,9 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeMultipleFramesPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  size_t encrypted_size = framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  size_t encrypted_size = framer.EncryptPayload(ENCRYPTION_NONE, /*path_id=*/0u,
+                                                header.packet_number, *packet,
+                                                buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_size);
   QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
   return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());

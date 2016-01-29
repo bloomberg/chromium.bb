@@ -25,7 +25,8 @@ bool NullDecrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }
 
-bool NullDecrypter::DecryptPacket(QuicPacketNumber /*packet_number*/,
+bool NullDecrypter::DecryptPacket(QuicPathId /*path_id*/,
+                                  QuicPacketNumber /*packet_number*/,
                                   const StringPiece& associated_data,
                                   const StringPiece& ciphertext,
                                   char* output,

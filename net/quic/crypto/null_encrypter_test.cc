@@ -22,8 +22,9 @@ TEST_F(NullEncrypterTest, Encrypt) {
   NullEncrypter encrypter;
   char encrypted[256];
   size_t encrypted_len = 0;
-  ASSERT_TRUE(encrypter.EncryptPacket(0, "hello world!", "goodbye!", encrypted,
-                                      &encrypted_len, 256));
+  ASSERT_TRUE(encrypter.EncryptPacket(kDefaultPathId, 0, "hello world!",
+                                      "goodbye!", encrypted, &encrypted_len,
+                                      256));
   test::CompareCharArraysWithHexError(
       "encrypted data", encrypted, encrypted_len,
       reinterpret_cast<const char*>(expected), arraysize(expected));

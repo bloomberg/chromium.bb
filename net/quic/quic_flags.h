@@ -41,7 +41,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_unencrypted_fec;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_fix;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_trailers;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_push_promise;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_primary_config_for_proof;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_distinguish_incoming_outgoing_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_validate_stk_without_scid;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_new_blocked_list;
@@ -53,5 +52,7 @@ NET_EXPORT_PRIVATE extern bool
     FLAGS_quic_time_wait_list_manager_use_shared_writer;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_log_loss_event;
 NET_EXPORT_PRIVATE extern bool FLAGS_use_stream_frame_freelist;
-
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_retransmit_via_onserializedpacket;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_include_path_id_in_iv;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_cede_correctly;
 #endif  // NET_QUIC_QUIC_FLAGS_H_

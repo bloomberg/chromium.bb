@@ -1474,6 +1474,8 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
 };
 
 TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_disable_non_nat_address_migration,
+                              false);
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1495,6 +1497,8 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
 }
 
 TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_disable_non_nat_address_migration,
+                              false);
   // Tests that the client's port can change during an established QUIC
   // connection, and that doing so does not result in the connection being
   // closed by the server.
@@ -1955,8 +1959,8 @@ TEST_P(EndToEndTest, BadEncryptedData) {
 
   scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       client_->client()->session()->connection()->connection_id(), false, false,
-      1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_6BYTE_PACKET_NUMBER));
+      false, kDefaultPathId, 1, "At least 20 characters.",
+      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
   string damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;

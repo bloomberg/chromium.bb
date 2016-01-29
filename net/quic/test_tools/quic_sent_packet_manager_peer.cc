@@ -53,7 +53,7 @@ void QuicSentPacketManagerPeer::SetPerspective(
 }
 
 // static
-const SendAlgorithmInterface* QuicSentPacketManagerPeer::GetSendAlgorithm(
+SendAlgorithmInterface* QuicSentPacketManagerPeer::GetSendAlgorithm(
     const QuicSentPacketManager& sent_packet_manager) {
   return sent_packet_manager.send_algorithm_.get();
 }

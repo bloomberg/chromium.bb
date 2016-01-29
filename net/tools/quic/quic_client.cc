@@ -498,8 +498,7 @@ bool QuicClient::ReadAndProcessPacket() {
   IPEndPoint client_address(client_ip,
                             QuicClient::GetLatestClientAddress().port());
 
-  session()->connection()->ProcessUdpPacket(client_address, server_address,
-                                            packet);
+  session()->ProcessUdpPacket(client_address, server_address, packet);
   return true;
 }
 

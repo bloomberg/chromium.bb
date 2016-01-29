@@ -66,12 +66,14 @@ QuicSentPacketManager::QuicSentPacketManager(
     const QuicClock* clock,
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
-    LossDetectionType loss_type)
+    LossDetectionType loss_type,
+    MultipathDelegateInterface* delegate)
     : unacked_packets_(),
       perspective_(perspective),
       path_id_(path_id),
       clock_(clock),
       stats_(stats),
+      delegate_(delegate),
       debug_delegate_(nullptr),
       network_change_visitor_(nullptr),
       initial_congestion_window_(kInitialCongestionWindow),
@@ -324,7 +326,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
 
   // Discard any retransmittable frames associated with revived packets.
   if (ack_frame.latest_revived_packet != 0) {
-    MarkPacketRevived(ack_frame.latest_revived_packet, ack_delay_time);
+    MarkPacketNotRetransmittable(ack_frame.latest_revived_packet,
+                                 ack_delay_time);
   }
 }
 
@@ -361,7 +364,11 @@ void QuicSentPacketManager::NeuterUnencryptedPackets() {
       // or otherwise. Unencrypted packets are neutered and abandoned, to ensure
       // they are not retransmitted or considered lost from a congestion control
       // perspective.
-      pending_retransmissions_.erase(packet_number);
+      if (delegate_ != nullptr) {
+        delegate_->OnUnencryptedPacketsNeutered(path_id_, packet_number);
+      } else {
+        pending_retransmissions_.erase(packet_number);
+      }
       unacked_packets_.RemoveFromInFlight(packet_number);
       unacked_packets_.RemoveRetransmittability(packet_number);
     }
@@ -380,13 +387,18 @@ void QuicSentPacketManager::MarkForRetransmission(
       transmission_type != RTO_RETRANSMISSION) {
     unacked_packets_.RemoveFromInFlight(packet_number);
   }
-  // TODO(ianswett): Currently the RTO can fire while there are pending NACK
-  // retransmissions for the same data, which is not ideal.
-  if (ContainsKey(pending_retransmissions_, packet_number)) {
-    return;
-  }
+  if (delegate_ != nullptr) {
+    delegate_->OnRetransmissionMarked(path_id_, packet_number,
+                                      transmission_type);
+  } else {
+    // TODO(ianswett): Currently the RTO can fire while there are pending NACK
+    // retransmissions for the same data, which is not ideal.
+    if (ContainsKey(pending_retransmissions_, packet_number)) {
+      return;
+    }
 
-  pending_retransmissions_[packet_number] = transmission_type;
+    pending_retransmissions_[packet_number] = transmission_type;
+  }
 }
 
 void QuicSentPacketManager::RecordOneSpuriousRetransmission(
@@ -483,8 +495,9 @@ QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
   }
 }
 
-void QuicSentPacketManager::MarkPacketRevived(QuicPacketNumber packet_number,
-                                              QuicTime::Delta ack_delay_time) {
+void QuicSentPacketManager::MarkPacketNotRetransmittable(
+    QuicPacketNumber packet_number,
+    QuicTime::Delta ack_delay_time) {
   if (!unacked_packets_.IsUnacked(packet_number)) {
     return;
   }
@@ -493,9 +506,13 @@ void QuicSentPacketManager::MarkPacketRevived(QuicPacketNumber packet_number,
       unacked_packets_.GetTransmissionInfo(packet_number);
   QuicPacketNumber newest_transmission =
       GetNewestRetransmission(packet_number, transmission_info);
-  // This packet has been revived at the receiver. If we were going to
-  // retransmit it, do not retransmit it anymore.
-  pending_retransmissions_.erase(newest_transmission);
+  // We do not need to retransmit this packet anymore.
+  if (delegate_ != nullptr) {
+    delegate_->OnPacketMarkedNotRetransmittable(path_id_, newest_transmission,
+                                                ack_delay_time);
+  } else {
+    pending_retransmissions_.erase(newest_transmission);
+  }
 
   // The AckListener needs to be notified for revived packets,
   // since it indicates the packet arrived from the appliction's perspective.
@@ -509,7 +526,12 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   QuicPacketNumber newest_transmission =
       GetNewestRetransmission(packet_number, *info);
   // Remove the most recent packet, if it is pending retransmission.
-  pending_retransmissions_.erase(newest_transmission);
+  if (delegate_ != nullptr) {
+    delegate_->OnPacketMarkedHandled(path_id_, newest_transmission,
+                                     ack_delay_time);
+  } else {
+    pending_retransmissions_.erase(newest_transmission);
+  }
 
   // The AckListener needs to be notified about the most recent
   // transmission, since that's the one only one it tracks.
@@ -561,7 +583,7 @@ bool QuicSentPacketManager::OnPacketSent(
   DCHECK(!unacked_packets_.IsUnacked(packet_number));
   QUIC_BUG_IF(bytes == 0) << "Cannot send empty packets.";
 
-  if (original_packet_number != 0) {
+  if (delegate_ == nullptr && original_packet_number != 0) {
     if (!pending_retransmissions_.erase(original_packet_number)) {
       QUIC_BUG << "Expected packet number to be in "
                << "pending_retransmissions_.  packet_number: "
@@ -965,6 +987,9 @@ QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
 void QuicSentPacketManager::CancelRetransmissionsForStream(
     QuicStreamId stream_id) {
   unacked_packets_.CancelRetransmissionsForStream(stream_id);
+  if (delegate_ != nullptr) {
+    return;
+  }
   PendingRetransmissionMap::iterator it = pending_retransmissions_.begin();
   while (it != pending_retransmissions_.end()) {
     if (HasRetransmittableFrames(it->first)) {
@@ -991,11 +1016,7 @@ void QuicSentPacketManager::EnablePacing() {
 }
 
 void QuicSentPacketManager::OnConnectionMigration(PeerAddressChangeType type) {
-  if (type == UNKNOWN) {
-    return;
-  }
-
-  if (type == NAT_PORT_REBINDING || type == IPV4_SUBNET_REBINDING) {
+  if (type == PORT_CHANGE || type == IPV4_SUBNET_CHANGE) {
     // Rtt and cwnd do not need to be reset when the peer address change is
     // considered to be caused by NATs.
     return;
@@ -1007,6 +1028,15 @@ void QuicSentPacketManager::OnConnectionMigration(PeerAddressChangeType type) {
 
 bool QuicSentPacketManager::InSlowStart() const {
   return send_algorithm_->InSlowStart();
+}
+
+TransmissionInfo* QuicSentPacketManager::GetMutableTransmissionInfo(
+    QuicPacketNumber packet_number) {
+  return unacked_packets_.GetMutableTransmissionInfo(packet_number);
+}
+
+void QuicSentPacketManager::RemoveObsoletePackets() {
+  unacked_packets_.RemoveObsoletePackets();
 }
 
 }  // namespace net

@@ -33,10 +33,10 @@ class GeneralLossAlgorithmTest : public ::testing::Test {
 
   void SendDataPacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    RetransmittableFrames* frames = new RetransmittableFrames();
+    QuicFrames* frames = new QuicFrames();
     QuicStreamFrame* frame = new QuicStreamFrame();
     frame->stream_id = kHeadersStreamId;
-    frames->AddFrame(QuicFrame(frame));
+    frames->push_back(QuicFrame(frame));
     SerializedPacket packet(kDefaultPathId, packet_number,
                             PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
                             frames, false, false);

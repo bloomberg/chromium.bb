@@ -86,7 +86,7 @@ class QuicChromiumClientSessionTest
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", base::TimeTicks::Now(),
+        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), &promised_by_url_,
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, &net_log_));
 
@@ -132,6 +132,7 @@ class QuicChromiumClientSessionTest
   TestCompletionCallback callback_;
   QuicTestPacketMaker maker_;
   ProofVerifyDetailsChromium verify_details_;
+  QuicPromisedByUrlMap promised_by_url_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,

@@ -191,6 +191,9 @@ const char* QuicUtils::StreamErrorToString(QuicRstStreamErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_RST_ACKNOWLEDGEMENT);
     RETURN_STRING_LITERAL(QUIC_REFUSED_STREAM);
     RETURN_STRING_LITERAL(QUIC_STREAM_LAST_ERROR);
+    RETURN_STRING_LITERAL(QUIC_INVALID_PROMISE_URL);
+    RETURN_STRING_LITERAL(QUIC_UNAUTHORIZED_PROMISE_URL);
+    RETURN_STRING_LITERAL(QUIC_DUPLICATE_PROMISE_URL);
   }
   // Return a default value so that we return this when |error| doesn't match
   // any of the QuicRstStreamErrorCodes. This can happen when the RstStream
@@ -448,6 +451,17 @@ void QuicUtils::RemoveFramesForStream(QuicFrames* frames,
     delete it->stream_frame;
     it = frames->erase(it);
   }
+}
+
+// static
+void QuicUtils::ClearSerializedPacket(SerializedPacket* serialized_packet) {
+  if (serialized_packet->retransmittable_frames != nullptr) {
+    DeleteFrames(serialized_packet->retransmittable_frames);
+  }
+  delete serialized_packet->retransmittable_frames;
+  delete serialized_packet->packet;
+  serialized_packet->retransmittable_frames = nullptr;
+  serialized_packet->packet = nullptr;
 }
 
 }  // namespace net

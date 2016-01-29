@@ -178,10 +178,11 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     QuicCryptoClientConfig* crypto_config,
     const char* const connection_description,
     base::TimeTicks dns_resolution_end_time,
+    QuicPromisedByUrlMap* promised_by_url,
     base::TaskRunner* task_runner,
     scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
-    : QuicClientSessionBase(connection, config),
+    : QuicClientSessionBase(connection, promised_by_url, config),
       server_id_(server_id),
       require_confirmation_(false),
       stream_factory_(stream_factory),
@@ -941,7 +942,7 @@ void QuicChromiumClientSession::OnReadError(
 bool QuicChromiumClientSession::OnPacket(const QuicEncryptedPacket& packet,
                                          IPEndPoint local_address,
                                          IPEndPoint peer_address) {
-  connection()->ProcessUdpPacket(local_address, peer_address, packet);
+  ProcessUdpPacket(local_address, peer_address, packet);
   if (!connection()->connected()) {
     NotifyFactoryOfSessionClosedLater();
     return false;

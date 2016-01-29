@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "crypto/scoped_nss_types.h"
+#include "net/quic/quic_flags.h"
 
 using base::StringPiece;
 
@@ -117,7 +118,8 @@ bool AeadBaseEncrypter::Encrypt(StringPiece nonce,
   return true;
 }
 
-bool AeadBaseEncrypter::EncryptPacket(QuicPacketNumber packet_number,
+bool AeadBaseEncrypter::EncryptPacket(QuicPathId path_id,
+                                      QuicPacketNumber packet_number,
                                       StringPiece associated_data,
                                       StringPiece plaintext,
                                       char* output,
@@ -132,8 +134,22 @@ bool AeadBaseEncrypter::EncryptPacket(QuicPacketNumber packet_number,
   const size_t nonce_size = nonce_prefix_size_ + sizeof(packet_number);
   ALIGNAS(4) char nonce_buffer[kMaxNonceSize];
   memcpy(nonce_buffer, nonce_prefix_, nonce_prefix_size_);
-  memcpy(nonce_buffer + nonce_prefix_size_, &packet_number,
-         sizeof(packet_number));
+  if (FLAGS_quic_include_path_id_in_iv) {
+    // Setting the nonce below relies on QuicPathId and QuicPacketNumber being
+    // specific sizes.
+    static_assert(sizeof(path_id) == 1, "Size of QuicPathId changed.");
+    static_assert(sizeof(packet_number) == 8,
+                  "Size of QuicPacketNumber changed.");
+    // Use path_id and lower 7 bytes of packet_number as lower 8 bytes of nonce.
+    uint64_t path_id_packet_number =
+        (static_cast<uint64_t>(path_id) << 56) | packet_number;
+    DCHECK(path_id != kDefaultPathId || path_id_packet_number == packet_number);
+    memcpy(nonce_buffer + nonce_prefix_size_, &path_id_packet_number,
+           sizeof(path_id_packet_number));
+  } else {
+    memcpy(nonce_buffer + nonce_prefix_size_, &packet_number,
+           sizeof(packet_number));
+  }
   if (!Encrypt(StringPiece(nonce_buffer, nonce_size), associated_data,
                plaintext, reinterpret_cast<unsigned char*>(output))) {
     return false;

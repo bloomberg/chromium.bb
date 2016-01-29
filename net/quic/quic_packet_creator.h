@@ -405,9 +405,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // packet_size_ is mutable because it's just a cache of the current size.
   // packet_size should never be read directly, use PacketSize() instead.
   mutable size_t packet_size_;
-  scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;
+  scoped_ptr<QuicFrames> queued_retransmittable_frames_;
   // If true, the packet will be padded up to |max_packet_length_|.
   bool needs_padding_;
+  IsHandshake has_crypto_handshake_;
   // Stores ack std::listeners that should be attached to the next packet.
   std::list<AckListenerWrapper> ack_listeners_;
 

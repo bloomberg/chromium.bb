@@ -126,6 +126,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       QuicCryptoClientConfig* crypto_config,
       const char* const connection_description,
       base::TimeTicks dns_resolution_end_time,
+      QuicPromisedByUrlMap* promised_by_url,
       base::TaskRunner* task_runner,
       scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log);

@@ -29,10 +29,12 @@ const int64_t kPushPromiseTimeoutSecs = 60;
 
 class QuicClientSession : public QuicClientSessionBase {
  public:
+  // Caller retains ownership of |promised_by_url|.
   QuicClientSession(const QuicConfig& config,
                     QuicConnection* connection,
                     const QuicServerId& server_id,
-                    QuicCryptoClientConfig* crypto_config);
+                    QuicCryptoClientConfig* crypto_config,
+                    QuicPromisedByUrlMap* promised_by_url);
   ~QuicClientSession() override;
   // Set up the QuicClientSession. Must be called prior to use.
   void Initialize() override;

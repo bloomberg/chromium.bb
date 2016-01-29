@@ -518,6 +518,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   NetworkConnection network_connection_;
 
+  QuicPromisedByUrlMap promised_by_url_;
+
   base::TaskRunner* task_runner_;
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_;

@@ -222,6 +222,8 @@ class QuicClientBase {
   // to the previous client-level connection.
   bool connected_or_attempting_connect_;
 
+  QuicPromisedByUrlMap promised_by_url_map_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicClientBase);
 };
 

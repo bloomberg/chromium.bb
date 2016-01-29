@@ -94,8 +94,8 @@ bool CryptoSecretBoxer::Unbox(StringPiece ciphertext,
   char plaintext[kMaxPacketSize];
   size_t plaintext_length = 0;
   const bool success = decrypter->DecryptPacket(
-      packet_number, StringPiece() /* associated data */, ciphertext, plaintext,
-      &plaintext_length, kMaxPacketSize);
+      /*path_id=*/0u, packet_number, /*associated data=*/StringPiece(),
+      ciphertext, plaintext, &plaintext_length, kMaxPacketSize);
   if (!success) {
     return false;
   }

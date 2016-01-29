@@ -41,6 +41,31 @@ struct QuicConnectionStats;
 // previous transmission is acked, the data will not be retransmitted.
 class NET_EXPORT_PRIVATE QuicSentPacketManager {
  public:
+  // A delegate interface which manages pending retransmissions.
+  class MultipathDelegateInterface {
+   public:
+    virtual ~MultipathDelegateInterface() {}
+
+    // Called when unencrypted |packet_number| is requested to be neutered.
+    virtual void OnUnencryptedPacketsNeutered(
+        QuicPathId path_id,
+        QuicPacketNumber packet_number) = 0;
+    // Called when |packet_number| is requested to be retransmitted.
+    virtual void OnRetransmissionMarked(QuicPathId path_id,
+                                        QuicPacketNumber packet_number,
+                                        TransmissionType transmission_type) = 0;
+    // Called when |packet_number| is marked as not retransmittable.
+    virtual void OnPacketMarkedNotRetransmittable(
+        QuicPathId path_id,
+        QuicPacketNumber packet_number,
+        QuicTime::Delta delta_largest_observed) = 0;
+    // Called when any transmission of |packet_number| is handled.
+    virtual void OnPacketMarkedHandled(
+        QuicPathId path_id,
+        QuicPacketNumber packet_number,
+        QuicTime::Delta delta_largest_observed) = 0;
+  };
+
   // Interface which gets callbacks from the QuicSentPacketManager at
   // interesting points.  Implementations must not mutate the state of
   // the packet manager or connection as a result of these callbacks.
@@ -84,7 +109,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                         const QuicClock* clock,
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
-                        LossDetectionType loss_type);
+                        LossDetectionType loss_type,
+                        MultipathDelegateInterface* delegate);
   virtual ~QuicSentPacketManager();
 
   virtual void SetFromConfig(const QuicConfig& config);
@@ -305,11 +331,13 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MaybeInvokeCongestionEvent(bool rtt_updated,
                                   QuicByteCount bytes_in_flight);
 
-  // Marks |packet_number| as having been revived by the peer, but not
-  // received, so the packet remains pending if it is and the congestion control
-  // does not consider the packet acked.
-  void MarkPacketRevived(QuicPacketNumber packet_number,
-                         QuicTime::Delta ack_delay_time);
+  // Called when frames of |packet_number| has been received but the packet
+  // itself has not been received by the peer (e.g., packet is revived by FEC).
+  // The packet needs no longer to be retransmitted, but the packet remains
+  // pending if it is and the congestion control does not consider the packet
+  // acked.
+  void MarkPacketNotRetransmittable(QuicPacketNumber packet_number,
+                                    QuicTime::Delta ack_delay_time);
 
   // Removes the retransmittability and in flight properties from the packet at
   // |info| due to receipt by the peer.
@@ -334,6 +362,14 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void RecordSpuriousRetransmissions(const TransmissionInfo& info,
                                      QuicPacketNumber acked_packet_number);
 
+  // Returns mutable TransmissionInfo associated with |packet_number|, which
+  // must be unacked.
+  TransmissionInfo* GetMutableTransmissionInfo(QuicPacketNumber packet_number);
+
+  // Remove any packets no longer needed for retransmission, congestion, or
+  // RTT measurement purposes.
+  void RemoveObsoletePackets();
+
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is
   // retransmitted, this map will contain entries for both the old and the new
@@ -354,6 +390,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   const QuicClock* clock_;
   QuicConnectionStats* stats_;
+
+  // Pending retransmissions are managed by delegate_ if it is not null.
+  MultipathDelegateInterface* delegate_;  // Not owned.
+
   DebugDelegate* debug_delegate_;
   NetworkChangeVisitor* network_change_visitor_;
   const QuicPacketCount initial_congestion_window_;

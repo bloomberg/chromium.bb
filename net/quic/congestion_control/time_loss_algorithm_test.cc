@@ -35,7 +35,7 @@ class TimeLossAlgorithmTest : public ::testing::Test {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket packet(kDefaultPathId, packet_number,
                             PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
-                            new RetransmittableFrames(), false, false);
+                            new QuicFrames(), false, false);
     unacked_packets_.AddSentPacket(&packet, 0, NOT_RETRANSMISSION, clock_.Now(),
                                    1000, true);
   }

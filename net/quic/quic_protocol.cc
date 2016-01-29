@@ -722,35 +722,6 @@ StringPiece QuicPacket::Plaintext() const {
                      length() - start_of_encrypted_data);
 }
 
-RetransmittableFrames::RetransmittableFrames()
-    : has_crypto_handshake_(NOT_HANDSHAKE), needs_padding_(false) {
-  // TODO(ianswett): Consider using an inlined vector instead, since this
-  // is very frequently a single frame.
-  frames_.reserve(2);
-}
-
-RetransmittableFrames::~RetransmittableFrames() {
-  QuicUtils::DeleteFrames(&frames_);
-}
-
-const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame) {
-  if (frame.type == STREAM_FRAME &&
-      frame.stream_frame->stream_id == kCryptoStreamId) {
-    has_crypto_handshake_ = IS_HANDSHAKE;
-  }
-  frames_.push_back(frame);
-  return frame;
-}
-
-void RetransmittableFrames::RemoveFramesForStream(QuicStreamId stream_id) {
-  QuicUtils::RemoveFramesForStream(&frames_, stream_id);
-}
-
-void RetransmittableFrames::SwapFrames(QuicFrames* destination_frames) {
-  frames_.swap(*destination_frames);
-  DCHECK(frames_.empty());
-}
-
 AckListenerWrapper::AckListenerWrapper(QuicAckListenerInterface* listener,
                                        QuicPacketLength data_length)
     : ack_listener(listener), length(data_length) {
@@ -759,17 +730,18 @@ AckListenerWrapper::AckListenerWrapper(QuicAckListenerInterface* listener,
 
 AckListenerWrapper::~AckListenerWrapper() {}
 
-SerializedPacket::SerializedPacket(
-    QuicPathId path_id,
-    QuicPacketNumber packet_number,
-    QuicPacketNumberLength packet_number_length,
-    QuicEncryptedPacket* packet,
-    QuicPacketEntropyHash entropy_hash,
-    RetransmittableFrames* retransmittable_frames,
-    bool has_ack,
-    bool has_stop_waiting)
+SerializedPacket::SerializedPacket(QuicPathId path_id,
+                                   QuicPacketNumber packet_number,
+                                   QuicPacketNumberLength packet_number_length,
+                                   QuicEncryptedPacket* packet,
+                                   QuicPacketEntropyHash entropy_hash,
+                                   QuicFrames* retransmittable_frames,
+                                   bool has_ack,
+                                   bool has_stop_waiting)
     : packet(packet),
       retransmittable_frames(retransmittable_frames),
+      has_crypto_handshake(NOT_HANDSHAKE),
+      needs_padding(false),
       path_id(path_id),
       packet_number(packet_number),
       packet_number_length(packet_number_length),
@@ -781,18 +753,19 @@ SerializedPacket::SerializedPacket(
       original_packet_number(0),
       transmission_type(NOT_RETRANSMISSION) {}
 
-SerializedPacket::SerializedPacket(
-    QuicPathId path_id,
-    QuicPacketNumber packet_number,
-    QuicPacketNumberLength packet_number_length,
-    char* encrypted_buffer,
-    size_t encrypted_length,
-    bool owns_buffer,
-    QuicPacketEntropyHash entropy_hash,
-    RetransmittableFrames* retransmittable_frames,
-    bool has_ack,
-    bool has_stop_waiting,
-    EncryptionLevel level)
+SerializedPacket::SerializedPacket(QuicPathId path_id,
+                                   QuicPacketNumber packet_number,
+                                   QuicPacketNumberLength packet_number_length,
+                                   char* encrypted_buffer,
+                                   size_t encrypted_length,
+                                   bool owns_buffer,
+                                   QuicPacketEntropyHash entropy_hash,
+                                   QuicFrames* retransmittable_frames,
+                                   bool padding,
+                                   IsHandshake is_handshake,
+                                   bool has_ack,
+                                   bool has_stop_waiting,
+                                   EncryptionLevel level)
     : SerializedPacket(path_id,
                        packet_number,
                        packet_number_length,
@@ -806,6 +779,8 @@ SerializedPacket::SerializedPacket(
   // TODO(ianswett): Move into the initializer list once SerializedPacket
   // no longer contains an encrypted packet.
   encryption_level = level;
+  needs_padding = padding;
+  has_crypto_handshake = is_handshake;
 }
 
 SerializedPacket::~SerializedPacket() {}

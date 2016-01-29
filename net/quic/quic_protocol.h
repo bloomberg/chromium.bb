@@ -28,7 +28,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/interval_set.h"
-#include "net/quic/quic_ack_listener_interface.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/quic_types.h"
@@ -180,6 +179,12 @@ const int kMaxStreamsMinimumIncrement = 10;
 // of available streams is 10 times the limit on the number of open streams.
 const int kMaxAvailableStreamsMultiplier = 10;
 
+// Track the number of promises that are not yet claimed by a
+// corresponding get.  This must be smaller than
+// kMaxAvailableStreamsMultiplier, because RST on a promised stream my
+// create available streams entries.
+const int kMaxPromisedStreamsMultiplier = kMaxAvailableStreamsMultiplier - 1;
+
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
 // with 5-bit exponent (bias 1), 11-bit mantissa (effective 12 with hidden
@@ -328,7 +333,7 @@ enum QuicPacketPublicFlags {
   // Bit 6: Does the packet header contain a path id?
   PACKET_PUBLIC_FLAGS_MULTIPATH = 1 << 6,
 
-  // All bits set (bit7 are not currently used): 01111111
+  // All bits set (bit 7 is not currently used): 01111111
   PACKET_PUBLIC_FLAGS_MAX = (1 << 7) - 1,
 };
 
@@ -467,6 +472,12 @@ enum QuicRstStreamErrorCode {
   // has been reached).  The sender should retry the request later (using
   // another stream).
   QUIC_REFUSED_STREAM,
+  // Invalid URL in PUSH_PROMISE request header.
+  QUIC_INVALID_PROMISE_URL,
+  // Server is not authoritative for this URL.
+  QUIC_UNAUTHORIZED_PROMISE_URL,
+  // Can't have more than one active PUSH_PROMISE per URL.
+  QUIC_DUPLICATE_PROMISE_URL,
 
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
@@ -1116,20 +1127,20 @@ enum EncryptionLevel {
 };
 
 enum PeerAddressChangeType {
+  // IP address and port remain unchanged.
   NO_CHANGE,
-  // Peer address changes which are considered to be cause by NATs. Currently,
-  // IPv4 address change with /24 does not change is considered to be cause by
-  // NATs.
-  NAT_PORT_REBINDING,
-  IPV4_SUBNET_REBINDING,
-  // IPv6 related address changes.
-  IPV4_TO_IPV6,
-  IPV6_TO_IPV4,
-  IPV6_TO_IPV6,
-  // This type is used when we always allow peer address changes.
-  UNKNOWN,
-  // All other peer address change types.
-  UNSPECIFIED,
+  // Port changed, but IP address remains unchanged.
+  PORT_CHANGE,
+  // IPv4 address changed, but within the /24 subnet (port may have changed.)
+  IPV4_SUBNET_CHANGE,
+  // IP address change from an IPv4 to an IPv6 address (port may have changed.)
+  IPV4_TO_IPV6_CHANGE,
+  // IP address change from an IPv6 to an IPv4 address (port may have changed.)
+  IPV6_TO_IPV4_CHANGE,
+  // IP address change from an IPv6 to an IPv6 address (port may have changed.)
+  IPV6_TO_IPV6_CHANGE,
+  // All other peer address changes.
+  UNSPECIFIED_CHANGE,
 };
 
 struct NET_EXPORT_PRIVATE QuicFrame {
@@ -1247,32 +1258,26 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
   DISALLOW_COPY_AND_ASSIGN(QuicEncryptedPacket);
 };
 
-class NET_EXPORT_PRIVATE RetransmittableFrames {
+// Pure virtual class to listen for packet acknowledgements.
+class NET_EXPORT_PRIVATE QuicAckListenerInterface
+    : public base::RefCounted<QuicAckListenerInterface> {
  public:
-  RetransmittableFrames();
-  ~RetransmittableFrames();
+  QuicAckListenerInterface() {}
 
-  // Takes ownership of the frame inside |frame|.
-  const QuicFrame& AddFrame(const QuicFrame& frame);
-  // Removes all stream frames associated with |stream_id|.
-  void RemoveFramesForStream(QuicStreamId stream_id);
-  // Swaps the frames from RetransmittableFrames into |destination_frames|.
-  void SwapFrames(QuicFrames* destination_frames);
+  // Called when a packet is acked.  Called once per packet.
+  // |acked_bytes| is the number of data bytes acked.
+  virtual void OnPacketAcked(int acked_bytes,
+                             QuicTime::Delta ack_delay_time) = 0;
 
-  const QuicFrames& frames() const { return frames_; }
+  // Called when a packet is retransmitted.  Called once per packet.
+  // |retransmitted_bytes| is the number of data bytes retransmitted.
+  virtual void OnPacketRetransmitted(int retransmitted_bytes) = 0;
 
-  IsHandshake HasCryptoHandshake() const { return has_crypto_handshake_; }
+ protected:
+  friend class base::RefCounted<QuicAckListenerInterface>;
 
-  bool needs_padding() const { return needs_padding_; }
-
-  void set_needs_padding(bool needs_padding) { needs_padding_ = needs_padding; }
-
- private:
-  QuicFrames frames_;
-  IsHandshake has_crypto_handshake_;
-  bool needs_padding_;
-
-  DISALLOW_COPY_AND_ASSIGN(RetransmittableFrames);
+  // Delegates are ref counted.
+  virtual ~QuicAckListenerInterface() {}
 };
 
 struct NET_EXPORT_PRIVATE AckListenerWrapper {
@@ -1290,7 +1295,7 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    QuicPacketNumberLength packet_number_length,
                    QuicEncryptedPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
-                   RetransmittableFrames* retransmittable_frames,
+                   QuicFrames* retransmittable_frames,
                    bool has_ack,
                    bool has_stop_waiting);
   SerializedPacket(QuicPathId path_id,
@@ -1300,14 +1305,18 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    size_t encrypted_length,
                    bool owns_buffer,
                    QuicPacketEntropyHash entropy_hash,
-                   RetransmittableFrames* retransmittable_frames,
+                   QuicFrames* retransmittable_frames,
+                   bool needs_padding,
+                   IsHandshake is_handshake,
                    bool has_ack,
                    bool has_stop_waiting,
                    EncryptionLevel level);
   ~SerializedPacket();
 
   QuicEncryptedPacket* packet;
-  RetransmittableFrames* retransmittable_frames;
+  QuicFrames* retransmittable_frames;
+  IsHandshake has_crypto_handshake;
+  bool needs_padding;
   QuicPathId path_id;
   QuicPacketNumber packet_number;
   QuicPacketNumberLength packet_number_length;

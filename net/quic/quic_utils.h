@@ -111,6 +111,9 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // Deletes all the QuicStreamFrames for the specified |stream_id|.
   static void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id);
 
+  // Deletes and clears all the frames and the packet from serialized packet.
+  static void ClearSerializedPacket(SerializedPacket* serialized_packet);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };

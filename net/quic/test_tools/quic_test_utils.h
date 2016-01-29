@@ -47,6 +47,7 @@ static const uint32_t kInitialSessionFlowControlWindowForTest =
 static const QuicStreamId kClientDataStreamId1 = 5;
 static const QuicStreamId kClientDataStreamId2 = 7;
 static const QuicStreamId kClientDataStreamId3 = 9;
+static const QuicStreamId kServerDataStreamId1 = 4;
 
 // Returns the test peer IP address.
 IPAddressNumber TestPeerIPAddress();
@@ -75,7 +76,9 @@ void GenerateBody(std::string* body, int length);
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
+    bool multipath_flag,
     bool reset_flag,
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
@@ -86,7 +89,9 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
+    bool multipath_flag,
     bool reset_flag,
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
@@ -97,7 +102,9 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
 // |versions| == nullptr.
 QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
                                               bool version_flag,
+                                              bool multipath_flag,
                                               bool reset_flag,
+                                              QuicPathId path_id,
                                               QuicPacketNumber packet_number,
                                               const std::string& data);
 
@@ -109,8 +116,9 @@ QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
-    bool path_id_flag,
+    bool multipath_flag,
     bool reset_flag,
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
@@ -499,7 +507,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   DISALLOW_COPY_AND_ASSIGN(MockQuicSpdySession);
 };
 
-class TestQuicSpdyServerSession : public tools::QuicServerSessionBase {
+class TestQuicSpdyServerSession : public net::tools::QuicServerSessionBase {
  public:
   TestQuicSpdyServerSession(QuicConnection* connection,
                             const QuicConfig& config,
@@ -515,7 +523,7 @@ class TestQuicSpdyServerSession : public tools::QuicServerSessionBase {
   QuicCryptoServerStream* GetCryptoStream() override;
 
  private:
-  tools::test::MockQuicServerSessionVisitor visitor_;
+  net::tools::test::MockQuicServerSessionVisitor visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };
@@ -543,6 +551,7 @@ class TestQuicSpdyClientSession : public QuicClientSessionBase {
 
  private:
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
+  QuicPromisedByUrlMap promised_by_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyClientSession);
 };

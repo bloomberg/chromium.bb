@@ -24,8 +24,9 @@ TEST_F(NullDecrypterTest, Decrypt) {
   NullDecrypter decrypter;
   char buffer[256];
   size_t length = 0;
-  ASSERT_TRUE(decrypter.DecryptPacket(0, "hello world!", StringPiece(data, len),
-                                      buffer, &length, 256));
+  ASSERT_TRUE(decrypter.DecryptPacket(kDefaultPathId, 0, "hello world!",
+                                      StringPiece(data, len), buffer, &length,
+                                      256));
   EXPECT_LT(0u, length);
   EXPECT_EQ("goodbye!", StringPiece(buffer, length));
 }
@@ -42,8 +43,9 @@ TEST_F(NullDecrypterTest, BadHash) {
   NullDecrypter decrypter;
   char buffer[256];
   size_t length = 0;
-  ASSERT_FALSE(decrypter.DecryptPacket(
-      0, "hello world!", StringPiece(data, len), buffer, &length, 256));
+  ASSERT_FALSE(decrypter.DecryptPacket(kDefaultPathId, 0, "hello world!",
+                                       StringPiece(data, len), buffer, &length,
+                                       256));
 }
 
 TEST_F(NullDecrypterTest, ShortInput) {
@@ -56,8 +58,9 @@ TEST_F(NullDecrypterTest, ShortInput) {
   NullDecrypter decrypter;
   char buffer[256];
   size_t length = 0;
-  ASSERT_FALSE(decrypter.DecryptPacket(
-      0, "hello world!", StringPiece(data, len), buffer, &length, 256));
+  ASSERT_FALSE(decrypter.DecryptPacket(kDefaultPathId, 0, "hello world!",
+                                       StringPiece(data, len), buffer, &length,
+                                       256));
 }
 
 }  // namespace test

@@ -307,7 +307,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
           clock_,
           &stats_,
           FLAGS_quic_use_bbr_congestion_control ? kBBR : kCubic,
-          FLAGS_quic_use_time_loss_detection ? kTime : kNack),
+          FLAGS_quic_use_time_loss_detection ? kTime : kNack,
+          /*delegate=*/nullptr),
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
       connected_(true),
@@ -353,8 +354,7 @@ QuicConnection::~QuicConnection() {
 void QuicConnection::ClearQueuedPackets() {
   for (QueuedPacketList::iterator it = queued_packets_.begin();
        it != queued_packets_.end(); ++it) {
-    delete it->retransmittable_frames;
-    delete it->packet;
+    QuicUtils::ClearSerializedPacket(&(*it));
   }
   queued_packets_.clear();
 }
@@ -1178,21 +1178,18 @@ void QuicConnection::SendRstStream(QuicStreamId id,
   // Remove all queued packets which only contain data for the reset stream.
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end()) {
-    RetransmittableFrames* retransmittable_frames =
+    QuicFrames* retransmittable_frames =
         packet_iterator->retransmittable_frames;
-    if (!retransmittable_frames) {
+    if (retransmittable_frames == nullptr) {
       ++packet_iterator;
       continue;
     }
-    retransmittable_frames->RemoveFramesForStream(id);
-    if (!retransmittable_frames->frames().empty()) {
+    QuicUtils::RemoveFramesForStream(retransmittable_frames, id);
+    if (!retransmittable_frames->empty()) {
       ++packet_iterator;
       continue;
     }
-    delete packet_iterator->retransmittable_frames;
-    delete packet_iterator->packet;
-    packet_iterator->retransmittable_frames = nullptr;
-    packet_iterator->packet = nullptr;
+    QuicUtils::ClearSerializedPacket(&(*packet_iterator));
     packet_iterator = queued_packets_.erase(packet_iterator);
   }
 }
@@ -1364,9 +1361,8 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
   PeerAddressChangeType type = NO_CHANGE;
   if (peer_ip_changed_ || peer_port_changed_) {
     type = DeterminePeerAddressChangeType();
-    if (type != NO_CHANGE && type != UNKNOWN &&
-        (FLAGS_quic_disable_non_nat_address_migration &&
-         type != NAT_PORT_REBINDING && type != IPV4_SUBNET_REBINDING)) {
+    if (FLAGS_quic_disable_non_nat_address_migration && type != PORT_CHANGE &&
+        type != IPV4_SUBNET_CHANGE) {
       SendConnectionCloseWithDetails(QUIC_ERROR_MIGRATING_ADDRESS,
                                      "Invalid peer address migration.");
       return false;
@@ -1492,6 +1488,10 @@ void QuicConnection::WritePendingRetransmissions() {
     char buffer[kMaxPacketSize];
     SerializedPacket serialized_packet =
         packet_generator_.ReserializeAllFrames(pending, buffer, kMaxPacketSize);
+    if (FLAGS_quic_retransmit_via_onserializedpacket) {
+      DCHECK(serialized_packet.packet == nullptr);
+      continue;
+    }
     if (serialized_packet.packet == nullptr) {
       // We failed to serialize the packet, so close the connection.
       // CloseConnection does not send close packet, so no infinite loop here.
@@ -1582,10 +1582,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   if (!WritePacketInner(packet)) {
     return false;
   }
-  delete packet->retransmittable_frames;
-  delete packet->packet;
-  packet->retransmittable_frames = nullptr;
-  packet->packet = nullptr;
+  QuicUtils::ClearSerializedPacket(packet);
   return true;
 }
 
@@ -1841,7 +1838,7 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
 }
 
 PeerAddressChangeType QuicConnection::DeterminePeerAddressChangeType() {
-  return UNKNOWN;
+  return UNSPECIFIED_CHANGE;
 }
 
 void QuicConnection::OnPingTimeout() {
@@ -1851,7 +1848,10 @@ void QuicConnection::OnPingTimeout() {
 }
 
 void QuicConnection::SendPing() {
+  ScopedPacketBundler bundler(this, ack_queued_ ? SEND_ACK : NO_ACK);
   packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
+  // Send PING frame immediately, without checking for congestion window bounds.
+  packet_generator_.FlushAllQueuedFrames();
 }
 
 void QuicConnection::SendAck() {
@@ -2363,7 +2363,7 @@ bool QuicConnection::IsTerminationPacket(const SerializedPacket& packet) {
   if (packet.retransmittable_frames == nullptr) {
     return false;
   }
-  for (const QuicFrame& frame : packet.retransmittable_frames->frames()) {
+  for (const QuicFrame& frame : *packet.retransmittable_frames) {
     if (frame.type == CONNECTION_CLOSE_FRAME) {
       return true;
     }

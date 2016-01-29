@@ -16,7 +16,7 @@
 namespace net {
 namespace test {
 
-class MockQuicDispatcher : public tools::QuicDispatcher {
+class MockQuicDispatcher : public net::tools::QuicDispatcher {
  public:
   MockQuicDispatcher(const QuicConfig& config,
                      const QuicCryptoServerConfig* crypto_config,

@@ -129,10 +129,6 @@ bool FLAGS_quic_supports_trailers = true;
 // If true, headers stream will support receiving PUSH_PROMISE frames.
 bool FLAGS_quic_supports_push_promise = false;
 
-// Fixes a bug in QUIC_VERSION_26 by always using the primary config when
-// getting the proof of possession.
-bool FLAGS_quic_use_primary_config_for_proof = true;
-
 // Enable counters for incoming/outgoing streams which are used as condition
 // check while creating a new stream.
 bool FLAGS_quic_distinguish_incoming_outgoing_streams = true;
@@ -168,3 +164,15 @@ bool FLAGS_quic_log_loss_event = true;
 // If true, use a free list for the stream frame buffer allocations in
 // QuicPacketCreator.
 bool FLAGS_use_stream_frame_freelist = true;
+
+// Call QuicConnection::OnSerializedPacket instead of returning the
+// serialized packet when frames are retransmitted.
+bool FLAGS_quic_retransmit_via_onserializedpacket = true;
+
+// If true, for QUIC authenticated encryption algorithms, last 8 bytes
+// of IV comprise packet path id and lower 7 bytes of packet number.
+bool FLAGS_quic_include_path_id_in_iv = true;
+
+// If true, make sure new incoming streams correctly cede to higher
+// priority (or batch) streams when doing QUIC writes.
+bool FLAGS_quic_cede_correctly = true;

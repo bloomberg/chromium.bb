@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 #include <sys/types.h>
-
 #include <string>
 
 #include "base/macros.h"
@@ -38,6 +37,10 @@ class QuicSpdyClientStream : public QuicSpdyStream {
 
   // Override the base class to parse and store trailers.
   void OnTrailingHeadersComplete(bool fin, size_t frame_len) override;
+
+  // Override the base class to handle creation of the push stream.
+  void OnPromiseHeadersComplete(QuicStreamId promised_stream_id,
+                                size_t frame_len) override;
 
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
@@ -99,6 +102,8 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // When true allows the sending of a request to continue while the response is
   // arriving.
   bool allow_bidirectional_data_;
+
+  QuicClientSession* session_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientStream);
 };

@@ -827,7 +827,6 @@ TEST_P(CryptoServerTest, NoServerNonce) {
 }
 
 TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_use_primary_config_for_proof, true);
   client_address_ = IPEndPoint(Loopback6(), 1234);
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(

@@ -58,7 +58,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                  &clock_,
                  &stats_,
                  kCubic,
-                 kNack),
+                 kNack,
+                 /*delegate=*/nullptr),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
     // These tests only work with pacing enabled.
@@ -194,10 +195,10 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   SerializedPacket CreatePacket(QuicPacketNumber packet_number,
                                 bool retransmittable) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    RetransmittableFrames* frames = nullptr;
+    QuicFrames* frames = nullptr;
     if (retransmittable) {
-      frames = new RetransmittableFrames();
-      frames->AddFrame(
+      frames = new QuicFrames();
+      frames->push_back(
           QuicFrame(new QuicStreamFrame(kStreamId, false, 0, StringPiece())));
     }
     return SerializedPacket(kDefaultPathId, packet_number,
@@ -231,8 +232,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(true));
     SerializedPacket packet(CreateDataPacket(packet_number));
-    packet.retransmittable_frames->AddFrame(
+    packet.retransmittable_frames->push_back(
         QuicFrame(new QuicStreamFrame(1, false, 0, StringPiece())));
+    packet.has_crypto_handshake = IS_HANDSHAKE;
     manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.packet->length(),
                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   }
@@ -1047,14 +1049,17 @@ TEST_F(QuicSentPacketManagerTest,
   // Retransmit the crypto packet as 2.
   manager_.OnRetransmissionTimeout();
   RetransmitNextPacket(2);
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
 
   // Retransmit the crypto packet as 3.
   manager_.OnRetransmissionTimeout();
   RetransmitNextPacket(3);
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
 
   // Now neuter all unacked unencrypted packets, which occurs when the
   // connection goes forward secure.
   manager_.NeuterUnencryptedPackets();
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   QuicPacketNumber unacked[] = {1, 2, 3};
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(nullptr, 0);

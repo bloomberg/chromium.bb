@@ -79,6 +79,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool HasPendingHandshake() const override;
   bool HasOpenDynamicStreams() const override;
 
+  // Called on every incoming packet. Passes |packet| through to |connection_|.
+  virtual void ProcessUdpPacket(const IPEndPoint& self_address,
+                                const IPEndPoint& peer_address,
+                                const QuicEncryptedPacket& packet);
+
   // Called by streams when they want to write data to the peer.
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
@@ -210,6 +215,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Close the connection, if it is not already closed.
   void CloseConnectionWithDetails(QuicErrorCode error, const char* details);
 
+  // Returns true if this stream should yield writes to another blocked stream.
+  bool ShouldYield(QuicStreamId stream_id);
+
  protected:
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> StreamMap;
 
@@ -292,6 +300,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   size_t GetNumLocallyClosedOutgoingStreamsHighestOffset() const;
 
+  // Returns true if the stream is still active.
+  bool IsOpenStream(QuicStreamId id);
+
   QuicStreamId next_outgoing_stream_id() const {
     return next_outgoing_stream_id_;
   }
@@ -303,6 +314,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // stream to be promised before creating an active stream.
   virtual void HandleFrameOnNonexistentOutgoingStream(QuicStreamId stream_id);
 
+  bool MaybeIncreaseLargestPeerStreamId(const QuicStreamId stream_id);
+
+  void InsertLocallyClosedStreamsHighestOffset(const QuicStreamId id,
+                                               QuicStreamOffset offset);
   // If stream is a locally closed stream, this RST will update FIN offset.
   // Otherwise stream is a preserved stream and the behavior of it depends on
   // derived class's own implementation.
@@ -386,6 +401,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Used for connection-level flow control.
   QuicFlowController flow_controller_;
+
+  // The stream id which was last popped in OnCanWrite, or 0, if not under the
+  // call stack of OnCanWrite.
+  QuicStreamId currently_writing_stream_id_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

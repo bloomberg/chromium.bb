@@ -336,6 +336,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Returns the length of the data encrypted into |buffer| if |buffer_len| is
   // long enough, and otherwise 0.
   size_t EncryptPayload(EncryptionLevel level,
+                        QuicPathId path_id,
                         QuicPacketNumber packet_number,
                         const QuicPacket& packet,
                         char* buffer,

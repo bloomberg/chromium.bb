@@ -18,8 +18,9 @@ namespace tools {
 QuicClientSession::QuicClientSession(const QuicConfig& config,
                                      QuicConnection* connection,
                                      const QuicServerId& server_id,
-                                     QuicCryptoClientConfig* crypto_config)
-    : QuicClientSessionBase(connection, config),
+                                     QuicCryptoClientConfig* crypto_config,
+                                     QuicPromisedByUrlMap* promised_by_url)
+    : QuicClientSessionBase(connection, promised_by_url, config),
       server_id_(server_id),
       crypto_config_(crypto_config),
       respect_goaway_(true) {}
@@ -76,10 +77,31 @@ int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
+bool QuicClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+  if (!connection()->connected()) {
+    LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
+    return false;
+  }
+  if (goaway_received() && respect_goaway_) {
+    DVLOG(1) << "Failed to create a new outgoing stream. "
+             << "Already received goaway.";
+    return false;
+  }
+  if (id % 2 != 0) {
+    LOG(WARNING) << "Received invalid push stream id " << id;
+    connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream");
+    return false;
+  }
+  return true;
+}
+
 QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
-  DLOG(ERROR) << "Server push not supported";
-  return nullptr;
+  if (!ShouldCreateIncomingDynamicStream(id)) {
+    return nullptr;
+  }
+  return new QuicSpdyClientStream(id, this);
 }
 
 QuicCryptoClientStreamBase* QuicClientSession::CreateQuicCryptoStream() {

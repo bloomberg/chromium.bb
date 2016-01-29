@@ -580,18 +580,13 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       DCHECK_EQ(configs_.find(primary_config_->id)->second, primary_config_);
     }
 
-    // We'll use the config that the client requested in order to do
-    // key-agreement. Otherwise we'll give it a copy of |primary_config_|
-    // to use.
-    if (FLAGS_quic_use_primary_config_for_proof) {
-      primary_config = GetConfigWithScid(crypto_proof->primary_scid);
-      if (!primary_config) {
-        *error_details = "Configuration not found";
-        QUIC_BUG << "Primary config not found";
-        return QUIC_CRYPTO_INTERNAL_ERROR;
-      }
-    } else {
-      primary_config = primary_config_;
+    // Use the config that the client requested in order to do key-agreement.
+    // Otherwise give it a copy of |primary_config_| to use.
+    primary_config = GetConfigWithScid(crypto_proof->primary_scid);
+    if (!primary_config) {
+      *error_details = "Configuration not found";
+      QUIC_BUG << "Primary config not found";
+      return QUIC_CRYPTO_INTERNAL_ERROR;
     }
 
     requested_config = GetConfigWithScid(requested_scid);
@@ -744,8 +739,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     char plaintext[kMaxPacketSize];
     size_t plaintext_length = 0;
     const bool success = crypters.decrypter->DecryptPacket(
-        0 /* packet number */, StringPiece() /* associated data */,
-        cetv_ciphertext, plaintext, &plaintext_length, kMaxPacketSize);
+        kDefaultPathId, 0 /* packet number */,
+        StringPiece() /* associated data */, cetv_ciphertext, plaintext,
+        &plaintext_length, kMaxPacketSize);
     if (!success) {
       *error_details = "CETV decryption failure";
       return QUIC_PACKET_TOO_LARGE;
@@ -1057,12 +1053,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     bool x509_supported = false;
     bool x509_ecdsa_supported = false;
     ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
-    string serialized_config;
-    if (FLAGS_quic_use_primary_config_for_proof) {
-      serialized_config = primary_config->serialized;
-    } else {
-      serialized_config = requested_config->serialized;
-    }
+    string serialized_config = primary_config->serialized;
     if (!proof_source_->GetProof(server_ip, info->sni.as_string(),
                                  serialized_config, x509_ecdsa_supported,
                                  &crypto_proof->certs, &crypto_proof->signature,

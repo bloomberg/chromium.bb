@@ -20,6 +20,7 @@
 #include "net/quic/p2p/quic_p2p_stream.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
+#include "net/quic/test_tools/quic_session_peer.h"
 #include "net/socket/socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -269,6 +270,14 @@ void QuicP2PSessionTest::TestStreamConnection(QuicP2PSession* from_session,
   outgoing_stream->SetDelegate(&outgoing_stream_delegate);
   EXPECT_EQ(expected_stream_id, outgoing_stream->id());
 
+  // Add streams to write_blocked_lists of both QuicSession objects.
+  QuicWriteBlockedList* write_blocked_list1 =
+      net::test::QuicSessionPeer::GetWriteBlockedStreams(from_session);
+  write_blocked_list1->RegisterStream(expected_stream_id, kV3HighestPriority);
+  QuicWriteBlockedList* write_blocked_list2 =
+      net::test::QuicSessionPeer::GetWriteBlockedStreams(to_session);
+  write_blocked_list2->RegisterStream(expected_stream_id, kV3HighestPriority);
+
   // Send a test message to the client.
   const char kTestMessage[] = "Hi";
   const char kTestResponse[] = "Response";
@@ -336,6 +345,11 @@ TEST_F(QuicP2PSessionTest, TransportWriteError) {
   TestP2PStreamDelegate stream_delegate;
   stream->SetDelegate(&stream_delegate);
   EXPECT_EQ(2U, stream->id());
+
+  // Add stream to write_blocked_list.
+  QuicWriteBlockedList* write_blocked_list =
+      net::test::QuicSessionPeer::GetWriteBlockedStreams(session1_.get());
+  write_blocked_list->RegisterStream(stream->id(), kV3HighestPriority);
 
   socket1_->SetWriteError(ERR_INTERNET_DISCONNECTED);
 

@@ -1469,7 +1469,8 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
       clock_.get(), transport_security_state_, std::move(server_info),
       server_id, yield_after_packets_, yield_after_duration_, cert_verify_flags,
       config, &crypto_config_, network_connection_.GetDescription(),
-      dns_resolution_end_time, base::ThreadTaskRunnerHandle::Get().get(),
+      dns_resolution_end_time, &promised_by_url_,
+      base::ThreadTaskRunnerHandle::Get().get(),
       std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer

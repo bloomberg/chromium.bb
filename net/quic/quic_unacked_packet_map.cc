@@ -52,14 +52,11 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
   }
 
   const bool has_crypto_handshake =
-      packet->retransmittable_frames != nullptr &&
-      packet->retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE;
-  const bool needs_padding = packet->retransmittable_frames != nullptr &&
-                             packet->retransmittable_frames->needs_padding();
+      packet->has_crypto_handshake == IS_HANDSHAKE;
   TransmissionInfo info(packet->encryption_level, packet->packet_number_length,
                         transmission_type, sent_time, bytes_sent,
                         packet->is_fec_packet, has_crypto_handshake,
-                        needs_padding);
+                        packet->needs_padding);
   if (old_packet_number > 0) {
     TransferRetransmissionInfo(old_packet_number, packet_number,
                                transmission_type, &info);
@@ -78,8 +75,8 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
       ++pending_crypto_packet_count_;
     }
     if (packet->retransmittable_frames != nullptr) {
-      packet->retransmittable_frames->SwapFrames(
-          &unacked_packets_.back().retransmittable_frames);
+      packet->retransmittable_frames->swap(
+          unacked_packets_.back().retransmittable_frames);
       delete packet->retransmittable_frames;
       packet->retransmittable_frames = nullptr;
     }
@@ -362,6 +359,11 @@ bool QuicUnackedPacketMap::HasInFlightPackets() const {
 const TransmissionInfo& QuicUnackedPacketMap::GetTransmissionInfo(
     QuicPacketNumber packet_number) const {
   return unacked_packets_[packet_number - least_unacked_];
+}
+
+TransmissionInfo* QuicUnackedPacketMap::GetMutableTransmissionInfo(
+    QuicPacketNumber packet_number) {
+  return &unacked_packets_[packet_number - least_unacked_];
 }
 
 QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {

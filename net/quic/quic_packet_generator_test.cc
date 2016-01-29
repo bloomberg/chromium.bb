@@ -124,8 +124,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
 
   ~QuicPacketGeneratorTest() override {
     for (SerializedPacket& packet : packets_) {
-      delete packet.packet;
-      delete packet.retransmittable_frames;
+      QuicUtils::ClearSerializedPacket(&packet);
     }
   }
 
@@ -162,7 +161,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     } else {
       ASSERT_TRUE(packet.retransmittable_frames != nullptr);
       EXPECT_EQ(num_retransmittable_frames,
-                packet.retransmittable_frames->frames().size());
+                packet.retransmittable_frames->size());
     }
 
     ASSERT_TRUE(packet.packet != nullptr);
@@ -190,7 +189,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     ASSERT_GT(packets_.size(), packet_index);
     const SerializedPacket& packet = packets_[packet_index];
     ASSERT_TRUE(packet.retransmittable_frames != nullptr);
-    EXPECT_EQ(1u, packet.retransmittable_frames->frames().size());
+    EXPECT_EQ(1u, packet.retransmittable_frames->size());
     ASSERT_TRUE(packet.packet != nullptr);
     ASSERT_TRUE(simple_framer_.ProcessPacket(*packet.packet));
     EXPECT_EQ(1u, simple_framer_.num_frames());

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "net/quic/iovector.h"
-#include "net/quic/quic_ack_listener_interface.h"
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_flow_controller.h"
@@ -289,6 +288,11 @@ QuicConsumedData ReliableQuicStream::WritevData(
   if (stream_contributes_to_connection_flow_control_) {
     send_window =
         min(send_window, connection_flow_controller_->SendWindowSize());
+  }
+
+  if (FLAGS_quic_cede_correctly && session_->ShouldYield(id())) {
+    session_->MarkConnectionLevelWriteBlocked(id(), Priority());
+    return QuicConsumedData(0, false);
   }
 
   if (send_window == 0 && !fin_with_zero_data) {

@@ -354,7 +354,7 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     const QuicConfig& config,
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config)
-    : QuicClientSessionBase(connection, config) {
+    : QuicClientSessionBase(connection, &promised_by_url_, config) {
   crypto_stream_.reset(new QuicCryptoClientStream(
       server_id, this, CryptoTestUtils::ProofVerifyContextForTesting(),
       crypto_config));
@@ -474,31 +474,38 @@ void GenerateBody(string* body, int length) {
 
 QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
                                               bool version_flag,
+                                              bool multipath_flag,
                                               bool reset_flag,
+                                              QuicPathId path_id,
                                               QuicPacketNumber packet_number,
                                               const string& data) {
-  return ConstructEncryptedPacket(
-      connection_id, version_flag, reset_flag, packet_number, data,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER);
+  return ConstructEncryptedPacket(connection_id, version_flag, multipath_flag,
+                                  reset_flag, path_id, packet_number, data,
+                                  PACKET_8BYTE_CONNECTION_ID,
+                                  PACKET_6BYTE_PACKET_NUMBER);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
+    bool multipath_flag,
     bool reset_flag,
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     const string& data,
     QuicConnectionIdLength connection_id_length,
     QuicPacketNumberLength packet_number_length) {
-  return ConstructEncryptedPacket(connection_id, version_flag, reset_flag,
-                                  packet_number, data, connection_id_length,
-                                  packet_number_length, nullptr);
+  return ConstructEncryptedPacket(
+      connection_id, version_flag, multipath_flag, reset_flag, path_id,
+      packet_number, data, connection_id_length, packet_number_length, nullptr);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
+    bool multipath_flag,
     bool reset_flag,
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     const string& data,
     QuicConnectionIdLength connection_id_length,
@@ -508,8 +515,10 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
   header.public_header.version_flag = version_flag;
+  header.public_header.multipath_flag = multipath_flag;
   header.public_header.reset_flag = reset_flag;
   header.public_header.packet_number_length = packet_number_length;
+  header.path_id = path_id;
   header.packet_number = packet_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;
@@ -528,7 +537,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   EXPECT_TRUE(packet != nullptr);
   char* buffer = new char[kMaxPacketSize];
   size_t encrypted_length = framer.EncryptPayload(
-      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
+      ENCRYPTION_NONE, path_id, packet_number, *packet, buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_length);
   return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }
@@ -536,8 +545,9 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
-    bool path_id_flag,
+    bool multipath_flag,
     bool reset_flag,
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     const string& data,
     QuicConnectionIdLength connection_id_length,
@@ -547,8 +557,10 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
   header.public_header.version_flag = version_flag;
+  header.public_header.multipath_flag = multipath_flag;
   header.public_header.reset_flag = reset_flag;
   header.public_header.packet_number_length = packet_number_length;
+  header.path_id = path_id;
   header.packet_number = packet_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;
@@ -569,12 +581,12 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   // Now set the packet's private flags byte to 0xFF, which is an invalid value.
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
-      connection_id_length, version_flag, path_id_flag, packet_number_length)] =
-      0xFF;
+      connection_id_length, version_flag, multipath_flag,
+      packet_number_length)] = 0xFF;
 
   char* buffer = new char[kMaxPacketSize];
   size_t encrypted_length = framer.EncryptPayload(
-      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
+      ENCRYPTION_NONE, path_id, packet_number, *packet, buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_length);
   return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }
@@ -602,7 +614,8 @@ void CompareCharArraysWithHexError(const string& description,
   }
   if (identical)
     return;
-  ADD_FAILURE() << "Description:\n" << description << "\n\nExpected:\n"
+  ADD_FAILURE() << "Description:\n"
+                << description << "\n\nExpected:\n"
                 << HexDumpWithMarks(expected, expected_len, marks.get(),
                                     max_len)
                 << "\nActual:\n"
