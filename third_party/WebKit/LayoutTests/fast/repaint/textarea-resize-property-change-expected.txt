@@ -6,6 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [90, 140, 15, 15],
         [0, 50, 106, 106]
       ],
       "paintInvalidationClients": [
