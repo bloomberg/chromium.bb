@@ -68,13 +68,12 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-protected:
+private:
+    HTMLSlotElement(Document&);
+
     void childrenChanged(const ChildrenChange&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;
-
-private:
-    HTMLSlotElement(Document&);
 
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_assignedNodes;
     // TODO(hayato): Share code with DistributedNode class
