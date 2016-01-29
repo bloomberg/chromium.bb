@@ -212,12 +212,6 @@ void FrameLoaderClientImpl::didChangeScrollOffset()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didChangeScrollOffset(m_webFrame);
-
-    if (m_webFrame->parent())
-        return;
-
-    if (WebViewImpl* webview = m_webFrame->viewImpl())
-        webview->devToolsEmulator()->viewportChanged();
 }
 
 void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()

@@ -31,7 +31,6 @@ InspectorEmulationAgent::InspectorEmulationAgent(WebLocalFrameImpl* webLocalFram
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_client(client)
 {
-    webViewImpl()->devToolsEmulator()->setEmulationAgent(this);
 }
 
 InspectorEmulationAgent::~InspectorEmulationAgent()
@@ -59,17 +58,6 @@ void InspectorEmulationAgent::disable(ErrorString*)
     setScriptExecutionDisabled(&error, false);
     setTouchEmulationEnabled(&error, false, nullptr);
     setEmulatedMedia(&error, String());
-}
-
-void InspectorEmulationAgent::discardAgent()
-{
-    webViewImpl()->devToolsEmulator()->setEmulationAgent(nullptr);
-}
-
-void InspectorEmulationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
-{
-    if (frame == m_webLocalFrameImpl->frame())
-        viewportChanged();
 }
 
 void InspectorEmulationAgent::resetPageScaleFactor(ErrorString*)
@@ -103,30 +91,6 @@ void InspectorEmulationAgent::setEmulatedMedia(ErrorString*, const String& media
 void InspectorEmulationAgent::setCPUThrottlingRate(ErrorString*, double throttlingRate)
 {
     m_client->setCPUThrottlingRate(throttlingRate);
-}
-
-void InspectorEmulationAgent::viewportChanged()
-{
-    if (!webViewImpl()->devToolsEmulator()->deviceEmulationEnabled() || !frontend())
-        return;
-
-    FrameView* view = m_webLocalFrameImpl->frameView();
-    if (!view)
-        return;
-
-    IntSize contentsSize = view->contentsSize();
-    FloatPoint scrollOffset;
-    scrollOffset = FloatPoint(view->scrollableArea()->visibleContentRectDouble().location());
-
-    RefPtr<TypeBuilder::Emulation::Viewport> viewport = TypeBuilder::Emulation::Viewport::create()
-        .setScrollX(scrollOffset.x())
-        .setScrollY(scrollOffset.y())
-        .setContentsWidth(contentsSize.width())
-        .setContentsHeight(contentsSize.height())
-        .setPageScaleFactor(webViewImpl()->page()->pageScaleFactor())
-        .setMinimumPageScaleFactor(webViewImpl()->minimumPageScaleFactor())
-        .setMaximumPageScaleFactor(webViewImpl()->maximumPageScaleFactor());
-    frontend()->viewportChanged(viewport);
 }
 
 DEFINE_TRACE(InspectorEmulationAgent)

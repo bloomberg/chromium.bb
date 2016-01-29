@@ -24,9 +24,6 @@ public:
     static PassOwnPtrWillBeRawPtr<DevToolsEmulator> create(WebViewImpl*);
     DECLARE_TRACE();
 
-    void setEmulationAgent(InspectorEmulationAgent*);
-    void viewportChanged();
-
     // Settings overrides.
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
@@ -59,7 +56,6 @@ private:
     void disableMobileEmulation();
 
     WebViewImpl* m_webViewImpl;
-    RawPtrWillBeMember<InspectorEmulationAgent> m_emulationAgent;
 
     bool m_deviceMetricsEnabled;
     bool m_emulateMobileEnabled;

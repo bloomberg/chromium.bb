@@ -10,7 +10,6 @@
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebLayerTreeView.h"
-#include "web/InspectorEmulationAgent.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
@@ -49,7 +48,6 @@ namespace blink {
 
 DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
-    , m_emulationAgent(nullptr)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
@@ -86,18 +84,6 @@ PassOwnPtrWillBeRawPtr<DevToolsEmulator> DevToolsEmulator::create(WebViewImpl* w
 
 DEFINE_TRACE(DevToolsEmulator)
 {
-    visitor->trace(m_emulationAgent);
-}
-
-void DevToolsEmulator::setEmulationAgent(InspectorEmulationAgent* agent)
-{
-    m_emulationAgent = agent;
-}
-
-void DevToolsEmulator::viewportChanged()
-{
-    if (m_emulationAgent)
-        m_emulationAgent->viewportChanged();
 }
 
 void DevToolsEmulator::setTextAutosizingEnabled(bool enabled)

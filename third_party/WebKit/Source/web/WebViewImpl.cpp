@@ -3791,7 +3791,6 @@ void WebViewImpl::sendResizeEventAndRepaint()
         }
     }
     updatePageOverlays();
-    m_devToolsEmulator->viewportChanged();
 }
 
 void WebViewImpl::configureAutoResizeMode()
@@ -4147,7 +4146,6 @@ void WebViewImpl::pageScaleFactorChanged()
 {
     pageScaleConstraintsSet().setNeedsReset(false);
     updateLayerTreeViewport();
-    m_devToolsEmulator->viewportChanged();
     m_client->pageScaleFactorChanged();
 }
 

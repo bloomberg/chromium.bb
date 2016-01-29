@@ -28,8 +28,6 @@ public:
     static PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> create(WebLocalFrameImpl*, Client*);
     ~InspectorEmulationAgent() override;
 
-    void viewportChanged();
-
     // InspectorBackendDispatcher::EmulationCommandHandler implementation.
     void resetPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
@@ -41,8 +39,6 @@ public:
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;
     void restore() override;
-    void discardAgent() override;
-    void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     DECLARE_VIRTUAL_TRACE();
 
