@@ -158,7 +158,9 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kCredentialsEnableService, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterBooleanPref(prefs::kPasswordManagerAutoSignin, true);
+  registry->RegisterBooleanPref(
+      prefs::kCredentialsEnableAutosignin, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
                                 true);
   registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains);

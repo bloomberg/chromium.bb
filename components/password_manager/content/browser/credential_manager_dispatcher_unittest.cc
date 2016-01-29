@@ -65,7 +65,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                     base::Callback<void(const CredentialInfo&)> callback));
 
   explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {
-    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerAutoSignin,
+    prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableAutosignin,
                                            true);
   }
   ~MockPasswordManagerClient() override {}
@@ -108,7 +108,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   PasswordFormManager* pending_manager() const { return manager_.get(); }
 
   void set_zero_click_enabled(bool zero_click_enabled) {
-    prefs_.SetBoolean(prefs::kPasswordManagerAutoSignin, zero_click_enabled);
+    prefs_.SetBoolean(prefs::kCredentialsEnableAutosignin, zero_click_enabled);
   }
 
  private:

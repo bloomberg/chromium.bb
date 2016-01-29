@@ -87,7 +87,8 @@ CredentialManager::CredentialManager(
       driver_(driver),
       weak_factory_(this) {
   zero_click_sign_in_enabled_.Init(
-      password_manager::prefs::kPasswordManagerAutoSignin, client_->GetPrefs());
+      password_manager::prefs::kCredentialsEnableAutosignin,
+      client_->GetPrefs());
 }
 
 CredentialManager::~CredentialManager() = default;

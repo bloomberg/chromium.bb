@@ -8,6 +8,7 @@
 namespace password_manager {
 namespace prefs {
 
+const char kCredentialsEnableAutosignin[] = "credentials_enable_autosignin";
 const char kCredentialsEnableService[] = "credentials_enable_service";
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
@@ -26,8 +27,6 @@ const char kKeychainMigrationStatus[] = "password_manager.keychain_migration";
 
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
-const char kPasswordManagerAutoSignin[] =
-    "profile.password_manager_auto_signin";
 const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
 const char kPasswordManagerGroupsForDomains[] =
     "profile.password_manager_groups_for_domains";

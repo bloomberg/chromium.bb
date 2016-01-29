@@ -13,6 +13,10 @@ namespace prefs {
 // Alphabetical list of preference names specific to the PasswordManager
 // component.
 
+// Boolean controlling whether the password manager allows automatic signing in
+// through Credential Manager API.
+extern const char kCredentialsEnableAutosignin[];
+
 // The value of this preference controls whether the Password Manager will save
 // credentials. When it is false, it doesn't ask if you want to save passwords
 // but will continue to fill passwords. This preference in a future will
@@ -45,10 +49,6 @@ extern const char kKeychainMigrationStatus[];
 // Boolean controlling whether the password manager allows to retrieve passwords
 // in clear text.
 extern const char kPasswordManagerAllowShowPasswords[];
-
-// Boolean controlling whether the password manager allows automatic signing in
-// through Credential Manager API.
-extern const char kPasswordManagerAutoSignin[];
 
 // Boolean that is true if password saving is on (will record new
 // passwords and fill in known passwords). When it is false, it doesn't

@@ -31,7 +31,7 @@ CredentialManagerDispatcher::CredentialManagerDispatcher(
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents), client_(client), weak_factory_(this) {
   DCHECK(web_contents);
-  auto_signin_enabled_.Init(prefs::kPasswordManagerAutoSignin,
+  auto_signin_enabled_.Init(prefs::kCredentialsEnableAutosignin,
                             client_->GetPrefs());
 }
 
