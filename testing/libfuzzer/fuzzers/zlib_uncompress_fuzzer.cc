@@ -15,7 +15,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   uLongf buffer_length = (uLongf)BUF_SIZE;
   memset(buffer, 0, BUF_SIZE);
   if (Z_OK != uncompress(buffer, &buffer_length, data,
-                         static_cast<uLong>size)) {
+                         static_cast<uLong>(size))) {
     delete[] buffer;
     return 0;
   }
