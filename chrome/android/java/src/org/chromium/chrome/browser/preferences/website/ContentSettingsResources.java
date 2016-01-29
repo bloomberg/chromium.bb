@@ -136,7 +136,8 @@ public class ContentSettingsResources {
                                  R.string.website_settings_category_blocked_recommended));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
                     new ResourceItem(R.drawable.permission_protected_media,
-                                 org.chromium.chrome.R.string.protected_content, 0,
+                                 org.chromium.chrome.R.string.protected_content,
+                                 org.chromium.chrome.R.string.protected_content,
                                  ContentSetting.ASK, ContentSetting.BLOCK, 0, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN,
                     new ResourceItem(R.drawable.permission_keygen,
