@@ -592,7 +592,7 @@ Output.SelectionSpan = function(startIndex, endIndex, opt_offset) {
  * Wrapper for automation nodes as annotations.  Since the
  * {@code AutomationNode} constructor isn't exposed in the API, this class is
  * used to allow instanceof checks on these annotations.
- @ @param {!AutomationNode} node
+ * @param {!AutomationNode} node
  * @constructor
  */
 Output.NodeSpan = function(node) {
@@ -917,7 +917,7 @@ Output.prototype = {
 
       // Annotate braille output with the corresponding automation nodes
       // to support acting on nodes based on location in the output.
-      if (this.formatOptions_.braille)
+      if (node && this.formatOptions_.braille)
         options.annotation.push(new Output.NodeSpan(node));
 
       // Process token based on prefix.
@@ -1007,6 +1007,9 @@ Output.prototype = {
             prev = cursors.Range.fromNode(node);
           this.range_(subrange, prev, Output.EventType.NAVIGATE, buff);
         } else if (token == 'role') {
+          if (localStorage['useVerboseMode'] == 'false')
+            return;
+
           options.annotation.push(token);
           var msg = node.role;
           var info = Output.ROLE_INFO_[node.role];
@@ -1226,11 +1229,12 @@ Output.prototype = {
          (formatPrevNode = prevUniqueAncestors[i]);
          i++) {
       // This prevents very repetitive announcements.
-      if (enteredRoleSet[formatPrevNode.role])
+      if (enteredRoleSet[formatPrevNode.role] ||
+          localStorage['useVerboseMode'] == 'false')
         continue;
 
       var roleBlock = getMergedRoleBlock(formatPrevNode.role);
-      if (roleBlock.leave)
+      if (roleBlock.leave && localStorage['useVerboseMode'] == 'true')
         this.format_(formatPrevNode, roleBlock.leave, buff, opt_exclude);
     }
 

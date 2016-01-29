@@ -573,3 +573,17 @@ TEST_F('OutputE2ETest', 'LessVerboseAncestry', function() {
                  oWithPrevExit.speechOutputForTest.string_);
   });
 });
+
+TEST_F('OutputE2ETest', 'Brief', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div role="article"><p>inside</p></div>
+  */},
+  function(root) {
+    var node = root.children[0].firstChild;
+    var range = cursors.Range.fromNode(node);
+
+    localStorage['useVerboseMode'] = 'false';
+    var oWithoutPrev = new Output().withSpeech(range, null, 'navigate');
+    assertEquals('|inside', oWithoutPrev.speechOutputForTest.string_);
+  });
+});
