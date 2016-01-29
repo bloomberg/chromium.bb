@@ -1,60 +1,84 @@
 Name: icu
 URL: http://site.icu-project.org/
-Version: 54.1
+Version: 56.1
 License: MIT
 Security Critical: yes
 
+***NOTE***
+ICU is in the middle of being updated to 56.1 and does not work, yet.
+If you have an urgent fix to apply, contact jshin@chromium.org to
+create a branch for 54.1 to apply a fix on top of.
+
 Description:
-This directory contains the source code of ICU 54.1 for C/C++.
+This directory contains the source code of ICU 56.1 for C/C++.
 
 
-1. Run "scripts/update.sh <version>" (e.g. 54-1).
+1. Run "scripts/update.sh <version>" (e.g. 56-1).
 
-2. Apply the following patch for platform.h for NaCl.
+2. Apply locale data patches from Google obtained by diff'ing
+   the upstream copy and Google's internal copy for source/data
 
- - patches/platform_nacl.patch to add U_PF_NATIVE_CLIENT
- - upstream bug (fixed in the upstream 55 RC)
-   http://bugs.icu-project.org/trac/ticket/11033
+  - patches/locale_google.patch:
+    * Google's internal ICU locale changes
+    * Simpler region names for Hong Kong and Macau in all locales
+    * Currency signs in ru, uk and tr locales
+    * AM/PM, midnight, noon formatting for a few Indian locales
+    * Timezone name changes in Korean and Chinese locales
 
+  - patches/locale1.patch: Minor fixes for Korean
+
+
+3. Apply post-56 fixes from the upstream for measure/date format bugs
+
+  - patches/measure_format.patch: combined patch of 12 CLs taken
+    from bugs below.
+  - upstream bugs
+    http://bugs.icu-project.org/trac/ticket/11986
+    http://bugs.icu-project.org/trac/ticket/12031
+    http://bugs.icu-project.org/trac/ticket/12030
+    http://bugs.icu-project.org/trac/ticket/12041
+
+  - patches/relative_date.patch from Android
+    https://android.googlesource.com/platform/external/icu/+/f9ffd5b%5E%21
 
 3. Breakiterator patches
 
-   - Apply patches/brkitr.patch
-     * word.txt
-       a. Move full stops (U+002E, U+FF0E) from MidNumLet to MidNum so that
-          FQDN labels can be split at '.'
-       b. Move fullwidth digits (U+FF10 - U+FF19) from Ideographic to Numeric.
-          See http://unicode.org/cldr/trac/ticket/6555
-     * line.txt
-       a. Use Japanese rules for all locales because Japanese tailoring only
-          affects Japanese specific characters.
-          See http://unicode.org/cldr/trac/ticket/3974
-       b. Minor changes in CL, OP and IS definitions to handle 'comma-variants'
-          more consistenly.
-          See http://unicode.org/cldr/trac/ticket/6557
-       c. Fix line breaking for Chinese characters and quotation marks
-          See http://unicode.org/cldr/trac/ticket/4200 and
-              http://crbug.com/39779
+  - Apply patches/brkitr.patch
+    * word.txt
+      a. Move full stops (U+002E, U+FF0E) from MidNumLet to MidNum so that
+         FQDN labels can be split at '.'
+      b. Move fullwidth digits (U+FF10 - U+FF19) from Ideographic to Numeric.
+         See http://unicode.org/cldr/trac/ticket/6555
+    * line.txt
+      a. Use Japanese rules for all locales because Japanese tailoring only
+         affects Japanese specific characters.
+         See http://unicode.org/cldr/trac/ticket/3974
+      b. Minor changes in CL, OP and IS definitions to handle 'comma-variants'
+         more consistenly.
+         See http://unicode.org/cldr/trac/ticket/6557
+      c. Fix line breaking for Chinese characters and quotation marks
+         See http://unicode.org/cldr/trac/ticket/4200 and
+             http://crbug.com/39779
 
-   - Add a new file brklocal.mk (copied from brkfiles.mk) with line_ja.txt
-     and word_POSIX.txt dropped from the build list.
+  - Add a new file brklocal.mk (copied from brkfiles.mk) with line_ja.txt
+    and word_POSIX.txt dropped from the build list.
 
-   - Apply patches/khmer-dictbe.patch and put in a smaller Khmer dictionary
-     (source/data/brkitr/khmerdict.txt) obtained from
-     http://bugs.icu-project.org/trac/ticket/9451
+  - Apply patches/khmer-dictbe.patch and put in a smaller Khmer dictionary
+    (source/data/brkitr/khmerdict.txt) obtained from
+    http://bugs.icu-project.org/trac/ticket/9451
 
-   - Add several common Chinese words that were dropped previously to
-     source/data/cjdict/brkitr/cjdict.txt
-     patch: patches/cjdict.patch
-     upstream bug: http://bugs.icu-project.org/trac/ticket/10888
+  - Add several common Chinese words that were dropped previously to
+    source/data/cjdict/brkitr/cjdict.txt
+    patch: patches/cjdict.patch
+    upstream bug: http://bugs.icu-project.org/trac/ticket/10888
 
 
-   - android/brkitr.patch (to be applied for Android build only) :
-       Do not use the C+J dictionary for Chinese/Japanese segmentation
-       to reduce the data size. Adjust word.txt and a few other files.
+  - android/brkitr.patch (to be applied for Android build only) :
+      Do not use the C+J dictionary for Chinese/Japanese segmentation
+      to reduce the data size. Adjust word.txt and a few other files.
 
-   - source/data/brkitr/word_ja.txt (used only on Android)
-       Added for Japanese-specific word-breaking without the C+J dictionary.
+  - source/data/brkitr/word_ja.txt (used only on Android)
+      Added for Japanese-specific word-breaking without the C+J dictionary.
 
 4. Converter changes :
 
@@ -91,12 +115,6 @@ This directory contains the source code of ICU 54.1 for C/C++.
 
 
 5. Locale changes
-
-  - patches/locale_google.patch : Google's internal ICU locale changes
-
-  - patches/locale1.patch :
-      a. Exemplar character set changes for zh*, ja + 9 Indian locales
-      b. Minor fixes for Korean and Turkish
 
   - Locale build configuration files: To include the full locale data
     for Chrome's UI languages and the minimum locale data for other locales,
@@ -139,7 +157,7 @@ This directory contains the source code of ICU 54.1 for C/C++.
      windowsZones.txt
      zoneinfo64.txt
 
-   As of Dec 14 2015, the latest version is 2015g and the above files
+   As of Jan 20 2016, the latest version is 2015g and the above files
    are available at
    http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2015g/44/
 
@@ -167,9 +185,6 @@ This directory contains the source code of ICU 54.1 for C/C++.
 
   - patches/data.build.patch :
       Remove unnecessary resources : unames, collator rule source
-  - patches/pkg_gen.patch :
-    upstream bug (fixed in the upstream RC 55)
-      http://bugs.icu-project.org/trac/ticket/10572
   - patches/data.build.win.patch :
       Windows-only data build patch.
   - patches/data_symb.patch :
@@ -239,72 +254,12 @@ This directory contains the source code of ICU 54.1 for C/C++.
       f. Copy that icudt54.dll to ${CHROME_ICU_ROOT}/windows/icudt.dll
          and check that in.
 
-10. Apply the following patches for regex
-   - patches/regex.patch (a combined patch of 3 revisions below)
-   - upstream bugs (fixed in the upstream 55 RC)
-     http://bugs.icu-project.org/trac/ticket/11370 (r36723:36724)
-     http://bugs.icu-project.org/trac/ticket/11369 (r36726:36727)
-     http://bugs.icu-project.org/trac/ticket/11371 (r36800:36801)
-
-11. Fix bugs in locid (getBaseName / thread safety).
-   - patches/locid.patch
-   - upstream bugs (fixed in the upstream 55 RC)
-     http://bugs.icu-project.org/trac/ticket/11421
-     http://bugs.icu-project.org/trac/ticket/11547
-
-12. Fix bugs in BiDi
-   - patches/bidi.patch
-   - upstream bugs (fixed in the upstream 55 RC)
-     http://bugs.icu-project.org/trac/ticket/11177
-     http://bugs.icu-project.org/trac/ticket/11451
-
-13. Fix a data race in cmemory
-   - patches/cmemory.patch
-   - upstream bug (fixed in the upstream 55 RC)
-     http://www.icu-project.org/trac/ticket/11538
-
-14. Fix a bug found by 'stack' (static analysis tool)
-   - patches/uloc.patch
-   - upstream bug
-     http://www.icu-project.org/trac/ticket/11602
-
-15. Add a timezone detection API
-   - patches/tzdetect.patch (applied in the upstream 55)
-   - patches/tzdetect2.patch
-   - upstream bugs
-     http://bugs.icu-project.org/trac/ticket/11358
-     http://bugs.icu-project.org/trac/ticket/11623
-
-16. Properly handle a converter name starting with 'x-'.
-   - patches/ucnv_name.patch
-   - upstream bug
-     http://bugs.icu-project.org/trac/ticket/11696
-
-17. Cherry-pick an upstream patch to add a separate field for ref-counting in
-    the converter data.
-   - patches/ucnv_refcount.patch
-   - upstream change:
-     http://bugs.icu-project.org/trac/ticket/11601
-
-18. Apply patches/infinite-recursion.patch , corresponds to upstream r36672
-
-19. Fix a data race in umutex
-   - patches/mutex.patch
-   - upstream bug (fixed in ToT and will be included in 56)
-     http://bugs.icu-project.org/trac/ticket/11599
-
-20. Cherry-pick an upstream patch for a data loading bug.
-   - patches/dataload.patch
-   - upstream change (fixed in ToT and will be included in 56)
-     http://bugs.icu-project.org/trac/changeset/37670
-
-21. Fix -Woverloaded-virtual warnings
-   - patches/woverloaded-virtual.patch
-
-22. Fix -Wmicrosoft-unqulified-friend warning
-   - patches/stringthreadtest.patch
+15. Apply a timezone detection API fix
+  - patches/tzdetect.patch
+  - upstream bugs
+    http://bugs.icu-project.org/trac/ticket/11623
 
 23. Fix 'bad cast' found in Transliterator with a cfi build
-   - patches/xlit_badcast.patch  ; speculative
-   - upstream bug (yet to be resolved)
-     http://bugs.icu-project.org/trac/ticket/11937
+  - patches/xlit_badcast.patch
+  - upstream bug (yet to be resolved)
+    http://bugs.icu-project.org/trac/ticket/11937

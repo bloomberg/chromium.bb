@@ -343,7 +343,10 @@
     <ClCompile Include="uresbund.cpp">
       <Filter>locales &amp; resources</Filter>
     </ClCompile>
-    <ClCompile Include="uresdata.c">
+    <ClCompile Include="uresdata.cpp">
+      <Filter>locales &amp; resources</Filter>
+    </ClCompile>
+    <ClCompile Include="resource.cpp">
       <Filter>locales &amp; resources</Filter>
     </ClCompile>
     <ClCompile Include="caniter.cpp">
@@ -767,6 +770,9 @@
       <Filter>locales &amp; resources</Filter>
     </ClInclude>
     <ClInclude Include="uresdata.h">
+      <Filter>locales &amp; resources</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>locales &amp; resources</Filter>
     </ClInclude>
     <ClInclude Include="uresimp.h">

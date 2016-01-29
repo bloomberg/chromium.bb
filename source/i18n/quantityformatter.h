@@ -1,6 +1,6 @@
 /*
 ******************************************************************************
-* Copyright (C) 2014, International Business Machines
+* Copyright (C) 2014-2015, International Business Machines
 * Corporation and others.  All Rights Reserved.
 ******************************************************************************
 * quantityformatter.h
@@ -13,6 +13,8 @@
 #include "unicode/uobject.h"
 
 #if !UCONFIG_NO_FORMATTING
+
+#include "standardplural.h"
 
 U_NAMESPACE_BEGIN
 
@@ -64,17 +66,14 @@ public:
     void reset();
 
     /**
-      * Adds a plural variant.
-      *
-      * @param variant "zero", "one", "two", "few", "many", "other"
-      * @param rawPattern the pattern for the variant e.g "{0} meters"
-      * @param status any error returned here.
-      * @return TRUE on success; FALSE if status was set to a non zero error.
-      */
-    UBool add(
-            const char *variant,
-            const UnicodeString &rawPattern,
-            UErrorCode &status);
+     * Adds a plural variant if there is none yet for the plural form.
+     *
+     * @param variant "zero", "one", "two", "few", "many", "other"
+     * @param rawPattern the pattern for the variant e.g "{0} meters"
+     * @param status any error returned here.
+     * @return TRUE on success; FALSE if status was set to a non zero error.
+     */
+    UBool addIfAbsent(const char *variant, const UnicodeString &rawPattern, UErrorCode &status);
 
     /**
      * returns TRUE if this object has at least the "other" variant.
@@ -89,27 +88,48 @@ public:
     const SimplePatternFormatter *getByVariant(const char *variant) const;
 
     /**
-     * Formats a quantity with this object appending the result to appendTo.
+     * Formats a number with this object appending the result to appendTo.
      * At least the "other" variant must be added to this object for this
      * method to work.
      * 
-     * @param quantity the single quantity.
-     * @param fmt formats the quantity
+     * @param number the single number.
+     * @param fmt formats the number
      * @param rules computes the plural variant to use.
      * @param appendTo result appended here.
      * @param status any error returned here.
      * @return appendTo
      */
     UnicodeString &format(
-            const Formattable &quantity,
+            const Formattable &number,
             const NumberFormat &fmt,
             const PluralRules &rules,
             UnicodeString &appendTo,
             FieldPosition &pos,
             UErrorCode &status) const;
 
+    /**
+     * Selects the standard plural form for the number/formatter/rules.
+     */
+    static StandardPlural::Form selectPlural(
+            const Formattable &number,
+            const NumberFormat &fmt,
+            const PluralRules &rules,
+            UnicodeString &formattedNumber,
+            FieldPosition &pos,
+            UErrorCode &status);
+
+    /**
+     * Formats the pattern with the value and adjusts the FieldPosition.
+     */
+    static UnicodeString &format(
+            const SimplePatternFormatter &pattern,
+            const UnicodeString &value,
+            UnicodeString &appendTo,
+            FieldPosition &pos,
+            UErrorCode &status);
+
 private:
-    SimplePatternFormatter *formatters[6];
+    SimplePatternFormatter *formatters[StandardPlural::COUNT];
 };
 
 U_NAMESPACE_END

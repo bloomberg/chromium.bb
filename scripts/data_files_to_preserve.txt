@@ -6,6 +6,7 @@ mappings/ucmlocal.mk
 mappings/convrtrs.txt
 mappings/*html.ucm
 mappings/windows-936-2000.ucm
+mappings/gb18030.ucm
 zone/reslocal.mk
 translit/trnslocal.mk
 rbnf/rbnflocal.mk
