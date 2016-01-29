@@ -3,3 +3,4 @@
 -NavigationControllerBrowserTest.ReloadOriginalRequest
 -*.RestoreSubframeFileAccessForHistoryNavigation
 -FrameTreeBrowserTest.NavigateGrandchildToBlob
+-RenderViewImplTest.NavigateProxyAndDetachBeforeOnNavigate
