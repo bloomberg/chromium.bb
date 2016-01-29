@@ -158,7 +158,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   static const uint32_t kResultBucketId = 1;
 
   // Alignment of allocations.
-  static const unsigned int kAlignment = 4;
+  static const unsigned int kAlignment = 16;
 
   // GL names for the buffers used to emulate client side buffers.
   static const GLuint kClientSideArrayId = 0xFEDCBA98u;
