@@ -38,7 +38,7 @@ public:
 
     static PassOwnPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
     {
-        return adoptPtr(new PairwisePrimitiveInterpolation(type, start, end, nonInterpolableValue));
+        return adoptPtr(new PairwisePrimitiveInterpolation(type, std::move(start), std::move(end), nonInterpolableValue));
     }
 
     static PassOwnPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PairwiseInterpolationComponent& component)
@@ -56,8 +56,8 @@ public:
 private:
     PairwisePrimitiveInterpolation(const InterpolationType& type, PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
-        , m_start(start)
-        , m_end(end)
+        , m_start(std::move(start))
+        , m_end(std::move(end))
         , m_nonInterpolableValue(nonInterpolableValue)
     {
         ASSERT(m_start);
@@ -87,13 +87,13 @@ public:
 
     static PassOwnPtr<FlipPrimitiveInterpolation> create(PassOwnPtr<InterpolationValue> start, PassOwnPtr<InterpolationValue> end)
     {
-        return adoptPtr(new FlipPrimitiveInterpolation(start, end));
+        return adoptPtr(new FlipPrimitiveInterpolation(std::move(start), std::move(end)));
     }
 
 private:
     FlipPrimitiveInterpolation(PassOwnPtr<InterpolationValue> start, PassOwnPtr<InterpolationValue> end)
-        : m_start(start)
-        , m_end(end)
+        : m_start(std::move(start))
+        , m_end(std::move(end))
         , m_lastFraction(std::numeric_limits<double>::quiet_NaN())
     { }
 

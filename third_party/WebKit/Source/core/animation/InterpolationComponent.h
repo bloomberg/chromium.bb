@@ -15,8 +15,8 @@ struct InterpolationComponent {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
     explicit InterpolationComponent(PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-        : interpolableValue(interpolableValue)
-        , nonInterpolableValue(nonInterpolableValue)
+        : interpolableValue(std::move(interpolableValue))
+        , nonInterpolableValue(std::move(nonInterpolableValue))
     { }
 
     InterpolationComponent(std::nullptr_t) { }
@@ -36,8 +36,8 @@ struct PairwiseInterpolationComponent {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
     PairwiseInterpolationComponent(PassOwnPtr<InterpolableValue> startInterpolableValue, PassOwnPtr<InterpolableValue> endInterpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-        : startInterpolableValue(startInterpolableValue)
-        , endInterpolableValue(endInterpolableValue)
+        : startInterpolableValue(std::move(startInterpolableValue))
+        , endInterpolableValue(std::move(endInterpolableValue))
         , nonInterpolableValue(nonInterpolableValue)
     { }
 

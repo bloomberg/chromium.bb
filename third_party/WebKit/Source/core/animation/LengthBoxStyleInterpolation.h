@@ -21,7 +21,7 @@ public:
 
 private:
     LengthBoxStyleInterpolation(PassOwnPtr<InterpolableValue> startInterpolation, PassOwnPtr<InterpolableValue> endInterpolation, CSSPropertyID id, CSSValue* startCSS, CSSValue* endCSS)
-        : StyleInterpolation(startInterpolation, endInterpolation, id)
+        : StyleInterpolation(std::move(startInterpolation), std::move(endInterpolation), id)
         , m_startCSSValue(startCSS)
         , m_endCSSValue(endCSS)
     { }

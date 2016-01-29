@@ -34,8 +34,8 @@ bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
 } // namespace
 
 Interpolation::Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
-    : m_start(start)
-    , m_end(end)
+    : m_start(std::move(start))
+    , m_end(std::move(end))
     , m_cachedFraction(0)
     , m_cachedIteration(0)
     , m_cachedValue(m_start ? m_start->clone() : nullptr)

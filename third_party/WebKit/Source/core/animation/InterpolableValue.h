@@ -122,7 +122,7 @@ public:
     void set(size_t position, PassOwnPtr<InterpolableValue> value)
     {
         ASSERT(position < m_size);
-        m_values[position] = value;
+        m_values[position] = std::move(value);
     }
     const InterpolableValue* get(size_t position) const
     {

@@ -45,7 +45,7 @@ public:
 private:
     ListStyleInterpolationImpl(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id,
         Vector<typename InterpolationType::NonInterpolableType> nonInterpolableData, InterpolationRange range = RangeAll)
-        : StyleInterpolation(start, end, id)
+        : StyleInterpolation(std::move(start), std::move(end), id)
         , m_range(range)
     {
         m_nonInterpolableData.swap(nonInterpolableData);
@@ -109,7 +109,7 @@ public:
 
 private:
     ListStyleInterpolationImpl(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range = RangeAll)
-        : StyleInterpolation(start, end, id), m_range(range)
+        : StyleInterpolation(std::move(start), std::move(end), id), m_range(range)
     {
     }
 

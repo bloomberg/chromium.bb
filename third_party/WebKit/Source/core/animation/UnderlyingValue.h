@@ -31,7 +31,7 @@ public:
     }
     void set(PassOwnPtr<InterpolationValue> interpolationValue)
     {
-        m_valueOwner = interpolationValue;
+        m_valueOwner = std::move(interpolationValue);
         m_value = m_valueOwner.get();
     }
     InterpolationComponent& mutableComponent()

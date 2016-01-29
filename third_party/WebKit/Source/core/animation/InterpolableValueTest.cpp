@@ -16,7 +16,7 @@ class SampleInterpolation : public Interpolation {
 public:
     static PassRefPtr<Interpolation> create(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
     {
-        return adoptRef(new SampleInterpolation(start, end));
+        return adoptRef(new SampleInterpolation(std::move(start), std::move(end)));
     }
 
     PropertyHandle property() const override
@@ -25,7 +25,7 @@ public:
     }
 private:
     SampleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
-        : Interpolation(start, end)
+        : Interpolation(std::move(start), std::move(end))
     {
     }
 };
@@ -60,7 +60,7 @@ protected:
 
     PassRefPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
     {
-        RefPtr<Interpolation> i = SampleInterpolation::create(listA, listB);
+        RefPtr<Interpolation> i = SampleInterpolation::create(std::move(listA), std::move(listB));
         i->interpolate(0, progress);
         return i;
     }

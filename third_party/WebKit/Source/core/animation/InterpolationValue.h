@@ -19,7 +19,7 @@ public:
     }
     static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
-        return adoptPtr(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
+        return adoptPtr(new InterpolationValue(type, std::move(interpolableValue), nonInterpolableValue));
     }
 
     PassOwnPtr<InterpolationValue> clone() const
@@ -37,7 +37,7 @@ public:
 private:
     InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
-        , m_component(interpolableValue, nonInterpolableValue)
+        , m_component(std::move(interpolableValue), nonInterpolableValue)
     {
         ASSERT(m_component.interpolableValue);
     }

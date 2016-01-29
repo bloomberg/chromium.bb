@@ -48,7 +48,7 @@ protected:
     CSSPropertyID m_id;
 
     StyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
-        : Interpolation(start, end)
+        : Interpolation(std::move(start), std::move(end))
         , m_id(id)
     {
     }

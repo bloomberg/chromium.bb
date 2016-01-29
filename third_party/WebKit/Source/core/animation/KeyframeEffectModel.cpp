@@ -240,7 +240,7 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, Pass
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(PassOwnPtr<Keyframe::PropertySpecificKeyframe> keyframe)
 {
     ASSERT(m_keyframes.isEmpty() || m_keyframes.last()->offset() <= keyframe->offset());
-    m_keyframes.append(keyframe);
+    m_keyframes.append(std::move(keyframe));
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyframes()

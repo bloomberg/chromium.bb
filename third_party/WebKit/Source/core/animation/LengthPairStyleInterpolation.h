@@ -24,7 +24,7 @@ public:
 
 private:
     LengthPairStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range)
-        : StyleInterpolation(start, end, id), m_range(range)
+        : StyleInterpolation(std::move(start), std::move(end), id), m_range(range)
     {
     }
 

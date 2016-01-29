@@ -31,7 +31,7 @@ public:
 
 private:
     DoubleStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id, bool isNumber, InterpolationRange clamp, bool flag)
-        : StyleInterpolation(start, end, id)
+        : StyleInterpolation(std::move(start), std::move(end), id)
         , m_isNumber(isNumber)
         , m_clamp(clamp)
         , m_flag(flag)

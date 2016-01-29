@@ -27,7 +27,7 @@ public:
 
 private:
     ImageSliceStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID property, Metadata metadata)
-        : StyleInterpolation(start, end, property)
+        : StyleInterpolation(std::move(start), std::move(end), property)
         , m_metadata(metadata)
     { }
 

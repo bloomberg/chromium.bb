@@ -19,13 +19,13 @@ public:
 
     static PassOwnPtr<UnderlyingImageListChecker> create(const InterpolationType& type, PassOwnPtr<InterpolationValue> underlyingValue)
     {
-        return adoptPtr(new UnderlyingImageListChecker(type, underlyingValue));
+        return adoptPtr(new UnderlyingImageListChecker(type, std::move(underlyingValue)));
     }
 
 private:
     UnderlyingImageListChecker(const InterpolationType& type, PassOwnPtr<InterpolationValue> underlyingValue)
         : ConversionChecker(type)
-        , m_underlyingValue(underlyingValue)
+        , m_underlyingValue(std::move(underlyingValue))
     { }
 
     bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
