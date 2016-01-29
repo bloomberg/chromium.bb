@@ -21,9 +21,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'imc': [
         'platform',
         ],
-    'nonnacl_util': [
-        'serialization',
-        ],
     'platform': [
         'gio',
         ],

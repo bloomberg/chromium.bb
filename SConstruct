@@ -2183,7 +2183,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/fault_injection/build.scons',
       'src/trusted/interval_multiset/build.scons',
       'src/trusted/nacl_base/build.scons',
-      'src/trusted/nonnacl_util/build.scons',
       'src/trusted/perf_counter/build.scons',
       'src/trusted/platform_qualify/build.scons',
       'src/trusted/seccomp_bpf/build.scons',
