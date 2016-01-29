@@ -7,7 +7,7 @@
  *   url: string,
  *   title: string,
  *   artist: string,
- *   artwork: Object,
+ *   artworkUrl: string,
  *   active: boolean
  * }}
  */
@@ -48,15 +48,16 @@ var TrackInfo;
         type: Boolean,
         value: false,
         observer: 'shuffleChanged'
-      }
-    },
+      },
 
-    /**
-     * Initializes an element. This method is called automatically when the
-     * element is ready.
-     */
-    ready: function() {
-      window.addEventListener('resize', this.onWindowResize_.bind(this));
+      /**
+       * Whether playlist is expanded or not.
+       */
+      expanded: {
+        type: Boolean,
+        value: false,
+        observer: 'expandedChanged'
+      }
     },
 
     /**
@@ -64,6 +65,15 @@ var TrackInfo;
      * @type {Array<number>}
      */
     playOrder: [],
+
+    /**
+     * Invoked when 'expanded' property is changed.
+     * @param {boolean} newValue New value.
+     * @param {boolean} oldValue Old value.
+     */
+    expandedChanged: function(newValue, oldValue) {
+      this.ensureTrackInViewport_(this.currentTrackIndex);
+    },
 
     /**
      * Invoked when 'shuffle' property is changed.
@@ -140,14 +150,6 @@ var TrackInfo;
     },
 
     /**
-     * Invoked when the window is resized.
-     * @private
-     */
-    onWindowResize_: function() {
-      this.ensureTrackInViewport_(this.currentTrackIndex);
-    },
-
-    /**
      * Scrolls the track list to ensure the given track in the viewport.
      * @param {number} trackIndex The index of the track to be in the viewport.
      * @private
@@ -157,18 +159,18 @@ var TrackInfo;
       if (trackElement) {
         var viewTop = this.scrollTop;
         var viewHeight = this.clientHeight;
-        var elementTop = trackElement.offsetTop;
+        var elementTop = trackElement.offsetTop - this.offsetTop;
         var elementHeight = trackElement.offsetHeight;
 
-        if (elementTop < viewTop) {
+        if (elementTop <= viewTop) {
           // Adjust the tops.
           this.scrollTop = elementTop;
-        } else if (elementTop + elementHeight <= viewTop + viewHeight) {
-          // The entire element is in the viewport. Do nothing.
-        } else {
+        } else if (elementTop + elementHeight >= viewTop + viewHeight) {
           // Adjust the bottoms.
           this.scrollTop = Math.max(0,
                                     (elementTop + elementHeight - viewHeight));
+        } else {
+          // The entire element is in the viewport. Do nothing.
         }
       }
     },

@@ -28,6 +28,7 @@ div.audio-player {
   cursor: default;
   flex: 1 1 auto;
   font-size: 10pt;
+  height: 100%;
   position: relative;
 }
 

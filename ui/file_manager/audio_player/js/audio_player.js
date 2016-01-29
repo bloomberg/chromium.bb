@@ -25,13 +25,14 @@ function AudioPlayer(container) {
 
   /**
    * Whether if the playlist is expanded or not. This value is changed by
-   * this.syncExpanded().
+   * this.syncPlaylistExpanded().
    * True: expanded, false: collapsed, null: unset.
    *
    * @type {?boolean}
    * @private
    */
-  this.isExpanded_ = null;  // Initial value is null. It'll be set in load().
+  // Initial value is null. It'll be set in load().
+  this.isPlaylistExpanded_ = null;
 
   this.player_ =
     /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
@@ -40,13 +41,14 @@ function AudioPlayer(container) {
   // Restore the saved state from local storage, and update the local storage
   // if the states are changed.
   var STORAGE_PREFIX = 'audioplayer-';
-  var KEYS_TO_SAVE_STATES = ['shuffle', 'repeat', 'volume', 'expanded'];
+  var KEYS_TO_SAVE_STATES =
+      ['shuffle', 'repeat', 'volume', 'playlist-expanded'];
   var storageKeys = KEYS_TO_SAVE_STATES.map(a => STORAGE_PREFIX + a);
   chrome.storage.local.get(storageKeys, function(results) {
     // Update the UI by loaded state.
     for (var storageKey in results) {
       var key = storageKey.substr(STORAGE_PREFIX.length);
-      this.player_[key] = results[storageKey];
+      this.player_[Polymer.CaseMap.dashToCamelCase(key)] = results[storageKey];
     }
     // Start listening to UI changes to write back the states to local storage.
     for (var i = 0; i < KEYS_TO_SAVE_STATES.length; i++) {
@@ -61,8 +63,8 @@ function AudioPlayer(container) {
   }.bind(this));
 
   // Update the window size when UI's 'expanded' state is changed.
-  this.player_.addEventListener('expanded-changed', function(event) {
-    this.onExpandedChanged_(event.detail.value);
+  this.player_.addEventListener('playlist-expanded-changed', function(event) {
+    this.onPlaylistExpandedChanged_(event.detail.value);
   }.bind(this));
 
   // Run asynchronously after an event of model change is delivered.
@@ -145,7 +147,7 @@ AudioPlayer.prototype.load = function(playlist) {
       JSON.parse(JSON.stringify(playlist)));  // cloning
   util.saveAppState();
 
-  this.isExpanded_ = this.player_.expanded;
+  this.isPlaylistExpanded_ = this.player_.playlistExpanded;
 
   // Resolving entries has to be done after the volume manager is initialized.
   this.volumeManager_.ensureInitialized(function() {
@@ -275,7 +277,8 @@ AudioPlayer.prototype.select_ = function(newTrack) {
  */
 AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
   this.metadataModel_.get(
-      [entry], ['mediaTitle', 'mediaArtist', 'present']).then(
+      [entry],
+      ['mediaTitle', 'mediaArtist', 'present', 'contentThumbnailUrl']).then(
       function(generation, metadata) {
         // Do nothing if another load happened since the metadata request.
         if (this.playlistGeneration_ == generation)
@@ -309,14 +312,14 @@ AudioPlayer.prototype.onError_ = function() {
  * @private
  */
 AudioPlayer.prototype.onResize_ = function(event) {
-  if (!this.isExpanded_ &&
-      window.innerHeight >= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
-    this.isExpanded_ = true;
-    this.player_.expanded = true;
-  } else if (this.isExpanded_ &&
-             window.innerHeight < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
-    this.isExpanded_ = false;
-    this.player_.expanded = false;
+  if (!this.isPlaylistExpanded_ &&
+      window.innerHeight > AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+    this.isPlaylistExpanded_ = true;
+    this.player_.playlistExpanded = true;
+  } else if (this.isPlaylistExpanded_ &&
+             window.innerHeight <= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+    this.isPlaylistExpanded_ = false;
+    this.player_.playlistExpanded = false;
   }
 };
 
@@ -372,6 +375,13 @@ AudioPlayer.TOP_PADDING_HEIGHT = 4;
 AudioPlayer.TRACK_HEIGHT = 48;
 
 /**
+ * artwork panel height in pixels, when it's closed.
+ * @type {number}
+ * @const
+ */
+AudioPlayer.CLOSED_ARTWORK_HEIGHT = 48;
+
+/**
  * Controls bar height in pixels.
  * @type {number}
  * @const
@@ -391,7 +401,7 @@ AudioPlayer.DEFAULT_EXPANDED_ITEMS = 5;
  * @const
  */
 AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.TOP_PADDING_HEIGHT +
-                                       AudioPlayer.TRACK_HEIGHT * 2 +
+                                       AudioPlayer.CLOSED_ARTWORK_HEIGHT +
                                        AudioPlayer.CONTROLS_HEIGHT;
 
 /**
@@ -399,20 +409,20 @@ AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.TOP_PADDING_HEIGHT +
  * @param {boolean} newValue New value.
  * @private
  */
-AudioPlayer.prototype.onExpandedChanged_ = function(newValue) {
-  if (this.isExpanded_ !== null &&
-      this.isExpanded_ === newValue)
+AudioPlayer.prototype.onPlaylistExpandedChanged_ = function(newValue) {
+  if (this.isPlaylistExpanded_ !== null &&
+      this.isPlaylistExpanded_ === newValue)
     return;
 
-  if (this.isExpanded_ && !newValue)
+  if (this.isPlaylistExpanded_ && !newValue)
     this.lastExpandedInnerHeight_ = window.innerHeight;
 
-  if (this.isExpanded_ !== newValue) {
-    this.isExpanded_ = newValue;
+  if (this.isPlaylistExpanded_ !== newValue) {
+    this.isPlaylistExpanded_ = newValue;
     this.syncHeight_();
 
     // Saves new state.
-    window.appState.expanded = newValue;
+    window.appState.playlistExpanded = newValue;
     util.saveAppState();
   }
 };
@@ -423,7 +433,7 @@ AudioPlayer.prototype.onExpandedChanged_ = function(newValue) {
 AudioPlayer.prototype.syncHeight_ = function() {
   var targetInnerHeight;
 
-  if (this.player_.expanded) {
+  if (this.player_.playlistExpanded) {
     // Expanded.
     if (!this.lastExpandedInnerHeight_ ||
         this.lastExpandedInnerHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
@@ -458,8 +468,7 @@ AudioPlayer.TrackInfo = function(entry) {
   this.title = this.getDefaultTitle();
   this.artist = this.getDefaultArtist();
 
-  // TODO(yoshiki): implement artwork.
-  this.artwork = null;
+  this.artworkUrl = "";
   this.active = false;
 };
 
@@ -493,9 +502,9 @@ AudioPlayer.TrackInfo.prototype.getDefaultArtist = function() {
 AudioPlayer.TrackInfo.prototype.setMetadata = function(
     metadata, error) {
   // TODO(yoshiki): Handle error in better way.
-  // TODO(yoshiki): implement artwork (metadata.thumbnail)
   this.title = metadata.mediaTitle || this.getDefaultTitle();
   this.artist = error || metadata.mediaArtist || this.getDefaultArtist();
+  this.artworkUrl = metadata.contentThumbnailUrl || "";
 };
 
 // Starts loading the audio player.

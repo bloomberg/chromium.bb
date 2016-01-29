@@ -27,10 +27,6 @@
   width: 100%;
 }
 
-:host(:not([expanded])) > .track:not([active]) {
-  display: none;
-}
-
 :host([expanded]) > .track:hover {
   background-color: rgba(0, 0, 0, 0.08);
 }

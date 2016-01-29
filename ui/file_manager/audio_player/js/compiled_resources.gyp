@@ -88,6 +88,7 @@
           '../../file_manager/background/js/volume_manager.js',
           '../../file_manager/foreground/js/volume_manager_wrapper.js',
           '../elements/control_panel.js',
+          '../elements/track_info_panel.js',
           '../elements/track_list.js',
           '../elements/audio_player.js',
         ],
@@ -109,4 +110,3 @@
     }
   ],
 }
-

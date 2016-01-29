@@ -49,9 +49,16 @@ Polymer({
     },
 
     /**
-     * Whether the expanded button is ON.
+     * Whether the playlist is expanded or not.
      */
-    expanded: {
+    playlistExpanded: {
+      type: Boolean,
+      notify: true
+    },
+    /**
+     * Whether the artwork is expanded or not.
+     */
+    trackInfoExpanded: {
       type: Boolean,
       notify: true
     },
@@ -128,6 +135,9 @@ Polymer({
 
     if (oldValue != newValue) {
       var currentTrack = this.$.trackList.getCurrentTrack();
+      if(currentTrack && currentTrack != this.$.trackInfo.track){
+        this.$.trackInfo.track = currentTrack;
+      }
       if (currentTrack && currentTrack.url != this.$.audio.src) {
         this.$.audio.src = currentTrack.url;
         currentTrackUrl = this.$.audio.src;
@@ -361,6 +371,18 @@ Polymer({
         this.tracks[index].title);
     this.$.trackList.notifyPath('tracks.' + index + '.artist',
         this.tracks[index].artist);
+
+    if (this.$.trackInfo.track &&
+        this.$.trackInfo.track.url === this.tracks[index].url){
+      this.$.trackInfo.notifyPath('track.title', this.tracks[index].title);
+      this.$.trackInfo.notifyPath('track.artist', this.tracks[index].artist);
+      var artworkUrl = this.tracks[index].artworkUrl;
+      if (!artworkUrl || artworkUrl !== '')
+        this.$.trackInfo.notifyPath('track.artworkUrl',
+            this.tracks[index].artworkUrl);
+      else
+        this.$.trackInfo.notifyPath('track.artworkUrl', undefined);
+    }
   },
 
   /**

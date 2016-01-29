@@ -97,9 +97,9 @@
       },
 
       /**
-       * Whether the expanded button is ON.
+       * Whether the playlist is expanded or not.
        */
-      expanded: {
+      playlistExpanded: {
         type: Boolean,
         value: false,
         notify: true

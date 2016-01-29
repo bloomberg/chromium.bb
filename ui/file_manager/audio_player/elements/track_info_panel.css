@@ -1,0 +1,110 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  align-items: center;
+  background: rgb(245, 245, 245);
+  color: rgb(51, 51, 51);
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  font-size: 10pt;
+  justify-content: space-around;
+  overflow: hidden;
+}
+
+/* Track item. */
+.track {
+  align-items: center;
+  display: flex;
+  height: 48px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Track icon. */
+.track .icon-wrapper {
+  flex: none;
+  height: 48px;
+  width: 48px;
+}
+
+.icon-wrapper .icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 48px;
+  pointer-events: none;
+  position: absolute;
+  width: 48px;
+}
+
+.icon-wrapper .icon-background {
+  background: -webkit-image-set(
+      url(../assets/100/playlist_now_playing.png) 1x,
+      url(../assets/200/playlist_now_playing.png) 2x)
+      center
+      no-repeat;
+  height: 48px;
+  pointer-events: none;
+  position: absolute;
+  width: 48px;
+}
+
+/* expand icon. */
+.track .expand {
+  background-position: center;
+  background-repeat: no-repeat;
+  flex: none;
+  height: 48px;
+  width: 48px;
+}
+
+:host(:not([available])) > .track .expand {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_cover_open.png) 1x,
+      url(../assets/200/player_cover_open.png) 2x);
+  opacity: 0.1;
+}
+
+:host([available]:not([expanded])) > .track .expand {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_cover_open.png) 1x,
+      url(../assets/200/player_cover_open.png) 2x);
+}
+
+:host([available][expanded]) > .track .expand {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_cover_close.png) 1x,
+      url(../assets/200/player_cover_close.png) 2x);
+}
+
+/* Track data. */
+
+.track .data {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  min-width: 0;
+}
+
+.track .data .data-title,
+.track .data .data-artist {
+  flex: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.track .data .data-title {
+  color: rgb(51, 51, 51);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.track .data .data-artist {
+  color: rgb(100, 100, 100);
+  font-size: 12px;
+}
