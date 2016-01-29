@@ -302,24 +302,22 @@ void ScrollView::Layout() {
 
   if (horiz_sb_required) {
     int height_offset = horiz_sb_->GetContentOverlapSize();
-    horiz_sb_->SetBounds(0,
+    horiz_sb_->SetBounds(contents_x,
                          viewport_bounds.bottom() - height_offset,
-                         viewport_bounds.right(),
+                         viewport_bounds.right() - contents_x,
                          horiz_sb_height + height_offset);
   }
   if (vert_sb_required) {
     int width_offset = vert_sb_->GetContentOverlapSize();
     vert_sb_->SetBounds(viewport_bounds.right() - width_offset,
-                        0,
+                        contents_y,
                         vert_sb_width + width_offset,
-                        viewport_bounds.bottom());
+                        viewport_bounds.bottom() - contents_y);
   }
   if (corner_view_required) {
     // Show the resize corner.
-    corner_view_->SetBounds(viewport_bounds.right(),
-                            viewport_bounds.bottom(),
-                            vert_sb_width,
-                            horiz_sb_height);
+    corner_view_->SetBounds(vert_sb_->bounds().x(), horiz_sb_->bounds().y(),
+                            vert_sb_width, horiz_sb_height);
   }
 
   // Update to the real client size with the visible scrollbars.

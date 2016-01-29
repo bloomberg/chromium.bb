@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/test/test_views.h"
 
@@ -96,6 +97,77 @@ TEST(ScrollViewTest, ScrollBars) {
   EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
   ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
   EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+
+  // Add a border, test vertical scrollbar.
+  const int kTopPadding = 1;
+  const int kLeftPadding = 2;
+  const int kBottomPadding = 3;
+  const int kRightPadding = 4;
+  scroll_view.SetBorder(Border::CreateEmptyBorder(
+      kTopPadding, kLeftPadding, kBottomPadding, kRightPadding));
+  contents->SetBounds(0, 0, 50, 400);
+  scroll_view.Layout();
+  EXPECT_EQ(
+      100 - scroll_view.GetScrollBarWidth() - kLeftPadding - kRightPadding,
+      contents->parent()->width());
+  EXPECT_EQ(100 - kTopPadding - kBottomPadding, contents->parent()->height());
+  EXPECT_TRUE(!scroll_view.horizontal_scroll_bar() ||
+              !scroll_view.horizontal_scroll_bar()->visible());
+  ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+  gfx::Rect bounds = scroll_view.vertical_scroll_bar()->bounds();
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth() - kRightPadding, bounds.x());
+  EXPECT_EQ(100 - kRightPadding, bounds.right());
+  EXPECT_EQ(kTopPadding, bounds.y());
+  EXPECT_EQ(100 - kBottomPadding, bounds.bottom());
+
+  // Horizontal with border.
+  contents->SetBounds(0, 0, 400, 50);
+  scroll_view.Layout();
+  EXPECT_EQ(100 - kLeftPadding - kRightPadding, contents->parent()->width());
+  EXPECT_EQ(
+      100 - scroll_view.GetScrollBarHeight() - kTopPadding - kBottomPadding,
+      contents->parent()->height());
+  ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
+  EXPECT_TRUE(!scroll_view.vertical_scroll_bar() ||
+              !scroll_view.vertical_scroll_bar()->visible());
+  bounds = scroll_view.horizontal_scroll_bar()->bounds();
+  EXPECT_EQ(kLeftPadding, bounds.x());
+  EXPECT_EQ(100 - kRightPadding, bounds.right());
+  EXPECT_EQ(100 - kBottomPadding - scroll_view.GetScrollBarHeight(),
+            bounds.y());
+  EXPECT_EQ(100 - kBottomPadding, bounds.bottom());
+
+  // Both horizontal and vertical with border.
+  contents->SetBounds(0, 0, 300, 400);
+  scroll_view.Layout();
+  EXPECT_EQ(
+      100 - scroll_view.GetScrollBarWidth() - kLeftPadding - kRightPadding,
+      contents->parent()->width());
+  EXPECT_EQ(
+      100 - scroll_view.GetScrollBarHeight() - kTopPadding - kBottomPadding,
+      contents->parent()->height());
+  bounds = scroll_view.horizontal_scroll_bar()->bounds();
+  // Check horiz.
+  ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
+  bounds = scroll_view.horizontal_scroll_bar()->bounds();
+  EXPECT_EQ(kLeftPadding, bounds.x());
+  EXPECT_EQ(100 - kRightPadding - scroll_view.GetScrollBarWidth(),
+            bounds.right());
+  EXPECT_EQ(100 - kBottomPadding - scroll_view.GetScrollBarHeight(),
+            bounds.y());
+  EXPECT_EQ(100 - kBottomPadding, bounds.bottom());
+  // Check vert.
+  ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+  bounds = scroll_view.vertical_scroll_bar()->bounds();
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth() - kRightPadding, bounds.x());
+  EXPECT_EQ(100 - kRightPadding, bounds.right());
+  EXPECT_EQ(kTopPadding, bounds.y());
+  EXPECT_EQ(100 - kBottomPadding - scroll_view.GetScrollBarHeight(),
+            bounds.bottom());
 }
 
 // Assertions around adding a header.
@@ -152,6 +224,9 @@ TEST(ScrollViewTest, ScrollBarsWithHeader) {
               !scroll_view.horizontal_scroll_bar()->visible());
   ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
   EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+  // Make sure the vertical scrollbar overlaps the header.
+  EXPECT_EQ(header->y(), scroll_view.vertical_scroll_bar()->y());
+  EXPECT_EQ(header->y(), contents->y());
 
   // Size the contents such that horizontal scrollbar is needed.
   contents->SetBounds(0, 0, 400, 50);
