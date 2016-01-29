@@ -97,7 +97,7 @@ class ResourceManagerTest : public testing::Test {
     params.settings = &settings;
     params.task_graph_runner = &task_graph_runner_;
     host_.reset(new MockLayerTreeHost(&params,
-                                      cc::CompositorMode::SingleThreaded));
+                                      cc::CompositorMode::SINGLE_THREADED));
     resource_manager_.Init(host_.get());
   }
 

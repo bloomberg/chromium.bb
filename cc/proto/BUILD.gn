@@ -32,6 +32,8 @@ proto_library("proto_internal") {
     "begin_main_frame_and_commit_state.proto",
     "commit_earlyout_reason.proto",
     "compositor_message.proto",
+    "compositor_message_to_impl.proto",
+    "compositor_message_to_main.proto",
     "display_item.proto",
     "display_list_recording_source.proto",
     "layer.proto",

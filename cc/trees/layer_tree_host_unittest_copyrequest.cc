@@ -148,39 +148,39 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
-  RunTest(CompositorMode::SingleThreaded, false);
+  RunTest(CompositorMode::SINGLE_THREADED, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread) {
   use_gl_renderer_ = true;
-  RunTest(CompositorMode::Threaded, false);
+  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunSingleThread_OutOfOrderCallbacks) {
   use_gl_renderer_ = true;
   out_of_order_callbacks_ = true;
-  RunTest(CompositorMode::SingleThreaded, false);
+  RunTest(CompositorMode::SINGLE_THREADED, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread_OutOfOrderCallbacks) {
   use_gl_renderer_ = true;
   out_of_order_callbacks_ = true;
-  RunTest(CompositorMode::Threaded, false);
+  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
-  RunTest(CompositorMode::SingleThreaded, false);
+  RunTest(CompositorMode::SINGLE_THREADED, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunMultiThread) {
   use_gl_renderer_ = false;
-  RunTest(CompositorMode::Threaded, false);
+  RunTest(CompositorMode::THREADED, false);
 }
 
 // TODO(crbug.com/564832): Remove this test when the workaround it tests is no

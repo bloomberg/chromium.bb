@@ -51,6 +51,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/proxy_main.h"
+#include "cc/trees/remote_channel_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -96,7 +97,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   DCHECK(impl_task_runner.get());
   DCHECK(params->settings);
   scoped_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::Threaded));
+      new LayerTreeHost(params, CompositorMode::THREADED));
   layer_tree_host->InitializeThreaded(
       params->main_task_runner, impl_task_runner,
       std::move(params->external_begin_frame_source));
@@ -108,10 +109,50 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     InitParams* params) {
   DCHECK(params->settings);
   scoped_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::SingleThreaded));
+      new LayerTreeHost(params, CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(
       single_thread_client, params->main_task_runner,
       std::move(params->external_begin_frame_source));
+  return layer_tree_host;
+}
+
+scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
+    RemoteProtoChannel* remote_proto_channel,
+    InitParams* params) {
+  DCHECK(params->main_task_runner.get());
+  DCHECK(params->settings);
+  DCHECK(remote_proto_channel);
+
+  // Using an external begin frame source is not supported on the server in
+  // remote mode.
+  DCHECK(!params->settings->use_external_begin_frame_source);
+  DCHECK(!params->external_begin_frame_source);
+
+  scoped_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(params, CompositorMode::REMOTE));
+  layer_tree_host->InitializeRemoteServer(remote_proto_channel,
+                                          params->main_task_runner);
+  return layer_tree_host;
+}
+
+scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
+    RemoteProtoChannel* remote_proto_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+    InitParams* params) {
+  DCHECK(params->main_task_runner.get());
+  DCHECK(params->settings);
+  DCHECK(remote_proto_channel);
+
+  // Using an external begin frame source is not supported in remote mode.
+  // TODO(khushalsagar): Add support for providing an external begin frame
+  // source on the client LayerTreeHost. crbug/576962
+  DCHECK(!params->settings->use_external_begin_frame_source);
+  DCHECK(!params->external_begin_frame_source);
+
+  scoped_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(params, CompositorMode::REMOTE));
+  layer_tree_host->InitializeRemoteClient(
+      remote_proto_channel, params->main_task_runner, impl_task_runner);
   return layer_tree_host;
 }
 
@@ -188,6 +229,33 @@ void LayerTreeHost::InitializeSingleThreaded(
                   std::move(external_begin_frame_source));
 }
 
+void LayerTreeHost::InitializeRemoteServer(
+    RemoteProtoChannel* remote_proto_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
+  task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
+  InitializeProxy(ProxyMain::CreateRemote(remote_proto_channel, this,
+                                          task_runner_provider_.get()),
+                  nullptr);
+}
+
+void LayerTreeHost::InitializeRemoteClient(
+    RemoteProtoChannel* remote_proto_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+  task_runner_provider_ =
+      TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
+
+  // For the remote mode, the RemoteChannelImpl implements the Proxy, which is
+  // owned by the LayerTreeHost. The RemoteChannelImpl pipes requests which need
+  // to handled locally, for instance the Output Surface creation to the
+  // LayerTreeHost on the client, while the other requests are sent to the
+  // RemoteChannelMain on the server which directs them to ProxyMain and the
+  // remote server LayerTreeHost.
+  InitializeProxy(RemoteChannelImpl::Create(this, remote_proto_channel,
+                                            task_runner_provider_.get()),
+                  nullptr);
+}
+
 void LayerTreeHost::InitializeForTesting(
     scoped_ptr<TaskRunnerProvider> task_runner_provider,
     scoped_ptr<Proxy> proxy_for_testing,
@@ -207,6 +275,7 @@ void LayerTreeHost::InitializeProxy(
     scoped_ptr<Proxy> proxy,
     scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
+  DCHECK(task_runner_provider_);
 
   proxy_ = std::move(proxy);
   proxy_->Start(std::move(external_begin_frame_source));
@@ -284,6 +353,7 @@ void LayerTreeHost::RequestMainFrameUpdate() {
 // should be delayed until the LayerTreeHost::CommitComplete, which will run
 // after the commit, but on the main thread.
 void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
+  DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
 
   bool is_new_trace;
@@ -470,6 +540,7 @@ void LayerTreeHost::DidFailToInitializeOutputSurface() {
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
+  DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
@@ -935,8 +1006,8 @@ void LayerTreeHost::SetPaintedDeviceScaleFactor(
 void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                                            TopControlsState current,
                                            bool animate) {
-  // Top controls are only used in threaded mode.
-  DCHECK(IsThreaded());
+  // Top controls are only used in threaded or remote mode.
+  DCHECK(IsThreaded() || IsRemoteServer());
   proxy_->UpdateTopControlsState(constraints, current, animate);
 }
 
@@ -1290,15 +1361,26 @@ bool LayerTreeHost::HasActiveAnimation(const Layer* layer) const {
 }
 
 bool LayerTreeHost::IsSingleThreaded() const {
-  DCHECK(compositor_mode_ != CompositorMode::SingleThreaded ||
+  DCHECK(compositor_mode_ != CompositorMode::SINGLE_THREADED ||
          !task_runner_provider_->HasImplThread());
-  return compositor_mode_ == CompositorMode::SingleThreaded;
+  return compositor_mode_ == CompositorMode::SINGLE_THREADED;
 }
 
 bool LayerTreeHost::IsThreaded() const {
-  DCHECK(compositor_mode_ != CompositorMode::Threaded ||
+  DCHECK(compositor_mode_ != CompositorMode::THREADED ||
          task_runner_provider_->HasImplThread());
-  return compositor_mode_ == CompositorMode::Threaded;
+  return compositor_mode_ == CompositorMode::THREADED;
+}
+
+bool LayerTreeHost::IsRemoteServer() const {
+  // The LayerTreeHost on the server does not have an impl task runner.
+  return compositor_mode_ == CompositorMode::REMOTE &&
+         !task_runner_provider_->HasImplThread();
+}
+
+bool LayerTreeHost::IsRemoteClient() const {
+  return compositor_mode_ == CompositorMode::REMOTE &&
+         task_runner_provider_->HasImplThread();
 }
 
 void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) const {

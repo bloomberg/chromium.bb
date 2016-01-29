@@ -20,7 +20,7 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
       needs_commit_(false),
       renderer_capabilities_set(false) {
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner =
-      mode == CompositorMode::Threaded ? base::ThreadTaskRunnerHandle::Get()
+      mode == CompositorMode::THREADED ? base::ThreadTaskRunnerHandle::Get()
                                        : nullptr;
   SetTaskRunnerProviderForTesting(TaskRunnerProvider::Create(
       base::ThreadTaskRunnerHandle::Get(), impl_task_runner));
@@ -41,7 +41,7 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings) {
   return Create(client, task_graph_runner, settings,
-                CompositorMode::SingleThreaded);
+                CompositorMode::SINGLE_THREADED);
 }
 
 scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(

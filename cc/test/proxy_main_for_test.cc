@@ -6,17 +6,32 @@
 
 #include "cc/animation/animation_events.h"
 #include "cc/test/threaded_channel_for_test.h"
+#include "cc/trees/remote_channel_main.h"
 
 namespace cc {
 
-scoped_ptr<ProxyMain> ProxyMainForTest::CreateThreaded(
+scoped_ptr<ProxyMainForTest> ProxyMainForTest::CreateThreaded(
     TestHooks* test_hooks,
     LayerTreeHost* host,
     TaskRunnerProvider* task_runner_provider) {
-  scoped_ptr<ProxyMain> proxy_main(
+  scoped_ptr<ProxyMainForTest> proxy_main(
       new ProxyMainForTest(test_hooks, host, task_runner_provider));
-  proxy_main->SetChannel(ThreadedChannelForTest::Create(
-      test_hooks, proxy_main.get(), task_runner_provider));
+  scoped_ptr<ThreadedChannelForTest> channel = ThreadedChannelForTest::Create(
+      test_hooks, proxy_main.get(), task_runner_provider);
+  proxy_main->threaded_channel_for_test_ = channel.get();
+  proxy_main->SetChannel(std::move(channel));
+  return proxy_main;
+}
+
+scoped_ptr<ProxyMainForTest> ProxyMainForTest::CreateRemote(
+    TestHooks* test_hooks,
+    RemoteProtoChannel* remote_proto_channel,
+    LayerTreeHost* host,
+    TaskRunnerProvider* task_runner_provider) {
+  scoped_ptr<ProxyMainForTest> proxy_main(
+      new ProxyMainForTest(test_hooks, host, task_runner_provider));
+  proxy_main->SetChannel(RemoteChannelMain::Create(
+      remote_proto_channel, proxy_main.get(), task_runner_provider));
   return proxy_main;
 }
 
@@ -25,7 +40,9 @@ ProxyMainForTest::~ProxyMainForTest() {}
 ProxyMainForTest::ProxyMainForTest(TestHooks* test_hooks,
                                    LayerTreeHost* host,
                                    TaskRunnerProvider* task_runner_provider)
-    : ProxyMain(host, task_runner_provider), test_hooks_(test_hooks) {}
+    : ProxyMain(host, task_runner_provider),
+      test_hooks_(test_hooks),
+      threaded_channel_for_test_(nullptr) {}
 
 void ProxyMainForTest::SetNeedsUpdateLayers() {
   ProxyMain::SetNeedsUpdateLayers();

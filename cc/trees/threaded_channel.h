@@ -133,9 +133,6 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void BeginMainFrame(
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
 
-  // Should be called on impl thread only.
-  ProxyImpl* GetProxyImplForTesting() const;
-
  protected:
   ThreadedChannel(ProxyMain* proxy_main,
                   TaskRunnerProvider* task_runner_provider);

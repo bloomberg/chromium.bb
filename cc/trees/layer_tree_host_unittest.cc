@@ -77,7 +77,7 @@ class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
   LayerTreeHostTestHasImplThreadTest() : threaded_(false) {}
 
   void RunTest(CompositorMode mode, bool delegating_renderer) override {
-    threaded_ = mode == CompositorMode::Threaded;
+    threaded_ = mode == CompositorMode::THREADED;
     LayerTreeHostTest::RunTest(mode, delegating_renderer);
   }
 

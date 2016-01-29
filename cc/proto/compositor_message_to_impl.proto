@@ -1,0 +1,59 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+import "layer_tree_settings.proto";
+
+package cc.proto;
+
+// Control messages sent to the impl side of the compositor (client) from the
+// main side of the compositor (server).
+// Note: Unless specified in a comment, all fields in a message are required,
+// even if listed as optional.
+message CompositorMessageToImpl {
+  enum Type {
+    // The enum values which are unknown get mapped to the default value, which
+    // is zero. This can happen with when the protocol version skewing is
+    // different on the client and server.
+    // Ignore the messages with type UNKNOWN.
+    // see crbug/559338.
+    UNKNOWN = 0;
+
+    // Client Initialization: When the remote server starts up it sends a
+    // CompositorMessageToImpl of type INITIALIZE_IMPL to the client. This
+    // message should be processed by the embedder of the client compositor to
+    // create the Remote Client LayerTreeHost. The compositor protocol
+    // guarantees that this will be the first message sent to the client. No
+    // messages can be sent from the client before the server is started.
+    INITIALIZE_IMPL = 1;
+
+    // Client Shutdown: When the remote server is shutting down it sends a
+    // CompositorMessageToImpl of type CLOSE_IMPL to the client. The message
+    // should be processed by the embedder of the client compositor to destroy
+    // the Remote Client LayerTreeHost. This is guaranteed to be the last
+    // message sent to the client. No messages can be sent from the client after
+    // the server has been shutdown.
+    CLOSE_IMPL = 2;
+
+    // Informs the client that a fling animation on the server has stopped.
+    MAIN_THREAD_HAS_STOPPED_FLINGING_ON_IMPL = 3;
+  }
+
+  optional Type message_type = 1;
+
+  // Only one of the following fields will be set per CompositorMessageToImpl.
+
+  // Set for message Type::InitializeImpl.
+  optional InitializeImpl initialize_impl_message = 2;
+}
+
+// The embedder of the remote client compositor should process the
+// InitializeImpl message to retrieve the LayerTreeSettings sent from the
+// server. The settings sent from the server may be modified by the embedder.
+message InitializeImpl {
+  optional LayerTreeSettings layer_tree_settings = 1;
+}

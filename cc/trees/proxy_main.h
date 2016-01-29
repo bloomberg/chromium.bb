@@ -14,6 +14,7 @@
 #include "cc/trees/channel_main.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
+#include "cc/trees/remote_proto_channel.h"
 
 namespace cc {
 
@@ -28,6 +29,11 @@ class LayerTreeHost;
 class CC_EXPORT ProxyMain : public Proxy {
  public:
   static scoped_ptr<ProxyMain> CreateThreaded(
+      LayerTreeHost* layer_tree_host,
+      TaskRunnerProvider* task_runner_provider);
+
+  static scoped_ptr<ProxyMain> CreateRemote(
+      RemoteProtoChannel* remote_proto_channel,
       LayerTreeHost* layer_tree_host,
       TaskRunnerProvider* task_runner_provider);
 

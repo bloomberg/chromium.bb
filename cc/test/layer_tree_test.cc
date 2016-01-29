@@ -17,15 +17,18 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/remote_channel_impl_for_test.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/test/threaded_channel_for_test.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -427,6 +430,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       TestHooks* test_hooks,
       CompositorMode mode,
       LayerTreeHostClientForTesting* client,
+      RemoteProtoChannel* remote_proto_channel,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
@@ -445,15 +449,30 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     scoped_ptr<TaskRunnerProvider> task_runner_provider =
         TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
     scoped_ptr<Proxy> proxy;
-    if (mode == CompositorMode::Threaded) {
-      DCHECK(impl_task_runner.get());
-      scoped_ptr<ProxyMain> proxy_main = ProxyMainForTest::CreateThreaded(
-          test_hooks, layer_tree_host.get(), task_runner_provider.get());
-      proxy = std::move(proxy_main);
-    } else {
-      proxy =
-          SingleThreadProxyForTest::Create(test_hooks, layer_tree_host.get(),
-                                           client, task_runner_provider.get());
+    switch (mode) {
+      case CompositorMode::SINGLE_THREADED:
+        proxy = SingleThreadProxyForTest::Create(test_hooks,
+                                                 layer_tree_host.get(), client,
+                                                 task_runner_provider.get());
+        break;
+      case CompositorMode::THREADED:
+        DCHECK(impl_task_runner.get());
+        proxy = ProxyMainForTest::CreateThreaded(
+            test_hooks, layer_tree_host.get(), task_runner_provider.get());
+        break;
+      case CompositorMode::REMOTE:
+        DCHECK(!external_begin_frame_source);
+        // The Remote LayerTreeHost on the client has the impl task runner.
+        if (task_runner_provider->HasImplThread()) {
+          proxy = RemoteChannelImplForTest::Create(
+              test_hooks, layer_tree_host.get(), remote_proto_channel,
+              task_runner_provider.get());
+        } else {
+          proxy = ProxyMainForTest::CreateRemote(
+              test_hooks, remote_proto_channel, layer_tree_host.get(),
+              task_runner_provider.get());
+        }
+        break;
     }
     layer_tree_host->InitializeForTesting(
         std::move(task_runner_provider), std::move(proxy),
@@ -498,6 +517,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 LayerTreeTest::LayerTreeTest()
     : output_surface_(nullptr),
       external_begin_frame_source_(nullptr),
+      remote_proto_channel_bridge_(this),
       beginning_(false),
       end_when_begin_returns_(false),
       timed_out_(false),
@@ -518,6 +538,17 @@ LayerTreeTest::LayerTreeTest()
 }
 
 LayerTreeTest::~LayerTreeTest() {}
+
+Proxy* LayerTreeTest::remote_client_proxy() const {
+  DCHECK(IsRemoteTest());
+  return remote_client_layer_tree_host_
+             ? remote_client_layer_tree_host_->proxy()
+             : nullptr;
+}
+
+bool LayerTreeTest::IsRemoteTest() const {
+  return mode_ == CompositorMode::REMOTE;
+}
 
 void LayerTreeTest::EndTest() {
   if (ended_)
@@ -669,18 +700,31 @@ void LayerTreeTest::DoBeginTest() {
 
   scoped_ptr<FakeExternalBeginFrameSource> external_begin_frame_source;
   if (settings_.use_external_begin_frame_source) {
+    DCHECK(!IsRemoteTest());
     external_begin_frame_source.reset(new FakeExternalBeginFrameSource(
         settings_.renderer_settings.refresh_rate));
     external_begin_frame_source_ = external_begin_frame_source.get();
   }
 
   DCHECK(!impl_thread_ || impl_thread_->task_runner().get());
-  layer_tree_host_ = LayerTreeHostForTesting::Create(
-      this, mode_, client_.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
-      base::ThreadTaskRunnerHandle::Get(),
-      impl_thread_ ? impl_thread_->task_runner() : NULL,
-      std::move(external_begin_frame_source));
+
+  if (IsRemoteTest()) {
+    DCHECK(impl_thread_);
+    layer_tree_host_ = LayerTreeHostForTesting::Create(
+        this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_main,
+        nullptr, nullptr, task_graph_runner_.get(), settings_,
+        base::ThreadTaskRunnerHandle::Get(), nullptr,
+        std::move(external_begin_frame_source));
+    DCHECK(remote_proto_channel_bridge_.channel_main.HasReceiver());
+  } else {
+    layer_tree_host_ = LayerTreeHostForTesting::Create(
+        this, mode_, client_.get(), nullptr, shared_bitmap_manager_.get(),
+        gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
+        base::ThreadTaskRunnerHandle::Get(),
+        impl_thread_ ? impl_thread_->task_runner() : NULL,
+        std::move(external_begin_frame_source));
+  }
+
   ASSERT_TRUE(layer_tree_host_);
 
   started_ = true;
@@ -721,8 +765,18 @@ void LayerTreeTest::Timeout() {
 
 void LayerTreeTest::RealEndTest() {
   // TODO(mithro): Make this method only end when not inside an impl frame.
-  if (layer_tree_host_ && !timed_out_ &&
-      proxy()->MainFrameWillHappenForTesting()) {
+  bool main_frame_will_happen;
+  if (IsRemoteTest()) {
+    main_frame_will_happen =
+        remote_client_layer_tree_host_
+            ? remote_client_proxy()->MainFrameWillHappenForTesting()
+            : false;
+  } else {
+    main_frame_will_happen =
+        layer_tree_host_ ? proxy()->MainFrameWillHappenForTesting() : false;
+  }
+
+  if (main_frame_will_happen && !timed_out_) {
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
@@ -815,7 +869,7 @@ void LayerTreeTest::DispatchNextCommitWaitsForActivation() {
 
 void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
   mode_ = mode;
-  if (mode_ == CompositorMode::Threaded) {
+  if (mode_ == CompositorMode::THREADED || mode_ == CompositorMode::REMOTE) {
     impl_thread_.reset(new base::Thread("Compositor"));
     ASSERT_TRUE(impl_thread_->Start());
   }
@@ -905,10 +959,58 @@ void LayerTreeTest::DestroyLayerTreeHost() {
   if (layer_tree_host_ && layer_tree_host_->root_layer())
     layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
   layer_tree_host_ = nullptr;
+
+  DCHECK(!remote_proto_channel_bridge_.channel_main.HasReceiver());
+
+  // Destroying the LayerTreeHost should destroy the remote client
+  // LayerTreeHost.
+  DCHECK(!remote_client_layer_tree_host_);
+}
+
+void LayerTreeTest::DestroyRemoteClientHost() {
+  DCHECK(IsRemoteTest());
+  DCHECK(remote_client_layer_tree_host_);
+
+  remote_client_layer_tree_host_ = nullptr;
+  DCHECK(!remote_proto_channel_bridge_.channel_impl.HasReceiver());
+}
+
+void LayerTreeTest::CreateRemoteClientHost(
+    const proto::CompositorMessageToImpl& proto) {
+  DCHECK(IsRemoteTest());
+  DCHECK(!remote_client_layer_tree_host_);
+  DCHECK(impl_thread_);
+  DCHECK(proto.message_type() ==
+         proto::CompositorMessageToImpl::INITIALIZE_IMPL);
+
+  proto::InitializeImpl initialize_proto = proto.initialize_impl_message();
+  LayerTreeSettings settings;
+  settings.FromProtobuf(initialize_proto.layer_tree_settings());
+  remote_client_layer_tree_host_ = LayerTreeHostForTesting::Create(
+      this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
+      nullptr, nullptr, task_graph_runner_.get(), settings,
+      base::ThreadTaskRunnerHandle::Get(), impl_thread_->task_runner(),
+      nullptr);
+
+  DCHECK(remote_proto_channel_bridge_.channel_impl.HasReceiver());
+  DCHECK(task_runner_provider()->HasImplThread());
 }
 
 TaskGraphRunner* LayerTreeTest::task_graph_runner() const {
   return task_graph_runner_.get();
+}
+
+TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {
+  // All LayerTreeTests can use the task runner provider to access the impl
+  // thread. In the remote mode, the impl thread of the compositor lives on
+  // the client, so return the task runner provider owned by the remote client
+  // LayerTreeHost.
+  if (IsRemoteTest()) {
+    return remote_client_layer_tree_host_
+               ? remote_client_layer_tree_host_->task_runner_provider()
+               : nullptr;
+  }
+  return layer_tree_host_ ? layer_tree_host_->task_runner_provider() : nullptr;
 }
 
 LayerTreeHost* LayerTreeTest::layer_tree_host() {
@@ -929,14 +1031,32 @@ ProxyMainForTest* LayerTreeTest::GetProxyMainForTest() const {
 
 ProxyImplForTest* LayerTreeTest::GetProxyImplForTest() const {
   DCHECK(HasImplThread());
-  ThreadedChannel* threaded_channel =
-      static_cast<ThreadedChannel*>(GetProxyMainForTest()->channel_main());
-  ProxyImpl* proxy_impl = threaded_channel->GetProxyImplForTesting();
+
+  if (IsRemoteTest()) {
+    return GetRemoteChannelImplForTest()->proxy_impl_for_test();
+  }
+
+  ProxyImplForTest* proxy_impl_for_test =
+      GetThreadedChannelForTest()->proxy_impl_for_test();
 
   // We check for null ProxyImpl since ProxyImpl exists in the ThreadedChannel
   // only after it is initialized.
-  DCHECK(proxy_impl);
-  return static_cast<ProxyImplForTest*>(proxy_impl);
+  DCHECK(proxy_impl_for_test);
+  return proxy_impl_for_test;
+}
+
+ThreadedChannelForTest* LayerTreeTest::GetThreadedChannelForTest() const {
+  DCHECK(mode_ == CompositorMode::THREADED);
+
+  return GetProxyMainForTest()->threaded_channel_for_test();
+}
+
+RemoteChannelImplForTest* LayerTreeTest::GetRemoteChannelImplForTest() const {
+  DCHECK(IsRemoteTest());
+  DCHECK(remote_client_layer_tree_host_);
+
+  return static_cast<RemoteChannelImplForTest*>(
+      remote_client_layer_tree_host_->proxy());
 }
 
 }  // namespace cc

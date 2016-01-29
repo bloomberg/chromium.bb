@@ -787,49 +787,49 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(CompositorMode::SingleThreaded, false);
+  RunTest(CompositorMode::SINGLE_THREADED, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(CompositorMode::SingleThreaded, true);
+  RunTest(CompositorMode::SINGLE_THREADED, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(CompositorMode::Threaded, false);
+  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(CompositorMode::Threaded, true);
+  RunTest(CompositorMode::THREADED, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(CompositorMode::SingleThreaded, false);
+  RunTest(CompositorMode::SINGLE_THREADED, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(CompositorMode::SingleThreaded, true);
+  RunTest(CompositorMode::SINGLE_THREADED, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_MultiThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(CompositorMode::Threaded, false);
+  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_MultiThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(CompositorMode::Threaded, true);
+  RunTest(CompositorMode::THREADED, true);
 }
 
 class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {

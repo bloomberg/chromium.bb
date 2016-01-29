@@ -63,6 +63,7 @@ class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
 class PropertyTrees;
 class Region;
+class RemoteProtoChannel;
 class RenderingStatsInstrumentation;
 class ResourceProvider;
 class ResourceUpdateQueue;
@@ -103,6 +104,22 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   static scoped_ptr<LayerTreeHost> CreateSingleThreaded(
       LayerTreeHostSingleThreadClient* single_thread_client,
       InitParams* params);
+
+  static scoped_ptr<LayerTreeHost> CreateRemoteServer(
+      RemoteProtoChannel* remote_proto_channel,
+      InitParams* params);
+
+  // The lifetime of this LayerTreeHost is tied to the lifetime of the remote
+  // server LayerTreeHost. It should be created on receiving
+  // CompositorMessageToImpl::InitializeImpl message and destroyed on receiving
+  // a CompositorMessageToImpl::CloseImpl message from the server. This ensures
+  // that the client will not send any compositor messages once the
+  // LayerTreeHost on the server is destroyed.
+  static scoped_ptr<LayerTreeHost> CreateRemoteClient(
+      RemoteProtoChannel* remote_proto_channel,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      InitParams* params);
+
   virtual ~LayerTreeHost();
 
   // LayerTreeHost interface to Proxy.
@@ -382,6 +399,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // the protobuf, the normal commit-flow should continue.
   void FromProtobufForCommit(const proto::LayerTreeHost& proto);
 
+  bool IsSingleThreaded() const;
+  bool IsThreaded() const;
+  bool IsRemoteServer() const;
+  bool IsRemoteClient() const;
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
   void InitializeThreaded(
@@ -392,6 +414,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       LayerTreeHostSingleThreadClient* single_thread_client,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
+  void InitializeRemoteServer(
+      RemoteProtoChannel* remote_proto_channel,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+  void InitializeRemoteClient(
+      RemoteProtoChannel* remote_proto_channel,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   void InitializeForTesting(
       scoped_ptr<TaskRunnerProvider> task_runner_provider,
       scoped_ptr<Proxy> proxy_for_testing,
@@ -430,9 +459,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void UpdateHudLayer();
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
-
-  bool IsSingleThreaded() const;
-  bool IsThreaded() const;
 
   struct UIResourceClientData {
     UIResourceClient* client;

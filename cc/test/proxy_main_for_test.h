@@ -10,13 +10,20 @@
 #include "cc/trees/proxy_main.h"
 
 namespace cc {
+class ThreadedChannelForTest;
 
 // Creates a ProxyMain that notifies the supplied |test_hooks| of various
 // actions.
 class ProxyMainForTest : public ProxyMain {
  public:
-  static scoped_ptr<ProxyMain> CreateThreaded(
+  static scoped_ptr<ProxyMainForTest> CreateThreaded(
       TestHooks* test_hooks,
+      LayerTreeHost* host,
+      TaskRunnerProvider* task_runner_provider);
+
+  static scoped_ptr<ProxyMainForTest> CreateRemote(
+      TestHooks* test_hooks,
+      RemoteProtoChannel* remote_proto_channel,
       LayerTreeHost* host,
       TaskRunnerProvider* task_runner_provider);
 
@@ -25,6 +32,10 @@ class ProxyMainForTest : public ProxyMain {
   ProxyMainForTest(TestHooks* test_hooks,
                    LayerTreeHost* host,
                    TaskRunnerProvider* task_runner_provider);
+
+  ThreadedChannelForTest* threaded_channel_for_test() const {
+    return threaded_channel_for_test_;
+  }
 
   void SetNeedsUpdateLayers() override;
   void DidCompleteSwapBuffers() override;
@@ -47,6 +58,7 @@ class ProxyMainForTest : public ProxyMain {
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
 
   TestHooks* test_hooks_;
+  ThreadedChannelForTest* threaded_channel_for_test_;
 };
 
 }  // namespace cc

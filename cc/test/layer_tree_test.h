@@ -11,6 +11,7 @@
 #include "cc/layers/layer_settings.h"
 #include "cc/test/proxy_impl_for_test.h"
 #include "cc/test/proxy_main_for_test.h"
+#include "cc/test/remote_proto_channel_bridge.h"
 #include "cc/test/test_hooks.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -23,12 +24,15 @@ class FakeLayerTreeHostClient;
 class FakeOutputSurface;
 class LayerImpl;
 class LayerTreeHost;
+class LayerTreeHostForTesting;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
+class RemoteChannelImplForTest;
 class TestContextProvider;
 class TestGpuMemoryBufferManager;
 class TestTaskGraphRunner;
 class TestWebGraphicsContext3D;
+class ThreadedChannelForTest;
 
 // Creates the virtual viewport layer hierarchy under the given root_layer.
 // Convenient overload of the method below that creates a scrolling layer as
@@ -131,7 +135,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void BeginTest() = 0;
   virtual void SetupTree();
 
-  // TODO(khushalsagar): Add mode for running remote channel tests.
   virtual void RunTest(CompositorMode mode, bool delegating_renderer);
 
   bool HasImplThread() const { return !!impl_thread_; }
@@ -148,10 +151,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
   }
-  TaskRunnerProvider* task_runner_provider() const {
-    return layer_tree_host_ ? layer_tree_host_->task_runner_provider()
-                            : nullptr;
-  }
+  Proxy* remote_client_proxy() const;
+  TaskRunnerProvider* task_runner_provider() const;
   TaskGraphRunner* task_graph_runner() const;
   bool TestEnded() const { return ended_; }
 
@@ -160,13 +161,21 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   FakeOutputSurface* output_surface() { return output_surface_; }
   int LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl) const;
 
-  // Use these only for ProxyMain tests in threaded mode.
-  // TODO(khushalsagar): Update these when adding support for remote channel
-  // tests.
+  // Use these only for tests in threaded or remote mode.
   ProxyMainForTest* GetProxyMainForTest() const;
   ProxyImplForTest* GetProxyImplForTest() const;
 
+  // Use this only for tests in threaded mode.
+  ThreadedChannelForTest* GetThreadedChannelForTest() const;
+
+  // Use this only for tests in remote mode.
+  RemoteChannelImplForTest* GetRemoteChannelImplForTest() const;
+
   void DestroyLayerTreeHost();
+  void DestroyRemoteClientHost() override;
+
+  void CreateRemoteClientHost(
+      const proto::CompositorMessageToImpl& proto) override;
 
   // By default, output surface recreation is synchronous.
   void RequestNewOutputSurface() override;
@@ -181,6 +190,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     return gpu_memory_buffer_manager_.get();
   }
 
+  bool IsRemoteTest() const;
+
  private:
   LayerTreeSettings settings_;
   LayerSettings layer_settings_;
@@ -189,8 +200,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   scoped_ptr<LayerTreeHostClientForTesting> client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
+
+  // The LayerTreeHost created by the cc embedder on the client in remote mode.
+  scoped_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;
+
   FakeOutputSurface* output_surface_;
   FakeExternalBeginFrameSource* external_begin_frame_source_;
+  RemoteProtoChannelBridge remote_proto_channel_bridge_;
 
   bool beginning_;
   bool end_when_begin_returns_;
@@ -218,13 +234,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
 #define SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DirectRenderer) {   \
-    RunTest(CompositorMode::SingleThreaded, false);             \
+    RunTest(CompositorMode::SINGLE_THREADED, false);            \
   }                                                             \
   class SingleThreadDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) {   \
-    RunTest(CompositorMode::SingleThreaded, true);                  \
+    RunTest(CompositorMode::SINGLE_THREADED, true);                 \
   }                                                                 \
   class SingleThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
@@ -234,19 +250,26 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
 #define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer) {   \
-    RunTest(CompositorMode::Threaded, false);                  \
+    RunTest(CompositorMode::THREADED, false);                  \
   }                                                            \
   class MultiThreadDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) {   \
-    RunTest(CompositorMode::Threaded, true);                       \
+    RunTest(CompositorMode::THREADED, true);                       \
   }                                                                \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)            \
   MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME); \
   MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
+
+// The Remote mode tests don't need to run for delegated renderer.
+#define REMOTE_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
+  TEST_F(TEST_FIXTURE_NAME, RunRemote_DirectRenderer) {  \
+    RunTest(CompositorMode::REMOTE, false);              \
+  }                                                      \
+  class RemoteDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);                \

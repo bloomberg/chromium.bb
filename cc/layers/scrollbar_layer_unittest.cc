@@ -66,7 +66,7 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
  public:
   FakeResourceTrackingLayerTreeHost(FakeLayerTreeHostClient* client,
                                     LayerTreeHost::InitParams* params)
-      : FakeLayerTreeHost(client, params, CompositorMode::SingleThreaded),
+      : FakeLayerTreeHost(client, params, CompositorMode::SINGLE_THREADED),
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {
@@ -642,7 +642,7 @@ TEST_F(ScrollbarLayerTestMaxTextureSize, DirectRenderer) {
   int max_size = 0;
   context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
   SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
-  RunTest(CompositorMode::Threaded, false);
+  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(ScrollbarLayerTestMaxTextureSize, DelegatingRenderer) {
@@ -651,7 +651,7 @@ TEST_F(ScrollbarLayerTestMaxTextureSize, DelegatingRenderer) {
   int max_size = 0;
   context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
   SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
-  RunTest(CompositorMode::Threaded, true);
+  RunTest(CompositorMode::THREADED, true);
 }
 
 class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {

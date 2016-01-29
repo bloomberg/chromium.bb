@@ -6,6 +6,9 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "compositor_message_to_impl.proto";
+import "compositor_message_to_main.proto";
+
 package cc.proto;
 
 // A top level message for serialized state used by the compositor remote
@@ -14,12 +17,4 @@ message CompositorMessage {
   // One of these is set based on where the message is going to.
   optional CompositorMessageToMain to_main = 1;
   optional CompositorMessageToImpl to_impl = 2;
-}
-
-message CompositorMessageToMain {
-  // Placeholder for compositor message data meant for ChannelMain.
-}
-
-message CompositorMessageToImpl {
-  // Placeholder for compositor message data meant for ChannelImpl.
 }

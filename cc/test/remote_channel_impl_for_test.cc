@@ -1,30 +1,34 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/threaded_channel_for_test.h"
+#include "cc/test/remote_channel_impl_for_test.h"
 
 #include "cc/test/proxy_impl_for_test.h"
 
 namespace cc {
 
-scoped_ptr<ThreadedChannelForTest> ThreadedChannelForTest::Create(
+scoped_ptr<RemoteChannelImplForTest> RemoteChannelImplForTest::Create(
     TestHooks* test_hooks,
-    ProxyMain* proxy_main,
+    LayerTreeHost* layer_tree_host,
+    RemoteProtoChannel* remote_proto_channel,
     TaskRunnerProvider* task_runner_provider) {
-  return make_scoped_ptr(
-      new ThreadedChannelForTest(test_hooks, proxy_main, task_runner_provider));
+  return make_scoped_ptr(new RemoteChannelImplForTest(
+      test_hooks, layer_tree_host, remote_proto_channel, task_runner_provider));
 }
 
-ThreadedChannelForTest::ThreadedChannelForTest(
+RemoteChannelImplForTest::RemoteChannelImplForTest(
     TestHooks* test_hooks,
-    ProxyMain* proxy_main,
+    LayerTreeHost* layer_tree_host,
+    RemoteProtoChannel* remote_proto_channel,
     TaskRunnerProvider* task_runner_provider)
-    : ThreadedChannel(proxy_main, task_runner_provider),
+    : RemoteChannelImpl(layer_tree_host,
+                        remote_proto_channel,
+                        task_runner_provider),
       test_hooks_(test_hooks),
       proxy_impl_for_test_(nullptr) {}
 
-scoped_ptr<ProxyImpl> ThreadedChannelForTest::CreateProxyImpl(
+scoped_ptr<ProxyImpl> RemoteChannelImplForTest::CreateProxyImpl(
     ChannelImpl* channel_impl,
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,

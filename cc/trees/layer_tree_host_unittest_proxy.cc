@@ -30,7 +30,7 @@ class ProxyTest : public LayerTreeTest {
     bool delegating_renderer = true;
 
     CompositorMode mode =
-        threaded ? CompositorMode::Threaded : CompositorMode::SingleThreaded;
+        threaded ? CompositorMode::THREADED : CompositorMode::SINGLE_THREADED;
     RunTest(mode, delegating_renderer);
   }
 
