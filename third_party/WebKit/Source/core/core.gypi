@@ -3881,6 +3881,7 @@
             'css/AffectedByFocusTest.cpp',
             'css/CSSCalculationValueTest.cpp',
             'css/CSSFontFaceTest.cpp',
+            'css/CSSPageRuleTest.cpp',
             'css/CSSSelectorTest.cpp',
             'css/CSSStyleSheetResourceTest.cpp',
             'css/CSSTestHelper.cpp',

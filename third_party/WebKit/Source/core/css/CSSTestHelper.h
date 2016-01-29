@@ -54,6 +54,7 @@ public:
 
     void addCSSRules(const char* ruleText);
     RuleSet& ruleSet();
+    CSSRuleList* cssRules();
 
 private:
     RefPtrWillBePersistent<Document> m_document;

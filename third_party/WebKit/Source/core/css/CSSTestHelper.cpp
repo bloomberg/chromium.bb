@@ -50,6 +50,11 @@ CSSTestHelper::CSSTestHelper()
     m_styleSheet = CSSStyleSheet::createInline(m_document.get(), KURL(), position, "UTF-8");
 }
 
+CSSRuleList* CSSTestHelper::cssRules()
+{
+    return m_styleSheet->cssRules().get();
+}
+
 RuleSet& CSSTestHelper::ruleSet()
 {
     RuleSet& ruleSet = m_styleSheet->contents()->ensureRuleSet(MediaQueryEvaluator(), RuleHasNoSpecialState);
