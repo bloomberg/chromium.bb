@@ -1,9 +1,4 @@
 {
-  "Mac Builder": {
-    "additional_compile_targets": [
-      "battor_agent"
-    ]
-  },
   "Mac GN": {
     "additional_compile_targets": [
       "gn_all"
@@ -18,6 +13,7 @@
     "additional_compile_targets": [
       "accessibility_unittests",
       "base_unittests",
+      "battor_agent",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",

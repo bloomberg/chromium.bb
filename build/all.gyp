@@ -158,6 +158,7 @@
             '../third_party/ots/ots.gyp:*',
             '../third_party/pdfium/samples/samples.gyp:*',
             '../third_party/qcms/qcms.gyp:*',
+            '../tools/battor_agent/battor_agent.gyp:*',
             '../tools/gn/gn.gyp:*',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',

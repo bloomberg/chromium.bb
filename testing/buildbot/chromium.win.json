@@ -394,11 +394,6 @@
       }
     ]
   },
-  "Win Builder": {
-    "additional_compile_targets": [
-      "battor_agent"
-    ]
-  },
   "Win x64 GN": {
     "additional_compile_targets": [
       "gn_all"
@@ -410,6 +405,7 @@
       "app_list_unittests",
       "app_shell_unittests",
       "aura_unittests",
+      "battor_agent",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
@@ -1257,6 +1253,7 @@
       "app_list_unittests",
       "app_shell_unittests",
       "aura_unittests",
+      "battor_agent",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
@@ -1367,6 +1364,7 @@
       "app_list_unittests",
       "app_shell_unittests",
       "aura_unittests",
+      "battor_agent",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
