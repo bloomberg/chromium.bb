@@ -35,6 +35,11 @@
       ['OS=="linux"', {
         'defines': ['HAVE_A_OUT_H'],
       }],
+      ['OS!="android"', {'sources/': [['exclude', '(^|/)android/']]}],
+      ['OS!="linux"', {'sources/': [['exclude', '(^|/)linux/']]}],
+      ['OS!="mac"', {'sources/': [['exclude', '(^|/)mac/']]}],
+      ['OS!="solaris"', {'sources/': [['exclude', '(^|/)solaris/']]}],
+      ['OS!="win"', {'sources/': [['exclude', '(^|/)windows/']]}],
     ],
   },
   'targets': [

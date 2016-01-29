@@ -28,6 +28,7 @@
 
 {
   'includes': [
+    '../build/common.gypi',
     'processor_tools.gypi',
   ],
   'targets': [
@@ -42,8 +43,6 @@
         'basic_code_modules.h',
         'basic_source_line_resolver.cc',
         'basic_source_line_resolver_types.h',
-        'binarystream.cc',
-        'binarystream.h',
         'call_stack.cc',
         'cfi_frame_info-inl.h',
         'cfi_frame_info.cc',
@@ -78,6 +77,7 @@
         'pathname_stripper.h',
         'postfix_evaluator-inl.h',
         'postfix_evaluator.h',
+	'proc_maps_linux.cc',
         'process_state.cc',
         'range_map-inl.h',
         'range_map.h',
@@ -143,7 +143,6 @@
       'sources': [
         'address_map_unittest.cc',
         'basic_source_line_resolver_unittest.cc',
-        'binarystream_unittest.cc',
         'cfi_frame_info_unittest.cc',
         'contained_range_map_unittest.cc',
         'disassembler_x86_unittest.cc',
