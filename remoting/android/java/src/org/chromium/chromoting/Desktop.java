@@ -77,6 +77,9 @@ public class Desktop
     /** Flag to indicate whether the current activity is switching to Cardboard desktop activity. */
     private boolean mSwitchToCardboardDesktopActivity;
 
+    /** Flag to indicate whether to manually hide the system UI when the OSK is dismissed. */
+    private boolean mHideSystemUIOnSoftKeyboardDismiss = false;
+
     /** Indicates whether a Soft Input UI (such as a keyboard) is visible. */
     private boolean mSoftInputVisible = false;
 
@@ -387,6 +390,8 @@ public class Desktop
     }
 
     public void showActionBar() {
+        mHideSystemUIOnSoftKeyboardDismiss = false;
+
         // Request exit from any fullscreen mode. The action-bar controls will be shown in response
         // to the SystemUiVisibility notification. The visibility of the action-bar should be tied
         // to the fullscreen state of the system, so there's no need to explicitly show it here.
@@ -439,6 +444,12 @@ public class Desktop
         // and still allow the system to hide the ActionBar normally when no keyboard is present.
         if (mSoftInputVisible) {
             hideActionBarWithoutSystemUi();
+
+            // Android OSes prior to Marshmallow do not call onSystemUiVisibilityChange after the
+            // OSK is dismissed if the user has interacted with the status bar.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                mHideSystemUIOnSoftKeyboardDismiss = true;
+            }
         }
     }
 
@@ -534,6 +545,20 @@ public class Desktop
                 mSoftInputVisible = (bottom < mMaxBottomValue);
                 mRemoteHostDesktop.onSoftInputMethodVisibilityChanged(
                         mSoftInputVisible, new Rect(left, top, right, bottom));
+
+                if (!mSoftInputVisible && mHideSystemUIOnSoftKeyboardDismiss) {
+                    // Queue a task which will run after the current action (OSK dismiss) has
+                    // completed, otherwise the hide request will not take effect.
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mHideSystemUIOnSoftKeyboardDismiss) {
+                                mHideSystemUIOnSoftKeyboardDismiss = false;
+                                hideActionBar();
+                            }
+                        }
+                    });
+                }
             }
         });
     }
