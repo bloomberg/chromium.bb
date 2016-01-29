@@ -34,7 +34,7 @@ def main_run(args):
 
 
 def main_compile_targets(args):
-  json.dump(['mandoline:tests', 'mash/wm:tests'], args.output)
+  json.dump(['mojo_apptests'], args.output)
 
 
 if __name__ == '__main__':
