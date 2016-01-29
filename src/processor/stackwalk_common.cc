@@ -926,4 +926,13 @@ void PrintProcessStateMachineReadable(const ProcessState& process_state) {
   }
 }
 
+void PrintProcessModules(const ProcessState& process_state) {
+  const CodeModules* modules = process_state.modules();
+  const unsigned int module_count = modules->module_count();
+  for (unsigned int i = 0; i < module_count; ++i) {
+    const CodeModule* module = modules->GetModuleAtSequence(i);
+    printf("%s\n", module->code_file().c_str());
+  }
+}
+
 }  // namespace google_breakpad
