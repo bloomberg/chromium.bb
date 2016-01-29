@@ -18,6 +18,12 @@ namespace test {
 
 namespace {
 
+const int kBarcodeCellWidth = 8;
+const int kBarcodeCellHeight = 8;
+const int kBarcodeBits = 10;
+const int kBarcodeBlackThreshold = 85;
+const int kBarcodeWhiteThreshold = 170;
+
 scoped_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
     const base::FilePath& file_path) {
   std::string file_content;
@@ -35,7 +41,26 @@ scoped_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
   return frame;
 }
 
+void DrawRect(webrtc::DesktopFrame* frame,
+              webrtc::DesktopRect rect,
+              uint32_t color) {
+  for (int y = rect.top(); y < rect.bottom(); ++y) {
+    uint32_t* data = reinterpret_cast<uint32_t*>(
+        frame->data() + y * frame->stride() +
+        rect.left() * webrtc::DesktopFrame::kBytesPerPixel);
+    for (int x = 0; x < rect.width(); ++x) {
+      data[x] = color;
+    }
+  }
+}
+
 }  // namespace
+CyclicFrameGenerator::FrameInfo::FrameInfo() = default;
+
+CyclicFrameGenerator::FrameInfo::FrameInfo(int frame_id,
+                                           FrameType type,
+                                           base::TimeTicks timestamp)
+    : frame_id(frame_id), type(type), timestamp(timestamp) {}
 
 // static
 scoped_refptr<CyclicFrameGenerator> CyclicFrameGenerator::Create() {
@@ -65,6 +90,7 @@ CyclicFrameGenerator::CyclicFrameGenerator(
         << "All reference frames should have the same size.";
   }
 }
+
 CyclicFrameGenerator::~CyclicFrameGenerator() {}
 
 void CyclicFrameGenerator::SetTickClock(base::TickClock* tick_clock) {
@@ -89,11 +115,7 @@ scoped_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
   webrtc::DesktopRect cursor_rect =
       webrtc::DesktopRect::MakeXYWH(20, 20, 2, 20);
   if (cursor_state) {
-    for (int y = cursor_rect.top(); y < cursor_rect.bottom(); ++y) {
-      memset(frame->data() + y * frame->stride() +
-                 cursor_rect.left() * webrtc::DesktopFrame::kBytesPerPixel,
-             0, cursor_rect.width() * webrtc::DesktopFrame::kBytesPerPixel);
-    }
+    DrawRect(frame.get(), cursor_rect, 0);
   }
 
   if (last_reference_frame_ != reference_frame) {
@@ -109,10 +131,74 @@ scoped_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
     // No changes.
     last_frame_type_ = FrameType::EMPTY;
   }
+
+  // Increment frame_id for non-empty frames.
+  int frame_id = (last_frame_type_ == FrameType::EMPTY) ? last_frame_id_
+                                                        : last_frame_id_ + 1;
+
+  // Render barcode.
+  if (draw_barcode_) {
+    uint32_t value = static_cast<uint32_t>(frame_id);
+    CHECK(value < (1U << kBarcodeBits));
+    for (int i = 0; i < kBarcodeBits; ++i) {
+      DrawRect(frame.get(), webrtc::DesktopRect::MakeXYWH(i * kBarcodeCellWidth,
+                                                          0, kBarcodeCellWidth,
+                                                          kBarcodeCellHeight),
+               (value & 1) ? 0xffffffff : 0xff000000);
+      value >>= 1;
+    }
+
+    if (frame_id != last_frame_id_) {
+      frame->mutable_updated_region()->AddRect(webrtc::DesktopRect::MakeXYWH(
+          0, 0, kBarcodeCellWidth * kBarcodeBits, kBarcodeCellHeight));
+    }
+  }
+
+  // Add non-empty frames to |generated_frames_info_|.
+  if (last_frame_type_ != FrameType::EMPTY) {
+    generated_frames_info_[frame_id] =
+        FrameInfo(frame_id, last_frame_type_, clock_->NowTicks());
+  }
+
   last_reference_frame_ = reference_frame;
   last_cursor_state_ = cursor_state;
+  last_frame_id_ = frame_id;
 
   return frame;
+}
+
+CyclicFrameGenerator::FrameInfo CyclicFrameGenerator::IdentifyFrame(
+    webrtc::DesktopFrame* frame) {
+  CHECK(draw_barcode_);
+  int frame_id = 0;
+  for (int i = kBarcodeBits - 1; i >= 0; --i) {
+    // Sample barcode in the center of the cell for each bit.
+    int x = i * kBarcodeCellWidth + kBarcodeCellWidth / 2;
+    int y = kBarcodeCellHeight / 2;
+    uint8_t* data = (frame->data() + y * frame->stride() +
+                     x * webrtc::DesktopFrame::kBytesPerPixel);
+    int b = data[0];
+    int g = data[1];
+    int r = data[2];
+    bool bit = 0;
+    if (b > kBarcodeWhiteThreshold && g > kBarcodeWhiteThreshold &&
+        r > kBarcodeWhiteThreshold) {
+      bit = 1;
+    } else if (b < kBarcodeBlackThreshold && g < kBarcodeBlackThreshold &&
+        r < kBarcodeBlackThreshold) {
+      bit = 0;
+    } else {
+      LOG(FATAL) << "Invalid barcode.";
+    }
+    frame_id <<= 1;
+    if (bit)
+      frame_id |= 1;
+  }
+
+  if (!generated_frames_info_.count(frame_id))
+    LOG(FATAL) << "Barcode contains unknown frame_id: " << frame_id;
+
+  return generated_frames_info_[frame_id];
 }
 
 }  // namespace test

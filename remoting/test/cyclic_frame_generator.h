@@ -5,6 +5,7 @@
 #ifndef REMOTING_TEST_CYCLIC_FRAME_GENERATOR_H_
 #define REMOTING_TEST_CYCLIC_FRAME_GENERATOR_H_
 
+#include <map>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -34,6 +35,15 @@ class CyclicFrameGenerator
     CURSOR,
   };
 
+  struct FrameInfo {
+    FrameInfo();
+    FrameInfo(int frame_id, FrameType type, base::TimeTicks timestamp);
+
+    int frame_id = 0;
+    FrameType type = FrameType::EMPTY;
+    base::TimeTicks timestamp;
+  };
+
   static scoped_refptr<CyclicFrameGenerator> Create();
 
   CyclicFrameGenerator(
@@ -49,10 +59,19 @@ class CyclicFrameGenerator
 
   void SetTickClock(base::TickClock* tick_clock);
 
+  // When |draw_barcode| is set to true a barcode is drawn on each generated
+  // frame. This make it possible to call IdentifyFrame() to identify the frame
+  // by its content.
+  void set_draw_barcode(bool draw_barcode) { draw_barcode_ = draw_barcode; }
+
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::DesktopCapturer::Callback* callback);
 
   FrameType last_frame_type() { return last_frame_type_; }
+
+  // Identifies |frame| by its content and returns FrameInfo corresponding to
+  // the frame.
+  FrameInfo IdentifyFrame(webrtc::DesktopFrame* frame);
 
  private:
   ~CyclicFrameGenerator();
@@ -69,6 +88,9 @@ class CyclicFrameGenerator
   // By default blink the cursor 4 times per seconds.
   base::TimeDelta cursor_blink_period_ = base::TimeDelta::FromMilliseconds(250);
 
+  // Id of the last frame encoded on the barcode.
+  int last_frame_id_ = -1;
+
   // Index of the reference frame used to render the last generated frame.
   int last_reference_frame_ = -1;
 
@@ -77,7 +99,11 @@ class CyclicFrameGenerator
 
   FrameType last_frame_type_ = FrameType::EMPTY;
 
+  bool draw_barcode_ = false;
+
   base::TimeTicks started_time_;
+
+  std::map<int, FrameInfo> generated_frames_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CyclicFrameGenerator);
 };
