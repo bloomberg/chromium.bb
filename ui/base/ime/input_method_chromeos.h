@@ -30,8 +30,6 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
   ~InputMethodChromeOS() override;
 
   // Overridden from InputMethod:
-  void OnFocus() override;
-  void OnBlur() override;
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
   void DispatchKeyEvent(ui::KeyEvent* event) override;

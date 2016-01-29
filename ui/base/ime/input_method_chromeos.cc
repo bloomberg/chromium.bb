@@ -57,17 +57,6 @@ InputMethodChromeOS::~InputMethodChromeOS() {
     ui::IMEBridge::Get()->SetInputContextHandler(NULL);
 }
 
-void InputMethodChromeOS::OnFocus() {
-  InputMethodBase::OnFocus();
-  OnTextInputTypeChanged(GetTextInputClient());
-}
-
-void InputMethodChromeOS::OnBlur() {
-  ConfirmCompositionText();
-  InputMethodBase::OnBlur();
-  OnTextInputTypeChanged(GetTextInputClient());
-}
-
 bool InputMethodChromeOS::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
     NativeEventResult* result) {

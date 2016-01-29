@@ -35,8 +35,6 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
   void OnInputLocaleChanged() override;
   std::string GetInputLocale() override;
   bool IsCandidatePopupOpen() const override;
-  void OnFocus() override;
-  void OnBlur() override;
 
   // Overriden from ui::LinuxInputMethodContextDelegate
   void OnCommit(const base::string16& text) override;

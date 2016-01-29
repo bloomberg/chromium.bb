@@ -326,17 +326,6 @@ void InputMethodAuraLinux::OnPreeditEnd() {
 
 // Overridden from InputMethodBase.
 
-void InputMethodAuraLinux::OnFocus() {
-  InputMethodBase::OnFocus();
-  UpdateContextFocusState();
-}
-
-void InputMethodAuraLinux::OnBlur() {
-  ConfirmCompositionText();
-  InputMethodBase::OnBlur();
-  UpdateContextFocusState();
-}
-
 void InputMethodAuraLinux::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {

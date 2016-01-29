@@ -51,22 +51,6 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
   SetDelegate(delegate);
 }
 
-void InputMethodWin::OnFocus() {
-  InputMethodBase::OnFocus();
-  if (GetTextInputClient())
-    UpdateIMEState();
-}
-
-void InputMethodWin::OnBlur() {
-  ConfirmCompositionText();
-  // Gets the focused text input client before calling parent's OnBlur() because
-  // it will cause GetTextInputClient() returns NULL.
-  ui::TextInputClient* client = GetTextInputClient();
-  InputMethodBase::OnBlur();
-  if (client)
-    UpdateIMEState();
-}
-
 bool InputMethodWin::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
     InputMethod::NativeEventResult* result) {
