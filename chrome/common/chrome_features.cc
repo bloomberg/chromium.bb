@@ -14,4 +14,12 @@ const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Enables showing the "This computer will no longer receive Google Chrome
+// updates" infobar instead of the "will soon stop receiving" infobar on
+// deprecated systems.
+const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
+    "LinuxObsoleteSystemIsEndOfTheLine", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features

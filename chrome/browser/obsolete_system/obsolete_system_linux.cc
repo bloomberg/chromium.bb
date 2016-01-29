@@ -11,8 +11,10 @@
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 
+#include "base/feature_list.h"
 #include "base/sys_info.h"
 #include "base/version.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,7 +69,12 @@ base::string16 ObsoleteSystem::LocalizedObsoleteString() {
 
 // static
 bool ObsoleteSystem::IsEndOfTheLine() {
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+  return base::FeatureList::IsEnabled(
+      features::kLinuxObsoleteSystemIsEndOfTheLine);
+#else
   return false;
+#endif
 }
 
 // static
