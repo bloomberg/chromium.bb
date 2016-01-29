@@ -394,6 +394,9 @@ public class CompositorView
 
         // TODO(jscholler): change 1.0f to dpToPx once the native part is fully supporting dp.
         mRenderHost.getVisibleViewport(mCacheVisibleViewport);
+        mCacheVisibleViewport.right = mCacheVisibleViewport.left + mSurfaceWidth;
+        mCacheVisibleViewport.bottom = mCacheVisibleViewport.top + mSurfaceHeight;
+
         provider.getViewportPixel(mCacheViewport);
         nativeSetLayoutViewport(mNativeCompositorView, mCacheViewport.left, mCacheViewport.top,
                 mCacheViewport.width(), mCacheViewport.height(), mCacheVisibleViewport.left,
