@@ -4,13 +4,9 @@
 
 #include "content/browser/loader/navigation_resource_throttle.h"
 
-#include "base/bind.h"
 #include "base/callback.h"
-#include "base/location.h"
-#include "base/logging.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
@@ -30,7 +26,7 @@ typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
 void SendCheckResultToIOThread(UIChecksPerformedCallback callback,
                                NavigationThrottle::ThrottleCheckResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_NE(result, NavigationThrottle::DEFER);
+  CHECK(result != NavigationThrottle::DEFER);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, result));
 }
@@ -97,28 +93,21 @@ void CheckWillRedirectRequestOnUIThread(
 }
 
 void WillProcessResponseOnUIThread(
-    UIChecksPerformedCallback callback,
     int render_process_id,
     int render_frame_host_id,
     scoped_refptr<net::HttpResponseHeaders> headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (!render_frame_host) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+  if (!render_frame_host)
     return;
-  }
 
   NavigationHandleImpl* navigation_handle =
       render_frame_host->navigation_handle();
-  if (!navigation_handle) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+  if (!navigation_handle)
     return;
-  }
 
-  navigation_handle->WillProcessResponse(
-      render_frame_host, headers,
-      base::Bind(&SendCheckResultToIOThread, callback));
+  navigation_handle->ReadyToCommitNavigation(render_frame_host, headers);
 }
 
 }  // namespace
@@ -215,15 +204,10 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
         request_->response_headers()->raw_headers());
   }
 
-  UIChecksPerformedCallback callback =
-      base::Bind(&NavigationResourceThrottle::OnUIChecksPerformed,
-                 weak_ptr_factory_.GetWeakPtr());
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WillProcessResponseOnUIThread, callback, render_process_id,
+      base::Bind(&WillProcessResponseOnUIThread, render_process_id,
                  render_frame_id, response_headers));
-  *defer = true;
 }
 
 const char* NavigationResourceThrottle::GetNameForLogging() const {
