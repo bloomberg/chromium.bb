@@ -225,6 +225,8 @@ if (!is_nacl) {
       "ssl/ssl_platform_key.h",
       "ssl/ssl_platform_key_task_runner.cc",
       "ssl/ssl_platform_key_task_runner.h",
+      "ssl/test_ssl_private_key.cc",
+      "ssl/test_ssl_private_key.h",
       "ssl/threaded_ssl_private_key.cc",
       "ssl/threaded_ssl_private_key.h",
       "ssl/token_binding_openssl.cc",
@@ -1481,7 +1483,6 @@ test("net_unittests") {
   } else {
     sources -= [
       "quic/test_tools/crypto_test_utils_openssl.cc",
-      "socket/ssl_client_socket_openssl_unittest.cc",
       "ssl/ssl_client_session_cache_openssl_unittest.cc",
     ]
   }

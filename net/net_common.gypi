@@ -188,6 +188,8 @@
           'ssl/ssl_platform_key_nss.cc',
           'ssl/ssl_platform_key_task_runner.cc',
           'ssl/ssl_platform_key_task_runner.h',
+          'ssl/test_ssl_private_key.cc',
+          'ssl/test_ssl_private_key.h',
           'ssl/threaded_ssl_private_key.cc',
           'ssl/threaded_ssl_private_key.h',
           'ssl/token_binding_openssl.cc',

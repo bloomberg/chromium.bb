@@ -255,7 +255,6 @@
           }, {  # else !use_openssl: remove the unneeded files and pull in NSS.
             'sources!': [
               'quic/test_tools/crypto_test_utils_openssl.cc',
-              'socket/ssl_client_socket_openssl_unittest.cc',
               'ssl/ssl_client_session_cache_openssl_unittest.cc',
             ],
           },

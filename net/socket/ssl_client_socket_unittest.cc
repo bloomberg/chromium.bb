@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -48,6 +49,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if defined(USE_OPENSSL)
+#include <errno.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <string.h>
+
+#include "crypto/scoped_openssl_types.h"
+#include "net/ssl/test_ssl_private_key.h"
+#endif
 
 using testing::_;
 using testing::Return;
@@ -3239,5 +3251,112 @@ TEST_F(SSLClientSocketTest, NPNServerDisabled) {
   EXPECT_EQ(SSLClientSocket::kNextProtoUnsupported,
             sock_->GetNextProto(&proto));
 }
+
+// Client auth is not supported in NSS ports.
+#if defined(USE_OPENSSL)
+
+namespace {
+
+// Loads a PEM-encoded private key file into a SSLPrivateKey object.
+// |filepath| is the private key file path.
+// Returns the new SSLPrivateKey.
+scoped_refptr<SSLPrivateKey> LoadPrivateKeyOpenSSL(
+    const base::FilePath& filepath) {
+  std::string data;
+  if (!base::ReadFileToString(filepath, &data)) {
+    LOG(ERROR) << "Could not read private key file: " << filepath.value();
+    return nullptr;
+  }
+  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<char*>(data.data()),
+                                        static_cast<int>(data.size())));
+  if (!bio) {
+    LOG(ERROR) << "Could not allocate BIO for buffer?";
+    return nullptr;
+  }
+  crypto::ScopedEVP_PKEY result(
+      PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
+  if (!result) {
+    LOG(ERROR) << "Could not decode private key file: " << filepath.value();
+    return nullptr;
+  }
+  return WrapOpenSSLPrivateKey(std::move(result));
+}
+
+}  // namespace
+
+// Connect to a server requesting client authentication, do not send
+// any client certificates. It should refuse the connection.
+TEST_F(SSLClientSocketTest, NoCert) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+
+  EXPECT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
+  EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Connect to a server requesting client authentication, and send it
+// an empty certificate.
+TEST_F(SSLClientSocketTest, SendEmptyCert) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  ssl_options.client_authorities.push_back(
+      GetTestClientCertsDirectory().AppendASCII("client_1_ca.pem"));
+
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig ssl_config;
+  ssl_config.send_client_cert = true;
+  ssl_config.client_cert = nullptr;
+  ssl_config.client_private_key = nullptr;
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_FALSE(ssl_info.client_cert_sent);
+}
+
+// Connect to a server requesting client authentication. Send it a
+// matching certificate. It should allow the connection.
+TEST_F(SSLClientSocketTest, SendGoodCert) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  ssl_options.client_authorities.push_back(
+      GetTestClientCertsDirectory().AppendASCII("client_1_ca.pem"));
+
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  SSLConfig ssl_config;
+  ssl_config.send_client_cert = true;
+  ssl_config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
+
+  // This is required to ensure that signing works with the client
+  // certificate's private key.
+  ssl_config.client_private_key =
+      LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.client_cert_sent);
+
+  sock_->Disconnect();
+  EXPECT_FALSE(sock_->IsConnected());
+}
+#endif  // defined(USE_OPENSSL)
 
 }  // namespace net
