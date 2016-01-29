@@ -16,6 +16,7 @@ function display(callback)
 
 function test()
 {
+    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.startTimeline(function() { InspectorTest.reloadPage(pageReloaded); });
 
     function pageReloaded()
