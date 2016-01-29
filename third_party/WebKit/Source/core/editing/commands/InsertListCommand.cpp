@@ -219,10 +219,24 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             return false;
         // Remove the list child.
         RefPtrWillBeRawPtr<HTMLElement> listElement = enclosingList(listChildNode);
+        if (listElement) {
+            if (!listElement->hasEditableStyle()) {
+                // Since, |listElement| is uneditable, we can't move |listChild|
+                // out from |listElement|.
+                return false;
+            }
+            if (!listElement->parentNode()->hasEditableStyle()) {
+                // Since parent of |listElement| is uneditable, we can not remove
+                // |listElement| for switching list type neither unlistify.
+                return false;
+            }
+        }
         if (!listElement) {
             listElement = fixOrphanedListChild(listChildNode);
             listElement = mergeWithNeighboringLists(listElement);
         }
+        ASSERT(listElement->hasEditableStyle());
+        ASSERT(listElement->parentNode()->hasEditableStyle());
         if (!listElement->hasTagName(listTag)) {
             // |listChildNode| will be removed from the list and a list of type
             // |m_type| will be created.
@@ -278,6 +292,9 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
 
 void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listElement, Node* listChildNode)
 {
+    // Since, unlistify paragraph inserts nodes into parent and removes node
+    // from parent, if parent of |listElement| should be editable.
+    ASSERT(listElement->parentNode()->hasEditableStyle());
     Node* nextListChild;
     Node* previousListChild;
     VisiblePosition start;
