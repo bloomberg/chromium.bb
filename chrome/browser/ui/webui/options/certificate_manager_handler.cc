@@ -809,7 +809,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
       string_id = IDS_CERT_MANAGER_IMPORT_MISSING_KEY;
       break;
     case net::ERR_CERT_INVALID:
-      string_id = IDS_CERT_MANAGER_READ_ERROR_FORMAT;
+      string_id = IDS_CERT_MANAGER_IMPORT_INVALID_FILE;
       break;
     default:
       string_id = IDS_CERT_MANAGER_UNKNOWN_ERROR;
