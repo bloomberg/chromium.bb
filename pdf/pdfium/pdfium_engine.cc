@@ -608,7 +608,10 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   IFSDK_PAUSE::NeedToPauseNow = Pause_NeedToPauseNow;
 
 #if defined(OS_LINUX)
-  g_last_instance_id = client_->GetPluginInstance()->pp_instance();
+  // PreviewModeClient does not know its pp::Instance.
+  pp::Instance* instance = client_->GetPluginInstance();
+  if (instance)
+    g_last_instance_id = instance->pp_instance();
 #endif
 }
 

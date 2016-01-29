@@ -138,8 +138,7 @@ void PreviewModeClient::DocumentLoadFailed() {
 }
 
 pp::Instance* PreviewModeClient::GetPluginInstance() {
-  NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void PreviewModeClient::DocumentHasUnsupportedFeature(
