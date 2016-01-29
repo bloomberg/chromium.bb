@@ -61,6 +61,7 @@ void SettingsBridge::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kWebKitDefaultFontSize);
   AddPrefToObserve(prefs::kWebKitMinimumFontSize);
   AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
+  AddPrefToObserve(prefs::kUse24HourClock);
 
   TimezoneSettings::GetInstance()->AddObserver(this);
 }
@@ -70,6 +71,7 @@ void SettingsBridge::SyncAllPrefs() const {
   SyncLocale();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
+  SyncUse24HourClock();
 }
 
 void SettingsBridge::StopObservingSettingsChanges() {
@@ -90,6 +92,8 @@ void SettingsBridge::OnPrefChanged(const std::string& pref_name) const {
              pref_name == prefs::kWebKitDefaultFontSize ||
              pref_name == prefs::kWebKitMinimumFontSize) {
     SyncFontSize();
+  } else if (pref_name == prefs::kUse24HourClock) {
+    SyncUse24HourClock();
   } else {
     LOG(ERROR) << "Unknown pref changed.";
   }
@@ -154,6 +158,19 @@ void SettingsBridge::SyncTimeZone() const {
   base::DictionaryValue extras;
   extras.SetString("olsonTimeZone", timezoneID);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_TIME_ZONE", extras);
+}
+
+void SettingsBridge::SyncUse24HourClock() const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(prefs::kUse24HourClock);
+  DCHECK(pref);
+  bool use24HourClock = false;
+  bool value_exists = pref->GetValue()->GetAsBoolean(&use24HourClock);
+  DCHECK(value_exists);
+  base::DictionaryValue extras;
+  extras.SetBoolean("use24HourClock", use24HourClock);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_USE_24_HOUR_CLOCK",
+                        extras);
 }
 
 void SettingsBridge::SendSettingsBroadcast(

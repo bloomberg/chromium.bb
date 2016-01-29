@@ -70,6 +70,7 @@ class SettingsBridge : public chromeos::system::TimezoneSettings::Observer {
   void SyncLocale() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
+  void SyncUse24HourClock() const;
 
   // Registers to listen to a particular perf.
   void AddPrefToObserve(const std::string& pref_name);
