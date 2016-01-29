@@ -15,6 +15,7 @@ from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import config_lib_unittest
+from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 
@@ -339,6 +340,18 @@ class BuilderRunTest(_BuilderRunTestCase):
           {'postsync_reexec': config_val})
 
       self.assertEquals(result, truth_table.GetOutput(inputs))
+
+  def testInProduction(self):
+    run = self._NewBuilderRun()
+    self.assertFalse(run.InProduction())
+
+  def testInEmailReportingEnvironment(self):
+    run = self._NewBuilderRun()
+    self.assertFalse(run.InEmailReportingEnvironment())
+
+    run.attrs.metadata.UpdateWithDict(
+        {'buildbot-master-name': constants.WATERFALL_BRILLO})
+    self.assertTrue(run.InEmailReportingEnvironment())
 
 
 class GetVersionTest(_BuilderRunTestCase):

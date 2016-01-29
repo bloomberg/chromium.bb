@@ -73,6 +73,14 @@ WATERFALL_BRANCH = 'chromeos.branch'
 # These waterfalls are not yet using cidb.
 WATERFALL_CHROMIUM = 'chromiumos.chromium'
 WATERFALL_CHROME = 'chromeos.chrome'
+WATERFALL_BRILLO = 'internal.brillo.brillo'
+
+# These waterfalls should send email reports regardless of cidb connection.
+EMAIL_WATERFALLS = (WATERFALL_INTERNAL,
+                    WATERFALL_EXTERNAL,
+                    WATERFALL_RELEASE,
+                    WATERFALL_BRANCH,
+                    WATERFALL_BRILLO,)
 
 CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
                          WATERFALL_EXTERNAL,

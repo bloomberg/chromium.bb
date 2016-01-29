@@ -377,7 +377,7 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                   to be added to the message. Custom field names should begin
                   with the prefix 'X-'.
   """
-  if builder_run.InProduction():
+  if builder_run.InEmailReportingEnvironment():
     server = alerts.GmailServer(
         token_cache_file=constants.GMAIL_TOKEN_CACHE_FILE,
         token_json_file=constants.GMAIL_TOKEN_JSON_FILE)

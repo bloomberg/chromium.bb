@@ -339,7 +339,7 @@ class BaseCommitQueueCompletionStageTest(
 
     self.alert_email_mock = self.PatchObject(alerts, 'SendEmail')
     self.PatchObject(cbuildbot_run._BuilderRunBase,
-                     'InProduction', return_value=True)
+                     'InEmailReportingEnvironment', return_value=True)
     self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
                      'HandleFailure')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,

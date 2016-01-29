@@ -35,8 +35,8 @@ except ImportError:
 import types
 
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
 from chromite.lib import portage_util
@@ -741,6 +741,11 @@ class _BuilderRunBase(object):
   def InProduction(self):
     """Return True if this is a production run."""
     return cidb.CIDBConnectionFactory.GetCIDBConnectionType() == 'prod'
+
+  def InEmailReportingEnvironment(self):
+    """Return True if this run should send reporting emails.."""
+    in_email_waterfall = self.GetWaterfall() in constants.EMAIL_WATERFALLS
+    return self.InProduction() or in_email_waterfall
 
   def GetVersionInfo(self):
     """Helper for picking apart various version bits.

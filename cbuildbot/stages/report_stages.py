@@ -419,7 +419,7 @@ class ReportStage(generic_stages.BuilderStage,
       builder_run: BuilderRun for this run.
       final_status: Final status string for this run.
     """
-    if builder_run.InProduction():
+    if builder_run.InEmailReportingEnvironment():
       streak_value = self._UpdateStreakCounter(
           final_status=final_status, counter_name=builder_run.config.name,
           dry_run=self._run.debug)

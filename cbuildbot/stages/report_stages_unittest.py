@@ -246,7 +246,7 @@ class ReportStageTest(AbstractReportStageTestCase):
   def testAlertEmail(self):
     """Send out alerts when streak counter reaches the threshold."""
     self.PatchObject(cbuildbot_run._BuilderRunBase,
-                     'InProduction', return_value=True)
+                     'InEmailReportingEnvironment', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['foo@bar.org']})
@@ -260,7 +260,7 @@ class ReportStageTest(AbstractReportStageTestCase):
   def testAlertEmailOnFailingStreak(self):
     """Continue sending out alerts when streak counter exceeds the threshold."""
     self.PatchObject(cbuildbot_run._BuilderRunBase,
-                     'InProduction', return_value=True)
+                     'InEmailReportingEnvironment', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['foo@bar.org']})
