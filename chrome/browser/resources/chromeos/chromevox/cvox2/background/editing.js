@@ -93,8 +93,8 @@ TextFieldTextEditHandler.prototype = {
  * @extends {cvox.ChromeVoxEditableTextBase}
  */
 function AutomationEditableText(node) {
-  if (node.role !== RoleType.textField)
-    throw Error('Node must be a textField.');
+  if (!node.state.editable)
+    throw Error('Node must have editable state set to true.');
   var start = node.textSelStart;
   var end = node.textSelEnd;
   cvox.ChromeVoxEditableTextBase.call(
