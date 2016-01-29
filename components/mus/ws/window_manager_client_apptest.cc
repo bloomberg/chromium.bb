@@ -33,6 +33,30 @@ int ValidIndexOf(const Window::Children& windows, Window* window) {
   return (it != windows.end()) ? (it - windows.begin()) : -1;
 }
 
+class TestWindowManagerDelegate : public WindowManagerDelegate {
+ public:
+  TestWindowManagerDelegate() {}
+  ~TestWindowManagerDelegate() override {}
+
+  // WindowManagerDelegate:
+  void SetWindowManagerClient(WindowManagerClient* client) override {}
+  bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override {
+    return false;
+  }
+  bool OnWmSetProperty(Window* window,
+                       const std::string& name,
+                       scoped_ptr<std::vector<uint8_t>>* new_data) override {
+    return true;
+  }
+  Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) override {
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerDelegate);
+};
+
 class BoundsChangeObserver : public WindowObserver {
  public:
   explicit BoundsChangeObserver(Window* window) : window_(window) {
@@ -381,27 +405,6 @@ TEST_F(WindowServerTest, SetBounds) {
 // Verifies that bounds changes applied to a window owned by a different
 // connection can be refused.
 TEST_F(WindowServerTest, SetBoundsSecurity) {
-  class TestWindowManagerDelegate : public WindowManagerDelegate {
-   public:
-    TestWindowManagerDelegate() {}
-    ~TestWindowManagerDelegate() override {}
-
-    // WindowManagerDelegate:
-    void SetWindowManagerClient(WindowManagerClient* client) override {}
-    bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override {
-      return false;
-    }
-    bool OnWmSetProperty(Window* window,
-                         const std::string& name,
-                         scoped_ptr<std::vector<uint8_t>>* new_data) override {
-      return true;
-    }
-    Window* OnWmCreateTopLevelWindow(
-        std::map<std::string, std::vector<uint8_t>>* properties) override {
-      return nullptr;
-    }
-  };
-
   TestWindowManagerDelegate wm_delegate;
   set_window_manager_delegate(&wm_delegate);
 
@@ -1105,6 +1108,66 @@ TEST_F(WindowServerTest, ClientAreaChanged) {
               GetFirstRoot(embedded_connection)->bounds());
   EXPECT_TRUE(gfx::Insets(1, 2, 3, 4) ==
               GetFirstRoot(embedded_connection)->client_area());
+}
+
+class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
+ public:
+  explicit EstablishConnectionViaFactoryDelegate(
+      WindowTreeConnection* connection)
+      : connection_(connection), run_loop_(nullptr), created_window_(nullptr) {}
+  ~EstablishConnectionViaFactoryDelegate() override {}
+
+  bool QuitOnCreate() {
+    if (run_loop_)
+      return false;
+
+    created_window_ = nullptr;
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+    run_loop_.reset();
+    return created_window_ != nullptr;
+  }
+
+  Window* created_window() { return created_window_; }
+
+  // WindowManagerDelegate:
+  Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) override {
+    created_window_ = connection_->NewWindow(properties);
+    (*connection_->GetRoots().begin())->AddChild(created_window_);
+    if (run_loop_)
+      run_loop_->Quit();
+    return created_window_;
+  }
+
+ private:
+  WindowTreeConnection* connection_;
+  scoped_ptr<base::RunLoop> run_loop_;
+  Window* created_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(EstablishConnectionViaFactoryDelegate);
+};
+
+TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
+  EstablishConnectionViaFactoryDelegate delegate(window_manager());
+  set_window_manager_delegate(&delegate);
+  scoped_ptr<WindowTreeConnection> second_connection(
+      WindowTreeConnection::Create(this, application_impl()));
+  Window* window_in_second_connection =
+      second_connection->NewTopLevelWindow(nullptr);
+  ASSERT_TRUE(window_in_second_connection);
+  ASSERT_TRUE(second_connection->GetRoots().count(window_in_second_connection) >
+              0);
+  // Wait for the window to appear in the wm.
+  ASSERT_TRUE(delegate.QuitOnCreate());
+
+  Window* window_in_wm = delegate.created_window();
+  ASSERT_TRUE(window_in_wm);
+
+  // Change the bounds in the wm, and make sure the child sees it.
+  window_in_wm->SetBounds(gfx::Rect(1, 11, 12, 101));
+  ASSERT_TRUE(WaitForBoundsToChange(window_in_second_connection));
+  EXPECT_EQ(gfx::Rect(1, 11, 12, 101), window_in_second_connection->bounds());
 }
 
 }  // namespace ws

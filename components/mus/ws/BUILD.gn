@@ -51,6 +51,8 @@ source_set("lib") {
     "window_finder.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
+    "window_tree_factory.cc",
+    "window_tree_factory.h",
     "window_tree_host_connection.cc",
     "window_tree_host_connection.h",
     "window_tree_host_delegate.h",

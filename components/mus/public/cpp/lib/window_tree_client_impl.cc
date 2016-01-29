@@ -82,6 +82,14 @@ Window* BuildWindowTree(WindowTreeClientImpl* client,
   return root;
 }
 
+WindowTreeConnection* WindowTreeConnection::Create(WindowTreeDelegate* delegate,
+                                                   mojo::ApplicationImpl* app) {
+  WindowTreeClientImpl* client =
+      new WindowTreeClientImpl(delegate, nullptr, nullptr);
+  client->ConnectViaWindowTreeFactory(app);
+  return client;
+}
+
 WindowTreeConnection* WindowTreeConnection::Create(
     WindowTreeDelegate* delegate,
     mojo::InterfaceRequest<mojom::WindowTreeClient> request,
@@ -150,6 +158,21 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
     delete tracker.windows().front();
 
   delegate_->OnConnectionLost(this);
+}
+
+void WindowTreeClientImpl::ConnectViaWindowTreeFactory(
+    mojo::ApplicationImpl* app) {
+  // Clients created with no root shouldn't delete automatically.
+  delete_on_no_roots_ = false;
+
+  // The connection id doesn't really matter, we use 101 purely for debugging.
+  connection_id_ = 101;
+
+  mojom::WindowTreeFactoryPtr factory;
+  app->ConnectToService("mojo:mus", &factory);
+  factory->CreateWindowTree(GetProxy(&tree_ptr_),
+                            binding_.CreateInterfacePtrAndBind());
+  tree_ = tree_ptr_.get();
 }
 
 void WindowTreeClientImpl::WaitForEmbed() {
@@ -407,6 +430,8 @@ Window* WindowTreeClientImpl::NewWindowImpl(
   if (properties) {
     transport_properties =
         mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
+  } else {
+    transport_properties.mark_non_null();
   }
   if (type == NewWindowType::CHILD) {
     tree_->NewWindow(change_id, window->id(), std::move(transport_properties));
@@ -423,6 +448,8 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        mojom::WindowDataPtr root_data,
                                        Id focused_window_id,
                                        uint32_t access_policy) {
+  // WARNING: this is only called if WindowTreeClientImpl was created as the
+  // result of an embedding.
   tree_ = window_tree;
   connection_id_ = connection_id;
   is_embed_root_ =

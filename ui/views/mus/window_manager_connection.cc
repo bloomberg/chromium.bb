@@ -8,7 +8,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
-#include "base/threading/thread_restrictions.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -46,31 +45,16 @@ WindowManagerConnection* WindowManagerConnection::Get() {
 
 mus::Window* WindowManagerConnection::NewWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
-  if (window_tree_connection_)
-    return window_tree_connection_->NewTopLevelWindow(&properties);
-
-  mus::mojom::WindowTreeClientPtr window_tree_client;
-  mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
-      window_tree_client_request = GetProxy(&window_tree_client);
-  window_manager_->OpenWindow(
-      std::move(window_tree_client),
-      mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(properties));
-
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  window_tree_connection_.reset(mus::WindowTreeConnection::Create(
-      this, std::move(window_tree_client_request),
-      mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED));
-  window_tree_connection_->SetDeleteOnNoRoots(false);
-  DCHECK_EQ(1u, window_tree_connection_->GetRoots().size());
-  return *window_tree_connection_->GetRoots().begin();
+  return window_tree_connection_->NewTopLevelWindow(&properties);
 }
 
 WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
     : app_(app), window_tree_connection_(nullptr) {
-  app->ConnectToService("mojo:mus", &window_manager_);
+  window_tree_connection_.reset(mus::WindowTreeConnection::Create(this, app_));
 
   screen_.reset(new ScreenMus(this));
   screen_->Init(app);
+
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       base::Bind(&WindowManagerConnection::CreateNativeWidget,
                  base::Unretained(this)));

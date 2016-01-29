@@ -11,6 +11,7 @@
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/forwarding_window_manager.h"
+#include "components/mus/ws/window_tree_factory.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "components/mus/ws/window_tree_impl.h"
@@ -39,9 +40,11 @@ using mus::mojom::Gpu;
 
 namespace mus {
 
+// TODO(sky): this is a pretty typical pattern, make it easier to do.
 struct MandolineUIServicesApp::PendingRequest {
   scoped_ptr<mojo::InterfaceRequest<mojom::DisplayManager>> dm_request;
   scoped_ptr<mojo::InterfaceRequest<mojom::WindowManagerDeprecated>> wm_request;
+  scoped_ptr<mojo::InterfaceRequest<mojom::WindowTreeFactory>> wtf_request;
 };
 
 MandolineUIServicesApp::MandolineUIServicesApp()
@@ -94,6 +97,7 @@ bool MandolineUIServicesApp::ConfigureIncomingConnection(
   connection->AddService<Gpu>(this);
   connection->AddService<mojom::DisplayManager>(this);
   connection->AddService<mojom::WindowManagerDeprecated>(this);
+  connection->AddService<mojom::WindowTreeFactory>(this);
   connection->AddService<WindowTreeHostFactory>(this);
   return true;
 }
@@ -104,8 +108,10 @@ void MandolineUIServicesApp::OnFirstRootConnectionCreated() {
   for (auto& request : requests) {
     if (request->dm_request)
       Create(nullptr, std::move(*request->dm_request));
-    else
+    else if (request->wm_request)
       Create(nullptr, std::move(*request->wm_request));
+    else
+      Create(nullptr, std::move(*request->wtf_request));
   }
 }
 
@@ -157,6 +163,24 @@ void MandolineUIServicesApp::Create(
   }
   window_manager_bindings_.AddBinding(window_manager_impl_.get(),
                                       std::move(request));
+}
+
+void MandolineUIServicesApp::Create(
+    ApplicationConnection* connection,
+    InterfaceRequest<mojom::WindowTreeFactory> request) {
+  if (!connection_manager_->has_tree_host_connections()) {
+    scoped_ptr<PendingRequest> pending_request(new PendingRequest);
+    pending_request->wtf_request.reset(
+        new mojo::InterfaceRequest<mojom::WindowTreeFactory>(
+            std::move(request)));
+    pending_requests_.push_back(std::move(pending_request));
+    return;
+  }
+  if (!window_tree_factory_) {
+    window_tree_factory_.reset(
+        new ws::WindowTreeFactory(connection_manager_.get()));
+  }
+  window_tree_factory_->AddBinding(std::move(request));
 }
 
 void MandolineUIServicesApp::Create(

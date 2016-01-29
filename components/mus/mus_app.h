@@ -39,6 +39,7 @@ class SurfacesState;
 namespace ws {
 class ConnectionManager;
 class ForwardingWindowManager;
+class WindowTreeFactory;
 }
 
 class MandolineUIServicesApp
@@ -46,6 +47,7 @@ class MandolineUIServicesApp
       public ws::ConnectionManagerDelegate,
       public mojo::InterfaceFactory<mojom::DisplayManager>,
       public mojo::InterfaceFactory<mojom::WindowManagerDeprecated>,
+      public mojo::InterfaceFactory<mojom::WindowTreeFactory>,
       public mojo::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public mojo::InterfaceFactory<mojom::Gpu>,
       public mojom::WindowTreeHostFactory {
@@ -82,6 +84,11 @@ class MandolineUIServicesApp
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojom::WindowManagerDeprecated> request) override;
 
+  // mojo::InterfaceFactory<mojom::WindowTreeFactory>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojom::WindowTreeFactory> request) override;
+
   // mojo::InterfaceFactory<mojom::WindowTreeHostFactory>:
   void Create(
       mojo::ApplicationConnection* connection,
@@ -108,6 +115,7 @@ class MandolineUIServicesApp
   mojo::TracingImpl tracing_;
   using PendingRequests = std::vector<scoped_ptr<PendingRequest>>;
   PendingRequests pending_requests_;
+  scoped_ptr<ws::WindowTreeFactory> window_tree_factory_;
 
   // Surfaces
   scoped_refptr<SurfacesState> surfaces_state_;

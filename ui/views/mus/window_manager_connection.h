@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -26,8 +25,14 @@ namespace internal {
 class NativeWidgetDelegate;
 }
 
-// Establishes a connection to the window manager for use by views within an
-// application, and performs Aura initialization.
+// Provides configuration to mus in views. This consists of the following:
+// . Provides a Screen implementation backed by mus.
+// . Creates and owns a WindowTreeConnection.
+// . Registers itself as the factory for creating NativeWidgets so that a
+//   NativeWidgetMus is created.
+// WindowManagerConnection is a singleton and should be created early on.
+//
+// TODO(sky): this name is now totally confusing. Come up with a better one.
 class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(mus::WindowTreeDelegate),
       public ScreenMusDelegate {
@@ -39,10 +44,6 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   mus::Window* NewWindow(const std::map<std::string,
                          std::vector<uint8_t>>& properties);
-
-  mus::mojom::WindowManagerDeprecated* window_manager() {
-    return window_manager_.get();
-  }
 
  private:
   explicit WindowManagerConnection(mojo::ApplicationImpl* app);
@@ -59,7 +60,6 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
                                    internal::NativeWidgetDelegate* delegate);
 
   mojo::ApplicationImpl* app_;
-  mus::mojom::WindowManagerDeprecatedPtr window_manager_;
   scoped_ptr<ScreenMus> screen_;
   scoped_ptr<mus::WindowTreeConnection> window_tree_connection_;
 

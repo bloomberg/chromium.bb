@@ -81,6 +81,10 @@ class ConnectionManager : public ServerWindowDelegate,
                                 uint32_t policy_bitmask,
                                 mojom::WindowTreeClientPtr client);
 
+  // Adds |connection| to internal maps.
+  void AddConnection(scoped_ptr<ClientConnection> owned_connection,
+                     mojom::WindowTreePtr tree_ptr);
+
   // Returns the connection by id.
   WindowTreeImpl* GetConnection(ConnectionSpecificId connection_id);
 
@@ -220,9 +224,6 @@ class ConnectionManager : public ServerWindowDelegate,
     return current_operation_ &&
            current_operation_->source_connection_id() == connection_id;
   }
-
-  // Adds |connection| to internal maps.
-  void AddConnection(ClientConnection* connection);
 
   // Run in response to events which may cause us to change the native cursor.
   void MaybeUpdateNativeCursor(ServerWindow* window);

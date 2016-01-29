@@ -152,17 +152,22 @@ WindowTreeImpl* ConnectionManager::EmbedAtWindow(
     ServerWindow* root,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
-  mojom::WindowTreePtr service_ptr;
+  mojom::WindowTreePtr tree_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtWindow(
-          this, GetProxy(&service_ptr), root, policy_bitmask,
-          std::move(client));
-  AddConnection(client_connection);
-  client_connection->service()->Init(client_connection->client(),
-                                     std::move(service_ptr));
+          this, GetProxy(&tree_ptr), root, policy_bitmask, std::move(client));
+  AddConnection(make_scoped_ptr(client_connection), std::move(tree_ptr));
   OnConnectionMessagedClient(client_connection->service()->id());
-
   return client_connection->service();
+}
+
+void ConnectionManager::AddConnection(
+    scoped_ptr<ClientConnection> owned_connection,
+    mojom::WindowTreePtr tree_ptr) {
+  ClientConnection* connection = owned_connection.release();
+  CHECK_EQ(0u, connection_map_.count(connection->service()->id()));
+  connection_map_[connection->service()->id()] = connection;
+  connection->service()->Init(connection->client(), std::move(tree_ptr));
 }
 
 WindowTreeImpl* ConnectionManager::GetConnection(
@@ -439,11 +444,6 @@ void ConnectionManager::FinishOperation() {
   // PrepareForOperation/FinishOperation should be balanced.
   CHECK(current_operation_);
   current_operation_ = nullptr;
-}
-
-void ConnectionManager::AddConnection(ClientConnection* connection) {
-  DCHECK_EQ(0u, connection_map_.count(connection->service()->id()));
-  connection_map_[connection->service()->id()] = connection;
 }
 
 void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {

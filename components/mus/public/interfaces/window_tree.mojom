@@ -413,3 +413,7 @@ interface WindowManagerClient {
   // the new window.
   OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);
 };
+
+interface WindowTreeFactory {
+  CreateWindowTree(WindowTree& tree_request, WindowTreeClient client);
+};

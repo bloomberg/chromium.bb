@@ -15,6 +15,10 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
+namespace mojo {
+class ApplicationImpl;
+}
+
 namespace mus {
 
 class Window;
@@ -36,13 +40,19 @@ class WindowTreeConnection {
 
   virtual ~WindowTreeConnection() {}
 
-  // The returned WindowTreeConnection instance owns itself, and is deleted when
-  // the last root is destroyed or the connection to the service is broken.
+  // Creates a WindowTreeConnection with no roots. Use this to establish a
+  // connection directly to mus and create top level windows.
+  static WindowTreeConnection* Create(WindowTreeDelegate* delegate,
+                                      mojo::ApplicationImpl* app);
+
+  // Creates a WindowTreeConnection to service the specified request for
+  // a WindowTreeClient. Use this to be embedded in another app.
   static WindowTreeConnection* Create(
       WindowTreeDelegate* delegate,
       mojo::InterfaceRequest<mojom::WindowTreeClient> request,
       CreateType create_type);
 
+  // Create a WindowTreeConnection that is going to serve as the WindowManager.
   static WindowTreeConnection* CreateForWindowManager(
       WindowTreeDelegate* delegate,
       mojo::InterfaceRequest<mojom::WindowTreeClient> request,

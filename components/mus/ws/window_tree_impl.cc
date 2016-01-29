@@ -73,9 +73,9 @@ WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
       event_source_host_(nullptr),
       is_embed_root_(false),
       window_manager_internal_(nullptr) {
-  CHECK(root);
-  roots_.insert(root);
-  if (root->GetRoot() == root) {
+  if (root)
+    roots_.insert(root);
+  if (root && root->GetRoot() == root) {
     access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
     is_embed_root_ = true;
   } else {
@@ -92,6 +92,10 @@ void WindowTreeImpl::Init(mojom::WindowTreeClient* client,
                           mojom::WindowTreePtr tree) {
   DCHECK(!client_);
   client_ = client;
+
+  if (roots_.empty())
+    return;
+
   std::vector<const ServerWindow*> to_send;
   CHECK_EQ(1u, roots_.size());
   GetUnknownWindowsFrom(*roots_.begin(), &to_send);
