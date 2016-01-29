@@ -48,8 +48,6 @@ namespace variations {
 
 namespace {
 
-const int kMaxRetrySeedFetch = 5;
-
 // TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64_t kServerTimeResolutionMs = 1000;
@@ -529,7 +527,6 @@ void VariationsService::DoActualFetch() {
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(client_->GetURLRequestContext());
-  pending_seed_request_->SetMaxRetriesOn5xx(kMaxRetrySeedFetch);
   bool enable_deltas = false;
   if (!seed_store_.variations_serial_number().empty() &&
       !disable_deltas_for_next_request_) {
