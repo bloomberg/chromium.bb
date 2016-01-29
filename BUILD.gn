@@ -149,6 +149,7 @@ group("both_gn_and_gyp") {
       "//third_party/codesighs",
       "//third_party/pdfium/samples:pdfium_test",
       "//tools/battor_agent",
+      "//tools/battor_agent:battor_agent_unittests",
       "//tools/gn",
       "//tools/gn:gn_unittests",
       "//tools/perf/clear_system_cache",

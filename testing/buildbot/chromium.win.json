@@ -33,6 +33,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
@@ -463,6 +469,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 5
         },
@@ -525,6 +537,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
       },
       {
         "swarming": {
@@ -923,6 +941,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 20
         },
@@ -1299,6 +1323,9 @@
       "wm_unittests"
     ],
     "gtest_tests": [
+      {
+        "test": "battor_agent_unittests"
+      },
       {
         "test": "content_browsertests"
       },

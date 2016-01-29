@@ -73,6 +73,10 @@
     "label": "//base:base_unittests",
     "type": "console_test_launcher",
   },
+  "battor_agent_unittests": {
+    "label": "//tools/battor_agent:battor_agent_unittests",
+    "type": "console_test_launcher",
+  },
   "blimp_unittests": {
     "label": "//blimp:blimp_unittests",
     "type": "console_test_launcher",

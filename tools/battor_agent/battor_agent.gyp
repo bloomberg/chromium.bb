@@ -69,4 +69,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'battor_agent_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'battor_agent_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'battor_agent_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
