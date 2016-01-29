@@ -57,6 +57,7 @@ cr.define('media_router_container', function() {
         'container-header',
         'device-missing',
         'first-run-flow',
+        'first-run-flow-cloud-pref',
         'issue-banner',
         'route-details',
         'sink-list',
@@ -542,6 +543,30 @@ cr.define('media_router_container', function() {
 
           setTimeout(function() {
             checkElementVisibleWithId(false, 'first-run-flow');
+            done();
+          });
+        });
+      });
+
+      // Tests for the expected visible UI when interacting with the first run
+      // flow with cloud services preference.
+      test('first run button visibility', function(done) {
+        container.showFirstRunFlow = true;
+        container.showFirstRunFlowCloudPref = true;
+
+        setTimeout(function() {
+          checkElementsVisibleWithId(['container-header',
+                                      'device-missing',
+                                      'first-run-flow',
+                                      'first-run-flow-cloud-pref',
+                                      'sink-list-view']);
+          MockInteractions.tap(container.shadowRoot.getElementById(
+              'first-run-button'));
+
+          setTimeout(function() {
+            checkElementsVisibleWithId(['container-header',
+                                        'device-missing',
+                                        'sink-list-view']);
             done();
           });
         });

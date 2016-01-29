@@ -76,9 +76,13 @@ cr.define('media_router.ui', function() {
     container.castModeList = data['castModes'];
     container.allSinks = data['sinks'];
     container.routeList = data['routes'];
-    container.showFirstRunFlow = !data['wasFirstRunFlowAcknowledged'];
     container.showFirstRunFlowCloudPref =
         data['showFirstRunFlowCloudPref'];
+    // Some users acknowledged the first run flow before the cloud prefs
+    // setting was implemented. These users will see the first run flow
+    // again.
+    container.showFirstRunFlow = !data['wasFirstRunFlowAcknowledged'] ||
+        container.showFirstRunFlowCloudPref;
     container.maybeShowRouteDetailsOnOpen();
     media_router.browserApi.onInitialDataReceived();
   }
