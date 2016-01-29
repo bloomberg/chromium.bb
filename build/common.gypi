@@ -493,7 +493,7 @@
       # Enable crash reporting via Kasko.
       'kasko%': 0,
 
-      # Enable hang reports in Kasko.
+      # Enable hang reports in Kasko. Requires Kasko to be enabled.
       'kasko_hang_reports%': 0,
 
       # Enable building with LSan (Clang's -fsanitize=leak option).

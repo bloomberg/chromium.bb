@@ -43,9 +43,9 @@ class WindowHangMonitor {
                     const WindowEventCallback& callback);
   ~WindowHangMonitor();
 
-  // Initializes the watcher to monitor a window named |window_name| and owned
+  // Initializes the watcher to monitor the Chrome message window owned
   // by |process|. May be invoked prior to the appearance of the window.
-  void Initialize(base::Process process, const base::string16& window_name);
+  void Initialize(base::Process process);
 
  private:
   struct OutstandingPing {

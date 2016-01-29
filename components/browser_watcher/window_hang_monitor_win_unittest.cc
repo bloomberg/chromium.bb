@@ -4,32 +4,19 @@
 
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
-#include <stddef.h>
-
-#include <vector>
-
+#include "base/base_paths.h"
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/location.h"
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/process/process_handle.h"
-#include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/thread.h"
 #include "base/win/message_window.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -37,9 +24,209 @@ namespace browser_watcher {
 
 namespace {
 
-// Simulates a process that never opens a window.
-MULTIPROCESS_TEST_MAIN(NoWindowChild) {
-  ::Sleep(INFINITE);
+const char kChildReadPipeSwitch[] = "child_read_pipe";
+const char kChildWritePipeSwitch[] = "child_write_pipe";
+
+// Signals used for IPC between the monitor process and the monitor.
+enum IPCSignal {
+  IPC_SIGNAL_INVALID,
+  IPC_SIGNAL_READY,
+  IPC_SIGNAL_TERMINATE_PROCESS,
+  IPC_SIGNAL_CREATE_MESSAGE_WINDOW,
+  IPC_SIGNAL_DELETE_MESSAGE_WINDOW,
+  IPC_SIGNAL_HANG_MESSAGE_WINDOW,
+};
+
+// Sends |ipc_signal| through the |write_pipe|.
+bool SendPipeSignal(HANDLE write_pipe, IPCSignal ipc_signal) {
+  DWORD bytes_written = 0;
+  if (!WriteFile(write_pipe, &ipc_signal, sizeof(ipc_signal), &bytes_written,
+                 nullptr))
+    return false;
+
+  return bytes_written == sizeof(ipc_signal);
+}
+
+// Blocks on |read_pipe| until a signal is received into |ipc_signal|.
+bool WaitForPipeSignal(HANDLE read_pipe, IPCSignal* ipc_signal) {
+  CHECK(ipc_signal);
+  DWORD bytes_read = 0;
+  if (!ReadFile(read_pipe, ipc_signal, sizeof(*ipc_signal), &bytes_read,
+                nullptr))
+    return false;
+
+  return bytes_read == sizeof(*ipc_signal);
+}
+
+// Blocks on |read_pipe| until a signal is received and returns true if it
+// matches |expected_ipc_signal|.
+bool WaitForSpecificPipeSignal(HANDLE read_pipe,
+                               IPCSignal expected_ipc_signal) {
+  IPCSignal received_signal = IPC_SIGNAL_INVALID;
+  return WaitForPipeSignal(read_pipe, &received_signal) &&
+         received_signal == expected_ipc_signal;
+}
+
+// Appends |handle| as a command line switch.
+void AppendSwitchHandle(base::CommandLine* command_line,
+                        std::string switch_name,
+                        HANDLE handle) {
+  command_line->AppendSwitchASCII(
+      switch_name, base::UintToString(base::win::HandleToUint32(handle)));
+}
+
+// Retrieves the |handle| associated to |switch_name| from the command line.
+HANDLE GetSwitchValueHandle(base::CommandLine* command_line,
+                            std::string switch_name) {
+  std::string switch_string = command_line->GetSwitchValueASCII(switch_name);
+  unsigned int switch_uint = 0;
+  if (switch_string.empty() ||
+      !base::StringToUint(switch_string, &switch_uint)) {
+    DLOG(ERROR) << "Missing or invalid " << switch_name << " argument.";
+    return nullptr;
+  }
+  return reinterpret_cast<HANDLE>(switch_uint);
+}
+
+// An instance of this class lives in the monitored process and receives signals
+// and executes their associated function.
+class MonitoredProcessClient {
+ public:
+  MonitoredProcessClient()
+      : message_window_thread_("Message window thread"),
+        hang_event_(true, false) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+    read_pipe_.Set(GetSwitchValueHandle(command_line, kChildReadPipeSwitch));
+    write_pipe_.Set(GetSwitchValueHandle(command_line, kChildWritePipeSwitch));
+  }
+
+  ~MonitoredProcessClient() {
+    if (message_window_thread_.IsRunning()) {
+      DeleteMessageWindow();
+    }
+  }
+
+  void RunEventLoop() {
+    bool running = true;
+    IPCSignal ipc_signal = IPC_SIGNAL_INVALID;
+    while (running) {
+      CHECK(WaitForPipeSignal(read_pipe_.Get(), &ipc_signal));
+      switch (ipc_signal) {
+        // The parent process should never send those.
+        case IPC_SIGNAL_INVALID:
+        case IPC_SIGNAL_READY:
+          CHECK(false);
+          break;
+        case IPC_SIGNAL_TERMINATE_PROCESS:
+          running = false;
+          break;
+        case IPC_SIGNAL_CREATE_MESSAGE_WINDOW:
+          CreateMessageWindow();
+          break;
+        case IPC_SIGNAL_DELETE_MESSAGE_WINDOW:
+          DeleteMessageWindow();
+          break;
+        case IPC_SIGNAL_HANG_MESSAGE_WINDOW:
+          HangMessageWindow();
+          break;
+      }
+      SendSignalToParent(IPC_SIGNAL_READY);
+    }
+  }
+
+  // Creates a thread then creates the message window on it.
+  void CreateMessageWindow() {
+    ASSERT_TRUE(message_window_thread_.StartWithOptions(
+        base::Thread::Options(base::MessageLoop::TYPE_UI, 0)));
+
+    bool succeeded = false;
+    base::WaitableEvent created(true, false);
+    ASSERT_TRUE(message_window_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&MonitoredProcessClient::CreateMessageWindowInWorkerThread,
+                   base::Unretained(this), &succeeded, &created)));
+    created.Wait();
+    ASSERT_TRUE(succeeded);
+  }
+
+  // Creates a thread then creates the message window on it.
+  void HangMessageWindow() {
+    message_window_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&base::WaitableEvent::Wait, base::Unretained(&hang_event_)));
+  }
+
+  bool SendSignalToParent(IPCSignal ipc_signal) {
+    return SendPipeSignal(write_pipe_.Get(), ipc_signal);
+  }
+
+ private:
+  bool EmptyMessageCallback(UINT message,
+                            WPARAM wparam,
+                            LPARAM lparam,
+                            LRESULT* result) {
+    EXPECT_EQ(message_window_thread_.message_loop(),
+              base::MessageLoop::current());
+    return false;  // Pass through to DefWindowProc.
+  }
+
+  void CreateMessageWindowInWorkerThread(bool* success,
+                                         base::WaitableEvent* created) {
+    CHECK(created);
+
+    // As an alternative to checking if the name of the message window is the
+    // user data directory, the hang watcher verifies that the window name is an
+    // existing directory. DIR_CURRENT is used to meet this constraint.
+    base::FilePath existing_dir;
+    CHECK(PathService::Get(base::DIR_CURRENT, &existing_dir));
+
+    message_window_.reset(new base::win::MessageWindow);
+    *success = message_window_->CreateNamed(
+        base::Bind(&MonitoredProcessClient::EmptyMessageCallback,
+                   base::Unretained(this)),
+        existing_dir.value().c_str());
+    created->Signal();
+  }
+
+  void DeleteMessageWindow() {
+    base::WaitableEvent deleted(true, false);
+    message_window_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&MonitoredProcessClient::DeleteMessageWindowInWorkerThread,
+                   base::Unretained(this), &deleted));
+    deleted.Wait();
+
+    message_window_thread_.Stop();
+  }
+
+  void DeleteMessageWindowInWorkerThread(base::WaitableEvent* deleted) {
+    CHECK(deleted);
+    message_window_.reset();
+    deleted->Signal();
+  }
+
+  // The thread that holds the message window.
+  base::Thread message_window_thread_;
+  scoped_ptr<base::win::MessageWindow> message_window_;
+
+  // Event used to hang the message window.
+  base::WaitableEvent hang_event_;
+
+  // Anonymous pipe handles for IPC with the parent process.
+  base::win::ScopedHandle read_pipe_;
+  base::win::ScopedHandle write_pipe_;
+
+  DISALLOW_COPY_AND_ASSIGN(MonitoredProcessClient);
+};
+
+// The monitored process main function.
+MULTIPROCESS_TEST_MAIN(MonitoredProcess) {
+  MonitoredProcessClient monitored_process_client;
+  CHECK(monitored_process_client.SendSignalToParent(IPC_SIGNAL_READY));
+
+  monitored_process_client.RunEventLoop();
+
   return 0;
 }
 
@@ -50,16 +237,16 @@ class HangMonitorThread {
   HangMonitorThread()
       : event_(WindowHangMonitor::WINDOW_NOT_FOUND),
         event_received_(false, false),
-        thread_("HangMonitorThread") {}
+        thread_("Hang monitor thread") {}
 
   ~HangMonitorThread() {
     if (hang_monitor_.get())
       DestroyWatcher();
   }
 
-  // Starts the background thread and the monitor to observe the window named
-  // |window_name| in |process|. Blocks until the monitor has been initialized.
-  bool Start(base::Process process, const base::string16& window_name) {
+  // Starts the background thread and the monitor to observe Chrome message
+  // window for |process|. Blocks until the monitor has been initialized.
+  bool Start(base::Process process) {
     if (!thread_.StartWithOptions(
             base::Thread::Options(base::MessageLoop::TYPE_UI, 0))) {
       return false;
@@ -67,10 +254,10 @@ class HangMonitorThread {
 
     base::WaitableEvent complete(false, false);
     if (!thread_.task_runner()->PostTask(
-            FROM_HERE, base::Bind(&HangMonitorThread::StartupOnThread,
-                                  base::Unretained(this), window_name,
-                                  base::Passed(process.Pass()),
-                                  base::Unretained(&complete)))) {
+            FROM_HERE,
+            base::Bind(&HangMonitorThread::StartupOnThread,
+                       base::Unretained(this), base::Passed(std::move(process)),
+                       base::Unretained(&complete)))) {
       return false;
     }
 
@@ -90,6 +277,7 @@ class HangMonitorThread {
     return event_;
   }
 
+ private:
   // Destroys the monitor and stops the background thread. Blocks until the
   // operation completes.
   void DestroyWatcher() {
@@ -100,7 +288,6 @@ class HangMonitorThread {
     thread_.Stop();
   }
 
- private:
   // Invoked when the monitor signals an event. Unblocks a call to
   // TimedWaitForEvent or WaitForEvent.
   void EventCallback(WindowHangMonitor::WindowEvent event) {
@@ -110,16 +297,14 @@ class HangMonitorThread {
     event_received_.Signal();
   }
 
-  // Initializes the WindowHangMonitor to observe the window named |window_name|
-  // in |process|. Signals |complete| when done.
-  void StartupOnThread(const base::string16& window_name,
-                       base::Process process,
-                       base::WaitableEvent* complete) {
+  // Initializes the WindowHangMonitor to observe the Chrome message window for
+  // |process|. Signals |complete| when done.
+  void StartupOnThread(base::Process process, base::WaitableEvent* complete) {
     hang_monitor_.reset(new WindowHangMonitor(
         base::TimeDelta::FromMilliseconds(100),
         base::TimeDelta::FromMilliseconds(100),
         base::Bind(&HangMonitorThread::EventCallback, base::Unretained(this))));
-    hang_monitor_->Initialize(process.Pass(), window_name);
+    hang_monitor_->Initialize(std::move(process));
     complete->Signal();
   }
 
@@ -141,247 +326,142 @@ class HangMonitorThread {
 
 class WindowHangMonitorTest : public testing::Test {
  public:
-  WindowHangMonitorTest()
-      : ping_event_(false, false),
-        pings_(0),
-        window_thread_("WindowHangMonitorTest window_thread") {}
+  WindowHangMonitorTest() {}
 
-  void SetUp() override {
-    // Pick a window name unique to this process.
-    window_name_ = base::StringPrintf(L"WindowHanMonitorTest-%d",
-                                      base::GetCurrentProcId());
-    ASSERT_TRUE(window_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_UI, 0)));
+  ~WindowHangMonitorTest() {
+    // Close process if running.
+    monitored_process_.Terminate(1, false);
   }
 
-  void TearDown() override {
-    DeleteMessageWindow();
-    window_thread_.Stop();
+  // Starts a child process that will be monitored. Handles to anonymous pipes
+  // are passed to the command line to provide a way to communicate with the
+  // child process. This function blocks until IPC_SIGNAL_READY is received.
+  bool StartMonitoredProcess() {
+    HANDLE child_read_pipe = nullptr;
+    HANDLE child_write_pipe = nullptr;
+    if (!CreatePipes(&child_read_pipe, &child_write_pipe))
+      return false;
+
+    base::CommandLine command_line =
+        base::GetMultiProcessTestChildBaseCommandLine();
+    command_line.AppendSwitchASCII(switches::kTestChildProcess,
+                                   "MonitoredProcess");
+
+    AppendSwitchHandle(&command_line, kChildReadPipeSwitch, child_read_pipe);
+    AppendSwitchHandle(&command_line, kChildWritePipeSwitch, child_write_pipe);
+
+    base::LaunchOptions options = {};
+    options.inherit_handles = true;
+    monitored_process_ = base::LaunchProcess(command_line, options);
+    if (!monitored_process_.IsValid())
+      return false;
+
+    return WaitForSignal(IPC_SIGNAL_READY);
   }
 
-  void CreateMessageWindow() {
-    bool succeeded = false;
-    base::WaitableEvent created(true, false);
-    ASSERT_TRUE(window_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&WindowHangMonitorTest::CreateMessageWindowInWorkerThread,
-                   base::Unretained(this), window_name_, &succeeded,
-                   &created)));
-    created.Wait();
-    ASSERT_TRUE(succeeded);
+  void StartHangMonitor() {
+    monitor_thread_.Start(monitored_process_.Duplicate());
   }
 
-  void DeleteMessageWindow() {
-    base::WaitableEvent deleted(true, false);
-    window_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&WindowHangMonitorTest::DeleteMessageWindowInWorkerThread,
-                   base::Unretained(this), &deleted));
-    deleted.Wait();
+  // Sends the |ipc_signal| to the child process and wait for a IPC_SIGNAL_READY
+  // response.
+  bool SendSignal(IPCSignal ipc_signal) {
+    if (!SendPipeSignal(write_pipe_.Get(), ipc_signal))
+      return false;
+
+    return WaitForSignal(IPC_SIGNAL_READY);
   }
 
-  void WaitForPing() {
-    while (true) {
-      {
-        base::AutoLock auto_lock(ping_lock_);
-        if (pings_) {
-          ping_event_.Reset();
-          --pings_;
-          return;
-        }
-      }
-      ping_event_.Wait();
-    }
+  // Blocks until |ipc_signal| is received from the child process.
+  bool WaitForSignal(IPCSignal ipc_signal) {
+    return WaitForSpecificPipeSignal(read_pipe_.Get(), ipc_signal);
   }
 
   HangMonitorThread& monitor_thread() { return monitor_thread_; }
 
-  const base::win::MessageWindow* message_window() const {
-    return message_window_.get();
-  }
-
-  const base::string16& window_name() const { return window_name_; }
-
-  base::Thread* window_thread() { return &window_thread_; }
-
  private:
-  bool MessageCallback(UINT message,
-                       WPARAM wparam,
-                       LPARAM lparam,
-                       LRESULT* result) {
-    EXPECT_EQ(window_thread_.message_loop(), base::MessageLoop::current());
-    if (message == WM_NULL) {
-      base::AutoLock auto_lock(ping_lock_);
-      ++pings_;
-      ping_event_.Signal();
+  // Creates pipes for IPC with the child process.
+  bool CreatePipes(HANDLE* child_read_pipe, HANDLE* child_write_pipe) {
+    CHECK(child_read_pipe);
+    CHECK(child_write_pipe);
+    SECURITY_ATTRIBUTES security_attributes = {
+        sizeof(SECURITY_ATTRIBUTES), nullptr, true /* inherit handles */};
+
+    HANDLE parent_read_pipe = nullptr;
+    if (!CreatePipe(&parent_read_pipe, child_write_pipe, &security_attributes,
+                    0)) {
+      return false;
     }
+    read_pipe_.Set(parent_read_pipe);
 
-    return false;  // Pass through to DefWindowProc.
+    HANDLE parent_write_pipe = nullptr;
+    if (!CreatePipe(child_read_pipe, &parent_write_pipe, &security_attributes,
+                    0)) {
+      return false;
+    }
+    write_pipe_.Set(parent_write_pipe);
+    return true;
   }
 
-  void CreateMessageWindowInWorkerThread(const base::string16& name,
-                                         bool* success,
-                                         base::WaitableEvent* created) {
-    message_window_.reset(new base::win::MessageWindow);
-    *success = message_window_->CreateNamed(
-        base::Bind(&WindowHangMonitorTest::MessageCallback,
-                   base::Unretained(this)),
-        name);
-    created->Signal();
-  }
-
-  void DeleteMessageWindowInWorkerThread(base::WaitableEvent* deleted) {
-    message_window_.reset();
-    if (deleted)
-      deleted->Signal();
-  }
-
+  // The thread that monitors the child process.
   HangMonitorThread monitor_thread_;
-  scoped_ptr<base::win::MessageWindow> message_window_;
-  base::string16 window_name_;
-  base::Lock ping_lock_;
-  base::WaitableEvent ping_event_;
-  size_t pings_;
-  base::Thread window_thread_;
+  // The process that is monitored.
+  base::Process monitored_process_;
+
+  // Anonymous pipe handles for IPC with the monitored process.
+  base::win::ScopedHandle read_pipe_;
+  base::win::ScopedHandle write_pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowHangMonitorTest);
 };
 
 }  // namespace
 
-TEST_F(WindowHangMonitorTest, NoWindow) {
-  base::CommandLine child_command_line =
-      base::GetMultiProcessTestChildBaseCommandLine();
-  child_command_line.AppendSwitchASCII(switches::kTestChildProcess,
-                                       "NoWindowChild");
-  base::Process process =
-      base::LaunchProcess(child_command_line, base::LaunchOptions());
-  ASSERT_TRUE(process.IsValid());
+TEST_F(WindowHangMonitorTest, WindowNotFound) {
+  ASSERT_TRUE(StartMonitoredProcess());
 
-  base::ScopedClosureRunner terminate_process_runner(
-      base::Bind(base::IgnoreResult(&base::Process::Terminate),
-                 base::Unretained(&process), 1, true));
+  StartHangMonitor();
 
-  monitor_thread().Start(process.Duplicate(), window_name());
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_TERMINATE_PROCESS));
 
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-
-  terminate_process_runner.Reset();
-
-  ASSERT_EQ(WindowHangMonitor::WINDOW_NOT_FOUND,
-            monitor_thread().WaitForEvent());
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-}
-
-TEST_F(WindowHangMonitorTest, WindowBeforeWatcher) {
-  CreateMessageWindow();
-
-  monitor_thread().Start(base::Process::Current(), window_name());
-
-  WaitForPing();
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-}
-
-TEST_F(WindowHangMonitorTest, WindowBeforeDestroy) {
-  CreateMessageWindow();
-
-  monitor_thread().Start(base::Process::Current(), window_name());
-
-  WaitForPing();
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-
-  monitor_thread().DestroyWatcher();
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(base::TimeDelta()));
-}
-
-TEST_F(WindowHangMonitorTest, NoWindowBeforeDestroy) {
-  monitor_thread().Start(base::Process::Current(), window_name());
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-  monitor_thread().DestroyWatcher();
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(base::TimeDelta()));
-}
-
-TEST_F(WindowHangMonitorTest, WatcherBeforeWindow) {
-  monitor_thread().Start(base::Process::Current(), window_name());
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-
-  CreateMessageWindow();
-
-  WaitForPing();
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-}
-
-TEST_F(WindowHangMonitorTest, DetectsWindowDisappearance) {
-  CreateMessageWindow();
-
-  monitor_thread().Start(base::Process::Current(), window_name());
-
-  WaitForPing();
-
-  DeleteMessageWindow();
-
-  ASSERT_EQ(WindowHangMonitor::WINDOW_VANISHED,
-            monitor_thread().WaitForEvent());
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-}
-
-TEST_F(WindowHangMonitorTest, DetectsWindowNameChange) {
-  // This test changes the title of the message window as a proxy for what
-  // happens if the window handle is reused for a different purpose. The latter
-  // is impossible to test in a deterministic fashion.
-  CreateMessageWindow();
-
-  monitor_thread().Start(base::Process::Current(), window_name());
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
-
-  ASSERT_TRUE(::SetWindowText(message_window()->hwnd(), L"Gonsky"));
-
-  ASSERT_EQ(WindowHangMonitor::WINDOW_VANISHED,
+  EXPECT_EQ(WindowHangMonitor::WINDOW_NOT_FOUND,
             monitor_thread().WaitForEvent());
 }
 
-TEST_F(WindowHangMonitorTest, DetectsWindowHang) {
-  CreateMessageWindow();
+TEST_F(WindowHangMonitorTest, WindowVanished) {
+  ASSERT_TRUE(StartMonitoredProcess());
 
-  monitor_thread().Start(base::Process::Current(), window_name());
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_CREATE_MESSAGE_WINDOW));
+
+  StartHangMonitor();
 
   ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
+      base::TimeDelta::FromMilliseconds(250)));
 
-  // Block the worker thread.
-  base::WaitableEvent hang(true, false);
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_DELETE_MESSAGE_WINDOW));
 
-  window_thread()->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&base::WaitableEvent::Wait, base::Unretained(&hang)));
+  EXPECT_EQ(WindowHangMonitor::WINDOW_VANISHED,
+            monitor_thread().WaitForEvent());
+
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_TERMINATE_PROCESS));
+}
+
+TEST_F(WindowHangMonitorTest, WindowHang) {
+  ASSERT_TRUE(StartMonitoredProcess());
+
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_CREATE_MESSAGE_WINDOW));
+
+  StartHangMonitor();
+
+  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
+      base::TimeDelta::FromMilliseconds(250)));
+
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_HANG_MESSAGE_WINDOW));
 
   EXPECT_EQ(WindowHangMonitor::WINDOW_HUNG,
             monitor_thread().WaitForEvent());
 
-  // Unblock the worker thread.
-  hang.Signal();
-
-  ASSERT_FALSE(monitor_thread().TimedWaitForEvent(
-      base::TimeDelta::FromMilliseconds(150)));
+  ASSERT_TRUE(SendSignal(IPC_SIGNAL_TERMINATE_PROCESS));
 }
 
 }  // namespace browser_watcher

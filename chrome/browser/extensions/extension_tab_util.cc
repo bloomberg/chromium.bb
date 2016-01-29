@@ -564,6 +564,7 @@ GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
 bool ExtensionTabUtil::IsKillURL(const GURL& url) {
   static const char* kill_hosts[] = {
       chrome::kChromeUICrashHost,
+      chrome::kChromeUIDelayedHangUIHost,
       chrome::kChromeUIHangUIHost,
       chrome::kChromeUIKillHost,
       chrome::kChromeUIQuitHost,

@@ -31,6 +31,11 @@
 
 namespace content {
 
+class ScopedAllowWaitForDebugURL {
+ private:
+  base::ThreadRestrictions::ScopedAllowWait wait;
+};
+
 namespace {
 
 // Define the Asan debug URLs.
@@ -164,13 +169,12 @@ bool HandleAsanDebugURL(const GURL& url) {
   return true;
 }
 
+void HangCurrentThread() {
+  ScopedAllowWaitForDebugURL allow_wait;
+  base::WaitableEvent(false, false).Wait();
+}
 
 }  // namespace
-
-class ScopedAllowWaitForDebugURL {
- private:
-  base::ThreadRestrictions::ScopedAllowWait wait;
-};
 
 bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   // Ensure that the user explicitly navigated to this URL, unless
@@ -199,8 +203,16 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   }
 
   if (url == GURL(kChromeUIBrowserUIHang)) {
-    ScopedAllowWaitForDebugURL allow_wait;
-    base::WaitableEvent(false, false).Wait();
+    HangCurrentThread();
+    return true;
+  }
+
+  if (url == GURL(kChromeUIDelayedBrowserUIHang)) {
+    // Webdriver-safe url to hang the ui thread. Webdriver waits for the onload
+    // event in javascript which needs a little more time to fire.
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+                                   base::Bind(&HangCurrentThread),
+                                   base::TimeDelta::FromSeconds(2));
     return true;
   }
 

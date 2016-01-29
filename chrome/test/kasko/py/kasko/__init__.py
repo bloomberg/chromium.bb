@@ -6,6 +6,7 @@
 import config
 import crash_server
 import exceptions
+import integration_test
 import process
 import report
 import util

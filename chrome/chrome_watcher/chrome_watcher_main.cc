@@ -354,7 +354,6 @@ extern "C" int WatcherMain(const base::char16* registry_path,
                            DWORD main_thread_id,
                            HANDLE on_initialized_event_handle,
                            const base::char16* browser_data_directory,
-                           const base::char16* message_window_name,
                            const base::char16* channel_name) {
   base::Process process(process_handle);
   base::win::ScopedHandle on_initialized_event(on_initialized_event_handle);
@@ -391,8 +390,11 @@ extern "C" int WatcherMain(const base::char16* registry_path,
           .c_str(),
       &OnCrashReportUpload, nullptr);
 #if BUILDFLAG(ENABLE_KASKO_HANG_REPORTS)
+  // Only activate hang reports for the canary channel. For testing purposes,
+  // Chrome instances with no channels will also report hangs.
   if (launched_kasko &&
-      base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
+      (base::StringPiece16(channel_name) == L"" ||
+       base::StringPiece16(channel_name) == installer::kChromeChannelCanary)) {
     on_hung_callback =
         base::Bind(&DumpHungBrowserProcess, main_thread_id, channel_name);
   }
@@ -416,7 +418,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
         base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(20),
         base::Bind(&OnWindowEvent, registry_path,
                    base::Passed(process.Duplicate()), on_hung_callback));
-    hang_monitor.Initialize(process.Duplicate(), message_window_name);
+    hang_monitor.Initialize(process.Duplicate());
 
     run_loop.Run();
   }

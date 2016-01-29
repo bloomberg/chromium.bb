@@ -41,6 +41,7 @@ const char kChromeUIBadCastCrashURL[] = "chrome://badcastcrash";
 const char kChromeUIBrowserCrashURL[] = "chrome://inducebrowsercrashforrealz";
 const char kChromeUIBrowserUIHang[] = "chrome://uithreadhang";
 const char kChromeUICrashURL[] = "chrome://crash";
+const char kChromeUIDelayedBrowserUIHang[] = "chrome://delayeduithreadhang";
 const char kChromeUIDumpURL[] = "chrome://crashdump";
 const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
 const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";

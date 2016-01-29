@@ -18,7 +18,7 @@ Typical usage (assuming in root 'src' directory):
 - generate project files with the following GYP variables:
     syzyasan=1 win_z7=0 chromium_win_pch=0
 - build the release Chrome binaries:
-    ninja -C out\Release chrome.exe
+    ninja -C out\Release chrome.exe chromedriver.exe
 - run the test:
     python chrome/test/kasko/syzyasan_integration_test.py
 """
@@ -267,6 +267,8 @@ def Main():
     report = server.crash(0)
     kasko.report.LogCrashKeys(report)
     kasko.report.ValidateCrashReport(report, {'asan-error-type': 'SyzyAsan'})
+
+    _LOGGER.info('Test passed successfully!')
 
     return 0
 

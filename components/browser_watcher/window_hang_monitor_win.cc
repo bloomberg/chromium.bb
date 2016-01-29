@@ -4,22 +4,48 @@
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/win/message_window.h"
 
 namespace browser_watcher {
 
 namespace {
 
-HWND FindNamedWindowForProcess(const base::string16 name, base::ProcessId pid) {
-  HWND candidate = base::win::MessageWindow::FindWindow(name);
-  if (candidate) {
+// Returns true if the class name for |window| equals |str|.
+bool WindowClassNameEqualsString(HWND window, base::StringPiece16 str) {
+  wchar_t class_name[MAX_PATH];
+  int str_length = ::GetClassName(window, class_name, MAX_PATH);
+  return str_length && str.compare(class_name) == 0;
+}
+
+// Returns true if the window text is an existing directory. Ensures that
+// |window| is the right Chrome message window to ping. This could be improved
+// by testing for a valid profile in the directory.
+bool WindowNameIsExistingDirectory(HWND window) {
+  base::string16 window_name;
+  int str_length = ::GetWindowText(
+      window, base::WriteInto(&window_name, MAX_PATH), MAX_PATH);
+  window_name.resize(str_length);
+  return base::DirectoryExists(base::FilePath(window_name));
+}
+
+// Returns the Chrome message window handle for the specified |pid| or nullptr
+// if not found.
+HWND FindChromeMessageWindow(base::ProcessId pid) {
+  HWND candidate = ::FindWindowEx(HWND_MESSAGE, nullptr, nullptr, nullptr);
+  while (candidate) {
     DWORD actual_process_id = 0;
     ::GetWindowThreadProcessId(candidate, &actual_process_id);
-    if (actual_process_id == pid)
+    if (WindowClassNameEqualsString(candidate, L"Chrome_MessageWindow") &&
+        WindowNameIsExistingDirectory(candidate) && actual_process_id == pid) {
       return candidate;
+    }
+    candidate = ::GetNextWindow(candidate, GW_HWNDNEXT);
   }
   return nullptr;
 }
@@ -45,9 +71,7 @@ WindowHangMonitor::~WindowHangMonitor() {
   }
 }
 
-void WindowHangMonitor::Initialize(base::Process process,
-                                   const base::string16& window_name) {
-  window_name_ = window_name;
+void WindowHangMonitor::Initialize(base::Process process) {
   window_process_ = process.Pass();
   timer_.SetTaskRunner(base::MessageLoop::current()->task_runner());
 
@@ -69,7 +93,7 @@ void WindowHangMonitor::PollForWindow() {
     return;
   }
 
-  HWND hwnd = FindNamedWindowForProcess(window_name_, window_process_.Pid());
+  HWND hwnd = FindChromeMessageWindow(window_process_.Pid());
   if (hwnd) {
     // Sends a ping and schedules a timeout task. Upon receiving a ping response
     // further pings will be scheduled ad infinitum. Will signal any failure now
@@ -121,7 +145,6 @@ void WindowHangMonitor::SendPing(HWND hwnd) {
 
 void WindowHangMonitor::OnHangTimeout(HWND hwnd) {
   DCHECK(window_process_.IsValid());
-
   if (outstanding_ping_) {
     // The ping is still outstanding, the window is hung or has vanished.
     // Orphan the outstanding ping. If the callback arrives late, it will
@@ -129,8 +152,7 @@ void WindowHangMonitor::OnHangTimeout(HWND hwnd) {
     outstanding_ping_->monitor = NULL;
     outstanding_ping_ = NULL;
 
-    if (hwnd !=
-        FindNamedWindowForProcess(window_name_, window_process_.Pid())) {
+    if (hwnd != FindChromeMessageWindow(window_process_.Pid())) {
       // The window vanished.
       callback_.Run(WINDOW_VANISHED);
     } else {
@@ -147,6 +169,7 @@ void WindowHangMonitor::OnHangTimeout(HWND hwnd) {
 
 void WindowHangMonitor::OnRetryTimeout() {
   DCHECK(window_process_.IsValid());
+  DCHECK(window_process_.IsValid());
   DCHECK(!outstanding_ping_);
   // We can't simply hold onto the previously located HWND due to potential
   // aliasing.
@@ -155,11 +178,12 @@ void WindowHangMonitor::OnRetryTimeout() {
   //    process.
   // 2. The window handle might have been re-assigned to a different process
   //    at any point after we found it.
-  HWND hwnd = FindNamedWindowForProcess(window_name_, window_process_.Pid());
-  if (hwnd)
+  HWND hwnd = FindChromeMessageWindow(window_process_.Pid());
+  if (hwnd) {
     SendPing(hwnd);
-  else
+  } else {
     callback_.Run(WINDOW_VANISHED);
+  }
 }
 
 }  // namespace browser_watcher
