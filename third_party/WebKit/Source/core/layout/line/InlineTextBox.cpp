@@ -195,8 +195,7 @@ bool InlineTextBox::hasWrappedSelectionNewline() const
         return false;
 
     SelectionState state = selectionState();
-    return RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
-        && (state == SelectionStart || state == SelectionInside)
+    return (state == SelectionStart || state == SelectionInside)
         // Checking last leaf child can be slow, so we make sure to do this only
         // after the other simple conditionals.
         && (root().lastLeafChild() == this)

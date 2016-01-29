@@ -94,7 +94,6 @@ public:
         ScrollbarTickmarks,
         ScrollbarTrackBackground,
         ScrollbarVertical, // For ScrollbarThemeMacNonOverlayAPI only.
-        SelectionGap,
         SelectionTint,
         TableCellBackgroundFromColumnGroup,
         TableCellBackgroundFromColumn,

@@ -255,7 +255,6 @@ void CompositedLayerMapping::destroyGraphicsLayers()
 
     m_scrollingLayer = nullptr;
     m_scrollingContentsLayer = nullptr;
-    m_scrollingBlockSelectionLayer = nullptr;
 }
 
 void CompositedLayerMapping::updateOpacity(const ComputedStyle& style)
@@ -1001,8 +1000,6 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
         m_foregroundLayer->setNeedsDisplay();
         m_foregroundLayer->setOffsetFromLayoutObject(m_scrollingContentsLayer->offsetFromLayoutObject());
     }
-
-    updateScrollingBlockSelection();
 }
 
 void CompositedLayerMapping::updateChildClippingMaskLayerGeometry()
@@ -1150,8 +1147,6 @@ void CompositedLayerMapping::updatePaintingPhases()
         if (!m_foregroundLayer)
             paintPhase |= GraphicsLayerPaintForeground;
         m_scrollingContentsLayer->setPaintingPhase(paintPhase);
-        if (m_scrollingBlockSelectionLayer)
-            m_scrollingBlockSelectionLayer->setPaintingPhase(paintPhase);
     }
 }
 
@@ -1198,35 +1193,6 @@ void CompositedLayerMapping::updateContentsOffsetInCompositingLayer(const IntPoi
     m_contentOffsetInCompositingLayerDirty = false;
 }
 
-void CompositedLayerMapping::updateScrollingBlockSelection()
-{
-    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
-        return;
-
-    if (!m_scrollingBlockSelectionLayer)
-        return;
-
-    if (!m_scrollingContentsAreEmpty) {
-        // In this case, the selection will be painted directly into m_scrollingContentsLayer.
-        m_scrollingBlockSelectionLayer->setDrawsContent(false);
-        return;
-    }
-
-    const IntRect blockSelectionGapsBounds = m_owningLayer.blockSelectionGapsBounds();
-    const bool shouldDrawContent = !blockSelectionGapsBounds.isEmpty();
-    m_scrollingBlockSelectionLayer->setDrawsContent(shouldDrawContent);
-    if (!shouldDrawContent)
-        return;
-    // FIXME: Remove the flooredIntSize conversion. crbug.com/414283.
-    const IntPoint position = blockSelectionGapsBounds.location() + flooredIntSize(m_owningLayer.scrollableArea()->adjustedScrollOffset());
-    if (m_scrollingBlockSelectionLayer->size() == blockSelectionGapsBounds.size() && m_scrollingBlockSelectionLayer->position() == position)
-        return;
-
-    m_scrollingBlockSelectionLayer->setPosition(position);
-    m_scrollingBlockSelectionLayer->setSize(FloatSize(blockSelectionGapsBounds.size()));
-    m_scrollingBlockSelectionLayer->setOffsetFromLayoutObject(toIntSize(blockSelectionGapsBounds.location()), GraphicsLayer::SetNeedsDisplay);
-}
-
 void CompositedLayerMapping::updateDrawsContent()
 {
     bool hasPaintedContent = containsPaintedContent();
@@ -1237,7 +1203,6 @@ void CompositedLayerMapping::updateDrawsContent()
         // m_scrollingContentsLayer only needs backing store if the scrolled contents need to paint.
         m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(layoutObject()->hasBackground() || paintsChildren());
         m_scrollingContentsLayer->setDrawsContent(!m_scrollingContentsAreEmpty);
-        updateScrollingBlockSelection();
     }
 
     if (hasPaintedContent && isAcceleratedCanvas(layoutObject())) {
@@ -1429,8 +1394,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
         f(mapping->clippingLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingLayer())
         f(mapping->scrollingLayer());
-    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingBlockSelectionLayer())
-        f(mapping->scrollingBlockSelectionLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingContentsLayer())
         f(mapping->scrollingContentsLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->foregroundLayer())
@@ -1515,8 +1478,6 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
     if (hasScrollingLayer()) {
         m_graphicsLayer->setShouldFlattenTransform(false);
         m_scrollingLayer->setShouldFlattenTransform(false);
-        if (m_scrollingBlockSelectionLayer)
-            m_scrollingBlockSelectionLayer->setShouldFlattenTransform(false);
     }
 }
 
@@ -1639,12 +1600,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
             m_scrollingLayer->addChild(m_scrollingContentsLayer.get());
 
-            if (!RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()) {
-                m_scrollingBlockSelectionLayer = createGraphicsLayer(CompositingReasonLayerForScrollingBlockSelection);
-                m_scrollingBlockSelectionLayer->setDrawsContent(true);
-                m_scrollingContentsLayer->addChild(m_scrollingBlockSelectionLayer.get());
-            }
-
             layerChanged = true;
             if (scrollingCoordinator) {
                 scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
@@ -1654,7 +1609,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
     } else if (m_scrollingLayer) {
         m_scrollingLayer = nullptr;
         m_scrollingContentsLayer = nullptr;
-        m_scrollingBlockSelectionLayer = nullptr;
         layerChanged = true;
         if (scrollingCoordinator) {
             scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
@@ -2014,9 +1968,6 @@ GraphicsLayer* CompositedLayerMapping::detachLayerForOverflowControls(const Pain
 
 GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
 {
-    if (m_scrollingBlockSelectionLayer)
-        return m_scrollingBlockSelectionLayer.get();
-
     if (m_scrollingContentsLayer)
         return m_scrollingContentsLayer.get();
 
@@ -2377,8 +2328,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         || graphicsLayer == m_backgroundLayer.get()
         || graphicsLayer == m_maskLayer.get()
         || graphicsLayer == m_childClippingMaskLayer.get()
-        || graphicsLayer == m_scrollingContentsLayer.get()
-        || graphicsLayer == m_scrollingBlockSelectionLayer.get()) {
+        || graphicsLayer == m_scrollingContentsLayer.get()) {
 
         GraphicsLayerPaintInfo paintInfo;
         paintInfo.paintLayer = &m_owningLayer;
@@ -2582,8 +2532,6 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer) con
         name = "Scrolling Layer";
     } else if (graphicsLayer == m_scrollingContentsLayer.get()) {
         name = "Scrolling Contents Layer";
-    } else if (graphicsLayer == m_scrollingBlockSelectionLayer.get()) {
-        name = "Scrolling Block Selection Layer";
     } else {
         ASSERT_NOT_REACHED();
     }

@@ -167,7 +167,6 @@ ScriptedSpeech status=stable
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
 SelectionForComposedTree status=stable
-SelectionPaintingWithoutSelectionGaps status=stable
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerPerformanceTimeline status=stable
 ServiceWorkerWindowClientNavigate status=stable

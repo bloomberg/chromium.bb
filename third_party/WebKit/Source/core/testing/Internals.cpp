@@ -2522,11 +2522,6 @@ void Internals::setCapsLockState(bool enabled)
         PlatformKeyboardEvent::OverrideCapsLockState::On : PlatformKeyboardEvent::OverrideCapsLockState::Off);
 }
 
-void Internals::setSelectionPaintingWithoutSelectionGapsEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setSelectionPaintingWithoutSelectionGapsEnabled(enabled);
-}
-
 bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
 {
     if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))

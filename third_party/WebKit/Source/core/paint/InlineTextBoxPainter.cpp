@@ -258,9 +258,7 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
     // This code path is only called in PaintPhaseForeground whereas we would
     // expect PaintPhaseSelection. The existing haveSelection logic in paint()
     // tests for != PaintPhaseTextClip.
-    bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled();
-    if ((!paintLineBreaks && m_inlineTextBox.isLineBreak())
-        || m_inlineTextBox.lineLayoutItem().style()->visibility() != VISIBLE
+    if (m_inlineTextBox.lineLayoutItem().style()->visibility() != VISIBLE
         || m_inlineTextBox.truncation() == cFullTruncation
         || !m_inlineTextBox.len())
         return false;

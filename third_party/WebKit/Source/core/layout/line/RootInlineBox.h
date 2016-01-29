@@ -116,8 +116,6 @@ public:
     InlineBox* firstSelectedBox() const;
     InlineBox* lastSelectedBox() const;
 
-    GapRects lineSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo*) const;
-
     LayoutBlockFlow& block() const;
 
     InlineBox* closestLeafChildForPoint(const LayoutPoint&, bool onlyEditableLeaves);

@@ -722,8 +722,6 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
         o = o->nextInPreOrder();
     }
 
-    layer()->clearBlockSelectionGapsBounds();
-
     // Now that the selection state has been updated for the new objects, walk them again and
     // put them in the new objects list.
     o = start;
@@ -789,7 +787,6 @@ void LayoutView::clearSelection()
     // This is correct, since destroying layout objects needs to cause eager paint invalidations.
     DisableCompositingQueryAsserts disabler;
 
-    layer()->invalidatePaintForBlockSelectionGaps();
     setSelection(0, -1, 0, -1, PaintInvalidationNewMinusOld);
 }
 

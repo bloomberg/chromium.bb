@@ -126,8 +126,6 @@ struct PaintLayerRareData {
     // paints into its own backing.
     CompositedLayerMapping* groupedMapping;
 
-    IntRect blockSelectionGapsBounds;
-
     OwnPtr<PaintLayerReflectionInfo> reflectionInfo;
 
     // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
@@ -275,12 +273,6 @@ public:
     PaintLayer* renderingContextRoot();
 
     LayoutSize offsetForInFlowPosition() const { return m_rareData ? m_rareData->offsetForInFlowPosition : LayoutSize(); }
-
-    void addBlockSelectionGapsBounds(const LayoutRect&);
-    void clearBlockSelectionGapsBounds();
-    void invalidatePaintForBlockSelectionGaps();
-    IntRect blockSelectionGapsBounds() const;
-    bool hasBlockSelectionGapBounds() const;
 
     PaintLayerStackingNode* stackingNode() { return m_stackingNode.get(); }
     const PaintLayerStackingNode* stackingNode() const { return m_stackingNode.get(); }
@@ -755,8 +747,6 @@ private:
 
     void updatePaginationRecursive(bool needsPaginationUpdate = false);
     void clearPaginationRecursive();
-
-    void blockSelectionGapsBoundsChanged();
 
     void markCompositingContainerChainForNeedsRepaint();
 

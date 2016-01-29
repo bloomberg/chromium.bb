@@ -1137,9 +1137,6 @@ public:
     Color selectionForegroundColor(const GlobalPaintFlags) const;
     Color selectionEmphasisMarkColor(const GlobalPaintFlags) const;
 
-    // Whether or not a given block needs to paint selection gaps.
-    virtual bool shouldPaintSelectionGaps() const { return false; }
-
     /**
      * Returns the local coordinates of the caret within this layout object.
      * @param caretOffset zero-based offset determining position within the layout object.

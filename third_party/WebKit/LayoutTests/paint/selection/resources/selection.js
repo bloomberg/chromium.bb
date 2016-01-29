@@ -5,8 +5,6 @@ function selectRangeAfterLayoutAndPaint(startElement, startIndex, endElement, en
 }
 
 function selectRange(startElement, startIndex, endElement, endIndex) {
-  if (window.internals)
-      window.internals.setSelectionPaintingWithoutSelectionGapsEnabled(true);
   var range = document.createRange();
   range.setStart(startElement, startIndex);
   range.setEnd(endElement, endIndex);

@@ -40,7 +40,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     // There are some cases where not all clipped visual overflow is accounted for.
     // FIXME: reduce the number of such cases.
     ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
-    if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() && !(m_layoutBlock.shouldPaintSelectionGaps() && originalPhase == PaintPhaseForeground) && !m_layoutBlock.hasCaret())
+    if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() && !m_layoutBlock.hasCaret())
         contentsClipBehavior = SkipContentsClipIfPossible;
 
     if (originalPhase == PaintPhaseOutline) {

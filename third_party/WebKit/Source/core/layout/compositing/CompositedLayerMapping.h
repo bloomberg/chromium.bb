@@ -107,7 +107,6 @@ public:
     bool hasScrollingLayer() const { return m_scrollingLayer; }
     GraphicsLayer* scrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
-    GraphicsLayer* scrollingBlockSelectionLayer() const { return m_scrollingBlockSelectionLayer.get(); }
 
     bool hasMaskLayer() const { return m_maskLayer; }
     GraphicsLayer* maskLayer() const { return m_maskLayer.get(); }
@@ -329,7 +328,6 @@ private:
     //      + m_childTransformLayer [OPTIONAL]
     //      | + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
     //      |                                             + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
-    //      |                                               + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
     //      + m_overflowControlsAncestorClippingLayer [OPTIONAL] // *The overflow controls may need to be repositioned in the
     //        + m_overflowControlsHostLayer [OPTIONAL]           //  graphics layer tree by the RLC to ensure that they stack
     //          + m_layerForVerticalScrollbar [OPTIONAL]         //  above scrolling content.
@@ -362,7 +360,6 @@ private:
     OwnPtr<GraphicsLayer> m_childTransformLayer; // Only used if we have perspective.
     OwnPtr<GraphicsLayer> m_scrollingLayer; // Only used if the layer is using composited scrolling.
     OwnPtr<GraphicsLayer> m_scrollingContentsLayer; // Only used if the layer is using composited scrolling.
-    OwnPtr<GraphicsLayer> m_scrollingBlockSelectionLayer; // Only used if the layer is using composited scrolling, but has no scrolling contents apart from block selection gaps.
 
     // This layer is also added to the hierarchy by the RLB, but in a different way than
     // the layers above. It's added to m_graphicsLayer as its mask layer (naturally) if

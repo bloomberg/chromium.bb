@@ -383,8 +383,6 @@ public:
 
     void setCapsLockState(bool enabled);
 
-    void setSelectionPaintingWithoutSelectionGapsEnabled(bool);
-
     bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 
     void forceRestrictIFramePermissions();
