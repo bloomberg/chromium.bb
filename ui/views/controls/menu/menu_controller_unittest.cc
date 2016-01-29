@@ -31,6 +31,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
+#include "ui/views/controls/menu/menu_key_event_handler.h"
 #endif
 
 #if defined(USE_X11)
@@ -397,6 +398,10 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void RunMenu() {
+#if defined(USE_AURA)
+    scoped_ptr<MenuKeyEventHandler> key_event_handler(new MenuKeyEventHandler);
+#endif
+
     menu_controller_->message_loop_depth_++;
     menu_controller_->RunMessageLoop(false);
     menu_controller_->message_loop_depth_--;
