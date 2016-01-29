@@ -302,13 +302,16 @@ TEST_F(PermissionBubbleManagerTest, SameRequestRejected) {
   EXPECT_EQ(&request1_, view_()->permission_requests_[0]);
 }
 
-TEST_F(PermissionBubbleManagerTest, DuplicateRequestRejected) {
+TEST_F(PermissionBubbleManagerTest, DuplicateRequestCancelled) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   MockPermissionBubbleRequest dupe_request("test1");
   manager_->AddRequest(&dupe_request);
-  EXPECT_TRUE(dupe_request.finished());
+  EXPECT_FALSE(dupe_request.finished());
   EXPECT_FALSE(request1_.finished());
+  manager_->CancelRequest(&request1_);
+  EXPECT_TRUE(dupe_request.finished());
+  EXPECT_TRUE(request1_.finished());
 }
 
 TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
@@ -319,13 +322,21 @@ TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
 
   MockPermissionBubbleRequest dupe_request("test1");
   manager_->AddRequest(&dupe_request);
-  EXPECT_TRUE(dupe_request.finished());
+  EXPECT_FALSE(dupe_request.finished());
   EXPECT_FALSE(request1_.finished());
 
-  MockPermissionBubbleRequest dupe_request2("test1");
+  MockPermissionBubbleRequest dupe_request2("test2");
   manager_->AddRequest(&dupe_request2);
-  EXPECT_TRUE(dupe_request2.finished());
+  EXPECT_FALSE(dupe_request2.finished());
   EXPECT_FALSE(request2_.finished());
+
+  manager_->CancelRequest(&request1_);
+  EXPECT_TRUE(dupe_request.finished());
+  EXPECT_TRUE(request1_.finished());
+
+  manager_->CancelRequest(&request2_);
+  EXPECT_TRUE(dupe_request2.finished());
+  EXPECT_TRUE(request2_.finished());
 }
 
 TEST_F(PermissionBubbleManagerTest, ForgetRequestsOnPageNavigation) {
