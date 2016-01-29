@@ -512,6 +512,8 @@ class MetaBuildWrapper(object):
           self.chromium_src_dir, 'testing', 'buildbot', 'gn_isolate_map.pyl')))
       gn_labels = []
       for target in swarming_targets:
+        if target.endswith('_apk'):
+          target = target[:-len('_apk')]
         if not target in gn_isolate_map:
           raise MBErr('test target "%s"  not found in %s' %
                       (target, '//testing/buildbot/gn_isolate_map.pyl'))
@@ -533,24 +535,41 @@ class MetaBuildWrapper(object):
         return ret
 
     for target in swarming_targets:
-      if gn_isolate_map[target]['type'] == 'gpu_browser_test':
-        runtime_deps_target = 'browser_tests'
+      if target.endswith('_apk'):
+        # "_apk" targets may be either android_apk or executable. The former
+        # will result in runtime_deps associated with the stamp file, while the
+        # latter will result in runtime_deps associated with the executable.
+        target = target[:-len('_apk')]
+        label = gn_isolate_map[target]['label']
+        runtime_deps_targets = [
+            target,
+            'obj/%s.stamp' % label.replace(':', '/')]
+      elif gn_isolate_map[target]['type'] == 'gpu_browser_test':
+        runtime_deps_targets = ['browser_tests']
       elif gn_isolate_map[target]['type'] == 'script':
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory.
         label = gn_isolate_map[target]['label']
-        runtime_deps_target = 'obj/%s.stamp' % label.replace(':', '/')
+        runtime_deps_targets = ['obj/%s.stamp' % label.replace(':', '/')]
       else:
-        runtime_deps_target = target
+        runtime_deps_targets = [target]
+
       if self.platform == 'win32':
-        deps_path = self.ToAbsPath(build_dir,
-                                   runtime_deps_target + '.exe.runtime_deps')
+        deps_paths = [
+            self.ToAbsPath(build_dir, r + '.exe.runtime_deps')
+            for r in runtime_deps_targets]
       else:
-        deps_path = self.ToAbsPath(build_dir,
-                                   runtime_deps_target + '.runtime_deps')
-      if not self.Exists(deps_path):
-          raise MBErr('did not generate %s' % deps_path)
+        deps_paths = [
+            self.ToAbsPath(build_dir, r + '.runtime_deps')
+            for r in runtime_deps_targets]
+
+      for d in deps_paths:
+        if self.Exists(d):
+          deps_path = d
+          break
+      else:
+        raise MBErr('did not generate any of ' % ', '.join(deps_paths))
 
       command, extra_files = self.GetIsolateCommand(target, vals,
                                                     gn_isolate_map)
