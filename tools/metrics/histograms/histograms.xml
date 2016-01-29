@@ -26663,6 +26663,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ResourceLoader.ResponseStartToEnd" units="microseconds">
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Time from the start to the end of receiving a response body. Recorded for
+    each resource load.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResponseSizeByProcess.Browser" units="KB">
   <owner>ttuttle@chromium.org</owner>
   <summary>
@@ -86101,6 +86109,16 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Requests for an unknown or unsupported key system."/>
   <suffix name="Widevine" label="Requests for the Widevine key system."/>
   <affected-histogram name="Media.EME.RequestMediaKeySystemAccess"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourceLoaderSizeSlice" separator=".">
+  <suffix name="LT_2kB" label="Sliced for resources smaller than 2kB."/>
+  <suffix name="LT_32kB"
+      label="Sliced for resources smaller than 32kB and larger than 2kB."/>
+  <suffix name="LT_512kB"
+      label="Sliced for resources smaller than 512kB and larger than 32kB."/>
+  <suffix name="Over_512kB" label="Sliced for resources larger than 512kB."/>
+  <affected-histogram name="Net.ResourceLoader.ResponseStartToEnd"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourcePrefetchPredictorNetworkTypePrefetch"

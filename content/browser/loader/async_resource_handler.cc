@@ -207,6 +207,8 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
 
+  response_started_ticks_ = base::TimeTicks::Now();
+
   progress_timer_.Stop();
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
@@ -412,6 +414,8 @@ void AsyncResourceHandler::OnResponseCompleted(
       request()->GetTotalReceivedBytes();
   info->filter()->Send(
       new ResourceMsg_RequestComplete(GetRequestID(), request_complete_data));
+
+  RecordHistogram();
 }
 
 bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {
@@ -455,6 +459,30 @@ int AsyncResourceHandler::CalculateEncodedDataLengthToReport() {
   int encoded_data_length = current_transfer_size - reported_transfer_size_;
   reported_transfer_size_ = current_transfer_size;
   return encoded_data_length;
+}
+
+void AsyncResourceHandler::RecordHistogram() {
+  int64_t elapsed_time =
+      (base::TimeTicks::Now() - response_started_ticks_).InMicroseconds();
+  int64_t encoded_length = request()->GetTotalReceivedBytes();
+  if (encoded_length < 2 * 1024) {
+    // The resource was smaller than the smallest required buffer size.
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ResourceLoader.ResponseStartToEnd.LT_2kB",
+                                elapsed_time, 1, 100000, 100);
+  } else if (encoded_length < 32 * 1024) {
+    // The resource was smaller than single chunk.
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ResourceLoader.ResponseStartToEnd.LT_32kB",
+                                elapsed_time, 1, 100000, 100);
+  } else if (encoded_length < 512 * 1024) {
+    // The resource was smaller than single chunk.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Net.ResourceLoader.ResponseStartToEnd.LT_512kB",
+        elapsed_time, 1, 100000, 100);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Net.ResourceLoader.ResponseStartToEnd.Over_512kB",
+        elapsed_time, 1, 100000, 100);
+  }
 }
 
 }  // namespace content
