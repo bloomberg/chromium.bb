@@ -156,11 +156,13 @@ def symbolize_snippets_in_json(cmd, env):
     p = subprocess.Popen(symbolize_command, stderr=subprocess.PIPE, env=env)
     (_, stderr) = p.communicate()
   except OSError as e:
-      print 'Exception while symbolizing snippets: %s' % e
+    print >> sys.stderr, 'Exception while symbolizing snippets: %s' % e
+    raise
 
   if p.returncode != 0:
-    print "Error: failed to symbolize snippets in JSON:\n"
-    print stderr
+    print >> sys.stderr, "Error: failed to symbolize snippets in JSON:\n"
+    print >> sys.stderr, stderr
+    raise subprocess.CalledProcessError(p.returncode, symbolize_command)
 
 
 def run_executable(cmd, env):
