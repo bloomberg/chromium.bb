@@ -236,6 +236,12 @@ class PersonalDataManager : public KeyedService,
   // feature can still disabled by a user pref.
   bool IsExperimentalWalletIntegrationEnabled() const;
 
+  // De-dupe credit card suggestions. Full server cards are prefered over their
+  // local duplicates, and local cards are preferred over their masked server
+  // card duplicate.
+  static void DedupeCreditCardSuggestions(
+      std::list<const CreditCard*>* cards_to_suggest);
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.

@@ -3197,6 +3197,128 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_EQ(3U, suggestions.size());
 }
 
+// Tests that only the full server card is kept when deduping with a local
+// duplicate of it.
+TEST_F(PersonalDataManagerTest,
+       DedupeCreditCardSuggestions_FullServerShadowsLocal) {
+  std::list<const CreditCard*> credit_cards;
+
+  // Create 3 different local credit cards.
+  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                        "https://www.example.com");
+  test::SetCreditCardInfo(&local_card, "Homer Simpson",
+                          "423456789012" /* Visa */, "01", "2010");
+  local_card.set_use_count(3);
+  local_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  credit_cards.push_back(&local_card);
+
+  // Create a full server card that is a duplicate of one of the local cards.
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
+                          "423456789012" /* Visa */, "01", "2010");
+  full_server_card.set_use_count(1);
+  full_server_card.set_use_date(base::Time::Now() -
+                                base::TimeDelta::FromDays(15));
+  credit_cards.push_back(&full_server_card);
+
+  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  ASSERT_EQ(1U, credit_cards.size());
+
+  const CreditCard* deduped_card(credit_cards.front());
+  EXPECT_TRUE(*deduped_card == full_server_card);
+}
+
+// Tests that only the local card is kept when deduping with a masked server
+// duplicate of it.
+TEST_F(PersonalDataManagerTest,
+       DedupeCreditCardSuggestions_LocalShadowsMasked) {
+  std::list<const CreditCard*> credit_cards;
+
+  CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                        "https://www.example.com");
+  local_card.set_use_count(300);
+  local_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
+  test::SetCreditCardInfo(&local_card, "Homer Simpson",
+                          "423456789012" /* Visa */, "01", "2010");
+  credit_cards.push_back(&local_card);
+
+  // Create a masked server card that is a duplicate of a local card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&masked_card, "Homer Simpson", "9012" /* Visa */,
+                          "01", "2010");
+  masked_card.set_use_count(2);
+  masked_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  masked_card.SetTypeForMaskedCard(kVisaCard);
+  credit_cards.push_back(&masked_card);
+
+  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  ASSERT_EQ(1U, credit_cards.size());
+
+  const CreditCard* deduped_card(credit_cards.front());
+  EXPECT_TRUE(*deduped_card == local_card);
+}
+
+// Tests that identical full server and masked credit cards are not deduped.
+TEST_F(PersonalDataManagerTest,
+       DedupeCreditCardSuggestions_FullServerAndMasked) {
+  std::list<const CreditCard*> credit_cards;
+
+  // Create a full server card that is a duplicate of one of the local cards.
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
+                          "423456789012" /* Visa */, "01", "2010");
+  full_server_card.set_use_count(1);
+  full_server_card.set_use_date(base::Time::Now() -
+                                base::TimeDelta::FromDays(15));
+  credit_cards.push_back(&full_server_card);
+
+  // Create a masked server card that is a duplicate of a local card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&masked_card, "Homer Simpson", "9012" /* Visa */,
+                          "01", "2010");
+  masked_card.set_use_count(2);
+  masked_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  masked_card.SetTypeForMaskedCard(kVisaCard);
+  credit_cards.push_back(&masked_card);
+
+  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  EXPECT_EQ(2U, credit_cards.size());
+}
+
+// Tests that slightly different local, full server, and masked credit cards are
+// not deduped.
+TEST_F(PersonalDataManagerTest, DedupeCreditCardSuggestions_DifferentCards) {
+  std::list<const CreditCard*> credit_cards;
+
+  CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
+                          "https://www.example.com");
+  credit_card2.set_use_count(1);
+  credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  test::SetCreditCardInfo(&credit_card2, "Homer Simpson",
+                          "518765432109" /* Mastercard */, "", "");
+  credit_cards.push_back(&credit_card2);
+
+  // Create a masked server card that is slightly different of the local card.
+  CreditCard credit_card4(CreditCard::MASKED_SERVER_CARD, "b456");
+  test::SetCreditCardInfo(&credit_card4, "Homer Simpson", "2109", "12", "2012");
+  credit_card4.set_use_count(3);
+  credit_card4.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  credit_card4.SetTypeForMaskedCard(kVisaCard);
+  credit_cards.push_back(&credit_card4);
+
+  // Create a full server card that is slightly different of the two other
+  // cards.
+  CreditCard credit_card5(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&credit_card5, "Homer Simpson",
+                          "347666888555" /* American Express */, "04", "2015");
+  credit_card5.set_use_count(1);
+  credit_card5.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  credit_cards.push_back(&credit_card5);
+
+  PersonalDataManager::DedupeCreditCardSuggestions(&credit_cards);
+  EXPECT_EQ(3U, credit_cards.size());
+}
+
 TEST_F(PersonalDataManagerTest, RecordUseOf) {
   AutofillProfile profile(test::GetFullProfile());
   EXPECT_EQ(0U, profile.use_count());

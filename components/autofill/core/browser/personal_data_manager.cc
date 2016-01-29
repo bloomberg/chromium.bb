@@ -800,30 +800,7 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
                             substring_matched_cards.end());
   }
 
-  // TODO(crbug.com/576300) Refactor the credit card deduping logic.
-  // De-dupe card suggestions. Full server cards shadow local cards, and
-  // local cards shadow masked server cards.
-  for (auto outer_it = cards_to_suggest.begin();
-       outer_it != cards_to_suggest.end();
-       ++outer_it) {
-    if ((*outer_it)->record_type() == CreditCard::FULL_SERVER_CARD) {
-      for (auto inner_it = cards_to_suggest.begin();
-           inner_it != cards_to_suggest.end();) {
-        auto inner_it_copy = inner_it++;
-        if ((*inner_it_copy)->IsLocalDuplicateOfServerCard(**outer_it))
-          cards_to_suggest.erase(inner_it_copy);
-      }
-    } else if ((*outer_it)->record_type() == CreditCard::LOCAL_CARD) {
-      for (auto inner_it = cards_to_suggest.begin();
-           inner_it != cards_to_suggest.end();) {
-        auto inner_it_copy = inner_it++;
-        if ((*inner_it_copy)->record_type() == CreditCard::MASKED_SERVER_CARD &&
-            (*outer_it)->IsLocalDuplicateOfServerCard(**inner_it_copy)) {
-          cards_to_suggest.erase(inner_it_copy);
-        }
-      }
-    }
-  }
+  DedupeCreditCardSuggestions(&cards_to_suggest);
 
   std::vector<Suggestion> suggestions;
   for (const CreditCard* credit_card : cards_to_suggest) {
@@ -999,6 +976,35 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
 
 bool PersonalDataManager::IsExperimentalWalletIntegrationEnabled() const {
   return pref_service_->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled);
+}
+
+// static
+void PersonalDataManager::DedupeCreditCardSuggestions(
+    std::list<const CreditCard*>* cards_to_suggest) {
+  for (auto outer_it = cards_to_suggest->begin();
+       outer_it != cards_to_suggest->end(); ++outer_it) {
+    // If considering a full server card, look for local cards that are
+    // duplicates of it and remove them.
+    if ((*outer_it)->record_type() == CreditCard::FULL_SERVER_CARD) {
+      for (auto inner_it = cards_to_suggest->begin();
+           inner_it != cards_to_suggest->end();) {
+        auto inner_it_copy = inner_it++;
+        if ((*inner_it_copy)->IsLocalDuplicateOfServerCard(**outer_it))
+          cards_to_suggest->erase(inner_it_copy);
+      }
+      // If considering a local card, look for masked server cards that are
+      // duplicates of it and remove them.
+    } else if ((*outer_it)->record_type() == CreditCard::LOCAL_CARD) {
+      for (auto inner_it = cards_to_suggest->begin();
+           inner_it != cards_to_suggest->end();) {
+        auto inner_it_copy = inner_it++;
+        if ((*inner_it_copy)->record_type() == CreditCard::MASKED_SERVER_CARD &&
+            (*outer_it)->IsLocalDuplicateOfServerCard(**inner_it_copy)) {
+          cards_to_suggest->erase(inner_it_copy);
+        }
+      }
+    }
+  }
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
