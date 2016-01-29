@@ -113,7 +113,8 @@ bool LayoutView::hitTest(HitTestResult& result)
     // into a child document, it could trigger a layout on the parent document, which can destroy PaintLayer
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
-    DocumentLifecycle::PreventThrottlingScope preventThrottling(document().lifecycle());
+    // Note that if an iframe has its render pipeline throttled, it will not update layout here,
+    // and it will also not propagate the hit test into the iframe's inner document.
     frameView()->updateLifecycleToCompositingCleanPlusScrolling();
     HitTestLatencyRecorder hitTestLatencyRecorder(result.hitTestRequest().allowsChildFrameContent());
     return hitTestNoLifecycleUpdate(result);

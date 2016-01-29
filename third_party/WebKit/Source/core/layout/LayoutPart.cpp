@@ -159,6 +159,13 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
     if (!widget() || !widget()->isFrameView() || !result.hitTestRequest().allowsChildFrameContent())
         return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset, action);
 
+    // A hit test can never hit an off-screen element; only off-screen iframes are throttled;
+    // therefore, hit tests can skip descending into throttled iframes.
+    if (toFrameView(widget())->shouldThrottleRendering())
+        return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset, action);
+
+    ASSERT(document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
+
     if (action == HitTestForeground) {
         FrameView* childFrameView = toFrameView(widget());
         LayoutView* childRoot = childFrameView->layoutView();

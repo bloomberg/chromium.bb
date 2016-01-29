@@ -161,9 +161,9 @@ TEST_F(FrameThrottlingTest, ThrottledLifecycleUpdate)
     compositeFrame();
     EXPECT_EQ(DocumentLifecycle::StyleClean, frameDocument->lifecycle().state());
 
-    // A hit test will force a complete lifecycle update.
+    // A hit test will not force a complete lifecycle update.
     webView().hitTestResultAt(WebPoint(0, 0));
-    EXPECT_EQ(DocumentLifecycle::CompositingClean, frameDocument->lifecycle().state());
+    EXPECT_EQ(DocumentLifecycle::StyleClean, frameDocument->lifecycle().state());
 }
 
 TEST_F(FrameThrottlingTest, UnthrottlingFrameSchedulesAnimation)
