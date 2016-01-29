@@ -14,12 +14,6 @@ import string
 import sys
 
 BUILDERS = [
-  'GPU NextGen Linux Builder',
-  'GPU NextGen Linux Builder (dbg)',
-  'GPU NextGen Mac Builder',
-  'GPU NextGen Mac Builder (dbg)',
-  'GPU NextGen Win Builder',
-  'GPU NextGen Win Builder (dbg)',
   'GPU Win Builder',
   'GPU Win Builder (dbg)',
   'GPU Mac Builder',
@@ -208,91 +202,6 @@ TESTERS = {
     # working well.
     'swarming': False,
     'os_type': 'linux',
-  },
-
-  # NextGen bots (to be removed once the above bots are switched to
-  # the Chromium recipe)
-  'Linux NextGen Debug (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Linux'
-    },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'linux',
-  },
-  'Linux NextGen Release (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Linux'
-    },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'linux',
-  },
-  'Win7 NextGen Debug (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1'
-    },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win7 NextGen Release (AMD)': {
-    'swarming_dimensions': {
-      'gpu': '1002:6779',
-      'os': 'Windows-2008ServerR2-SP1'
-    },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win7 NextGen Release (Intel)': {
-    'swarming_dimensions': {
-      'gpu': '8086:041a',
-      'os': 'Windows-2008ServerR2-SP1'
-    },
-    'build_config': 'Release',
-    'swarming': False,
-    'os_type': 'win',
-  },
-  'Win7 NextGen Release (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1'
-    },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win7 NextGen dEQP (NVIDIA)': {
-    'deqp': True,
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1'
-    },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win8 NextGen Debug (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2012ServerR2-SP0'
-    },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win8 NextGen Release (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2012ServerR2-SP0'
-    },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
   },
 }
 
