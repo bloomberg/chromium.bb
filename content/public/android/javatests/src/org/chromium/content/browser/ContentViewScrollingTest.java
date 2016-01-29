@@ -5,13 +5,11 @@
 package org.chromium.content.browser;
 
 import android.content.res.Configuration;
-import android.graphics.Canvas;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -40,13 +38,6 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
 
         private boolean mScrollChanged;
         private final Object mLock = new Object();
-
-
-
-        @Override
-        public boolean drawChild(Canvas canvas, View child, long drawingTime) {
-            return false;
-        }
 
         @Override
         public boolean super_onKeyUp(int keyCode, KeyEvent event) {

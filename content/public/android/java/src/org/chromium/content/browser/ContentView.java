@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -86,12 +85,6 @@ public class ContentView extends FrameLayout
         } else {
             return super.getAccessibilityNodeProvider();
         }
-    }
-
-    // Needed by ContentViewCore.InternalAccessDelegate
-    @Override
-    public boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        return super.drawChild(canvas, child, drawingTime);
     }
 
     // Needed by ContentViewCore.InternalAccessDelegate

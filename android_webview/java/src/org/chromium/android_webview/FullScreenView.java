@@ -195,12 +195,6 @@ public class FullScreenView extends FrameLayout {
     private class InternalAccessAdapter implements AwContents.InternalAccessDelegate {
 
         @Override
-        public boolean drawChild(Canvas canvas, View child, long drawingTime) {
-            // Intentional no-op
-            return false;
-        }
-
-        @Override
         public boolean super_onKeyUp(int keyCode, KeyEvent event) {
             return FullScreenView.super.onKeyUp(keyCode, event);
         }

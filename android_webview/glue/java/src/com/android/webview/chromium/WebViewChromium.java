@@ -2233,11 +2233,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     // AwContents.InternalAccessDelegate implementation --------------------------------------
     private class InternalAccessAdapter implements AwContents.InternalAccessDelegate {
         @Override
-        public boolean drawChild(Canvas arg0, View arg1, long arg2) {
-            return false;
-        }
-
-        @Override
         public boolean super_onKeyUp(int arg0, KeyEvent arg1) {
             // Intentional no-op
             return false;

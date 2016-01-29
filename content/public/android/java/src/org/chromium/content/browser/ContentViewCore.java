@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -358,11 +357,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     @SuppressWarnings("javadoc")
     public interface InternalAccessDelegate {
-        /**
-         * @see View#drawChild(Canvas, View, long)
-         */
-        boolean drawChild(Canvas canvas, View child, long drawingTime);
-
         /**
          * @see View#onKeyUp(keyCode, KeyEvent)
          */
