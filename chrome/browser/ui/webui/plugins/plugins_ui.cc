@@ -69,25 +69,27 @@ content::WebUIDataSource* CreatePluginsUIHTMLSource(Profile* profile) {
 #if defined(OS_CHROMEOS)
   chromeos::AddAccountUITweaksLocalizedValues(source, profile);
 #endif
+  source->AddResourcePath("chrome/browser/ui/webui/plugins/plugins.mojom",
+                          IDR_PLUGINS_MOJO_JS);
+
   return source;
 }
 
 }  // namespace
 
-
-PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new PluginsHandler());
-
+PluginsUI::PluginsUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
   // Set up the chrome://plugins/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreatePluginsUIHTMLSource(profile));
 }
 
+PluginsUI::~PluginsUI() {}
+
 // static
 base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
-  return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_PLUGINS_FAVICON, scale_factor);
+    ui::ScaleFactor scale_factor) {
+  return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+      IDR_PLUGINS_FAVICON, scale_factor);
 }
 
 // static
@@ -97,4 +99,9 @@ void PluginsUI::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       prefs::kContentSettingsPluginWhitelist,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+void PluginsUI::BindUIHandler(
+    mojo::InterfaceRequest<PluginsHandlerMojo> request) {
+  plugins_handler_.reset(new PluginsHandler(web_ui(), std::move(request)));
 }

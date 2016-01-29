@@ -71,13 +71,13 @@
               </span>
               <a jsdisplay="critical" jsvalues=".href:update_url"
                     i18n-content="pluginDownload">DOWNLOAD UPDATE</a>
-              <span jsdisplay="enabledMode == 'disabledByUser'"
+              <span jsdisplay="enabled_mode == 'disabledByUser'"
                     i18n-content="pluginDisabled">(DISABLED)</span>
-              <span jsdisplay="enabledMode == 'disabledByPolicy'"
+              <span jsdisplay="enabled_mode == 'disabledByPolicy'"
                     i18n-content="pluginDisabledByPolicy">(DISABLED_BY_POLICY)</span>
-              <span jsdisplay="enabledMode == 'enabledByPolicy'"
+              <span jsdisplay="enabled_mode == 'enabledByPolicy'"
                     i18n-content="pluginEnabledByPolicy">(ENABLED_BY_POLICY)</span>
-              <span jsdisplay="enabledMode == 'managedByPolicy'"
+              <span jsdisplay="enabled_mode == 'managedByPolicy'"
                     i18n-content="pluginGroupManagedByPolicy">(MANAGED_BY_POLICY)</span>
               <div jsdisplay="shouldDisplayPluginDescription($this)">
                 <span dir="ltr" jsvalues=".innerHTML:description">
@@ -119,29 +119,29 @@
                   <div><table><tr>
                     <td class="plugin-details-label">&nbsp;</td>
                     <td>
-                      <span jsdisplay="enabledMode == 'disabledByPolicy'"
+                      <span jsdisplay="enabled_mode == 'disabledByPolicy'"
                           i18n-content="pluginDisabledByPolicy">(DISABLED_BY_POLICY)</span>
-                      <span jsdisplay="enabledMode == 'enabledByPolicy'"
+                      <span jsdisplay="enabled_mode == 'enabledByPolicy'"
                           i18n-content="pluginEnabledByPolicy">(ENABLED_BY_POLICY)</span>
                       <span guest-visibility="disabled">
                         <a
                           class="disable-plugin-link"
                           jsvalues=".path:path"
-                          jsdisplay="enabledMode == 'enabledByUser'"
+                          jsdisplay="enabled_mode == 'enabledByUser'"
                           href="#"
                           i18n-content="disable"
                           >DISABLE</a>
                         <a
                           class="enable-plugin-link"
                           jsvalues=".path:path"
-                          jsdisplay="enabledMode == 'disabledByUser'"
+                          jsdisplay="enabled_mode == 'disabledByUser'"
                           href="#"
                           i18n-content="enable"
                           >ENABLE</a>
                       </span>
                     </td>
                   </tr></table></div>
-                  <table><tr jsdisplay="mimeTypes.length > 0">
+                  <table><tr jsdisplay="mime_types.length > 0">
                     <td class="plugin-details-label"
                         i18n-content="pluginMimeTypes">MIME_TYPES:</td>
                     <td><table width="100%" class="mime-types">
@@ -153,14 +153,14 @@
                         <td i18n-content="pluginMimeTypesFileExtensions"
                             >FILE_EXTENSIONS</td>
                       </tr>
-                      <tr jsselect="mimeTypes">
+                      <tr jsselect="mime_types">
                         <td><span dir="ltr"
-                                  jscontent="mimeType"></span></td>
+                                  jscontent="mime_type"></span></td>
                         <td><span dir="ltr"
                                   jsvalues=".innerHTML:description"></span></td>
-                        <td><table jsdisplay="fileExtensions.length > 0"
+                        <td><table jsdisplay="file_extensions.length > 0"
                                    class="hlisting">
-                          <tr><td jsselect="fileExtensions">
+                          <tr><td jsselect="file_extensions">
                             <span dir="ltr" jscontent="'.' + $this">
                           </td></tr>
                         </table></td>
@@ -176,14 +176,14 @@
               <a
                 class="disable-group-link"
                 jsvalues=".path:name"
-                jsdisplay="enabledMode == 'enabledByUser'"
+                jsdisplay="enabled_mode == 'enabledByUser'"
                 href="#"
                 i18n-content="disable"
                 >DISABLE</a>
               <a
                 class="enable-group-link"
                 jsvalues=".path:name"
-                jsdisplay="enabledMode == 'disabledByUser'"
+                jsdisplay="enabled_mode == 'disabledByUser'"
                 href="#"
                 i18n-content="enable"
                 >ENABLE</a>
@@ -191,7 +191,7 @@
             <input
                 class="always-allow" type="checkbox"
                 jsvalues=
-                    ".identifier:id; id:id + '-always-allowed'; .checked:alwaysAllowed; disabled:!isPluginEnabled($this)">
+                    ".identifier:id; id:id + '-always-allowed'; .checked:always_allowed; disabled:!isPluginEnabled($this)">
             <label jsvalues="for:id + '-always-allowed'"
                 i18n-content="alwaysAllowed"></label>
           </div>

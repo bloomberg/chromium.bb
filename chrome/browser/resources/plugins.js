@@ -5,7 +5,7 @@
 /**
  * Takes the |pluginsData| input argument which represents data about the
  * currently installed/running plugins and populates the html jstemplate with
- * that data. It expects an object structure like the above.
+ * that data.
  * @param {Object} pluginsData Detailed info about installed plugins. Same
  *     expected format as returnPluginsData().
  */
@@ -16,24 +16,20 @@ function renderTemplate(pluginsData) {
   jstProcess(input, output);
 }
 
+// Keeps track of whether details have been made visible (expanded) or not.
+var tmiModeExpanded = false;
+
 /**
- * Asks the C++ PluginsDOMHandler to get details about the installed plugins and
- * return detailed data about the configuration. The PluginsDOMHandler should
- * reply to returnPluginsData() (below).
+ * @param {boolean} showDetails
  */
-function requestPluginsData() {
-  chrome.send('requestPluginsData');
-  chrome.send('getShowDetails');
-}
-
-function loadShowDetailsFromPrefs(show_details) {
-  tmiModeExpanded = show_details;
+function loadShowDetailsFromPrefs(showDetails) {
+  tmiModeExpanded = showDetails;
   $('collapse').style.display =
-      show_details ? 'inline' : 'none';
+      showDetails ? 'inline' : 'none';
   $('expand').style.display =
-      show_details ? 'none' : 'inline';
+      showDetails ? 'none' : 'inline';
 
-  document.body.className = show_details ? 'show-in-tmi-mode' : 'hide-tmi-mode';
+  document.body.className = showDetails ? 'show-in-tmi-mode' : 'hide-tmi-mode';
 }
 
 /**
@@ -50,63 +46,48 @@ function loadShowDetailsFromPrefs(show_details) {
  *         version: 'version',
  *         update_url: 'http://update/',
  *         critical: true,
- *         enabled: true,
- *         identifier: 'plugin-name',
+ *         enabled_mode: 'enabledByUser',
+ *         id: 'plugin-name',
+ *         always_allowed: false,
  *         plugin_files: [
  *           {
- *             path: '/blahblah/blahblah/MyCrappyPlugin.plugin',
- *             name: 'MyCrappyPlugin',
- *             version: '1.2.3',
- *             description: 'My crappy plugin',
- *             mimeTypes: [
- *               { description: 'Foo Media',
- *                 fileExtensions: ['foo'],
- *                 mimeType: 'application/x-my-foo' },
- *               { description: 'Bar Stuff',
- *                 fileExtensions: ['bar', 'baz'],
- *                 mimeType: 'application/my-bar' }
+ *             path: '/foo/bar/baz/MyPlugin.plugin',
+ *             name: 'MyPlugin',
+ *             version: '1.2,3'
+ *             description: 'My plugin',
+ *             type: 'BROWSER PLUGIN',
+ *             mime_types: [
+ *               {
+ *                 description: 'Foo Media',
+ *                 file_extensions: ['pdf'],
+ *                 mime_type: 'application/x-my-foo'
+ *               },
+ *               {
+ *                 description: 'Bar Stuff',
+ *                 file_extensions: ['bar', 'baz'],
+ *                 mime_type: 'application/my-bar'
+ *               }
  *             ],
- *             enabledMode: 'enabledByUser'
+ *             enabled_mode: 'enabledByUser',
  *           },
  *           {
  *             path: '/tmp/MyFirst.plugin',
  *             name: 'MyFirstPlugin',
  *             version: '3.14r15926',
  *             description: 'My first plugin',
- *             mimeTypes: [
- *               { description: 'New Guy Media',
- *                 fileExtensions: ['mfp'],
- *                 mimeType: 'application/x-my-first' }
+ *             type: 'BROWSER PLUGIN',
+ *             mime_types: [
+ *               {
+ *                 description: 'New Guy Media',
+ *                 file_extensions: ['mfp'],
+ *                 mime_type: 'application/x-my-first'
+ *               },
  *             ],
- *             enabledMode: 'enabledByPolicy'
+ *             enabled_mode: 'disabledByUser',
  *           },
- *           {
- *             path: '/foobar/baz/YourGreatPlugin.plugin',
- *             name: 'YourGreatPlugin',
- *             version: '4.5',
- *             description: 'Your great plugin',
- *             mimeTypes: [
- *               { description: 'Baz Stuff',
- *                 fileExtensions: ['baz'],
- *                 mimeType: 'application/x-your-baz' }
- *             ],
- *             enabledMode: 'disabledByUser'
- *           },
- *           {
- *             path: '/foobiz/bar/HisGreatPlugin.plugin',
- *             name: 'HisGreatPlugin',
- *             version: '1.2',
- *             description: 'His great plugin',
- *             mimeTypes: [
- *               { description: 'More baz Stuff',
- *                 fileExtensions: ['bor'],
- *                 mimeType: 'application/x-his-bor' }
- *             ],
- *             enabledMode: 'disabledByPolicy'
- *           }
- *         ]
- *       }
- *     ]
+ *         ],
+ *       },
+ *     ],
  *   }
  */
 function returnPluginsData(pluginsData) {
@@ -200,13 +181,13 @@ function returnPluginsData(pluginsData) {
  *     rather than a single plugin.
  */
 function handleEnablePlugin(node, enable, isGroup) {
-  // Tell the C++ PluginsDOMHandler to enable/disable the plugin.
-  chrome.send('enablePlugin', [String(node.path), String(enable),
-              String(isGroup)]);
+  whenBrowserProxyReady.then(function(browserProxy) {
+    if (isGroup)
+      browserProxy.setPluginGroupEnabled(node.path, enable);
+    else
+      browserProxy.setPluginEnabled(node.path, enable);
+  });
 }
-
-// Keeps track of whether details have been made visible (expanded) or not.
-var tmiModeExpanded = false;
 
 /*
  * Toggles visibility of details.
@@ -222,11 +203,15 @@ function toggleTmiMode() {
   document.body.className =
       tmiModeExpanded ? 'show-tmi-mode' : 'hide-tmi-mode';
 
-  chrome.send('saveShowDetailsToPrefs', [String(tmiModeExpanded)]);
+  whenBrowserProxyReady.then(function(browserProxy) {
+    browserProxy.saveShowDetailsToPrefs(tmiModeExpanded);
+  });
 }
 
 function handleSetPluginAlwaysAllowed(el) {
-  chrome.send('setPluginAlwaysAllowed', [el.identifier, el.checked]);
+  whenBrowserProxyReady.then(function(browserProxy) {
+    browserProxy.setPluginAlwaysAllowed(el.identifier, el.checked);
+  });
 }
 
 /**
@@ -259,18 +244,81 @@ function shouldDisplayPluginDescription(plugin) {
  * @return {boolean} Whether the plugin is enabled.
  */
 function isPluginEnabled(plugin) {
-  return plugin.enabledMode == 'enabledByUser' ||
-         plugin.enabledMode == 'enabledByPolicy';
+  return plugin.enabled_mode == 'enabledByUser' ||
+         plugin.enabled_mode == 'enabledByPolicy';
 }
 
 // Unfortunately, we don't have notifications for plugin (list) status changes
 // (yet), so in the meanwhile just update regularly.
-setInterval(requestPluginsData, 30000);
-
-// Get data and have it displayed upon loading.
-document.addEventListener('DOMContentLoaded', requestPluginsData);
+setInterval(function() {
+  whenBrowserProxyReady.then(function(browserProxy) {
+    return browserProxy.getPluginsData();
+  }).then(returnPluginsData);
+}, 30000);
 
 // Add handlers to static HTML elements.
 $('collapse').onclick = toggleTmiMode;
 $('expand').onclick = toggleTmiMode;
 $('details-link').onclick = toggleTmiMode;
+
+// NOTE: Need to keep a reference to the stub here such that it is not garbage
+// collected, which causes the pipe to close and future calls from C++ to JS to
+// get dropped.
+var pluginsPageStub = null;
+
+/**
+ * A promise to use for getting a reference to the proxy object allowing
+ * communication with the browser side.
+ * @type {!Promise}
+ */
+var whenBrowserProxyReady = new Promise(function(resolve, reject) {
+  define([
+    'mojo/public/js/bindings',
+    'mojo/public/js/core',
+    'mojo/public/js/connection',
+    'chrome/browser/ui/webui/plugins/plugins.mojom',
+    'content/public/renderer/service_provider',
+  ], function(bindings, core, connection, pluginsMojom, serviceProvider) {
+    var browserProxy = connection.bindHandleToProxy(
+        serviceProvider.connectToService(
+            pluginsMojom.PluginsHandlerMojo.name),
+        pluginsMojom.PluginsHandlerMojo);
+
+    // Perform necessary setup for the C++ side to make calls to JS at will.
+
+    // Connect pipe handle to JS code.
+    var pipe = core.createMessagePipe();
+    pluginsPageStub = connection.bindHandleToStub(
+        pipe.handle0, pluginsMojom.PluginsPageMojo);
+
+    bindings.StubBindings(pluginsPageStub).delegate = {
+      __proto__: pluginsMojom.PluginsPageMojo.stubClass.prototype,
+      onPluginsUpdated: function(plugins) {
+        returnPluginsData({plugins: plugins});
+      },
+    };
+
+    // Send pipe handle to C++.
+    browserProxy.setClientPage(pipe.handle1);
+
+    resolve(browserProxy);
+  });
+});
+
+/**
+ * @type {!Promise} A promise firing when DOMContentLoaded event is received.
+ */
+var whenDomContentLoaded = new Promise(function(resolve, reject) {
+  document.addEventListener('DOMContentLoaded', resolve);
+});
+
+Promise.all([
+  whenDomContentLoaded,
+  whenBrowserProxyReady
+]).then(function(results) {
+  var browserProxy = results[1];
+  browserProxy.getPluginsData().then(returnPluginsData);
+  browserProxy.getShowDetails().then(function(response) {
+    loadShowDetailsFromPrefs(response.show_details);
+  });
+});
