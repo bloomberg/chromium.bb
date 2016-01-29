@@ -605,120 +605,22 @@ void BluetoothDispatcherHost::OnRequestDevice(
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
-  RecordRequestDeviceArguments(filters, optional_services);
-
-  VLOG(1) << "requestDevice called with the following filters: ";
-  for (const BluetoothScanFilter& filter : filters) {
-    VLOG(1) << "Name: " << filter.name;
-    VLOG(1) << "Name Prefix: " << filter.namePrefix;
-    VLOG(1) << "Services:";
-    VLOG(1) << "\t[";
-    for (const BluetoothUUID& service : filter.services)
-      VLOG(1) << "\t\t" << service.value();
-    VLOG(1) << "\t]";
-  }
-
-  VLOG(1) << "requestDevice called with the following optional services: ";
-  for (const BluetoothUUID& service : optional_services)
-    VLOG(1) << "\t" << service.value();
-
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
-
-  if (!render_frame_host) {
-    DLOG(WARNING)
-        << "Got a requestDevice IPC without a matching RenderFrameHost: "
-        << render_process_id_ << ", " << frame_routing_id;
-    RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_RENDER_FRAME);
-    Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
-    return;
-  }
-
-  if (render_frame_host->GetLastCommittedOrigin().unique()) {
-    VLOG(1) << "Request device with unique origin.";
-    Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id,
-        WebBluetoothError::RequestDeviceWithUniqueOrigin));
-    return;
-  }
-
-  if (!adapter_) {
-    VLOG(1) << "No BluetoothAdapter. Can't serve requestDevice.";
+  if (!adapter_.get()) {
+    if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+      BluetoothAdapterFactory::GetAdapter(base::Bind(
+          &BluetoothDispatcherHost::OnGetAdapter, weak_ptr_on_ui_thread_,
+          base::Bind(&BluetoothDispatcherHost::OnRequestDeviceImpl,
+                     weak_ptr_on_ui_thread_, thread_id, request_id,
+                     frame_routing_id, filters, optional_services)));
+      return;
+    }
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_BLUETOOTH_ADAPTER);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
     return;
   }
-
-  if (!adapter_->IsPresent()) {
-    VLOG(1) << "Bluetooth Adapter not present. Can't serve requestDevice.";
-    RecordRequestDeviceOutcome(
-        UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
-    Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
-    return;
-  }
-
-  // The renderer should never send empty filters.
-  if (HasEmptyOrInvalidFilter(filters)) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::BDH_EMPTY_OR_INVALID_FILTERS);
-    return;
-  }
-
-  // Create storage for the information that backs the chooser, and show the
-  // chooser.
-  RequestDeviceSession* const session = new RequestDeviceSession(
-      thread_id, request_id, render_frame_host->GetLastCommittedOrigin(),
-      filters, optional_services);
-  int chooser_id = request_device_sessions_.Add(session);
-
-  BluetoothChooser::EventHandler chooser_event_handler =
-      base::Bind(&BluetoothDispatcherHost::OnBluetoothChooserEvent,
-                 weak_ptr_on_ui_thread_, chooser_id);
-  if (WebContents* web_contents =
-          WebContents::FromRenderFrameHost(render_frame_host)) {
-    if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
-      session->chooser = delegate->RunBluetoothChooser(
-          web_contents, chooser_event_handler,
-          render_frame_host->GetLastCommittedOrigin());
-    }
-  }
-  if (!session->chooser) {
-    LOG(WARNING)
-        << "No Bluetooth chooser implementation; falling back to first device.";
-    session->chooser.reset(
-        new FirstDeviceBluetoothChooser(chooser_event_handler));
-  }
-
-  if (!session->chooser->CanAskForScanningPermission()) {
-    VLOG(1) << "Closing immediately because Chooser cannot obtain permission.";
-    OnBluetoothChooserEvent(chooser_id,
-                            BluetoothChooser::Event::DENIED_PERMISSION, "");
-    return;
-  }
-
-  // Populate the initial list of devices.
-  VLOG(1) << "Populating " << adapter_->GetDevices().size()
-          << " devices in chooser " << chooser_id;
-  for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
-    VLOG(1) << "\t" << device->GetAddress();
-    session->AddFilteredDevice(*device);
-  }
-
-  if (!session->chooser) {
-    // If the dialog's closing, no need to do any of the rest of this.
-    return;
-  }
-
-  if (!adapter_->IsPowered()) {
-    session->chooser->SetAdapterPresence(
-        BluetoothChooser::AdapterPresence::POWERED_OFF);
-    return;
-  }
-
-  StartDeviceDiscovery(session, chooser_id);
+  OnRequestDeviceImpl(thread_id, request_id, frame_routing_id, filters,
+                      optional_services);
 }
 
 void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
@@ -1069,6 +971,132 @@ void BluetoothDispatcherHost::OnUnregisterCharacteristicObject(
   if (thread_ids_set.empty()) {
     active_characteristic_threads_.erase(active_iter);
   }
+}
+
+void BluetoothDispatcherHost::OnGetAdapter(
+    base::Closure continuation,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  set_adapter(adapter);
+  continuation.Run();
+}
+
+void BluetoothDispatcherHost::OnRequestDeviceImpl(
+    int thread_id,
+    int request_id,
+    int frame_routing_id,
+    const std::vector<BluetoothScanFilter>& filters,
+    const std::vector<BluetoothUUID>& optional_services) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
+  RecordRequestDeviceArguments(filters, optional_services);
+
+  VLOG(1) << "requestDevice called with the following filters: ";
+  for (const BluetoothScanFilter& filter : filters) {
+    VLOG(1) << "Name: " << filter.name;
+    VLOG(1) << "Name Prefix: " << filter.namePrefix;
+    VLOG(1) << "Services:";
+    VLOG(1) << "\t[";
+    for (const BluetoothUUID& service : filter.services)
+      VLOG(1) << "\t\t" << service.value();
+    VLOG(1) << "\t]";
+  }
+
+  VLOG(1) << "requestDevice called with the following optional services: ";
+  for (const BluetoothUUID& service : optional_services)
+    VLOG(1) << "\t" << service.value();
+
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+
+  if (!render_frame_host) {
+    DLOG(WARNING)
+        << "Got a requestDevice IPC without a matching RenderFrameHost: "
+        << render_process_id_ << ", " << frame_routing_id;
+    RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_RENDER_FRAME);
+    Send(new BluetoothMsg_RequestDeviceError(
+        thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
+    return;
+  }
+
+  if (render_frame_host->GetLastCommittedOrigin().unique()) {
+    VLOG(1) << "Request device with unique origin.";
+    Send(new BluetoothMsg_RequestDeviceError(
+        thread_id, request_id,
+        WebBluetoothError::RequestDeviceWithUniqueOrigin));
+    return;
+  }
+
+  DCHECK(adapter_.get());
+
+  if (!adapter_->IsPresent()) {
+    VLOG(1) << "Bluetooth Adapter not present. Can't serve requestDevice.";
+    RecordRequestDeviceOutcome(
+        UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
+    Send(new BluetoothMsg_RequestDeviceError(
+        thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
+    return;
+  }
+
+  // The renderer should never send empty filters.
+  if (HasEmptyOrInvalidFilter(filters)) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_EMPTY_OR_INVALID_FILTERS);
+    return;
+  }
+
+  // Create storage for the information that backs the chooser, and show the
+  // chooser.
+  RequestDeviceSession* const session = new RequestDeviceSession(
+      thread_id, request_id, render_frame_host->GetLastCommittedOrigin(),
+      filters, optional_services);
+  int chooser_id = request_device_sessions_.Add(session);
+
+  BluetoothChooser::EventHandler chooser_event_handler =
+      base::Bind(&BluetoothDispatcherHost::OnBluetoothChooserEvent,
+                 weak_ptr_on_ui_thread_, chooser_id);
+  if (WebContents* web_contents =
+          WebContents::FromRenderFrameHost(render_frame_host)) {
+    if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
+      session->chooser = delegate->RunBluetoothChooser(
+          web_contents, chooser_event_handler,
+          render_frame_host->GetLastCommittedOrigin());
+    }
+  }
+  if (!session->chooser) {
+    LOG(WARNING)
+        << "No Bluetooth chooser implementation; falling back to first device.";
+    session->chooser.reset(
+        new FirstDeviceBluetoothChooser(chooser_event_handler));
+  }
+
+  if (!session->chooser->CanAskForScanningPermission()) {
+    VLOG(1) << "Closing immediately because Chooser cannot obtain permission.";
+    OnBluetoothChooserEvent(chooser_id,
+                            BluetoothChooser::Event::DENIED_PERMISSION, "");
+    return;
+  }
+
+  // Populate the initial list of devices.
+  VLOG(1) << "Populating " << adapter_->GetDevices().size()
+          << " devices in chooser " << chooser_id;
+  for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
+    VLOG(1) << "\t" << device->GetAddress();
+    session->AddFilteredDevice(*device);
+  }
+
+  if (!session->chooser) {
+    // If the dialog's closing, no need to do any of the rest of this.
+    return;
+  }
+
+  if (!adapter_->IsPowered()) {
+    session->chooser->SetAdapterPresence(
+        BluetoothChooser::AdapterPresence::POWERED_OFF);
+    return;
+  }
+
+  StartDeviceDiscovery(session, chooser_id);
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(

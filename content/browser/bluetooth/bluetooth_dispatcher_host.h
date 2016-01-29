@@ -146,6 +146,17 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int frame_routing_id,
       const std::string& characteristic_instance_id);
 
+  // Callbacks for BluetoothDevice::OnRequestDevice.
+  // If necessary, the adapter must be obtained before continuing to Impl.
+  void OnGetAdapter(base::Closure continuation,
+                    scoped_refptr<device::BluetoothAdapter> adapter);
+  void OnRequestDeviceImpl(
+      int thread_id,
+      int request_id,
+      int frame_routing_id,
+      const std::vector<content::BluetoothScanFilter>& filters,
+      const std::vector<device::BluetoothUUID>& optional_services);
+
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
       int chooser_id,
