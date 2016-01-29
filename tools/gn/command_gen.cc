@@ -18,12 +18,15 @@
 #include "tools/gn/standard_out.h"
 #include "tools/gn/switches.h"
 #include "tools/gn/target.h"
+#include "tools/gn/visual_studio_writer.h"
 
 namespace commands {
 
 namespace {
 
 const char kSwitchCheck[] = "check";
+const char kSwitchIde[] = "ide";
+const char kSwitchIdeValueVs[] = "vs";
 
 // Called on worker thread to write the ninja file.
 void BackgroundDoWrite(const Target* target) {
@@ -144,6 +147,29 @@ bool CheckForInvalidGeneratedInputs(Setup* setup) {
   return false;
 }
 
+bool RunIdeWriter(const std::string& ide,
+                  const BuildSettings* build_settings,
+                  Builder* builder,
+                  Err* err) {
+  if (ide == kSwitchIdeValueVs) {
+    base::TimeTicks begin_vs_gen = base::TimeTicks::Now();
+    bool res =
+        VisualStudioWriter::RunAndWriteFiles(build_settings, builder, err);
+    if (res &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
+      OutputString(
+          "Generating Visual Studio projects took " +
+          base::Int64ToString(
+              (base::TimeTicks::Now() - begin_vs_gen).InMilliseconds()) +
+          "ms\n");
+    }
+    return res;
+  }
+
+  *err = Err(Location(), "Unknown IDE: " + ide);
+  return false;
+}
+
 }  // namespace
 
 const char kGen[] = "gen";
@@ -152,7 +178,7 @@ const char kGen_HelpShort[] =
 const char kGen_Help[] =
     "gn gen: Generate ninja files.\n"
     "\n"
-    "  gn gen <out_dir>\n"
+    "  gn gen [--ide=<ide_name>] <out_dir>\n"
     "\n"
     "  Generates ninja files from the current tree and puts them in the given\n"
     "  output directory.\n"
@@ -161,6 +187,10 @@ const char kGen_Help[] =
     "      //out/foo\n"
     "  Or it can be a directory relative to the current directory such as:\n"
     "      out/foo\n"
+    "\n"
+    "  --ide=<ide_name>\n"
+    "    Also generate files for an IDE. Currently supported values:\n"
+    "      'vs' - Visual Studio project/solution files.\n"
     "\n"
     "  See \"gn help switches\" for the common command-line switches.\n";
 
@@ -179,7 +209,9 @@ int RunGen(const std::vector<std::string>& args) {
   if (!setup->DoSetup(args[0], true))
     return 1;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchCheck))
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kSwitchCheck))
     setup->set_check_public_headers(true);
 
   // Cause the load to also generate the ninja files for each target. We wrap
@@ -210,9 +242,16 @@ int RunGen(const std::vector<std::string>& args) {
   if (!CheckForInvalidGeneratedInputs(setup))
     return 1;
 
+  if (command_line->HasSwitch(kSwitchIde) &&
+      !RunIdeWriter(command_line->GetSwitchValueASCII(kSwitchIde),
+                    &setup->build_settings(), setup->builder(), &err)) {
+    err.PrintToStdout();
+    return 1;
+  }
+
   base::TimeDelta elapsed_time = timer.Elapsed();
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
+  if (!command_line->HasSwitch(switches::kQuiet)) {
     OutputString("Done. ", DECORATION_GREEN);
 
     std::string stats = "Wrote " +

@@ -189,6 +189,12 @@
         'variables.h',
         'visibility.cc',
         'visibility.h',
+        'visual_studio_utils.cc',
+        'visual_studio_utils.h',
+        'visual_studio_writer.cc',
+        'visual_studio_writer.h',
+        'xml_element_writer.cc',
+        'xml_element_writer.h',
       ],
     },
     {
@@ -259,6 +265,9 @@
         'unique_vector_unittest.cc',
         'value_unittest.cc',
         'visibility_unittest.cc',
+        'visual_studio_utils_unittest.cc',
+        'visual_studio_writer_unittest.cc',
+        'xml_element_writer_unittest.cc',
       ],
       'dependencies': [
         'gn_lib',
