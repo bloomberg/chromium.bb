@@ -80,6 +80,23 @@ public class EnhancedBookmarkUtils {
     }
 
     /**
+     * Adds a bookmark with the given title and url to the last used parent folder. Provides
+     * no visual feedback that a bookmark has been added.
+     *
+     * @param title The title of the bookmark.
+     * @param url The URL of the new bookmark.
+     */
+    public static BookmarkId addBookmarkSilently(Context context,
+            EnhancedBookmarksModel bookmarkModel, String title, String url) {
+        BookmarkId parent = getLastUsedParent(context);
+        if (parent == null || !bookmarkModel.doesBookmarkExist(parent)) {
+            parent = bookmarkModel.getDefaultFolder();
+        }
+
+        return bookmarkModel.addBookmark(parent, bookmarkModel.getChildCount(parent), title, url);
+    }
+
+    /**
      * Saves an offline copy for the specified tab that is bookmarked. A snackbar will be shown to
      * notify the user.
      * @param id The bookmark ID for the tab.

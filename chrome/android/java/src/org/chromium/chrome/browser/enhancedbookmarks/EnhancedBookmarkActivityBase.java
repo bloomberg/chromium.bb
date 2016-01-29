@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
 /**
- * Activity base class that all the EnhnacedBookmark activities inherit. Currently it's responsible
+ * Activity base class that all the EnhancedBookmark activities inherit. Currently it's responsible
  * for ensuring native library initialization.
  */
 abstract class EnhancedBookmarkActivityBase extends AppCompatActivity {
