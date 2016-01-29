@@ -1325,8 +1325,6 @@ crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/570391 inspector/sources/debugger/promise-events.html [ NeedsManualRebaseline ]
 
-crbug.com/463358 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
-
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
 
 crbug.com/573287 inspector/console/console-dir.html [ NeedsManualRebaseline ]
