@@ -58,9 +58,9 @@ if (current_cpu == "x86") {
     # NOTE: This must match what //build/config/BUILDCONFIG.gn uses
     # as default toolchain for the corresponding x64 build.
     if (is_clang) {
-      x64_toolchain = "//build/toolchain/win:clang_nacl_win64"
+      x64_toolchain = "//build/toolchain/win:clang_x64"
     } else {
-      x64_toolchain = "//build/toolchain/win:nacl_win64"
+      x64_toolchain = "//build/toolchain/win:x64"
     }
     nacl64_label = ":nacl64($x64_toolchain)"
     nacl64_out_dir = get_label_info(nacl64_label, "root_out_dir")
@@ -82,13 +82,8 @@ if (current_cpu == "x86") {
     # //build/config/compiler:optimize{,_max} adds this for official builds
     # only, as it only reduces binary size and is not necessary for
     # correctness.  But for nacl64.exe, it makes more than a six-fold
-    # difference in the binary size, so always use it in release builds.
-    # Note that using this flag disables incremental linking.  In debug
-    # builds, incremental rebuild time is usually of more concern than
-    # binary size, so incremental linking is preferable to size reduction.
-    if (!is_debug) {
-      ldflags = [ "/OPT:REF" ]
-    }
+    # difference in the binary size, so always use it.
+    ldflags = [ "/OPT:REF" ]
 
     sources = [
       "//chrome/nacl/nacl_exe_win_64.cc",

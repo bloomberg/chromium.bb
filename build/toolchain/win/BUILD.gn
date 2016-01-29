@@ -225,12 +225,9 @@ template("msvc_toolchain") {
       if (defined(invoker.toolchain_os)) {
         current_os = invoker.toolchain_os
       }
-
-      forward_variables_from(invoker,
-                             [
-                               "is_clang",
-                               "is_component_build",
-                             ])
+      if (defined(invoker.is_clang)) {
+        is_clang = invoker.is_clang
+      }
 
       # This value needs to be passed through unchanged.
       host_toolchain = host_toolchain
@@ -287,56 +284,21 @@ x64_toolchain_data = exec_script("setup_toolchain.py",
                                  ],
                                  "scope")
 
-template("win_x64_toolchains") {
-  # TODO(mcgrathr): These assignments are only required because of
-  # crbug.com/395883.  Drop them if that ever gets fixed in GN.
-  concurrent_links = invoker.concurrent_links
-  goma_prefix = invoker.goma_prefix
-  x64_toolchain_data = invoker.x64_toolchain_data
-
-  msvc_toolchain(target_name) {
-    environment = "environment.x64"
-    toolchain_cpu = "x64"
-    cl = "${goma_prefix}\"${x64_toolchain_data.vc_bin_dir}/cl.exe\""
-    is_clang = false
-
-    forward_variables_from(invoker, [ "is_component_build" ])
-  }
-
-  msvc_toolchain("clang_" + target_name) {
-    environment = "environment.x64"
-    toolchain_cpu = "x64"
-    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                         root_build_dir)
-    cl = "${goma_prefix}$prefix/${clang_cl}"
-    toolchain_os = "win"
-    is_clang = true
-
-    forward_variables_from(invoker, [ "is_component_build" ])
-  }
+msvc_toolchain("x64") {
+  environment = "environment.x64"
+  toolchain_cpu = "x64"
+  cl = "${goma_prefix}\"${x64_toolchain_data.vc_bin_dir}/cl.exe\""
+  is_clang = false
 }
 
-win_x64_toolchains("x64") {
-  # TODO(mcgrathr): These assignments are only required because of
-  # crbug.com/395883.  Drop them if that ever gets fixed in GN.
-  concurrent_links = concurrent_links
-  goma_prefix = goma_prefix
-  x64_toolchain_data = x64_toolchain_data
-}
-
-# The nacl_win64 toolchain is nearly identical to the plain x64 toolchain.
-# It's used solely for building nacl64.exe (//components/nacl/broker:nacl64).
-# The only reason it's a separate toolchain is so that it can force
-# is_component_build to false in the toolchain_args() block, because
-# building nacl64.exe in component style does not work.
-win_x64_toolchains("nacl_win64") {
-  is_component_build = false
-
-  # TODO(mcgrathr): These assignments are only required because of
-  # crbug.com/395883.  Drop them if that ever gets fixed in GN.
-  concurrent_links = concurrent_links
-  goma_prefix = goma_prefix
-  x64_toolchain_data = x64_toolchain_data
+msvc_toolchain("clang_x64") {
+  environment = "environment.x64"
+  toolchain_cpu = "x64"
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cl = "${goma_prefix}$prefix/${clang_cl}"
+  toolchain_os = "win"
+  is_clang = true
 }
 
 # WinRT toolchains. Only define these when targeting them.
