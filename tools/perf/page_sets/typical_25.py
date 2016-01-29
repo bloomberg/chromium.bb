@@ -53,16 +53,6 @@ class Typical25Page(page_module.Page):
       action_runner.ScrollPage()
 
 
-class Typical25PageWithProfile(Typical25Page):
-  """A page from the typical 25 set backed by a profile."""
-
-  def __init__(self, url, page_set, run_no_page_interactions):
-    super(Typical25PageWithProfile, self).__init__(
-        url=url, page_set=page_set,
-        run_no_page_interactions=run_no_page_interactions,
-        shared_page_state_class=Typical25ProfileSharedState)
-
-
 class Typical25PageSet(story.StorySet):
 
   """ Pages designed to represent the median, not highly optimized web """
@@ -117,12 +107,3 @@ class Typical25PageSet(story.StorySet):
     for url in urls_list:
       self.AddStory(
         page_class(url, self, run_no_page_interactions))
-
-
-class Typical25PageSetWithProfile(Typical25PageSet):
-  """ Similar to Typical25PageSet, but with a non-empty profile. """
-
-  def __init__(self, run_no_page_interactions=False):
-    super(Typical25PageSetWithProfile, self).__init__(
-        run_no_page_interactions=run_no_page_interactions,
-        page_class=Typical25PageWithProfile)
