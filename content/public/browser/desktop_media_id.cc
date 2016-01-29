@@ -102,7 +102,7 @@ bool DesktopMediaID::operator<(const DesktopMediaID& other) const {
          std::tie(other.type, other.id, other.aura_id, other.web_contents_id);
 #else
   return std::tie(type, id, web_contents_id) <
-         std::tie(other.type, other.id, web_contents_id);
+         std::tie(other.type, other.id, other.web_contents_id);
 #endif
 }
 
