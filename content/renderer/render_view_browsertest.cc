@@ -912,7 +912,7 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);
 
-  // Detach the child frame (current remote) in the main frame.
+  // Detach the child frame (currently remote) in the main frame.
   ExecuteJavaScriptForTests(
       "document.body.removeChild(document.querySelector('iframe'));");
   RenderFrameProxy* child_proxy =
@@ -934,6 +934,10 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
       render_thread_->sink().GetUniqueMessageMatching(
           FrameHostMsg_DidCommitProvisionalLoad::ID);
   EXPECT_FALSE(frame_navigate_msg);
+
+  // Detach the provisional frame to clean it up.  Normally, the browser
+  // process would trigger this via FrameMsg_Delete.
+  provisional_frame->GetWebFrame()->detach();
 }
 
 // Verify that DidFlushPaint doesn't crash if called after a RenderView is
