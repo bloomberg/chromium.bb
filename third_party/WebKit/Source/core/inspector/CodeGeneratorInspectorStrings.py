@@ -215,7 +215,7 @@ backend_cpp = (
 #include "InspectorBackendDispatcher.h"
 
 #include "core/inspector/InspectorFrontendChannel.h"
-#include "core/inspector/JSONParser.h"
+#include "platform/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

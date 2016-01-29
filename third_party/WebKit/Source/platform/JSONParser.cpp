@@ -28,10 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/JSONParser.h"
+#include "platform/JSONParser.h"
 
+#include "platform/Decimal.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/UTF8.h"
 
 namespace blink {
 
@@ -190,15 +192,70 @@ bool parseStringToken(const CharType* start, const CharType* end, const CharType
 }
 
 template<typename CharType>
+bool skipComment(const CharType* start, const CharType* end, const CharType** commentEnd)
+{
+    if (start == end)
+        return false;
+
+    if (*start != '/' || start + 1 >= end)
+        return false;
+    ++start;
+
+    if (*start == '/') {
+        // Single line comment, read to newline.
+        for (++start; start < end; ++start) {
+            if (*start == '\n' || *start == '\r') {
+                *commentEnd = start + 1;
+                return true;
+            }
+        }
+        *commentEnd = end;
+        // Comment reaches end-of-input, which is fine.
+        return true;
+    }
+
+    if (*start == '*') {
+        CharType previous = '\0';
+        // Block comment, read until end marker.
+        for (++start; start < end; previous = *start++) {
+            if (previous == '*' && *start == '/') {
+                *commentEnd = start + 1;
+                return true;
+            }
+        }
+        // Block comment must close before end-of-input.
+        return false;
+    }
+
+    return false;
+}
+
+template<typename CharType>
+void skipWhitespaceAndComments(const CharType* start, const CharType* end, const CharType** whitespaceEnd)
+{
+    while (start < end) {
+        if (isSpaceOrNewline(*start)) {
+            ++start;
+        } else if (*start == '/') {
+            const CharType* commentEnd;
+            if (!skipComment(start, end, &commentEnd))
+                break;
+            start = commentEnd;
+        } else {
+            break;
+        }
+    }
+    *whitespaceEnd = start;
+}
+
+template<typename CharType>
 Token parseToken(const CharType* start, const CharType* end, const CharType** tokenStart, const CharType** tokenEnd)
 {
-    while (start < end && isSpaceOrNewline(*start))
-        ++start;
+    skipWhitespaceAndComments(start, end, tokenStart);
+    start = *tokenStart;
 
     if (start == end)
         return InvalidToken;
-
-    *tokenStart = start;
 
     switch (*start) {
     case 'n':
@@ -267,6 +324,50 @@ inline int hexToInt(CharType c)
 }
 
 template<typename CharType>
+bool decodeUTF8(const CharType* start, const CharType* end, const CharType** utf8charEnd, StringBuilder* output)
+{
+    UChar utf16[4] = {0};
+    char utf8[6] = {0};
+    size_t utf8count = 0;
+
+    while (start < end) {
+        if (start + 1 >= end || *start != '\\' || *(start + 1) != 'x')
+            return false;
+        start += 2;
+
+        // Accumulate one more utf8 character and try converting to utf16.
+        if (start + 1 >= end)
+            return false;
+        utf8[utf8count++] = (hexToInt(*start) << 4) + hexToInt(*(start + 1));
+        start += 2;
+
+        const char* utf8start = utf8;
+        UChar* utf16start = utf16;
+        WTF::Unicode::ConversionResult conversionResult = WTF::Unicode::convertUTF8ToUTF16(&utf8start, utf8start + utf8count, &utf16start, utf16start + WTF_ARRAY_LENGTH(utf16), nullptr, true);
+
+        if (conversionResult == WTF::Unicode::sourceIllegal)
+            return false;
+
+        if (conversionResult == WTF::Unicode::conversionOK) {
+            // Not all utf8 characters were consumed - failed parsing.
+            if (utf8start != utf8 + utf8count)
+                return false;
+
+            size_t utf16length = utf16start - utf16;
+            output->append(utf16, utf16length);
+            *utf8charEnd = start;
+            return true;
+        }
+
+        // Keep accumulating utf8 characters up to buffer length (6 should be enough).
+        if (utf8count >= WTF_ARRAY_LENGTH(utf8))
+            return false;
+    }
+
+    return false;
+}
+
+template<typename CharType>
 bool decodeString(const CharType* start, const CharType* end, StringBuilder* output)
 {
     while (start < end) {
@@ -276,6 +377,14 @@ bool decodeString(const CharType* start, const CharType* end, StringBuilder* out
             continue;
         }
         c = *start++;
+
+        if (c == 'x') {
+            // Rewind "\x".
+            if (!decodeUTF8(start - 2, end, &start, output))
+                return false;
+            continue;
+        }
+
         switch (c) {
         case '"':
         case '/':
@@ -298,11 +407,6 @@ bool decodeString(const CharType* start, const CharType* end, StringBuilder* out
             break;
         case 'v':
             c = '\v';
-            break;
-        case 'x':
-            c = (hexToInt(*start) << 4) +
-                hexToInt(*(start + 1));
-            start += 2;
             break;
         case 'u':
             c = (hexToInt(*start) << 12) +
@@ -333,6 +437,9 @@ bool decodeString(const CharType* start, const CharType* end, String* output)
     if (!decodeString(start, end, &buffer))
         return false;
     *output = buffer.toString();
+    // Validate constructed utf16 string.
+    if (output->utf8(StrictUTF8Conversion).isNull())
+        return false;
     return true;
 }
 
@@ -361,6 +468,8 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
     case Number: {
         bool ok;
         double value = charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
+        if (Decimal::fromDouble(value).isInfinity())
+            ok = false;
         if (!ok)
             return nullptr;
         result = JSONBasicValue::create(value);
@@ -448,7 +557,8 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
         // We got a token that's not a value.
         return nullptr;
     }
-    *valueTokenEnd = tokenEnd;
+
+    skipWhitespaceAndComments(tokenEnd, end, valueTokenEnd);
     return result.release();
 }
 

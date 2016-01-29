@@ -14,7 +14,6 @@
 #include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/JSONParser.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"

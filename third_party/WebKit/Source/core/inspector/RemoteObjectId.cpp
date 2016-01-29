@@ -4,7 +4,7 @@
 
 #include "core/inspector/RemoteObjectId.h"
 
-#include "core/inspector/JSONParser.h"
+#include "platform/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"

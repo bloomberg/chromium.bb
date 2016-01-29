@@ -1784,8 +1784,6 @@
             'inspector/InstanceCounters.cpp',
             'inspector/InstanceCounters.h',
             'inspector/InstrumentingAgents.h',
-            'inspector/JSONParser.cpp',
-            'inspector/JSONParser.h',
             'inspector/LayoutEditor.cpp',
             'inspector/LayoutEditor.h',
             'inspector/MainThreadDebugger.cpp',

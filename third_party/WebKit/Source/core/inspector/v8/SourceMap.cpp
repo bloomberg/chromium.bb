@@ -4,7 +4,7 @@
 
 #include "core/inspector/v8/SourceMap.h"
 
-#include "core/inspector/JSONParser.h"
+#include "platform/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/KURL.h"
 
