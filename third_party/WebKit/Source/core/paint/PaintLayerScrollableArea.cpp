@@ -256,7 +256,6 @@ static IntRect cornerRect(const LayoutBox& box, const Scrollbar* horizontalScrol
         horizontalThickness, verticalThickness);
 }
 
-
 IntRect PaintLayerScrollableArea::scrollCornerRect() const
 {
     // We have a scrollbar corner when a scrollbar is visible and not filling the entire length of the box.

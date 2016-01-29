@@ -1,0 +1,19 @@
+<!doctype HTML>
+<style>
+::-webkit-resizer {
+    background: red;
+}
+</style>
+<textarea id="target" style="width: 200px; height: 200px;"></textarea>
+<script>
+if (window.testRunner)
+    window.testRunner.waitUntilDone();
+onload = function() {
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            target.style.width = "400px";
+            testRunner.notifyDone();
+        });
+    });
+}
+</script>

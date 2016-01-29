@@ -101,9 +101,9 @@ void PaintInvalidationCapableScrollableArea::invalidatePaintOfScrollControlsIfNe
     invalidatePaintOfScrollbarIfNeeded(horizontalScrollbar(), layerForHorizontalScrollbar(), m_horizontalScrollbarPreviouslyWasOverlay, m_horizontalScrollbarPreviousPaintInvalidationRect, horizontalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer);
     invalidatePaintOfScrollbarIfNeeded(verticalScrollbar(), layerForVerticalScrollbar(), m_verticalScrollbarPreviouslyWasOverlay, m_verticalScrollbarPreviousPaintInvalidationRect, verticalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState, paintInvalidationContainer);
 
-    LayoutRect scrollCornerPaintInvalidationRect = scrollControlPaintInvalidationRect(scrollCornerRect(), box, paintInvalidationState, paintInvalidationContainer);
-    if (invalidatePaintOfScrollControlIfNeeded(scrollCornerPaintInvalidationRect, m_scrollCornerPreviousPaintInvalidationRect, scrollCornerNeedsPaintInvalidation(), box, paintInvalidationContainer)) {
-        m_scrollCornerPreviousPaintInvalidationRect = scrollCornerPaintInvalidationRect;
+    LayoutRect scrollCornerPaintInvalidationRect = scrollControlPaintInvalidationRect(scrollCornerAndResizerRect(), box, paintInvalidationState, paintInvalidationContainer);
+    if (invalidatePaintOfScrollControlIfNeeded(scrollCornerPaintInvalidationRect, m_scrollCornerAndResizerPreviousPaintInvalidationRect, scrollCornerNeedsPaintInvalidation(), box, paintInvalidationContainer)) {
+        m_scrollCornerAndResizerPreviousPaintInvalidationRect = scrollCornerPaintInvalidationRect;
         if (LayoutScrollbarPart* scrollCorner = this->scrollCorner())
             scrollCorner->invalidateDisplayItemClientsIncludingNonCompositingDescendants(&paintInvalidationContainer, PaintInvalidationScroll);
         if (LayoutScrollbarPart* resizer = this->resizer())
@@ -117,7 +117,7 @@ void PaintInvalidationCapableScrollableArea::clearPreviousPaintInvalidationRects
 {
     m_horizontalScrollbarPreviousPaintInvalidationRect = LayoutRect();
     m_verticalScrollbarPreviousPaintInvalidationRect = LayoutRect();
-    m_scrollCornerPreviousPaintInvalidationRect = LayoutRect();
+    m_scrollCornerAndResizerPreviousPaintInvalidationRect = LayoutRect();
 }
 
 } // namespace blink

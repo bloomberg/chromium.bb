@@ -301,7 +301,7 @@ public:
     bool scrollsOverflow() const { return m_scrollsOverflow; }
 
     // Rectangle encompassing the scroll corner and resizer rect.
-    IntRect scrollCornerAndResizerRect() const;
+    IntRect scrollCornerAndResizerRect() const final;
 
     enum LCDTextMode {
         ConsiderLCDText,
