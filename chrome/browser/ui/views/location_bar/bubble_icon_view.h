@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/widget/widget_observer.h"
 
 class CommandUpdater;
 
@@ -18,10 +21,13 @@ enum class VectorIconId;
 
 namespace views {
 class BubbleDelegateView;
+class InkDropDelegate;
 }
 
 // Represents an icon on the omnibox that shows a bubble when clicked.
-class BubbleIconView : public views::ImageView {
+class BubbleIconView : public views::View,
+                       public views::InkDropHost,
+                       public views::WidgetObserver {
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,
@@ -35,13 +41,25 @@ class BubbleIconView : public views::ImageView {
   // Returns true if a related bubble is showing.
   bool IsBubbleShowing() const;
 
+  // Sets the image that should be displayed in |image_|.
+  void SetImage(const gfx::ImageSkia* image_skia);
+
+  // Returns the image currently displayed, which can be empty if not set.
+  // The returned image is owned by |image_|.
+  const gfx::ImageSkia& GetImage() const;
+
+  // Sets the tooltip text.
+  void SetTooltipText(const base::string16& tooltip);
+
   // Invoked prior to executing the command.
   virtual void OnExecuting(ExecuteSource execute_source) = 0;
 
-  // views::ImageView:
+  // views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
   bool GetTooltipText(const gfx::Point& p, base::string16* tooltip) const
       override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -52,6 +70,15 @@ class BubbleIconView : public views::ImageView {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // views::InkDropHost:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget,
+                                 bool visible) override;
+
  protected:
   // Calls OnExecuting and runs |command_id_| with a valid |command_updater_|.
   virtual void ExecuteCommand(ExecuteSource source);
@@ -61,7 +88,7 @@ class BubbleIconView : public views::ImageView {
 
   // Gets the given vector icon in the correct color and size based on |active|
   // and whether Chrome's in material design mode.
-  virtual gfx::VectorIconId GetVectorIcon() const = 0;
+  virtual gfx::VectorIconId GetVectorIcon() const;
 
   // Sets the image using a PNG from the resource bundle. Returns true if an
   // image was set, or false if the icon should use a vector asset. This only
@@ -70,6 +97,10 @@ class BubbleIconView : public views::ImageView {
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
+  // views::InkDropHost:
+  gfx::Point CalculateInkDropCenter() const override;
+  bool ShouldShowInkDropHover() const override;
 
   // Updates the icon after some state has changed.
   void UpdateIcon();
@@ -81,6 +112,9 @@ class BubbleIconView : public views::ImageView {
   bool active() const { return active_; }
 
  private:
+  // The image shown in the button.
+  views::ImageView* image_;
+
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;
 
@@ -96,6 +130,9 @@ class BubbleIconView : public views::ImageView {
   // pressed event. If this is true then the mouse released event is ignored to
   // prevent the bubble from reshowing.
   bool suppress_mouse_released_action_;
+
+  // Animation delegate for the ink drop ripple effect.
+  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleIconView);
 };

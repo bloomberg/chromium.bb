@@ -1294,10 +1294,11 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   scoped_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_.get()));
 
-  BookmarkBubbleView::ShowBubble(GetToolbarView()->GetBookmarkBubbleAnchor(),
-                                 gfx::Rect(), nullptr, bookmark_bar_view_.get(),
-                                 std::move(delegate), browser_->profile(), url,
-                                 already_bookmarked);
+  views::View* anchor_view = GetToolbarView()->GetBookmarkBubbleAnchor();
+  views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
+      anchor_view, gfx::Rect(), nullptr, bookmark_bar_view_.get(),
+      std::move(delegate), browser_->profile(), url, already_bookmarked);
+  GetToolbarView()->OnBubbleCreatedForAnchor(anchor_view, bubble_widget);
 }
 
 void BrowserView::ShowBookmarkAppBubble(
@@ -1310,9 +1311,10 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
     bool is_user_gesture) {
+  views::View* anchor_view = GetToolbarView()->GetSaveCreditCardBubbleAnchor();
   autofill::SaveCardBubbleViews* view = new autofill::SaveCardBubbleViews(
-      GetToolbarView()->GetSaveCreditCardBubbleAnchor(), web_contents,
-      controller);
+      anchor_view, web_contents, controller);
+  GetToolbarView()->OnBubbleCreatedForAnchor(anchor_view, view->GetWidget());
   view->Show(is_user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                              : autofill::SaveCardBubbleViews::AUTOMATIC);
   return view;
@@ -1339,10 +1341,12 @@ void BrowserView::ShowTranslateBubble(
   if (IsMinimized())
     return;
 
-  TranslateBubbleView::ShowBubble(
-      GetToolbarView()->GetTranslateBubbleAnchor(), web_contents, step,
+  views::View* anchor_view = GetToolbarView()->GetTranslateBubbleAnchor();
+  views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
+      anchor_view, web_contents, step,
       error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
                                   : TranslateBubbleView::AUTOMATIC);
+  GetToolbarView()->OnBubbleCreatedForAnchor(anchor_view, bubble_widget);
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

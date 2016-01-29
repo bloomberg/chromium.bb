@@ -16,6 +16,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -46,24 +47,37 @@ ContentSettingImageView::ContentSettingImageView(
       slide_animator_(this),
       pause_animation_(false),
       pause_animation_state_(0.0),
-      bubble_widget_(NULL) {
+      bubble_view_(nullptr),
+      suppress_mouse_released_action_(false),
+      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     static const int kBackgroundImages[] =
         IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
     SetBackgroundImageGrid(kBackgroundImages);
   }
 
+  // TODO(varkha): Provide standard ink drop dimensions in LayoutConstants.
   image()->SetHorizontalAlignment(views::ImageView::LEADING);
   image()->set_interactive(true);
+  image()->EnableCanvasFlippingForRTLUI(true);
+  image()->SetAccessibilityFocusable(true);
   label()->SetElideBehavior(gfx::NO_ELIDE);
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
   slide_animator_.SetTweenType(gfx::Tween::LINEAR);
+
+  const int kInkDropLargeSize = 32;
+  const int kInkDropLargeCornerRadius = 5;
+  const int kInkDropSmallSize = 24;
+  const int kInkDropSmallCornerRadius = 2;
+  ink_drop_delegate_->SetInkDropSize(
+      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
+      kInkDropSmallCornerRadius);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
-  if (bubble_widget_)
-    bubble_widget_->RemoveObserver(this);
+  if (bubble_view_ && bubble_view_->GetWidget())
+    bubble_view_->GetWidget()->RemoveObserver(this);
 }
 
 void ContentSettingImageView::Update(content::WebContents* web_contents) {
@@ -151,20 +165,52 @@ const char* ContentSettingImageView::GetClassName() const {
   return "ContentSettingsImageView";
 }
 
+void ContentSettingImageView::Layout() {
+  IconLabelBubbleView::Layout();
+  ink_drop_delegate_->OnLayout();
+}
+
+void ContentSettingImageView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  if (bubble_view_)
+    bubble_view_->OnAnchorBoundsChanged();
+  ink_drop_delegate_->OnLayout();
+}
+
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
+  // If the bubble is showing then don't reshow it when the mouse is released.
+  suppress_mouse_released_action_ = IsBubbleShowing();
+  if (!suppress_mouse_released_action_ && !label()->visible())
+    ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
+
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
   return true;
 }
 
 void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (HitTestPoint(event.location()))
+  // If this is the second click on this view then the bubble was showing on the
+  // mouse pressed event and is hidden now. Prevent the bubble from reshowing by
+  // doing nothing here.
+  if (suppress_mouse_released_action_) {
+    suppress_mouse_released_action_ = false;
+    return;
+  }
+  const bool activated = HitTestPoint(event.location());
+  if (!label()->visible()) {
+    ink_drop_delegate_->OnAction(activated ? views::InkDropState::ACTIVATED
+                                           : views::InkDropState::HIDDEN);
+  }
+  if (activated)
     OnClick();
 }
 
 void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP)
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    if (!label()->visible())
+      ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
     OnClick();
+  }
   if ((event->type() == ui::ET_GESTURE_TAP) ||
       (event->type() == ui::ET_GESTURE_TAP_DOWN))
     event->SetHandled();
@@ -178,16 +224,50 @@ void ContentSettingImageView::OnNativeThemeChanged(
   IconLabelBubbleView::OnNativeThemeChanged(native_theme);
 }
 
+void ContentSettingImageView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+  layer()->Add(ink_drop_layer);
+  layer()->StackAtBottom(ink_drop_layer);
+}
+
+void ContentSettingImageView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  layer()->Remove(ink_drop_layer);
+  SetFillsBoundsOpaquely(true);
+  SetPaintToLayer(false);
+  image()->SetFillsBoundsOpaquely(true);
+  image()->SetPaintToLayer(false);
+}
+
+gfx::Point ContentSettingImageView::CalculateInkDropCenter() const {
+  return GetLocalBounds().CenterPoint();
+}
+
+bool ContentSettingImageView::ShouldShowInkDropHover() const {
+  // location bar views don't show hover effect.
+  return false;
+}
+
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
-  DCHECK_EQ(bubble_widget_, widget);
-  bubble_widget_->RemoveObserver(this);
-  bubble_widget_ = NULL;
+  DCHECK(bubble_view_);
+  DCHECK_EQ(bubble_view_->GetWidget(), widget);
+  widget->RemoveObserver(this);
+  bubble_view_ = nullptr;
 
   if (pause_animation_) {
     slide_animator_.Reset(pause_animation_state_);
     pause_animation_ = false;
     slide_animator_.Show();
   }
+}
+
+void ContentSettingImageView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                        bool visible) {
+  // |widget| is a bubble that has just got shown / hidden.
+  if (!visible && !label()->visible())
+    ink_drop_delegate_->OnAction(views::InkDropState::DEACTIVATED);
 }
 
 void ContentSettingImageView::OnClick() {
@@ -200,19 +280,24 @@ void ContentSettingImageView::OnClick() {
   }
 
   content::WebContents* web_contents = parent_->GetWebContents();
-  if (web_contents && !bubble_widget_) {
-    bubble_widget_ =
-        parent_->delegate()->CreateViewsBubble(new ContentSettingBubbleContents(
-            content_setting_image_model_->CreateBubbleModel(
-                parent_->delegate()->GetContentSettingBubbleModelDelegate(),
-                web_contents, parent_->profile()),
-            web_contents, this, views::BubbleBorder::TOP_RIGHT));
-    bubble_widget_->AddObserver(this);
-    bubble_widget_->Show();
+  if (web_contents && !bubble_view_) {
+    bubble_view_ = new ContentSettingBubbleContents(
+                content_setting_image_model_->CreateBubbleModel(
+                    parent_->delegate()->GetContentSettingBubbleModelDelegate(),
+                    web_contents, parent_->profile()),
+                web_contents, this, views::BubbleBorder::TOP_RIGHT);
+    views::Widget* bubble_widget =
+        parent_->delegate()->CreateViewsBubble(bubble_view_);
+    bubble_widget->AddObserver(this);
+    bubble_widget->Show();
   }
 }
 
 void ContentSettingImageView::UpdateImage() {
   SetImage(content_setting_image_model_->GetIcon(GetTextColor()).AsImageSkia());
   image()->SetTooltipText(content_setting_image_model_->get_tooltip());
+}
+
+bool ContentSettingImageView::IsBubbleShowing() const {
+  return bubble_view_ != nullptr;
 }

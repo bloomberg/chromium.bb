@@ -43,6 +43,10 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
     return tooltip;
   }
 
+  const gfx::ImageSkia& GetImage() {
+    return GetView()->GetImage();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViewTest);
 };
@@ -58,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, PendingState) {
   EXPECT_TRUE(GetView()->visible());
   // No tooltip because the bubble is showing.
   EXPECT_EQ(base::string16(), GetTooltipText());
-  const gfx::ImageSkia active_image = GetView()->GetImage();
+  const gfx::ImageSkia active_image = GetImage();
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, ManageState) {

@@ -69,7 +69,7 @@ class UnsizedCombobox : public views::Combobox {
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
-void BookmarkBubbleView::ShowBubble(
+views::Widget* BookmarkBubbleView::ShowBubble(
     views::View* anchor_view,
     const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
@@ -79,7 +79,7 @@ void BookmarkBubbleView::ShowBubble(
     const GURL& url,
     bool already_bookmarked) {
   if (bookmark_bubble_)
-    return;
+    return nullptr;
 
   bookmark_bubble_ =
       new BookmarkBubbleView(anchor_view, observer, std::move(delegate),
@@ -88,7 +88,9 @@ void BookmarkBubbleView::ShowBubble(
     bookmark_bubble_->SetAnchorRect(anchor_rect);
     bookmark_bubble_->set_parent_window(parent_window);
   }
-  views::BubbleDelegateView::CreateBubble(bookmark_bubble_)->Show();
+  views::Widget* bubble_widget =
+      views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
+  bubble_widget->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll(true);
   bookmark_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
@@ -98,6 +100,7 @@ void BookmarkBubbleView::ShowBubble(
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
     bookmark_bubble_->observer_->OnBookmarkBubbleShown(node);
   }
+  return bubble_widget;
 }
 
 void BookmarkBubbleView::Hide() {

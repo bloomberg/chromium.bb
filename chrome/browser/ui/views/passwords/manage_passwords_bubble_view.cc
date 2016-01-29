@@ -752,7 +752,10 @@ void ManagePasswordsBubbleView::ShowBubble(
   if (is_fullscreen)
     manage_passwords_bubble_->set_parent_window(web_contents->GetNativeView());
 
-  views::BubbleDelegateView::CreateBubble(manage_passwords_bubble_);
+  views::Widget* manage_passwords_bubble_widget =
+      views::BubbleDelegateView::CreateBubble(manage_passwords_bubble_);
+  if (anchor_view)
+    manage_passwords_bubble_widget->AddObserver(anchor_view);
 
   // Adjust for fullscreen after creation as it relies on the content size.
   if (is_fullscreen) {
@@ -782,13 +785,12 @@ content::WebContents* ManagePasswordsBubbleView::web_contents() const {
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
-    ManagePasswordsIconViews* anchor_view,
+    views::View* anchor_view,
     DisplayReason reason)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       model_(web_contents,
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),
-      anchor_view_(anchor_view),
       initially_focused_view_(nullptr) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));

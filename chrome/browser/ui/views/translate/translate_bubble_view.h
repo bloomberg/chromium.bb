@@ -53,15 +53,17 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   ~TranslateBubbleView() override;
 
-  // Shows the Translate bubble.
+  // Shows the Translate bubble. Returns the newly created bubble's Widget or
+  // nullptr in cases when the bubble already exists or when the bubble is not
+  // created.
   //
-  // |is_user_gesture| is true when the bubble is shown on the user's delibarate
+  // |is_user_gesture| is true when the bubble is shown on the user's deliberate
   // action.
-  static void ShowBubble(views::View* anchor_view,
-                         content::WebContents* web_contents,
-                         translate::TranslateStep step,
-                         translate::TranslateErrors::Type error_type,
-                         DisplayReason reason);
+  static views::Widget* ShowBubble(views::View* anchor_view,
+                                   content::WebContents* web_contents,
+                                   translate::TranslateStep step,
+                                   translate::TranslateErrors::Type error_type,
+                                   DisplayReason reason);
 
   // Closes the current bubble if existing.
   static void CloseBubble();

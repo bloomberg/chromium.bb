@@ -46,7 +46,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   bool is_fullscreen = browser_view->IsFullscreen();
   bool anchor_to_view = !is_fullscreen ||
       browser_view->immersive_mode_controller()->IsRevealed();
-  views::View* anchor_view = anchor_to_view ?
+  ZoomView* anchor_view = anchor_to_view ?
       browser_view->GetLocationBarView()->zoom_view() : NULL;
 
   // Find the extension that initiated the zoom change, if any.
@@ -82,7 +82,10 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   if (!anchor_to_view)
     zoom_bubble_->set_parent_window(web_contents->GetNativeView());
 
-  views::BubbleDelegateView::CreateBubble(zoom_bubble_);
+  views::Widget* zoom_bubble_widget =
+      views::BubbleDelegateView::CreateBubble(zoom_bubble_);
+  if (anchor_view)
+    zoom_bubble_widget->AddObserver(anchor_view);
 
   // Adjust for fullscreen after creation as it relies on the content size.
   if (is_fullscreen)

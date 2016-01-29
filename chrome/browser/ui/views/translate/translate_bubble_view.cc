@@ -76,7 +76,7 @@ TranslateBubbleView::~TranslateBubbleView() {
 }
 
 // static
-void TranslateBubbleView::ShowBubble(
+views::Widget* TranslateBubbleView::ShowBubble(
     views::View* anchor_view,
     content::WebContents* web_contents,
     translate::TranslateStep step,
@@ -88,7 +88,7 @@ void TranslateBubbleView::ShowBubble(
     if (translate_bubble_view_->web_contents() == web_contents &&
         translate_bubble_view_->model()->GetViewState() ==
         TranslateBubbleModel::VIEW_STATE_ADVANCED) {
-      return;
+      return nullptr;
     }
     if (step != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
       TranslateBubbleModel::ViewState state =
@@ -97,11 +97,11 @@ void TranslateBubbleView::ShowBubble(
     } else {
       translate_bubble_view_->SwitchToErrorView(error_type);
     }
-    return;
+    return nullptr;
   } else {
     if (step == translate::TRANSLATE_STEP_AFTER_TRANSLATE &&
         reason == AUTOMATIC) {
-      return;
+      return nullptr;
     }
   }
 
@@ -120,8 +120,9 @@ void TranslateBubbleView::ShowBubble(
       new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   TranslateBubbleView* view = new TranslateBubbleView(
       anchor_view, std::move(model), error_type, web_contents);
-  views::BubbleDelegateView::CreateBubble(view);
+  views::Widget* bubble_widget = views::BubbleDelegateView::CreateBubble(view);
   view->ShowForReason(reason);
+  return bubble_widget;
 }
 
 // static

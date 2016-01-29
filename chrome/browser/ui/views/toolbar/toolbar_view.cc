@@ -329,6 +329,17 @@ views::View* ToolbarView::GetTranslateBubbleAnchor() {
              : app_menu_button_;
 }
 
+void ToolbarView::OnBubbleCreatedForAnchor(views::View* anchor_view,
+                                           views::Widget* bubble_widget) {
+  if (bubble_widget &&
+      (anchor_view == location_bar()->star_view() ||
+       anchor_view == location_bar()->save_credit_card_icon_view() ||
+       anchor_view == location_bar()->translate_icon_view())) {
+    DCHECK(anchor_view);
+    bubble_widget->AddObserver(static_cast<BubbleIconView*>(anchor_view));
+  }
+}
+
 void ToolbarView::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {

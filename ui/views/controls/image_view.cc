@@ -65,7 +65,7 @@ void ImageView::SetImage(const gfx::ImageSkia* image_skia) {
   }
 }
 
-const gfx::ImageSkia& ImageView::GetImage() {
+const gfx::ImageSkia& ImageView::GetImage() const {
   return image_;
 }
 

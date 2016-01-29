@@ -81,6 +81,11 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns the view to which the Translate bubble should be anchored.
   views::View* GetTranslateBubbleAnchor();
 
+  // Adds |anchor_view| as an observer of |bubble_widget| to track its
+  // visibility.
+  void OnBubbleCreatedForAnchor(views::View* anchor_view,
+                                views::Widget* bubble_widget);
+
   // Executes |command| registered by |extension|.
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
