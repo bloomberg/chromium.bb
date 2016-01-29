@@ -1066,17 +1066,13 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
     case CSSSelector::PseudoShadow:
         return element.isInShadowTree() && context.previousElement;
     default:
-        break;
-    }
-
-    if (m_mode == QueryingRules)
-        return false;
-    if (m_mode == SharingRules)
+        if (m_mode == SharingRules)
+            return true;
+        ASSERT(m_mode != QueryingRules);
+        result.dynamicPseudo = CSSSelector::pseudoId(selector.pseudoType());
+        ASSERT(result.dynamicPseudo != NOPSEUDO);
         return true;
-
-    result.dynamicPseudo = CSSSelector::pseudoId(selector.pseudoType());
-    ASSERT(result.dynamicPseudo != NOPSEUDO);
-    return true;
+    }
 }
 
 bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, MatchResult& result) const

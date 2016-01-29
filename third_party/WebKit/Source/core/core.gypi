@@ -3916,6 +3916,7 @@
             'dom/NthIndexCacheTest.cpp',
             'dom/RangeTest.cpp',
             'dom/ScriptRunnerTest.cpp',
+            'dom/SelectorQueryTest.cpp',
             'dom/StyleElementTest.cpp',
             'dom/TreeScopeStyleSheetCollectionTest.cpp',
             'dom/TreeScopeTest.cpp',

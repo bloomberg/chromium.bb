@@ -29,6 +29,8 @@ shouldBe('document.querySelectorAll("#foo-host /deep/ span")[2].id', '"nested"')
 shouldBe('document.querySelectorAll("#foo-host /deep/ span")[3].id', '"inner-host"');
 shouldBe('document.querySelectorAll("#foo-host /deep/ span")[4].id', '"outer-host"');
 
+shouldBe('document.querySelector("::before, #foo-host /deep/ span").id', '"not-top"');
+
 // FIXME: after making "*" in shadow tree not to match shadow host, rebaseline.
 var fooShadowRoot = getNodeInTreeOfTrees('foo-host/');
 shouldBe('fooShadowRoot.querySelectorAll("*::shadow span").length', '1');

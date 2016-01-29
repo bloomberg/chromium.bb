@@ -110,6 +110,8 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
     m_selectors.reserveInitialCapacity(selectorCount);
     unsigned index = 0;
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector), ++index) {
+        if (selector->matchesPseudoElement())
+            continue;
         m_selectors.uncheckedAppend(selector);
         m_usesDeepCombinatorOrShadowPseudo |= selectorList.selectorUsesDeepCombinatorOrShadowPseudo(index);
         m_needsUpdatedDistribution |= selectorList.selectorNeedsUpdatedDistribution(index);
@@ -141,10 +143,13 @@ bool SelectorDataList::matches(Element& targetElement) const
 
 Element* SelectorDataList::closest(Element& targetElement) const
 {
+    unsigned selectorCount = m_selectors.size();
+    if (!selectorCount)
+        return nullptr;
+
     if (m_needsUpdatedDistribution)
         targetElement.updateDistribution();
 
-    unsigned selectorCount = m_selectors.size();
     for (Element* currentElement = &targetElement; currentElement; currentElement = currentElement->parentElement()) {
         for (unsigned i = 0; i < selectorCount; ++i) {
             if (selectorMatches(*m_selectors[i], *currentElement, targetElement))
@@ -451,6 +456,9 @@ const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector& firs
 template <typename SelectorQueryTrait>
 void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
+    if (m_selectors.isEmpty())
+        return;
+
     if (!canUseFastQuery(rootNode)) {
         if (m_needsUpdatedDistribution)
             rootNode.updateDistribution();

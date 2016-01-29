@@ -881,6 +881,17 @@ bool CSSSelector::matchNth(int count) const
     return m_data.m_rareData->matchNth(count);
 }
 
+bool CSSSelector::matchesPseudoElement() const
+{
+    for (const CSSSelector* current = this; current; current = current->tagHistory()) {
+        if (current->match() == PseudoElement)
+            return true;
+        if (current->relation() != SubSelector)
+            return false;
+    }
+    return false;
+}
+
 CSSSelector::RareData::RareData(const AtomicString& value)
     : m_matchingValue(value)
     , m_serializingValue(value)

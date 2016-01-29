@@ -15,6 +15,7 @@ PASS document.querySelectorAll("#foo-host /deep/ span")[1].id is "top"
 PASS document.querySelectorAll("#foo-host /deep/ span")[2].id is "nested"
 PASS document.querySelectorAll("#foo-host /deep/ span")[3].id is "inner-host"
 PASS document.querySelectorAll("#foo-host /deep/ span")[4].id is "outer-host"
+PASS document.querySelector("::before, #foo-host /deep/ span").id is "not-top"
 PASS fooShadowRoot.querySelectorAll("*::shadow span").length is 1
 PASS fooShadowRoot.querySelectorAll("*::shadow span")[0].id is "nested"
 PASS fooShadowRoot.querySelectorAll("* /deep/ span").length is 3

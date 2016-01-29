@@ -289,6 +289,8 @@ public:
     bool relationIsAffectedByPseudoContent() const { return m_relationIsAffectedByPseudoContent; }
     void setRelationIsAffectedByPseudoContent() { m_relationIsAffectedByPseudoContent = true; }
 
+    bool matchesPseudoElement() const;
+
 private:
     unsigned m_relation               : 3; // enum Relation
     unsigned m_match                  : 4; // enum Match

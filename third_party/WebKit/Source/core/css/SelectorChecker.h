@@ -45,7 +45,7 @@ class SelectorChecker {
     STACK_ALLOCATED();
 public:
     enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
-    enum Mode { ResolvingStyle = 0, CollectingStyleRules, CollectingCSSRules, QueryingRules, SharingRules };
+    enum Mode { ResolvingStyle, CollectingStyleRules, CollectingCSSRules, QueryingRules, SharingRules };
 
     explicit SelectorChecker(Mode);
 
