@@ -603,6 +603,7 @@ bool AddEffectNodeIfNeeded(
   node.data.has_render_surface = should_create_render_surface;
   node.data.has_copy_request = layer->HasCopyRequest();
   node.data.has_background_filters = !layer->background_filters().IsEmpty();
+  node.data.has_animated_opacity = has_animated_opacity;
 
   if (!is_root) {
     // The effect node's transform id is used only when we create a render
@@ -616,10 +617,6 @@ bool AddEffectNodeIfNeeded(
           data_from_ancestor.transform_tree->next_available_id();
     }
     node.data.clip_id = data_from_ancestor.clip_tree_parent;
-
-    EffectNode* parent = data_from_ancestor.effect_tree->Node(parent_id);
-    node.data.screen_space_opacity_is_animating =
-        parent->data.screen_space_opacity_is_animating || has_animated_opacity;
   } else {
     // Root render surface acts the unbounded and untransformed to draw content
     // into. Transform node created from root layer (includes device scale
@@ -627,7 +624,6 @@ bool AddEffectNodeIfNeeded(
     // to root render surface's content, but not root render surface itself.
     node.data.transform_id = kRootPropertyTreeNodeId;
     node.data.clip_id = kRootPropertyTreeNodeId;
-    node.data.screen_space_opacity_is_animating = has_animated_opacity;
   }
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);

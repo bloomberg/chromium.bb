@@ -251,7 +251,7 @@ struct CC_EXPORT EffectNodeData {
   bool has_copy_request;
   bool has_background_filters;
   bool is_drawn;
-  bool screen_space_opacity_is_animating;
+  bool has_animated_opacity;
   int num_copy_requests_in_subtree;
   int transform_id;
   int clip_id;

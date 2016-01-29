@@ -85,7 +85,7 @@ message EffectNodeData {
   optional bool has_copy_request = 4;
   optional bool has_background_filters = 5;
   optional bool is_drawn = 6;
-  optional bool screen_space_opacity_is_animating = 7;
+  optional bool has_animated_opacity = 7;
   optional int64 num_copy_requests_in_subtree = 8;
   optional int64 transform_id = 9;
   optional int64 clip_id = 10;

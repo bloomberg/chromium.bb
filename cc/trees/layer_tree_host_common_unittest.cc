@@ -5188,7 +5188,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   // If the root itself is hidden, the child should not be drawn even if it has
   // an animating opacity.
-  root->SetOpacity(0.f);
+  root->SetOpacity(0.0f);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerImplList render_surface_layer_list2;
   root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
@@ -5202,6 +5202,25 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   EffectTree tree = root->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
+
+  // A layer should be drawn and it should contribute to drawn surface when
+  // it has animating opacity even if it has opacity 0.
+  root->SetOpacity(1.0f);
+  child_ptr->SetOpacity(0.0f);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  LayerImplList render_surface_layer_list3;
+  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs3(
+      root.get(), root->bounds(), &render_surface_layer_list3,
+      root->layer_tree_impl()->current_render_surface_list_id());
+  inputs3.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs3);
+
+  child_ptr = root->layer_tree_impl()->LayerById(2);
+  tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  node = tree.Node(child_ptr->effect_tree_index());
+  EXPECT_TRUE(node->data.is_drawn);
+  EXPECT_TRUE(tree.ContributesToDrawnSurface(child_ptr->effect_tree_index()));
 }
 
 class LayerTreeSettingsForLCDTextTest : public LayerTreeSettings {

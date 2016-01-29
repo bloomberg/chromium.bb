@@ -422,7 +422,7 @@ EffectNodeData::EffectNodeData()
       has_copy_request(false),
       has_background_filters(false),
       is_drawn(true),
-      screen_space_opacity_is_animating(false),
+      has_animated_opacity(false),
       num_copy_requests_in_subtree(0),
       transform_id(0),
       clip_id(0) {}
@@ -434,8 +434,7 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          has_copy_request == other.has_copy_request &&
          has_background_filters == other.has_background_filters &&
          is_drawn == other.is_drawn &&
-         screen_space_opacity_is_animating ==
-             other.screen_space_opacity_is_animating &&
+         has_animated_opacity == other.has_animated_opacity &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id;
 }
@@ -449,8 +448,7 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_has_copy_request(has_copy_request);
   data->set_has_background_filters(has_background_filters);
   data->set_is_drawn(is_drawn);
-  data->set_screen_space_opacity_is_animating(
-      screen_space_opacity_is_animating);
+  data->set_has_animated_opacity(has_animated_opacity);
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
   data->set_transform_id(transform_id);
   data->set_clip_id(clip_id);
@@ -466,7 +464,7 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   has_copy_request = data.has_copy_request();
   has_background_filters = data.has_background_filters();
   is_drawn = data.is_drawn();
-  screen_space_opacity_is_animating = data.screen_space_opacity_is_animating();
+  has_animated_opacity = data.has_animated_opacity();
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
   clip_id = data.clip_id();
@@ -1103,9 +1101,7 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   //    drawn irrespective of their opacity.
   if (node->data.has_copy_request || node->data.has_background_filters)
     node->data.is_drawn = true;
-  else if (node->data.screen_space_opacity_is_animating)
-    node->data.is_drawn = parent_node ? parent_node->data.is_drawn : true;
-  else if (node->data.opacity == 0.f)
+  else if (node->data.opacity == 0.f && !node->data.has_animated_opacity)
     node->data.is_drawn = false;
   else if (parent_node)
     node->data.is_drawn = parent_node->data.is_drawn;
@@ -1137,7 +1133,8 @@ bool EffectTree::ContributesToDrawnSurface(int id) {
   EffectNode* parent_node = parent(node);
   bool contributes_to_drawn_surface =
       node->data.is_drawn &&
-      (node->data.opacity != 0.f || node->data.has_background_filters);
+      (node->data.opacity != 0.f || node->data.has_animated_opacity ||
+       node->data.has_background_filters);
   if (parent_node && !parent_node->data.is_drawn)
     contributes_to_drawn_surface = false;
   return contributes_to_drawn_surface;
