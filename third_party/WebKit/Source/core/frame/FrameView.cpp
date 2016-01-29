@@ -189,7 +189,7 @@ DEFINE_TRACE(FrameView)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);
-    visitor->trace(m_scrollAnchor);
+    visitor->trace(m_fragmentAnchor);
     visitor->trace(m_scrollableAreas);
     visitor->trace(m_animatingScrollableAreas);
     visitor->trace(m_autoSizeInfo);
@@ -221,7 +221,7 @@ void FrameView::reset()
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
-    clearScrollAnchor();
+    clearFragmentAnchor();
     m_viewportConstrainedObjects.clear();
     m_layoutSubtreeRootList.clear();
 }
@@ -1483,7 +1483,7 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
         return false;
 
     if (behavior == UrlFragmentScroll)
-        maintainScrollPositionAtAnchor(anchorNode ? static_cast<Node*>(anchorNode) : m_frame->document());
+        setFragmentAnchor(anchorNode ? static_cast<Node*>(anchorNode) : m_frame->document());
 
     // If the anchor accepts keyboard focus, move focus there to aid users
     // relying on keyboard navigation.
@@ -1499,10 +1499,10 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
     return true;
 }
 
-void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
+void FrameView::setFragmentAnchor(Node* anchorNode)
 {
     ASSERT(anchorNode);
-    m_scrollAnchor = anchorNode;
+    m_fragmentAnchor = anchorNode;
 
     // We need to update the layout tree before scrolling.
     m_frame->document()->updateLayoutTreeIfNeeded();
@@ -1512,12 +1512,12 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
     if (layoutView && layoutView->needsLayout())
         layout();
     else
-        scrollToAnchor();
+        scrollToFragmentAnchor();
 }
 
-void FrameView::clearScrollAnchor()
+void FrameView::clearFragmentAnchor()
 {
-    m_scrollAnchor = nullptr;
+    m_fragmentAnchor = nullptr;
 }
 
 void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scrollType, ScrollBehavior scrollBehavior)
@@ -1721,9 +1721,9 @@ void FrameView::handleLoadCompleted()
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
 
-    // If there is a pending layout, the scroll anchor will be cleared when it finishes.
+    // If there is a pending layout, the fragment anchor will be cleared when it finishes.
     if (!needsLayout())
-        clearScrollAnchor();
+        clearFragmentAnchor();
 }
 
 void FrameView::clearLayoutSubtreeRoot(const LayoutObject& root)
@@ -1866,14 +1866,14 @@ void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool t
     });
 }
 
-void FrameView::scrollToAnchor()
+void FrameView::scrollToFragmentAnchor()
 {
-    RefPtrWillBeRawPtr<Node> anchorNode = m_scrollAnchor;
+    RefPtrWillBeRawPtr<Node> anchorNode = m_fragmentAnchor;
     if (!anchorNode)
         return;
 
     // Scrolling is disabled during updateScrollbars (see isProgrammaticallyScrollable).
-    // Bail now to avoid clearing m_scrollAnchor before we actually have a chance to scroll.
+    // Bail now to avoid clearing m_fragmentAnchor before we actually have a chance to scroll.
     if (m_inUpdateScrollbars)
         return;
 
@@ -1903,10 +1903,10 @@ void FrameView::scrollToAnchor()
             cache->handleScrolledToAnchor(anchorNode.get());
     }
 
-    // The scroll anchor should only be maintained while the frame is still loading.
+    // The fragment anchor should only be maintained while the frame is still loading.
     // If the frame is done loading, clear the anchor now. Otherwise, restore it
     // since it may have been cleared during scrollRectToVisible.
-    m_scrollAnchor = m_frame->document()->isLoadCompleted() ? nullptr : anchorNode;
+    m_fragmentAnchor = m_frame->document()->isLoadCompleted() ? nullptr : anchorNode;
 }
 
 bool FrameView::updateWidgets()
@@ -2010,7 +2010,7 @@ void FrameView::performPostLayoutTasks()
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->notifyGeometryChanged();
 
-    scrollToAnchor();
+    scrollToFragmentAnchor();
 
     sendResizeEventIfNeeded();
 }
@@ -2104,7 +2104,7 @@ void FrameView::scrollTo(const DoublePoint& newPosition)
     if (!scrollbarsSuppressed())
         m_pendingScrollDelta += scrollDelta;
 
-    clearScrollAnchor();
+    clearFragmentAnchor();
     updateLayersAndCompositingAfterScrollIfNeeded();
     scrollPositionChanged();
     frame().loader().client()->didChangeScrollOffset();

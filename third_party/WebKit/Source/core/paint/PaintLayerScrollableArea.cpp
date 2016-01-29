@@ -405,8 +405,8 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
         frame->loader().client()->didChangeScrollOffset();
     }
 
-    // All scrolls clear the scroll anchor.
-    frameView->clearScrollAnchor();
+    // All scrolls clear the fragment anchor.
+    frameView->clearFragmentAnchor();
 }
 
 IntPoint PaintLayerScrollableArea::scrollPosition() const

@@ -23,7 +23,7 @@ description("Tests that after an explicit scroll, we do not continue to " +
 
 location.hash = "a1";
 
-// This scroll should reset FrameView::m_scrollAnchor.
+// This scroll should reset FrameView::m_fragmentAnchor.
 scrollTo(0, 10);
 
 // Force a layout.

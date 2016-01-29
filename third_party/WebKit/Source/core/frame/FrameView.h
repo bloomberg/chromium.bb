@@ -255,7 +255,7 @@ public:
         UrlFragmentDontScroll
     };
     bool processUrlFragment(const KURL&, UrlFragmentBehavior = UrlFragmentScroll);
-    void clearScrollAnchor();
+    void clearFragmentAnchor();
 
     // Methods to convert points and rects between the coordinate space of the layoutObject, and this view.
     IntRect convertFromLayoutObject(const LayoutObject&, const IntRect&) const;
@@ -691,8 +691,8 @@ private:
     bool updateWidgets();
 
     bool processUrlFragmentHelper(const String&, UrlFragmentBehavior);
-    void maintainScrollPositionAtAnchor(Node*);
-    void scrollToAnchor();
+    void setFragmentAnchor(Node*);
+    void scrollToFragmentAnchor();
     void scrollPositionChanged();
     void didScrollTimerFired(Timer<FrameView>*);
 
@@ -810,7 +810,7 @@ private:
     unsigned m_visuallyNonEmptyPixelCount;
     bool m_isVisuallyNonEmpty;
 
-    RefPtrWillBeMember<Node> m_scrollAnchor;
+    RefPtrWillBeMember<Node> m_fragmentAnchor;
 
     // layoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
