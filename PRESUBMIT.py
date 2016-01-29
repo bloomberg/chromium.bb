@@ -982,7 +982,11 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   introduced. This check verifies that this happens.
   """
   changed_lines = set()
-  for f in input_api.AffectedFiles():
+
+  file_filter = lambda f: not input_api.re.match(
+      r"^third_party[\\\/]WebKit[\\\/].*", f.LocalPath())
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=file_filter):
     filename = input_api.os_path.basename(f.LocalPath())
     if filename == 'DEPS':
       changed_lines |= set(line.strip()
