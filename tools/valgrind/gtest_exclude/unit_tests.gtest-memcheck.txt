@@ -38,3 +38,6 @@ ExtensionMessageBubbleTest.*
 DesktopMediaListAshTest.*
 ExtensionTestMessageListenerUnittest.*
 SigninErrorNotifierTest.*
+
+# Hangs: https://crbug.com/582372
+CombinedDesktopMediaListTest.*
