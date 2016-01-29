@@ -11,7 +11,6 @@
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
         '../src/shared/platform/platform.gyp:*',
-        '../src/shared/serialization/serialization.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/trusted/cpu_features/cpu_features.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',

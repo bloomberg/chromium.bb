@@ -2174,7 +2174,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
       'src/shared/platform/build.scons',
-      'src/shared/serialization/build.scons',
       'src/shared/srpc/build.scons',
       'src/third_party/gtest/build.scons',
       'src/trusted/cpu_features/build.scons',
