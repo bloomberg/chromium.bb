@@ -35,7 +35,6 @@
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 class WebWaitableEvent;
@@ -73,7 +72,6 @@ private:
     bool m_done;
     RefPtr<ThreadableLoaderClientWrapper> m_client;
     OwnPtr<WebWaitableEvent> m_event;
-    Vector<Vector<char>*> m_receivedData;
     // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
     // on the main thread only before |m_event| is signaled and can be read
     // on the worker context thread only after |m_event| is signaled.

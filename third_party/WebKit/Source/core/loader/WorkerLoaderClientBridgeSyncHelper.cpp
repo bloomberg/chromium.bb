@@ -39,6 +39,7 @@
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -49,10 +50,7 @@ PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> WorkerLoaderClientBridgeSyncHelpe
 
 WorkerLoaderClientBridgeSyncHelper::~WorkerLoaderClientBridgeSyncHelper()
 {
-    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
-    for (size_t i = 0; i < m_receivedData.size(); ++i)
-        delete m_receivedData[i];
 }
 
 void WorkerLoaderClientBridgeSyncHelper::run()
@@ -91,10 +89,9 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, unsign
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     RELEASE_ASSERT(!m_done);
-    Vector<char>* buffer = new Vector<char>(dataLength);
+    OwnPtr<Vector<char>> buffer = adoptPtr(new Vector<char>(dataLength));
     memcpy(buffer->data(), data, dataLength);
-    m_receivedData.append(buffer);
-    m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didReceiveData, AllowCrossThreadAccess(m_client.get()), AllowCrossThreadAccess(static_cast<const char*>(buffer->data())), dataLength));
+    m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didReceiveData, AllowCrossThreadAccess(m_client.get()), buffer.release()));
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didDownloadData(int dataLength)
@@ -110,10 +107,9 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveCachedMetadata(const char* da
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     RELEASE_ASSERT(!m_done);
-    Vector<char>* buffer = new Vector<char>(dataLength);
+    OwnPtr<Vector<char>> buffer = adoptPtr(new Vector<char>(dataLength));
     memcpy(buffer->data(), data, dataLength);
-    m_receivedData.append(buffer);
-    m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didReceiveCachedMetadata, AllowCrossThreadAccess(m_client.get()), AllowCrossThreadAccess(static_cast<const char*>(buffer->data())), dataLength));
+    m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didReceiveCachedMetadata, AllowCrossThreadAccess(m_client.get()), buffer.release()));
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didFinishLoading(unsigned long identifier, double finishTime)

@@ -79,7 +79,7 @@ static void workerGlobalScopeDidReceiveData(PassRefPtr<ThreadableLoaderClientWra
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     RELEASE_ASSERT(vectorData->size() <= std::numeric_limits<unsigned>::max());
-    workerClientWrapper->didReceiveData(vectorData->data(), vectorData->size());
+    workerClientWrapper->didReceiveData(vectorData);
 }
 
 void WorkerLoaderClientBridge::didReceiveData(const char* data, unsigned dataLength)
@@ -103,7 +103,7 @@ void WorkerLoaderClientBridge::didDownloadData(int dataLength)
 static void workerGlobalScopeDidReceiveCachedMetadata(PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper, PassOwnPtr<Vector<char>> vectorData, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didReceiveCachedMetadata(vectorData->data(), vectorData->size());
+    workerClientWrapper->didReceiveCachedMetadata(vectorData);
 }
 
 void WorkerLoaderClientBridge::didReceiveCachedMetadata(const char* data, int dataLength)

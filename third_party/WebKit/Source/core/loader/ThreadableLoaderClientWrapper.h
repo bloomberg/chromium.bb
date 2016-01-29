@@ -33,9 +33,11 @@
 
 #include "core/loader/ThreadableLoaderClient.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Threading.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -85,16 +87,16 @@ public:
             m_client->didReceiveResponse(identifier, response, handle);
     }
 
-    void didReceiveData(const char* data, unsigned dataLength)
+    void didReceiveData(PassOwnPtr<Vector<char>> data)
     {
         if (m_client)
-            m_client->didReceiveData(data, dataLength);
+            m_client->didReceiveData(data->data(), data->size());
     }
 
-    void didReceiveCachedMetadata(const char* data, int dataLength)
+    void didReceiveCachedMetadata(PassOwnPtr<Vector<char>> data)
     {
         if (m_client)
-            m_client->didReceiveCachedMetadata(data, dataLength);
+            m_client->didReceiveCachedMetadata(data->data(), data->size());
     }
 
     void didFinishLoading(unsigned long identifier, double finishTime)
