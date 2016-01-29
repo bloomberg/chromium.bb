@@ -111,9 +111,9 @@ struct TypeConverter<device::usb::WebUsbConfigurationSubsetPtr,
 
 template <>
 struct TypeConverter<device::usb::WebUsbDescriptorSetPtr,
-                     device::WebUsbDescriptorSet> {
+                     device::WebUsbAllowedOrigins> {
   static device::usb::WebUsbDescriptorSetPtr Convert(
-      const device::WebUsbDescriptorSet& set);
+      const device::WebUsbAllowedOrigins& allowed_origins);
 };
 
 template <>

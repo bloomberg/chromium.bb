@@ -236,14 +236,14 @@ TypeConverter<device::usb::WebUsbConfigurationSubsetPtr,
 // static
 device::usb::WebUsbDescriptorSetPtr TypeConverter<
     device::usb::WebUsbDescriptorSetPtr,
-    device::WebUsbDescriptorSet>::Convert(const device::WebUsbDescriptorSet&
-                                              set) {
+    device::WebUsbAllowedOrigins>::Convert(const device::WebUsbAllowedOrigins&
+                                               allowed_origins) {
   device::usb::WebUsbDescriptorSetPtr info =
       device::usb::WebUsbDescriptorSet::New();
-  info->origins = mojo::Array<mojo::String>::From(set.origins);
+  info->origins = mojo::Array<mojo::String>::From(allowed_origins.origins);
   info->configurations =
       mojo::Array<device::usb::WebUsbConfigurationSubsetPtr>::From(
-          set.configurations);
+          allowed_origins.configurations);
   return info;
 }
 

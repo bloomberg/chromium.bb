@@ -48,11 +48,6 @@ namespace {
 const uint16_t kUsbVersion2_1 = 0x0210;
 const uint8_t kGetDescriptorRequest = 0x06;
 const uint8_t kStringDescriptorType = 0x03;
-const uint8_t kBosDescriptorType = 0x0F;
-
-// WebUSB requests:
-const uint8_t kGetAllowedOriginsRequest = 0x01;
-const uint8_t kGetLandingPageRequest = 0x02;
 
 const int kControlTransferTimeout = 60000;  // 1 minute
 
@@ -150,147 +145,6 @@ void ReadStringDescriptor(
       base::Bind(&OnReadStringDescriptor, callback));
 }
 
-void OnReadWebUsbLandingPage(scoped_refptr<UsbDevice> device,
-                             const base::Closure& callback,
-                             UsbTransferStatus status,
-                             scoped_refptr<net::IOBuffer> buffer,
-                             size_t length) {
-  if (status != USB_TRANSFER_COMPLETED) {
-    USB_LOG(EVENT) << "Failed to read WebUSB landing page.";
-    callback.Run();
-    return;
-  }
-
-  GURL landing_page;
-  if (ParseWebUsbUrlDescriptor(
-          std::vector<uint8_t>(buffer->data(), buffer->data() + length),
-          &landing_page)) {
-    UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
-    device_impl->set_webusb_landing_page(landing_page);
-  }
-  callback.Run();
-}
-
-void ReadWebUsbLandingPage(scoped_refptr<UsbDeviceHandle> device_handle,
-                           const base::Closure& callback,
-                           uint8_t vendor_code) {
-  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(255);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
-      vendor_code, 0, kGetLandingPageRequest, buffer, buffer->size(),
-      kControlTransferTimeout,
-      base::Bind(&OnReadWebUsbLandingPage, device_handle->GetDevice(),
-                 callback));
-}
-
-void OnReadWebUsbAllowedOrigins(scoped_refptr<UsbDevice> device,
-                                const base::Closure& callback,
-                                UsbTransferStatus status,
-                                scoped_refptr<net::IOBuffer> buffer,
-                                size_t length) {
-  if (status != USB_TRANSFER_COMPLETED) {
-    USB_LOG(EVENT) << "Failed to read WebUSB allowed origins.";
-    callback.Run();
-    return;
-  }
-
-  scoped_ptr<WebUsbDescriptorSet> descriptors(new WebUsbDescriptorSet());
-  if (descriptors->Parse(
-          std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
-    UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
-    device_impl->set_webusb_allowed_origins(std::move(descriptors));
-  }
-  callback.Run();
-}
-
-void OnReadWebUsbAllowedOriginsHeader(
-    scoped_refptr<UsbDeviceHandle> device_handle,
-    const base::Closure& callback,
-    uint8_t vendor_code,
-    UsbTransferStatus status,
-    scoped_refptr<net::IOBuffer> buffer,
-    size_t length) {
-  if (status != USB_TRANSFER_COMPLETED || length != 4) {
-    USB_LOG(EVENT) << "Failed to read WebUSB allowed origins header.";
-    callback.Run();
-    return;
-  }
-
-  uint16_t new_length = buffer->data()[2] | (buffer->data()[3] << 8);
-  scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
-      vendor_code, 0, kGetAllowedOriginsRequest, new_buffer, new_buffer->size(),
-      kControlTransferTimeout,
-      base::Bind(&OnReadWebUsbAllowedOrigins, device_handle->GetDevice(),
-                 callback));
-}
-
-void ReadWebUsbAllowedOrigins(scoped_refptr<UsbDeviceHandle> device_handle,
-                              const base::Closure& callback,
-                              uint8_t vendor_code) {
-  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(4);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
-      vendor_code, 0, kGetAllowedOriginsRequest, buffer, buffer->size(),
-      kControlTransferTimeout,
-      base::Bind(&OnReadWebUsbAllowedOriginsHeader, device_handle, callback,
-                 vendor_code));
-}
-
-void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
-                         const base::Closure& callback,
-                         UsbTransferStatus status,
-                         scoped_refptr<net::IOBuffer> buffer,
-                         size_t length) {
-  if (status != USB_TRANSFER_COMPLETED) {
-    USB_LOG(EVENT) << "Failed to read BOS descriptor.";
-    callback.Run();
-    return;
-  }
-
-  WebUsbPlatformCapabilityDescriptor descriptor;
-  if (!descriptor.ParseFromBosDescriptor(
-          std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
-    callback.Run();
-    return;
-  }
-
-  base::Closure barrier = base::BarrierClosure(2, callback);
-  ReadWebUsbLandingPage(device_handle, barrier, descriptor.vendor_code);
-  ReadWebUsbAllowedOrigins(device_handle, barrier, descriptor.vendor_code);
-}
-
-void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
-                               const base::Closure& callback,
-                               UsbTransferStatus status,
-                               scoped_refptr<net::IOBuffer> buffer,
-                               size_t length) {
-  if (status != USB_TRANSFER_COMPLETED || length != 5) {
-    USB_LOG(EVENT) << "Failed to read BOS descriptor header.";
-    callback.Run();
-    return;
-  }
-
-  uint16_t new_length = buffer->data()[2] | (buffer->data()[3] << 8);
-  scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
-      kGetDescriptorRequest, kBosDescriptorType << 8, 0, new_buffer,
-      new_buffer->size(), kControlTransferTimeout,
-      base::Bind(&OnReadBosDescriptor, device_handle, callback));
-}
-
-void ReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
-                       const base::Closure& callback) {
-  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(5);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
-      kGetDescriptorRequest, kBosDescriptorType << 8, 0, buffer, buffer->size(),
-      kControlTransferTimeout,
-      base::Bind(&OnReadBosDescriptorHeader, device_handle, callback));
-}
-
 void CloseHandleAndRunContinuation(scoped_refptr<UsbDeviceHandle> device_handle,
                                    const base::Closure& continuation) {
   device_handle->Close();
@@ -349,6 +203,21 @@ void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
   }
 }
 
+void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
+                         const base::Closure& barrier,
+                         scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
+                         const GURL& landing_page) {
+  scoped_refptr<UsbDeviceImpl> device =
+      static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
+
+  if (allowed_origins)
+    device->set_webusb_allowed_origins(std::move(allowed_origins));
+  if (landing_page.is_valid())
+    device->set_webusb_landing_page(landing_page);
+
+  barrier.Run();
+}
+
 void OnDeviceOpenedReadDescriptors(
     uint8_t manufacturer,
     uint8_t product,
@@ -381,7 +250,8 @@ void OnDeviceOpenedReadDescriptors(
     }
 
     if (read_bos_descriptors) {
-      ReadBosDescriptor(device_handle, barrier);
+      ReadWebUsbDescriptors(device_handle, base::Bind(&OnReadBosDescriptor,
+                                                      device_handle, barrier));
     }
   } else {
     failure_closure.Run();

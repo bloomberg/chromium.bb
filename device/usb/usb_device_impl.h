@@ -61,8 +61,9 @@ class UsbDeviceImpl : public UsbDevice {
     serial_number_ = value;
   }
   void set_device_path(const std::string& value) { device_path_ = value; }
-  void set_webusb_allowed_origins(scoped_ptr<WebUsbDescriptorSet> descriptors) {
-    webusb_allowed_origins_ = std::move(descriptors);
+  void set_webusb_allowed_origins(
+      scoped_ptr<WebUsbAllowedOrigins> allowed_origins) {
+    webusb_allowed_origins_ = std::move(allowed_origins);
   }
   void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }
 

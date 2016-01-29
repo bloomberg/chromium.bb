@@ -48,16 +48,16 @@ void RecordChooserClosure(WebUsbChooserClosed disposition) {
                             WEBUSB_CHOOSER_CLOSED_MAX);
 }
 
-// Check if the origin is in the description set.
-bool FindOriginInDescriptorSet(const device::WebUsbDescriptorSet* set,
-                               const GURL& origin) {
-  if (!set)
+// Check if the origin is allowed.
+bool FindInAllowedOrigins(const device::WebUsbAllowedOrigins* allowed_origins,
+                          const GURL& origin) {
+  if (!allowed_origins)
     return false;
 
-  if (ContainsValue(set->origins, origin))
+  if (ContainsValue(allowed_origins->origins, origin))
     return true;
 
-  for (const auto& config : set->configurations) {
+  for (const auto& config : allowed_origins->configurations) {
     if (ContainsValue(config.origins, origin))
       return true;
 
@@ -152,7 +152,7 @@ void UsbChooserBubbleDelegate::Close() {}
 void UsbChooserBubbleDelegate::OnDeviceAdded(
     scoped_refptr<device::UsbDevice> device) {
   if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
-      FindOriginInDescriptorSet(
+      FindInAllowedOrigins(
           device->webusb_allowed_origins(),
           render_frame_host_->GetLastCommittedURL().GetOrigin())) {
     devices_.push_back(std::make_pair(device, device->product_string()));
@@ -180,7 +180,7 @@ void UsbChooserBubbleDelegate::GotUsbDeviceList(
     const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
   for (const auto& device : devices) {
     if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
-        FindOriginInDescriptorSet(
+        FindInAllowedOrigins(
             device->webusb_allowed_origins(),
             render_frame_host_->GetLastCommittedURL().GetOrigin())) {
       devices_.push_back(std::make_pair(device, device->product_string()));

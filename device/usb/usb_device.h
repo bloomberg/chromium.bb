@@ -20,7 +20,7 @@
 namespace device {
 
 class UsbDeviceHandle;
-struct WebUsbDescriptorSet;
+struct WebUsbAllowedOrigins;
 
 // A UsbDevice object represents a detected USB device, providing basic
 // information about it. Methods other than simple property accessors must be
@@ -44,7 +44,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   }
   const base::string16& product_string() const { return product_string_; }
   const base::string16& serial_number() const { return serial_number_; }
-  const WebUsbDescriptorSet* webusb_allowed_origins() const {
+  const WebUsbAllowedOrigins* webusb_allowed_origins() const {
     return webusb_allowed_origins_.get();
   }
   const GURL& webusb_landing_page() const { return webusb_landing_page_; }
@@ -78,7 +78,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   base::string16 manufacturer_string_;
   base::string16 product_string_;
   base::string16 serial_number_;
-  scoped_ptr<WebUsbDescriptorSet> webusb_allowed_origins_;
+  scoped_ptr<WebUsbAllowedOrigins> webusb_allowed_origins_;
   GURL webusb_landing_page_;
 
   // All of the device's configuration descriptors.

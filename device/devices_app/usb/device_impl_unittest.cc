@@ -21,6 +21,7 @@
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Invoke;

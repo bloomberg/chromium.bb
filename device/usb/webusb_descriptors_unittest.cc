@@ -4,8 +4,15 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+
+#include "base/bind.h"
+#include "base/stl_util.h"
+#include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/webusb_descriptors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
 
 namespace device {
 
@@ -20,54 +27,74 @@ const uint8_t kExampleBosDescriptor[] = {
     0x8E, 0x64, 0xFF, 0x01, 0x0C, 0x7F, 0x94, 0xE1,
 
     // WebUSB Platform Capability descriptor.
-    0x17, 0x10, 0x05, 0x00, 0x38, 0xB6, 0x08, 0x34, 0xA9, 0x09, 0xA0, 0x47,
-    0x8B, 0xFD, 0xA0, 0x76, 0x88, 0x15, 0xB6, 0x65, 0x00, 0x01, 0x42,
+    0x18, 0x10, 0x05, 0x00, 0x38, 0xB6, 0x08, 0x34, 0xA9, 0x09, 0xA0, 0x47,
+    0x8B, 0xFD, 0xA0, 0x76, 0x88, 0x15, 0xB6, 0x65, 0x00, 0x01, 0x42, 0x01,
 
     // Microsoft OS 2.0 Platform Capability descriptor.
     0x1C, 0x10, 0x05, 0x00, 0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C,
     0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F, 0x00, 0x00, 0x03, 0x06,
     0x00, 0x00, 0x01, 0x00};
 
-const uint8_t kExampleDescriptorSet[] = {
-    // Descriptor set header.
-    0x04, 0x00, 0x9E, 0x00,
-
-    // URL descriptor: https://example.com:80
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x', 'a', 'm', 'p',
-    'l', 'e', '.', 'c', 'o', 'm', ':', '8', '0',
-
+const uint8_t kExampleAllowedOrigins[] = {
+    // Allowed origins header.
+    0x07, 0x00, 0x12, 0x00, 0x01, 0x01, 0x02,
     // Configuration subset header. {
-    0x05, 0x01, 0x01, 0x6A, 0x00,
-
-    //   URL descriptor: https://example.com:81
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x', 'a', 'm', 'p',
-    'l', 'e', '.', 'c', 'o', 'm', ':', '8', '1',
-
+    0x06, 0x01, 0x01, 0x01, 0x03, 0x04,
     //   Function subset header. {
-    0x05, 0x02, 0x01, 0x35, 0x00,
-
-    //     URL descriptor: https://example.com:82
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x', 'a', 'm', 'p',
-    'l', 'e', '.', 'c', 'o', 'm', ':', '8', '2',
-
-    //     URL descriptor: https://example.com:83
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x', 'a', 'm', 'p',
-    'l', 'e', '.', 'c', 'o', 'm', ':', '8', '3',
-
+    0x05, 0x02, 0x01, 0x05, 0x06
     //   }
-    //   URL descriptor: https://example.com:84
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x', 'a', 'm', 'p',
-    'l', 'e', '.', 'c', 'o', 'm', ':', '8', '4',
-
     // }
-    // URL descriptor: https://example.com:85
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x', 'a', 'm', 'p',
-    'l', 'e', '.', 'c', 'o', 'm', ':', '8', '5',
 };
 
-const uint8_t kExampleUrlDescriptor[] = {
-    0x18, 0x03, 'h', 't', 't', 'p', 's', ':', '/', '/', 'e', 'x',
-    'a',  'm',  'p', 'l', 'e', '.', 'c', 'o', 'm', ':', '8', '0'};
+const uint8_t kExampleUrlDescriptor1[] = {
+    0x19, 0x03, 0x01, 'e', 'x', 'a', 'm', 'p', 'l', 'e', '.', 'c', 'o',
+    'm',  '/',  'i',  'n', 'd', 'e', 'x', '.', 'h', 't', 'm', 'l'};
+
+const uint8_t kExampleUrlDescriptor2[] = {0x11, 0x03, 0x01, 'e', 'x', 'a',
+                                          'm',  'p',  'l',  'e', '.', 'c',
+                                          'o',  'm',  ':',  '8', '1'};
+
+const uint8_t kExampleUrlDescriptor3[] = {0x11, 0x03, 0x01, 'e', 'x', 'a',
+                                          'm',  'p',  'l',  'e', '.', 'c',
+                                          'o',  'm',  ':',  '8', '2'};
+
+const uint8_t kExampleUrlDescriptor4[] = {0x11, 0x03, 0x01, 'e', 'x', 'a',
+                                          'm',  'p',  'l',  'e', '.', 'c',
+                                          'o',  'm',  ':',  '8', '3'};
+
+const uint8_t kExampleUrlDescriptor5[] = {0x11, 0x03, 0x01, 'e', 'x', 'a',
+                                          'm',  'p',  'l',  'e', '.', 'c',
+                                          'o',  'm',  ':',  '8', '4'};
+
+const uint8_t kExampleUrlDescriptor6[] = {0x11, 0x03, 0x01, 'e', 'x', 'a',
+                                          'm',  'p',  'l',  'e', '.', 'c',
+                                          'o',  'm',  ':',  '8', '5'};
+
+ACTION_P2(InvokeCallback, data, length) {
+  size_t transferred_length = std::min(length, arg7);
+  memcpy(arg6->data(), data, transferred_length);
+  arg9.Run(USB_TRANSFER_COMPLETED, arg6, transferred_length);
+}
+
+void ExpectAllowedOriginsAndLandingPage(
+    scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
+    const GURL& landing_page) {
+  EXPECT_EQ(GURL("https://example.com/index.html"), landing_page);
+  ASSERT_TRUE(allowed_origins);
+  ASSERT_EQ(2u, allowed_origins->origins.size());
+  EXPECT_EQ(GURL("https://example.com"), allowed_origins->origins[0]);
+  EXPECT_EQ(GURL("https://example.com:81"), allowed_origins->origins[1]);
+  ASSERT_EQ(1u, allowed_origins->configurations.size());
+  EXPECT_EQ(GURL("https://example.com:82"),
+            allowed_origins->configurations[0].origins[0]);
+  EXPECT_EQ(GURL("https://example.com:83"),
+            allowed_origins->configurations[0].origins[1]);
+  ASSERT_EQ(1u, allowed_origins->configurations[0].functions.size());
+  EXPECT_EQ(GURL("https://example.com:84"),
+            allowed_origins->configurations[0].functions[0].origins[0]);
+  EXPECT_EQ(GURL("https://example.com:85"),
+            allowed_origins->configurations[0].functions[0].origins[1]);
+}
 
 class WebUsbDescriptorsTest : public ::testing::Test {};
 
@@ -102,8 +129,8 @@ TEST_F(WebUsbDescriptorsTest, LongBosDescriptorHeader) {
 TEST_F(WebUsbDescriptorsTest, InvalidBosDescriptor) {
   WebUsbPlatformCapabilityDescriptor descriptor;
   ASSERT_FALSE(descriptor.ParseFromBosDescriptor(std::vector<uint8_t>(
-      kExampleUrlDescriptor,
-      kExampleUrlDescriptor + sizeof(kExampleUrlDescriptor))));
+      kExampleUrlDescriptor1,
+      kExampleUrlDescriptor1 + sizeof(kExampleUrlDescriptor1))));
 }
 
 TEST_F(WebUsbDescriptorsTest, ShortBosDescriptor) {
@@ -217,227 +244,108 @@ TEST_F(WebUsbDescriptorsTest, WebUsbPlatformCapabilityDescriptorOutOfDate) {
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, DescriptorSet) {
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, AllowedOrigins) {
+  WebUsbAllowedOrigins descriptor;
 
   ASSERT_TRUE(descriptor.Parse(std::vector<uint8_t>(
-      kExampleDescriptorSet,
-      kExampleDescriptorSet + sizeof(kExampleDescriptorSet))));
-  EXPECT_EQ(2u, descriptor.origins.size());
-  EXPECT_EQ(GURL("https://example.com:80"), descriptor.origins[0]);
-  EXPECT_EQ(GURL("https://example.com:85"), descriptor.origins[1]);
+      kExampleAllowedOrigins,
+      kExampleAllowedOrigins + sizeof(kExampleAllowedOrigins))));
+  EXPECT_EQ(2u, descriptor.origin_ids.size());
+  EXPECT_EQ(1, descriptor.origin_ids[0]);
+  EXPECT_EQ(2, descriptor.origin_ids[1]);
   EXPECT_EQ(1u, descriptor.configurations.size());
 
   const WebUsbConfigurationSubset& config1 = descriptor.configurations[0];
-  EXPECT_EQ(2u, config1.origins.size());
-  EXPECT_EQ(GURL("https://example.com:81"), config1.origins[0]);
-  EXPECT_EQ(GURL("https://example.com:84"), config1.origins[1]);
+  EXPECT_EQ(2u, config1.origin_ids.size());
+  EXPECT_EQ(3, config1.origin_ids[0]);
+  EXPECT_EQ(4, config1.origin_ids[1]);
   EXPECT_EQ(1u, config1.functions.size());
 
   const WebUsbFunctionSubset& function1 = config1.functions[0];
-  EXPECT_EQ(2u, function1.origins.size());
-  EXPECT_EQ(GURL("https://example.com:82"), function1.origins[0]);
-  EXPECT_EQ(GURL("https://example.com:83"), function1.origins[1]);
+  EXPECT_EQ(2u, function1.origin_ids.size());
+  EXPECT_EQ(5, function1.origin_ids[0]);
+  EXPECT_EQ(6, function1.origin_ids[1]);
 }
 
 TEST_F(WebUsbDescriptorsTest, ShortDescriptorSetHeader) {
-  // bLength is too short for a WebUSB Descriptor Set Header.
-  static const uint8_t kBuffer[] = {0x03, 0x00, 0x03};
-  WebUsbDescriptorSet descriptor;
+  // bLength less than 5, which makes this descriptor invalid.
+  static const uint8_t kBuffer[] = {0x04, 0x00, 0x05, 0x00, 0x00};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
 TEST_F(WebUsbDescriptorsTest, LongDescriptorSetHeader) {
-  // bLength is too long for a WebUSB DescriptorSet Header.
-  static const uint8_t kBuffer[] = {0x05, 0x00, 0x04, 0x00};
-  WebUsbDescriptorSet descriptor;
+  // bLength is longer than the buffer size.
+  static const uint8_t kBuffer[] = {0x06, 0x00, 0x05, 0x00, 0x00};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, UrlNotDescriptorSet) {
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(std::vector<uint8_t>(
-      kExampleUrlDescriptor,
-      kExampleUrlDescriptor + sizeof(kExampleUrlDescriptor))));
-}
-
 TEST_F(WebUsbDescriptorsTest, ShortDescriptorSet) {
-  // wTotalLength is shorter than bLength, making the WebUSB Descriptor Set
-  // Header inconsistent.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x03, 0x00};
-  WebUsbDescriptorSet descriptor;
+  // wTotalLength is shorter than bLength, making the header inconsistent.
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x04, 0x00, 0x00};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
 TEST_F(WebUsbDescriptorsTest, LongDescriptorSet) {
-  // The WebUSB Descriptor Set Header's wTotalLength is longer than the buffer.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x05, 0x00};
-  WebUsbDescriptorSet descriptor;
+  // wTotalLength is longer than the buffer size.
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x06, 0x00, 0x00};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, ShortDescriptorInDescriptorSet) {
-  // bLength for the descriptor within the descriptor set is too short.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x05, 0x00, 0x01};
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, TooManyConfigurations) {
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x05, 0x00, 0x01};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, LongDescriptorInDescriptorSet) {
-  // bLength for the descriptor within the descriptor set is longer than the
-  // remaining portion of the buffer and the wTotalLength of the descriptor set.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x06, 0x00, 0x03, 0x03};
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, ShortConfiguration) {
+  // The configuration's bLength is less than 4, making it invalid.
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x08, 0x00,
+                                    0x01, 0x03, 0x01, 0x01};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, InvalidDescriptorInDescriptorSet) {
-  // A descriptor set cannot contain a descriptor with this bDescriptorType.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x06, 0x00, 0x02, 0x04};
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, LongConfiguration) {
+  // The configuration's bLength is longer than the buffer.
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x09, 0x00, 0x01,
+                                    0x05, 0x01, 0x01, 0x00};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, EmptyUrlInDescriptorSet) {
-  // The URL in this descriptor set is the empty string.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x06, 0x00, 0x02, 0x03};
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, TooManyFunctions) {
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x09, 0x00, 0x01,
+                                    0x04, 0x01, 0x01, 0x01};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, InvalidUrlInDescriptorSet) {
-  // The URL in this descriptor set is not a valid URL: "This is not a URL."
-  static const uint8_t kBuffer[] = {
-      0x04, 0x00, 0x18, 0x00, 0x14, 0x03, 'T', 'h', 'i', 's', ' ', 'i',
-      's',  ' ',  'n',  'o',  't',  ' ',  'a', ' ', 'U', 'R', 'L', '.'};
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, ShortFunction) {
+  // The function's bLength is less than 3, making it invalid.
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x0B, 0x00, 0x01, 0x04,
+                                    0x01, 0x01, 0x01, 0x02, 0x02};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
-TEST_F(WebUsbDescriptorsTest, ShortConfigurationSubsetHeader) {
-  // bLength is too short for a WebUSB Configuration Subset Header.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x05, 0x00, 0x02, 0x01};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, ShortConfigurationSubset) {
-  // The configuration subset header's wTotalLength is shorter than its bLength,
-  // making it inconsistent.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x09, 0x00, 0x05,
-                                    0x01, 0x01, 0x04, 0x00};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, LongConfigurationSubset) {
-  // wTotalLength of the configuration subset header extends beyond wTotalLength
-  // for the descriptor set and the length of the buffer.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x09, 0x00, 0x05,
-                                    0x01, 0x01, 0x06, 0x00};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, ShortDescriptorInConfigurationSubset) {
-  // bLength for the descriptor within the configuration subset is too short.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0A, 0x00, 0x05,
-                                    0x01, 0x01, 0x06, 0x00, 0x01};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, LongDescriptorInConfigurationSubset) {
-  // bLength for the descriptor within the configuration subset is longer than
-  // the remaining portion of the buffer and the wTotalLength of the
-  // configuration subset.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0B, 0x00, 0x05, 0x01,
-                                    0x01, 0x07, 0x00, 0x03, 0x03};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, InvalidDescriptorInConfigurationSubset) {
-  // A configuration subset cannot contain a descriptor with this
-  // bDescriptorType.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0B, 0x00, 0x05, 0x01,
-                                    0x01, 0x07, 0x00, 0x02, 0x01};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, ShortFunctionSubsetHeader) {
-  // bLength is too short for a WebUSB Function Subset Header.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0B, 0x00, 0x05, 0x01,
-                                    0x01, 0x07, 0x00, 0x02, 0x02};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, ShortFunctionSubset) {
-  // The function subset header's wTotalLength is shorter than its bLength,
-  // making it inconsistent.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0E, 0x00, 0x05, 0x01, 0x01,
-                                    0x0A, 0x00, 0x05, 0x02, 0x01, 0x04, 0x00};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, LongFunctionSubset) {
-  // wTotalLength of the function subset header extends beyond wTotalLength for
-  // for the configuration subset and the length of the buffer.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0E, 0x00, 0x05, 0x01, 0x01,
-                                    0x0A, 0x00, 0x05, 0x02, 0x01, 0x06, 0x00};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, ShortDescriptorInFunctionSubset) {
-  // bLength for the descriptor within the function subset is too short.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x0F, 0x00, 0x05,
-                                    0x01, 0x01, 0x0B, 0x00, 0x05,
-                                    0x02, 0x01, 0x06, 0x00, 0x01};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, LongDescriptorInFunctionSubset) {
-  // bLength for the descriptor within the function subset is longer than the
-  // remaining portion of the buffer and the wTotalLength of the function
-  // subset.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x10, 0x00, 0x05, 0x01,
-                                    0x01, 0x0C, 0x00, 0x05, 0x02, 0x01,
-                                    0x07, 0x00, 0x03, 0x03};
-  WebUsbDescriptorSet descriptor;
-  ASSERT_FALSE(descriptor.Parse(
-      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
-}
-
-TEST_F(WebUsbDescriptorsTest, InvalidDescriptorInFunctionSubset) {
-  // A function subset cannot contain a descriptor with this bDescriptorType.
-  static const uint8_t kBuffer[] = {0x04, 0x00, 0x10, 0x00, 0x05, 0x01,
-                                    0x01, 0x0C, 0x00, 0x05, 0x02, 0x01,
-                                    0x07, 0x00, 0x02, 0x02};
-  WebUsbDescriptorSet descriptor;
+TEST_F(WebUsbDescriptorsTest, LongFunction) {
+  // The function's bLength is longer than the buffer.
+  static const uint8_t kBuffer[] = {0x05, 0x00, 0x0C, 0x00, 0x01, 0x04,
+                                    0x01, 0x01, 0x01, 0x04, 0x02, 0x01};
+  WebUsbAllowedOrigins descriptor;
   ASSERT_FALSE(descriptor.Parse(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
@@ -446,10 +354,10 @@ TEST_F(WebUsbDescriptorsTest, UrlDescriptor) {
   GURL url;
   ASSERT_TRUE(ParseWebUsbUrlDescriptor(
       std::vector<uint8_t>(
-          kExampleUrlDescriptor,
-          kExampleUrlDescriptor + sizeof(kExampleUrlDescriptor)),
+          kExampleUrlDescriptor1,
+          kExampleUrlDescriptor1 + sizeof(kExampleUrlDescriptor1)),
       &url));
-  EXPECT_EQ(GURL("https://example.com:80"), url);
+  EXPECT_EQ(GURL("https://example.com/index.html"), url);
 }
 
 TEST_F(WebUsbDescriptorsTest, ShortUrlDescriptorHeader) {
@@ -478,20 +386,77 @@ TEST_F(WebUsbDescriptorsTest, LongUrlDescriptor) {
 
 TEST_F(WebUsbDescriptorsTest, EmptyUrl) {
   // The URL in this descriptor set is the empty string.
-  static const uint8_t kBuffer[] = {0x02, 0x03};
+  static const uint8_t kBuffer[] = {0x03, 0x03, 0x00};
   GURL url;
   ASSERT_FALSE(ParseWebUsbUrlDescriptor(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
 }
 
 TEST_F(WebUsbDescriptorsTest, InvalidUrl) {
-  // The URL in this descriptor set is not a valid URL: "This is not a URL."
-  static const uint8_t kBuffer[] = {0x14, 0x03, 'T', 'h', 'i', 's', ' ',
-                                    'i',  's',  ' ', 'n', 'o', 't', ' ',
-                                    'a',  ' ',  'U', 'R', 'L', '.'};
+  // The URL in this descriptor set is not a valid URL: "http://???"
+  static const uint8_t kBuffer[] = {0x06, 0x03, 0x00, '?', '?', '?'};
   GURL url;
   ASSERT_FALSE(ParseWebUsbUrlDescriptor(
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
+}
+
+TEST_F(WebUsbDescriptorsTest, ReadDescriptors) {
+  scoped_refptr<MockUsbDeviceHandle> device_handle(
+      new MockUsbDeviceHandle(nullptr));
+
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD,
+                              UsbDeviceHandle::DEVICE, 0x06, 0x0F00, 0x0000, _,
+                              _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          InvokeCallback(kExampleBosDescriptor, sizeof(kExampleBosDescriptor)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0000, 0x0001, _,
+                              _, _, _))
+      .Times(2)
+      .WillRepeatedly(InvokeCallback(kExampleAllowedOrigins,
+                                     sizeof(kExampleAllowedOrigins)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0001, 0x0002, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kExampleUrlDescriptor1,
+                               sizeof(kExampleUrlDescriptor1)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0002, 0x0002, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kExampleUrlDescriptor2,
+                               sizeof(kExampleUrlDescriptor2)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0003, 0x0002, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kExampleUrlDescriptor3,
+                               sizeof(kExampleUrlDescriptor3)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0004, 0x0002, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kExampleUrlDescriptor4,
+                               sizeof(kExampleUrlDescriptor4)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0005, 0x0002, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kExampleUrlDescriptor5,
+                               sizeof(kExampleUrlDescriptor5)));
+  EXPECT_CALL(*device_handle,
+              ControlTransfer(USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR,
+                              UsbDeviceHandle::DEVICE, 0x42, 0x0006, 0x0002, _,
+                              _, _, _))
+      .WillOnce(InvokeCallback(kExampleUrlDescriptor6,
+                               sizeof(kExampleUrlDescriptor6)));
+
+  ReadWebUsbDescriptors(device_handle,
+                        base::Bind(&ExpectAllowedOriginsAndLandingPage));
 }
 
 }  // namespace
