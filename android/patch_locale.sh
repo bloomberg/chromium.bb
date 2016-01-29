@@ -3,22 +3,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+treeroot="$(dirname "$0")/.."
+cd "${treeroot}"
+
+echo "Applying brkitr.patch"
+patch -p1 < android/brkitr.patch || { echo "failed to patch" >2; exit 1; }
+
 # Keep only the currencies used by the larget 60 economies in terms of GDP
 # with several more added in.
 # TODO(jshin): Use ucurr_isAvailable in ICU to drop more currencies.
 # See also http://en.wikipedia.org/wiki/List_of_circulating_currencies
 # Copied from scripts/trim_data.sh. Need to refactor.
-for currency in $(grep -v '^#' currencies.list)
+for currency in $(grep -v '^#' "${treeroot}/android/currencies.list")
 do
   OP=${KEEPLIST:+|}
   KEEPLIST=${KEEPLIST}${OP}${currency}
 done
 KEEPLIST="(${KEEPLIST})"
-
-cd "$(dirname "$0")/.."
-
-echo "Applying brkitr.patch"
-patch -p1 < android/brkitr.patch || { echo "failed to patch"; exit 1; }
 
 cd source/data
 

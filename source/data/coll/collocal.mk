@@ -44,7 +44,7 @@ COLLATION_EMPTY_SOURCE =
 # for them.
 COLLATION_SOURCE = $(COLLATION_EMPTY_SOURCE) ar.txt bg.txt\
  ca.txt cs.txt da.txt\
- de.txt el.txt en.txt en_US.txt\
+ de.txt de_AT.txt el.txt en.txt en_US.txt\
  es.txt et.txt fi.txt fil.txt\
  fr.txt fr_CA.txt he.txt\
  hi.txt hr.txt hu.txt id.txt it.txt\

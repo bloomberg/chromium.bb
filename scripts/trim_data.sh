@@ -7,7 +7,7 @@
 # Remove display names for languages that are not listed in the accept-language
 # list of Chromium.
 function filter_display_language_names {
-  for lang in $(grep -v '^#' accept_lang.list)
+  for lang in $(grep -v '^#' "${scriptdir}/accept_lang.list")
   do
     # Set $OP to '|' only if $ACCEPT_LANG_PATTERN is not empty.
     OP=${ACCEPT_LANG_PATTERN:+|}
@@ -16,7 +16,7 @@ function filter_display_language_names {
   ACCEPT_LANG_PATTERN="(${ACCEPT_LANG_PATTERN})[^a-z]"
 
   echo "Filtering out display names for non-A-L languages ${langdatapath}"
-  for lang in $(grep -v '^#' chrome_ui_languages.list)
+  for lang in $(grep -v '^#' "${scriptdir}/chrome_ui_languages.list")
   do
     target=${langdatapath}/${lang}.txt
     echo Overwriting ${target} ...
@@ -46,14 +46,15 @@ function filter_display_language_names {
 
 # Keep only the minimum locale data for non-UI languages.
 function abridge_locale_data_for_non_ui_languages {
-  for lang in $(grep -v '^#' chrome_ui_languages.list)
+  for lang in $(grep -v '^#' "${scriptdir}/chrome_ui_languages.list")
   do
     # Set $OP to '|' only if $UI_LANGUAGES is not empty.
     OP=${UI_LANGUAGES:+|}
     UI_LANGUAGES="${UI_LANGUAGES}${OP}${lang}"
   done
 
-  EXTRA_LANGUAGES=$(egrep -v -e '^#' -e "(${UI_LANGUAGES})" accept_lang.list)
+  EXTRA_LANGUAGES=$(egrep -v -e '^#' -e "(${UI_LANGUAGES})" \
+                    "${scriptdir}/accept_lang.list")
 
   echo Creating minimum locale data in ${localedatapath}
   for lang in ${EXTRA_LANGUAGES}
@@ -100,7 +101,7 @@ function abridge_locale_data_for_non_ui_languages {
 # See also http://en.wikipedia.org/wiki/List_of_circulating_currencies
 function filter_currency_data {
   unset KEEPLIST
-  for currency in $(grep -v '^#' currencies.list)
+  for currency in $(grep -v '^#' "${scriptdir}/currencies.list")
   do
     OP=${KEEPLIST:+|}
     KEEPLIST=${KEEPLIST}${OP}${currency}
@@ -180,7 +181,9 @@ function remove_legacy_chinese_codepoint_collation {
   sed -r -i '/^        (uni|big5|gb2312)han\{$/,/^        \}$/ d' ${target}
 }
 
-dataroot="$(dirname $0)/../source/data"
+treeroot="$(dirname "$0")/.."
+dataroot="${treeroot}/source/data"
+scriptdir="${treeroot}/scripts"
 localedatapath="${dataroot}/locales"
 langdatapath="${dataroot}/lang"
 

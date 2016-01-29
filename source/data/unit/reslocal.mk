@@ -30,8 +30,9 @@ UNIT_SOURCE =\
  da.txt\
  de.txt de_CH.txt\
  el.txt\
- en.txt en_001.txt en_GB.txt en_AU.txt en_NZ.txt en_ZA.txt\
- es.txt es_419.txt es_MX.txt es_AR.txt\
+ en.txt en_001.txt en_150.txt\
+ en_AU.txt en_CA.txt en_GB.txt en_IN.txt en_NZ.txt en_ZA.txt\
+ es.txt es_419.txt es_AR.txt es_MX.txt es_US.txt\
  et.txt\
  fa.txt\
  fi.txt\
@@ -70,58 +71,4 @@ UNIT_SOURCE =\
  uk.txt\
  vi.txt\
  zh.txt zh_Hans.txt zh_Hans_CN.txt zh_Hans_SG.txt\
- zh_Hant.txt zh_Hant_TW.txt zh_Hant_HK.txt\
- af.txt\
- ak.txt\
- az.txt\
- be.txt\
- bem.txt\
- br.txt\
- bs.txt\
- cy.txt\
- ee.txt\
- eo.txt\
- eu.txt\
- fo.txt\
- ga.txt\
- gl.txt\
- ha.txt\
- haw.txt\
- hy.txt\
- ig.txt\
- is.txt\
- ka.txt\
- kk.txt\
- km.txt\
- ky.txt\
- lg.txt\
- ln.txt\
- lo.txt\
- mfe.txt\
- mg.txt\
- mk.txt\
- mn.txt\
- mo.txt ro_MD.txt\
- mt.txt\
- my.txt\
- ne.txt\
- nn.txt\
- nyn.txt\
- om.txt\
- or.txt\
- pa.txt\
- ps.txt\
- rm.txt\
- rn.txt\
- rw.txt\
- si.txt\
- sn.txt\
- so.txt\
- sq.txt\
- sr_Latn.txt\
- ti.txt\
- to.txt\
- ur.txt\
- uz.txt\
- yo.txt\
- zu.txt
+ zh_Hant.txt zh_Hant_TW.txt zh_Hant_HK.txt
