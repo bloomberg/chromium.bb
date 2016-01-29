@@ -146,7 +146,7 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* 
 
 void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definition, PassOwnPtr<CustomElementBinding> binding)
 {
-    m_customElementBindings.append(binding);
+    m_customElementBindings.append(std::move(binding));
 }
 
 v8::Local<v8::Value> V8PerContextData::compiledPrivateScript(String className)

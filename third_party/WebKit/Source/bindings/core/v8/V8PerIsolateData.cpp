@@ -302,7 +302,7 @@ v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const Wrapp
 
 void V8PerIsolateData::addEndOfScopeTask(PassOwnPtr<EndOfScopeTask> task)
 {
-    m_endOfScopeTasks.append(task);
+    m_endOfScopeTasks.append(std::move(task));
 }
 
 void V8PerIsolateData::runEndOfScopeTasks()
