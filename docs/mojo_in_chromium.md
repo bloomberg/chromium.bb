@@ -181,6 +181,11 @@ request and writes it to one end of the pipe. Eventually (and incidentally,
 very soon after), `impl`'s internal `mojo::Binding` will decode this message and
 dispatch a call to `impl.Frobinate()`.
 
+**NOTE:** In this example the service and client are in the same process, and
+this works just fine. If they were in different processes (see the example below
+in [Exposing Services in Chromium](#Exposing-Services-in-Chromium)), the call
+to `Frobinate()` would look exactly the same!
+
 ### Responding to Requests
 
 A common idiom in Chromium IPC is to keep track of IPC requests with some kind
