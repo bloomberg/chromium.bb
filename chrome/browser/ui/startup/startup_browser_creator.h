@@ -136,19 +136,18 @@ class StartupBrowserCreator {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorWinTest,
                            GetURLsFromCommandLineWithDesktopSearchURL);
 
+  bool ProcessCmdLineImpl(const base::CommandLine& command_line,
+                          const base::FilePath& cur_dir,
+                          bool process_startup,
+                          Profile* last_used_profile,
+                          const Profiles& last_opened_profiles);
+
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
   static std::vector<GURL> GetURLsFromCommandLine(
       const base::CommandLine& command_line,
       const base::FilePath& cur_dir,
       Profile* profile);
-
-  static bool ProcessCmdLineImpl(const base::CommandLine& command_line,
-                                 const base::FilePath& cur_dir,
-                                 bool process_startup,
-                                 Profile* last_used_profile,
-                                 const Profiles& last_opened_profiles,
-                                 StartupBrowserCreator* browser_creator);
 
   // This function performs command-line handling and is invoked only after
   // start up (for example when we get a start request for another process).

@@ -123,8 +123,6 @@ bool TabStripContainsUrl(TabStripModel* tab_strip, GURL url) {
 
 void ProcessCommandLineAlreadyRunningDefaultProfile(
     const base::CommandLine& cmdline) {
-  StartupBrowserCreator browser_creator;
-
   base::FilePath current_dir;
   ASSERT_TRUE(base::GetCurrentDirectory(&current_dir));
   base::FilePath user_data_dir =
@@ -133,8 +131,8 @@ void ProcessCommandLineAlreadyRunningDefaultProfile(
       g_browser_process->profile_manager()->GetLastUsedProfileDir(
           user_data_dir);
 
-  browser_creator.ProcessCommandLineAlreadyRunning(cmdline, current_dir,
-                                                   startup_profile_dir);
+  StartupBrowserCreator::ProcessCommandLineAlreadyRunning(cmdline, current_dir,
+                                                          startup_profile_dir);
 }
 #endif  // defined(OS_WIN)
 

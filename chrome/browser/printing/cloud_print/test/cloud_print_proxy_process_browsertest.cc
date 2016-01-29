@@ -328,9 +328,9 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 
   bool LaunchBrowser(const base::CommandLine& command_line, Profile* profile) {
     StartupBrowserCreator browser_creator;
-    return StartupBrowserCreator::ProcessCmdLineImpl(
+    return browser_creator.ProcessCmdLineImpl(
         command_line, base::FilePath(), false, profile,
-        StartupBrowserCreator::Profiles(), &browser_creator);
+        StartupBrowserCreator::Profiles());
   }
 
  protected:
