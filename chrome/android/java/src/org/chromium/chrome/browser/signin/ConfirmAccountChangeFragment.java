@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.sync.ui;
+package org.chromium.chrome.browser.signin;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -18,13 +17,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.chrome.browser.sync.ui.ClearSyncDataDialogFragment;
+import org.chromium.signin.InvestigatedScenario;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -32,23 +29,29 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  * The fragment shown when the user was previously signed in, then disconnected their account,
  * and is now attempting to sign in to a new account. This dialog warns the user that they should
  * clear their browser data, or else their bookmarks etc from their old account will be merged with
- * the new account when they sign in.
+ * the new account when they sign in. This dialog assumes it is being created in the middle of the
+ * signin flow, and as such is purposefully package private.
  */
-public class ConfirmAccountChangeFragment extends DialogFragment
-        implements DialogInterface.OnClickListener {
+class ConfirmAccountChangeFragment
+        extends DialogFragment implements DialogInterface.OnClickListener {
     private static final String KEY_OLD_ACCOUNT_NAME = "lastAccountName";
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
 
+    /**
+     * Prompts the user with a dialog if the user is changing accounts. If there is not a change
+     * of accounts or the user accepts through the dialog, the signin flow is continued. This
+     * means that the signin flow should have been started by the caller of this method.
+     */
     public static void confirmSyncAccount(String syncAccountName, Activity activity) {
-        // TODO(skym): Use last account id for equality check, crbug.com/571698.
-        String lastSyncAccountName = PrefServiceBridge.getInstance().getSyncLastAccountName();
-        if (lastSyncAccountName != null && !lastSyncAccountName.isEmpty()
-                && !lastSyncAccountName.equals(syncAccountName)) {
-            ConfirmAccountChangeFragment dialog = newInstance(syncAccountName, lastSyncAccountName);
+        // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
+        if (SigninInvestigator.investigate(syncAccountName)
+                == InvestigatedScenario.DIFFERENT_ACCOUNT) {
+            ConfirmAccountChangeFragment dialog = newInstance(
+                    syncAccountName, PrefServiceBridge.getInstance().getSyncLastAccountName());
             dialog.show(activity.getFragmentManager(), null);
         } else {
             // Do not display dialog, just sign-in.
-            signIn(activity, syncAccountName);
+            SigninManager.get(activity).progressSignInFlowCheckPolicy();
         }
     }
 
@@ -62,23 +65,21 @@ public class ConfirmAccountChangeFragment extends DialogFragment
         return dialogFragment;
     }
 
-    private String mAccountName;
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final Activity activity = getActivity();
         String lastSyncAccountName = getArguments().getString(KEY_OLD_ACCOUNT_NAME);
-        mAccountName = getArguments().getString(KEY_NEW_ACCOUNT_NAME);
+        String currentAccountName = getArguments().getString(KEY_NEW_ACCOUNT_NAME);
 
         LayoutInflater inflater = activity.getLayoutInflater();
         View v = inflater.inflate(R.layout.confirm_sync_account_change_account, null);
         final TextView textView = (TextView) v.findViewById(R.id.confirmMessage);
-        String message = activity.getString(
-                R.string.confirm_account_change_dialog_message, lastSyncAccountName, mAccountName);
+        String message = activity.getString(R.string.confirm_account_change_dialog_message,
+                lastSyncAccountName, currentAccountName);
 
         // Show clear sync data dialog when the user clicks the "settings" link.
-        SpannableString messageWithLink = SpanApplier.applySpans(message,
-                new SpanInfo("<link>", "</link>", new ClickableSpan() {
+        SpannableString messageWithLink = SpanApplier.applySpans(
+                message, new SpanInfo("<link>", "</link>", new ClickableSpan() {
                     @Override
                     public void onClick(View widget) {
                         showClearSyncDataDialogFragment();
@@ -91,7 +92,8 @@ public class ConfirmAccountChangeFragment extends DialogFragment
         return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.confirm_account_change_dialog_title)
                 .setPositiveButton(R.string.confirm_account_change_dialog_signin, this)
-                .setNegativeButton(R.string.cancel, this).setView(v)
+                .setNegativeButton(R.string.cancel, this)
+                .setView(v)
                 .create();
     }
 
@@ -99,36 +101,21 @@ public class ConfirmAccountChangeFragment extends DialogFragment
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_ImportData");
-            signIn(getActivity(), mAccountName);
+            SigninManager.get(getActivity()).progressSignInFlowCheckPolicy();
         } else if (which == AlertDialog.BUTTON_NEGATIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
+            SigninManager.get(getActivity()).cancelSignIn();
         }
     }
 
     private void showClearSyncDataDialogFragment() {
         ClearSyncDataDialogFragment dialogFragment = new ClearSyncDataDialogFragment();
         dialogFragment.show(getFragmentManager(), null);
-        // Dismiss the confirmation dialog.
-        dismiss();
-        RecordUserAction.record("Signin_ImportDataPrompt_DontImport");
-    }
 
-    private static void signIn(final Activity activity, String accountName) {
-        if (activity == null) return;
-        AccountManagerHelper.get(activity).getAccountFromName(accountName, new Callback<Account>() {
-            @Override
-            public void onResult(Account account) {
-                if (account == null) return;
-                SigninManager.get(activity).signInToSelectedAccount(activity, account,
-                        SigninManager.SIGNIN_TYPE_INTERACTIVE, new SignInFlowObserver() {
-                            @Override
-                            public void onSigninComplete() {
-                                RecordUserAction.record("Signin_Signin_Succeed");
-                            }
-                            @Override
-                            public void onSigninCancelled() {}
-                        });
-            }
-        });
+        // Cancel out of current sign in.
+        SigninManager.get(getActivity()).cancelSignIn();
+        dismiss();
+
+        RecordUserAction.record("Signin_ImportDataPrompt_DontImport");
     }
 }

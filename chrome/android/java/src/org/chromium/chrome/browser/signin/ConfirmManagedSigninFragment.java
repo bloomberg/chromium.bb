@@ -22,6 +22,7 @@ public class ConfirmManagedSigninFragment extends DialogFragment {
     private final String mManagementDomain;
     private final OnClickListener mListener;
 
+    // TODO(skym): Fragments should have empty constructors, crbug.com/580095.
     public ConfirmManagedSigninFragment(String managementDomain, OnClickListener listener) {
         mManagementDomain = managementDomain;
         mListener = listener;

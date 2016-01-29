@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -13,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class ChooseAccountFragment extends DialogFragment implements OnClickList
 
     protected int mSelectedAccount;
 
+    // TODO(skym): Fragments should have empty constructors, crbug.com/580093.
     public ChooseAccountFragment(List<String> accountNames) {
         mAccounts = accountNames.toArray(new String[accountNames.size()]);
     }
@@ -39,16 +42,16 @@ public class ChooseAccountFragment extends DialogFragment implements OnClickList
                 .create();
     }
 
-    protected void selectAccount(final String account) {
+    private static void signIn(final Activity activity, String accountName) {
         RecordUserAction.record("Signin_Signin_FromSettings");
-        ConfirmAccountChangeFragment.confirmSyncAccount(account, getActivity());
+        SigninManager.startInteractiveSignIn(accountName, activity);
     }
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
         switch (which) {
             case AlertDialog.BUTTON_POSITIVE: {
-                selectAccount(mAccounts[mSelectedAccount]);
+                signIn(getActivity(), mAccounts[mSelectedAccount]);
                 break;
             }
             default: {

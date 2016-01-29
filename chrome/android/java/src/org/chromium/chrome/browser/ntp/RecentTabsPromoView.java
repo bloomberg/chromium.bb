@@ -19,7 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.AccountFirstRunView;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.signin.AccountAdder;
-import org.chromium.chrome.browser.sync.ui.ConfirmAccountChangeFragment;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 
 /**
@@ -250,8 +250,7 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
             @Override
             public void onAccountSelectionConfirmed(String accountName) {
                 if (mUserActionListener != null) mUserActionListener.onAccountSelectionConfirmed();
-
-                ConfirmAccountChangeFragment.confirmSyncAccount(accountName, mActivity);
+                SigninManager.startInteractiveSignIn(accountName, mActivity);
             }
 
             @Override

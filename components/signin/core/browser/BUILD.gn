@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("browser") {
   sources = [
     "about_signin_internals.cc",
@@ -155,5 +159,14 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     sources -= [ "signin_status_metrics_provider_unittest.cc" ]
+  }
+}
+
+if (is_android) {
+  # GYP: //component/signin.gypi:investigated_scenario_java
+  java_cpp_enum("investigated_scenario_java") {
+    sources = [
+      "signin_investigator.h",
+    ]
   }
 }

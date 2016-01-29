@@ -78,6 +78,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/account_tracker_service_android.h"
+#include "chrome/browser/android/signin/signin_investigator_android.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_state.h"
@@ -340,6 +341,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ScreenshotTask", RegisterScreenshotTask},
     {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
     {"SessionTabHelper", RegisterSessionTabHelper},
+    {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
     {"SpellCheckerSessionBridge", SpellCheckerSessionBridge::RegisterJNI},

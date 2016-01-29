@@ -199,6 +199,15 @@
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
+        {
+          # GN: //components/signin/core/browser:investigated_scenario_java
+          'target_name': 'investigated_scenario_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'signin/core/browser/signin_investigator.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
       ],
     }],
     ['OS == "ios"', {

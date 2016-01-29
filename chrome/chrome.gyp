@@ -558,6 +558,7 @@
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:infobar_delegate_java',
             '../components/components.gyp:invalidation_java',
+            '../components/components.gyp:investigated_scenario_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:offline_page_feature_enums_java',
             '../components/components.gyp:offline_page_model_enums_java',
