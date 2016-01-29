@@ -676,7 +676,7 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId + 1, false, federations);
 
   // Check that the second request triggered a rejection.
   uint32_t kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
