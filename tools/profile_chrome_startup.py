@@ -10,16 +10,17 @@ import os
 import sys
 import webbrowser
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir,
-                             'build', 'android'))
-
 from profile_chrome import chrome_startup_controller
 from profile_chrome import controllers
 from profile_chrome import flags
 from profile_chrome import profiler
 from profile_chrome import systrace_controller
 from profile_chrome import ui
-from pylib.device import device_utils
+
+_SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
 
 
 def _CreateOptionParser():

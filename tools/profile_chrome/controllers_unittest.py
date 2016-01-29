@@ -6,8 +6,8 @@ import unittest
 
 from profile_chrome import profiler
 
-from pylib.device import device_utils
-from pylib.device import intent
+from devil.android import device_utils
+from devil.android.sdk import intent
 
 
 class BaseControllerTest(unittest.TestCase):

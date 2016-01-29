@@ -18,7 +18,7 @@ from profile_chrome import profiler
 from profile_chrome import systrace_controller
 from profile_chrome import ui
 
-from pylib.device import device_utils
+from devil.android import device_utils
 
 
 _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'

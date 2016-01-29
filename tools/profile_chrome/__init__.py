@@ -6,6 +6,7 @@ import os
 import sys
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__),
-                             os.pardir, os.pardir,
-                             'build', 'android'))
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))

@@ -9,8 +9,8 @@ import time
 
 from profile_chrome import controllers
 
-from pylib.device import device_errors
-from pylib.device import intent
+from devil.android import device_errors
+from devil.android.sdk import intent
 
 
 _HEAP_PROFILE_MMAP_PROPERTY = 'heapprof.mmap'
