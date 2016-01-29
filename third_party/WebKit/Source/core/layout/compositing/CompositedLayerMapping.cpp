@@ -2219,16 +2219,23 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     anchorLayoutObject->mapToVisibleRectInAncestorSpace(rootView, visibleContentRect, 0);
     visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
+    IntRect enclosingGraphicsLayerBounds(enclosingIntRect(graphicsLayerBounds));
+
     // Map the visible content rect from screen space to local graphics layer space.
     IntRect localInterestRect;
     // If the visible content rect is empty, then it makes no sense to map it back since there is nothing to map.
     if (!visibleContentRect.isEmpty()) {
         localInterestRect = anchorLayoutObject->absoluteToLocalQuad(FloatRect(visibleContentRect), UseTransforms | TraverseDocumentBoundaries).enclosingBoundingBox();
         localInterestRect.move(-offsetFromAnchorLayoutObject);
+        // TODO(chrishtr): the code below is a heuristic, instead we should detect and return whether the mapping failed.
+        // In some cases, absoluteToLocalQuad can fail to map back to the local space, due to passing through
+        // non-invertible transforms or floating-point accuracy issues. Examples include rotation near 90 degrees
+        // or perspective. In such cases, fall back to painting the first kPixelDistanceToRecord pixels in each direction.
+        localInterestRect.intersect(enclosingGraphicsLayerBounds);
     }
     // Expand by interest rect padding amount.
     localInterestRect.inflate(kPixelDistanceToRecord);
-    localInterestRect.intersect(enclosingIntRect(graphicsLayerBounds));
+    localInterestRect.intersect(enclosingGraphicsLayerBounds);
     return localInterestRect;
 }
 

@@ -139,6 +139,20 @@ TEST_F(CompositedLayerMappingTest, RotatedInterestRect)
     EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
+TEST_F(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees)
+{
+    setBodyInnerHTML(
+        "<div id='target' style='width: 10000px; height: 200px; will-change: transform; transform: rotateY(89.9999deg)'></div>");
+
+    document().view()->updateAllLifecyclePhases();
+    Element* element = document().getElementById("target");
+    PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+    ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
+    // Because the layer is rotated to almost 90 degrees, floating-point error leads to a reverse-projected rect that is much much larger
+    // than the original layer size in certain dimensions. In such cases, we often fall back to the 4000px interest rect padding amount.
+    EXPECT_RECT_EQ(IntRect(0, 0, 4000, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
+}
+
 TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect)
 {
     // It's rotated 90 degrees about the X axis, which means its visual content rect is empty, and so the interest rect is the
