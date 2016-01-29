@@ -666,7 +666,9 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
   if ssh_private_key is not None:
     cmd.append('--ssh_private_key=%s' % ssh_private_key)
 
-  result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True)
+  # Give tests 10 minutes to clean up before shutting down.
+  result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True,
+                                     kill_timeout=10 * 60)
   if result.returncode:
     if os.path.exists(results_dir_in_chroot):
       error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
