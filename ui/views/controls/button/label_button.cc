@@ -181,11 +181,7 @@ void LabelButton::SetIsDefault(bool is_default) {
   if (style_ == STYLE_BUTTON) {
     label_->SetFontList(
         is_default ? cached_bold_font_list_ : cached_normal_font_list_);
-    // Usually this function is called before |this| is attached to a widget,
-    // but in the cases where |this| is already shown, we need to re-layout
-    // because font boldness affects the label's size.
-    if (GetWidget())
-      Layout();
+    InvalidateLayout();
   }
 }
 

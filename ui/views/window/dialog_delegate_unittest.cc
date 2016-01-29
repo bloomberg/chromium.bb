@@ -7,10 +7,12 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event_processor.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -23,10 +25,13 @@ namespace {
 class TestDialog : public DialogDelegateView, public ButtonListener {
  public:
   TestDialog()
-      : canceled_(false),
+      : input_(new views::Textfield()),
+        canceled_(false),
         accepted_(false),
         closeable_(false),
-        last_pressed_button_(NULL) {}
+        last_pressed_button_(NULL) {
+    AddChildView(input_);
+  }
   ~TestDialog() override {}
 
   // WidgetDelegate overrides:
@@ -47,6 +52,7 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   // DialogDelegateView overrides:
   gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
   base::string16 GetWindowTitle() const override { return title_; }
+  View* GetInitiallyFocusedView() override { return input_; }
   bool UseNewStyleForThisDialog() const override { return true; }
 
   // ButtonListener override:
@@ -55,18 +61,6 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   }
 
   Button* last_pressed_button() const { return last_pressed_button_; }
-
-  void PressEnterAndCheckStates(Button* button) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-    GetFocusManager()->OnKeyEvent(key_event);
-    const DialogClientView* client_view = GetDialogClientView();
-    EXPECT_EQ(canceled_, client_view->cancel_button()->is_default());
-    EXPECT_EQ(accepted_, client_view->ok_button()->is_default());
-    // This view does not listen for ok or cancel clicks, DialogClientView does.
-    CheckAndResetStates(button == client_view->cancel_button(),
-                        button == client_view->ok_button(),
-                        (canceled_ || accepted_ ) ? NULL : button);
-  }
 
   void CheckAndResetStates(bool canceled, bool accepted, Button* last_pressed) {
     EXPECT_EQ(canceled, canceled_);
@@ -84,7 +78,10 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
 
   void set_title(const base::string16& title) { title_ = title; }
 
+  views::Textfield* input() { return input_; }
+
  private:
+  views::Textfield* input_;
   bool canceled_;
   bool accepted_;
   // Prevent the dialog from closing, for repeated ok and cancel button clicks.
@@ -111,6 +108,12 @@ class DialogTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
+  void SimulateKeyEvent(const ui::KeyEvent& event) {
+    ui::KeyEvent event_copy = event;
+    if (dialog()->GetFocusManager()->OnKeyEvent(event_copy))
+      dialog()->GetWidget()->OnKeyEvent(&event_copy);
+  }
+
   TestDialog* dialog() const { return dialog_; }
 
  private:
@@ -121,67 +124,32 @@ class DialogTest : public ViewsTestBase {
 
 }  // namespace
 
-TEST_F(DialogTest, DefaultButtons) {
-  DialogClientView* client_view = dialog()->GetDialogClientView();
-  LabelButton* ok_button = client_view->ok_button();
-
-  // DialogDelegate's default button (ok) should be default (and handle enter).
-  EXPECT_EQ(ui::DIALOG_BUTTON_OK, dialog()->GetDefaultDialogButton());
-  dialog()->PressEnterAndCheckStates(ok_button);
-
-  // Focus another button in the dialog, it should become the default.
-  LabelButton* button_1 = new LabelButton(dialog(), base::string16());
-  client_view->AddChildView(button_1);
-  client_view->OnWillChangeFocus(ok_button, button_1);
-  EXPECT_TRUE(button_1->is_default());
-  dialog()->PressEnterAndCheckStates(button_1);
-
-  // Focus a Checkbox (not a push button), OK should become the default again.
-  Checkbox* checkbox = new Checkbox(base::string16());
-  client_view->AddChildView(checkbox);
-  client_view->OnWillChangeFocus(button_1, checkbox);
-  EXPECT_FALSE(button_1->is_default());
-  dialog()->PressEnterAndCheckStates(ok_button);
-
-  // Focus yet another button in the dialog, it should become the default.
-  LabelButton* button_2 = new LabelButton(dialog(), base::string16());
-  client_view->AddChildView(button_2);
-  client_view->OnWillChangeFocus(checkbox, button_2);
-  EXPECT_FALSE(button_1->is_default());
-  EXPECT_TRUE(button_2->is_default());
-  dialog()->PressEnterAndCheckStates(button_2);
-
-  // Focus nothing, OK should become the default again.
-  client_view->OnWillChangeFocus(button_2, NULL);
-  EXPECT_FALSE(button_1->is_default());
-  EXPECT_FALSE(button_2->is_default());
-  dialog()->PressEnterAndCheckStates(ok_button);
-}
-
 TEST_F(DialogTest, AcceptAndCancel) {
   DialogClientView* client_view = dialog()->GetDialogClientView();
   LabelButton* ok_button = client_view->ok_button();
   LabelButton* cancel_button = client_view->cancel_button();
 
   // Check that return/escape accelerators accept/cancel dialogs.
-  const ui::KeyEvent return_key(
+  EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
+  const ui::KeyEvent return_event(
       ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-  dialog()->GetFocusManager()->OnKeyEvent(return_key);
+  SimulateKeyEvent(return_event);
   dialog()->CheckAndResetStates(false, true, NULL);
-  const ui::KeyEvent escape_key(
+  const ui::KeyEvent escape_event(
       ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
-  dialog()->GetFocusManager()->OnKeyEvent(escape_key);
+  SimulateKeyEvent(escape_event);
   dialog()->CheckAndResetStates(true, false, NULL);
 
   // Check ok and cancel button behavior on a directed return key events.
-  ok_button->OnKeyPressed(return_key);
+  ok_button->OnKeyPressed(return_event);
   dialog()->CheckAndResetStates(false, true, NULL);
-  cancel_button->OnKeyPressed(return_key);
+  cancel_button->OnKeyPressed(return_event);
   dialog()->CheckAndResetStates(true, false, NULL);
 
   // Check that return accelerators cancel dialogs if cancel is focused.
   cancel_button->RequestFocus();
-  dialog()->GetFocusManager()->OnKeyEvent(return_key);
+  EXPECT_EQ(cancel_button, dialog()->GetFocusManager()->GetFocusedView());
+  SimulateKeyEvent(return_event);
   dialog()->CheckAndResetStates(true, false, NULL);
 }
 

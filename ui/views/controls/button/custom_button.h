@@ -93,6 +93,7 @@ class VIEWS_EXPORT CustomButton : public Button,
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void OnDragDone() override;

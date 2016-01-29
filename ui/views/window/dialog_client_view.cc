@@ -56,8 +56,6 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
     : ClientView(owner, contents_view),
       ok_button_(NULL),
       cancel_button_(NULL),
-      default_button_(NULL),
-      focus_manager_(NULL),
       extra_view_(NULL),
       footnote_view_(NULL),
       notified_delegate_(false) {
@@ -85,9 +83,6 @@ void DialogClientView::CancelWindow() {
 void DialogClientView::UpdateDialogButtons() {
   const int buttons = GetDialogDelegate()->GetDialogButtons();
   ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
-  if (default_button_)
-    default_button_->SetIsDefault(false);
-  default_button_ = NULL;
 
   if (buttons & ui::DIALOG_BUTTON_OK) {
     if (!ok_button_) {
@@ -146,31 +141,6 @@ DialogClientView* DialogClientView::AsDialogClientView() {
 
 const DialogClientView* DialogClientView::AsDialogClientView() const {
   return this;
-}
-
-void DialogClientView::OnWillChangeFocus(View* focused_before,
-                                         View* focused_now) {
-  // Make the newly focused button default or restore the dialog's default.
-  const int default_button = GetDialogDelegate()->GetDefaultDialogButton();
-  LabelButton* new_default_button = NULL;
-  if (focused_now &&
-      !strcmp(focused_now->GetClassName(), LabelButton::kViewClassName)) {
-    new_default_button = static_cast<LabelButton*>(focused_now);
-  } else if (default_button == ui::DIALOG_BUTTON_OK && ok_button_) {
-    new_default_button = ok_button_;
-  } else if (default_button == ui::DIALOG_BUTTON_CANCEL && cancel_button_) {
-    new_default_button = cancel_button_;
-  }
-
-  if (default_button_ && default_button_ != new_default_button)
-    default_button_->SetIsDefault(false);
-  default_button_ = new_default_button;
-  if (default_button_ && !default_button_->is_default())
-    default_button_->SetIsDefault(true);
-}
-
-void DialogClientView::OnDidChangeFocus(View* focused_before,
-                                        View* focused_now) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -277,35 +247,14 @@ void DialogClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   ClientView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this) {
-    focus_manager_ = GetFocusManager();
-    if (focus_manager_)
-      GetFocusManager()->AddFocusChangeListener(this);
-
     UpdateDialogButtons();
     CreateExtraView();
     CreateFootnoteView();
-  } else if (!details.is_add && details.child == this) {
-    if (focus_manager_)
-      focus_manager_->RemoveFocusChangeListener(this);
-    focus_manager_ = NULL;
-  } else if (!details.is_add) {
-    if (details.child == default_button_)
-      default_button_ = NULL;
+  } else if (!details.is_add && details.child != this) {
     if (details.child == ok_button_)
       ok_button_ = NULL;
     if (details.child == cancel_button_)
       cancel_button_ = NULL;
-  }
-}
-
-void DialogClientView::NativeViewHierarchyChanged() {
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager_ != focus_manager) {
-    if (focus_manager_)
-      focus_manager_->RemoveFocusChangeListener(this);
-    focus_manager_ = focus_manager;
-    if (focus_manager_)
-      focus_manager_->AddFocusChangeListener(this);
   }
 }
 
@@ -343,8 +292,6 @@ DialogClientView::DialogClientView(View* contents_view)
     : ClientView(NULL, contents_view),
       ok_button_(NULL),
       cancel_button_(NULL),
-      default_button_(NULL),
-      focus_manager_(NULL),
       extra_view_(NULL),
       footnote_view_(NULL),
       notified_delegate_(false) {}
@@ -409,11 +356,7 @@ void DialogClientView::UpdateButton(LabelButton* button,
   DialogDelegate* dialog = GetDialogDelegate();
   button->SetText(dialog->GetDialogButtonLabel(type));
   button->SetEnabled(dialog->IsDialogButtonEnabled(type));
-
-  if (type == dialog->GetDefaultDialogButton()) {
-    default_button_ = button;
-    button->SetIsDefault(true);
-  }
+  button->SetIsDefault(type == dialog->GetDefaultDialogButton());
 }
 
 int DialogClientView::GetButtonsAndExtraViewRowHeight() const {

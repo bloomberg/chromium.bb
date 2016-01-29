@@ -283,6 +283,13 @@ bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
+bool CustomButton::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
+  // If this button is focused and the user presses space or enter, don't let
+  // that be treated as an accelerator.
+  return (event.key_code() == ui::VKEY_SPACE) ||
+         (event.key_code() == ui::VKEY_RETURN);
+}
+
 void CustomButton::ShowContextMenu(const gfx::Point& p,
                                    ui::MenuSourceType source_type) {
   if (!context_menu_controller())
