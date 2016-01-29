@@ -406,7 +406,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        if (!mSignInState.passive && mSignInState.activity != null) {
+        if (mSignInState.passive || mSignInState.activity == null) {
             // If this is a passive interaction (e.g. auto signin) then don't show the confirmation
             // dialog. This will call back to onPolicyFetchedBeforeSignIn.
             nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
