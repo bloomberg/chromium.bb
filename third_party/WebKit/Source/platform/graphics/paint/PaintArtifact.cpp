@@ -96,10 +96,8 @@ void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 #if ENABLE(ASSERT)
     m_displayItemList.assertDisplayItemClientsAreAlive();
 #endif
-    for (const DisplayItem& displayItem : m_displayItemList) {
-        IntRect visualRect = displayItem.client().visualRect();
-        displayItem.appendToWebDisplayItemList(visualRect, list);
-    }
+    for (const DisplayItem& displayItem : m_displayItemList)
+        displayItem.appendToWebDisplayItemList(displayItem.client().visualRect(), list);
 }
 
 } // namespace blink
