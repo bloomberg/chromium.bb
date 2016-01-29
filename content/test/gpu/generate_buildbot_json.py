@@ -367,7 +367,9 @@ FYI_ONLY_GTESTS = {
 }
 
 DEQP_GTESTS = {
-  'angle_deqp_gles2_tests': {'swarming_shards': 4},
+  # TODO(kbr): re-enable angle_deqp_gles2_tests on Linux. Currently
+  # the target is disabled in the ANGLE workspace for the GN builds.
+  'angle_deqp_gles2_tests': {'win_only': True, 'swarming_shards': 4},
   'angle_deqp_gles3_tests': {'win_only': True, 'swarming_shards': 12},
 }
 

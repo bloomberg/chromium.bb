@@ -2730,23 +2730,7 @@
       }
     ]
   },
-  "Linux Release dEQP (NVIDIA)": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "angle_deqp_gles2_tests"
-      }
-    ]
-  },
+  "Linux Release dEQP (NVIDIA)": {},
   "Mac 10.10 Debug (ATI)": {
     "gtest_tests": [
       {
