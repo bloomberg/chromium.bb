@@ -139,19 +139,12 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
 bool MatchesAnySearchURL(const GURL& url,
                          TemplateURL* template_url,
                          const SearchTermsData& search_terms_data) {
-  GURL search_url = TemplateURLRefToGURL(template_url->url_ref(),
-                                         search_terms_data, false, false);
-  if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
-    return true;
-
-  // "URLCount() - 1" because we already tested url_ref above.
-  for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
-    TemplateURLRef ref(template_url, i);
-    search_url = TemplateURLRefToGURL(ref, search_terms_data, false, false);
+  for (const TemplateURLRef& ref : template_url->url_refs()) {
+    GURL search_url =
+        TemplateURLRefToGURL(ref, search_terms_data, false, false);
     if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
       return true;
   }
-
   return false;
 }
 
@@ -458,8 +451,7 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
     return result;
-  for (size_t i = 0; i < template_url->URLCount(); ++i) {
-    TemplateURLRef ref(template_url, i);
+  for (const TemplateURLRef& ref : template_url->url_refs()) {
     result.push_back(TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile),
                                           false, false));
   }

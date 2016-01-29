@@ -1812,8 +1812,15 @@ void TemplateURLService::RequestGoogleURLTrackerServerCheckIfNecessary() {
 }
 
 void TemplateURLService::GoogleBaseURLChanged() {
-  if (!loaded_)
+  if (!loaded_) {
+    if (initial_default_search_provider_.get() &&
+        initial_default_search_provider_->HasGoogleBaseURLs(
+            search_terms_data()))
+      initial_default_search_provider_->InvalidateCachedValues();
+      initial_default_search_provider_->ResetKeywordIfNecessary(
+          search_terms_data(), false);
     return;
+  }
 
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   bool something_changed = false;
