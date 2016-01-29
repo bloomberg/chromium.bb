@@ -168,6 +168,25 @@ private:
         m_popup->widgetClient()->hasTouchEventHandlers(needsTouchEvents);
     }
 
+    void setHaveWheelEventHandlers(bool haveEventHandlers) override
+    {
+        if (m_popup->m_layerTreeView)
+            return m_popup->m_layerTreeView->setHaveWheelEventHandlers(haveEventHandlers);
+    }
+
+    bool haveWheelEventHandlers() const override
+    {
+        if (m_popup->m_layerTreeView)
+            return m_popup->m_layerTreeView->haveWheelEventHandlers();
+        return false;
+    }
+
+    void setTouchAction(TouchAction touchAction) override
+    {
+        if (WebViewClient* client = m_popup->m_webView->client())
+            client->setTouchAction(static_cast<WebTouchAction>(touchAction));
+    }
+
     GraphicsLayerFactory* graphicsLayerFactory() const override
     {
         return m_popup->m_webView->graphicsLayerFactory();
