@@ -20,13 +20,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#if defined(_WIN32)
-#include <windows.h>
-#else
-#include <sys/file.h>
-#include <unistd.h>
-#endif
-
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -41,6 +34,13 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/TargetSelect.h"
 
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <sys/file.h>
+#include <unistd.h>
+#endif
+
 using namespace clang::ast_matchers;
 using clang::tooling::CommonOptionsParser;
 using clang::tooling::Replacement;
@@ -53,8 +53,8 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
 
-constexpr char kBlinkFieldPrefix[] = "m_";
-constexpr char kBlinkStaticMemberPrefix[] = "s_";
+const char kBlinkFieldPrefix[] = "m_";
+const char kBlinkStaticMemberPrefix[] = "s_";
 
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     const clang::ASTContext& context,
@@ -199,40 +199,40 @@ struct TargetNodeTraits;
 
 template <>
 struct TargetNodeTraits<clang::NamedDecl> {
-  static constexpr char kName[] = "decl";
+  static const char kName[];
   static clang::CharSourceRange GetRange(const clang::NamedDecl& decl) {
     return clang::CharSourceRange::getTokenRange(decl.getLocation());
   }
 };
-constexpr char TargetNodeTraits<clang::NamedDecl>::kName[];
+const char TargetNodeTraits<clang::NamedDecl>::kName[] = "decl";
 
 template <>
 struct TargetNodeTraits<clang::MemberExpr> {
-  static constexpr char kName[] = "expr";
+  static const char kName[];
   static clang::CharSourceRange GetRange(const clang::MemberExpr& expr) {
     return clang::CharSourceRange::getTokenRange(expr.getMemberLoc());
   }
 };
-constexpr char TargetNodeTraits<clang::MemberExpr>::kName[];
+const char TargetNodeTraits<clang::MemberExpr>::kName[] = "expr";
 
 template <>
 struct TargetNodeTraits<clang::DeclRefExpr> {
-  static constexpr char kName[] = "expr";
+  static const char kName[];
   static clang::CharSourceRange GetRange(const clang::DeclRefExpr& expr) {
     return clang::CharSourceRange::getTokenRange(expr.getLocation());
   }
 };
-constexpr char TargetNodeTraits<clang::DeclRefExpr>::kName[];
+const char TargetNodeTraits<clang::DeclRefExpr>::kName[] = "expr";
 
 template <>
 struct TargetNodeTraits<clang::CXXCtorInitializer> {
-  static constexpr char kName[] = "initializer";
+  static const char kName[];
   static clang::CharSourceRange GetRange(
       const clang::CXXCtorInitializer& init) {
     return clang::CharSourceRange::getTokenRange(init.getSourceLocation());
   }
 };
-constexpr char TargetNodeTraits<clang::CXXCtorInitializer>::kName[];
+const char TargetNodeTraits<clang::CXXCtorInitializer>::kName[] = "initializer";
 
 template <typename DeclNode, typename TargetNode>
 class RewriterBase : public MatchFinder::MatchCallback {
@@ -540,8 +540,8 @@ int main(int argc, const char* argv[]) {
     return result;
 
 #if defined(_WIN32)
-  HFILE lockfd = CreateFile("rewrite-sym.lock", GENERIC_READ, FILE_SHARE_READ,
-                            NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  HANDLE lockfd = CreateFile("rewrite-sym.lock", GENERIC_READ, FILE_SHARE_READ,
+                             NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
   OVERLAPPED overlapped = {};
   LockFileEx(lockfd, LOCKFILE_EXCLUSIVE_LOCK, 0, 1, 0, &overlapped);
 #else
