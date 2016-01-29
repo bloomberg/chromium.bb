@@ -77,6 +77,17 @@ def FindInDirectories(directories, filename_filter):
 
 
 def ParseGnList(gn_string):
+  # TODO(brettw) bug 573132: This doesn't handle GN escaping properly, so any
+  # weird characters like $ or \ in the strings will be corrupted.
+  #
+  # The code should import build/gn_helpers.py and then do:
+  #   parser = gn_helpers.GNValueParser(gn_string)
+  #   return return parser.ParseList()
+  # As of this writing, though, there is a CastShell build script that sends
+  # JSON through this function, and using correct GN parsing corrupts that.
+  #
+  # We need to be consistent about passing either JSON or GN lists through
+  # this function.
   return ast.literal_eval(gn_string)
 
 

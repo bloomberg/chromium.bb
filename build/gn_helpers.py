@@ -5,7 +5,19 @@
 """Helper functions useful when writing scripts that integrate with GN.
 
 The main functions are ToGNString and FromGNString which convert between
-serialized GN veriables and Python variables."""
+serialized GN veriables and Python variables.
+
+To use in a random python file in the build:
+
+  import os
+  import sys
+
+  sys.path.append(os.path.join(os.path.dirname(__file__),
+                               os.pardir, os.pardir, "build"))
+  import gn_helpers
+
+Where the sequence of parameters to join is the relative path from your source
+file to the build directory."""
 
 class GNException(Exception):
   pass

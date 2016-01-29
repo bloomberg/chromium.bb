@@ -285,6 +285,7 @@ if (enable_configuration_policy) {
 
   if (is_android) {
     import("//build/config/android/rules.gni")
+    import("//build/config/zip.gni")
 
     resources_name = "app_restrictions_resources"
     resources_zip = "res.java/$resources_name.zip"
@@ -316,22 +317,11 @@ if (enable_configuration_policy) {
     }
 
     zip_target_name = "${resources_name}__create_zip"
-    action(zip_target_name) {
-      script = "//build/android/gn/zip.py"
-      outputs = [
-        "$root_build_dir/$resources_zip",
-      ]
-      generated_resources = get_target_outputs(":$consolidate_target_name") +
-                            policy_templates_android_outputs
-      inputs = generated_resources
-      rebased_inputs = rebase_path(generated_resources, root_build_dir)
-      rebased_resources_dir =
-          rebase_path(generated_resources_dir, root_build_dir)
-      args = [
-        "--inputs=$rebased_inputs",
-        "--output=$resources_zip",
-        "--base-dir=$rebased_resources_dir",
-      ]
+    zip(zip_target_name) {
+      inputs = get_target_outputs(":$consolidate_target_name") +
+               policy_templates_android_outputs
+      output = "$root_build_dir/$resources_zip"
+      base_dir = generated_resources_dir
       deps = [
         ":$consolidate_target_name",
         ":policy_templates_grit",  # For policy_templates_android_outputs.

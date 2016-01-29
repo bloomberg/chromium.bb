@@ -3,18 +3,19 @@
 # found in the LICENSE file.
 
 # Creates a zip archive of the inputs.
-# If base_dir is provided, the archive paths will be relative to it.
+#
+# inputs (required)
+#     List of input files relative to the current directory.
+#
+# output (required)
+#     File name to write.
+#
+# base_dir (optional)
+#     If provided, the archive paths will be relative to this directory.
+#
+# deps, public_deps, data_deps, testonly, visibility (optional)
+#     Normal meaning.
 template("zip") {
-  set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
-
-  assert(defined(invoker.inputs))
-  assert(defined(invoker.output))
-
-  rebase_inputs = rebase_path(invoker.inputs, root_build_dir)
-  rebase_output = rebase_path(invoker.output, root_build_dir)
   action(target_name) {
     script = "//build/android/gn/zip.py"
     depfile = "$target_gen_dir/$target_name.d"
@@ -23,6 +24,13 @@ template("zip") {
       depfile,
       invoker.output,
     ]
+
+    assert(defined(invoker.inputs))
+    rebase_inputs = rebase_path(invoker.inputs, root_build_dir)
+
+    assert(defined(invoker.output))
+    rebase_output = rebase_path(invoker.output, root_build_dir)
+
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
@@ -36,18 +44,13 @@ template("zip") {
       ]
     }
 
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
-
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "deps",
+                             "public_deps",
+                             "data_deps",
+                             "visibility",
+                           ])
   }
 }

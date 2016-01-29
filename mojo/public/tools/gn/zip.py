@@ -4,14 +4,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(brettw) bug 582594: merge this with build/android/gn/zip.py and update
+# callers to use the existing template rather than invoking this directly.
+
 """Archives a set of files.
 """
 
-import ast
 import optparse
 import os
 import sys
 import zipfile
+
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             os.pardir, os.pardir, os.pardir, os.pardir,
+                             "build"))
+import gn_helpers
 
 def DoZip(inputs, link_inputs, zip_inputs, output, base_dir):
   files = []
@@ -37,10 +44,12 @@ def DoZip(inputs, link_inputs, zip_inputs, output, base_dir):
 def main():
   parser = optparse.OptionParser()
 
-  parser.add_option('--inputs', help='List of files to archive.')
+  parser.add_option('--inputs',
+      help='GN format list of files to archive.')
   parser.add_option('--link-inputs',
-      help='List of files to archive. Symbolic links are resolved.')
-  parser.add_option('--zip-inputs', help='List of zip files to re-archive.')
+      help='GN-format list of files to archive. Symbolic links are resolved.')
+  parser.add_option('--zip-inputs',
+      help='GN-format list of zip files to re-archive.')
   parser.add_option('--output', help='Path to output archive.')
   parser.add_option('--base-dir',
                     help='If provided, the paths in the archive will be '
@@ -50,13 +59,19 @@ def main():
 
   inputs = []
   if (options.inputs):
-    inputs = ast.literal_eval(options.inputs)
+    parser = gn_helpers.GNValueParser(options.inputs)
+    inputs = parser.ParseList()
+
   link_inputs = []
   if options.link_inputs:
-    link_inputs = ast.literal_eval(options.link_inputs)
+    parser = gn_helpers.GNValueParser(options.link_inputs)
+    link_inputs = parser.ParseList()
+
   zip_inputs = []
   if options.zip_inputs:
-    zip_inputs = ast.literal_eval(options.zip_inputs)
+    parser = gn_helpers.GNValueParser(options.zip_inputs)
+    zip_inputs = parser.ParseList()
+
   output = options.output
   base_dir = options.base_dir
 

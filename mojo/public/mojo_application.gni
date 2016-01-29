@@ -6,6 +6,7 @@ import("//build/toolchain/toolchain.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//build/config/zip.gni")
 }
 
 # Generate a binary Mojo application in a self-named directory.
@@ -204,36 +205,19 @@ if (is_android) {
     zip_action_name = "${target_name}_zip"
     zip_action_output = "$target_gen_dir/${target_name}.zip"
     prepend_action_name = target_name
-    action(zip_action_name) {
+    zip(zip_action_name) {
       visibility = [ ":$prepend_action_name" ]
-      script = "//build/android/gn/zip.py"
-
       inputs = [
         invoker.input_so,
         invoker.input_dex_jar,
       ]
-
       output = zip_action_output
-      outputs = [
-        output,
-      ]
-
-      rebase_inputs = rebase_path(inputs, root_build_dir)
-      rebase_output = rebase_path(output, root_build_dir)
-      args = [
-        "--inputs=$rebase_inputs",
-        "--output=$rebase_output",
-      ]
-
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      }
-      if (defined(invoker.public_deps)) {
-        public_deps = invoker.public_deps
-      }
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "data_deps",
+                             ])
     }
 
     _mojo_output =
