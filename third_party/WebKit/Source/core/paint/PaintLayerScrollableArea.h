@@ -228,11 +228,13 @@ public:
     // FIXME: We shouldn't allow access to m_overflowRect outside this class.
     LayoutRect overflowRect() const { return m_overflowRect; }
 
-    void scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping = ScrollOffsetUnclamped, ScrollBehavior = ScrollBehaviorInstant, ScrollType = ProgrammaticScroll);
+    void scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping = ScrollOffsetUnclamped,
+        ScrollBehavior = ScrollBehaviorInstant, ScrollType = ProgrammaticScroll);
 
-    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
+    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp = ScrollOffsetUnclamped,
+        ScrollBehavior scrollBehavior = ScrollBehaviorInstant, ScrollType scrollType = ProgrammaticScroll)
     {
-        scrollToPosition(-scrollOrigin() + scrollOffset, clamp, scrollBehavior);
+        scrollToPosition(-scrollOrigin() + scrollOffset, clamp, scrollBehavior, scrollType);
     }
 
     void scrollToXOffset(double x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
@@ -247,7 +249,7 @@ public:
 
     void setScrollPosition(const DoublePoint& position, ScrollType scrollType, ScrollBehavior scrollBehavior = ScrollBehaviorInstant) override
     {
-        scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior);
+        scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior, scrollType);
     }
 
     void updateScrollDimensions(DoubleSize& scrollOffset, bool& autoHorizontalScrollBarChanged, bool& autoVerticalScrollBarChanged);
