@@ -33,8 +33,10 @@ class C {
     const int kFunctionConstantFromExpression = 4 + 6;
     const int kFunctionConstantFromOtherConsts =
         kFunctionConstant + kFunctionConstantFromExpression;
-    const int kShouldBeRenamedToAConst = 9 - 2;
-    const int kShouldAlsoBeRenamedToAConst =
+    // These don't do the right thing right now, but names like this don't
+    // exist in blink (hopefully).
+    const int kShould_be_renamed_to_a_const = 9 - 2;
+    const int kShould_also_be_renamed_to_a_const =
         kFunctionConstant + kFunctionConstantFromOtherConsts;
     const int not_compile_time_const = kFunctionConstant + Function();
   }
