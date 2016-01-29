@@ -20,6 +20,9 @@
             "params": {
                 "limit": "3"
             }
+        },
+        {
+            "group_name": "Enabled"
         }
     ],
     "AutomaticTabDiscarding": [
