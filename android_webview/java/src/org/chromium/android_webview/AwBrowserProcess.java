@@ -104,9 +104,8 @@ public abstract class AwBrowserProcess {
             Log.w(TAG, "Failed to create lock file " + lockFile, e);
         }
         if (!success) {
-            throw new RuntimeException(
-                    "Could not obtain an exclusive lock on the data dir. The app may have "
-                    + "another WebView opened in a separate process");
+            Log.w(TAG, "The app may have another WebView opened in a separate process. "
+                    + "This is not recommended and may stop working in future versions.");
         }
     }
 }
