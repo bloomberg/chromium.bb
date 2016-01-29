@@ -242,6 +242,15 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_EVAL_CUBIC
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_VERTICAL_EDGE
+#   define SK_SUPPORT_LEGACY_VERTICAL_EDGE
+#endif
+
+#ifndef    SK_SUPPORT_LEGACY_INSERT_NEW_EDGES
+#   define SK_SUPPORT_LEGACY_INSERT_NEW_EDGES
+#endif
+
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
