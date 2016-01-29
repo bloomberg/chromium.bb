@@ -20,7 +20,7 @@ class C {
   // Test that a field without a m_ prefix is correctly renamed.
   static int instanceCount;
 
- private:
+ protected:
   // Test that a field with a m_ prefix is correctly renamed.
   const int m_flagField;
   // Statics should be named with s_, but make sure s_ and m_ are both correctly
@@ -31,6 +31,11 @@ class C {
   int m_fieldMentioningHTTPAndHTTPS;
   // Already Google style, should not change.
   int already_google_style_;
+};
+
+struct Derived : public C {
+  using C::m_flagField;
+  using C::m_fieldMentioningHTTPAndHTTPS;
 };
 
 int C::instanceCount = 0;

@@ -11,6 +11,9 @@ class Task {
 
   // Tests that the declarations for methods are updated.
   void DoTheWork();
+  // Overload to test using declarations that introduce multiple shadow
+  // declarations.
+  void DoTheWork(int);
   virtual void ReallyDoTheWork() = 0;
 
   // Note: this is purposely copyable and assignable, to make sure the Clang
@@ -57,7 +60,13 @@ namespace Moo {
 // Test that overrides from outside the Blink namespace are also updated.
 class BovineTask : public blink::Task {
  public:
+  using Task::DoTheWork;
   void ReallyDoTheWork() override;
+};
+
+class SuperBovineTask : public BovineTask {
+ public:
+  using BovineTask::ReallyDoTheWork;
 };
 
 void BovineTask::ReallyDoTheWork() {

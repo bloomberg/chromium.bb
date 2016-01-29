@@ -6,6 +6,9 @@ namespace blink {
 
 // Tests that the prototype for a function is updated.
 int testFunctionThatTakesTwoInts(int x, int y);
+// Overload to test using declarations that introduce multiple shadow
+// declarations.
+int testFunctionThatTakesTwoInts(int x, int y, int z);
 
 // Test that the actual function definition is also updated.
 int testFunctionThatTakesTwoInts(int x, int y) {
@@ -30,6 +33,8 @@ void F() {
 
 }  // namespace blink
 
+using blink::testFunctionThatTakesTwoInts;
+
 void G() {
-  blink::testFunctionThatTakesTwoInts(1, 2);
+  testFunctionThatTakesTwoInts(1, 2);
 }
