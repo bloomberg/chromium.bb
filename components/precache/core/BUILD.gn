@@ -7,9 +7,9 @@ import("//third_party/protobuf/proto_library.gni")
 # These values are duplicated in the GYP build in:
 # //components/precache/precache_defines.gypi
 precache_config_settings_url =
-    "http://www.gstatic.com/chrome/wifiprefetch/precache_config"
+    "https://www.gstatic.com/chrome/wifiprefetch/precache_config"
 precache_manifest_url_prefix =
-    "http://www.gstatic.com/chrome/wifiprefetch/hosts/"
+    "https://www.gstatic.com/chrome/wifiprefetch/hosts/"
 
 config("precache_config") {
   defines = [
