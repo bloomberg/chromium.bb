@@ -19,18 +19,15 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/runner/child/child_controller.mojom.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
-#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/shell/runner/common/switches.h"
 
 namespace mojo {
 namespace shell {
 namespace {
-
-void DidCreateChannel(embedder::ChannelInfo* channel_info) {}
 
 // Blocks a thread until another thread unblocks it, at which point it unblocks
 // and runs a closure provided by that thread.
@@ -76,6 +73,13 @@ class Blocker {
 
 using GotApplicationRequestCallback =
     base::Callback<void(InterfaceRequest<Application>)>;
+
+void OnCreateMessagePipe(ScopedMessagePipeHandle* result,
+                         Blocker::Unblocker unblocker,
+                         ScopedMessagePipeHandle pipe) {
+  *result = std::move(pipe);
+  unblocker.Unblock(base::Bind(&base::DoNothing));
+}
 
 void OnGotApplicationRequest(InterfaceRequest<Application>* out_request,
                              InterfaceRequest<Application> request) {
@@ -164,7 +168,7 @@ class ChildControllerImpl : public ChildController {
   void OnConnectionError() {
     // A connection error means the connection to the shell is lost. This is not
     // recoverable.
-    LOG(ERROR) << "Connection error to the shell.";
+    DLOG(ERROR) << "Connection error to the shell.";
     _exit(1);
   }
 
@@ -191,7 +195,6 @@ class ChildControllerImpl : public ChildController {
       : connection_(connection),
         callback_(callback),
         unblocker_(unblocker),
-        channel_info_(nullptr),
         binding_(this) {}
 
   static void ReturnApplicationRequestOnMainThread(
@@ -206,7 +209,6 @@ class ChildControllerImpl : public ChildController {
   Blocker::Unblocker unblocker_;
   StartAppCallback on_app_complete_;
 
-  embedder::ChannelInfo* channel_info_;
   Binding<ChildController> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildControllerImpl);
@@ -218,45 +220,21 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
   // If a valid message pipe to the runner was not provided, look for one on the
   // command line.
   if (!handle.is_valid()) {
-    embedder::ScopedPlatformHandle platform_channel =
-        embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
+    edk::ScopedPlatformHandle platform_channel =
+        edk::PlatformChannelPair::PassClientHandleFromParentProcess(
             *base::CommandLine::ForCurrentProcess());
     if (!platform_channel.is_valid())
       return false;
-    scoped_refptr<base::TaskRunner> task_runner;
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"))
-      task_runner = base::ThreadTaskRunnerHandle::Get();
-    handle =
-        embedder::CreateChannel(std::move(platform_channel),
-                                base::Bind(&DidCreateChannel), task_runner);
-    // Copy of code in child_process.cc
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-      // When using the new Mojo EDK, each message pipe is backed by a platform
-      // handle. The one platform handle that comes on the command line is used
-      // to bind to the ChildController interface. However we also want a
-      // platform handle to setup the communication channel by which we exchange
-      // handles to/from tokens, which is needed for sandboxed Windows
-      // processes.
-      char broker_handle[10];
-      MojoHandleSignalsState state;
-      MojoResult rv =
-          MojoWait(handle.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                   MOJO_DEADLINE_INDEFINITE, &state);
-      CHECK_EQ(MOJO_RESULT_OK, rv);
-      uint32_t num_bytes = arraysize(broker_handle);
-      rv = MojoReadMessage(handle.get().value(),
-                           broker_handle, &num_bytes, nullptr, 0,
-                           MOJO_READ_MESSAGE_FLAG_NONE);
-      CHECK_EQ(MOJO_RESULT_OK, rv);
-
-      edk::ScopedPlatformHandle broker_channel =
-          edk::PlatformChannelPair::PassClientHandleFromParentProcessFromString(
-              std::string(broker_handle, num_bytes));
-      CHECK(broker_channel.is_valid());
-      embedder::SetParentPipeHandle(
-          mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
-              broker_channel.release().handle)));
-    }
+    edk::SetParentPipeHandle(std::move(platform_channel));
+    std::string primordial_pipe_token =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kPrimordialPipeToken);
+    Blocker blocker;
+    edk::CreateChildMessagePipe(
+        primordial_pipe_token,
+        base::Bind(&OnCreateMessagePipe, base::Unretained(&handle),
+                   blocker.GetUnblocker()));
+    blocker.Block();
   }
 
   Blocker blocker;

@@ -14,8 +14,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/host/child_process.h"
-#include "mojo/shell/runner/host/switches.h"
 #include "mojo/shell/runner/init.h"
 #include "mojo/shell/standalone/desktop/launcher_process.h"
 

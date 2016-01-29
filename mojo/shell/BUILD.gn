@@ -168,6 +168,7 @@ executable("application_manager_apptest_driver") {
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/child:test_native_main",
+    "//mojo/shell/runner/common",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }

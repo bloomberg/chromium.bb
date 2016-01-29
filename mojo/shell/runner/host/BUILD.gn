@@ -15,13 +15,6 @@ group("host") {
   ]
 }
 
-source_set("switches") {
-  sources = [
-    "switches.cc",
-    "switches.h",
-  ]
-}
-
 source_set("native_application_support") {
   sources = [
     "native_application_support.cc",
@@ -58,7 +51,6 @@ source_set("lib") {
 
   deps = [
     ":native_application_support",
-    ":switches",
     "//base",
     "//base:base_static",
     "//base:i18n",
@@ -68,6 +60,7 @@ source_set("lib") {
     "//mojo/shell",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/child:interfaces",
+    "//mojo/shell/runner/common",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 
@@ -95,13 +88,13 @@ test("mojo_runner_host_unittests") {
 
   deps = [
     ":lib",
-    ":switches",
     "//base",
     "//base/test:test_support",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/shell/runner:init",
+    "//mojo/shell/runner/common",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/system",
   ]

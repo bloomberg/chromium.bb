@@ -25,6 +25,7 @@ source_set("lib") {
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/common",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }

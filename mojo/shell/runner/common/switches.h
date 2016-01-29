@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_RUNNER_HOST_SWITCHES_H_
-#define MOJO_SHELL_RUNNER_HOST_SWITCHES_H_
+#ifndef MOJO_SHELL_RUNNER_COMMON_SWITCHES_H_
+#define MOJO_SHELL_RUNNER_COMMON_SWITCHES_H_
 
 namespace switches {
 
@@ -15,4 +15,4 @@ extern const char kPrimordialPipeToken[];
 
 }  // namespace switches
 
-#endif  // MOJO_SHELL_RUNNER_HOST_SWITCHES_H_
+#endif  // MOJO_SHELL_RUNNER_COMMON_SWITCHES_H_

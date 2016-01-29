@@ -22,8 +22,8 @@ executable("mandoline") {
     "//mojo/environment:chromium",
     "//mojo/shell",
     "//mojo/shell/package_manager",
+    "//mojo/shell/runner/common",
     "//mojo/shell/runner/host:lib",
-    "//mojo/shell/runner/host:switches",
     "//mojo/shell/standalone:lib",
     "//mojo/shell/standalone:register_local_aliases_fwd",
   ]

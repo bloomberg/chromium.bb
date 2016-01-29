@@ -30,8 +30,8 @@ source_set("main_lib") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
+    "//mojo/shell/runner/common",
     "//mojo/shell/runner/host:lib",
-    "//mojo/shell/runner/host:switches",
   ]
 
   if (!is_android) {

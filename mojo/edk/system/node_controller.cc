@@ -524,7 +524,26 @@ void NodeController::OnAcceptParent(const ports::NodeName& from_node,
 
   DVLOG(1) << "Parent " << name_ << " accepted child " << child_name;
 
+  // If the child has a grandparent, we want to make sure they're introduced
+  // as well. The grandparent will be sent a named channel handle, then we'll
+  // add the child as our peer, then we'll introduce the child to the parent.
+
+  scoped_refptr<NodeChannel> parent = GetParentChannel();
+  ports::NodeName parent_name;
+  scoped_ptr<PlatformChannelPair> grandparent_channel;
+  if (parent) {
+    base::AutoLock lock(parent_lock_);
+    parent_name = parent_name_;
+    grandparent_channel.reset(new PlatformChannelPair);
+  }
+
+  if (grandparent_channel)
+    parent->Introduce(child_name, grandparent_channel->PassServerHandle());
+
   AddPeer(child_name, channel, false /* start_channel */);
+
+  if (grandparent_channel)
+    channel->Introduce(parent_name, grandparent_channel->PassClientHandle());
 }
 
 void NodeController::OnPortsMessage(Channel::MessagePtr channel_message) {
@@ -645,11 +664,6 @@ void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
     return;
   }
 
-  if (GetParentChannel() != nullptr) {
-    DLOG(ERROR) << "Non-parent node cannot introduce peers to each other.";
-    return;
-  }
-
   scoped_refptr<NodeChannel> new_friend = GetPeerChannel(name);
   if (!new_friend) {
     // We don't know who they're talking about!
@@ -665,16 +679,6 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
                                  const ports::NodeName& name,
                                  ScopedPlatformHandle channel_handle) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-
-  {
-    base::AutoLock lock(parent_lock_);
-    if (from_node != parent_name_) {
-      DLOG(ERROR) << "Received unexpected Introduce message from node "
-                  << from_node;
-      DropPeer(from_node);
-      return;
-    }
-  }
 
   if (!channel_handle.is_valid()) {
     DLOG(ERROR) << "Could not be introduced to peer " << name;

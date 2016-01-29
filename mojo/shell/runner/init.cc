@@ -16,7 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/shell/runner/host/switches.h"
+#include "mojo/shell/runner/common/switches.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

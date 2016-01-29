@@ -20,6 +20,6 @@ source_set("init") {
     "//base",
     "//base:base_static",
     "//base:i18n",
-    "//mojo/shell/runner/host:switches",
+    "//mojo/shell/runner/common",
   ]
 }
