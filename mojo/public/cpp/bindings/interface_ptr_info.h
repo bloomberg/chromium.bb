@@ -34,7 +34,7 @@ class InterfacePtrInfo {
 
   InterfacePtrInfo& operator=(InterfacePtrInfo&& other) {
     if (this != &other) {
-      handle_ = other.handle_.Pass();
+      handle_ = std::move(other.handle_);
       version_ = other.version_;
       other.version_ = 0u;
     }
