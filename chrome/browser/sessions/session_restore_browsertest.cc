@@ -58,9 +58,6 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/page_transition_types.h"
 
-using sessions::SerializedNavigationEntry;
-using sessions::SerializedNavigationEntryTestHelper;
-
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -68,6 +65,9 @@ using sessions::SerializedNavigationEntryTestHelper;
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
+
+using sessions::SerializedNavigationEntry;
+using sessions::SerializedNavigationEntryTestHelper;
 
 class SessionRestoreTest : public InProcessBrowserTest {
  public:
@@ -211,7 +211,7 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
                                       public content::NotificationObserver {
  public:
   SmartSessionRestoreTest() {}
-  void StartObserving(int num_tabs) {
+  void StartObserving(size_t num_tabs) {
     // Start by clearing everything so it can be reused in the same test.
     web_contents_.clear();
     registrar_.RemoveAll();
@@ -227,7 +227,7 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
         content::NavigationController* controller =
             content::Source<content::NavigationController>(source).ptr();
         web_contents_.push_back(controller->GetWebContents());
-        if (web_contents_.size() == static_cast<size_t>(num_tabs_))
+        if (web_contents_.size() == num_tabs_)
           message_loop_runner_->Quit();
         break;
       }
@@ -243,7 +243,7 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
   }
 
  protected:
-  static const int kExpectedNumTabs;
+  static const size_t kExpectedNumTabs;
   static const char* const kUrls[];
 
  private:
@@ -251,13 +251,13 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
   // Ordered by load start order.
   std::vector<content::WebContents*> web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  int num_tabs_;
+  size_t num_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreTest);
 };
 
 // static
-const int SmartSessionRestoreTest::kExpectedNumTabs = 6;
+const size_t SmartSessionRestoreTest::kExpectedNumTabs = 6;
 // static
 const char* const SmartSessionRestoreTest::kUrls[] = {
     "http://google.com/1",
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   chrome::NewWindow(popup);
   Browser* new_browser = observer.WaitForSingleNewBrowser();
 
-  ASSERT_TRUE(new_browser != NULL);
+  ASSERT_TRUE(new_browser);
 
   // The browser should only have one tab.
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
@@ -509,10 +509,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   // there is no guarantee that the SessionID for the tab has remained the same.
   base::Time timestamp;
   int http_status_code = 0;
-  for (std::vector<sessions::TabRestoreService::Tab>::const_iterator it =
-           window->tabs.begin();
-       it != window->tabs.end(); ++it) {
-    const sessions::TabRestoreService::Tab& tab = *it;
+  for (const sessions::TabRestoreService::Tab& tab : window->tabs) {
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = tab.navigations[0].timestamp();
@@ -520,10 +517,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       std::vector<sessions::LiveTab*> content =
           service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
       ASSERT_EQ(1U, content.size());
-      ASSERT_TRUE(content[0]);
-      EXPECT_EQ(url2, static_cast<sessions::ContentLiveTab*>(content[0])
-                          ->web_contents()
-                          ->GetURL());
+      sessions::ContentLiveTab* live_tab =
+          static_cast<sessions::ContentLiveTab*>(content[0]);
+      ASSERT_TRUE(live_tab);
+      EXPECT_EQ(url2, live_tab->web_contents()->GetURL());
       break;
     }
   }
@@ -1355,20 +1352,21 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
 IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
   Profile* profile = browser()->profile();
 
-  int activation_order[] = {4, 2, 1, 5, 0, 3};
+  const int activation_order[] = {4, 2, 1, 5, 0, 3};
 
   // Replace the first tab and add the other tabs.
   ui_test_utils::NavigateToURL(browser(), GURL(kUrls[0]));
-  for (int i = 1; i < kExpectedNumTabs; i++) {
+  for (size_t i = 1; i < kExpectedNumTabs; i++) {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(kUrls[i]), NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   }
 
-  ASSERT_EQ(kExpectedNumTabs, browser()->tab_strip_model()->count());
+  ASSERT_EQ(static_cast<int>(kExpectedNumTabs),
+            browser()->tab_strip_model()->count());
 
   // Activate the tabs one by one following the specified activation order.
-  for (auto i : activation_order)
+  for (int i : activation_order)
     browser()->tab_strip_model()->ActivateTabAt(i, true);
 
   // Close the browser.
@@ -1381,11 +1379,11 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
   ui_test_utils::BrowserAddedObserver window_observer;
   chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-  ASSERT_TRUE(new_browser != NULL);
+  ASSERT_TRUE(new_browser);
   WaitForAllTabsToStartLoading();
   g_browser_process->ReleaseModule();
 
-  ASSERT_EQ(static_cast<size_t>(kExpectedNumTabs), web_contents().size());
+  ASSERT_EQ(kExpectedNumTabs, web_contents().size());
   // Test that we have observed the tabs being loaded in the inverse order of
   // their activation (MRU). Also validate that their last active time is in the
   // correct order.
@@ -1410,7 +1408,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
 #define MAYBE_CorrectLoadingOrder CorrectLoadingOrder
 #endif
 IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
-  int activation_order[] = {4, 2, 5, 0, 3, 1};
+  const int activation_order[] = {4, 2, 5, 0, 3, 1};
   Profile* profile = browser()->profile();
 
   // Close the browser that gets opened automatically so we can track the order
@@ -1425,11 +1423,11 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
   ui_test_utils::BrowserAddedObserver window_observer;
   chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-  ASSERT_TRUE(new_browser != NULL);
+  ASSERT_TRUE(new_browser);
   WaitForAllTabsToStartLoading();
   g_browser_process->ReleaseModule();
 
-  ASSERT_EQ(static_cast<size_t>(kExpectedNumTabs + 1), web_contents().size());
+  ASSERT_EQ(kExpectedNumTabs + 1, web_contents().size());
 
   // Test that we have observed the tabs being loaded in the inverse order of
   // their activation (MRU). Also validate that their last active time is in the
