@@ -1385,3 +1385,4 @@ crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 
 crbug.com/581203 [ Linux ] web-animations-api/player-finish-sample-only.html [ Failure Pass ]
 
+crbug.com/582155 fast/regex/non-pattern-characters.html [ NeedsManualRebaseline ]
