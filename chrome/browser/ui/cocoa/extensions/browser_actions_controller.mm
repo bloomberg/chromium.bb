@@ -379,15 +379,6 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     [self showChevronIfNecessaryInFrame:[containerView_ frame]];
     [self updateGrippyCursors];
     [container setIsOverflow:isOverflow_];
-    if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-            browser_->profile())) {
-      [containerView_ setTrackingEnabled:YES];
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(containerMouseEntered:)
-                 name:kBrowserActionsContainerMouseEntered
-               object:containerView_];
-    }
 
     focusedViewIndex_ = -1;
   }
@@ -572,6 +563,15 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
           new ui::NinePartImageIds(IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT)));
   }
   [containerView_ setHighlight:std::move(highlight)];
+  if (toolbarActionsBar_->show_icon_surfacing_bubble() &&
+      ![containerView_ trackingEnabled]) {
+    [containerView_ setTrackingEnabled:YES];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerMouseEntered:)
+               name:kBrowserActionsContainerMouseEntered
+             object:containerView_];
+  }
 
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->GetActions();

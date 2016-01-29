@@ -122,6 +122,10 @@ const CGFloat kMinimumContainerWidth = 3.0;
   }
 }
 
+- (BOOL)trackingEnabled {
+  return trackingArea_.get() != nullptr;
+}
+
 - (void)keyDown:(NSEvent*)theEvent {
   // If this is the overflow container, we handle three key events: left, right,
   // and space. Left and right navigate the actions within the container, and
@@ -173,6 +177,10 @@ const CGFloat kMinimumContainerWidth = 3.0;
     resizable_ = highlight.get() == nullptr;
     [self setNeedsDisplay:YES];
   }
+}
+
+- (BOOL)isHighlighting {
+  return highlight_.get() != nullptr;
 }
 
 - (void)setIsOverflow:(BOOL)isOverflow {

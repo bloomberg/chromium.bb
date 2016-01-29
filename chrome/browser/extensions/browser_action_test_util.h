@@ -94,6 +94,10 @@ class BrowserActionTestUtil {
   // is too small for the preferred width.
   void SetWidth(int width);
 
+  // Returns true if the container is currently highlighting in preparation for
+  // showing the icon surfacing bubble.
+  bool IsHighlightingForSurfacingBubble();
+
   // Returns the ToolbarActionsBar.
   ToolbarActionsBar* GetToolbarActionsBar();
 

@@ -193,6 +193,12 @@ void BrowserActionTestUtil::SetWidth(int width) {
   [containerView setFrame:frame];
 }
 
+bool BrowserActionTestUtil::IsHighlightingForSurfacingBubble() {
+  BrowserActionsContainerView* containerView =
+      [GetController(browser_, test_helper_.get()) containerView];
+  return [containerView trackingEnabled] && [containerView isHighlighting];
+}
+
 ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
   return [GetController(browser_, test_helper_.get()) toolbarActionsBar];
 }

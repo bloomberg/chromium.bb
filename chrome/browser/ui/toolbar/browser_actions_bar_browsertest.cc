@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -505,4 +507,23 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
   browser_actions_bar()->HidePopup();
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_FALSE(browser_actions_bar()->HasPopup());
+}
+
+// Tests that the browser actions container correctly highlights for displaying
+// the icon surfacing bubble.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       PRE_HighlightsForExtensionIconSurfacingBubble) {
+  // Add a new extension and clear the pref for the bubble being acknowledged.
+  base::FilePath path = PackExtension(test_data_dir_.AppendASCII("api_test")
+                                          .AppendASCII("page_action")
+                                          .AppendASCII("simple"));
+  InstallExtensionFromWebstore(path, 1);
+  profile()->GetPrefs()->ClearPref(
+      prefs::kToolbarIconSurfacingBubbleAcknowledged);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       HighlightsForExtensionIconSurfacingBubble) {
+  // The toolbar should be highlighting for the bubble.
+  EXPECT_TRUE(browser_actions_bar()->IsHighlightingForSurfacingBubble());
 }

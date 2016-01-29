@@ -204,6 +204,12 @@ void BrowserActionTestUtil::SetWidth(int width) {
   container->SetSize(gfx::Size(width, container->height()));
 }
 
+bool BrowserActionTestUtil::IsHighlightingForSurfacingBubble() {
+  return GetContainer(browser_, test_helper_.get())
+      ->toolbar_actions_bar()
+      ->is_highlighting();
+}
+
 ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
   return GetContainer(browser_, test_helper_.get())->toolbar_actions_bar();
 }
