@@ -19,11 +19,6 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
-
 /**
  * Manager for the snackbar showing at the bottom of activity. There should be only one
  * SnackbarManager and one snackbar in the activity.
@@ -155,7 +150,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
      */
     @Override
     public void onClick(View v) {
-        mSnackbars.removeCurrent(true);
+        mSnackbars.removeCurrentDueToAction();
         updatePopup();
     }
 
@@ -267,98 +262,5 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     @VisibleForTesting
     Snackbar getCurrentSnackbarForTesting() {
         return mSnackbars.getCurrent();
-    }
-
-    private static class SnackbarCollection {
-        private Deque<Snackbar> mStack = new LinkedList<>();
-        private Queue<Snackbar> mQueue = new LinkedList<>();
-
-        /**
-         * Adds a new snackbar to the collection. If the new snackbar is of
-         * {@link Snackbar#TYPE_ACTION} and current snackbar is of
-         * {@link Snackbar#TYPE_NOTIFICATION}, the current snackbar will be removed from the
-         * collection immediately.
-         */
-        public void add(Snackbar snackbar) {
-            if (snackbar.isTypeAction()) {
-                if (getCurrent() != null && !getCurrent().isTypeAction()) {
-                    removeCurrent(false);
-                }
-                mStack.push(snackbar);
-            } else {
-                mQueue.offer(snackbar);
-            }
-        }
-
-        /**
-         * Removes the current snackbar from the collection.
-         * @param isAction Whether the removal is triggered by user clicking the action button.
-         */
-        public void removeCurrent(boolean isAction) {
-            Snackbar current = !mStack.isEmpty() ? mStack.pop() : mQueue.poll();
-            if (current != null) {
-                SnackbarController controller = current.getController();
-                if (isAction) controller.onAction(current.getActionData());
-                else controller.onDismissNoAction(current.getActionData());
-            }
-        }
-
-        /**
-         * @return The snackbar that is currently displayed.
-         */
-        public Snackbar getCurrent() {
-            return !mStack.isEmpty() ? mStack.peek() : mQueue.peek();
-        }
-
-        public boolean isEmpty() {
-            return mStack.isEmpty() && mQueue.isEmpty();
-        }
-
-        public void clear() {
-            while (!isEmpty()) {
-                removeCurrent(false);
-            }
-        }
-
-        public void removeCurrentDueToTimeout() {
-            removeCurrent(false);
-            Snackbar current;
-            while ((current = getCurrent()) != null && current.isTypeAction()) {
-                removeCurrent(false);
-            }
-        }
-
-        public boolean removeMatchingSnackbars(SnackbarController controller) {
-            boolean snackbarRemoved = false;
-            Iterator<Snackbar> iter = mStack.iterator();
-            while (iter.hasNext()) {
-                Snackbar snackbar = iter.next();
-                if (snackbar.getController() == controller) {
-                    iter.remove();
-                    snackbarRemoved = true;
-                }
-            }
-            return snackbarRemoved;
-        }
-
-        public boolean removeMatchingSnackbars(SnackbarController controller, Object data) {
-            boolean snackbarRemoved = false;
-            Iterator<Snackbar> iter = mStack.iterator();
-            while (iter.hasNext()) {
-                Snackbar snackbar = iter.next();
-                if (snackbar.getController() == controller
-                        && objectsAreEqual(snackbar.getActionData(), data)) {
-                    iter.remove();
-                    snackbarRemoved = true;
-                }
-            }
-            return snackbarRemoved;
-        }
-
-        private static boolean objectsAreEqual(Object a, Object b) {
-            if (a == null && b == null) return true;
-            if (a == null || b == null) return false;
-            return a.equals(b);
-        }
     }
 }

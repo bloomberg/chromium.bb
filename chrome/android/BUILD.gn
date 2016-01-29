@@ -278,6 +278,7 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/omaha/VersionNumberTest.java",
     "junit/src/org/chromium/chrome/browser/util/NonThreadSafeTest.java",
     "junit/src/org/chromium/chrome/browser/notifications/NotificationUIManagerUnitTest.java",
+    "junit/src/org/chromium/chrome/browser/snackbar/SnackbarCollectionUnitTest.java",
     "junit/src/org/chromium/chrome/browser/webapps/WebappDataStorageTest.java",
     "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",
   ]
