@@ -2417,7 +2417,7 @@ ScriptableDocumentParser* Document::scriptableDocumentParser() const
     return parser() ? parser()->asScriptableDocumentParser() : 0;
 }
 
-void Document::open(Document* ownerDocument, ExceptionState& exceptionState)
+void Document::open(Document* enteredDocument, ExceptionState& exceptionState)
 {
     if (importLoader()) {
         exceptionState.throwDOMException(InvalidStateError, "Imported document doesn't support open().");
@@ -2429,10 +2429,14 @@ void Document::open(Document* ownerDocument, ExceptionState& exceptionState)
         return;
     }
 
-    if (ownerDocument) {
-        setURL(ownerDocument->url());
-        m_cookieURL = ownerDocument->cookieURL();
-        setSecurityOrigin(ownerDocument->securityOrigin());
+    if (enteredDocument) {
+        if (!securityOrigin()->canAccess(enteredDocument->securityOrigin())) {
+            exceptionState.throwSecurityError("Can only call open() on same-origin documents.");
+            return;
+        }
+        setSecurityOrigin(enteredDocument->securityOrigin());
+        setURL(enteredDocument->url());
+        m_cookieURL = enteredDocument->cookieURL();
     }
 
     open();
@@ -2844,7 +2848,7 @@ int Document::elapsedTime() const
     return static_cast<int>((currentTime() - m_startTime) * 1000);
 }
 
-void Document::write(const SegmentedString& text, Document* ownerDocument, ExceptionState& exceptionState)
+void Document::write(const SegmentedString& text, Document* enteredDocument, ExceptionState& exceptionState)
 {
     if (importLoader()) {
         exceptionState.throwDOMException(InvalidStateError, "Imported document doesn't support write().");
@@ -2853,6 +2857,11 @@ void Document::write(const SegmentedString& text, Document* ownerDocument, Excep
 
     if (!isHTMLDocument()) {
         exceptionState.throwDOMException(InvalidStateError, "Only HTML documents support write().");
+        return;
+    }
+
+    if (enteredDocument && !securityOrigin()->canAccess(enteredDocument->securityOrigin())) {
+        exceptionState.throwSecurityError("Can only call write() on same-origin documents.");
         return;
     }
 
@@ -2872,23 +2881,23 @@ void Document::write(const SegmentedString& text, Document* ownerDocument, Excep
     }
 
     if (!hasInsertionPoint)
-        open(ownerDocument, ASSERT_NO_EXCEPTION);
+        open(enteredDocument, ASSERT_NO_EXCEPTION);
 
     ASSERT(m_parser);
     m_parser->insert(text);
 }
 
-void Document::write(const String& text, Document* ownerDocument, ExceptionState& exceptionState)
+void Document::write(const String& text, Document* enteredDocument, ExceptionState& exceptionState)
 {
-    write(SegmentedString(text), ownerDocument, exceptionState);
+    write(SegmentedString(text), enteredDocument, exceptionState);
 }
 
-void Document::writeln(const String& text, Document* ownerDocument, ExceptionState& exceptionState)
+void Document::writeln(const String& text, Document* enteredDocument, ExceptionState& exceptionState)
 {
-    write(text, ownerDocument, exceptionState);
+    write(text, enteredDocument, exceptionState);
     if (exceptionState.hadException())
         return;
-    write("\n", ownerDocument);
+    write("\n", enteredDocument);
 }
 
 void Document::write(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)

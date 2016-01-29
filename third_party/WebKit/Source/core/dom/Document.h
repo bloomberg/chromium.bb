@@ -472,8 +472,9 @@ public:
 
     DocumentLoader* loader() const;
 
-    // This is the DOM API document.open()
-    void open(Document* ownerDocument, ExceptionState&);
+    // This is the DOM API document.open(). enteredDocument is the responsible
+    // document of the entry settings object.
+    void open(Document* enteredDocument, ExceptionState&);
     // This is used internally and does not handle exceptions.
     void open();
     PassRefPtrWillBeRawPtr<DocumentParser> implicitOpen(ParserSynchronizationPolicy);
@@ -498,9 +499,9 @@ public:
 
     void cancelParsing();
 
-    void write(const SegmentedString& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void write(const String& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void writeln(const String& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void write(const SegmentedString& text, Document* enteredDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void write(const String& text, Document* enteredDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void writeln(const String& text, Document* enteredDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
     void write(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
     void writeln(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
 

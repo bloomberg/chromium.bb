@@ -113,8 +113,8 @@ interface Document : Node {
     // FIXME: There are two open() methods in the spec.
     [Custom, CustomElementCallbacks, RaisesException] void open();
     [RaisesException] void close();
-    [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void write(DOMString... text);
-    [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
+    [CallWith=FirstWindow, CustomElementCallbacks, RaisesException] void write(DOMString... text);
+    [CallWith=FirstWindow, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // user interaction
     [ImplementedAs=domWindow] readonly attribute Window? defaultView;
