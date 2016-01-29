@@ -11,7 +11,7 @@
 // Thumbnail size is 100*100 pixels
 static const int kDefaultThumbnailSize = 100;
 
-// Base class for DesktopMedaiList implementations. Implements logic shared
+// Base class for DesktopMediaList implementations. Implements logic shared
 // between implementations. Specifically it's responsible for keeping current
 // list of sources and calling the observer when the list changes.
 class DesktopMediaListBase : public DesktopMediaList {

@@ -17,29 +17,29 @@ void FakeDesktopMediaList::AddSource(int id) {
   source.name = base::Int64ToString16(id);
 
   sources_.push_back(source);
-  observer_->OnSourceAdded(sources_.size() - 1);
+  observer_->OnSourceAdded(this, sources_.size() - 1);
 }
 
 void FakeDesktopMediaList::RemoveSource(int index) {
   sources_.erase(sources_.begin() + index);
-  observer_->OnSourceRemoved(index);
+  observer_->OnSourceRemoved(this, index);
 }
 
 void FakeDesktopMediaList::MoveSource(int old_index, int new_index) {
   Source source = sources_[old_index];
   sources_.erase(sources_.begin() + old_index);
   sources_.insert(sources_.begin() + new_index, source);
-  observer_->OnSourceMoved(old_index, new_index);
+  observer_->OnSourceMoved(this, old_index, new_index);
 }
 
 void FakeDesktopMediaList::SetSourceThumbnail(int index) {
   sources_[index].thumbnail = thumbnail_;
-  observer_->OnSourceThumbnailChanged(index);
+  observer_->OnSourceThumbnailChanged(this, index);
 }
 
 void FakeDesktopMediaList::SetSourceName(int index, base::string16 name) {
   sources_[index].name = name;
-  observer_->OnSourceNameChanged(index);
+  observer_->OnSourceNameChanged(this, index);
 }
 
 void FakeDesktopMediaList::SetUpdatePeriod(base::TimeDelta period) {}

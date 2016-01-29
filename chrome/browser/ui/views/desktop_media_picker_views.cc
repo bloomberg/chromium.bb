@@ -311,7 +311,7 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-void DesktopMediaListView::OnSourceAdded(int index) {
+void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
   const DesktopMediaList::Source& source = media_list_->GetSource(index);
   DesktopMediaSourceView* source_view =
       new DesktopMediaSourceView(this, source.id);
@@ -338,7 +338,7 @@ void DesktopMediaListView::OnSourceAdded(int index) {
   }
 }
 
-void DesktopMediaListView::OnSourceRemoved(int index) {
+void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
   DesktopMediaSourceView* view =
       static_cast<DesktopMediaSourceView*>(child_at(index));
   DCHECK(view);
@@ -356,21 +356,25 @@ void DesktopMediaListView::OnSourceRemoved(int index) {
     parent_->OnMediaListRowsChanged();
 }
 
-void DesktopMediaListView::OnSourceMoved(int old_index, int new_index) {
+void DesktopMediaListView::OnSourceMoved(DesktopMediaList* list,
+                                         int old_index,
+                                         int new_index) {
   DesktopMediaSourceView* view =
       static_cast<DesktopMediaSourceView*>(child_at(old_index));
   ReorderChildView(view, new_index);
   PreferredSizeChanged();
 }
 
-void DesktopMediaListView::OnSourceNameChanged(int index) {
+void DesktopMediaListView::OnSourceNameChanged(DesktopMediaList* list,
+                                               int index) {
   const DesktopMediaList::Source& source = media_list_->GetSource(index);
   DesktopMediaSourceView* source_view =
       static_cast<DesktopMediaSourceView*>(child_at(index));
   source_view->SetName(source.name);
 }
 
-void DesktopMediaListView::OnSourceThumbnailChanged(int index) {
+void DesktopMediaListView::OnSourceThumbnailChanged(DesktopMediaList* list,
+                                                    int index) {
   const DesktopMediaList::Source& source = media_list_->GetSource(index);
   DesktopMediaSourceView* source_view =
       static_cast<DesktopMediaSourceView*>(child_at(index));

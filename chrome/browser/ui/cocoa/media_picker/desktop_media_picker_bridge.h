@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_MEDIA_PICKER_DESKTOP_MEDIA_PICKER_BRIDGE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 
 // Protocol corresponding to |DesktopMediaListObserver|.
@@ -26,11 +27,13 @@ class DesktopMediaPickerBridge : public DesktopMediaListObserver {
   ~DesktopMediaPickerBridge() override;
 
   // DesktopMediaListObserver overrides.
-  void OnSourceAdded(int index) override;
-  void OnSourceRemoved(int index) override;
-  void OnSourceMoved(int old_index, int new_index) override;
-  void OnSourceNameChanged(int index) override;
-  void OnSourceThumbnailChanged(int index) override;
+  void OnSourceAdded(DesktopMediaList* list, int index) override;
+  void OnSourceRemoved(DesktopMediaList* list, int index) override;
+  void OnSourceMoved(DesktopMediaList* list,
+                     int old_index,
+                     int new_index) override;
+  void OnSourceNameChanged(DesktopMediaList* list, int index) override;
+  void OnSourceThumbnailChanged(DesktopMediaList* list, int index) override;
 
  private:
   id<DesktopMediaPickerObserver> observer_;  // weak; owns this

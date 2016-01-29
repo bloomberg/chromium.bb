@@ -12,9 +12,7 @@
 using content::BrowserThread;
 
 DesktopMediaListBase::DesktopMediaListBase(base::TimeDelta update_period)
-    : weak_factory_(this) {
-  update_period_ = update_period;
-}
+    : update_period_(update_period), weak_factory_(this) {}
 
 DesktopMediaListBase::~DesktopMediaListBase() {}
 
@@ -66,7 +64,7 @@ void DesktopMediaListBase::UpdateSourcesList(
   for (size_t i = 0; i < sources_.size(); ++i) {
     if (new_source_set.find(sources_[i].id) == new_source_set.end()) {
       sources_.erase(sources_.begin() + i);
-      observer_->OnSourceRemoved(i);
+      observer_->OnSourceRemoved(this, i);
       --i;
     }
   }
@@ -82,7 +80,7 @@ void DesktopMediaListBase::UpdateSourcesList(
         sources_.insert(sources_.begin() + i, Source());
         sources_[i].id = new_sources[i].id;
         sources_[i].name = new_sources[i].name;
-        observer_->OnSourceAdded(i);
+        observer_->OnSourceAdded(this, i);
       }
     }
   }
@@ -106,12 +104,12 @@ void DesktopMediaListBase::UpdateSourcesList(
       sources_.erase(sources_.begin() + old_pos);
       sources_.insert(sources_.begin() + pos, temp);
 
-      observer_->OnSourceMoved(old_pos, pos);
+      observer_->OnSourceMoved(this, old_pos, pos);
     }
 
     if (sources_[pos].name != new_sources[pos].name) {
       sources_[pos].name = new_sources[pos].name;
-      observer_->OnSourceNameChanged(pos);
+      observer_->OnSourceNameChanged(this, pos);
     }
     ++pos;
   }
@@ -122,7 +120,7 @@ void DesktopMediaListBase::UpdateSourceThumbnail(content::DesktopMediaID id,
   for (size_t i = 0; i < sources_.size(); ++i) {
     if (sources_[i].id == id) {
       sources_[i].thumbnail = image;
-      observer_->OnSourceThumbnailChanged(i);
+      observer_->OnSourceThumbnailChanged(this, i);
       break;
     }
   }
