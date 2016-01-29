@@ -2130,7 +2130,7 @@ def add_cache_options(parser):
       '--max-cache-size',
       type='int',
       metavar='NNN',
-      default=20*1024*1024*1024,
+      default=50*1024*1024*1024,
       help='Trim if the cache gets larger than this value, default=%default')
   cache_group.add_option(
       '--min-free-space',
