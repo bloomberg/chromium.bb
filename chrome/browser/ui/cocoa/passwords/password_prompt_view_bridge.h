@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
-#include "chrome/browser/ui/passwords/account_chooser_prompt.h"
+#include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 
 @class AccountChooserViewController;
 
@@ -22,7 +22,7 @@ class PasswordPromptViewBridge : public AccountChooserPrompt,
   ~PasswordPromptViewBridge() override;
 
   // AccountChooserPrompt:
-  void Show() override;
+  void ShowAccountChooser() override;
   void ControllerGone() override;
 
   // ConstrainedWindowMacDelegate:

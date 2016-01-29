@@ -26,6 +26,7 @@ class PasswordFormManager;
 }
 
 class AccountChooserPrompt;
+class AutoSigninFirstRunPrompt;
 class ManagePasswordsIconView;
 class PasswordDialogController;
 class PasswordDialogControllerImpl;
@@ -52,6 +53,7 @@ class ManagePasswordsUIController
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override;
   void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms) override;
+  void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
       scoped_ptr<password_manager::PasswordFormManager> form_manager) override;
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
@@ -112,6 +114,10 @@ class ManagePasswordsUIController
   virtual AccountChooserPrompt* CreateAccountChooser(
       PasswordDialogController* controller);
 
+  // Called to create the account chooser dialog. Mocked in tests.
+  virtual AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
+      PasswordDialogController* controller);
+
   // Overwrites the client for |passwords_data_|.
   void set_client(password_manager::PasswordManagerClient* client) {
     passwords_data_.set_client(client);
@@ -128,6 +134,10 @@ class ManagePasswordsUIController
 
   // Shows the password bubble without user interaction.
   void ShowBubbleWithoutUserInteraction();
+
+  // Closes the account chooser gracefully so the callback is called. Then sets
+  // the state to MANAGE_STATE.
+  void DestroyAccountChooser();
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;

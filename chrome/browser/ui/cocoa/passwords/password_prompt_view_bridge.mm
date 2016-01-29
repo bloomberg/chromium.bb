@@ -22,7 +22,7 @@ PasswordPromptViewBridge::~PasswordPromptViewBridge() {
   [view_controller_ setBridge:nil];
 }
 
-void PasswordPromptViewBridge::Show() {
+void PasswordPromptViewBridge::ShowAccountChooser() {
   view_controller_.reset(
       [[AccountChooserViewController alloc] initWithBridge:this]);
   // Setup the constrained window that will show the view.
@@ -66,3 +66,10 @@ AccountChooserPrompt* CreateAccountChooserPromptView(
     PasswordDialogController* controller, content::WebContents* web_contents) {
   return new PasswordPromptViewBridge(controller, web_contents);
 }
+
+AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
+    PasswordDialogController* controller, content::WebContents* web_contents) {
+  // TODO(vasilii): return PasswordPromptViewBridge.
+  return nullptr;
+}
+

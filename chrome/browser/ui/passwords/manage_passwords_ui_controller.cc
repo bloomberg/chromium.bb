@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/passwords/account_chooser_prompt.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
+#include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -73,6 +73,7 @@ ManagePasswordsUIController::~ManagePasswordsUIController() {}
 void ManagePasswordsUIController::OnPasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
   bool show_bubble = !form_manager->IsBlacklisted();
+  DestroyAccountChooser();
   passwords_data_.OnPendingPassword(std::move(form_manager));
   if (show_bubble) {
     password_manager::InteractionsStats* stats = GetCurrentInteractionStats();
@@ -87,6 +88,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 
 void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
+  DestroyAccountChooser();
   passwords_data_.OnUpdatePassword(std::move(form_manager));
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
@@ -104,6 +106,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
       CopyFormVector(federated_credentials);
   passwords_data_.OnRequestCredentials(
       std::move(local_credentials), std::move(federated_credentials), origin);
+  passwords_data_.set_credentials_callback(callback);
   dialog_controller_.reset(new PasswordDialogControllerImpl(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
       this));
@@ -111,24 +114,32 @@ bool ManagePasswordsUIController::OnChooseCredentials(
       CreateAccountChooser(dialog_controller_.get()),
       std::move(locals), std::move(federations));
   UpdateBubbleAndIconVisibility();
-  if (!should_pop_up_bubble_) {
-    passwords_data_.set_credentials_callback(callback);
-    return true;
-  }
-  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-  return false;
+  return true;
 }
 
 void ManagePasswordsUIController::OnAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());
+  DestroyAccountChooser();
   passwords_data_.OnAutoSignin(std::move(local_forms));
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::OnPromptEnableAutoSignin() {
+  // Both the account chooser and the previous prompt shouldn't be closed.
+  if (dialog_controller_)
+    return;
+  dialog_controller_.reset(new PasswordDialogControllerImpl(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      this));
+  dialog_controller_->ShowAutosigninPrompt(
+      CreateAutoSigninPrompt(dialog_controller_.get()));
+}
+
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> form_manager) {
+  DestroyAccountChooser();
   passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
@@ -281,12 +292,11 @@ void ManagePasswordsUIController::UpdatePassword(
 void ManagePasswordsUIController::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {
+  DCHECK(dialog_controller_);
+  dialog_controller_.reset();
   passwords_data_.ChooseCredential(form, credential_type);
-  if (dialog_controller_) {
-    dialog_controller_.reset();
-    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-    UpdateBubbleAndIconVisibility();
-  }
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
@@ -360,6 +370,11 @@ AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
   return CreateAccountChooserPromptView(controller, web_contents());
 }
 
+AutoSigninFirstRunPrompt* ManagePasswordsUIController::CreateAutoSigninPrompt(
+    PasswordDialogController* controller) {
+  return CreateAutoSigninPromptView(controller, web_contents());
+}
+
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -373,6 +388,7 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
     return;
 
   // Otherwise, reset the password manager and the timer.
+  DestroyAccountChooser();
   passwords_data_.OnInactive();
   UpdateBubbleAndIconVisibility();
 }
@@ -389,6 +405,13 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 
   CommandUpdater* updater = browser->command_controller()->command_updater();
   updater->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
+}
+
+void ManagePasswordsUIController::DestroyAccountChooser() {
+  if (dialog_controller_ && dialog_controller_->IsShowingAccountChooser()) {
+    dialog_controller_.reset();
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  }
 }
 
 void ManagePasswordsUIController::WebContentsDestroyed() {

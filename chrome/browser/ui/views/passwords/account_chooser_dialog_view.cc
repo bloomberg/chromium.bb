@@ -70,7 +70,7 @@ AccountChooserDialogView::AccountChooserDialogView(
 
 AccountChooserDialogView::~AccountChooserDialogView() = default;
 
-void AccountChooserDialogView::Show() {
+void AccountChooserDialogView::ShowAccountChooser() {
   InitWindow();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }

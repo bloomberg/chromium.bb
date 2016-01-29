@@ -1,12 +1,12 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/passwords/account_chooser_prompt.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -25,7 +25,8 @@ PasswordDialogControllerImpl::PasswordDialogControllerImpl(
     PasswordsModelDelegate* delegate)
     : profile_(profle),
       delegate_(delegate),
-      current_dialog_(nullptr) {
+      account_chooser_dialog_(nullptr),
+      autosignin_dialog_(nullptr) {
 }
 
 PasswordDialogControllerImpl::~PasswordDialogControllerImpl() {
@@ -36,12 +37,22 @@ void PasswordDialogControllerImpl::ShowAccountChooser(
     AccountChooserPrompt* dialog,
     std::vector<scoped_ptr<autofill::PasswordForm>> locals,
     std::vector<scoped_ptr<autofill::PasswordForm>> federations) {
-  DCHECK(!current_dialog_);
+  DCHECK(!account_chooser_dialog_);
+  DCHECK(!autosignin_dialog_);
   DCHECK(dialog);
   local_credentials_.swap(locals);
   federated_credentials_.swap(federations);
-  current_dialog_ = dialog;
-  current_dialog_->Show();
+  account_chooser_dialog_ = dialog;
+  account_chooser_dialog_->ShowAccountChooser();
+}
+
+void PasswordDialogControllerImpl::ShowAutosigninPrompt(
+    AutoSigninFirstRunPrompt* dialog) {
+  DCHECK(!account_chooser_dialog_);
+  DCHECK(!autosignin_dialog_);
+  DCHECK(dialog);
+  autosignin_dialog_ = dialog;
+  autosignin_dialog_->ShowAutoSigninPrompt();
 }
 
 const PasswordDialogController::FormsVector&
@@ -76,14 +87,18 @@ void PasswordDialogControllerImpl::OnChooseCredentials(
 }
 
 void PasswordDialogControllerImpl::OnCloseAccountChooser() {
-  current_dialog_ = nullptr;
+  account_chooser_dialog_ = nullptr;
   // The dialog isn't a bubble but ManagePasswordsUIController handles this.
   delegate_->OnBubbleHidden();
 }
 
 void PasswordDialogControllerImpl::ResetDialog() {
-  if (current_dialog_) {
-    current_dialog_->ControllerGone();
-    current_dialog_ = nullptr;
+  if (account_chooser_dialog_) {
+    account_chooser_dialog_->ControllerGone();
+    account_chooser_dialog_ = nullptr;
+  }
+  if (autosignin_dialog_) {
+    autosignin_dialog_->ControllerGone();
+    autosignin_dialog_ = nullptr;
   }
 }

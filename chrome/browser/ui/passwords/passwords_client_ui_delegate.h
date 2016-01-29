@@ -54,6 +54,9 @@ class PasswordsClientUIDelegate {
   virtual void OnAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) = 0;
 
+  // Called when it's the right time to enable autosign-in explicitly.
+  virtual void OnPromptEnableAutoSignin() = 0;
+
   // Called when the password will be saved automatically, but we still wish to
   // visually inform the user that the save has occured.
   virtual void OnAutomaticPasswordSave(

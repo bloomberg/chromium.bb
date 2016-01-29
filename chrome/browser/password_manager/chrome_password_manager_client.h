@@ -133,6 +133,10 @@ class ChromePasswordManagerClient
                                 const gfx::RectF& bounds,
                                 const autofill::PasswordForm& form);
 
+  // Shows the dialog where the user can accept or decline the global autosignin
+  // setting as a first run experience.
+  void PromptUserToEnableAutosignin();
+
   // Notify the PasswordManager that generation is available for |form|. Used
   // for UMA stats.
   void GenerationAvailableForForm(const autofill::PasswordForm& form);

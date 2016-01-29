@@ -478,6 +478,15 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   popup_controller_->Show(false /* display_password */);
 }
 
+void ChromePasswordManagerClient::PromptUserToEnableAutosignin() {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  // TODO(crbug.com/532876): pop up the dialog.
+#else
+  PasswordsClientUIDelegateFromWebContents(web_contents())
+      ->OnPromptEnableAutoSignin();
+#endif
+}
+
 void ChromePasswordManagerClient::GenerationAvailableForForm(
     const autofill::PasswordForm& form) {
   password_manager_.GenerationAvailableForForm(form);

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_ACCOUNT_CHOOSER_DIALOG_VIEW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/passwords/account_chooser_prompt.h"
+#include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -27,7 +27,7 @@ class AccountChooserDialogView : public views::DialogDelegateView,
   ~AccountChooserDialogView() override;
 
   // AccountChooserPrompt:
-  void Show() override;
+  void ShowAccountChooser() override;
   void ControllerGone() override;
 
  private:

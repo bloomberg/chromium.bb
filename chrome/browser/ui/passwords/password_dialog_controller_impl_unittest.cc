@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/passwords/account_chooser_prompt.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -28,7 +28,7 @@ const char kUsername[] = "user1";
 
 class MockAccountChooserPrompt : public AccountChooserPrompt {
  public:
-  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(ShowAccountChooser, void());
   MOCK_METHOD0(ControllerGone, void());
 };
 
@@ -81,7 +81,7 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
   std::vector<scoped_ptr<autofill::PasswordForm>> federations;
   federations.push_back(make_scoped_ptr(new autofill::PasswordForm(idp_form)));
 
-  EXPECT_CALL(prompt, Show());
+  EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt,
                                   std::move(locals), std::move(federations));
   EXPECT_THAT(controller().GetLocalForms(), ElementsAre(Pointee(local_form)));
@@ -100,7 +100,7 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
 
 TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
   StrictMock<MockAccountChooserPrompt> prompt;
-  EXPECT_CALL(prompt, Show());
+  EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt,
                                   PasswordDialogController::FormsVector(),
                                   PasswordDialogController::FormsVector());
