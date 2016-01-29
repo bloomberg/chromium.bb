@@ -2171,28 +2171,51 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
 
 // TODO(yosin): We should use |associatedLayoutObjectOf()| in "VisibleUnits.cpp"
 // where it takes |LayoutObject| from |Position|.
-static LayoutObject* associatedLayoutObjectOf(const Node& node, int offsetInNode)
+// Note about ::first-letter pseudo-element:
+//   When an element has ::first-letter pseudo-element, first letter characters
+//   are taken from |Text| node and first letter characters are considered
+//   as content of <pseudo:first-letter>.
+//   For following HTML,
+//      <style>div::first-letter {color: red}</style>
+//      <div>abc</div>
+//   we have following layout tree:
+//      LayoutBlockFlow {DIV} at (0,0) size 784x55
+//        LayoutInline {<pseudo:first-letter>} at (0,0) size 22x53
+//          LayoutTextFragment (anonymous) at (0,1) size 22x53
+//            text run at (0,1) width 22: "a"
+//        LayoutTextFragment {#text} at (21,30) size 16x17
+//          text run at (21,30) width 16: "bc"
+//  In this case, |Text::layoutObject()| for "abc" returns |LayoutTextFragment|
+//  containing "bc", and it is called remaining part.
+//
+//  Even if |Text| node contains only first-letter characters, e.g. just "a",
+//  remaining part of |LayoutTextFragment|, with |fragmentLength()| == 0, is
+//  appeared in layout tree.
+//
+//  When |Text| node contains only first-letter characters and whitespaces, e.g.
+//  "B\n", associated |LayoutTextFragment| is first-letter part instead of
+//  remaining part.
+//
+//  Punctuation characters are considered as first-letter. For "(1)ab",
+//  "(1)" are first-letter part and "ab" are remaining part.
+LayoutObject* associatedLayoutObjectOf(const Node& node, int offsetInNode)
 {
     ASSERT(offsetInNode >= 0);
     LayoutObject* layoutObject = node.layoutObject();
     if (!node.isTextNode() || !layoutObject || !toLayoutText(layoutObject)->isTextFragment())
         return layoutObject;
     LayoutTextFragment* layoutTextFragment = toLayoutTextFragment(layoutObject);
-    if (layoutTextFragment->isRemainingTextLayoutObject()) {
-        if (static_cast<unsigned>(offsetInNode) >= layoutTextFragment->start())
-            return layoutObject;
-        LayoutObject* firstLetterLayoutObject = layoutTextFragment->firstLetterPseudoElement()->layoutObject();
-        if (!firstLetterLayoutObject)
-            return nullptr;
-        // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
-        // multiple child layout object.
-        ASSERT(firstLetterLayoutObject->slowFirstChild() == firstLetterLayoutObject->slowLastChild());
-        return firstLetterLayoutObject->slowFirstChild();
+    if (!layoutTextFragment->isRemainingTextLayoutObject()) {
+        ASSERT(static_cast<unsigned>(offsetInNode) <= layoutTextFragment->start() + layoutTextFragment->fragmentLength());
+        return layoutTextFragment;
     }
-    // TODO(yosin): We should rename |LayoutTextFramge::length()| instead of
-    // |end()|, once |LayoutTextFramge| has it. See http://crbug.com/545789
-    ASSERT(static_cast<unsigned>(offsetInNode) <= layoutTextFragment->start() + layoutTextFragment->fragmentLength());
-    return layoutTextFragment;
+    if (layoutTextFragment->fragmentLength() && static_cast<unsigned>(offsetInNode) >= layoutTextFragment->start())
+        return layoutObject;
+    LayoutObject* firstLetterLayoutObject = layoutTextFragment->firstLetterPseudoElement()->layoutObject();
+    // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
+    // multiple child layout object.
+    ASSERT(firstLetterLayoutObject->slowFirstChild() == firstLetterLayoutObject->slowLastChild());
+    return firstLetterLayoutObject->slowFirstChild();
 }
 
 int caretMinOffset(const Node* node)

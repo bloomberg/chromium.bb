@@ -8,6 +8,7 @@
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLTextFormControlElement.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineBox.h"
 #include <ostream> // NOLINT
 
@@ -64,6 +65,66 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
 
     EXPECT_FALSE(boundsInDOMTree.isEmpty());
     EXPECT_EQ(boundsInDOMTree, boundsInComposedTree);
+}
+
+TEST_F(VisibleUnitsTest, associatedLayoutObjectOfFirstLetterPunctuations)
+{
+    const char* bodyContent = "<style>p:first-letter {color:red;}</style><p id=sample>(a)bc</p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    LayoutTextFragment* layoutObject0 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 0));
+    EXPECT_FALSE(layoutObject0->isRemainingTextLayoutObject());
+
+    LayoutTextFragment* layoutObject1 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 1));
+    EXPECT_EQ(layoutObject0, layoutObject1) << "A character 'a' should be part of first letter.";
+
+    LayoutTextFragment* layoutObject2 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 2));
+    EXPECT_EQ(layoutObject0, layoutObject2) << "close parenthesis should be part of first letter.";
+
+    LayoutTextFragment* layoutObject3 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 3));
+    EXPECT_TRUE(layoutObject3->isRemainingTextLayoutObject());
+}
+
+TEST_F(VisibleUnitsTest, associatedLayoutObjectOfFirstLetterSplit)
+{
+    const char* bodyContent = "<style>p:first-letter {color:red;}</style><p id=sample>abc</p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* firstLetter = sample->firstChild();
+    // Split "abc" into "a" "bc"
+    toText(firstLetter)->splitText(1, ASSERT_NO_EXCEPTION);
+    updateLayoutAndStyleForPainting();
+
+    LayoutTextFragment* layoutObject0 = toLayoutTextFragment(associatedLayoutObjectOf(*firstLetter, 0));
+    EXPECT_FALSE(layoutObject0->isRemainingTextLayoutObject());
+
+    LayoutTextFragment* layoutObject1 = toLayoutTextFragment(associatedLayoutObjectOf(*firstLetter, 1));
+    EXPECT_EQ(layoutObject0, layoutObject1);
+}
+
+TEST_F(VisibleUnitsTest, associatedLayoutObjectOfFirstLetterWithTrailingWhitespace)
+{
+    const char* bodyContent = "<style>div:first-letter {color:red;}</style><div id=sample>a\n <div></div></div>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    LayoutTextFragment* layoutObject0 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 0));
+    EXPECT_FALSE(layoutObject0->isRemainingTextLayoutObject());
+
+    LayoutTextFragment* layoutObject1 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 1));
+    EXPECT_TRUE(layoutObject1->isRemainingTextLayoutObject());
+
+    LayoutTextFragment* layoutObject2 = toLayoutTextFragment(associatedLayoutObjectOf(*text, 2));
+    EXPECT_EQ(layoutObject1, layoutObject2);
 }
 
 TEST_F(VisibleUnitsTest, caretMinOffset)
@@ -801,6 +862,27 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter)
     EXPECT_EQ(Position(sample, 6), mostBackwardCaretPosition(Position::lastPositionInNode(sample->parentNode())));
     EXPECT_EQ(Position(sample, 6), mostBackwardCaretPosition(Position::afterNode(sample->parentNode())));
     EXPECT_EQ(Position::lastPositionInNode(document().body()), mostBackwardCaretPosition(Position::lastPositionInNode(document().body())));
+}
+
+TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit)
+{
+    const char* bodyContent = "<style>p:first-letter {color:red;}</style><p id=sample>abc</p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* firstLetter = sample->firstChild();
+    // Split "abc" into "a" "bc"
+    RefPtrWillBeRawPtr<Text> remaining = toText(firstLetter)->splitText(1, ASSERT_NO_EXCEPTION);
+    updateLayoutAndStyleForPainting();
+
+    EXPECT_EQ(Position(sample, 0), mostBackwardCaretPosition(Position(firstLetter, 0)));
+    EXPECT_EQ(Position(firstLetter, 1), mostBackwardCaretPosition(Position(firstLetter, 1)));
+    EXPECT_EQ(Position(firstLetter, 1), mostBackwardCaretPosition(Position(remaining, 0)));
+    EXPECT_EQ(Position(remaining, 1), mostBackwardCaretPosition(Position(remaining, 1)));
+    EXPECT_EQ(Position(remaining, 2), mostBackwardCaretPosition(Position(remaining, 2)));
+    EXPECT_EQ(Position(remaining, 2), mostBackwardCaretPosition(Position::lastPositionInNode(sample)));
+    EXPECT_EQ(Position(remaining, 2), mostBackwardCaretPosition(Position::afterNode(sample)));
 }
 
 TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)

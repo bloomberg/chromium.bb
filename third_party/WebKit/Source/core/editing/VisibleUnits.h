@@ -74,6 +74,8 @@ struct InlineBoxPosition {
 // "core/editing/VisibleUnitsTest.cpp".
 std::ostream& operator<<(std::ostream&, const InlineBoxPosition&);
 
+CORE_EXPORT LayoutObject* associatedLayoutObjectOf(const Node&, int offsetInNode);
+
 // offset functions on Node
 CORE_EXPORT int caretMinOffset(const Node*);
 CORE_EXPORT int caretMaxOffset(const Node*);
