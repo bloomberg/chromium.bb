@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -553,7 +553,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
           : SkColorSetRGB(0x32, 0x32, 0x32);
 
   // Generate the replacements.
-  std::map<base::StringPiece, std::string> substitutions;
+  ui::TemplateReplacements substitutions;
 
   // Cache-buster for background.
   substitutions["themeId"] =
@@ -605,7 +605,7 @@ void NTPResourceCache::CreateNewTabCSS() {
                      SkColorGetB(color_header));
 
   // Generate the replacements.
-  std::map<base::StringPiece, std::string> substitutions;
+  ui::TemplateReplacements substitutions;
 
   // Cache-buster for background.
   substitutions["themeId"] =

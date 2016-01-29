@@ -5,21 +5,21 @@
 
 html {
   background-attachment: fixed;
-  background-color: ${colorBackground};
-  background-position: ${backgroundBarDetached};
-  background-repeat: ${backgroundTiling};
+  background-color: $i18n{colorBackground};
+  background-position: $i18n{backgroundBarDetached};
+  background-repeat: $i18n{backgroundTiling};
   height: 100%;
   overflow: auto;
 }
 
 html[hascustombackground='true'] {
-  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?${themeId});
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$i18n{themeId});
 }
 
 html[bookmarkbarattached='true'] {
-  background-position: ${backgroundBarAttached};
+  background-position: $i18n{backgroundBarAttached};
 }
 
 #attribution-img {
-  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?${themeId});
+  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?$i18n{themeId});
 }

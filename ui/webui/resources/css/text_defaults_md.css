@@ -13,19 +13,19 @@
  *
  * 2. via the webui::AppendWebUICSSTextDefaultsMd() method to directly append it
  * to an HTML string.
- * Otherwise its $placeholders won't be expanded. */
+ * Otherwise its placeholders won't be expanded. */
 
 @import url(chrome://resources/css/roboto.css);
 
 html {
-  direction: ${textDirection};
+  direction: $i18n{textDirection};
 }
 
 body {
-  font-family: Roboto, ${fontFamily};
-  font-size: ${fontSize};
+  font-family: Roboto, $i18n{fontFamily};
+  font-size: $i18n{fontSize};
 }
 
 button {
-  font-family: Roboto, ${fontFamily};
+  font-family: Roboto, $i18n{fontFamily};
 }

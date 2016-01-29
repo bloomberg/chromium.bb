@@ -13,17 +13,17 @@
  *
  * 2. via the webui::AppendWebUICSSTextDefaults() method to directly append it
  * to an HTML string.
- * Otherwise its $placeholders won't be expanded. */
+ * Otherwise its placeholders won't be expanded. */
 
 html {
-  direction: ${textDirection};
+  direction: $i18n{textDirection};
 }
 
 body {
-  font-family: ${fontFamily};
-  font-size: ${fontSize};
+  font-family: $i18n{fontFamily};
+  font-size: $i18n{fontSize};
 }
 
 button {
-  font-family: ${fontFamily};
+  font-family: $i18n{fontFamily};
 }
