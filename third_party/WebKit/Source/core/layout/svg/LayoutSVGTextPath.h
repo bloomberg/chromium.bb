@@ -30,7 +30,7 @@ public:
     explicit LayoutSVGTextPath(Element*);
 
     Path layoutPath() const;
-    float startOffset() const;
+    float calculateStartOffset(float) const;
 
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 

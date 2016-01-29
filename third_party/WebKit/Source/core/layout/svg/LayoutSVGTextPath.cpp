@@ -57,9 +57,14 @@ Path LayoutSVGTextPath::layoutPath() const
     return pathData;
 }
 
-float LayoutSVGTextPath::startOffset() const
+float LayoutSVGTextPath::calculateStartOffset(float pathLength) const
 {
-    return toSVGTextPathElement(node())->startOffset()->currentValue()->valueAsPercentage();
+    const SVGLength& startOffset = *toSVGTextPathElement(node())->startOffset()->currentValue();
+    float textPathStartOffset = startOffset.valueAsPercentage();
+    if (startOffset.typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Percentage)
+        textPathStartOffset *= pathLength;
+
+    return textPathStartOffset;
 }
 
 } // namespace blink
