@@ -216,8 +216,8 @@ struct TargetNodeTraits;
 template <>
 struct TargetNodeTraits<clang::NamedDecl> {
   static const char kName[];
-  static clang::CharSourceRange GetRange(const clang::NamedDecl& decl) {
-    return clang::CharSourceRange::getTokenRange(decl.getLocation());
+  static clang::SourceLocation GetLoc(const clang::NamedDecl& decl) {
+    return decl.getLocation();
   }
 };
 const char TargetNodeTraits<clang::NamedDecl>::kName[] = "decl";
@@ -225,8 +225,8 @@ const char TargetNodeTraits<clang::NamedDecl>::kName[] = "decl";
 template <>
 struct TargetNodeTraits<clang::MemberExpr> {
   static const char kName[];
-  static clang::CharSourceRange GetRange(const clang::MemberExpr& expr) {
-    return clang::CharSourceRange::getTokenRange(expr.getMemberLoc());
+  static clang::SourceLocation GetLoc(const clang::MemberExpr& expr) {
+    return expr.getMemberLoc();
   }
 };
 const char TargetNodeTraits<clang::MemberExpr>::kName[] = "expr";
@@ -234,8 +234,8 @@ const char TargetNodeTraits<clang::MemberExpr>::kName[] = "expr";
 template <>
 struct TargetNodeTraits<clang::DeclRefExpr> {
   static const char kName[];
-  static clang::CharSourceRange GetRange(const clang::DeclRefExpr& expr) {
-    return clang::CharSourceRange::getTokenRange(expr.getLocation());
+  static clang::SourceLocation GetLoc(const clang::DeclRefExpr& expr) {
+    return expr.getLocation();
   }
 };
 const char TargetNodeTraits<clang::DeclRefExpr>::kName[] = "expr";
@@ -243,10 +243,9 @@ const char TargetNodeTraits<clang::DeclRefExpr>::kName[] = "expr";
 template <>
 struct TargetNodeTraits<clang::CXXCtorInitializer> {
   static const char kName[];
-  static clang::CharSourceRange GetRange(
-      const clang::CXXCtorInitializer& init) {
+  static clang::SourceLocation GetLoc(const clang::CXXCtorInitializer& init) {
     assert(init.isWritten());
-    return clang::CharSourceRange::getTokenRange(init.getSourceLocation());
+    return init.getSourceLocation();
   }
 };
 const char TargetNodeTraits<clang::CXXCtorInitializer>::kName[] = "initializer";
@@ -258,23 +257,27 @@ class RewriterBase : public MatchFinder::MatchCallback {
       : replacements_(replacements) {}
 
   void run(const MatchFinder::MatchResult& result) override {
-    std::string new_name;
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
-    clang::ASTContext* context = result.Context;
+    // If the decl originates inside a macro, just skip it completely.
+    clang::SourceLocation decl_loc =
+        TargetNodeTraits<clang::NamedDecl>::GetLoc(*decl);
+    if (decl_loc.isMacroID())
+      return;
     // If false, there's no name to be renamed.
     if (!decl->getIdentifier())
       return;
     // If false, the name was not suitable for renaming.
+    clang::ASTContext* context = result.Context;
+    std::string new_name;
     if (!GetNameForDecl(*decl, *context, new_name))
       return;
     llvm::StringRef old_name = decl->getName();
     if (old_name == new_name)
       return;
-    clang::CharSourceRange range = TargetNodeTraits<TargetNode>::GetRange(
+    clang::SourceLocation loc = TargetNodeTraits<TargetNode>::GetLoc(
         *result.Nodes.getNodeAs<TargetNode>(
             TargetNodeTraits<TargetNode>::kName));
-    if (range.getBegin().isMacroID() || range.getEnd().isMacroID())
-      return;
+    clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(loc);
     replacements_->emplace(*result.SourceManager, range, new_name);
     replacement_names_.emplace(old_name.str(), std::move(new_name));
   }
