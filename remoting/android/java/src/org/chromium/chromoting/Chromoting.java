@@ -62,6 +62,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     /** Preference names for storing selected and recent accounts. */
     private static final String PREFERENCE_SELECTED_ACCOUNT = "account_name";
     private static final String PREFERENCE_RECENT_ACCOUNT_PREFIX = "recent_account_";
+    private static final String PREFERENCE_EXPERIMENTAL_FLAGS = "flags";
 
     /** User's account name (email). */
     private String mAccount;
@@ -457,7 +458,8 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                 });
         SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
         mAuthenticator = new SessionAuthenticator(this, host);
-        connector.connectToHost(mAccount, mToken, host, mAuthenticator);
+        connector.connectToHost(mAccount, mToken, host, mAuthenticator,
+                getPreferences(MODE_PRIVATE).getString(PREFERENCE_EXPERIMENTAL_FLAGS, ""));
     }
 
     private void refreshHostList() {

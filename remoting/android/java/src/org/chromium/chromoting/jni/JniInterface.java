@@ -98,21 +98,21 @@ public class JniInterface {
     /** Attempts to form a connection to the user-selected host. Called on the UI thread. */
     public static void connectToHost(String username, String authToken, String hostJid,
             String hostId, String hostPubkey, ConnectionListener listener,
-            SessionAuthenticator authenticator) {
+            SessionAuthenticator authenticator, String flags) {
         disconnectFromHost();
 
         sConnectionListener = listener;
         sAuthenticator = authenticator;
         nativeConnect(username, authToken, hostJid, hostId, hostPubkey,
                 sAuthenticator.getPairingId(hostId), sAuthenticator.getPairingSecret(hostId),
-                sCapabilityManager.getLocalCapabilities());
+                sCapabilityManager.getLocalCapabilities(), flags);
         sConnected = true;
     }
 
     /** Performs the native portion of the connection. */
     private static native void nativeConnect(String username, String authToken, String hostJid,
             String hostId, String hostPubkey, String pairId, String pairSecret,
-            String capabilities);
+            String capabilities, String flags);
 
     /** Severs the connection and cleans up. Called on the UI thread. */
     public static void disconnectFromHost() {

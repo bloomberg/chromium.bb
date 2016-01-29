@@ -26,6 +26,8 @@ public class SessionConnector implements ConnectionListener,
 
     private String mHostJabberId;
 
+    private String mFlags;
+
     /**
      * Tracks whether the connection has been established. Auto-reloading and reconnecting should
      * only happen if connection has not yet occurred.
@@ -46,12 +48,13 @@ public class SessionConnector implements ConnectionListener,
 
     /** Initiates a connection to the host. */
     public void connectToHost(String accountName, String authToken, HostInfo host,
-            SessionAuthenticator authenticator) {
+            SessionAuthenticator authenticator, String flags) {
         mAccountName = accountName;
         mAuthToken = authToken;
         mHostId = host.id;
         mHostJabberId = host.jabberId;
         mAuthenticator = authenticator;
+        mFlags = flags;
 
         if (hostIncomplete(host)) {
             // These keys might not be present in a newly-registered host, so treat this as a
@@ -61,7 +64,7 @@ public class SessionConnector implements ConnectionListener,
         }
 
         JniInterface.connectToHost(accountName, authToken, host.jabberId, host.id, host.publicKey,
-                this, mAuthenticator);
+                this, mAuthenticator, mFlags);
     }
 
     private static boolean hostIncomplete(HostInfo host) {
@@ -110,8 +113,8 @@ public class SessionConnector implements ConnectionListener,
         } else {
             // Reconnect to the host, but use the original callback directly, instead of this
             // wrapper object, so the host list is not loaded again.
-            JniInterface.connectToHost(mAccountName, mAuthToken, foundHost.jabberId,
-                    foundHost.id, foundHost.publicKey, mConnectionCallback, mAuthenticator);
+            JniInterface.connectToHost(mAccountName, mAuthToken, foundHost.jabberId, foundHost.id,
+                    foundHost.publicKey, mConnectionCallback, mAuthenticator, mFlags);
         }
     }
 

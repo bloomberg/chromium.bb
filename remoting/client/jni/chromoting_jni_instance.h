@@ -46,14 +46,15 @@ class ChromotingJniInstance
   // The instance does not take ownership of |jni_runtime|. To connect with an
   // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
   ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
-                        const char* username,
-                        const char* auth_token,
-                        const char* host_jid,
-                        const char* host_id,
-                        const char* host_pubkey,
-                        const char* pairing_id,
-                        const char* pairing_secret,
-                        const char* capabilities);
+                        const std::string& username,
+                        const std::string& auth_token,
+                        const std::string& host_jid,
+                        const std::string& host_id,
+                        const std::string& host_pubkey,
+                        const std::string& pairing_id,
+                        const std::string& pairing_secret,
+                        const std::string& capabilities,
+                        const std::string& flags);
 
   // Terminates the current connection (if it hasn't already failed) and cleans
   // up. Must be called before destruction.
@@ -149,6 +150,8 @@ class ChromotingJniInstance
   // ID of the host we are connecting to.
   std::string host_id_;
   std::string host_jid_;
+
+  std::string flags_;
 
   // This group of variables is to be used on the network thread.
   scoped_ptr<ClientContext> client_context_;
