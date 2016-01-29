@@ -61,7 +61,7 @@ UNIT_SOURCE =\
  ru.txt\
  sk.txt\
  sl.txt\
- sr.txt\
+ sr.txt sr_Latn.txt\
  sv.txt\
  sw.txt\
  ta.txt\

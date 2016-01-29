@@ -47,7 +47,7 @@ GENRB_SOURCE =\
  hr.txt\
  hu.txt\
  id.txt\
- it.txt\
+ it.txt it_CH.txt\
  ja.txt\
  kn.txt\
  ko.txt\

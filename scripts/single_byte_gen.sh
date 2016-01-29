@@ -38,7 +38,7 @@ encodings="ibm866 iso-8859-2 iso-8859-3 iso-8859-4 iso-8859-5 iso-8859-6\
            windows-1254 windows-1255 windows-1256 windows-1257 windows-1258\
            x-mac-cyrillic"
 
-ENCODING_DIR="$(dirname $0)/../source/data/mappings"
+ENCODING_DIR="$(dirname "$0")/../source/data/mappings"
 for e in ${encodings}
 do
   output="${ENCODING_DIR}/${e}-html.ucm"

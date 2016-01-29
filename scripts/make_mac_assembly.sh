@@ -3,9 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-ICUROOT="$(dirname $0)/.."
+ICUROOT="$(dirname "$0")/.."
 LINUX_SOURCE="${ICUROOT}/linux/icudtl_dat.S"
 MAC_SOURCE="${ICUROOT}/mac/icudtl_dat.S"
+
+echo "Generating ${MAC_SOURCE} from ${LINUX_SOURCE}"
 
 # Linux uses 'icudt${MAJOR VERSION}_dat' while Mac has "_" prepended to it.
 ICUDATA_SYMBOL="_$(head -1 ${LINUX_SOURCE} | cut -d ' ' -f 2)"
@@ -23,3 +25,4 @@ PREAMBLE
 
 PREAMBLE_LENGTH=$(($(egrep -n '^icudt' ${LINUX_SOURCE} | cut -d : -f 1) + 1))
 tail -n +${PREAMBLE_LENGTH} ${LINUX_SOURCE} >> ${MAC_SOURCE}
+echo "Done with generating ${MAC_SOURCE}"

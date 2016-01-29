@@ -12,7 +12,7 @@
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: $0 version (e.g. '2015b')"
+  echo "Usage: "$0" version (e.g. '2015b')" >&2
   exit 1
 fi
 

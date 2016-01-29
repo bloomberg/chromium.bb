@@ -8,7 +8,7 @@
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: $0 version (e.g. '56-1')"
+  echo "Usage: "$0" version (e.g. '56-1')" >&2
   exit 1
 fi
 
@@ -19,7 +19,7 @@ treeroot="$(dirname "$0")/.."
 
 # Check if the repo for $version is available.
 svn ls "${repo}" > /dev/null 2>&1  || \
-    { echo "${repo} does not exist."; exit 2; }
+    { echo "${repo} does not exist." >&2; exit 2; }
 
 echo "Cleaning up source/ ..."
 for file in source license.html readme.html APIChangeReport.html
@@ -50,5 +50,8 @@ echo "Patching configure to work without source/layout(ex) directories ..."
 sed -i.orig -e '/^ac_config_files=/ s:\ layout\(ex\)\{0,1\}/Makefile::g' \
   "${treeroot}/source/configure"
 rm -f "${treeroot}/source/configure.orig"
+
+# TODO(jshin): Automatically update BUILD.gn and icu.gypi with the updated
+# list of source files.
 
 echo "Done"
