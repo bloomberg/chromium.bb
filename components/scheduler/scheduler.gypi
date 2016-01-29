@@ -5,10 +5,12 @@
 {
   'variables': {
     'scheduler_common_sources': [
+      # Sources list duplicated in GN build.
       'common/scheduler_switches.cc',
       'common/scheduler_switches.h',
     ],
     'scheduler_sources': [
+      # Sources list duplicated in GN build.
       'base/cancelable_closure_holder.cc',
       'base/cancelable_closure_holder.h',
       'base/lazy_now.cc',
@@ -91,6 +93,7 @@
       'scheduler_export.h',
     ],
     'scheduler_test_support_sources': [
+      # Sources list duplicated in GN build.
       'test/lazy_scheduler_message_loop_delegate_for_tests.cc',
       'test/lazy_scheduler_message_loop_delegate_for_tests.h',
     ],
