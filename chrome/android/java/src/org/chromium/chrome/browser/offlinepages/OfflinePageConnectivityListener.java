@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.offlinepages;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
@@ -20,38 +21,41 @@ public class OfflinePageConnectivityListener
     private ChromeActivity mActivity;
     private boolean mSeen;
     private boolean mEnabled;
+    private SnackbarController mSnackbarController;
 
     /**
      * Builds an offline page connectivity listener.
      * @param activity The ChromeActivity that we are listening for.
      * @param tab The current tab that we are setting up a listener for.
      */
-    public OfflinePageConnectivityListener(ChromeActivity activity, Tab tab) {
-        Log.d(TAG, "OfflinePageConnectivityListener constructor, this: " + this);
+    public OfflinePageConnectivityListener(
+            ChromeActivity activity, Tab tab, SnackbarController snackbarController) {
         this.mActivity = activity;
         this.mTab = tab;
         this.mSeen = false;
         this.mEnabled = false;
-        enable();
+        enable(snackbarController);
     }
 
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        Log.d(TAG, "Got connectivity event, connectionType: " + connectionType);
+        Log.d(TAG, "Got connectivity event, connectionType: " + connectionType + ", controller "
+                        + mSnackbarController);
 
         boolean connected = (connectionType != ConnectionType.CONNECTION_NONE
                 && connectionType != ConnectionType.CONNECTION_BLUETOOTH);
+        Log.d(TAG, "Connection changed, connected " + connected);
 
         // TODO(petewil): We should consider using the connection quality monitor instead
         // of the connection event here - don't offer to reload if connection quality is bad.
         // Maybe the NetworkConnectivityListener is the right place to use the quality monitor.
 
         // Shows or hides the snackbar as needed.  This also adds some hysterisis - if we keep
-        // connecting and disconnecting, we don't want to flash the snackbar.  It will timeout at 3
-        // seconds.
+        // connecting and disconnecting, we don't want to flash the snackbar.  It will timeout after
+        // several seconds.
         if (connected && mTab != null && !mSeen) {
-            Log.d(TAG, "Showing reload snackbar");
-            OfflinePageUtils.showOfflineSnackbarIfNecessary(mActivity, mTab);
+            Log.d(TAG, "Connection became available, show reload snackbar.");
+            OfflinePageUtils.showOfflineSnackbarIfNecessary(mActivity, mTab, mSnackbarController);
             // We can stop listening for online transitions once we go online.
             disable();
             mSeen = true;
@@ -61,13 +65,14 @@ public class OfflinePageConnectivityListener
     /**
      * Enable the listener when we have an offline page showing.
      */
-    public void enable() {
+    public void enable(SnackbarController snackbarController) {
         if (!mEnabled) {
             Log.d(TAG, "enabled");
             NetworkChangeNotifier.addConnectionTypeObserver(this);
             mEnabled = true;
             mSeen = false;
         }
+        mSnackbarController = snackbarController;
     }
 
     /**

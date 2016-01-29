@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Environment;
 
 import org.chromium.base.Log;
@@ -22,6 +20,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.concurrent.TimeUnit;
@@ -32,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class OfflinePageUtils {
     private static final String TAG = "OfflinePageUtils";
     /** Snackbar button types */
-    private static final int RELOAD_BUTTON = 0;
-    private static final int EDIT_BUTTON = 1;
+    public static final int RELOAD_BUTTON = 0;
+    public static final int EDIT_BUTTON = 1;
 
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
 
@@ -64,11 +63,9 @@ public class OfflinePageUtils {
      * Returns true if the network is connected.
      * @param context Context associated with the activity.
      */
+    // TODO(petewil): Remove context, we no longer need it now that we use NCN.
     public static boolean isConnected(Context context) {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnected();
+        return NetworkChangeNotifier.isOnline();
     }
 
     /**
@@ -209,76 +206,111 @@ public class OfflinePageUtils {
      * @param activity The activity owning the tab.
      * @param tab The current tab.
      */
-    public static void showOfflineSnackbarIfNecessary(final ChromeActivity activity, Tab tab) {
-        if (tab == null || tab.isFrozen()) {
-            return;
-        }
+    public static void showOfflineSnackbarIfNecessary(ChromeActivity activity, Tab tab) {
+        showOfflineSnackbarIfNecessary(activity, tab, null);
+    }
 
-        if (!OfflinePageBridge.isEnabled()) {
-            return;
-        }
+    /**
+     * Shows the snackbar for the current tab to provide offline specific information if needed.
+     * This method is used by testing for dependency injecting a snackbar controller.
+     * @param activity The activity owning the tab.
+     * @param tab The current tab.
+     * @param snackbarController Class to show the snackbar.
+     */
+    public static void showOfflineSnackbarIfNecessary(
+            ChromeActivity activity, Tab tab, SnackbarController snackbarController) {
+        Log.d(TAG, "showOfflineSnackbarIfNecessary, controller is " + snackbarController);
+        if (tab == null || tab.isFrozen()) return;
 
-        Log.d(TAG, "showOfflineSnackbarIfNecessary called, tab " + tab);
+        if (!OfflinePageBridge.isEnabled()) return;
 
         // We only show a snackbar if we are seeing an offline page.
         if (!tab.isOfflinePage()) return;
 
-        final long bookmarkId = tab.getUserBookmarkId();
+        // Get a snackbar controller if we need one.
+        if (snackbarController == null) {
+            snackbarController = getSnackbarController(activity, tab);
+        }
+
         Context context = activity.getBaseContext();
         final boolean connected = isConnected(context);
 
+        Log.d(TAG, "showOfflineSnackbarIfNecessary called, tabId " + tab.getId() + ", hidden "
+                        + tab.isHidden() + ", connected " + connected + ", controller "
+                        + snackbarController);
+
+        // If the tab is no longer hidden, and we have a connection while showing an offline
+        // page, offer to reload it now.
         if (!tab.isHidden() && connected) {
-            Log.d(TAG, "Showing offline page snackbar");
-            showReloadSnackbar(activity, tab.getId(), bookmarkId);
+            Log.d(TAG, "Offering to reload page, controller " + snackbarController);
+            showReloadSnackbar(activity, snackbarController);
             return;
         }
 
-        // Set up the connectivity listener to watch for connectivity.
-        OfflinePageTabObserver.addObserverForTab(activity, tab, connected, bookmarkId);
+        // Set up the tab observer to watch for the tab being unhidden or connectivity.
+        OfflinePageTabObserver.addObserverForTab(
+                activity, tab, connected, tab.getUserBookmarkId(), snackbarController);
         return;
     }
 
     /**
      * Shows the "reload" snackbar for the given tab.
      */
-    public static void showReloadSnackbar(
-            final ChromeActivity activity, final int tabId, final long bookmarkId) {
+    public static void showReloadSnackbar(final ChromeActivity activity,
+            final SnackbarController snackbarController) {
+        Log.d(TAG, "showReloadSnackbar called with controller " + snackbarController);
         int buttonType = RELOAD_BUTTON;
         int actionTextId = R.string.reload;
-        showOfflineSnackbar(activity, tabId, bookmarkId, buttonType, actionTextId);
+        showOfflineSnackbar(activity, snackbarController, buttonType, actionTextId);
     }
 
-    public static void showEditSnackbar(
-            final ChromeActivity activity, final int tabId, final long bookmarkId) {
+    public static void showEditSnackbar(final ChromeActivity activity,
+            final SnackbarController snackbarController) {
         int buttonType = EDIT_BUTTON;
         int actionTextId = R.string.enhanced_bookmark_item_edit;
-        showOfflineSnackbar(activity, tabId, bookmarkId, buttonType, actionTextId);
+        showOfflineSnackbar(activity, snackbarController, buttonType, actionTextId);
     }
 
     /**
      * Shows the snackbar for the current tab to provide offline specific information.
      * @param activity The activity owning the tab.
-     * @param tabId The ID of current tab.
-     * @param bookmarkId Bookmark ID related to the opened page.
+     * @param snackbarController Class to show the snackbar.
+     * @param buttonType Which snackbar button to show.
+     * @param actionTextId Resource ID of the text to put on the snackbar button.
      */
-    private static void showOfflineSnackbar(final ChromeActivity activity, final int tabId,
-            final long bookmarkId, final int buttonType, final int actionTextId) {
+    public static void showOfflineSnackbar(final ChromeActivity activity,
+            final SnackbarController snackbarController, int buttonType, final int actionTextId) {
         Context context = activity.getBaseContext();
 
         final int snackbarTextId = getStringId(R.string.offline_pages_viewing_offline_page);
 
-        SnackbarController snackbarController = new SnackbarController() {
+        Snackbar snackbar = Snackbar
+                .make(context.getString(snackbarTextId), snackbarController, Snackbar.TYPE_ACTION)
+                .setAction(context.getString(actionTextId), buttonType);
+        Log.d(TAG, "made snackbar with controller " + snackbarController);
+        activity.getSnackbarManager().showSnackbar(snackbar);
+    }
+
+    /**
+     * Gets a snackbar controller that we can use to show our snackbar.
+     */
+    private static SnackbarController getSnackbarController(
+            final ChromeActivity activity, final Tab tab) {
+        final long bookmarkId = tab.getUserBookmarkId();
+        final int tabId = tab.getId();
+        Log.d(TAG, "building snackbar controller");
+
+        return new SnackbarController() {
             @Override
             public void onAction(Object actionData) {
-                Tab tab = activity.getTabModelSelector().getTabById(tabId);
-                if (tab == null) return;
-
+                Tab foundTab = activity.getTabModelSelector().getTabById(tabId);
+                if (foundTab == null) return;
                 int buttonType = (int) actionData;
                 switch (buttonType) {
                     case RELOAD_BUTTON:
                         RecordUserAction.record("OfflinePages.ReloadButtonClicked");
-                        tab.loadUrl(new LoadUrlParams(
-                                tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
+                        foundTab.loadUrl(new LoadUrlParams(
+                                foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
                         break;
                     case EDIT_BUTTON:
                         RecordUserAction.record("OfflinePages.ViewingOffline.EditButtonClicked");
@@ -308,9 +340,5 @@ public class OfflinePageUtils {
                 }
             }
         };
-        Snackbar snackbar = Snackbar
-                .make(context.getString(snackbarTextId), snackbarController, Snackbar.TYPE_ACTION)
-                .setAction(context.getString(actionTextId), buttonType);
-        activity.getSnackbarManager().showSnackbar(snackbar);
     }
 }

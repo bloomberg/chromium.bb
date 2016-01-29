@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.offlinepages;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -22,9 +23,9 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     private static final String TAG = "OfflinePageTO";
     private ChromeActivity mActivity;
     private boolean mConnected;
-    private long mBookmarkId;
-    private boolean mWasHidden;
-    private OfflinePageConnectivityListener mListener;
+    private SnackbarController mSnackbarController;
+    private boolean mWasHidden = false;
+    private OfflinePageConnectivityListener mListener = null;
 
     static final Map<Integer, OfflinePageTabObserver> sTabObservers =
             new TreeMap<Integer, OfflinePageTabObserver>();
@@ -36,29 +37,34 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
      * @param conneted True if we were connected when this call was made.
      * @param bookmarkId The ID of the bookmark we are adding an observer for.
      */
-    public static void addObserverForTab(
-            ChromeActivity activity, Tab tab, boolean connected, long bookmarkId) {
+    public static void addObserverForTab(ChromeActivity activity, Tab tab, boolean connected,
+            long bookmarkId, SnackbarController snackbarController) {
         // See if we already have an observer for this tab.
         int tabId = tab.getId();
         OfflinePageTabObserver observer = sTabObservers.get(tabId);
+        Log.d(TAG, "addObserver called, tabId " + tabId);
 
         if (observer == null) {
             // If we don't have an observer, build one and attach it to the tab.
-            observer = new OfflinePageTabObserver(activity, tab, connected, bookmarkId);
+            observer = new OfflinePageTabObserver(
+                    activity, tab, connected, bookmarkId, snackbarController);
             sTabObservers.put(tabId, observer);
             tab.addObserver(observer);
-            Log.d(TAG, "Added tab observer connected " + connected + ", bookmarkId " + bookmarkId);
+            Log.d(TAG, "Added tab observer connected " + connected + ", bookmarkId " + bookmarkId
+                            + ", controller " + snackbarController);
         } else {
-            // If we already have an observer, update the bookmark ID and connected state.
+            // If we already have an observer, update the connected state.
             observer.setConnected(connected);
-            observer.setBookmarkId(bookmarkId);
             // If we already have an observer and addObserver was called, we should re-enable
             // the connectivity listener in case we go offline again.  This typically happens
             // if a background page comes back to the foreground.
+            // To make testing work properly, replace the snackbar controller.  Otherwise the test
+            // will use the release version of the snackbar controller instead of its mock.
             if (!connected) {
-                observer.enableConnectivityListener();
+                observer.enableConnectivityListener(snackbarController);
             }
-            Log.d(TAG, "Updated tab observer " + connected + ", bookmarkId " + bookmarkId);
+            Log.d(TAG, "Updated tab observer " + connected + ", bookmarkId " + bookmarkId
+                            + ", controller " + snackbarController);
         }
     }
 
@@ -67,17 +73,19 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
      * @param activity The ChromeActivity of this instance of the browser.
      * @param connected True if the phone is connected when the observer is created.
      * @param bookmarkId Id of the bookmark (offline page) that is associated with this observer.
+     * @param snackbarController Controller to use to build the snackbar.
      */
-    private OfflinePageTabObserver(
-            ChromeActivity activity, Tab tab, boolean connected, long bookmarkId) {
+    public OfflinePageTabObserver(ChromeActivity activity, Tab tab, boolean connected,
+            long bookmarkId, SnackbarController snackbarController) {
         mActivity = activity;
         mConnected = connected;
-        mBookmarkId = bookmarkId;
         // Remember if the tab was hidden when we started, so we can show the snackbar when
         // the tab becomes visible.
         mWasHidden = tab.isHidden();
 
-        mListener = new OfflinePageConnectivityListener(activity, tab);
+        mListener = new OfflinePageConnectivityListener(activity, tab, snackbarController);
+        mSnackbarController = snackbarController;
+
         Log.d(TAG, "OfflinePageTabObserver built");
     }
 
@@ -85,22 +93,17 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
         mConnected = connected;
     }
 
-    public void setBookmarkId(long bookmarkId) {
-        mBookmarkId = bookmarkId;
-    }
-
-    public void enableConnectivityListener() {
-        mListener.enable();
+    public void enableConnectivityListener(SnackbarController snackbarController) {
+        mListener.enable(snackbarController);
     }
 
     @Override
     public void onShown(Tab visibleTab) {
         if (mWasHidden) {
-            // TODO(petewil): Connectivity listener should channel NCN.isOnline().
             if (mConnected) {
-                OfflinePageUtils.showReloadSnackbar(mActivity, visibleTab.getId(), mBookmarkId);
+                OfflinePageUtils.showReloadSnackbar(mActivity, mSnackbarController);
             } else {
-                OfflinePageUtils.showEditSnackbar(mActivity, visibleTab.getId(), mBookmarkId);
+                OfflinePageUtils.showEditSnackbar(mActivity, mSnackbarController);
             }
 
             mWasHidden = false;
@@ -135,5 +138,14 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
         // Unregister this tab for OS connectivity notifications.
         mListener.disable();
         Log.d(TAG, "onUrlUpdated");
+    }
+
+    /**
+     * Attaches a connectivity listener if needed by this observer.
+     * @param tabId The index of the tab that this listener is listening to.
+     * @param listener The listener itself.
+     */
+    public void setConnectivityListener(int tabId, OfflinePageConnectivityListener listener) {
+        mListener = listener;
     }
 }
