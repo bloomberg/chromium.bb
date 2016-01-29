@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/vai.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/vai.xml
- */
 vai{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ vai{
         BHD{
             "BHD",
             "ꕑꗸꘋ",
+        }
+        BIF{
+            "BIF",
+            "ꖜꖩꔺ ꖢꕟꘋꕃ",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ vai{
             "CN¥",
             "ꕦꕇꔧ ꖳꕎꘋ ꔓꕆꘋꔬ",
         }
+        CVE{
+            "CVE",
+            "ꗡꔻꖴꖁ ꕪꕷꗲꗡꔵꕩꖆ",
+        }
+        DJF{
+            "DJF",
+            "ꕀꖜꔳ ꖢꕟꘋꕃ",
+        }
         DZD{
             "DZD",
             "ꕉꔷꕀꔸꕩ ꔵꕯ",
@@ -54,6 +63,10 @@ vai{
         EGP{
             "EGP",
             "ꕆꔻꕞ ꗁꖻꘋ",
+        }
+        ERN{
+            "ERN",
+            "ꔀꔸꔳꕟ ꗁꖻꘋ",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ vai{
             "£",
             "ꔛꔟꔻ ꗁꖻꘋ ꔻꗳꔷꘋ",
         }
+        GHC{
+            "GHC",
+            "ꕭꕌꕯ ꔻꔵ",
+        }
+        GMD{
+            "GMD",
+            "ꕭꔭꕩ ꕜꕞꔻ",
+        }
+        GNS{
+            "GNS",
+            "ꕅꔤꕇ ꖢꕟꘋꕃ",
+        }
         INR{
-            "Rs.",
+            "₹",
             "ꔤꔺꕩ ꖩꔪ",
         }
         JPY{
@@ -78,6 +103,18 @@ vai{
         KES{
             "KES",
             "ꔞꕰ ꔻꔝꘋ",
+        }
+        KMF{
+            "KMF",
+            "ꖏꖒꖄ ꖢꕟꘋꕃ",
+        }
+        LRD{
+            "$",
+            "ꕞꔤꔫꕩ ꕜꕞꕌ",
+        }
+        LSL{
+            "LSL",
+            "ꔷꖇꕿ ꖃꔳ",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ vai{
             "MWK",
             "ꕮꕞꕌꔨ ꖴꕎꕦ",
         }
+        MZM{
+            "MZM",
+            "ꗞꕤꔭꕃ ꕆꔳꕪ",
+        }
         NAD{
             "NAD",
             "ꕯꕆꔫꕩ ꕜꕞꕌ",
@@ -119,13 +160,33 @@ vai{
             "SAR",
             "ꕢꖙꔵ ꔸꕩꔷ",
         }
+        SCR{
+            "SCR",
+            "ꔖꗼꔷ ꖩꔪ",
+        }
         SDG{
             "SDG",
             "ꖬꗵꘋ ꗁꖻꘋ",
         }
+        SHP{
+            "SHP",
+            "ꔻꘋ ꗥꔷꕯ ꗁꖻꘋ",
+        }
         SLL{
             "SLL",
             "ꔷꗚꘋ",
+        }
+        SOS{
+            "SOS",
+            "ꖇꕮꔷ ꔻꔝꘋ",
+        }
+        STD{
+            "STD",
+            "ꕢꕴ ꕿꔈ ꗪ ꕉ ꕗꕴ ꖁꖜꕟ",
+        }
+        SZL{
+            "SZL",
+            "ꔷꕞꔟꕇ",
         }
         TND{
             "TND",
@@ -147,10 +208,18 @@ vai{
             "ZAR",
             "ꕉꔱꔸꕪ ꗛꔤ ꔒꘋꗣ ꗏ ꕟꘋꔵ",
         }
+        ZMK{
+            "ZMK",
+            "ꕤꔭꕩ ꖴꕎꕦ (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "ꕤꔭꕩ ꖴꕎꕦ",
         }
+        ZWD{
+            "ZWD",
+            "ꔽꕓꖜꔃ ꕜꕞ",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

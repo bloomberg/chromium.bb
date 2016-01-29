@@ -1,16 +1,40 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/mt.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/mt.xml
- */
 mt{
     Countries{
+        001{"Dinja"}
+        002{"Affrika"}
+        005{"Amerika t’Isfel"}
+        009{"Oċejanja"}
+        011{"Affrika tal-Punent"}
+        013{"Amerika Ċentrali"}
+        014{"Affrika tal-Lvant"}
+        015{"Affrika ta’ Fuq"}
+        017{"Affrika Nofsani"}
+        018{"Affrika t’Isfel"}
+        019{"Amerika"}
+        029{"Karibew"}
+        030{"Asja tal-Lvant"}
+        034{"Asja t’Isfel Ċentrali"}
+        035{"Asja tax-Xlokk"}
+        039{"Ewropa t’Isfel"}
+        053{"Awstralja u New Zealand"}
+        054{"Melanesja"}
+        057{"Reġjun ta’ Mikroneżja"}
+        061{"Polinesja"}
+        142{"Asja"}
+        143{"Asja Ċentrali"}
+        145{"Asja tal-Punent"}
+        150{"Ewropa"}
+        151{"Ewropa tal-Lvant"}
+        154{"Ewropa ta’ Fuq"}
+        155{"Ewropa tal-Punent"}
         419{"Amerika Latina"}
         AD{"Andorra"}
         AE{"Emirati Għarab Maqgħuda"}
@@ -59,7 +83,7 @@ mt{
         CL{"Ċili"}
         CM{"Kamerun"}
         CN{"Iċ-Ċina"}
-        CO{"Kolumbja"}
+        CO{"Kolombja"}
         CR{"Kosta Rika"}
         CU{"Kuba"}
         CV{"Kape Verde"}
@@ -76,7 +100,7 @@ mt{
         EE{"Estonja"}
         EG{"Eġittu"}
         EH{"Sahara tal-Punent"}
-        ER{"Eritreja"}
+        ER{"Eritrea"}
         ES{"Spanja"}
         ET{"Etijopja"}
         EU{"Unjoni Ewropea"}
@@ -89,13 +113,13 @@ mt{
         GA{"Gabon"}
         GB{"L-Ingilterra"}
         GD{"Grenada"}
-        GE{"Ġorġja"}
+        GE{"Ġeorġja"}
         GF{"Gujana Franċiża"}
         GH{"Gana"}
         GI{"Gibraltar"}
         GL{"Grinlandja"}
         GM{"Gambja"}
-        GN{"Gineja"}
+        GN{"Ginea"}
         GP{"Gwadelupe"}
         GQ{"Ginea Ekwatorjali"}
         GR{"Greċja"}
@@ -147,7 +171,7 @@ mt{
         LY{"Libja"}
         MA{"Marokk"}
         MC{"Monako"}
-        MD{"Maldova"}
+        MD{"Moldova"}
         MG{"Madagaskar"}
         MH{"Gżejjer ta’ Marshall"}
         MK{"Maċedonja"}
@@ -255,5 +279,5 @@ mt{
         ZW{"Żimbabwe"}
         ZZ{"Reġjun Mhux Magħruf"}
     }
-    Version{"2.1.8.22"}
+    Version{"2.1.19.94"}
 }

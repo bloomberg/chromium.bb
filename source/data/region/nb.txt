@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/nb.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/nb.xml
- */
 nb{
     Countries{
+        001{"verden"}
+        002{"Afrika"}
+        003{"Nord-Amerika"}
+        005{"Sør-Amerika"}
+        009{"Oseania"}
+        011{"Vest-Afrika"}
+        013{"Mellom-Amerika"}
+        014{"Øst-Afrika"}
+        015{"Nord-Afrika"}
+        017{"Sentral-Afrika"}
+        018{"Sørlige Afrika"}
+        019{"Amerika"}
+        021{"Nordlige Amerika"}
+        029{"Karibia"}
+        030{"Øst-Asia"}
+        034{"Sør-Asia"}
+        035{"Sørøst-Asia"}
+        039{"Sør-Europa"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Mikronesia"}
+        061{"Polynesia"}
+        142{"Asia"}
+        143{"Sentral-Asia"}
+        145{"Vest-Asia"}
+        150{"Europa"}
+        151{"Øst-Europa"}
+        154{"Nord-Europa"}
+        155{"Vest-Europa"}
         419{"Latin-Amerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ nb{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong S.A.R. Kina"}
         HM{"Heard- og McDonaldøyene"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -124,7 +150,7 @@ nb{
         IL{"Israel"}
         IM{"Man"}
         IN{"India"}
-        IO{"Britiske territorier i Indiahavet"}
+        IO{"Det britiske territoriet i Indiahavet"}
         IQ{"Irak"}
         IR{"Iran"}
         IS{"Island"}
@@ -138,7 +164,7 @@ nb{
         KH{"Kambodsja"}
         KI{"Kiribati"}
         KM{"Komorene"}
-        KN{"St. Kitts og Nevis"}
+        KN{"Saint Kitts og Nevis"}
         KP{"Nord-Korea"}
         KR{"Sør-Korea"}
         KW{"Kuwait"}
@@ -166,7 +192,7 @@ nb{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macao"}
+        MO{"Macao S.A.R. Kina"}
         MP{"Nord-Marianene"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -201,7 +227,7 @@ nb{
         PM{"St. Pierre og Miquelon"}
         PN{"Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Det palestinske området"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,15 +299,18 @@ nb{
         ZW{"Zimbabwe"}
         ZZ{"ukjent område"}
     }
+    Countries%short{
+        GB{"Storbritannia"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestina"}
+        US{"USA"}
+    }
     Countries%variant{
         CD{"Den demokratiske republikken Kongo"}
         CG{"Republikken Kongo"}
         FK{"Falklandsøyene (Islas Malvinas)"}
         MK{"Makedonia (FYROM)"}
     }
-    CountriesShort{
-        GB{"Storbritannia"}
-        US{"USA"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.96"}
 }

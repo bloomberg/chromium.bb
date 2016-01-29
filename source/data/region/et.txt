@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/et.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/et.xml
- */
 et{
     Countries{
+        001{"maailm"}
+        002{"Aafrika"}
+        003{"Põhja-Ameerika"}
+        005{"Lõuna-Ameerika"}
+        009{"Okeaania"}
+        011{"Lääne-Aafrika"}
+        013{"Kesk-Ameerika"}
+        014{"Ida-Aafrika"}
+        015{"Põhja-Aafrika"}
+        017{"Kesk-Aafrika"}
+        018{"Lõuna-Aafrika"}
+        019{"Ameerika"}
+        021{"Ameerika põhjaosa"}
+        029{"Kariibi piirkond"}
+        030{"Ida-Aasia"}
+        034{"Lõuna-Aasia"}
+        035{"Kagu-Aasia"}
+        039{"Lõuna-Euroopa"}
+        053{"Australaasia"}
+        054{"Melaneesia"}
+        057{"Mikroneesia (piirkond)"}
+        061{"Polüneesia"}
+        142{"Aasia"}
+        143{"Kesk-Aasia"}
+        145{"Lääne-Aasia"}
+        150{"Euroopa"}
+        151{"Ida-Euroopa"}
+        154{"Põhja-Euroopa"}
+        155{"Lääne-Euroopa"}
         419{"Ladina-Ameerika"}
         AC{"Ascensioni saar"}
         AD{"Andorra"}
@@ -55,7 +81,7 @@ et{
         CC{"Kookossaared"}
         CD{"Kongo DV"}
         CF{"Kesk-Aafrika Vabariik"}
-        CG{"Kongo-Brazzaville"}
+        CG{"Kongo Vabariik"}
         CH{"Šveits"}
         CI{"Côte d’Ivoire"}
         CK{"Cooki saared"}
@@ -90,7 +116,7 @@ et{
         FI{"Soome"}
         FJ{"Fidži"}
         FK{"Falklandi saared"}
-        FM{"Mikroneesia Liiduriigid"}
+        FM{"Mikroneesia"}
         FO{"Fääri saared"}
         FR{"Prantsusmaa"}
         GA{"Gabon"}
@@ -112,7 +138,7 @@ et{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkongi erihalduspiirkond"}
         HM{"Heardi ja McDonaldi saared"}
         HN{"Honduras"}
         HR{"Horvaatia"}
@@ -133,7 +159,7 @@ et{
         JM{"Jamaica"}
         JO{"Jordaania"}
         JP{"Jaapan"}
-        KE{"Kenya"}
+        KE{"Keenia"}
         KG{"Kõrgõzstan"}
         KH{"Kambodža"}
         KI{"Kiribati"}
@@ -159,14 +185,14 @@ et{
         MC{"Monaco"}
         MD{"Moldova"}
         ME{"Montenegro"}
-        MF{"Saint Martin"}
+        MF{"Saint-Martin"}
         MG{"Madagaskar"}
-        MH{"Marshalli saared"}
+        MH{"Marshalli Saared"}
         MK{"Makedoonia"}
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongoolia"}
-        MO{"Macau"}
+        MO{"Macau erihalduspiirkond"}
         MP{"Põhja-Mariaanid"}
         MQ{"Martinique"}
         MR{"Mauritaania"}
@@ -201,7 +227,7 @@ et{
         PM{"Saint Pierre ja Miquelon"}
         PN{"Pitcairni saared"}
         PR{"Puerto Rico"}
-        PS{"Palestiina"}
+        PS{"Palestiina alad"}
         PT{"Portugal"}
         PW{"Belau"}
         PY{"Paraguay"}
@@ -273,15 +299,20 @@ et{
         ZW{"Zimbabwe"}
         ZZ{"Tundmatu piirkond"}
     }
-    Countries%variant{
-        CD{"Kongo-Kinshasa"}
-        CG{"Kongo (Vabariik)"}
-        CI{"Elevandiluurannik"}
-        FK{"Falklandi saared (Malviini saared)"}
-    }
-    CountriesShort{
-        GB{"Suurbritannia"}
+    Countries%short{
+        GB{"ÜK"}
+        HK{"Hongkong"}
+        MO{"Macau"}
+        PS{"Palestiina"}
         US{"USA"}
     }
-    Version{"2.1.8.9"}
+    Countries%variant{
+        CD{"Kongo-Kinshasa"}
+        CG{"Kongo-Brazzaville"}
+        CI{"Elevandiluurannik"}
+        FK{"Malviini saared"}
+        MK{"Makedoonia Vabariik"}
+        TL{"Timor-Leste"}
+    }
+    Version{"2.1.20.4"}
 }

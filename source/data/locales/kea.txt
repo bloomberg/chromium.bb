@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/kea.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/kea.xml
- */
 kea{
     AuxExemplarCharacters{
         "[á à ă â å ä ã ā æ c ç é è ĕ ê ë ẽ ē í ì ĭ î ï ĩ ī {n\u0308} ó ò ŏ ô ö õ ø ō"
@@ -24,9 +21,6 @@ kea{
     }
     ExemplarCharacters{"[a b d {dj} e f g h i j k l {lh} m n ñ {nh} o p r s t {tx} u v x y z]"}
     ExemplarCharactersIndex{"[A B D E F G H I J K L M N O P R S T U V X Z]"}
-    LocaleScript{
-        "Latn",
-    }
     MoreInformation{"?"}
     NumberElements{
         default{"latn"}
@@ -140,7 +134,7 @@ kea{
         minimumGroupingDigits{"1"}
         native{"latn"}
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.74"}
     calendar{
         generic{
             DateTimePatterns{
@@ -165,8 +159,6 @@ kea{
                 GyMMMEd{"E, d MMM y G"}
                 GyMMMd{"d MMM y G"}
                 H{"HH"}
-                HHmm{"HH:mm"}
-                HHmmss{"HH:mm:ss"}
                 Hm{"HH:mm"}
                 Hms{"HH:mm:ss"}
                 M{"L"}
@@ -325,8 +317,6 @@ kea{
                 "{1} {0}",
                 "{1} {0}",
             }
-            NoonMarker{"mei-dia"}
-            NoonMarkerNarrow{"m"}
             appendItems{
                 Timezone{"{0} {1}"}
             }
@@ -342,8 +332,6 @@ kea{
                 GyMMMEd{"E, d 'di' MMM 'di' y G"}
                 GyMMMd{"d 'di' MMM 'di' y G"}
                 H{"HH"}
-                HHmm{"HH:mm"}
-                HHmmss{"HH:mm:ss"}
                 Hm{"HH:mm"}
                 Hms{"HH:mm:ss"}
                 M{"L"}
@@ -703,11 +691,6 @@ kea{
         alternateQuotationStart{"‘"}
         quotationEnd{"”"}
         quotationStart{"“"}
-    }
-    durationUnits{
-        hm{"h:mm"}
-        hms{"h:mm:ss"}
-        ms{"m:ss"}
     }
     fields{
         day{
@@ -1155,18 +1138,26 @@ kea{
     }
     listPattern{
         standard{
-            2{"{0} y {1}"}
-            end{"{0} y {1}"}
+            2{"{0} i {1}"}
+            end{"{0} i {1}"}
             middle{"{0}, {1}"}
             start{"{0}, {1}"}
         }
         unit{
-            2{"{0} y {1}"}
-            end{"{0} y {1}"}
+            2{"{0} i {1}"}
+            end{"{0} i {1}"}
+            middle{"{0}, {1}"}
+            start{"{0}, {1}"}
+        }
+        unit-narrow{
+            2{"{0}, {1}"}
+            end{"{0}, {1}"}
             middle{"{0}, {1}"}
             start{"{0}, {1}"}
         }
         unit-short{
+            2{"{0}, {1}"}
+            end{"{0}, {1}"}
             middle{"{0}, {1}"}
             start{"{0}, {1}"}
         }

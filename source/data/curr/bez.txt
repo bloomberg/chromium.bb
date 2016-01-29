@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/bez.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/bez.xml
- */
 bez{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ bez{
         BHD{
             "BHD",
             "Lupila lwa Hubahareni",
+        }
+        BIF{
+            "BIF",
+            "Lupila lwa Huburundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ bez{
             "CN¥",
             "Lupila lwa Huchina",
         }
+        CVE{
+            "CVE",
+            "Lupila lwa Hukepuvede",
+        }
+        DJF{
+            "DJF",
+            "Lupila lwa Hujibuti",
+        }
         DZD{
             "DZD",
             "Lupila lwa Hualjelia",
@@ -54,6 +63,10 @@ bez{
         EGP{
             "EGP",
             "Lupila lwa Humisri",
+        }
+        ERN{
+            "ERN",
+            "Lupila lwa Hueritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ bez{
             "£",
             "Lupila lwa Huuingereza",
         }
+        GHC{
+            "GHC",
+            "Lupila lwa Hughana",
+        }
+        GMD{
+            "GMD",
+            "Lupila lwa Hugambia",
+        }
+        GNS{
+            "GNS",
+            "Lupila lwa Hujine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Lupila lwa Huindia",
         }
         JPY{
@@ -78,6 +103,18 @@ bez{
         KES{
             "KES",
             "Shilingi ya Hukenya",
+        }
+        KMF{
+            "KMF",
+            "Lupila lwa Hukomoro",
+        }
+        LRD{
+            "LRD",
+            "Lupila lwa Hulibelia",
+        }
+        LSL{
+            "LSL",
+            "Lupila lwa Hulesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ bez{
             "MWK",
             "Lupila lwa Humalawi",
         }
+        MZM{
+            "MZM",
+            "Lupila lwa Humsumbiji",
+        }
         NAD{
             "NAD",
             "Lupila lwa Hunamibia",
@@ -119,13 +160,33 @@ bez{
             "SAR",
             "Lupila lwa Husaudi",
         }
+        SCR{
+            "SCR",
+            "Lupila lwa Hushelisheli",
+        }
         SDG{
             "SDG",
             "Lupila lwa Husudani",
         }
+        SHP{
+            "SHP",
+            "Lupila lwa Husantahelena",
+        }
         SLL{
             "SLL",
             "Lupila lwa Lioni",
+        }
+        SOS{
+            "SOS",
+            "Lupila lwa Husomalia",
+        }
+        STD{
+            "STD",
+            "Lupila lwa Husaotome na Huprinisipe",
+        }
+        SZL{
+            "SZL",
+            "Lupila lwa Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ bez{
             "ZAR",
             "Lupila lwa Huafriaka ya Hukusini",
         }
+        ZMK{
+            "ZMK",
+            "Lupila lwa Huzambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Lupila lwa Huzambia",
         }
+        ZWD{
+            "ZWD",
+            "Lupila lwa Huzimbabwe",
+        }
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.14"}
 }

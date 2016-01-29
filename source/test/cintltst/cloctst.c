@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2014, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /*****************************************************************************
@@ -1674,9 +1674,9 @@ static void TestKeywordVariants(void)
 {
     static const struct {
         const char *localeID;
-        const char *expectedLocaleID;
-        const char *expectedLocaleIDNoKeywords;
-        const char *expectedCanonicalID;
+        const char *expectedLocaleID;           /* uloc_getName */
+        const char *expectedLocaleIDNoKeywords; /* uloc_getBaseName */
+        const char *expectedCanonicalID;        /* uloc_canonicalize */
         const char *expectedKeywords[10];
         int32_t numKeywords;
         UErrorCode expectedStatus; /* from uloc_openKeywords */
@@ -1693,20 +1693,29 @@ static void TestKeywordVariants(void)
         {
             "de_DE@euro",
             "de_DE@euro",
-            "de_DE",
+            "de_DE@euro",   /* we probably should strip off the POSIX style variant @euro see #11690 */
             "de_DE@currency=EUR",
             {"","","","","","",""},
             0,
             U_INVALID_FORMAT_ERROR /* must have '=' after '@' */
         },
         {
-            "de_DE@euro;collation=phonebook",
-            "de_DE", /* error result; bad format */
-            "de_DE", /* error result; bad format */
-            "de_DE", /* error result; bad format */
+            "de_DE@euro;collation=phonebook",   /* The POSIX style variant @euro cannot be combined with key=value? */
+            "de_DE", /* getName returns de_DE - should be INVALID_FORMAT_ERROR? */
+            "de_DE", /* getBaseName returns de_DE - should be INVALID_FORMAT_ERROR? see #11690 */
+            "de_DE", /* canonicalize returns de_DE - should be INVALID_FORMAT_ERROR? */
             {"","","","","","",""},
             0,
             U_INVALID_FORMAT_ERROR
+        },
+        {
+            "de_DE@collation=",
+            0, /* expected getName to fail */
+            "de_DE", /* getBaseName returns de_DE - should be INVALID_FORMAT_ERROR? see #11690 */
+            0, /* expected canonicalize to fail */
+            {"","","","","","",""},
+            0,
+            U_INVALID_FORMAT_ERROR /* must have '=' after '@' */
         }
     };
     UErrorCode status = U_ZERO_ERROR;
@@ -1753,19 +1762,58 @@ static void TestKeywordVariants(void)
             }
             uenum_close(keywords);
         }
+
+        status = U_ZERO_ERROR;
         resultLen = uloc_getName(testCases[i].localeID, buffer, 256, &status);
-        (void)resultLen;    /* Suppress set but not used warning. */
-        if (uprv_strcmp(testCases[i].expectedLocaleID, buffer) != 0) {
-            log_err("Expected uloc_getName(\"%s\") => \"%s\"; got \"%s\"\n",
-                    testCases[i].localeID, testCases[i].expectedLocaleID, buffer);
+        if (U_SUCCESS(status)) {
+            if (testCases[i].expectedLocaleID == 0) {
+                log_err("Expected uloc_getName(\"%s\") to fail; got \"%s\"\n",
+                        testCases[i].localeID, buffer);
+            } else if (uprv_strcmp(testCases[i].expectedLocaleID, buffer) != 0) {
+                log_err("Expected uloc_getName(\"%s\") => \"%s\"; got \"%s\"\n",
+                        testCases[i].localeID, testCases[i].expectedLocaleID, buffer);
+            }
+        } else {
+            if (testCases[i].expectedLocaleID != 0) {
+                log_err("Expected uloc_getName(\"%s\") => \"%s\"; but returned error: %s\n",
+                        testCases[i].localeID, testCases[i].expectedLocaleID, buffer, u_errorName(status));
+            }
         }
+
+        status = U_ZERO_ERROR;
+        resultLen = uloc_getBaseName(testCases[i].localeID, buffer, 256, &status);
+        if (U_SUCCESS(status)) {
+            if (testCases[i].expectedLocaleIDNoKeywords == 0) {
+                log_err("Expected uloc_getBaseName(\"%s\") to fail; got \"%s\"\n",
+                        testCases[i].localeID, buffer);
+            } else if (uprv_strcmp(testCases[i].expectedLocaleIDNoKeywords, buffer) != 0) {
+                log_err("Expected uloc_getBaseName(\"%s\") => \"%s\"; got \"%s\"\n",
+                        testCases[i].localeID, testCases[i].expectedLocaleIDNoKeywords, buffer);
+            }
+        } else {
+            if (testCases[i].expectedLocaleIDNoKeywords != 0) {
+                log_err("Expected uloc_getBaseName(\"%s\") => \"%s\"; but returned error: %s\n",
+                        testCases[i].localeID, testCases[i].expectedLocaleIDNoKeywords, buffer, u_errorName(status));
+            }
+        }
+
+        status = U_ZERO_ERROR;
         resultLen = uloc_canonicalize(testCases[i].localeID, buffer, 256, &status);
-        if (uprv_strcmp(testCases[i].expectedCanonicalID, buffer) != 0) {
-            log_err("Expected uloc_canonicalize(\"%s\") => \"%s\"; got \"%s\"\n",
-                    testCases[i].localeID, testCases[i].expectedCanonicalID, buffer);
-        }        
+        if (U_SUCCESS(status)) {
+            if (testCases[i].expectedCanonicalID == 0) {
+                log_err("Expected uloc_canonicalize(\"%s\") to fail; got \"%s\"\n",
+                        testCases[i].localeID, buffer);
+            } else if (uprv_strcmp(testCases[i].expectedCanonicalID, buffer) != 0) {
+                log_err("Expected uloc_canonicalize(\"%s\") => \"%s\"; got \"%s\"\n",
+                        testCases[i].localeID, testCases[i].expectedCanonicalID, buffer);
+            }
+        } else {
+            if (testCases[i].expectedCanonicalID != 0) {
+                log_err("Expected uloc_canonicalize(\"%s\") => \"%s\"; but returned error: %s\n",
+                        testCases[i].localeID, testCases[i].expectedCanonicalID, buffer, u_errorName(status));
+            }
+        }
     }
-    
 }
 
 static void TestKeywordVariantParsing(void) 
@@ -2201,14 +2249,14 @@ static void TestDisplayKeywordValues(void){
         {   "de_AT@currency=ATS",         "fr_FR", 
             {0x0073, 0x0063, 0x0068, 0x0069, 0x006c, 0x006c, 0x0069, 0x006e, 0x0067, 0x0020, 0x0061, 0x0075, 0x0074, 0x0072, 0x0069, 0x0063, 0x0068, 0x0069, 0x0065, 0x006e, 0x0000}
         },
-        { "de_DE@currency=DEM",         "it", 
-            {0x004d, 0x0061, 0x0072, 0x0063, 0x006f, 0x0020, 0x0054, 0x0065, 0x0064, 0x0065, 0x0073, 0x0063, 0x006f, 0x0000}
+        {   "de_DE@currency=DEM",         "it", 
+            {0x006d, 0x0061, 0x0072, 0x0063, 0x006f, 0x0020, 0x0074, 0x0065, 0x0064, 0x0065, 0x0073, 0x0063, 0x006f, 0x0000}
         },
         {   "el_GR@currency=GRD",         "en",    
             {0x0047, 0x0072, 0x0065, 0x0065, 0x006b, 0x0020, 0x0044, 0x0072, 0x0061, 0x0063, 0x0068, 0x006d, 0x0061, 0x0000}
         },
         {   "eu_ES@currency=ESP",         "it_IT", 
-            {0x0050, 0x0065, 0x0073, 0x0065, 0x0074, 0x0061, 0x0020, 0x0053, 0x0070, 0x0061, 0x0067, 0x006e, 0x006f, 0x006c, 0x0061, 0x0000}
+            {0x0070, 0x0065, 0x0073, 0x0065, 0x0074, 0x0061, 0x0020, 0x0073, 0x0070, 0x0061, 0x0067, 0x006e, 0x006f, 0x006c, 0x0061, 0x0000}
         },
         {   "de@collation=phonebook",     "es",    
             {0x006F, 0x0072, 0x0064, 0x0065, 0x006E, 0x0020, 0x0064, 0x0065, 0x0020, 0x006C, 0x0069, 0x0073, 0x0074, 0x00ED, 0x006E, 0x0020, 0x0074, 0x0065, 0x006C, 0x0065, 0x0066, 0x00F3, 0x006E, 0x0069, 0x0063, 0x006F, 0x0000}
@@ -4124,8 +4172,8 @@ const char* const full_data[][3] = {
     "fi"
   }, {
     "und_FM",
-    "chk_Latn_FM",
-    "chk"
+    "en_Latn_FM",
+    "en_FM"
   }, {
     "und_FO",
     "fo_Latn_FO",

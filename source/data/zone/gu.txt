@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/gu.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/gu.xml
- */
 gu{
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"આબિદ્જાન"}
@@ -687,11 +684,11 @@ gu{
         "Asia:Calcutta"{
             ec{"કોલકાતા"}
         }
+        "Asia:Chita"{
+            ec{"ચિતા"}
+        }
         "Asia:Choibalsan"{
             ec{"ચોઇબાલ્સન"}
-        }
-        "Asia:Chongqing"{
-            ec{"ચોંગકિંગ"}
         }
         "Asia:Colombo"{
             ec{"કોલંબો"}
@@ -713,9 +710,6 @@ gu{
         }
         "Asia:Gaza"{
             ec{"ગાઝા"}
-        }
-        "Asia:Harbin"{
-            ec{"હારબિન"}
         }
         "Asia:Hebron"{
             ec{"હેબ્રોન"}
@@ -746,9 +740,6 @@ gu{
         }
         "Asia:Karachi"{
             ec{"કરાચી"}
-        }
-        "Asia:Kashgar"{
-            ec{"કાશ્ગર"}
         }
         "Asia:Katmandu"{
             ec{"કાઠમંડુ"}
@@ -836,6 +827,9 @@ gu{
         }
         "Asia:Singapore"{
             ec{"સિંગાપુર"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"સ્રેડ્નેકોલીમ્સ્ક"}
         }
         "Asia:Taipei"{
             ec{"તાઇપેઇ"}
@@ -986,7 +980,7 @@ gu{
         }
         "Europe:Dublin"{
             ec{"ડબલિન"}
-            ld{"આઇરિશ ગ્રીષ્મ સમય"}
+            ld{"આઈરિશ માનક સમય"}
         }
         "Europe:Gibraltar"{
             ec{"જીબ્રાલ્ટર"}
@@ -1157,6 +1151,9 @@ gu{
         "Pacific:Auckland"{
             ec{"ઑકલેન્ડ"}
         }
+        "Pacific:Bougainville"{
+            ec{"બૌગેઈનવિલે"}
+        }
         "Pacific:Chatham"{
             ec{"ચથમ"}
         }
@@ -1305,7 +1302,7 @@ gu{
         "meta:America_Central"{
             ld{"ઉત્તર અમેરિકન મધ્ય દિવસ સમય"}
             lg{"ઉત્તર અમેરિકન મધ્ય સમય"}
-            ls{"ઉત્તર અમેરિકન મધ્ય પ્રમાણભૂત સમય"}
+            ls{"ઉત્તર અમેરિકન કેન્દ્રિય પ્રમાણભૂત સમય"}
         }
         "meta:America_Eastern"{
             ld{"ઉત્તર અમેરિકન પૂર્વી દિવસ સમય"}
@@ -1329,8 +1326,8 @@ gu{
         }
         "meta:Apia"{
             ld{"અપિયા દિવસ સમય"}
-            lg{"અપિયા સમય"}
-            ls{"અપિયા માનક સમય"}
+            lg{"એપિયા સમય"}
+            ls{"એપિયા પ્રમાણભૂત સમય"}
         }
         "meta:Aqtau"{
             ld{"અક્તાઉ ગ્રીષ્મ સમય"}
@@ -1493,7 +1490,7 @@ gu{
             ls{"પૂર્વી યુરોપિયન માનક સમય"}
         }
         "meta:Europe_Further_Eastern"{
-            ls{"વધુ પૂર્વીય યુરોપીયન સમય"}
+            ls{"આગળનું-પૂર્વીય યુરોપીયન સમય"}
         }
         "meta:Europe_Western"{
             ld{"પશ્ચિમી યુરોપિયન ગ્રીષ્મ સમય"}

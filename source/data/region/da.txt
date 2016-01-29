@@ -1,20 +1,46 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/da.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/da.xml
- */
 da{
     Countries{
+        001{"Verden"}
+        002{"Afrika"}
+        003{"Nordamerika"}
+        005{"Sydamerika"}
+        009{"Oceanien"}
+        011{"Vestafrika"}
+        013{"Mellemamerika"}
+        014{"Østafrika"}
+        015{"Nordafrika"}
+        017{"Centralafrika"}
+        018{"Det sydlige Afrika"}
+        019{"Amerika"}
+        021{"Det nordlige Amerika"}
+        029{"Caribien"}
+        030{"Østasien"}
+        034{"Sydasien"}
+        035{"Sydøstasien"}
+        039{"Sydeuropa"}
+        053{"Australasien"}
+        054{"Melanesien"}
+        057{"Mikronesien"}
+        061{"Polynesien"}
+        142{"Asien"}
+        143{"Centralasien"}
+        145{"Vestasien"}
+        150{"Europa"}
+        151{"Østeuropa"}
+        154{"Nordeuropa"}
+        155{"Vesteuropa"}
         419{"Latinamerika"}
         AC{"Ascensionøen"}
         AD{"Andorra"}
-        AE{"Forenede Arabiske Emirater"}
+        AE{"De Forenede Arabiske Emirater"}
         AF{"Afghanistan"}
         AG{"Antigua og Barbuda"}
         AI{"Anguilla"}
@@ -28,7 +54,7 @@ da{
         AT{"Østrig"}
         AU{"Australien"}
         AW{"Aruba"}
-        AX{"Ålandsøerne"}
+        AX{"Åland"}
         AZ{"Aserbajdsjan"}
         BA{"Bosnien-Hercegovina"}
         BB{"Barbados"}
@@ -43,7 +69,7 @@ da{
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
-        BQ{"Nederlandske antiller"}
+        BQ{"De Nederlandske Antiller"}
         BR{"Brasilien"}
         BS{"Bahamas"}
         BT{"Bhutan"}
@@ -54,7 +80,7 @@ da{
         CA{"Canada"}
         CC{"Cocosøerne"}
         CD{"Congo-Kinshasa"}
-        CF{"Centralafrikanske Republik"}
+        CF{"Den Centralafrikanske Republik"}
         CG{"Congo-Brazzaville"}
         CH{"Schweiz"}
         CI{"Elfenbenskysten"}
@@ -112,7 +138,7 @@ da{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong SAR"}
         HM{"Heard Island og McDonald Islands"}
         HN{"Honduras"}
         HR{"Kroatien"}
@@ -166,7 +192,7 @@ da{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongoliet"}
-        MO{"Macao"}
+        MO{"Macao SAR"}
         MP{"Nordmarianerne"}
         MQ{"Martinique"}
         MR{"Mauretanien"}
@@ -179,12 +205,12 @@ da{
         MY{"Malaysia"}
         MZ{"Mozambique"}
         NA{"Namibia"}
-        NC{"Ny Caledonien"}
+        NC{"Ny Kaledonien"}
         NE{"Niger"}
-        NF{"Norfolkøen"}
+        NF{"Norfolk Island"}
         NG{"Nigeria"}
         NI{"Nicaragua"}
-        NL{"Holland"}
+        NL{"Nederlandene"}
         NO{"Norge"}
         NP{"Nepal"}
         NR{"Nauru"}
@@ -201,7 +227,7 @@ da{
         PM{"Saint Pierre og Miquelon"}
         PN{"Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palæstina"}
+        PS{"De palæstinensiske områder"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -228,7 +254,7 @@ da{
         SO{"Somalia"}
         SR{"Surinam"}
         SS{"Sydsudan"}
-        ST{"Sao Tome og Principe"}
+        ST{"São Tomé og Príncipe"}
         SV{"El Salvador"}
         SX{"Sint Maarten"}
         SY{"Syrien"}
@@ -273,16 +299,19 @@ da{
         ZW{"Zimbabwe"}
         ZZ{"Ukendt område"}
     }
+    Countries%short{
+        GB{"UK"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palæstina"}
+        US{"USA"}
+    }
     Countries%variant{
         CD{"Den Demokratiske Republik Congo"}
         CG{"Republikken Congo"}
         FK{"Falklandsøerne (Islas Malvinas)"}
-        MK{"Makedonien (Den Tidligere Jugoslaviske Republik Makedonien)"}
+        MK{"Den tidligere jugoslaviske republik Makedonien"}
         TL{"Østtimor"}
     }
-    CountriesShort{
-        GB{"UK"}
-        US{"USA"}
-    }
-    Version{"2.1.9.62"}
+    Version{"2.1.19.44"}
 }

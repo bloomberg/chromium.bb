@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/mua.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/mua.xml
- */
 mua{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ mua{
         BHD{
             "BHD",
             "solai Barenya",
+        }
+        BIF{
+            "BIF",
+            "solai Burundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ mua{
             "CN¥",
             "solai Syiŋ",
         }
+        CVE{
+            "CVE",
+            "solai Kapverdiya",
+        }
+        DJF{
+            "DJF",
+            "solai Djibouti",
+        }
         DZD{
             "DZD",
             "solai Algerya",
@@ -54,6 +63,10 @@ mua{
         EGP{
             "EGP",
             "solai Egypt",
+        }
+        ERN{
+            "ERN",
+            "solai Eritre",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ mua{
             "£",
             "solai Britaniya",
         }
+        GHC{
+            "GHC",
+            "solai Gana",
+        }
+        GMD{
+            "GMD",
+            "solai Gambiya",
+        }
+        GNS{
+            "GNS",
+            "solai Guine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "solai India",
         }
         JPY{
@@ -78,6 +103,18 @@ mua{
         KES{
             "KES",
             "solai Kenia",
+        }
+        KMF{
+            "KMF",
+            "solai Komorya",
+        }
+        LRD{
+            "LRD",
+            "solai Liberiya",
+        }
+        LSL{
+            "LSL",
+            "solai Lesotho",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ mua{
             "MWK",
             "Solai Malawi",
         }
+        MZM{
+            "MZM",
+            "Solai Mozambika",
+        }
         NAD{
             "NAD",
             "Solai Namibiya",
@@ -119,13 +160,37 @@ mua{
             "SAR",
             "Solai Saudiya",
         }
+        SCR{
+            "SCR",
+            "Solai Saichel",
+        }
         SDG{
             "SDG",
             "Solai Sudaŋ ma dii ne dinar",
         }
+        SDP{
+            "SDP",
+            "Solai Sudaŋ ma dii ne livre",
+        }
+        SHP{
+            "SHP",
+            "Solai Helena",
+        }
         SLL{
             "SLL",
             "solai Sierra leonǝ",
+        }
+        SOS{
+            "SOS",
+            "Solai Somaliya",
+        }
+        STD{
+            "STD",
+            "Solai Sao Tome",
+        }
+        SZL{
+            "SZL",
+            "solai Swaziland",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ mua{
             "ZAR",
             "Solai Africa nekǝsǝŋ",
         }
+        ZMK{
+            "ZMK",
+            "Solai Zambiya (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Solai Zambiya",
         }
+        ZWD{
+            "ZWD",
+            "Solai Zimbabwe",
+        }
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.14"}
 }

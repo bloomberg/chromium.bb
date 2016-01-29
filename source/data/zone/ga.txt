@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ga.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ga.xml
- */
 ga{
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -687,11 +684,11 @@ ga{
         "Asia:Calcutta"{
             ec{"Calcúta"}
         }
+        "Asia:Chita"{
+            ec{"Chita"}
+        }
         "Asia:Choibalsan"{
             ec{"Choibalsan"}
-        }
-        "Asia:Chongqing"{
-            ec{"Chongqing"}
         }
         "Asia:Colombo"{
             ec{"Colombo"}
@@ -713,9 +710,6 @@ ga{
         }
         "Asia:Gaza"{
             ec{"Gaza"}
-        }
-        "Asia:Harbin"{
-            ec{"Harbin"}
         }
         "Asia:Hebron"{
             ec{"Heabrón"}
@@ -746,9 +740,6 @@ ga{
         }
         "Asia:Karachi"{
             ec{"Karachi"}
-        }
-        "Asia:Kashgar"{
-            ec{"Kashgar"}
         }
         "Asia:Katmandu"{
             ec{"Kathmandu"}
@@ -836,6 +827,9 @@ ga{
         }
         "Asia:Singapore"{
             ec{"Singeapór"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"Srednekolymsk"}
         }
         "Asia:Taipei"{
             ec{"Taipei"}
@@ -1159,6 +1153,9 @@ ga{
         "Pacific:Auckland"{
             ec{"Auckland"}
         }
+        "Pacific:Bougainville"{
+            ec{"Bougainville"}
+        }
         "Pacific:Chatham"{
             ec{"Chatham"}
         }
@@ -1329,6 +1326,11 @@ ga{
             lg{"Am Anadyr"}
             ls{"Am Caighdeánach Anadyr"}
         }
+        "meta:Apia"{
+            ld{"Am Samhraidh Apia"}
+            lg{"Am Apia"}
+            ls{"Am Caighdeánach Apia"}
+        }
         "meta:Aqtau"{
             ld{"Am Samhraidh Aqtau"}
             lg{"Am Aqtau"}
@@ -1497,6 +1499,9 @@ ga{
             sd{"EEST"}
             sg{"EET"}
             ss{"EET"}
+        }
+        "meta:Europe_Further_Eastern"{
+            ls{"Am Chianoirthear na hEorpa"}
         }
         "meta:Europe_Western"{
             ld{"Am Samhraidh Iarthar na hEorpa"}

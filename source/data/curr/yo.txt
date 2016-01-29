@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/yo.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/yo.xml
- */
 yo{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ yo{
         BHD{
             "BHD",
             "Dina ti Orílẹ́ède Báránì",
+        }
+        BIF{
+            "BIF",
+            "Faransi ti Orílẹ́ède Bùùrúndì",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ yo{
             "CN¥",
             "Reminibi ti Orílẹ́ède ṣáínà",
         }
+        CVE{
+            "CVE",
+            "Kabofediano ti Orílẹ́ède Esuodo",
+        }
+        DJF{
+            "DJF",
+            "Faransi ti Orílẹ́ède Dibouti",
+        }
         DZD{
             "DZD",
             "Dina ti Orílẹ́ède Àlùgèríánì",
@@ -54,6 +63,10 @@ yo{
         EGP{
             "EGP",
             "pọọn ti Orílẹ́ède Egipiti",
+        }
+        ERN{
+            "ERN",
+            "Nakifa ti Orílẹ́ède Eriteriani",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ yo{
             "£",
             "Pọọn ti Orílẹ́ède Bírítísì",
         }
+        GHC{
+            "GHC",
+            "ṣidi ti Orílẹ́ède Gana",
+        }
+        GMD{
+            "GMD",
+            "Dalasi ti Orílẹ́ède Gamibia",
+        }
+        GNS{
+            "GNS",
+            "Faransi ti Orílẹ́ède Gini",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Rupi ti Orílẹ́ède Indina",
         }
         JPY{
@@ -78,6 +103,18 @@ yo{
         KES{
             "KES",
             "ṣiili ti Orílẹ́ède Kenya",
+        }
+        KMF{
+            "KMF",
+            "Faransi ti Orílẹ́ède ṣomoriani",
+        }
+        LRD{
+            "LRD",
+            "Dọla ti Orílẹ́ède Liberia",
+        }
+        LSL{
+            "LSL",
+            "Loti ti Orílẹ́ède Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ yo{
             "MWK",
             "Kaṣa ti Orílẹ́ède Malawi",
         }
+        MZM{
+            "MZM",
+            "Metika ti Orílẹ́ède Mosamibiki",
+        }
         NAD{
             "NAD",
             "Dọla ti Orílẹ́ède Namibia",
@@ -119,13 +160,37 @@ yo{
             "SAR",
             "Riya ti Orílẹ́ède Saudi",
         }
+        SCR{
+            "SCR",
+            "Rupi ti Orílẹ́ède Sayiselesi",
+        }
         SDG{
             "SDG",
             "Dina ti Orílẹ́ède Sudani",
         }
+        SDP{
+            "SDP",
+            "Pọọun ti Orílẹ́ède Sudani",
+        }
+        SHP{
+            "SHP",
+            "Pọọun ti Orílẹ́ède ̣Elena",
+        }
         SLL{
             "SLL",
             "Lioni",
+        }
+        SOS{
+            "SOS",
+            "Sile ti Orílẹ́ède Somali",
+        }
+        STD{
+            "STD",
+            "Dobira ti Orílẹ́ède Sao tome Ati Pirisipe",
+        }
+        SZL{
+            "SZL",
+            "Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ yo{
             "ZAR",
             "Randi ti Orílẹ́ède Ariwa Afirika",
         }
+        ZMK{
+            "ZMK",
+            "Kawaṣa ti Orílẹ́ède Saabia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kawaṣa ti Orílẹ́ède Saabia",
         }
+        ZWD{
+            "ZWD",
+            "Dọla ti Orílẹ́ède Siibabuwe",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.80"}
 }

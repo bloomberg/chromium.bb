@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/da.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/da.xml
- */
 da{
-    Version{"2.1.9.62"}
+    Version{"2.1.19.44"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -687,11 +684,11 @@ da{
         "Asia:Calcutta"{
             ec{"Kolkata"}
         }
+        "Asia:Chita"{
+            ec{"Chita"}
+        }
         "Asia:Choibalsan"{
             ec{"Choibalsan"}
-        }
-        "Asia:Chongqing"{
-            ec{"Chongqing"}
         }
         "Asia:Colombo"{
             ec{"Colombo"}
@@ -713,9 +710,6 @@ da{
         }
         "Asia:Gaza"{
             ec{"Gaza"}
-        }
-        "Asia:Harbin"{
-            ec{"Harbin"}
         }
         "Asia:Hebron"{
             ec{"Hebron"}
@@ -746,9 +740,6 @@ da{
         }
         "Asia:Karachi"{
             ec{"Karachi"}
-        }
-        "Asia:Kashgar"{
-            ec{"Kashgar"}
         }
         "Asia:Katmandu"{
             ec{"Katmandu"}
@@ -820,7 +811,7 @@ da{
             ec{"Riyadh"}
         }
         "Asia:Saigon"{
-            ec{"Ho Chi Minh-byen"}
+            ec{"Ho Chi Minh City"}
         }
         "Asia:Sakhalin"{
             ec{"Sakhalin"}
@@ -836,6 +827,9 @@ da{
         }
         "Asia:Singapore"{
             ec{"Singapore"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"Srednekolymsk"}
         }
         "Asia:Taipei"{
             ec{"Taipei"}
@@ -1156,6 +1150,9 @@ da{
         }
         "Pacific:Auckland"{
             ec{"Auckland"}
+        }
+        "Pacific:Bougainville"{
+            ec{"Bougainville"}
         }
         "Pacific:Chatham"{
             ec{"Chatham"}
@@ -1733,7 +1730,7 @@ da{
             ls{"Niue-tid"}
         }
         "meta:Norfolk"{
-            ls{"Norfolkøen-tid"}
+            ls{"Norfolk Island-tid"}
         }
         "meta:Noronha"{
             ld{"Fernando de Noronha-sommertid"}
@@ -1857,7 +1854,7 @@ da{
             ls{"Tongansk normaltid"}
         }
         "meta:Truk"{
-            ls{"Truk-tid"}
+            ls{"Chuuk-tid"}
         }
         "meta:Turkmenistan"{
             ld{"Turkmensk sommertid"}
@@ -1918,7 +1915,7 @@ da{
         gmtFormat{"GMT{0}"}
         gmtZeroFormat{"GMT"}
         hourFormat{"+HH.mm;-HH.mm"}
-        regionFormat{"Tidszone for {0}"}
+        regionFormat{"{0}"}
         regionFormatDaylight{"{0} (+1)"}
         regionFormatStandard{"{0} (+0)"}
     }

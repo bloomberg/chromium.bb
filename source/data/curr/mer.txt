@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/mer.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/mer.xml
- */
 mer{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ mer{
         BHD{
             "BHD",
             "Dinari ya Baharini",
+        }
+        BIF{
+            "BIF",
+            "Faranga ya Burundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ mer{
             "CN¥",
             "Yuan Renminbi ya China",
         }
+        CVE{
+            "CVE",
+            "Eskudo ya Kepuvede",
+        }
+        DJF{
+            "DJF",
+            "Faranga ya Jibuti",
+        }
         DZD{
             "DZD",
             "Dinari ya Anjĩria",
@@ -54,6 +63,10 @@ mer{
         EGP{
             "EGP",
             "Paũndi ya Misri",
+        }
+        ERN{
+            "ERN",
+            "Nakfa ya Eritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ mer{
             "£",
             "Paũndi ya Ngeretha",
         }
+        GHC{
+            "GHC",
+            "Sedi ya Ghana",
+        }
+        GMD{
+            "GMD",
+            "Dalasi ya Gambia",
+        }
+        GNS{
+            "GNS",
+            "Faranga ya Gine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Rupia ya India",
         }
         JPY{
@@ -78,6 +103,18 @@ mer{
         KES{
             "Ksh",
             "Shilingi ya Kenya",
+        }
+        KMF{
+            "KMF",
+            "Faranga ya Komoro",
+        }
+        LRD{
+            "LRD",
+            "Dola ya Liberia",
+        }
+        LSL{
+            "LSL",
+            "Loti ya Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ mer{
             "MWK",
             "Kwacha ya Malawi",
         }
+        MZM{
+            "MZM",
+            "Metikali ya Mozambĩkĩ",
+        }
         NAD{
             "NAD",
             "Dola ya Namibia",
@@ -119,13 +160,33 @@ mer{
             "SAR",
             "Riyal ya Saudi Arĩbia",
         }
+        SCR{
+            "SCR",
+            "Rupia ya Shelisheli",
+        }
         SDG{
             "SDG",
             "Paũndi ya Sudani",
         }
+        SHP{
+            "SHP",
+            "Paũndi ya Santahelena",
+        }
         SLL{
             "SLL",
             "Leoni",
+        }
+        SOS{
+            "SOS",
+            "Shilingi ya Somalia",
+        }
+        STD{
+            "STD",
+            "Dobra ya Sao Tome na Principe",
+        }
+        SZL{
+            "SZL",
+            "Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ mer{
             "ZAR",
             "Randi ya Afrika ya Sauthi",
         }
+        ZMK{
+            "ZMK",
+            "Kwacha ya Zambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
         }
+        ZWD{
+            "ZWD",
+            "Dola ya Zimbabwe",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/tr.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/tr.xml
- */
 tr{
     Countries{
+        001{"Dünya"}
+        002{"Afrika"}
+        003{"Kuzey Amerika"}
+        005{"Güney Amerika"}
+        009{"Okyanusya"}
+        011{"Batı Afrika"}
+        013{"Orta Amerika"}
+        014{"Doğu Afrika"}
+        015{"Kuzey Afrika"}
+        017{"Orta Afrika"}
+        018{"Afrika’nın Güneyi"}
+        019{"Amerika"}
+        021{"Amerika’nın Kuzeyi"}
+        029{"Karayipler"}
+        030{"Doğu Asya"}
+        034{"Güney Asya"}
+        035{"Güneydoğu Asya"}
+        039{"Güney Avrupa"}
+        053{"Avustralasya"}
+        054{"Melanezya"}
+        057{"Mikronezya Bölgesi"}
+        061{"Polinezya"}
+        142{"Asya"}
+        143{"Orta Asya"}
+        145{"Batı Asya"}
+        150{"Avrupa"}
+        151{"Doğu Avrupa"}
+        154{"Kuzey Avrupa"}
+        155{"Batı Avrupa"}
         419{"Latin Amerika"}
         AC{"Ascension Adası"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ tr{
         GU{"Guam"}
         GW{"Gine-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Çin Hong Kong ÖYB"}
         HM{"Heard Adası ve McDonald Adaları"}
         HN{"Honduras"}
         HR{"Hırvatistan"}
@@ -166,7 +192,7 @@ tr{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Moğolistan"}
-        MO{"Makao"}
+        MO{"Çin Makao ÖYB"}
         MP{"Kuzey Mariana Adaları"}
         MQ{"Martinik"}
         MR{"Moritanya"}
@@ -201,7 +227,7 @@ tr{
         PM{"Saint Pierre ve Miquelon"}
         PN{"Pitcairn Adaları"}
         PR{"Porto Riko"}
-        PS{"Filistin"}
+        PS{"Filistin Bölgeleri"}
         PT{"Portekiz"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,6 +299,13 @@ tr{
         ZW{"Zimbabve"}
         ZZ{"Bilinmeyen Bölge"}
     }
+    Countries%short{
+        GB{"BK"}
+        HK{"Hong Kong"}
+        MO{"Makao"}
+        PS{"Filistin"}
+        US{"ABD"}
+    }
     Countries%variant{
         CD{"Demokratik Kongo Cumhuriyeti"}
         CG{"Kongo Cumhuriyeti"}
@@ -280,9 +313,5 @@ tr{
         MK{"Makedonya (EYMC)"}
         TL{"Doğu Timor"}
     }
-    CountriesShort{
-        GB{"BK"}
-        US{"ABD"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
 }

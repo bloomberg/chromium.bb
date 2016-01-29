@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/agq.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/agq.xml
- */
 agq{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ agq{
         BHD{
             "BHD",
             "Dinà è Balae",
+        }
+        BIF{
+            "BIF",
+            "Fàlâŋ è Bùlundì",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ agq{
             "CN¥",
             "Yùwân Lèmembi è Chaenî",
         }
+        CVE{
+            "CVE",
+            "Kàbòvàdianù è Èsùkudò",
+        }
+        DJF{
+            "DJF",
+            "Fàlâŋ è Dzìbutì",
+        }
         DZD{
             "DZD",
             "Dinà è Àdzɛlìa",
@@ -54,6 +63,10 @@ agq{
         EGP{
             "EGP",
             "Bɔ̀ŋ è Edzì",
+        }
+        ERN{
+            "ERN",
+            "Nakafa è Èletɨ̀làe",
         }
         ETB{
             "ETB",
@@ -65,10 +78,22 @@ agq{
         }
         GBP{
             "£",
-            "Bɔ̀ŋ Sɨ̀telè è Bèletì",
+            "Bɔ̀ŋ è Bèletì",
+        }
+        GHC{
+            "GHC",
+            "Sɛ̀di è Gaanà",
+        }
+        GMD{
+            "GMD",
+            "Dàlasì è Gambìa",
+        }
+        GNS{
+            "GNS",
+            "Fàlâŋ è Ginè",
         }
         INR{
-            "Rs.",
+            "₹",
             "Lukpì è Endìa",
         }
         JPY{
@@ -78,6 +103,18 @@ agq{
         KES{
             "KES",
             "Shwɨlà tɨ Kenyà",
+        }
+        KMF{
+            "KMF",
+            "Fàlâŋ è Komolìa",
+        }
+        LRD{
+            "LRD",
+            "Dɔlà Làebɛlìa",
+        }
+        LSL{
+            "LSL",
+            "Lɔtì Lèsutù",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ agq{
             "MWK",
             "Kwachà è Màlawè",
         }
+        MZM{
+            "MZM",
+            "Mètikà è Mùzàmbî",
+        }
         NAD{
             "NAD",
             "Dɔlà è Nàmibìa",
@@ -119,13 +160,33 @@ agq{
             "SAR",
             "Leyà è Sàwudì",
         }
+        SCR{
+            "SCR",
+            "Lukpìi è Sɛchɛ̀lɛ̀",
+        }
         SDG{
             "SDG",
             "Bɔ̀ŋ è Sùdànê",
         }
+        SHP{
+            "SHP",
+            "Bɔ̀ŋ è Sɛ̀n Èlenà",
+        }
         SLL{
             "SLL",
             "Lyɔ̂ŋ",
+        }
+        SOS{
+            "SOS",
+            "Shwɨlà è Sùmalìa",
+        }
+        STD{
+            "STD",
+            "Dɔbàlà è Sàwu Tɔ̀me à Pèlènsipè",
+        }
+        SZL{
+            "SZL",
+            "Lèlàŋgenè",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ agq{
             "ZAR",
             "Lân è Afɨlekà ghɨ Emàm ghò",
         }
+        ZMK{
+            "ZMK",
+            "Kwachà è Zambìa (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwachà è Zambìa",
         }
+        ZWD{
+            "ZWD",
+            "Dɔlà è Zìmbagbɛ̀",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

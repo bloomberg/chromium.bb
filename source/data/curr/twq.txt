@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/twq.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/twq.xml
- */
 twq{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ twq{
         BHD{
             "BHD",
             "Bahareen Dinar",
+        }
+        BIF{
+            "BIF",
+            "Burundi Fraŋ",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ twq{
             "CN¥",
             "Sinwa Yuan Renminbi",
         }
+        CVE{
+            "CVE",
+            "Kapuver Escudo",
+        }
+        DJF{
+            "DJF",
+            "Jibuuti Fraŋ",
+        }
         DZD{
             "DZD",
             "Alžeeri Dinar",
@@ -54,6 +63,10 @@ twq{
         EGP{
             "EGP",
             "Misra Pund",
+        }
+        ERN{
+            "ERN",
+            "Eritree Nafka",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ twq{
             "£",
             "Britin Pund",
         }
+        GHC{
+            "GHC",
+            "Gaana Šiidi",
+        }
+        GMD{
+            "GMD",
+            "Gambi Dalasi",
+        }
+        GNS{
+            "GNS",
+            "Ginee Fraŋ",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Indu Rupii",
         }
         JPY{
@@ -78,6 +103,18 @@ twq{
         KES{
             "KES",
             "Keeniya Šiiliŋ",
+        }
+        KMF{
+            "KMF",
+            "Komoor Fraŋ",
+        }
+        LRD{
+            "LRD",
+            "Liberia Dollar",
+        }
+        LSL{
+            "LSL",
+            "Leezoto Loti",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ twq{
             "MWK",
             "Malaawi Kwaca",
         }
+        MZM{
+            "MZM",
+            "Mozambik Metikal",
+        }
         NAD{
             "NAD",
             "Naamibi Dollar",
@@ -119,13 +160,37 @@ twq{
             "SAR",
             "Saudiya Riyal",
         }
+        SCR{
+            "SCR",
+            "Seešel Rupii",
+        }
         SDG{
             "SDG",
             "Suudaŋ Dinar",
         }
+        SDP{
+            "SDP",
+            "Suudaŋ Pund",
+        }
+        SHP{
+            "SHP",
+            "Seŋ Helena Fraŋ",
+        }
         SLL{
             "SLL",
             "Leeon",
+        }
+        SOS{
+            "SOS",
+            "Somaali Šiiliŋ",
+        }
+        STD{
+            "STD",
+            "Sao Tome nda Prinsipe Dobra",
+        }
+        SZL{
+            "SZL",
+            "Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ twq{
             "ZAR",
             "Hawasa Afriki Rand",
         }
+        ZMK{
+            "ZMK",
+            "Zambi Kwaca (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Zambi Kwaca",
         }
+        ZWD{
+            "ZWD",
+            "Zimbabwe Dollar",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/likelySubtags.xml
@@ -12,11 +12,13 @@ likelySubtags:table(nofallback){
     abr{"abr_Latn_GH"}
     ace{"ace_Latn_ID"}
     ach{"ach_Latn_UG"}
+    ada{"ada_Latn_GH"}
     ady{"ady_Cyrl_RU"}
     ae{"ae_Avst_IR"}
     aeb{"aeb_Arab_TN"}
     af{"af_Latn_ZA"}
     agq{"agq_Latn_CM"}
+    aho{"aho_Ahom_IN"}
     ak{"ak_Latn_GH"}
     akk{"akk_Xsux_IQ"}
     aln{"aln_Latn_XK"}
@@ -35,6 +37,7 @@ likelySubtags:table(nofallback){
     arz{"arz_Arab_EG"}
     as{"as_Beng_IN"}
     asa{"asa_Latn_TZ"}
+    ase{"ase_Sgnw_US"}
     ast{"ast_Latn_ES"}
     atj{"atj_Latn_CA"}
     av{"av_Cyrl_RU"}
@@ -42,9 +45,9 @@ likelySubtags:table(nofallback){
     ay{"ay_Latn_BO"}
     az{"az_Latn_AZ"}
     az_Arab{"az_Arab_IR"}
+    az_IQ{"az_Arab_IQ"}
     az_IR{"az_Arab_IR"}
     az_RU{"az_Cyrl_RU"}
-    azb{"azb_Arab_IR"}
     ba{"ba_Cyrl_RU"}
     bal{"bal_Arab_PK"}
     ban{"ban_Latn_ID"}
@@ -56,6 +59,7 @@ likelySubtags:table(nofallback){
     bbj{"bbj_Latn_CM"}
     bci{"bci_Latn_CI"}
     be{"be_Cyrl_BY"}
+    bej{"bej_Arab_SD"}
     bem{"bem_Latn_ZM"}
     bew{"bew_Latn_ID"}
     bez{"bez_Latn_TZ"}
@@ -65,6 +69,7 @@ likelySubtags:table(nofallback){
     bfy{"bfy_Deva_IN"}
     bg{"bg_Cyrl_BG"}
     bgc{"bgc_Deva_IN"}
+    bgn{"bgn_Arab_PK"}
     bgx{"bgx_Grek_TR"}
     bh{"bh_Kthi_IN"}
     bhb{"bhb_Deva_IN"}
@@ -113,6 +118,7 @@ likelySubtags:table(nofallback){
     ch{"ch_Latn_GU"}
     chk{"chk_Latn_FM"}
     chm{"chm_Cyrl_RU"}
+    cho{"cho_Latn_US"}
     chp{"chp_Latn_CA"}
     chr{"chr_Cher_US"}
     cja{"cja_Arab_KH"}
@@ -136,6 +142,7 @@ likelySubtags:table(nofallback){
     cv{"cv_Cyrl_RU"}
     cy{"cy_Latn_GB"}
     da{"da_Latn_DK"}
+    dak{"dak_Latn_US"}
     dar{"dar_Cyrl_RU"}
     dav{"dav_Latn_KE"}
     dcc{"dcc_Arab_IN"}
@@ -175,6 +182,7 @@ likelySubtags:table(nofallback){
     ff{"ff_Latn_SN"}
     ffm{"ffm_Latn_ML"}
     fi{"fi_Latn_FI"}
+    fia{"fia_Arab_SD"}
     fil{"fil_Latn_PH"}
     fit{"fit_Latn_SE"}
     fj{"fj_Latn_FJ"}
@@ -189,11 +197,13 @@ likelySubtags:table(nofallback){
     fuq{"fuq_Latn_NE"}
     fur{"fur_Latn_IT"}
     fuv{"fuv_Latn_NG"}
+    fvr{"fvr_Latn_SD"}
     fy{"fy_Latn_NL"}
     ga{"ga_Latn_IE"}
     gaa{"gaa_Latn_GH"}
     gag{"gag_Latn_MD"}
     gan{"gan_Hans_CN"}
+    gay{"gay_Latn_ID"}
     gbm{"gbm_Deva_IN"}
     gbz{"gbz_Arab_IR"}
     gcr{"gcr_Latn_GF"}
@@ -231,8 +241,9 @@ likelySubtags:table(nofallback){
     haz{"haz_Arab_AF"}
     he{"he_Hebr_IL"}
     hi{"hi_Deva_IN"}
-    hif{"hif_Deva_FJ"}
+    hif{"hif_Latn_FJ"}
     hil{"hil_Latn_PH"}
+    hlu{"hlu_Hluw_TR"}
     hmd{"hmd_Plrd_CN"}
     hnd{"hnd_Arab_PK"}
     hne{"hne_Deva_IN"}
@@ -248,7 +259,9 @@ likelySubtags:table(nofallback){
     ht{"ht_Latn_HT"}
     hu{"hu_Latn_HU"}
     hy{"hy_Armn_AM"}
+    hz{"hz_Latn_NA"}
     ia{"ia_Latn_FR"}
+    iba{"iba_Latn_MY"}
     ibb{"ibb_Latn_NG"}
     id{"id_Latn_ID"}
     ig{"ig_Latn_NG"}
@@ -266,6 +279,7 @@ likelySubtags:table(nofallback){
     ja{"ja_Jpan_JP"}
     jam{"jam_Latn_JM"}
     jgo{"jgo_Latn_CM"}
+    ji{"ji_Hebr_UA"}
     jmc{"jmc_Latn_TZ"}
     jml{"jml_Deva_NP"}
     jut{"jut_Latn_DK"}
@@ -274,6 +288,7 @@ likelySubtags:table(nofallback){
     ka{"ka_Geor_GE"}
     kaa{"kaa_Cyrl_UZ"}
     kab{"kab_Latn_DZ"}
+    kac{"kac_Latn_MM"}
     kaj{"kaj_Latn_NG"}
     kam{"kam_Latn_KE"}
     kao{"kao_Latn_ML"}
@@ -328,7 +343,6 @@ likelySubtags:table(nofallback){
     ksh{"ksh_Latn_DE"}
     ku{"ku_Latn_TR"}
     ku_Arab{"ku_Arab_IQ"}
-    ku_IR{"ku_Arab_IR"}
     ku_LB{"ku_Arab_LB"}
     kum{"kum_Cyrl_RU"}
     kv{"kv_Cyrl_RU"}
@@ -406,8 +420,10 @@ likelySubtags:table(nofallback){
     mh{"mh_Latn_MH"}
     mi{"mi_Latn_NZ"}
     min{"min_Latn_ID"}
+    mis{"mis_Hatr_IQ"}
     mk{"mk_Cyrl_MK"}
     ml{"ml_Mlym_IN"}
+    mls{"mls_Latn_SD"}
     mn{"mn_Cyrl_MN"}
     mn_CN{"mn_Mong_CN"}
     mn_Mong{"mn_Mong_CN"}
@@ -426,6 +442,7 @@ likelySubtags:table(nofallback){
     mt{"mt_Latn_MT"}
     mtr{"mtr_Deva_IN"}
     mua{"mua_Latn_CM"}
+    mus{"mus_Latn_US"}
     mvy{"mvy_Arab_PK"}
     mwk{"mwk_Latn_ML"}
     mwr{"mwr_Deva_IN"}
@@ -466,12 +483,13 @@ likelySubtags:table(nofallback){
     nr{"nr_Latn_ZA"}
     nsk{"nsk_Cans_CA"}
     nso{"nso_Latn_ZA"}
-    nus{"nus_Latn_SD"}
+    nus{"nus_Latn_SS"}
     nv{"nv_Latn_US"}
     nxq{"nxq_Latn_CN"}
     ny{"ny_Latn_MW"}
     nym{"nym_Latn_TZ"}
     nyn{"nyn_Latn_UG"}
+    nzi{"nzi_Latn_GH"}
     oc{"oc_Latn_FR"}
     om{"om_Latn_ET"}
     or{"or_Orya_IN"}
@@ -508,7 +526,7 @@ likelySubtags:table(nofallback){
     qu{"qu_Latn_PE"}
     quc{"quc_Latn_GT"}
     qug{"qug_Latn_EC"}
-    raj{"raj_Latn_IN"}
+    raj{"raj_Deva_IN"}
     rcf{"rcf_Latn_RE"}
     rej{"rej_Latn_ID"}
     rgn{"rgn_Latn_IT"}
@@ -552,6 +570,7 @@ likelySubtags:table(nofallback){
     sd_Khoj{"sd_Khoj_IN"}
     sd_Sind{"sd_Sind_IN"}
     sdc{"sdc_Latn_IT"}
+    sdh{"sdh_Arab_IR"}
     se{"se_Latn_NO"}
     sef{"sef_Latn_CI"}
     seh{"seh_Latn_MZ"}
@@ -560,7 +579,6 @@ likelySubtags:table(nofallback){
     sg{"sg_Latn_CF"}
     sga{"sga_Ogam_IE"}
     sgs{"sgs_Latn_LT"}
-    sh{"sr_Latn_RS"}
     shi{"shi_Tfng_MA"}
     shn{"shn_Mymr_MM"}
     si{"si_Sinh_LK"}
@@ -601,6 +619,7 @@ likelySubtags:table(nofallback){
     sw{"sw_Latn_TZ"}
     swb{"swb_Arab_YT"}
     swc{"swc_Latn_CD"}
+    swg{"swg_Latn_DE"}
     swv{"swv_Deva_IN"}
     sxn{"sxn_Latn_ID"}
     syl{"syl_Beng_BD"}
@@ -636,6 +655,7 @@ likelySubtags:table(nofallback){
     tmh{"tmh_Latn_NE"}
     tn{"tn_Latn_ZA"}
     to{"to_Latn_TO"}
+    tog{"tog_Latn_MW"}
     tpi{"tpi_Latn_PG"}
     tr{"tr_Latn_TR"}
     tru{"tru_Latn_TR"}
@@ -671,7 +691,7 @@ likelySubtags:table(nofallback){
     und_009{"en_Latn_AU"}
     und_011{"en_Latn_NG"}
     und_013{"es_Latn_MX"}
-    und_014{"en_Latn_KE"}
+    und_014{"sw_Latn_TZ"}
     und_015{"ar_Arab_EG"}
     und_017{"sw_Latn_CD"}
     und_018{"en_Latn_ZA"}
@@ -684,7 +704,7 @@ likelySubtags:table(nofallback){
     und_039{"it_Latn_IT"}
     und_053{"en_Latn_AU"}
     und_054{"en_Latn_PG"}
-    und_057{"en_Latn_KI"}
+    und_057{"en_Latn_GU"}
     und_061{"sm_Latn_WS"}
     und_142{"zh_Hans_CN"}
     und_143{"uz_Latn_UZ"}
@@ -708,6 +728,7 @@ likelySubtags:table(nofallback){
     und_AX{"sv_Latn_AX"}
     und_AZ{"az_Latn_AZ"}
     und_Aghb{"lez_Aghb_RU"}
+    und_Ahom{"aho_Ahom_IN"}
     und_Arab{"ar_Arab_EG"}
     und_Arab_CC{"ms_Arab_CC"}
     und_Arab_CN{"ug_Arab_CN"}
@@ -719,9 +740,9 @@ likelySubtags:table(nofallback){
     und_Arab_MU{"ur_Arab_MU"}
     und_Arab_NG{"ha_Arab_NG"}
     und_Arab_PK{"ur_Arab_PK"}
-    und_Arab_SN{"wo_Arab_SN"}
     und_Arab_TH{"mfa_Arab_TH"}
     und_Arab_TJ{"fa_Arab_TJ"}
+    und_Arab_TR{"az_Arab_TR"}
     und_Arab_YT{"swb_Arab_YT"}
     und_Armi{"arc_Armi_IR"}
     und_Armn{"hy_Armn_AM"}
@@ -747,7 +768,6 @@ likelySubtags:table(nofallback){
     und_Bass{"bsq_Bass_LR"}
     und_Batk{"bbc_Batk_ID"}
     und_Beng{"bn_Beng_BD"}
-    und_Beng_IN{"bn_Beng_IN"}
     und_Bopo{"zh_Bopo_TW"}
     und_Brah{"pka_Brah_IN"}
     und_Brai{"fr_Brai_FR"}
@@ -781,7 +801,6 @@ likelySubtags:table(nofallback){
     und_Cyrl_BA{"sr_Cyrl_BA"}
     und_Cyrl_GE{"ab_Cyrl_GE"}
     und_Cyrl_GR{"mk_Cyrl_GR"}
-    und_Cyrl_KZ{"kk_Cyrl_KZ"}
     und_Cyrl_MD{"uk_Cyrl_MD"}
     und_Cyrl_PL{"be_Cyrl_PL"}
     und_Cyrl_RO{"bg_Cyrl_RO"}
@@ -811,10 +830,7 @@ likelySubtags:table(nofallback){
     und_Egyp{"egy_Egyp_EG"}
     und_Elba{"sq_Elba_AL"}
     und_Ethi{"am_Ethi_ET"}
-    und_Ethi_ER{"ti_Ethi_ER"}
     und_FI{"fi_Latn_FI"}
-    und_FJ{"fj_Latn_FJ"}
-    und_FM{"chk_Latn_FM"}
     und_FO{"fo_Latn_FO"}
     und_FR{"fr_Latn_FR"}
     und_GA{"fr_Latn_GA"}
@@ -828,7 +844,6 @@ likelySubtags:table(nofallback){
     und_GR{"el_Grek_GR"}
     und_GS{"und_Latn_GS"}
     und_GT{"es_Latn_GT"}
-    und_GU{"ch_Latn_GU"}
     und_GW{"pt_Latn_GW"}
     und_Geor{"ka_Geor_GE"}
     und_Glag{"cu_Glag_BG"}
@@ -849,6 +864,7 @@ likelySubtags:table(nofallback){
     und_Hano{"hnn_Hano_PH"}
     und_Hans{"zh_Hans_CN"}
     und_Hant{"zh_Hant_TW"}
+    und_Hatr{"mis_Hatr_IQ"}
     und_Hebr{"he_Hebr_IL"}
     und_Hebr_CA{"yi_Hebr_CA"}
     und_Hebr_GB{"yi_Hebr_GB"}
@@ -856,7 +872,9 @@ likelySubtags:table(nofallback){
     und_Hebr_UA{"yi_Hebr_UA"}
     und_Hebr_US{"yi_Hebr_US"}
     und_Hira{"ja_Hira_JP"}
+    und_Hluw{"hlu_Hluw_TR"}
     und_Hmng{"hnj_Hmng_LA"}
+    und_Hung{"hu_Hung_HU"}
     und_IC{"es_Latn_IC"}
     und_ID{"id_Latn_ID"}
     und_IL{"he_Hebr_IL"}
@@ -870,6 +888,7 @@ likelySubtags:table(nofallback){
     und_JP{"ja_Jpan_JP"}
     und_Java{"jv_Java_ID"}
     und_Jpan{"ja_Jpan_JP"}
+    und_KE{"sw_Latn_KE"}
     und_KG{"ky_Cyrl_KG"}
     und_KH{"km_Khmr_KH"}
     und_KM{"ar_Arab_KM"}
@@ -898,34 +917,23 @@ likelySubtags:table(nofallback){
     und_Laoo{"lo_Laoo_LA"}
     und_Latn_AF{"tk_Latn_AF"}
     und_Latn_AM{"ku_Latn_AM"}
-    und_Latn_BG{"tr_Latn_BG"}
     und_Latn_CN{"za_Latn_CN"}
     und_Latn_CY{"tr_Latn_CY"}
     und_Latn_DZ{"fr_Latn_DZ"}
-    und_Latn_ES{"es_Latn_ES"}
     und_Latn_ET{"en_Latn_ET"}
-    und_Latn_GB{"en_Latn_GB"}
     und_Latn_GE{"ku_Latn_GE"}
-    und_Latn_GH{"ak_Latn_GH"}
-    und_Latn_GR{"tr_Latn_GR"}
-    und_Latn_ID{"id_Latn_ID"}
-    und_Latn_IL{"ro_Latn_IL"}
     und_Latn_IR{"tk_Latn_IR"}
-    und_Latn_IT{"it_Latn_IT"}
     und_Latn_KM{"fr_Latn_KM"}
-    und_Latn_KZ{"de_Latn_KZ"}
-    und_Latn_LB{"fr_Latn_LB"}
     und_Latn_MA{"fr_Latn_MA"}
     und_Latn_MK{"sq_Latn_MK"}
+    und_Latn_MM{"kac_Latn_MM"}
     und_Latn_MO{"pt_Latn_MO"}
     und_Latn_MR{"fr_Latn_MR"}
     und_Latn_RU{"krl_Latn_RU"}
     und_Latn_SY{"fr_Latn_SY"}
     und_Latn_TN{"fr_Latn_TN"}
-    und_Latn_TR{"tr_Latn_TR"}
     und_Latn_TW{"trv_Latn_TW"}
     und_Latn_UA{"pl_Latn_UA"}
-    und_Latn_ZA{"af_Latn_ZA"}
     und_Lepc{"lep_Lepc_IN"}
     und_Limb{"lif_Limb_IN"}
     und_Lina{"lab_Lina_GR"}
@@ -939,7 +947,6 @@ likelySubtags:table(nofallback){
     und_ME{"sr_Latn_ME"}
     und_MF{"fr_Latn_MF"}
     und_MG{"mg_Latn_MG"}
-    und_MH{"mh_Latn_MH"}
     und_MK{"mk_Cyrl_MK"}
     und_ML{"bm_Latn_ML"}
     und_MM{"my_Mymr_MM"}
@@ -964,6 +971,7 @@ likelySubtags:table(nofallback){
     und_Mong{"mn_Mong_CN"}
     und_Mroo{"mru_Mroo_BD"}
     und_Mtei{"mni_Mtei_IN"}
+    und_Mult{"skr_Mult_PK"}
     und_Mymr{"my_Mymr_MM"}
     und_Mymr_IN{"kht_Mymr_IN"}
     und_Mymr_TH{"mnw_Mymr_TH"}
@@ -972,10 +980,8 @@ likelySubtags:table(nofallback){
     und_NE{"ha_Latn_NE"}
     und_NI{"es_Latn_NI"}
     und_NL{"nl_Latn_NL"}
-    und_NO{"no_Latn_NO"}
+    und_NO{"nb_Latn_NO"}
     und_NP{"ne_Deva_NP"}
-    und_NR{"na_Latn_NR"}
-    und_NU{"niu_Latn_NU"}
     und_Narb{"xna_Narb_SA"}
     und_Nbat{"arc_Nbat_JO"}
     und_Nkoo{"man_Nkoo_GN"}
@@ -1021,7 +1027,7 @@ likelySubtags:table(nofallback){
     und_SD{"ar_Arab_SD"}
     und_SE{"sv_Latn_SE"}
     und_SI{"sl_Latn_SI"}
-    und_SJ{"no_Latn_SJ"}
+    und_SJ{"nb_Latn_SJ"}
     und_SK{"sk_Latn_SK"}
     und_SM{"it_Latn_SM"}
     und_SN{"fr_Latn_SN"}
@@ -1033,6 +1039,7 @@ likelySubtags:table(nofallback){
     und_Samr{"smp_Samr_IL"}
     und_Sarb{"xsa_Sarb_YE"}
     und_Saur{"saz_Saur_IN"}
+    und_Sgnw{"ase_Sgnw_US"}
     und_Shaw{"en_Shaw_GB"}
     und_Shrd{"sa_Shrd_IN"}
     und_Sidd{"sa_Sidd_IN"}
@@ -1091,6 +1098,7 @@ likelySubtags:table(nofallback){
     und_YE{"ar_Arab_YE"}
     und_YT{"fr_Latn_YT"}
     und_Yiii{"ii_Yiii_CN"}
+    und_ZW{"sn_Latn_ZW"}
     unr{"unr_Beng_IN"}
     unr_Deva{"unr_Deva_NP"}
     unr_NP{"unr_Deva_NP"}
@@ -1110,15 +1118,18 @@ likelySubtags:table(nofallback){
     vmf{"vmf_Latn_DE"}
     vmw{"vmw_Latn_MZ"}
     vo{"vo_Latn_001"}
+    vot{"vot_Latn_RU"}
     vro{"vro_Latn_EE"}
     vun{"vun_Latn_TZ"}
     wa{"wa_Latn_BE"}
     wae{"wae_Latn_CH"}
     wal{"wal_Ethi_ET"}
     war{"war_Latn_PH"}
+    wbp{"wbp_Latn_AU"}
     wbq{"wbq_Telu_IN"}
     wbr{"wbr_Deva_IN"}
     wls{"wls_Latn_WF"}
+    wni{"wni_Arab_KM"}
     wo{"wo_Latn_SN"}
     wtm{"wtm_Deva_IN"}
     wuu{"wuu_Hans_CN"}
@@ -1145,6 +1156,7 @@ likelySubtags:table(nofallback){
     yrl{"yrl_Latn_BR"}
     yua{"yua_Latn_MX"}
     za{"za_Latn_CN"}
+    zag{"zag_Latn_SD"}
     zdj{"zdj_Arab_KM"}
     zea{"zea_Latn_NL"}
     zgh{"zgh_Tfng_MA"}

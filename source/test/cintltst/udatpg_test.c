@@ -1,7 +1,7 @@
 /*
 *******************************************************************************
 *
-*   Copyright (C) 2007-2014, International Business Machines
+*   Copyright (C) 2007-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
@@ -217,10 +217,10 @@ static void TestUsage() {
     }
     
     /* set append name to hr */
-    udatpg_setAppendItemName( dtpg, UDATPG_HOUR_FIELD, appendItemName, 7 );
+    udatpg_setAppendItemName(dtpg, UDATPG_HOUR_FIELD, appendItemName, 2);
     r = udatpg_getAppendItemName(dtpg, UDATPG_HOUR_FIELD, &length);
     
-    if(length!=7 || 0!=u_memcmp(r, appendItemName, length) || r[length]!=0) { 
+    if(length!=2 || 0!=u_memcmp(r, appendItemName, length) || r[length]!=0) { 
         log_err("udatpg_setAppendItemName did not return the expected string\n");
         return;
     }
@@ -400,12 +400,12 @@ static void TestOptions() {
         { "en", skel_Hmm,  UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_HHcmm   },
         { "en", skel_HHmm, UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_HHcmm   },
         { "en", skel_hhmm, UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_hhcmm_a },
-        { "be", skel_Hmm,  UDATPG_MATCH_NO_OPTIONS,        patn_HHpmm   },
-        { "be", skel_HHmm, UDATPG_MATCH_NO_OPTIONS,        patn_HHpmm   },
-        { "be", skel_hhmm, UDATPG_MATCH_NO_OPTIONS,        patn_hpmm_a  },
-        { "be", skel_Hmm,  UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_Hpmm    },
-        { "be", skel_HHmm, UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_HHpmm   },
-        { "be", skel_hhmm, UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_hhpmm_a },
+        { "da", skel_Hmm,  UDATPG_MATCH_NO_OPTIONS,        patn_HHpmm   },
+        { "da", skel_HHmm, UDATPG_MATCH_NO_OPTIONS,        patn_HHpmm   },
+        { "da", skel_hhmm, UDATPG_MATCH_NO_OPTIONS,        patn_hpmm_a  },
+        { "da", skel_Hmm,  UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_Hpmm    },
+        { "da", skel_HHmm, UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_HHpmm   },
+        { "da", skel_hhmm, UDATPG_MATCH_HOUR_FIELD_LENGTH, patn_hhpmm_a },
     };
 
     int count = sizeof(testData) / sizeof(testData[0]);

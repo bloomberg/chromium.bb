@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- *   Copyright (C) 2005-2012, International Business Machines
+ *   Copyright (C) 2005-2015, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  **********************************************************************
  */
@@ -65,7 +65,7 @@ public:
     UBool match(InputText *textIn, CharsetMatch *results) const;
 };
 
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
 class CharsetRecog_2022KR :public CharsetRecog_2022 {
 public:
     virtual ~CharsetRecog_2022KR();

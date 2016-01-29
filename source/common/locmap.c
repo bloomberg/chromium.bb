@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- *   Copyright (C) 1996-2013, International Business Machines
+ *   Copyright (C) 1996-2014, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  **********************************************************************
  *
@@ -29,7 +29,6 @@
 #include "cstring.h"
 #include "cmemory.h"
 
-#if 0
 #if U_PLATFORM == U_PF_WINDOWS && defined(_MSC_VER) && (_MSC_VER >= 1500)
 /*
  * TODO: It seems like we should widen this to
@@ -40,7 +39,6 @@
  * Or call some Windows function and see what it returns.
  */
 #define USE_WINDOWS_LOCALE_API
-#endif
 #endif
 
 #ifdef USE_WINDOWS_LOCALE_API
@@ -402,6 +400,13 @@ ILCID_POSIX_SUBTABLE(hr) {
     {0x7c1a, "sr"}          /* In CLDR sr is sr_Cyrl. */
 };
 
+ILCID_POSIX_SUBTABLE(hsb) {
+    {0x2E,   "hsb"},
+    {0x042E, "hsb_DE"},
+    {0x082E, "dsb_DE"},
+    {0x7C2E, "dsb"},
+};
+
 ILCID_POSIX_ELEMENT_ARRAY(0x040e, hu, hu_HU)
 ILCID_POSIX_ELEMENT_ARRAY(0x042b, hy, hy_AM)
 ILCID_POSIX_ELEMENT_ARRAY(0x0469, ibb, ibb_NG)
@@ -688,16 +693,6 @@ ILCID_POSIX_SUBTABLE(ve) { /* TODO: Verify the country */
 };
 
 ILCID_POSIX_ELEMENT_ARRAY(0x042a, vi, vi_VN)
-
-ILCID_POSIX_SUBTABLE(wen) {
-    {0x2E,   "wen"},
-    {0x042E, "wen_DE"},
-    {0x042E, "hsb_DE"},
-    {0x082E, "dsb_DE"},
-    {0x7C2E, "dsb"},
-    {0x2E,   "hsb"}
-};
-
 ILCID_POSIX_ELEMENT_ARRAY(0x0488, wo, wo_SN)
 ILCID_POSIX_ELEMENT_ARRAY(0x0434, xh, xh_ZA)
 ILCID_POSIX_ELEMENT_ARRAY(0x043d, yi, yi)
@@ -781,6 +776,7 @@ static const ILcidPosixMap gPosixIDmap[] = {
     ILCID_POSIX_MAP(he),    /*  he  Hebrew (formerly iw)      0x0d */
     ILCID_POSIX_MAP(hi),    /*  hi  Hindi                     0x39 */
     ILCID_POSIX_MAP(hr),    /*  *   Croatian and others       0x1a */
+    ILCID_POSIX_MAP(hsb),   /*  hsb Upper Sorbian             0x2e */
     ILCID_POSIX_MAP(hu),    /*  hu  Hungarian                 0x0e */
     ILCID_POSIX_MAP(hy),    /*  hy  Armenian                  0x2b */
     ILCID_POSIX_MAP(ibb),   /*  ibb Ibibio - Nigeria          0x69 */
@@ -870,7 +866,6 @@ static const ILcidPosixMap gPosixIDmap[] = {
     ILCID_POSIX_MAP(uz),    /*  uz  Uzbek                     0x43 */
     ILCID_POSIX_MAP(ve),    /*  ve  Venda                     0x33 */
     ILCID_POSIX_MAP(vi),    /*  vi  Vietnamese                0x2a */
-    ILCID_POSIX_MAP(wen),   /*  wen Sorbian                   0x2e */
     ILCID_POSIX_MAP(wo),    /*  wo  Wolof                     0x88 */
     ILCID_POSIX_MAP(xh),    /*  xh  Xhosa                     0x34 */
     ILCID_POSIX_MAP(yi),    /*  yi  Yiddish                   0x3d */

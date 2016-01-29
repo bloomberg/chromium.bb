@@ -1,21 +1,15 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/smn.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/smn.xml
- */
 smn{
     AuxExemplarCharacters{"[à ç é è í ñ ń ó ò q ú ü w x æ ø å ã ö]"}
     ExemplarCharacters{"[a â b c č d đ e f g h i j k l m n ŋ o p r s š t u v y z ž ä á]"}
     ExemplarCharactersIndex{"[A Â B C Č D Đ E F G H I J K L M N Ŋ O P R S Š T U V Y Z Ž Ä Á]"}
-    LocaleScript{
-        "Latn",
-    }
     NumberElements{
         latn{
             miscPatterns{
@@ -90,7 +84,7 @@ smn{
             }
         }
     }
-    Version{"2.1.8.11"}
+    Version{"2.1.19.14"}
     calendar{
         gregorian{
             dayNames{
@@ -160,6 +154,12 @@ smn{
                         "2. niälj.",
                         "3. niälj.",
                         "4. niälj.",
+                    }
+                    wide{
+                        "1. niäljádâs",
+                        "2. niäljádâs",
+                        "3. niäljádâs",
+                        "4. niäljádâs",
                     }
                 }
                 stand-alone{

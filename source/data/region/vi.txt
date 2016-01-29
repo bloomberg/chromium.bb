@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/vi.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/vi.xml
- */
 vi{
     Countries{
+        001{"Thế giới"}
+        002{"Châu Phi"}
+        003{"Bắc Mỹ"}
+        005{"Nam Mỹ"}
+        009{"Châu Đại Dương"}
+        011{"Tây Phi"}
+        013{"Trung Mỹ"}
+        014{"Đông Phi"}
+        015{"Bắc Phi"}
+        017{"Trung Phi"}
+        018{"Miền Nam Châu Phi"}
+        019{"Châu Mỹ"}
+        021{"Miền Bắc Châu Mỹ"}
+        029{"Ca-ri-bê"}
+        030{"Đông Á"}
+        034{"Nam Á"}
+        035{"Đông Nam Á"}
+        039{"Nam Âu"}
+        053{"Úc và New Zealand"}
+        054{"Melanesia"}
+        057{"Vùng Micronesian"}
+        061{"Polynesia"}
+        142{"Châu Á"}
+        143{"Trung Á"}
+        145{"Tây Á"}
+        150{"Châu Âu"}
+        151{"Đông Âu"}
+        154{"Bắc Âu"}
+        155{"Tây Âu"}
         419{"Châu Mỹ La-tinh"}
         AC{"Đảo Ascension"}
         AD{"Andorra"}
@@ -39,7 +65,7 @@ vi{
         BH{"Bahrain"}
         BI{"Burundi"}
         BJ{"Benin"}
-        BL{"Saint Barthélemy"}
+        BL{"St. Barthélemy"}
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
@@ -112,8 +138,8 @@ vi{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hồng Kông"}
-        HM{"Đảo Heard và Quần đảo McDonald"}
+        HK{"Hồng Kông, Trung Quốc"}
+        HM{"Quần đảo Heard và McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
         HT{"Haiti"}
@@ -138,7 +164,7 @@ vi{
         KH{"Campuchia"}
         KI{"Kiribati"}
         KM{"Comoros"}
-        KN{"Saint Kitts và Nevis"}
+        KN{"St. Kitts và Nevis"}
         KP{"Triều Tiên"}
         KR{"Hàn Quốc"}
         KW{"Cô-oét"}
@@ -146,7 +172,7 @@ vi{
         KZ{"Kazakhstan"}
         LA{"Lào"}
         LB{"Li-băng"}
-        LC{"Saint Lucia"}
+        LC{"St. Lucia"}
         LI{"Liechtenstein"}
         LK{"Sri Lanka"}
         LR{"Liberia"}
@@ -159,14 +185,14 @@ vi{
         MC{"Monaco"}
         MD{"Moldova"}
         ME{"Montenegro"}
-        MF{"Saint Martin"}
+        MF{"St. Martin"}
         MG{"Madagascar"}
         MH{"Quần đảo Marshall"}
         MK{"Macedonia"}
         ML{"Mali"}
         MM{"Myanmar (Miến Điện)"}
         MN{"Mông Cổ"}
-        MO{"Macao"}
+        MO{"Macao, Trung Quốc"}
         MP{"Quần đảo Bắc Mariana"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -201,7 +227,7 @@ vi{
         PM{"Saint Pierre và Miquelon"}
         PN{"Quần đảo Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestine"}
+        PS{"Lãnh thổ Palestine"}
         PT{"Bồ Đào Nha"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -218,7 +244,7 @@ vi{
         SD{"Sudan"}
         SE{"Thụy Điển"}
         SG{"Singapore"}
-        SH{"Saint Helena"}
+        SH{"St. Helena"}
         SI{"Slovenia"}
         SJ{"Svalbard và Jan Mayen"}
         SK{"Slovakia"}
@@ -257,7 +283,7 @@ vi{
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
         VA{"Thành Vatican"}
-        VC{"Saint Vincent và Grenadines"}
+        VC{"St. Vincent và Grenadines"}
         VE{"Venezuela"}
         VG{"Quần đảo Virgin thuộc Anh"}
         VI{"Quần đảo Virgin thuộc Mỹ"}
@@ -273,15 +299,18 @@ vi{
         ZW{"Zimbabwe"}
         ZZ{"Vùng không xác định"}
     }
+    Countries%short{
+        GB{"Vương quốc Anh"}
+        HK{"Hồng Kông"}
+        MO{"Macao"}
+        PS{"Palestine"}
+        US{"Hoa Kỳ"}
+    }
     Countries%variant{
         CD{"Cộng hòa Dân chủ Congo"}
         CG{"Cộng hòa Congo"}
         FK{"Quần đảo Falkland (Islas Malvinas)"}
         MK{"Macedonia (FYROM)"}
     }
-    CountriesShort{
-        GB{"Vương quốc Anh"}
-        US{"Hoa Kỳ"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
 }

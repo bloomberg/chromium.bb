@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/gd.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/gd.xml
- */
 gd{
     Countries{
+        001{"An Saoghal"}
+        002{"Afraga"}
+        003{"Aimeireaga a Tuath"}
+        005{"Aimeireaga a Deas"}
+        009{"Roinn a’ Chuain Sèimh"}
+        011{"Afraga an Iar"}
+        013{"Meadhan Aimeireaga"}
+        014{"Afraga an Ear"}
+        015{"Afraga a Tuath"}
+        017{"Meadhan Afraga"}
+        018{"Ceann a Deas Afraga"}
+        019{"An Dà Aimeireaga"}
+        021{"Ceann a Tuath Aimeireaga"}
+        029{"Am Muir Caraibeach"}
+        030{"Àisia an Ear"}
+        034{"Àisia a Deas"}
+        035{"Àisia an Ear-dheas"}
+        039{"An Roinn-Eòrpa a Deas"}
+        053{"Astràilia is Sealainn Nuadh"}
+        054{"Na h-Eileanan Dubha"}
+        057{"Roinn nam Meanbh-Eileanan"}
+        061{"Poilinèis"}
+        142{"Àisia"}
+        143{"Meadhan Àisia"}
+        145{"Àisia an Iar"}
+        150{"An Roinn-Eòrpa"}
+        151{"An Roinn-Eòrpa an Ear"}
+        154{"An Roinn-Eòrpa a Tuath"}
+        155{"An Roinn-Eòrpa an Iar"}
         419{"Aimeireaga Laidinneach"}
         AC{"Eilean na Deasgabhalach"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ gd{
         GU{"Guam"}
         GW{"Gini-Bioso"}
         GY{"Guidheàna"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong SAR na Sìne"}
         HM{"Eilean Heard is MhicDhòmhnaill"}
         HN{"Hondùras"}
         HR{"A’ Chròthais"}
@@ -164,9 +190,9 @@ gd{
         MH{"Eileanan Mharshall"}
         MK{"A’ Mhasadon"}
         ML{"Màili"}
-        MM{"Miànmar (Burma)"}
+        MM{"Miànmar"}
         MN{"Dùthaich nam Mongol"}
-        MO{"Macàthu"}
+        MO{"Macàthu SAR na Sìne"}
         MP{"Na h-Eileanan Mairianach a Tuath"}
         MQ{"Mairtinic"}
         MR{"Moratàinea"}
@@ -201,7 +227,7 @@ gd{
         PM{"Saint Pierre agus Miquelon"}
         PN{"Eilean Peit a’ Chàirn"}
         PR{"Porto Rìceo"}
-        PS{"Palastain"}
+        PS{"Na Ranntairean Palastaineach"}
         PT{"A’ Phortagail"}
         PW{"Palabh"}
         PY{"Paraguaidh"}
@@ -252,7 +278,7 @@ gd{
         TZ{"An Tansan"}
         UA{"An Ucràin"}
         UG{"Uganda"}
-        UM{"Meanbh-Eileanan Iomallach nan Stàitean Aonaichte"}
+        UM{"Meanbh-Eileanan Iomallach nan SA"}
         US{"Na Stàitean Aonaichte"}
         UY{"Uruguaidh"}
         UZ{"Usbagastàn"}
@@ -273,17 +299,20 @@ gd{
         ZW{"An t-Sìombab"}
         ZZ{"Roinn-dùthcha neo-aithnichte"}
     }
+    Countries%short{
+        GB{"RA"}
+        HK{"Hong Kong"}
+        MO{"Macàthu"}
+        PS{"Palastain"}
+        US{"SA"}
+    }
     Countries%variant{
-        CD{"A’ Chongo (Poblachd Dheamocratach)"}
+        CD{"A’ Chongo (PDC)"}
         CG{"A’ Chongo (Poblachd)"}
         CI{"An Costa Ìbhri"}
         FK{"Na h-Eileanan Fàclannach (Islas Malvinas)"}
         MK{"A’ Mhasadon (FYROM)"}
         TL{"Tìomor an Ear"}
     }
-    CountriesShort{
-        GB{"RA"}
-        US{"SA"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.20.4"}
 }

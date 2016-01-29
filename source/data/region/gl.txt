@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/gl.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/gl.xml
- */
 gl{
     Countries{
+        001{"Mundo"}
+        002{"África"}
+        003{"Norteamérica"}
+        005{"Sudamérica"}
+        009{"Oceanía"}
+        011{"África Occidental"}
+        013{"América Central"}
+        014{"África Oriental"}
+        015{"África Septentrional"}
+        017{"África Central"}
+        018{"África Meridional"}
+        019{"América"}
+        021{"América do Norte"}
+        029{"Caribe"}
+        030{"Asia Oriental"}
+        034{"Sul de Asia"}
+        035{"Sureste Asiático"}
+        039{"Europa Meridional"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Rexión da Micronesia"}
+        061{"Polinesia"}
+        142{"Asia"}
+        143{"Asia Central"}
+        145{"Asia Occidental"}
+        150{"Europa"}
+        151{"Europa do Leste"}
+        154{"Europa Septentrional"}
+        155{"Europa Occidental"}
         419{"América Latina"}
         AC{"Illa de Ascensión"}
         AD{"Andorra"}
@@ -54,7 +80,7 @@ gl{
         CA{"Canadá"}
         CC{"Illas Cocos (Keeling)"}
         CD{"República Democrática do Congo"}
-        CF{"República Africana Central"}
+        CF{"República Centroafricana"}
         CG{"Congo"}
         CH{"Suíza"}
         CI{"Costa de Marfil"}
@@ -73,7 +99,7 @@ gl{
         CZ{"República Checa"}
         DE{"Alemaña"}
         DG{"Diego García"}
-        DJ{"Xibuti"}
+        DJ{"Djibuti"}
         DK{"Dinamarca"}
         DM{"Dominica"}
         DO{"República Dominicana"}
@@ -82,7 +108,7 @@ gl{
         EC{"Ecuador"}
         EE{"Estonia"}
         EG{"Exipto"}
-        EH{"Sahara Occidental"}
+        EH{"Sáhara Occidental"}
         ER{"Eritrea"}
         ES{"España"}
         ET{"Etiopía"}
@@ -112,7 +138,7 @@ gl{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Güiana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong RAE de China"}
         HM{"Illa Heard e Illas McDonald"}
         HN{"Honduras"}
         HR{"Croacia"}
@@ -133,7 +159,7 @@ gl{
         JM{"Xamaica"}
         JO{"Xordania"}
         JP{"Xapón"}
-        KE{"Quenia"}
+        KE{"Kenya"}
         KG{"Quirguicistán"}
         KH{"Cambodia"}
         KI{"Kiribati"}
@@ -166,7 +192,7 @@ gl{
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau RAE de China"}
         MP{"Illas Marianas do norte"}
         MQ{"Martinica"}
         MR{"Mauritania"}
@@ -201,7 +227,7 @@ gl{
         PM{"San Pedro e Miguelón"}
         PN{"Illas Pitcairn"}
         PR{"Porto Rico"}
-        PS{"Palestina"}
+        PS{"Territorios palestinos"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguai"}
@@ -273,6 +299,13 @@ gl{
         ZW{"Cimbabue"}
         ZZ{"Rexión descoñecida"}
     }
+    Countries%short{
+        GB{"RU"}
+        HK{"Hong Kong"}
+        MO{"Macau"}
+        PS{"Palestina"}
+        US{"EUA"}
+    }
     Countries%variant{
         CD{"Congo (RDC)"}
         CG{"Congo (RC)"}
@@ -280,8 +313,5 @@ gl{
         FK{"Illas Malvinas (Falkland)"}
         MK{"Macedonia (ARIM)"}
     }
-    CountriesShort{
-        GB{"RU"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.94"}
 }

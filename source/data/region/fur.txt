@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/fur.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/fur.xml
- */
 fur{
     Countries{
+        001{"Mont"}
+        002{"Afriche"}
+        003{"Americhe dal Nord"}
+        005{"Americhe meridionâl"}
+        009{"Oceanie"}
+        011{"Afriche ocidentâl"}
+        013{"Americhe centrâl"}
+        014{"Afriche orientâl"}
+        015{"Afriche setentrionâl"}
+        017{"Afriche di mieç"}
+        018{"Afriche meridionâl"}
+        019{"Americhis"}
+        021{"Americhe setentrionâl"}
+        029{"caraibic"}
+        030{"Asie orientâl"}
+        034{"Asie meridionâl"}
+        035{"Asie sud orientâl"}
+        039{"Europe meridionâl"}
+        053{"Australie e Gnove Zelande"}
+        054{"Melanesie"}
+        057{"Regjon de Micronesie"}
+        061{"Polinesie"}
+        142{"Asie"}
+        143{"Asie centrâl"}
+        145{"Asie ocidentâl"}
+        150{"Europe"}
+        151{"Europe orientâl"}
+        154{"Europe setentrionâl"}
+        155{"Europe ocidentâl"}
         419{"Americhe latine"}
         AD{"Andorra"}
         AE{"Emirâts araps unîts"}
@@ -109,7 +135,7 @@ fur{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Regjon aministrative speciâl de Cine di Hong Kong"}
         HM{"Isule Heard e Isulis McDonald"}
         HN{"Honduras"}
         HR{"Cravuazie"}
@@ -163,7 +189,7 @@ fur{
         ML{"Mali"}
         MM{"Birmanie"}
         MN{"Mongolie"}
-        MO{"Macao"}
+        MO{"Regjon aministrative speciâl de Cine di Macao"}
         MP{"Isulis Mariana dal Nord"}
         MQ{"Martiniche"}
         MR{"Mauritanie"}
@@ -267,11 +293,15 @@ fur{
         ZW{"Zimbabwe"}
         ZZ{"Regjon no cognossude o no valide"}
     }
+    Countries%short{
+        HK{"Hong Kong"}
+        MO{"Macao"}
+    }
     Countries%variant{
         CD{"Congo (RDC)"}
         CG{"Congo (Republiche)"}
         FK{"Isulis Falkland (Isulis Malvinas)"}
         MK{"Macedonie (FYROM)"}
     }
-    Version{"2.1.7.53"}
+    Version{"2.1.19.14"}
 }

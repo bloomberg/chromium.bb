@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/en_GB.xml
@@ -8,12 +8,17 @@
 // ***************************************************************************
 en_GB{
     %%Parent{"en_001"}
-    LanguagesShort{
-        en_GB{"UK English"}
-        en_US{"US English"}
+    Keys{
+        colNormalization{"Normalised Sorting"}
     }
-    Scripts{
-        Thai{"Thai"}
+    Languages{
+        nds_NL{"West Low German"}
     }
-    Version{"2.1.8.19"}
+    Types{
+        colNormalization{
+            no{"Sort Without Normalisation"}
+            yes{"Sort Unicode Normalised"}
+        }
+    }
+    Version{"2.1.19.79"}
 }

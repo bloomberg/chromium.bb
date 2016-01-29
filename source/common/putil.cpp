@@ -882,7 +882,7 @@ static UBool compareBinaryFiles(const char* defaultTZFileName, const char* TZFil
             if (tzInfo->defaultTZBuffer == NULL) {
                 rewind(tzInfo->defaultTZFilePtr);
                 tzInfo->defaultTZBuffer = (char*)uprv_malloc(sizeof(char) * tzInfo->defaultTZFileSize);
-                fread(tzInfo->defaultTZBuffer, 1, tzInfo->defaultTZFileSize, tzInfo->defaultTZFilePtr);
+                sizeFileRead = fread(tzInfo->defaultTZBuffer, 1, tzInfo->defaultTZFileSize, tzInfo->defaultTZFilePtr);
             }
             rewind(file);
             while(sizeFileLeft > 0) {
@@ -970,15 +970,6 @@ static char* searchForTZFile(const char* path, DefaultTZInfo* tzInfo) {
     return result;
 }
 #endif
-
-U_CAPI void U_EXPORT2
-uprv_tzname_clear_cache()
-{
-#if defined(CHECK_LOCALTIME_LINK) && !defined(DEBUG_SKIP_LOCALTIME_LINK)
-    gTimeZoneBufferPtr = NULL;
-#endif
-}
-
 U_CAPI const char* U_EXPORT2
 uprv_tzname(int n)
 {

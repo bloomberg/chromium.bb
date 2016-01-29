@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/brx.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/brx.xml
- */
 brx{
     AuxExemplarCharacters{"[\u200C\u200D]"}
     ExemplarCharacters{
@@ -19,9 +16,6 @@ brx{
     ExemplarCharactersIndex{
         "[अ आ इ ई उ ऊ ऍ ए ऐ ऑ ओ औ क ख ग घ च छ ज झ ञ ट ठ ड {ड\u093C} ढ ण त थ द ध न प फ"
         " ब भ म य र ल ळ व श ष स ह]"
-    }
-    LocaleScript{
-        "Deva",
     }
     NumberElements{
         default{"latn"}
@@ -47,7 +41,7 @@ brx{
         }
         native{"deva"}
     }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.74"}
     calendar{
         generic{
             DateTimePatterns{
@@ -66,7 +60,10 @@ brx{
                 "{1} {0}",
             }
             availableFormats{
-                GGGGyMMMMEEEEdd{"EEEE,dd MMMM GGGGy"}
+                Gy{"y G"}
+                GyMMM{"MMM, y G"}
+                GyMMMEd{"E, MMM d, y G"}
+                GyMMMd{"MMM d, y G"}
                 Hm{"HH:mm"}
                 Hms{"HH:mm:ss"}
                 M{"L"}
@@ -111,7 +108,10 @@ brx{
                 "{1} {0}",
             }
             availableFormats{
-                GGGGyMMMMEEEEdd{"EEEE,dd MMMM GGGGy"}
+                Gy{"y G"}
+                GyMMM{"MMM, y G"}
+                GyMMMEd{"E, MMM d, y G"}
+                GyMMMd{"MMM d, y G"}
                 Hm{"HH:mm"}
                 Hms{"HH:mm:ss"}
                 M{"L"}

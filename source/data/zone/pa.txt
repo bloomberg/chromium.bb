@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/pa.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/pa.xml
- */
 pa{
-    Version{"2.1.8.9"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"ਅਬੀਦਜਾਨ"}
@@ -687,11 +684,11 @@ pa{
         "Asia:Calcutta"{
             ec{"ਕੋਲਕਾਤਾ"}
         }
+        "Asia:Chita"{
+            ec{"ਚਿਤਾ"}
+        }
         "Asia:Choibalsan"{
             ec{"ਚੋਇਲਬਾਲਸਨ"}
-        }
-        "Asia:Chongqing"{
-            ec{"ਚੋਂਗਿੰਗ"}
         }
         "Asia:Colombo"{
             ec{"ਕੋਲੰਬੋ"}
@@ -713,9 +710,6 @@ pa{
         }
         "Asia:Gaza"{
             ec{"ਗਾਜ਼ਾ"}
-        }
-        "Asia:Harbin"{
-            ec{"ਹਾਰਬਿਨ"}
         }
         "Asia:Hebron"{
             ec{"ਹੇਬਰਾਨ"}
@@ -746,9 +740,6 @@ pa{
         }
         "Asia:Karachi"{
             ec{"ਕਰਾਚੀ"}
-        }
-        "Asia:Kashgar"{
-            ec{"ਕੈਸ਼ਗਰ"}
         }
         "Asia:Katmandu"{
             ec{"ਕਾਠਮਾਂਡੂ"}
@@ -820,7 +811,7 @@ pa{
             ec{"ਰਿਆਧ"}
         }
         "Asia:Saigon"{
-            ec{"ਹੋ ਚਾਈ ਮਿਨ੍ਹ ਸਿਟੀ"}
+            ec{"ਹੋ ਚੀ ਮਿਨ੍ਹ ਸਿਟੀ"}
         }
         "Asia:Sakhalin"{
             ec{"ਸਖਲੀਨ"}
@@ -836,6 +827,9 @@ pa{
         }
         "Asia:Singapore"{
             ec{"ਸਿੰਗਾਪੁਰ"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"ਸਰਿਡਨੀਕੋਲਿਸਕ"}
         }
         "Asia:Taipei"{
             ec{"ਤੈਪਈ"}
@@ -946,7 +940,7 @@ pa{
             ec{"ਸਿਡਨੀ"}
         }
         "Etc:Unknown"{
-            ec{"ਅਣਪਛਾਤਾ ਸ਼ਹਿਰ"}
+            ec{"ਅਗਿਆਤ ਸ਼ਹਿਰ"}
         }
         "Europe:Amsterdam"{
             ec{"ਐਮਸਟਰਡਮ"}
@@ -1156,6 +1150,9 @@ pa{
         }
         "Pacific:Auckland"{
             ec{"ਆਕਲੈਂਡ"}
+        }
+        "Pacific:Bougainville"{
+            ec{"ਬੋਗਨਵਿਲੇ"}
         }
         "Pacific:Chatham"{
             ec{"ਚੈਥਮ"}

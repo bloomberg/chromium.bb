@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/wae.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/wae.xml
- */
 wae{
     Currencies{
         BRL{
@@ -28,7 +25,7 @@ wae{
             "Pfund",
         }
         INR{
-            "Rs.",
+            "₹",
             "Indiši Rupie",
         }
         JPY{
@@ -36,12 +33,16 @@ wae{
             "Yen",
         }
         RUB{
-            "руб",
+            "RUB",
             "Rubel",
         }
         USD{
             "$",
             "Dollar",
+        }
+        XXX{
+            "XXX",
+            "Unbekannti Wãrig",
         }
     }
     CurrencyPlurals{
@@ -77,10 +78,14 @@ wae{
             one{"Dollar"}
             other{"Dollar"}
         }
+        XXX{
+            one{"Unbekannti Wãrig"}
+            other{"Unbekannti Wãrig"}
+        }
     }
     CurrencyUnitPatterns{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.7.53"}
+    Version{"2.1.19.14"}
 }

@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/rbnf/et.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/xml/rbnf/et.xml
- */
 et{
     RBNFRules{
         SpelloutRules{
@@ -49,5 +46,5 @@ et{
             "1000000000000000000: =#,##0=;",
         }
     }
-    Version{"2.0.82.42"}
+    Version{"2.1.19.14"}
 }

@@ -427,13 +427,18 @@ TimeZone::createTimeZone(const UnicodeString& ID)
      */
     TimeZone* result = createSystemTimeZone(ID);
 
-    if (result == 0) {
+    if (result == NULL) {
         U_DEBUG_TZ_MSG(("failed to load system time zone with id - falling to custom"));
         result = createCustomTimeZone(ID);
     }
-    if (result == 0) {
+    if (result == NULL) {
         U_DEBUG_TZ_MSG(("failed to load time zone with id - falling to Etc/Unknown(GMT)"));
-        result = getUnknown().clone();
+        const TimeZone& unknown = getUnknown();
+        if (_UNKNOWN_ZONE == NULL) {                   // Cannot test (&unknown == NULL) because the
+          U_DEBUG_TZ_MSG(("failed to getUnknown()"));  // behavior of NULL references is undefined.
+        } else {
+          result = unknown.clone();
+        }
     }
     return result;
 }
@@ -452,8 +457,6 @@ TimeZone::detectHostTimeZone()
     // on the string ID in tzname[0].
 
     uprv_tzset(); // Initialize tz... system data
-
-    uprv_tzname_clear_cache();
 
     // Get the timezone ID from the host.  This function should do
     // any required host-specific remapping; e.g., on Windows this
@@ -1544,7 +1547,6 @@ TimeZone::getCanonicalID(const UnicodeString& id, UnicodeString& canonicalID, UB
     return canonicalID;
 }
 
-#ifndef U_HIDE_DRAFT_API
 UnicodeString&
 TimeZone::getWindowsID(const UnicodeString& id, UnicodeString& winid, UErrorCode& status) {
     winid.remove();
@@ -1685,7 +1687,6 @@ TimeZone::getIDForWindowsID(const UnicodeString& winid, const char* region, Unic
     ures_close(zones);
     return id;
 }
-#endif /* U_HIDE_DRAFT_API */
 
 
 U_NAMESPACE_END

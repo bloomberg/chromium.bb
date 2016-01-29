@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- *   Copyright (C) 2005-2012, International Business Machines
+ *   Copyright (C) 2005-2015, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  **********************************************************************
  */
@@ -119,7 +119,7 @@ static const uint8_t escapeSequences_2022JP[][5] = {
     {0x1b, 0x2e, 0x46, 0x00, 0x00}    // ISO 8859-7
 };
 
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
 static const uint8_t escapeSequences_2022KR[][5] = {
     {0x1b, 0x24, 0x29, 0x43, 0x00}   
 };
@@ -154,7 +154,7 @@ UBool CharsetRecog_2022JP::match(InputText *textIn, CharsetMatch *results) const
     return (confidence > 0);
 }
 
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
 CharsetRecog_2022KR::~CharsetRecog_2022KR() {}
 
 const char *CharsetRecog_2022KR::getName() const {

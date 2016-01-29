@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/kab.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/kab.xml
- */
 kab{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ kab{
         BHD{
             "BHD",
             "Adinar Abaḥrini",
+        }
+        BIF{
+            "BIF",
+            "Afrank Aburandi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ kab{
             "CN¥",
             "Ayuwan Renminbi Acinwa",
         }
+        CVE{
+            "CVE",
+            "Akabuviradinu Askudi",
+        }
+        DJF{
+            "DJF",
+            "Afrank Ajibuti",
+        }
         DZD{
             "DA",
             "Adinar Azzayri",
@@ -54,6 +63,10 @@ kab{
         EGP{
             "EGP",
             "Apund Amaṣri",
+        }
+        ERN{
+            "ERN",
+            "Anakfa Iritiri",
         }
         ETB{
             "ETB",
@@ -65,10 +78,22 @@ kab{
         }
         GBP{
             "£",
-            "Apund Sterling Aglizi",
+            "Apund Aglizi",
+        }
+        GHC{
+            "GHC",
+            "Asidi Aɣani",
+        }
+        GMD{
+            "GMD",
+            "Adalasi Agambi",
+        }
+        GNS{
+            "GNS",
+            "Afrank Aɣini",
         }
         INR{
-            "Rs.",
+            "₹",
             "Arupi Ahendi",
         }
         JPY{
@@ -78,6 +103,18 @@ kab{
         KES{
             "KES",
             "Aciling Akini",
+        }
+        KMF{
+            "KMF",
+            "Afrank Akamiruni",
+        }
+        LRD{
+            "LRD",
+            "Adular Alibiri",
+        }
+        LSL{
+            "LSL",
+            "Aluṭi Alizuṭi",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ kab{
             "MWK",
             "Akwaca Amalawi",
         }
+        MZM{
+            "MZM",
+            "Amitikal Amuzembiqi",
+        }
         NAD{
             "NAD",
             "Adular Anamibi",
@@ -119,13 +160,33 @@ kab{
             "SAR",
             "Aryal Asuɛudi",
         }
+        SCR{
+            "SCR",
+            "Arupi Aseycili",
+        }
         SDG{
             "SDG",
             "Apund Asudani",
         }
+        SHP{
+            "SHP",
+            "Apund Asant Ilini",
+        }
         SLL{
             "SLL",
             "Alyun",
+        }
+        SOS{
+            "SOS",
+            "Aciling Aṣumali",
+        }
+        STD{
+            "STD",
+            "Asw Ṭum d Udubra Amenzay",
+        }
+        SZL{
+            "SZL",
+            "Alilangini",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ kab{
             "ZAR",
             "Arand Afriqi n Wadda",
         }
+        ZMK{
+            "ZMK",
+            "Akwaca Azambi (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Akwaca Azambi",
         }
+        ZWD{
+            "ZWD",
+            "Adular Azimbabwi",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

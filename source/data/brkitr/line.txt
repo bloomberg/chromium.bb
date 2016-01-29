@@ -1,19 +1,23 @@
-# Copyright (c) 2002-2013  International Business Machines Corporation and
+# Copyright (c) 2002-2015  International Business Machines Corporation and
 # others. All Rights Reserved.
 #
 #  file:  line.txt
 #
 #         Line Breaking Rules
 #         Implement default line breaking as defined by 
-#         Unicode Standard Annex #14 Revision 29 for Unicode 6.2
+#         Unicode Standard Annex #14 Revision 34 for Unicode 8.0
 #         http://www.unicode.org/reports/tr14/
 #
 #         TODO:  Rule LB 8 remains as it was in Unicode 5.2
 #         This is only because of a limitation of ICU break engine implementation,
 #         not because the older behavior is desirable.
+#
+#         This corresponds to CSS line-break=strict (BCP47 -u-lb-strict).
+#         It sets characters of class CJ to behave like NS.
 
-# CHROME: 1. Use line_ja.txt to apply small kana rules in all locales.
-#         2. Adjust CL, OP, and IS to handle 'comma-variants' consistently.
+#
+#  Character Classes defined by TR 14.
+#
 
 !!chain;
 !!LBCMNoChain;
@@ -56,14 +60,14 @@
 #
 
 $AI = [:LineBreak =  Ambiguous:];
-$AL = [[:LineBreak =  Alphabetic:] - [\u23B4\u23B5]];
+$AL = [:LineBreak =  Alphabetic:];
 $BA = [:LineBreak =  Break_After:];
 $BB = [:LineBreak =  Break_Before:];
 $BK = [:LineBreak =  Mandatory_Break:];
 $B2 = [:LineBreak =  Break_Both:];
 $CB = [:LineBreak =  Contingent_Break:];
 $CJ = [:LineBreak =  Conditional_Japanese_Starter:];
-$CL = [[:LineBreak =  Close_Punctuation:] [\uFE51\uFE10\u23B5]];
+$CL = [:LineBreak =  Close_Punctuation:];
 $CM = [:LineBreak =  Combining_Mark:];
 $CP = [:LineBreak =  Close_Parenthesis:];
 $CR = [:LineBreak =  Carriage_Return:];
@@ -73,17 +77,17 @@ $HL = [:LineBreak =  Hebrew_Letter:];
 $HY = [:LineBreak =  Hyphen:];
 $H2 = [:LineBreak =  H2:];
 $H3 = [:LineBreak =  H3:];
-$ID = [[[:LineBreak =  Ideographic:] $CJ] - [\uFE51]];
+$ID = [:LineBreak =  Ideographic:];
 $IN = [:LineBreak =  Inseperable:];
-$IS = [[:LineBreak =  Infix_Numeric:] - [\uFE10]];
+$IS = [:LineBreak =  Infix_Numeric:];
 $JL = [:LineBreak =  JL:];
 $JV = [:LineBreak =  JV:];
 $JT = [:LineBreak =  JT:];
 $LF = [:LineBreak =  Line_Feed:];
 $NL = [:LineBreak =  Next_Line:];
-$NS = [:LineBreak =  Nonstarter:];
+$NS = [[:LineBreak =  Nonstarter:] $CJ];
 $NU = [:LineBreak =  Numeric:];
-$OP = [[:LineBreak =  Open_Punctuation:] \u23B4];
+$OP = [:LineBreak =  Open_Punctuation:];
 $PO = [:LineBreak =  Postfix_Numeric:];
 $PR = [:LineBreak =  Prefix_Numeric:];
 $QU = [:LineBreak =  Quotation:];
@@ -348,6 +352,7 @@ $SYcm $HLcm;
 # LB 22
 ($ALcm | $HLcm) $INcm;
 $CM+     $INcm;     #  by rule 10, any otherwise unattached CM behaves as AL
+$EXcm    $INcm;
 $IDcm    $INcm;
 $INcm    $INcm;
 $NUcm    $INcm;
@@ -583,6 +588,7 @@ $CM* $HL $CM* $SY;
 
 # LB 22
 $CM* $IN $CM* ($ALPlus | $HL);
+$CM* $IN $CM* $EX;
 $CM* $IN $CM* $ID;
 $CM* $IN $CM* $IN;
 $CM* $IN $CM* $NU;

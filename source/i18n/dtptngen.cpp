@@ -1,6 +1,6 @@
 /*
 *******************************************************************************
-* Copyright (C) 2007-2014, International Business Machines Corporation and
+* Copyright (C) 2007-2015, International Business Machines Corporation and
 * others. All Rights Reserved.
 *******************************************************************************
 *
@@ -124,7 +124,6 @@ static const UChar *ures_a_getNextString(UResourceBundleAIterator *aiter, int32_
 
 U_NAMESPACE_BEGIN
 
-
 // *****************************************************************************
 // class DateTimePatternGenerator
 // *****************************************************************************
@@ -245,15 +244,12 @@ DateTimePatternGenerator::createInstance(UErrorCode& status) {
 
 DateTimePatternGenerator* U_EXPORT2
 DateTimePatternGenerator::createInstance(const Locale& locale, UErrorCode& status) {
-    DateTimePatternGenerator *result = new DateTimePatternGenerator(locale, status);
-    if (result == NULL) {
-        status = U_MEMORY_ALLOCATION_ERROR;
-    }
     if (U_FAILURE(status)) {
-        delete result;
-        result = NULL;
+        return NULL;
     }
-    return result;
+    LocalPointer<DateTimePatternGenerator> result(
+            new DateTimePatternGenerator(locale, status), status);
+    return U_SUCCESS(status) ? result.orphan() : NULL;
 }
 
 DateTimePatternGenerator*  U_EXPORT2
@@ -312,6 +308,10 @@ DateTimePatternGenerator::DateTimePatternGenerator(const DateTimePatternGenerato
 
 DateTimePatternGenerator&
 DateTimePatternGenerator::operator=(const DateTimePatternGenerator& other) {
+    // reflexive case
+    if (&other == this) {
+        return *this;
+    }
     pLocale = other.pLocale;
     fDefaultHourFormatChar = other.fDefaultHourFormatChar;
     *fp = *(other.fp);
@@ -397,16 +397,23 @@ DateTimePatternGenerator::initData(const Locale& locale, UErrorCode &status) {
 } // DateTimePatternGenerator::initData
 
 UnicodeString
-DateTimePatternGenerator::getSkeleton(const UnicodeString& pattern, UErrorCode&
-/*status*/) {
-    dtMatcher->set(pattern, fp);
-    return dtMatcher->getSkeletonPtr()->getSkeleton();
+DateTimePatternGenerator::staticGetSkeleton(
+        const UnicodeString& pattern, UErrorCode& /*status*/) {
+    FormatParser fp;
+    DateTimeMatcher matcher;
+    PtnSkeleton localSkeleton;
+    matcher.set(pattern, &fp, localSkeleton);
+    return localSkeleton.getSkeleton();
 }
 
 UnicodeString
-DateTimePatternGenerator::getBaseSkeleton(const UnicodeString& pattern, UErrorCode& /*status*/) {
-    dtMatcher->set(pattern, fp);
-    return dtMatcher->getSkeletonPtr()->getBaseSkeleton();
+DateTimePatternGenerator::staticGetBaseSkeleton(
+        const UnicodeString& pattern, UErrorCode& /*status*/) {
+    FormatParser fp;
+    DateTimeMatcher matcher;
+    PtnSkeleton localSkeleton;
+    matcher.set(pattern, &fp, localSkeleton);
+    return localSkeleton.getBaseSkeleton();
 }
 
 void
@@ -1217,7 +1224,7 @@ DateTimePatternGenerator::copyHashtable(Hashtable *other, UErrorCode &status) {
     if(U_FAILURE(status)){
         return;
     }
-    int32_t pos = -1;
+    int32_t pos = UHASH_FIRST;
     const UHashElement* elem = NULL;
     // walk through the hash table and create a deep clone
     while((elem = other->nextElement(pos))!= NULL){
@@ -1333,7 +1340,7 @@ PatternMap::copyFrom(const PatternMap& other, UErrorCode& status) {
                 status = U_MEMORY_ALLOCATION_ERROR;
                 return;
             }
-
+            curElem->skeletonWasSpecified = otherElem->skeletonWasSpecified;
             if (prevElem!=NULL) {
                 prevElem->next=curElem;
             }
@@ -1840,7 +1847,7 @@ FormatParser::getCanonicalIndex(const UnicodeString& s, UBool strict) {
 }
 
 UBool
-FormatParser::isQuoteLiteral(const UnicodeString& s) const {
+FormatParser::isQuoteLiteral(const UnicodeString& s) {
     return (UBool)(s.charAt(0)==SINGLE_QUOTE);
 }
 

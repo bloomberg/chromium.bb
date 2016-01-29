@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/az.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/az.xml
- */
 az{
     Countries{
+        001{"Dünya"}
+        002{"Afrika"}
+        003{"Şimali Amerika"}
+        005{"Cənubi Amerika"}
+        009{"Okeaniya"}
+        011{"Qərbi Afrika"}
+        013{"Mərkəzi Amerika"}
+        014{"Şərqi Afrika"}
+        015{"Şimali Afrika"}
+        017{"Mərkəzi Afrika"}
+        018{"Cənubi Afrika"}
+        019{"Amerikalar"}
+        021{"Şimal Amerikası"}
+        029{"Karib"}
+        030{"Şərqi Asiya"}
+        034{"Cənubi Asiya"}
+        035{"Cənub-Şərqi Asiya"}
+        039{"Cənubi Avropa"}
+        053{"Avstralaziya"}
+        054{"Melaneziya"}
+        057{"Mikroneziya Regionu"}
+        061{"Polineziya"}
+        142{"Asiya"}
+        143{"Mərkəzi Asiya"}
+        145{"Qərbi Asiya"}
+        150{"Avropa"}
+        151{"Şərqi Avropa"}
+        154{"Şimali Avropa"}
+        155{"Qərbi Avropa"}
         419{"Latın Amerikası"}
         AC{"Yüksəliş Adası"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ az{
         GU{"Quam"}
         GW{"Qvineya-Bisau"}
         GY{"Qviyana"}
-        HK{"Honq Konq"}
+        HK{"Honq Konq Xüsusi İnzibati Ərazi Çin"}
         HM{"Herd və Mak Donald Adaları"}
         HN{"Honduras"}
         HR{"Xorvatiya"}
@@ -166,7 +192,7 @@ az{
         ML{"Mali"}
         MM{"Myanma"}
         MN{"Monqoliya"}
-        MO{"Makao"}
+        MO{"Makao Xüsusi İnzibati Ərazi Çin"}
         MP{"Şimali Mariana Adaları"}
         MQ{"Martinik"}
         MR{"Mavritaniya"}
@@ -201,7 +227,7 @@ az{
         PM{"San Pier və Mikelon"}
         PN{"Pitkern Adaları"}
         PR{"Puerto Riko"}
-        PS{"Fələstin"}
+        PS{"Fələstin Əraziləri"}
         PT{"Portuqal"}
         PW{"Palau"}
         PY{"Paraqvay"}
@@ -273,6 +299,13 @@ az{
         ZW{"Zimbabve"}
         ZZ{"Naməlum Region"}
     }
+    Countries%short{
+        GB{"B.K."}
+        HK{"Honq Konq"}
+        MO{"Makao"}
+        PS{"Fələstin"}
+        US{"A.B.Ş."}
+    }
     Countries%variant{
         CD{"Konqo (KDR)"}
         CG{"Konqo (Respublika)"}
@@ -280,9 +313,5 @@ az{
         MK{"Makedoniya (FYROM)"}
         TL{"Doğu Timor"}
     }
-    CountriesShort{
-        GB{"B.K."}
-        US{"A.B.Ş."}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.83"}
 }

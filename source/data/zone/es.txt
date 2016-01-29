@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/es.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/es.xml
- */
 es{
-    Version{"2.1.8.9"}
+    Version{"2.1.20.15"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abiyán"}
@@ -163,7 +160,7 @@ es{
             ec{"Trípoli"}
         }
         "Africa:Tunis"{
-            ec{"Túnez capital"}
+            ec{"Túnez"}
         }
         "Africa:Windhoek"{
             ec{"Windhoek"}
@@ -687,11 +684,11 @@ es{
         "Asia:Calcutta"{
             ec{"Calcuta"}
         }
+        "Asia:Chita"{
+            ec{"Chitá"}
+        }
         "Asia:Choibalsan"{
             ec{"Choibalsan"}
-        }
-        "Asia:Chongqing"{
-            ec{"Chongqing"}
         }
         "Asia:Colombo"{
             ec{"Colombo"}
@@ -713,9 +710,6 @@ es{
         }
         "Asia:Gaza"{
             ec{"Gaza"}
-        }
-        "Asia:Harbin"{
-            ec{"Harbin"}
         }
         "Asia:Hebron"{
             ec{"Hebrón"}
@@ -746,9 +740,6 @@ es{
         }
         "Asia:Karachi"{
             ec{"Karachi"}
-        }
-        "Asia:Kashgar"{
-            ec{"Kashgar"}
         }
         "Asia:Katmandu"{
             ec{"Katmandú"}
@@ -836,6 +827,9 @@ es{
         }
         "Asia:Singapore"{
             ec{"Singapur"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"Srednekolimsk"}
         }
         "Asia:Taipei"{
             ec{"Taipéi"}
@@ -946,7 +940,7 @@ es{
             ec{"Sídney"}
         }
         "Etc:Unknown"{
-            ec{"Ciudad desconocida"}
+            ec{"ciudad desconocida"}
         }
         "Europe:Amsterdam"{
             ec{"Ámsterdam"}
@@ -1157,6 +1151,9 @@ es{
         "Pacific:Auckland"{
             ec{"Auckland"}
         }
+        "Pacific:Bougainville"{
+            ec{"Bougainville"}
+        }
         "Pacific:Chatham"{
             ec{"Chatham"}
         }
@@ -1233,7 +1230,7 @@ es{
             ec{"Palaos"}
         }
         "Pacific:Pitcairn"{
-            ec{"Islas Pitcairn"}
+            ec{"Pitcairn"}
         }
         "Pacific:Ponape"{
             ec{"Pohnpei"}
@@ -1440,10 +1437,10 @@ es{
             ls{"hora estándar de Choibalsan"}
         }
         "meta:Christmas"{
-            ls{"hora de la isla Christmas"}
+            ls{"hora de la Isla de Navidad"}
         }
         "meta:Cocos"{
-            ls{"hora de las islas Cocos"}
+            ls{"hora de las Islas Cocos"}
         }
         "meta:Colombia"{
             ld{"hora de verano de Colombia"}
@@ -1451,9 +1448,9 @@ es{
             ls{"hora estándar de Colombia"}
         }
         "meta:Cook"{
-            ld{"hora de verano media de las islas Cook"}
-            lg{"hora de las islas Cook"}
-            ls{"hora estándar de las islas Cook"}
+            ld{"hora de verano media de las Islas Cook"}
+            lg{"hora de las Islas Cook"}
+            ls{"hora estándar de las Islas Cook"}
         }
         "meta:Cuba"{
             ld{"hora de verano de Cuba"}
@@ -1539,7 +1536,7 @@ es{
             ls{"hora de las islas Gilbert"}
         }
         "meta:Greenland_Eastern"{
-            ld{"hora de verano de de Groenlandia oriental"}
+            ld{"hora de verano de Groenlandia oriental"}
             lg{"hora de Groenlandia oriental"}
             ls{"hora estándar de Groenlandia oriental"}
         }
@@ -1668,7 +1665,7 @@ es{
             ls{"hora de Maldivas"}
         }
         "meta:Marquesas"{
-            ls{"hora de las islas Marquesas"}
+            ls{"hora de Marquesas"}
         }
         "meta:Marshall_Islands"{
             ls{"hora de las Islas Marshall"}
@@ -1729,7 +1726,7 @@ es{
             ls{"hora de Niue"}
         }
         "meta:Norfolk"{
-            ls{"hora de las islas Norfolk"}
+            ls{"hora de la isla Norfolk"}
         }
         "meta:Noronha"{
             ld{"hora de verano de Fernando de Noronha"}

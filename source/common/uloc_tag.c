@@ -1,6 +1,6 @@
 /*
 **********************************************************************
-*   Copyright (C) 2009-2014, International Business Machines
+*   Copyright (C) 2009-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 **********************************************************************
 */
@@ -1320,7 +1320,7 @@ _appendLDMLExtensionAsKeywords(const char* ldmlext, ExtensionListEntry** appendT
         /* BCP47 representation of LDML key/type pairs */
         while (!isDone) {
             const char *pNextBcpKey = NULL;
-            int32_t nextBcpKeyLen;
+            int32_t nextBcpKeyLen = 0;
             UBool emitKeyword = FALSE;
 
             if (*pTag) {
@@ -1833,6 +1833,7 @@ ultag_parse(const char* tag, int32_t tagLen, int32_t* parsedLen, UErrorCode* sta
                 tagBuf = (char*)uprv_malloc(newTagLength + 1);
                 if (tagBuf == NULL) {
                     *status = U_MEMORY_ALLOCATION_ERROR;
+                    ultag_close(t);
                     return NULL;
                 }
                 t->buf = tagBuf;
@@ -2129,7 +2130,7 @@ ultag_parse(const char* tag, int32_t tagLen, int32_t* parsedLen, UErrorCode* sta
     return t;
 
 error:
-    uprv_free(t);
+    ultag_close(t);
     return NULL;
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1999-2014, International Business Machines Corporation and
+ * Copyright (c) 1999-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /************************************************************************
@@ -38,6 +38,11 @@
 #include <stdlib.h>
 #include "unicode/numfmt.h"
 #include "unicode/uscript.h"
+#include "cmemory.h"
+
+#if !UCONFIG_NO_FILTERED_BREAK_ITERATION
+#include "unicode/filteredbrk.h"
+#endif // !UCONFIG_NO_FILTERED_BREAK_ITERATION
 
 #define TEST_ASSERT(x) {if (!(x)) { \
     errln("Failure in file %s, line %d", __FILE__, __LINE__);}}
@@ -1174,7 +1179,7 @@ void RBBITest::TestExtended() {
     UnicodeString       rules;
     TestParams          tp(status);
 
-    RegexMatcher      localeMatcher(UNICODE_STRING_SIMPLE("<locale *([\\p{L}\\p{Nd}_]*) *>"), 0, status);
+    RegexMatcher      localeMatcher(UNICODE_STRING_SIMPLE("<locale *([\\p{L}\\p{Nd}_@&=-]*) *>"), 0, status);
     if (U_FAILURE(status)) {
         dataerrln("Failure in file %s, line %d, status = \"%s\"", __FILE__, __LINE__, u_errorName(status));
     }
@@ -1199,7 +1204,7 @@ void RBBITest::TestExtended() {
     }
 
 
-
+    bool skipTest = false; // Skip this test?
 
     //
     //  Put the test data into a UnicodeString
@@ -1267,25 +1272,28 @@ void RBBITest::TestExtended() {
             if (testString.compare(charIdx-1, 6, "<word>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createWordInstance(locale,  status);
+                skipTest = false;
                 charIdx += 5;
                 break;
             }
             if (testString.compare(charIdx-1, 6, "<char>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createCharacterInstance(locale,  status);
+                skipTest = false;
                 charIdx += 5;
                 break;
             }
             if (testString.compare(charIdx-1, 6, "<line>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createLineInstance(locale,  status);
+                skipTest = false;
                 charIdx += 5;
                 break;
             }
             if (testString.compare(charIdx-1, 6, "<sent>") == 0) {
                 delete tp.bi;
-                tp.bi = NULL;
                 tp.bi = BreakIterator::createSentenceInstance(locale,  status);
+                skipTest = false;
                 charIdx += 5;
                 break;
             }
@@ -1346,17 +1354,19 @@ void RBBITest::TestExtended() {
                 parseState = PARSE_TAG;
                 charIdx += 6;
 
-                // RUN THE TEST!
-                status = U_ZERO_ERROR;
-                tp.setUTF16(status);
-                executeTest(&tp, status);
-                TEST_ASSERT_SUCCESS(status);
+                if (!skipTest) {
+                    // RUN THE TEST!
+                    status = U_ZERO_ERROR;
+                    tp.setUTF16(status);
+                    executeTest(&tp, status);
+                    TEST_ASSERT_SUCCESS(status);
 
-                // Run again, this time with UTF-8 text wrapped in a UText.
-                status = U_ZERO_ERROR;
-                tp.setUTF8(status);
-                TEST_ASSERT_SUCCESS(status);
-                executeTest(&tp, status);
+                    // Run again, this time with UTF-8 text wrapped in a UText.
+                    status = U_ZERO_ERROR;
+                    tp.setUTF8(status);
+                    TEST_ASSERT_SUCCESS(status);
+                    executeTest(&tp, status);
+                }
                 break;
             }
 
@@ -1724,6 +1734,32 @@ void RBBITest::TestUnicodeFiles() {
 }
 
 
+// Check for test cases from the Unicode test data files that are known to fail
+// and should be skipped because ICU is not yet able to fully implement the spec.
+// See ticket #7270.
+
+UBool RBBITest::testCaseIsKnownIssue(const UnicodeString &testCase, const char *fileName) {
+    static const UChar badTestCases[][4] = {                     // Line Numbers from Unicode 7.0.0 file.
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x007D, (UChar)0x0000},   // Line 5198
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x0029, (UChar)0x0000},   // Line 5202
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x0021, (UChar)0x0000},   // Line 5214
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x002c, (UChar)0x0000},   // Line 5246
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x002f, (UChar)0x0000},   // Line 5298
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x2060, (UChar)0x0000}    // Line 5302
+    };
+    if (strcmp(fileName, "LineBreakTest.txt") != 0) {
+        return FALSE;
+    }
+
+    for (int i=0; i<UPRV_LENGTHOF(badTestCases); i++) {
+        if (testCase == UnicodeString(badTestCases[i])) {
+            return logKnownIssue("7270");
+        }
+    }
+    return FALSE;
+}
+
+
 //--------------------------------------------------------------------------------------------
 //
 //   Run tests from one of the boundary test data files distributed by the Unicode Consortium
@@ -1731,9 +1767,6 @@ void RBBITest::TestUnicodeFiles() {
 //-------------------------------------------------------------------------------------------
 void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *bi) {
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS
-    // TODO(andy): Match line break behavior to Unicode 6.0 and remove this time bomb. Ticket #7270
-    UBool isTicket7270Fixed = !logKnownIssue("7270");
-    UBool isLineBreak = 0 == strcmp(fileName, "LineBreakTest.txt");
     UErrorCode  status = U_ZERO_ERROR;
 
     //
@@ -1825,20 +1858,8 @@ void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *
         else if (tokenMatcher.start(4, status) >= 0) {
             // Scanned to end of a line, possibly skipping over a comment in the process.
             //   If the line from the file contained test data, run the test now.
-            //
-            if (testString.length() > 0) {
-// TODO(andy): Remove this time bomb code. Note: Failing line numbers may change when updating to new Unicode data.
-//             Rule 8 
-//                ZW SP* <break>
-//             is not yet implemented.
-if (!(isLineBreak && !isTicket7270Fixed && (5198 == lineNumber || 
-                                            5202 == lineNumber ||
-                                            5214 == lineNumber ||
-                                            5246 == lineNumber ||
-                                            5298 == lineNumber ||
-                                            5302 == lineNumber ))) {
+            if (testString.length() > 0 && !testCaseIsKnownIssue(testString, fileName)) {  
                 checkUnicodeTestCase(fileName, lineNumber, testString, &breakPositions, bi);
-}
             }
 
             // Clear out this test case.
@@ -2743,8 +2764,9 @@ int32_t RBBISentMonkey::next(int32_t prevPos) {
             continue;
         }
 
-        // Rule (7).  Upper ATerm  x  Uppper
-        if (fUpperSet->contains(c0) && fATermSet->contains(c1) && fUpperSet->contains(c2)) {
+        // Rule (7).  (Upper | Lower) ATerm  x  Uppper
+        if ((fUpperSet->contains(c0) || fLowerSet->contains(c0)) &&
+                fATermSet->contains(c1) && fUpperSet->contains(c2)) {
             continue;
         }
 
@@ -3359,6 +3381,7 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
 
         // LB 22
         if ((fAL->contains(prevChar) && fIN->contains(thisChar)) ||
+            (fEX->contains(prevChar) && fIN->contains(thisChar)) ||
             (fHL->contains(prevChar) && fIN->contains(thisChar)) ||
             (fID->contains(prevChar) && fIN->contains(thisChar)) ||
             (fIN->contains(prevChar) && fIN->contains(thisChar)) ||

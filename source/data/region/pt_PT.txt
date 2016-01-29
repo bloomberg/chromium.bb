@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/pt_PT.xml
@@ -8,12 +8,18 @@
 // ***************************************************************************
 pt_PT{
     Countries{
+        009{"Oceânia"}
+        015{"Norte de África"}
+        029{"Caraíbas"}
+        154{"Europa do Norte"}
         AI{"Anguila"}
         AM{"Arménia"}
+        AX{"Alanda"}
+        BD{"Bangladeche"}
         BH{"Barém"}
         BJ{"Benim"}
-        BW{"Botswana"}
-        CC{"Ilhas Cocos"}
+        BS{"Baamas"}
+        CC{"Ilhas dos Cocos (Keeling)"}
         CD{"Congo-Kinshasa"}
         CG{"Congo-Brazzaville"}
         CM{"Camarões"}
@@ -23,49 +29,53 @@ pt_PT{
         DJ{"Jibuti"}
         DM{"Domínica"}
         EE{"Estónia"}
-        EG{"Egipto"}
         FK{"Ilhas Falkland"}
         FO{"Ilhas Faroé"}
         GL{"Gronelândia"}
-        GS{"Ilhas Geórgia do Sul e Sandwich do Sul"}
         GU{"Guame"}
-        GW{"Guiné-Bissau"}
         IR{"Irão"}
         KE{"Quénia"}
+        KN{"São Cristóvão e Neves"}
         KY{"Ilhas Caimão"}
+        LI{"Listenstaine"}
+        LK{"Sri Lanca"}
         LV{"Letónia"}
         MC{"Mónaco"}
         MG{"Madagáscar"}
         MK{"Macedónia"}
         MS{"Monserrate"}
         MU{"Maurícia"}
+        MW{"Maláui"}
         NC{"Nova Caledónia"}
         NL{"Países Baixos"}
         PL{"Polónia"}
-        PN{"Pitcairn"}
-        PS{"Território Palestiniano"}
+        PM{"São Pedro e Miquelão"}
+        PS{"Territórios palestinianos"}
         QO{"Oceânia Insular"}
         RO{"Roménia"}
         SC{"Seicheles"}
         SG{"Singapura"}
         SI{"Eslovénia"}
-        SM{"São Marino"}
+        SM{"São Marinho"}
+        SV{"Salvador"}
         TC{"Ilhas Turcas e Caicos"}
         TK{"Toquelau"}
         TM{"Turquemenistão"}
         TT{"Trindade e Tobago"}
+        UM{"Ilhas Menores Afastadas dos EUA"}
+        UZ{"Usbequistão"}
         VN{"Vietname"}
         YE{"Iémen"}
         YT{"Maiote"}
         ZW{"Zimbabué"}
     }
+    Countries%short{
+        GB{"GB"}
+    }
     Countries%variant{
         CG{"República do Congo"}
         FK{"Ilhas Malvinas"}
-        MK{"Antiga República Jugoslava da Macedónia"}
+        MK{"Macedónia (ARJM)"}
     }
-    CountriesShort{
-        GB{"RU"}
-    }
-    Version{"2.1.8.19"}
+    Version{"2.1.19.79"}
 }

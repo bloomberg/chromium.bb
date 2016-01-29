@@ -1,6 +1,6 @@
 /*
 *******************************************************************************
-* Copyright (C) 2014, International Business Machines Corporation and         *
+* Copyright (C) 2014-2015, International Business Machines Corporation and    *
 * others. All Rights Reserved.                                                *
 *******************************************************************************
 *
@@ -40,6 +40,8 @@ private:
     void TestBasic();
     void TestCompatible53_1();
     void TestCompatible54_1();
+    void TestCompatible55_1();
+    void TestCompatible56_1();
     void TestGetAvailable();
     void TestExamplesInDocs();
     void TestFormatPeriodEn();
@@ -47,7 +49,6 @@ private:
     void TestGreek();
     void TestFormatSingleArg();
     void TestFormatMeasuresZeroArg();
-    void TestMultiplesWithPer();
     void TestSimplePer();
     void TestNumeratorPlurals();
     void TestMultiples();
@@ -55,11 +56,11 @@ private:
     void TestCurrencies();
     void TestFieldPosition();
     void TestFieldPositionMultiple();
-    void TestFieldPositionMultipleWithPer();
     void TestBadArg();
     void TestEquality();
     void TestGroupingSeparator();
     void TestDoubleZero();
+    void TestUnitPerUnitResolution();
     void verifyFormat(
         const char *description,
         const MeasureFormat &fmt,
@@ -85,11 +86,16 @@ private:
         const MeasureUnit &unit,
         const MeasureUnit &perUnit,
         const char *expected);
-    void helperTestMultiplesWithPer(
+    void helperTestSimplePer(
         const Locale &locale,
         UMeasureFormatWidth width,
+        double value,
         const MeasureUnit &unit,
-        const char *expected);
+        const MeasureUnit &perUnit,
+        const char *expected,
+        int32_t field,
+        int32_t expected_start,
+        int32_t expected_end);
     void helperTestMultiples(
         const Locale &locale,
         UMeasureFormatWidth width,
@@ -100,16 +106,6 @@ private:
         const UnicodeString &prefix,
         const Measure *measures,
         int32_t measureCount,
-        NumberFormat::EAlignmentFields field,
-        int32_t start,
-        int32_t end);
-    void verifyFieldPositionWithPer(
-        const char *description,
-        const MeasureFormat &fmt,
-        const UnicodeString &prefix,
-        const Measure *measures,
-        int32_t measureCount,
-        const MeasureUnit &perUnit,
         NumberFormat::EAlignmentFields field,
         int32_t start,
         int32_t end);
@@ -124,6 +120,8 @@ void MeasureFormatTest::runIndexedTest(
     TESTCASE_AUTO(TestBasic);
     TESTCASE_AUTO(TestCompatible53_1);
     TESTCASE_AUTO(TestCompatible54_1);
+    TESTCASE_AUTO(TestCompatible55_1);
+    TESTCASE_AUTO(TestCompatible56_1);
     TESTCASE_AUTO(TestGetAvailable);
     TESTCASE_AUTO(TestExamplesInDocs);
     TESTCASE_AUTO(TestFormatPeriodEn);
@@ -131,7 +129,6 @@ void MeasureFormatTest::runIndexedTest(
     TESTCASE_AUTO(TestGreek);
     TESTCASE_AUTO(TestFormatSingleArg);
     TESTCASE_AUTO(TestFormatMeasuresZeroArg);
-    TESTCASE_AUTO(TestMultiplesWithPer);
     TESTCASE_AUTO(TestSimplePer);
     TESTCASE_AUTO(TestNumeratorPlurals);
     TESTCASE_AUTO(TestMultiples);
@@ -139,11 +136,11 @@ void MeasureFormatTest::runIndexedTest(
     TESTCASE_AUTO(TestCurrencies);
     TESTCASE_AUTO(TestFieldPosition);
     TESTCASE_AUTO(TestFieldPositionMultiple);
-    TESTCASE_AUTO(TestFieldPositionMultipleWithPer);
     TESTCASE_AUTO(TestBadArg);
     TESTCASE_AUTO(TestEquality);
     TESTCASE_AUTO(TestGroupingSeparator);
     TESTCASE_AUTO(TestDoubleZero);
+    TESTCASE_AUTO(TestUnitPerUnitResolution);
     TESTCASE_AUTO_END;
 }
 
@@ -320,6 +317,269 @@ void MeasureFormatTest::TestCompatible54_1() {
     measureUnit.adoptInstead(MeasureUnit::createMegaliter(status));
     measureUnit.adoptInstead(MeasureUnit::createMilliliter(status));
     measureUnit.adoptInstead(MeasureUnit::createPint(status));
+    measureUnit.adoptInstead(MeasureUnit::createQuart(status));
+    measureUnit.adoptInstead(MeasureUnit::createTablespoon(status));
+    measureUnit.adoptInstead(MeasureUnit::createTeaspoon(status));
+    assertSuccess("", status);
+}
+
+void MeasureFormatTest::TestCompatible55_1() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<MeasureUnit> measureUnit;
+    measureUnit.adoptInstead(MeasureUnit::createGForce(status));
+    measureUnit.adoptInstead(MeasureUnit::createMeterPerSecondSquared(status));
+    measureUnit.adoptInstead(MeasureUnit::createArcMinute(status));
+    measureUnit.adoptInstead(MeasureUnit::createArcSecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createDegree(status));
+    measureUnit.adoptInstead(MeasureUnit::createRadian(status));
+    measureUnit.adoptInstead(MeasureUnit::createAcre(status));
+    measureUnit.adoptInstead(MeasureUnit::createHectare(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareCentimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareMeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareYard(status));
+    measureUnit.adoptInstead(MeasureUnit::createLiterPerKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilePerGallon(status));
+    measureUnit.adoptInstead(MeasureUnit::createBit(status));
+    measureUnit.adoptInstead(MeasureUnit::createByte(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigabit(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigabyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilobit(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilobyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegabit(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegabyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createTerabit(status));
+    measureUnit.adoptInstead(MeasureUnit::createTerabyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createDay(status));
+    measureUnit.adoptInstead(MeasureUnit::createHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createMicrosecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillisecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createMinute(status));
+    measureUnit.adoptInstead(MeasureUnit::createMonth(status));
+    measureUnit.adoptInstead(MeasureUnit::createNanosecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createSecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createWeek(status));
+    measureUnit.adoptInstead(MeasureUnit::createYear(status));
+    measureUnit.adoptInstead(MeasureUnit::createAmpere(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilliampere(status));
+    measureUnit.adoptInstead(MeasureUnit::createOhm(status));
+    measureUnit.adoptInstead(MeasureUnit::createVolt(status));
+    measureUnit.adoptInstead(MeasureUnit::createCalorie(status));
+    measureUnit.adoptInstead(MeasureUnit::createFoodcalorie(status));
+    measureUnit.adoptInstead(MeasureUnit::createJoule(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilocalorie(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilojoule(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilowattHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigahertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createHertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilohertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegahertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createAstronomicalUnit(status));
+    measureUnit.adoptInstead(MeasureUnit::createCentimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createDecimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createFathom(status));
+    measureUnit.adoptInstead(MeasureUnit::createFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createFurlong(status));
+    measureUnit.adoptInstead(MeasureUnit::createInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createLightYear(status));
+    measureUnit.adoptInstead(MeasureUnit::createMeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createMicrometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createNanometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createNauticalMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createParsec(status));
+    measureUnit.adoptInstead(MeasureUnit::createPicometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createYard(status));
+    measureUnit.adoptInstead(MeasureUnit::createLux(status));
+    measureUnit.adoptInstead(MeasureUnit::createCarat(status));
+    measureUnit.adoptInstead(MeasureUnit::createGram(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilogram(status));
+    measureUnit.adoptInstead(MeasureUnit::createMetricTon(status));
+    measureUnit.adoptInstead(MeasureUnit::createMicrogram(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilligram(status));
+    measureUnit.adoptInstead(MeasureUnit::createOunce(status));
+    measureUnit.adoptInstead(MeasureUnit::createOunceTroy(status));
+    measureUnit.adoptInstead(MeasureUnit::createPound(status));
+    measureUnit.adoptInstead(MeasureUnit::createStone(status));
+    measureUnit.adoptInstead(MeasureUnit::createTon(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigawatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createHorsepower(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilowatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegawatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilliwatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createWatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createHectopascal(status));
+    measureUnit.adoptInstead(MeasureUnit::createInchHg(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillibar(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillimeterOfMercury(status));
+    measureUnit.adoptInstead(MeasureUnit::createPoundPerSquareInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createKarat(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilometerPerHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createMeterPerSecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilePerHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createCelsius(status));
+    measureUnit.adoptInstead(MeasureUnit::createFahrenheit(status));
+    measureUnit.adoptInstead(MeasureUnit::createGenericTemperature(status));
+    measureUnit.adoptInstead(MeasureUnit::createKelvin(status));
+    measureUnit.adoptInstead(MeasureUnit::createAcreFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createBushel(status));
+    measureUnit.adoptInstead(MeasureUnit::createCentiliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicCentimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicMeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicYard(status));
+    measureUnit.adoptInstead(MeasureUnit::createCup(status));
+    measureUnit.adoptInstead(MeasureUnit::createDeciliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createFluidOunce(status));
+    measureUnit.adoptInstead(MeasureUnit::createGallon(status));
+    measureUnit.adoptInstead(MeasureUnit::createHectoliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createLiter(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegaliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilliliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createPint(status));
+    measureUnit.adoptInstead(MeasureUnit::createQuart(status));
+    measureUnit.adoptInstead(MeasureUnit::createTablespoon(status));
+    measureUnit.adoptInstead(MeasureUnit::createTeaspoon(status));
+    assertSuccess("", status);
+}
+
+void MeasureFormatTest::TestCompatible56_1() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<MeasureUnit> measureUnit;
+    measureUnit.adoptInstead(MeasureUnit::createGForce(status));
+    measureUnit.adoptInstead(MeasureUnit::createMeterPerSecondSquared(status));
+    measureUnit.adoptInstead(MeasureUnit::createArcMinute(status));
+    measureUnit.adoptInstead(MeasureUnit::createArcSecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createDegree(status));
+    measureUnit.adoptInstead(MeasureUnit::createRadian(status));
+    measureUnit.adoptInstead(MeasureUnit::createRevolutionAngle(status));
+    measureUnit.adoptInstead(MeasureUnit::createAcre(status));
+    measureUnit.adoptInstead(MeasureUnit::createHectare(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareCentimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareMeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createSquareYard(status));
+    measureUnit.adoptInstead(MeasureUnit::createLiterPer100Kilometers(status));
+    measureUnit.adoptInstead(MeasureUnit::createLiterPerKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilePerGallon(status));
+    measureUnit.adoptInstead(MeasureUnit::createBit(status));
+    measureUnit.adoptInstead(MeasureUnit::createByte(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigabit(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigabyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilobit(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilobyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegabit(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegabyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createTerabit(status));
+    measureUnit.adoptInstead(MeasureUnit::createTerabyte(status));
+    measureUnit.adoptInstead(MeasureUnit::createCentury(status));
+    measureUnit.adoptInstead(MeasureUnit::createDay(status));
+    measureUnit.adoptInstead(MeasureUnit::createHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createMicrosecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillisecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createMinute(status));
+    measureUnit.adoptInstead(MeasureUnit::createMonth(status));
+    measureUnit.adoptInstead(MeasureUnit::createNanosecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createSecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createWeek(status));
+    measureUnit.adoptInstead(MeasureUnit::createYear(status));
+    measureUnit.adoptInstead(MeasureUnit::createAmpere(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilliampere(status));
+    measureUnit.adoptInstead(MeasureUnit::createOhm(status));
+    measureUnit.adoptInstead(MeasureUnit::createVolt(status));
+    measureUnit.adoptInstead(MeasureUnit::createCalorie(status));
+    measureUnit.adoptInstead(MeasureUnit::createFoodcalorie(status));
+    measureUnit.adoptInstead(MeasureUnit::createJoule(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilocalorie(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilojoule(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilowattHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigahertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createHertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilohertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegahertz(status));
+    measureUnit.adoptInstead(MeasureUnit::createAstronomicalUnit(status));
+    measureUnit.adoptInstead(MeasureUnit::createCentimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createDecimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createFathom(status));
+    measureUnit.adoptInstead(MeasureUnit::createFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createFurlong(status));
+    measureUnit.adoptInstead(MeasureUnit::createInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createLightYear(status));
+    measureUnit.adoptInstead(MeasureUnit::createMeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createMicrometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createMileScandinavian(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createNanometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createNauticalMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createParsec(status));
+    measureUnit.adoptInstead(MeasureUnit::createPicometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createYard(status));
+    measureUnit.adoptInstead(MeasureUnit::createLux(status));
+    measureUnit.adoptInstead(MeasureUnit::createCarat(status));
+    measureUnit.adoptInstead(MeasureUnit::createGram(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilogram(status));
+    measureUnit.adoptInstead(MeasureUnit::createMetricTon(status));
+    measureUnit.adoptInstead(MeasureUnit::createMicrogram(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilligram(status));
+    measureUnit.adoptInstead(MeasureUnit::createOunce(status));
+    measureUnit.adoptInstead(MeasureUnit::createOunceTroy(status));
+    measureUnit.adoptInstead(MeasureUnit::createPound(status));
+    measureUnit.adoptInstead(MeasureUnit::createStone(status));
+    measureUnit.adoptInstead(MeasureUnit::createTon(status));
+    measureUnit.adoptInstead(MeasureUnit::createGigawatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createHorsepower(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilowatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegawatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilliwatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createWatt(status));
+    measureUnit.adoptInstead(MeasureUnit::createHectopascal(status));
+    measureUnit.adoptInstead(MeasureUnit::createInchHg(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillibar(status));
+    measureUnit.adoptInstead(MeasureUnit::createMillimeterOfMercury(status));
+    measureUnit.adoptInstead(MeasureUnit::createPoundPerSquareInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createKarat(status));
+    measureUnit.adoptInstead(MeasureUnit::createKilometerPerHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createKnot(status));
+    measureUnit.adoptInstead(MeasureUnit::createMeterPerSecond(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilePerHour(status));
+    measureUnit.adoptInstead(MeasureUnit::createCelsius(status));
+    measureUnit.adoptInstead(MeasureUnit::createFahrenheit(status));
+    measureUnit.adoptInstead(MeasureUnit::createGenericTemperature(status));
+    measureUnit.adoptInstead(MeasureUnit::createKelvin(status));
+    measureUnit.adoptInstead(MeasureUnit::createAcreFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createBushel(status));
+    measureUnit.adoptInstead(MeasureUnit::createCentiliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicCentimeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicFoot(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicInch(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicKilometer(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicMeter(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicMile(status));
+    measureUnit.adoptInstead(MeasureUnit::createCubicYard(status));
+    measureUnit.adoptInstead(MeasureUnit::createCup(status));
+    measureUnit.adoptInstead(MeasureUnit::createCupMetric(status));
+    measureUnit.adoptInstead(MeasureUnit::createDeciliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createFluidOunce(status));
+    measureUnit.adoptInstead(MeasureUnit::createGallon(status));
+    measureUnit.adoptInstead(MeasureUnit::createHectoliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createLiter(status));
+    measureUnit.adoptInstead(MeasureUnit::createMegaliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createMilliliter(status));
+    measureUnit.adoptInstead(MeasureUnit::createPint(status));
+    measureUnit.adoptInstead(MeasureUnit::createPintMetric(status));
     measureUnit.adoptInstead(MeasureUnit::createQuart(status));
     measureUnit.adoptInstead(MeasureUnit::createTablespoon(status));
     measureUnit.adoptInstead(MeasureUnit::createTeaspoon(status));
@@ -589,11 +849,11 @@ void MeasureFormatTest::TestFormatPeriodEn() {
             {t_2y_5M_3w_4d, UPRV_LENGTHOF(t_2y_5M_3w_4d), "2 years, 5 months, 3 weeks, 4 days"}};
 
     ExpectedResult abbrevData[] = {
-            {t_1m_59_9996s, UPRV_LENGTHOF(t_1m_59_9996s), "1 min, 59.9996 secs"},
-            {t_19m, UPRV_LENGTHOF(t_19m), "19 mins"},
-            {t_1h_23_5s, UPRV_LENGTHOF(t_1h_23_5s), "1 hr, 23.5 secs"},
-            {t_1h_23_5m, UPRV_LENGTHOF(t_1h_23_5m), "1 hr, 23.5 mins"},
-            {t_1h_0m_23s, UPRV_LENGTHOF(t_1h_0m_23s), "1 hr, 0 mins, 23 secs"},
+            {t_1m_59_9996s, UPRV_LENGTHOF(t_1m_59_9996s), "1 min, 59.9996 sec"},
+            {t_19m, UPRV_LENGTHOF(t_19m), "19 min"},
+            {t_1h_23_5s, UPRV_LENGTHOF(t_1h_23_5s), "1 hr, 23.5 sec"},
+            {t_1h_23_5m, UPRV_LENGTHOF(t_1h_23_5m), "1 hr, 23.5 min"},
+            {t_1h_0m_23s, UPRV_LENGTHOF(t_1h_0m_23s), "1 hr, 0 min, 23 sec"},
             {t_2y_5M_3w_4d, UPRV_LENGTHOF(t_2y_5M_3w_4d), "2 yrs, 5 mths, 3 wks, 4 days"}};
 
     ExpectedResult narrowData[] = {
@@ -871,32 +1131,6 @@ void MeasureFormatTest::TestFormatMeasuresZeroArg() {
     verifyFormat("TestFormatMeasuresZeroArg", fmt, NULL, 0, "");
 }
 
-void MeasureFormatTest::TestMultiplesWithPer() {
-    Locale en("en");
-    UErrorCode status = U_ZERO_ERROR;
-    LocalPointer<MeasureUnit> second(MeasureUnit::createSecond(status));
-    LocalPointer<MeasureUnit> minute(MeasureUnit::createMinute(status));
-    if (!assertSuccess("", status)) {
-        return;
-    }
-
-    // Per unit test.
-    helperTestMultiplesWithPer(
-            en, UMEASFMT_WIDTH_WIDE, *second, "2 miles, 1 foot, 2.3 inches per second");
-    helperTestMultiplesWithPer(
-            en, UMEASFMT_WIDTH_SHORT, *second, "2 mi, 1 ft, 2.3 inps");
-    helperTestMultiplesWithPer(
-            en, UMEASFMT_WIDTH_NARROW, *second, "2mi 1\\u2032 2.3\\u2033/s");
-
-    // Fallback compound per test
-    helperTestMultiplesWithPer(
-            en, UMEASFMT_WIDTH_WIDE, *minute, "2 miles, 1 foot, 2.3 inches per minute");
-    helperTestMultiplesWithPer(
-            en, UMEASFMT_WIDTH_SHORT, *minute, "2 mi, 1 ft, 2.3 in/min");
-    helperTestMultiplesWithPer(
-            en, UMEASFMT_WIDTH_NARROW, *minute, "2mi 1\\u2032 2.3\\u2033/m");
-}
-
 void MeasureFormatTest::TestSimplePer() {
     Locale en("en");
     UErrorCode status = U_ZERO_ERROR;
@@ -908,13 +1142,59 @@ void MeasureFormatTest::TestSimplePer() {
     }
 
     helperTestSimplePer(
-            en, UMEASFMT_WIDTH_SHORT, 1.0, *pound, *second, "1 lbps");
+            en, UMEASFMT_WIDTH_WIDE,
+            1.0, *pound, *second, "1 pound per second");
     helperTestSimplePer(
-            en, UMEASFMT_WIDTH_SHORT, 2.0, *pound, *second, "2 lbps");
+            en, UMEASFMT_WIDTH_WIDE,
+            2.0, *pound, *second, "2 pounds per second");
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_WIDE,
+            1.0, *pound, *minute, "1 pound per minute");
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_WIDE,
+            2.0, *pound, *minute, "2 pounds per minute");
+
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_SHORT, 1.0, *pound, *second, "1 lb/s");
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_SHORT, 2.0, *pound, *second, "2 lb/s");
     helperTestSimplePer(
             en, UMEASFMT_WIDTH_SHORT, 1.0, *pound, *minute, "1 lb/min");
     helperTestSimplePer(
             en, UMEASFMT_WIDTH_SHORT, 2.0, *pound, *minute, "2 lb/min");
+
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_NARROW, 1.0, *pound, *second, "1#/s");
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_NARROW, 2.0, *pound, *second, "2#/s");
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_NARROW, 1.0, *pound, *minute, "1#/min");
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_NARROW, 2.0, *pound, *minute, "2#/min");
+
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_SHORT,
+            23.3, *pound, *second, "23.3 lb/s",
+            NumberFormat::kDecimalSeparatorField,
+            2, 3);
+
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_SHORT,
+            23.3, *pound, *second, "23.3 lb/s",
+            NumberFormat::kIntegerField,
+            0, 2);
+
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_SHORT,
+            23.3, *pound, *minute, "23.3 lb/min",
+            NumberFormat::kDecimalSeparatorField,
+            2, 3);
+
+    helperTestSimplePer(
+            en, UMEASFMT_WIDTH_SHORT,
+            23.3, *pound, *minute, "23.3 lb/min",
+            NumberFormat::kIntegerField,
+            0, 2);
 }
 
 void MeasureFormatTest::TestNumeratorPlurals() {
@@ -927,13 +1207,20 @@ void MeasureFormatTest::TestNumeratorPlurals() {
     }
 
     helperTestSimplePer(
-            pl, UMEASFMT_WIDTH_WIDE, 1.0, *foot, *second, "1 stopa na sekund\\u0119");
+            pl,
+            UMEASFMT_WIDTH_WIDE,
+            1.0, *foot, *second, "1 stopa na sekund\\u0119");
     helperTestSimplePer(
-            pl, UMEASFMT_WIDTH_WIDE, 2.0, *foot, *second, "2 stopy na sekund\\u0119");
+            pl,
+            UMEASFMT_WIDTH_WIDE,
+            2.0, *foot, *second, "2 stopy na sekund\\u0119");
     helperTestSimplePer(
-            pl, UMEASFMT_WIDTH_WIDE, 5.0, *foot, *second, "5 st\\u00f3p na sekund\\u0119");
+            pl,
+            UMEASFMT_WIDTH_WIDE,
+            5.0, *foot, *second, "5 st\\u00f3p na sekund\\u0119");
     helperTestSimplePer(
-            pl, UMEASFMT_WIDTH_WIDE, 1.5, *foot, *second, "1,5 stopy na sekund\\u0119");
+            pl, UMEASFMT_WIDTH_WIDE,
+            1.5, *foot, *second, "1,5 stopy na sekund\\u0119");
 }
 
 void MeasureFormatTest::helperTestSimplePer(
@@ -943,8 +1230,30 @@ void MeasureFormatTest::helperTestSimplePer(
         const MeasureUnit &unit,
         const MeasureUnit &perUnit,
         const char *expected) {
+    helperTestSimplePer(
+            locale,
+            width,
+            value,
+            unit,
+            perUnit,
+            expected,
+            FieldPosition::DONT_CARE,
+            0,
+            0);
+}
+
+void MeasureFormatTest::helperTestSimplePer(
+        const Locale &locale,
+        UMeasureFormatWidth width,
+        double value,
+        const MeasureUnit &unit,
+        const MeasureUnit &perUnit,
+        const char *expected,
+        int32_t field,
+        int32_t expected_start,
+        int32_t expected_end) {
     UErrorCode status = U_ZERO_ERROR;
-    FieldPosition pos(0);
+    FieldPosition pos(field);
     MeasureFormat fmt(locale, width, status);
     if (!assertSuccess("Error creating format object", status)) {
         return;
@@ -953,10 +1262,10 @@ void MeasureFormatTest::helperTestSimplePer(
     if (!assertSuccess("Error creating measure object", status)) {
         return;
     }
-    UnicodeString buffer;
-    fmt.formatMeasuresPer(
-            &measure,
-            1,
+    UnicodeString prefix("prefix: ");
+    UnicodeString buffer(prefix);
+    fmt.formatMeasurePerUnit(
+            measure,
             perUnit,
             buffer,
             pos,
@@ -964,45 +1273,18 @@ void MeasureFormatTest::helperTestSimplePer(
     if (!assertSuccess("Error formatting measures with per", status)) {
         return;
     }
+    UnicodeString uexpected(expected);
+    uexpected = prefix + uexpected;
     assertEquals(
             "TestSimplePer",
-            UnicodeString(expected).unescape(),
+            uexpected.unescape(),
             buffer);
-}
-
-void MeasureFormatTest::helperTestMultiplesWithPer(
-        const Locale &locale,
-        UMeasureFormatWidth width,
-        const MeasureUnit &perUnit,
-        const char *expected) {
-    UErrorCode status = U_ZERO_ERROR;
-    FieldPosition pos(0);
-    MeasureFormat fmt(locale, width, status);
-    if (!assertSuccess("Error creating format object", status)) {
-        return;
+    if (field != FieldPosition::DONT_CARE) {
+        assertEquals(
+                "Start", expected_start, pos.getBeginIndex() - prefix.length());
+        assertEquals(
+                "End", expected_end, pos.getEndIndex() - prefix.length());
     }
-    Measure measures[] = {
-            Measure(2, MeasureUnit::createMile(status), status),
-            Measure(1, MeasureUnit::createFoot(status), status),
-            Measure(2.3, MeasureUnit::createInch(status), status)};
-    if (!assertSuccess("Error creating measures", status)) {
-        return;
-    }
-    UnicodeString buffer;
-    fmt.formatMeasuresPer(
-            measures,
-            UPRV_LENGTHOF(measures),
-            perUnit,
-            buffer,
-            pos,
-            status);
-    if (!assertSuccess("Error formatting measures with per", status)) {
-        return;
-    }
-    assertEquals(
-            "TestMultiplesWithPer",
-            UnicodeString(expected).unescape(),
-            buffer);
 }
 
 void MeasureFormatTest::TestMultiples() {
@@ -1011,8 +1293,8 @@ void MeasureFormatTest::TestMultiples() {
     helperTestMultiples(en, UMEASFMT_WIDTH_WIDE, "2 miles, 1 foot, 2.3 inches");
     helperTestMultiples(en, UMEASFMT_WIDTH_SHORT, "2 mi, 1 ft, 2.3 in");
     helperTestMultiples(en, UMEASFMT_WIDTH_NARROW, "2mi 1\\u2032 2.3\\u2033");
-    helperTestMultiples(ru, UMEASFMT_WIDTH_WIDE, "2 \\u043C\\u0438\\u043B\\u0438, 1 \\u0444\\u0443\\u0442 \\u0438 2,3 \\u0434\\u044E\\u0439\\u043C\\u0430");
-    helperTestMultiples(ru, UMEASFMT_WIDTH_SHORT, "2 \\u043C\\u0438\\u043B\\u0438, 1 \\u0444\\u0443\\u0442, 2,3 \\u0434\\u044E\\u0439\\u043C.");
+    helperTestMultiples(ru, UMEASFMT_WIDTH_WIDE, "2 \\u043C\\u0438\\u043B\\u0438 1 \\u0444\\u0443\\u0442 \\u0438 2,3 \\u0434\\u044E\\u0439\\u043C\\u0430");
+    helperTestMultiples(ru, UMEASFMT_WIDTH_SHORT, "2 \\u043C\\u0438\\u043B\\u0438 1 \\u0444\\u0443\\u0442 \\u0438 2,3 \\u0434\\u044E\\u0439\\u043C.");
     helperTestMultiples(ru, UMEASFMT_WIDTH_NARROW, "2 \\u043C\\u0438\\u043B\\u044C 1 \\u0444\\u0443\\u0442 2,3 \\u0434\\u044E\\u0439\\u043C\\u0430");
 }
 
@@ -1181,99 +1463,6 @@ void MeasureFormatTest::TestFieldPositionMultiple() {
             0);
 }
 
-void MeasureFormatTest::TestFieldPositionMultipleWithPer() {
-    UErrorCode status = U_ZERO_ERROR;
-    MeasureFormat fmt("en", UMEASFMT_WIDTH_SHORT, status);
-    if (!assertSuccess("Error creating format object", status)) {
-        return;
-    }
-    Measure first[] = {
-            Measure(354, MeasureUnit::createMeter(status), status),
-            Measure(23, MeasureUnit::createCentimeter(status), status)};
-    Measure second[] = {
-            Measure(354, MeasureUnit::createMeter(status), status),
-            Measure(23, MeasureUnit::createCentimeter(status), status),
-            Measure(5.4, MeasureUnit::createMillimeter(status), status)};
-    Measure third[] = {
-            Measure(3, MeasureUnit::createMeter(status), status),
-            Measure(23, MeasureUnit::createCentimeter(status), status),
-            Measure(5, MeasureUnit::createMillimeter(status), status)};
-    if (!assertSuccess("Error creating measure objects", status)) {
-        return;
-    }
-    UnicodeString prefix("123456: ");
-
-    LocalPointer<MeasureUnit> secondUnit(MeasureUnit::createSecond(status));
-    LocalPointer<MeasureUnit> minuteUnit(MeasureUnit::createMinute(status));
-    if (!assertSuccess("Error creating format object", status)) {
-        return;
-    }
-
-    // per unit test
-    verifyFieldPositionWithPer(
-            "Integer",
-            fmt,
-            prefix,
-            first,
-            UPRV_LENGTHOF(first),
-            *secondUnit,
-            NumberFormat::kIntegerField,
-            8,
-            11);
-    verifyFieldPositionWithPer(
-            "Decimal separator",
-            fmt,
-            prefix,
-            second,
-            UPRV_LENGTHOF(second),
-            *secondUnit,
-            NumberFormat::kDecimalSeparatorField,
-            23,
-            24);
-    verifyFieldPositionWithPer(
-            "no decimal separator",
-            fmt,
-            prefix,
-            third,
-            UPRV_LENGTHOF(third),
-            *secondUnit,
-            NumberFormat::kDecimalSeparatorField,
-            0,
-            0);
-
-    // Fallback to compound per test
-    verifyFieldPositionWithPer(
-            "Integer",
-            fmt,
-            prefix,
-            first,
-            UPRV_LENGTHOF(first),
-            *minuteUnit,
-            NumberFormat::kIntegerField,
-            8,
-            11);
-    verifyFieldPositionWithPer(
-            "Decimal separator",
-            fmt,
-            prefix,
-            second,
-            UPRV_LENGTHOF(second),
-            *minuteUnit,
-            NumberFormat::kDecimalSeparatorField,
-            23,
-            24);
-    verifyFieldPositionWithPer(
-            "no decimal separator",
-            fmt,
-            prefix,
-            third,
-            UPRV_LENGTHOF(third),
-            *minuteUnit,
-            NumberFormat::kDecimalSeparatorField,
-            0,
-            0);
-}
-
 void MeasureFormatTest::TestBadArg() {
     UErrorCode status = U_ZERO_ERROR;
     MeasureFormat fmt("en", UMEASFMT_WIDTH_SHORT, status);
@@ -1323,8 +1512,8 @@ void MeasureFormatTest::TestGroupingSeparator() {
         return;
     }
     Measure ms[] = {
-            Measure(INT32_MAX, MeasureUnit::createYear(status), status),
-            Measure(INT32_MIN, MeasureUnit::createMonth(status), status),
+            Measure((int32_t)INT32_MAX, MeasureUnit::createYear(status), status),
+            Measure((int32_t)INT32_MIN, MeasureUnit::createMonth(status), status),
             Measure(-987, MeasureUnit::createDay(status), status),
             Measure(1362, MeasureUnit::createHour(status), status),
             Measure(987, MeasureUnit::createMinute(status), status)};
@@ -1336,7 +1525,7 @@ void MeasureFormatTest::TestGroupingSeparator() {
     }
     assertEquals(
             "grouping separator",
-            "2,147,483,647 yrs, -2,147,483,648 mths, -987 days, 1,362 hrs, 987 mins",
+            "2,147,483,647 yrs, -2,147,483,648 mths, -987 days, 1,362 hr, 987 min",
             appendTo);
     assertEquals("begin index", 9, pos.getBeginIndex());
     assertEquals("end index", 10, pos.getEndIndex());
@@ -1379,6 +1568,26 @@ void MeasureFormatTest::TestDoubleZero() {
             appendTo);
 }
 
+void MeasureFormatTest::TestUnitPerUnitResolution() {
+    UErrorCode status = U_ZERO_ERROR;
+    Locale en("en");
+    MeasureFormat fmt("en", UMEASFMT_WIDTH_SHORT, status);
+    Measure measure(50, MeasureUnit::createPound(status), status);
+    LocalPointer<MeasureUnit> sqInch(MeasureUnit::createSquareInch(status));
+    if (!assertSuccess("Create of format unit and per unit", status)) {
+        return;
+    }
+    FieldPosition pos(0);
+    UnicodeString actual;
+    fmt.formatMeasurePerUnit(
+            measure,
+            *sqInch,
+            actual,
+            pos,
+            status);
+    assertEquals("", "50 psi", actual);
+}
+
 void MeasureFormatTest::verifyFieldPosition(
         const char *description,
         const MeasureFormat &fmt,
@@ -1400,40 +1609,6 @@ void MeasureFormatTest::verifyFieldPosition(
     CharString endIndex;
     endIndex.append(descPrefix, status).append("endIndex", status);
     fmt.formatMeasures(measures, measureCount, result, pos, status);
-    if (!assertSuccess("Error formatting", status)) {
-        return;
-    }
-    assertEquals(beginIndex.data(), start, pos.getBeginIndex());
-    assertEquals(endIndex.data(), end, pos.getEndIndex());
-}
-
-void MeasureFormatTest::verifyFieldPositionWithPer(
-        const char *description,
-        const MeasureFormat &fmt,
-        const UnicodeString &prefix,
-        const Measure *measures,
-        int32_t measureCount,
-        const MeasureUnit &perUnit,
-        NumberFormat::EAlignmentFields field,
-        int32_t start,
-        int32_t end) {
-    UnicodeString result(prefix);
-    FieldPosition pos(field);
-    UErrorCode status = U_ZERO_ERROR;
-    CharString ch;
-    const char *descPrefix = ch.append(description, status)
-            .append(": ", status).data();
-    CharString beginIndex;
-    beginIndex.append(descPrefix, status).append("beginIndex", status);
-    CharString endIndex;
-    endIndex.append(descPrefix, status).append("endIndex", status);
-    fmt.formatMeasuresPer(
-            measures,
-            measureCount,
-            perUnit,
-            result,
-            pos,
-            status);
     if (!assertSuccess("Error formatting", status)) {
         return;
     }

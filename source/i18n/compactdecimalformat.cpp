@@ -1,6 +1,6 @@
 /*
 *******************************************************************************
-* Copyright (C) 1997-2014, International Business Machines Corporation and    *
+* Copyright (C) 1997-2015, International Business Machines Corporation and    *
 * others. All Rights Reserved.                                                *
 *******************************************************************************
 *
@@ -242,10 +242,22 @@ CompactDecimalFormat::format(
     double number,
     UnicodeString& appendTo,
     FieldPosition& pos) const {
+  UErrorCode status = U_ZERO_ERROR;
+  return format(number, appendTo, pos, status);
+}
+
+UnicodeString&
+CompactDecimalFormat::format(
+    double number,
+    UnicodeString& appendTo,
+    FieldPosition& pos,
+    UErrorCode &status) const {
+  if (U_FAILURE(status)) {
+    return appendTo;
+  }
   DigitList orig, rounded;
   orig.set(number);
   UBool isNegative;
-  UErrorCode status = U_ZERO_ERROR;
   _round(orig, rounded, isNegative, status);
   if (U_FAILURE(status)) {
     return appendTo;
@@ -279,10 +291,46 @@ CompactDecimalFormat::format(
 
 UnicodeString&
 CompactDecimalFormat::format(
+    int32_t number,
+    UnicodeString& appendTo,
+    FieldPosition& pos) const {
+  return format((double) number, appendTo, pos);
+}
+
+UnicodeString&
+CompactDecimalFormat::format(
+    int32_t number,
+    UnicodeString& appendTo,
+    FieldPosition& pos,
+    UErrorCode &status) const {
+  return format((double) number, appendTo, pos, status);
+}
+
+UnicodeString&
+CompactDecimalFormat::format(
+    int32_t /* number */,
+    UnicodeString& appendTo,
+    FieldPositionIterator* /* posIter */,
+    UErrorCode& status) const {
+  status = U_UNSUPPORTED_ERROR;
+  return appendTo;
+}
+
+UnicodeString&
+CompactDecimalFormat::format(
     int64_t number,
     UnicodeString& appendTo,
     FieldPosition& pos) const {
   return format((double) number, appendTo, pos);
+}
+
+UnicodeString&
+CompactDecimalFormat::format(
+    int64_t number,
+    UnicodeString& appendTo,
+    FieldPosition& pos,
+    UErrorCode &status) const {
+  return format((double) number, appendTo, pos, status);
 }
 
 UnicodeString&
@@ -868,7 +916,7 @@ static void fillInMissing(CDFLocaleStyleData* result) {
     }
   }
   // Iterate over each variant.
-  int32_t pos = -1;
+  int32_t pos = UHASH_FIRST;
   const UHashElement* element = uhash_nextElement(result->unitsByVariant, &pos);
   for (;element != NULL; element = uhash_nextElement(result->unitsByVariant, &pos)) {
     CDFUnit* units = (CDFUnit*) element->value.pointer;

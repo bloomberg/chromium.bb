@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/fur.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/fur.xml
- */
 fur{
     Currencies{
         AMD{
@@ -19,9 +16,21 @@ fur{
             "ARS",
             "Peso argjentin",
         }
+        ATS{
+            "ATS",
+            "Selin austriac",
+        }
         AUD{
             "A$",
             "dolar australian",
+        }
+        BEF{
+            "BEF",
+            "Franc de Belgjiche",
+        }
+        BIF{
+            "BIF",
+            "Franc burundês",
         }
         BND{
             "BND",
@@ -47,9 +56,21 @@ fur{
             "CN¥",
             "yuan cinês",
         }
+        CSD{
+            "CSD",
+            "Vieri dinar serp",
+        }
+        CUP{
+            "CUP",
+            "Peso cuban",
+        }
         CZK{
             "CZK",
             "Corone de Republiche Ceche",
+        }
+        DEM{
+            "DEM",
+            "Marc todesc",
         }
         DKK{
             "DKK",
@@ -63,6 +84,10 @@ fur{
             "€",
             "euro",
         }
+        FRF{
+            "FRF",
+            "Franc francês",
+        }
         GBP{
             "£",
             "sterline britaniche",
@@ -70,6 +95,10 @@ fur{
         HKD{
             "HK$",
             "dolar di Hong Kong",
+        }
+        HRD{
+            "HRD",
+            "Dinar cravuat",
         }
         HRK{
             "HRK",
@@ -80,12 +109,16 @@ fur{
             "rupiah indonesiane",
         }
         INR{
-            "Rs.",
+            "₹",
             "rupie indiane",
         }
         IRR{
             "IRR",
             "Rial iranian",
+        }
+        ITL{
+            "ITL",
+            "Lire taliane",
         }
         JPY{
             "JP¥",
@@ -94,6 +127,10 @@ fur{
         KRW{
             "₩",
             "won de Coree dal Sud",
+        }
+        LVL{
+            "LVL",
+            "Lats leton",
         }
         MXN{
             "MX$",
@@ -139,9 +176,21 @@ fur{
             "SEK",
             "corone svedese",
         }
+        SIT{
+            "SIT",
+            "Talar sloven",
+        }
+        SKK{
+            "SKK",
+            "Corone slovache",
+        }
         THB{
             "THB",
             "baht tailandês",
+        }
+        TRL{
+            "TRL",
+            "Viere Lire turche",
         }
         TRY{
             "TRY",
@@ -155,9 +204,69 @@ fur{
             "US$",
             "dolar american",
         }
+        USN{
+            "USN",
+            "Dolar american (prossime zornade)",
+        }
+        USS{
+            "USS",
+            "Dolar american (stesse zornade)",
+        }
+        XAG{
+            "XAG",
+            "Arint",
+        }
+        XAU{
+            "XAU",
+            "Aur",
+        }
+        XBA{
+            "XBA",
+            "Unitât composite europeane",
+        }
+        XBB{
+            "XBB",
+            "Unitât monetarie europeane",
+        }
+        XBC{
+            "XBC",
+            "Unitât di acont europeane (XBC)",
+        }
+        XBD{
+            "XBD",
+            "Unitât di acont europeane (XBD)",
+        }
         XDR{
             "XDR",
             "Dirits speciâi di incas",
+        }
+        XFO{
+            "XFO",
+            "Franc aur francês",
+        }
+        XFU{
+            "XFU",
+            "Franc UIC francês",
+        }
+        XPD{
+            "XPD",
+            "Paladi",
+        }
+        XPT{
+            "XPT",
+            "Platin",
+        }
+        XRE{
+            "XRE",
+            "fonts RINET",
+        }
+        XTS{
+            "XTS",
+            "codiç di verifiche de monede",
+        }
+        XXX{
+            "XXX",
+            "Monede no valide o no cognossude",
         }
         ZAR{
             "ZAR",
@@ -257,6 +366,10 @@ fur{
             one{"dolar american"}
             other{"dolars americans"}
         }
+        XXX{
+            one{"Monede no valide o no cognossude"}
+            other{"Monedis no validis o no cognossudis"}
+        }
         ZAR{
             one{"rand sudafrican"}
             other{"rands sudafricans"}
@@ -266,5 +379,5 @@ fur{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.7.53"}
+    Version{"2.1.19.14"}
 }

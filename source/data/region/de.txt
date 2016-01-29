@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/de.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/de.xml
- */
 de{
     Countries{
+        001{"Welt"}
+        002{"Afrika"}
+        003{"Nordamerika"}
+        005{"Südamerika"}
+        009{"Ozeanien"}
+        011{"Westafrika"}
+        013{"Mittelamerika"}
+        014{"Ostafrika"}
+        015{"Nordafrika"}
+        017{"Zentralafrika"}
+        018{"Südliches Afrika"}
+        019{"Amerika"}
+        021{"Nördliches Amerika"}
+        029{"Karibik"}
+        030{"Ostasien"}
+        034{"Südasien"}
+        035{"Südostasien"}
+        039{"Südeuropa"}
+        053{"Australasien"}
+        054{"Melanesien"}
+        057{"Mikronesisches Inselgebiet"}
+        061{"Polynesien"}
+        142{"Asien"}
+        143{"Zentralasien"}
+        145{"Westasien"}
+        150{"Europa"}
+        151{"Osteuropa"}
+        154{"Nordeuropa"}
+        155{"Westeuropa"}
         419{"Lateinamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -28,7 +54,7 @@ de{
         AT{"Österreich"}
         AU{"Australien"}
         AW{"Aruba"}
-        AX{"Åland-Inseln"}
+        AX{"Ålandinseln"}
         AZ{"Aserbaidschan"}
         BA{"Bosnien und Herzegowina"}
         BB{"Barbados"}
@@ -43,7 +69,7 @@ de{
         BM{"Bermuda"}
         BN{"Brunei Darussalam"}
         BO{"Bolivien"}
-        BQ{"Karibische Niederlande"}
+        BQ{"Bonaire, Sint Eustatius und Saba"}
         BR{"Brasilien"}
         BS{"Bahamas"}
         BT{"Bhutan"}
@@ -112,8 +138,8 @@ de{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
-        HM{"Heard- und McDonald-Inseln"}
+        HK{"Sonderverwaltungszone Hongkong"}
+        HM{"Heard und McDonaldinseln"}
         HN{"Honduras"}
         HR{"Kroatien"}
         HT{"Haiti"}
@@ -139,8 +165,8 @@ de{
         KI{"Kiribati"}
         KM{"Komoren"}
         KN{"St. Kitts und Nevis"}
-        KP{"Demokratische Volksrepublik Korea"}
-        KR{"Republik Korea"}
+        KP{"Nordkorea"}
+        KR{"Südkorea"}
         KW{"Kuwait"}
         KY{"Kaimaninseln"}
         KZ{"Kasachstan"}
@@ -166,7 +192,7 @@ de{
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolei"}
-        MO{"Macau"}
+        MO{"Sonderverwaltungsregion Macau"}
         MP{"Nördliche Marianen"}
         MQ{"Martinique"}
         MR{"Mauretanien"}
@@ -201,7 +227,7 @@ de{
         PM{"St. Pierre und Miquelon"}
         PN{"Pitcairninseln"}
         PR{"Puerto Rico"}
-        PS{"Palästina"}
+        PS{"Palästinensische Autonomiegebiete"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -210,7 +236,7 @@ de{
         RE{"Réunion"}
         RO{"Rumänien"}
         RS{"Serbien"}
-        RU{"Russische Föderation"}
+        RU{"Russland"}
         RW{"Ruanda"}
         SA{"Saudi-Arabien"}
         SB{"Salomonen"}
@@ -252,7 +278,7 @@ de{
         TZ{"Tansania"}
         UA{"Ukraine"}
         UG{"Uganda"}
-        UM{"Amerikanisch-Ozeanien"}
+        UM{"Amerikanische Überseeinseln"}
         US{"Vereinigte Staaten"}
         UY{"Uruguay"}
         UZ{"Usbekistan"}
@@ -273,6 +299,13 @@ de{
         ZW{"Simbabwe"}
         ZZ{"Unbekannte Region"}
     }
+    Countries%short{
+        GB{"GB"}
+        HK{"Hongkong"}
+        MO{"Macau"}
+        PS{"Palästina"}
+        US{"USA"}
+    }
     Countries%variant{
         CD{"Kongo (Demokratische Republik)"}
         CG{"Kongo (Republik)"}
@@ -281,9 +314,5 @@ de{
         MK{"Mazedonien (EJR)"}
         TL{"Osttimor"}
     }
-    CountriesShort{
-        GB{"UK"}
-        US{"USA"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.72"}
 }

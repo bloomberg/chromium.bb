@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ro.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ro.xml
- */
 ro{
     Countries{
+        001{"Lume"}
+        002{"Africa"}
+        003{"America de Nord"}
+        005{"America de Sud"}
+        009{"Oceania"}
+        011{"Africa Occidentală"}
+        013{"America Centrală"}
+        014{"Africa Orientală"}
+        015{"Africa Septentrională"}
+        017{"Africa Centrală"}
+        018{"Africa Meridională"}
+        019{"Americi"}
+        021{"America Septentrională"}
+        029{"Caraibe"}
+        030{"Asia Orientală"}
+        034{"Asia Meridională"}
+        035{"Asia de Sud-Est"}
+        039{"Europa Meridională"}
+        053{"Australasia"}
+        054{"Melanezia"}
+        057{"Regiunea Micronezia"}
+        061{"Polinezia"}
+        142{"Asia"}
+        143{"Asia Centrală"}
+        145{"Asia Occidentală"}
+        150{"Europa"}
+        151{"Europa Orientală"}
+        154{"Europa Septentrională"}
+        155{"Europa Occidentală"}
         419{"America Latină"}
         AC{"Insula Ascension"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ ro{
         GU{"Guam"}
         GW{"Guineea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"R.A.S. Hong Kong a Chinei"}
         HM{"Insula Heard și Insulele McDonald"}
         HN{"Honduras"}
         HR{"Croația"}
@@ -166,7 +192,7 @@ ro{
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"Macao"}
+        MO{"R.A.S. Macao a Chinei"}
         MP{"Insulele Mariane de Nord"}
         MQ{"Martinica"}
         MR{"Mauritania"}
@@ -176,12 +202,12 @@ ro{
         MV{"Maldive"}
         MW{"Malawi"}
         MX{"Mexic"}
-        MY{"Malaezia"}
+        MY{"Malaysia"}
         MZ{"Mozambic"}
         NA{"Namibia"}
         NC{"Noua Caledonie"}
         NE{"Niger"}
-        NF{"Insulele Norfolk"}
+        NF{"Insula Norfolk"}
         NG{"Nigeria"}
         NI{"Nicaragua"}
         NL{"Țările de Jos"}
@@ -201,7 +227,7 @@ ro{
         PM{"Saint-Pierre și Miquelon"}
         PN{"Insulele Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Teritoriile Palestiniene"}
         PT{"Portugalia"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -226,7 +252,7 @@ ro{
         SM{"San Marino"}
         SN{"Senegal"}
         SO{"Somalia"}
-        SR{"Surinam"}
+        SR{"Suriname"}
         SS{"Sudanul de Sud"}
         ST{"Sao Tome și Principe"}
         SV{"El Salvador"}
@@ -257,7 +283,7 @@ ro{
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
         VA{"Statul Cetății Vaticanului"}
-        VC{"Saint Vincent și Grenadine"}
+        VC{"Saint Vincent și Grenadinele"}
         VE{"Venezuela"}
         VG{"Insulele Virgine Britanice"}
         VI{"Insulele Virgine S.U.A."}
@@ -273,6 +299,13 @@ ro{
         ZW{"Zimbabwe"}
         ZZ{"Regiune necunoscută"}
     }
+    Countries%short{
+        GB{"Regatul Unit"}
+        HK{"Hong Kong"}
+        MO{"Macao"}
+        PS{"Palestina"}
+        US{"S.U.A."}
+    }
     Countries%variant{
         CD{"Congo (Republica Democrată Congo)"}
         CG{"Congo (Republica)"}
@@ -280,9 +313,5 @@ ro{
         FK{"Insulele Falkland (Insulele Malvine)"}
         MK{"Macedonia (FRIM)"}
     }
-    CountriesShort{
-        GB{"Regatul Unit"}
-        US{"S.U.A."}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
 }

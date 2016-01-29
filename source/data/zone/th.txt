@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/th.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/th.xml
- */
 th{
-    Version{"2.1.8.9"}
+    Version{"2.1.19.77"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"อาบีจาน"}
@@ -687,11 +684,11 @@ th{
         "Asia:Calcutta"{
             ec{"โกลกาตา"}
         }
+        "Asia:Chita"{
+            ec{"ชิตา"}
+        }
         "Asia:Choibalsan"{
             ec{"ชอยบาลซาน"}
-        }
-        "Asia:Chongqing"{
-            ec{"ฉงชิ่ง"}
         }
         "Asia:Colombo"{
             ec{"โคลัมโบ"}
@@ -713,9 +710,6 @@ th{
         }
         "Asia:Gaza"{
             ec{"กาซา"}
-        }
-        "Asia:Harbin"{
-            ec{"ฮาร์บิน"}
         }
         "Asia:Hebron"{
             ec{"เฮบรอน"}
@@ -746,9 +740,6 @@ th{
         }
         "Asia:Karachi"{
             ec{"การาจี"}
-        }
-        "Asia:Kashgar"{
-            ec{"กัชการ์"}
         }
         "Asia:Katmandu"{
             ec{"กาตมันดุ"}
@@ -836,6 +827,9 @@ th{
         }
         "Asia:Singapore"{
             ec{"สิงคโปร์"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"ซเรดเนคโคลิมสก์"}
         }
         "Asia:Taipei"{
             ec{"ไทเป"}
@@ -940,7 +934,7 @@ th{
             ec{"เมลเบิร์น"}
         }
         "Australia:Perth"{
-            ec{"เพิิร์ท"}
+            ec{"เพิร์ท"}
         }
         "Australia:Sydney"{
             ec{"ซิดนีย์"}
@@ -1156,6 +1150,9 @@ th{
         }
         "Pacific:Auckland"{
             ec{"โอคแลนด์"}
+        }
+        "Pacific:Bougainville"{
+            ec{"บูเกนวิลล์"}
         }
         "Pacific:Chatham"{
             ec{"แชแทม"}

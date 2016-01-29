@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/dsb.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/dsb.xml
- */
 dsb{
     AuxExemplarCharacters{
         "[á à ă â å ä ã ą ā æ ç ď đ é è ĕ ê ë ė ę ē ğ í ì ĭ î ï İ ī ı ĺ ľ ň ñ ò ŏ ô ö"
@@ -22,9 +19,6 @@ dsb{
     ExemplarCharactersPunctuation{
         "[\\- ‐ – — , ; \\: ! ? . … ' ‘ ’ ‚ \u0022 “ „ « » ( ) \\[ \\] \\{ \\} § @ * "
         "/ \\& #]"
-    }
-    LocaleScript{
-        "Latn",
     }
     NumberElements{
         latn{
@@ -207,7 +201,7 @@ dsb{
         }
         minimumGroupingDigits{"1"}
     }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.14"}
     calendar{
         generic{
             DateTimePatterns{
@@ -337,8 +331,6 @@ dsb{
                 "{1} {0}",
                 "{1} {0}",
             }
-            NoonMarker{"połdnjo"}
-            NoonMarkerNarrow{"połd."}
             appendItems{
                 Timezone{"{0} {1}"}
             }
@@ -707,11 +699,6 @@ dsb{
         alternateQuotationStart{"‚"}
         quotationEnd{"“"}
         quotationStart{"„"}
-    }
-    durationUnits{
-        hm{"h:mm"}
-        hms{"h:mm:ss"}
-        ms{"m:ss"}
     }
     fields{
         day{

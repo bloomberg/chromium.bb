@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/he.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/he.xml
- */
 he{
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"אביג׳אן"}
@@ -687,11 +684,11 @@ he{
         "Asia:Calcutta"{
             ec{"קולקטה"}
         }
+        "Asia:Chita"{
+            ec{"צ׳יטה"}
+        }
         "Asia:Choibalsan"{
             ec{"צ׳ואיבלסאן"}
-        }
-        "Asia:Chongqing"{
-            ec{"צ׳ונגקינג"}
         }
         "Asia:Colombo"{
             ec{"קולומבו"}
@@ -713,9 +710,6 @@ he{
         }
         "Asia:Gaza"{
             ec{"עזה"}
-        }
-        "Asia:Harbin"{
-            ec{"חרבין"}
         }
         "Asia:Hebron"{
             ec{"חברון"}
@@ -746,9 +740,6 @@ he{
         }
         "Asia:Karachi"{
             ec{"קרצ׳י"}
-        }
-        "Asia:Kashgar"{
-            ec{"קשגר"}
         }
         "Asia:Katmandu"{
             ec{"קטמנדו"}
@@ -832,10 +823,13 @@ he{
             ec{"סיאול"}
         }
         "Asia:Shanghai"{
-            ec{"אסיה/שנחאי"}
+            ec{"שנחאי"}
         }
         "Asia:Singapore"{
             ec{"סינגפור"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"סרדנייקולימסק"}
         }
         "Asia:Taipei"{
             ec{"טאיפיי"}
@@ -1157,6 +1151,9 @@ he{
         "Pacific:Auckland"{
             ec{"אוקלנד"}
         }
+        "Pacific:Bougainville"{
+            ec{"בוגנוויל"}
+        }
         "Pacific:Chatham"{
             ec{"צ׳אטהאם"}
         }
@@ -1309,7 +1306,7 @@ he{
         }
         "meta:America_Pacific"{
             ld{"שעון קיץ, מערב ארה״ב (לוס אנג׳לס)"}
-            lg{"שעון מערב ארה״ב (לוס אנג׳לס)"}
+            lg{"שעון מערב ארה״ב"}
             ls{"שעון רגיל האוקיינוס השקט"}
         }
         "meta:Anadyr"{
@@ -1727,7 +1724,7 @@ he{
             ls{"שעון פפואה גיניאה החדשה"}
         }
         "meta:Paraguay"{
-            ld{"שעון קיץ פרגוואי"}
+            ld{"שעון פרגוואי (קיץ)"}
             lg{"שעון פרגוואי"}
             ls{"שעון פרגוואי (חורף)"}
         }
@@ -1872,9 +1869,9 @@ he{
             ls{"שעון יקטרינבורג (חורף)"}
         }
         fallbackFormat{"{1} ({0})"}
-        gmtFormat{"GMT{0}"}
+        gmtFormat{"GMT{0}‎"}
         gmtZeroFormat{"GMT"}
-        hourFormat{"+HH:mm;-HH:mm"}
+        hourFormat{"‎+HH:mm;-HH:mm‎"}
         regionFormat{"שעון {0}"}
         regionFormatDaylight{"שעון {0} (קיץ)"}
         regionFormatStandard{"שעון {0} (חורף)"}

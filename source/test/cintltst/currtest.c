@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 2005-2014, International Business Machines Corporation and
+ * Copyright (c) 2005-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 #include "unicode/utypes.h"
@@ -159,9 +159,9 @@ static void TestFractionDigitOverride(void) {
     UNumberFormat *fmt = unum_open(UNUM_CURRENCY, NULL, 0, "hu_HU", NULL, &status);
     UChar buffer[256];
     UChar expectedBuf[256];
-    const char expectedFirst[] = "123,46\\u00A0HUF"; /* changed to use 2 fraction digits */
-    const char expectedSecond[] = "123,46\\u00A0HUF";
-    const char expectedThird[] = "123,456\\u00A0HUF";
+    const char expectedFirst[] = "123,46\\u00A0Ft"; /* changed to use 2 fraction digits */
+    const char expectedSecond[] = "123,46\\u00A0Ft";
+    const char expectedThird[] = "123,456\\u00A0Ft";
     if (U_FAILURE(status)) {
        log_data_err("Error: unum_open returned %s (Are you missing data?)\n", myErrorName(status));
        return;
@@ -244,12 +244,13 @@ static const NumCodeTestEntry NUMCODE_TESTDATA[] = {
 };
 
 static void TestNumericCode(void) {
-    UChar code[4];
+    UChar code[8];  // at least one longer than the longest alphaCode
     int32_t i;
     int32_t numCode;
 
     for (i = 0; NUMCODE_TESTDATA[i].alphaCode; i++) {
-        u_charsToUChars(NUMCODE_TESTDATA[i].alphaCode, code, sizeof(code)/sizeof(code[0]));
+        int32_t length = uprv_strlen(NUMCODE_TESTDATA[i].alphaCode);
+        u_charsToUChars(NUMCODE_TESTDATA[i].alphaCode, code, length + 1);  // +1 includes the NUL
         numCode = ucurr_getNumericCode(code);
         if (numCode != NUMCODE_TESTDATA[i].numericCode) {
             log_data_err("Error: ucurr_getNumericCode returned %d for currency %s, expected - %d\n",

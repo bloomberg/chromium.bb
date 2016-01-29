@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/root.xml
@@ -44,7 +44,7 @@ root{
             "ILS",
         }
         INR{
-            "Rs.",
+            "₹",
             "INR",
         }
         JPY{
@@ -79,9 +79,17 @@ root{
             "FCFA",
             "XAF",
         }
+        XCD{
+            "EC$",
+            "XCD",
+        }
         XOF{
             "CFA",
             "XOF",
+        }
+        XPF{
+            "CFPF",
+            "XPF",
         }
     }
     Currencies%narrow{
@@ -89,25 +97,36 @@ root{
         ARS{"$"}
         AUD{"$"}
         BAM{"KM"}
+        BBD{"$"}
         BDT{"৳"}
+        BMD{"$"}
         BND{"$"}
         BOB{"Bs"}
         BRL{"R$"}
+        BSD{"$"}
         BWP{"P"}
         BYR{"р."}
+        BZD{"$"}
         CAD{"$"}
         CLP{"$"}
         CNY{"¥"}
         COP{"$"}
         CRC{"₡"}
+        CUC{"$"}
+        CUP{"$"}
         CZK{"Kč"}
         DKK{"kr"}
         DOP{"$"}
         EGP{"E£"}
+        ESP{"₧"}
         EUR{"€"}
+        FJD{"$"}
+        FKP{"£"}
         GBP{"£"}
+        GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
+        GYD{"$"}
         HKD{"$"}
         HNL{"L"}
         HRK{"kn"}
@@ -119,13 +138,19 @@ root{
         JMD{"$"}
         JPY{"¥"}
         KHR{"៛"}
+        KMF{"CF"}
+        KPW{"₩"}
         KRW{"₩"}
+        KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
         LBP{"L£"}
         LKR{"Rs"}
+        LRD{"$"}
         LTL{"Lt"}
+        LVL{"Ls"}
         MGA{"Ar"}
+        MMK{"K"}
         MNT{"₮"}
         MUR{"Rs"}
         MXN{"$"}
@@ -140,26 +165,39 @@ root{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
+        RUB{"₽"}
+        RUR{"р."}
         RWF{"RF"}
+        SBD{"$"}
         SEK{"kr"}
         SGD{"$"}
+        SHP{"£"}
+        SRD{"$"}
         SSP{"£"}
+        STD{"Db"}
+        SYP{"£"}
         THB{"฿"}
+        TOP{"T$"}
         TRY{"₺"}
         TTD{"$"}
-        TWD{"NT$"}
+        TWD{"$"}
         UAH{"₴"}
         USD{"$"}
         UYU{"$"}
         VEF{"Bs"}
         VND{"₫"}
+        XCD{"$"}
         ZAR{"R"}
         ZMW{"ZK"}
+    }
+    Currencies%variant{
+        GEL{"₾"}
+        TRY{"TL"}
     }
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.7.12"}
+    Version{"2.1.19.19"}
     currencySpacing{
         afterCurrency{
             currencyMatch{"[:^S:]"}

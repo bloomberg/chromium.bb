@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ksh.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ksh.xml
- */
 ksh{
     Keys{
         calendar{"dä Kalländer"}
@@ -42,7 +39,7 @@ ksh{
         av{"Avahresch"}
         ay{"Aimahresch"}
         az{"Asserbaidschahnesch"}
-        azb{"Södasserbaidschahnesch"}
+        az_Arab{"Södasserbaidschahnesch"}
         ba{"Baschkihresch"}
         bal{"Beluhtschesch"}
         ban{"Balinehsesch"}
@@ -240,7 +237,7 @@ ksh{
         zu{"Suulu"}
         zxx{"kein Schprooch"}
     }
-    LanguagesShort{
+    Languages%short{
         en_GB{"Brittesch Änglesch"}
         en_US{"Amärrekaanesch Änglesch"}
     }
@@ -395,7 +392,7 @@ ksh{
         VALENCIA{"valenzijaanesche Dijaläk"}
         WADEGILE{"lateijnesche Ömschreff noh Wade-Giles"}
     }
-    Version{"2.1.7.53"}
+    Version{"2.1.19.14"}
     codePatterns{
         language{"de Schprooch afjekööz met „{0}“"}
         script{"de Schreff afjekööz met „{0}“"}

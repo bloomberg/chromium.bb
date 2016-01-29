@@ -1,5 +1,5 @@
 #**********************************************************************
-#* Copyright (C) 1999-2014, International Business Machines Corporation
+#* Copyright (C) 1999-2015, International Business Machines Corporation
 #* and others.  All Rights Reserved.
 #**********************************************************************
 # nmake file for creating data files on win32
@@ -10,10 +10,10 @@
 
 ##############################################################################
 # Keep the following in sync with the version - see common/unicode/uvernum.h
-U_ICUDATA_NAME=icudt54
+U_ICUDATA_NAME=icudt56
 ##############################################################################
 U_ICUDATA_ENDIAN_SUFFIX=l
-UNICODE_VERSION=7.0
+UNICODE_VERSION=8.0
 ICU_LIB_TARGET=$(DLL_OUTPUT)\$(U_ICUDATA_NAME).dll
 
 #  ICUMAKE
@@ -500,7 +500,7 @@ COMMON_ICUDATA_ARGUMENTS=-f -e $(U_ICUDATA_NAME) -v $(ICU_PACKAGE_MODE) -c -p $(
 #				Building the common dll in $(ICUBLD_PKG) unconditionally copies it to $(DLL_OUTPUT) too.
 #
 #############################################################################
-ALL : GODATA "$(ICU_LIB_TARGET)"
+ALL : GODATA "$(ICU_LIB_TARGET)" "$(TESTDATAOUT)\testdata.dat"
 	@echo All targets are up to date
 
 # The core Unicode properties files (uprops.icu, ucase.icu, ubidi.icu)
@@ -619,7 +619,6 @@ icu4j-data-install :
 	cd "$(ICUBLD_PKG)"
 	"$(ICUPBIN)\icupkg" -x * --list "$(ICUDATA_SOURCE_ARCHIVE)" > "$(ICUTMP)\icudata.lst"
 	"$(ICUPBIN)\pkgdata" $(COMMON_ICUDATA_ARGUMENTS) "$(ICUTMP)\icudata.lst"
-	editbin /NXCOMPAT /DYNAMICBASE "$(U_ICUDATA_NAME).dll"
 	copy "$(U_ICUDATA_NAME).dll" "$(DLL_OUTPUT)"
 	-@erase "$(U_ICUDATA_NAME).dll"
 	copy "$(ICUTMP)\$(ICUPKG).dat" "$(ICUOUT)\$(U_ICUDATA_NAME)$(U_ICUDATA_ENDIAN_SUFFIX).dat"
@@ -721,6 +720,7 @@ CLEAN : GODATA
 	-@erase "*.brk"
 	-@erase "*.res"
 	-@erase "*.txt"
+	-@erase "*.dict"
 	@cd "$(ICUBLD_PKG)\$(ICUCOL)"
 	-@erase "*.res"
 	-@erase "*.txt"

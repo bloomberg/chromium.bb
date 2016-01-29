@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2014, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -445,7 +445,7 @@ void IntlTest::setICU_DATA() {
         }
         else {
             /* __FILE__ on MSVC7 does not contain the directory */
-            u_setDataDirectory(".."U_FILE_SEP_STRING".."U_FILE_SEP_STRING "data" U_FILE_SEP_STRING "out" U_FILE_SEP_STRING);
+            u_setDataDirectory(".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING "data" U_FILE_SEP_STRING "out" U_FILE_SEP_STRING);
             return;
         }
     }
@@ -561,6 +561,7 @@ void IntlTest::setCaller( IntlTest* callingTest )
         verbose = caller->verbose;
         no_err_msg = caller->no_err_msg;
         quick = caller->quick;
+        threadCount = caller->threadCount;
         testoutfp = caller->testoutfp;
         LL_indentlevel = caller->LL_indentlevel + indentLevel_offset;
         numProps = caller->numProps;
@@ -973,8 +974,8 @@ UBool IntlTest::logKnownIssue(const char *ticket, const UnicodeString &msg) {
   char fullpath[2048];
   strcpy(fullpath, basePath);
   strcat(fullpath, currName);
-  UnicodeString msg2 =msg;
-  UBool firstForTicket, firstForWhere;
+  UnicodeString msg2 = msg;
+  UBool firstForTicket = TRUE, firstForWhere = TRUE;
   knownList = udbg_knownIssue_openU(knownList, ticket, fullpath, msg2.getTerminatedBuffer(), &firstForTicket, &firstForWhere);
 
   msg2 = UNICODE_STRING_SIMPLE("(Known issue #") +
@@ -1166,6 +1167,10 @@ IntlTest::run_phase2( char* name, char* par ) // supports reporting memory leaks
 #   define TRY_CNV_2 "sjis"
 #endif
 
+#ifdef UNISTR_COUNT_FINAL_STRING_LENGTHS
+U_CAPI void unistr_printLengths();
+#endif
+
 int
 main(int argc, char* argv[])
 {
@@ -1331,11 +1336,7 @@ main(int argc, char* argv[])
     fprintf(stdout, "   notime (T)               : %s\n", (no_time?             "On" : "Off"));
     fprintf(stdout, "   noknownissues (K)        : %s\n", (noKnownIssues?      "On" : "Off"));
     fprintf(stdout, "   Warn on missing data (w) : %s\n", (warnOnMissingData? "On" : "Off"));
-#if (ICU_USE_THREADS==0)
-    fprintf(stdout, "   Threads                  : Disabled\n");
-#else
     fprintf(stdout, "   Threads                  : %d\n", threadCount);
-#endif
     for (int32_t i = 0; i < nProps; i++) {
         fprintf(stdout, "   Custom property (prop:)  : %s\n", props[i]);
     }
@@ -1524,6 +1525,10 @@ main(int argc, char* argv[])
         u_cleanup();
     }
 
+#ifdef UNISTR_COUNT_FINAL_STRING_LENGTHS
+    unistr_printLengths();
+#endif
+
     fprintf(stdout, "--------------------------------------\n");
 
     if (execCount <= 0) {
@@ -1602,7 +1607,8 @@ const char *IntlTest::getSourceTestData(UErrorCode& /*err*/) {
     }
     else {
         /* We're in icu/source/test/intltest/Platform/(Debug|Release) */
-        srcDataDir = ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING "test" U_FILE_SEP_STRING "testdata"U_FILE_SEP_STRING;
+        srcDataDir = ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING
+                     "test" U_FILE_SEP_STRING "testdata" U_FILE_SEP_STRING;
     }
 #endif
     return srcDataDir;
@@ -1702,13 +1708,13 @@ const char *  IntlTest::pathToDataDirectory()
         }
         else {
             /* __FILE__ on MSVC7 does not contain the directory */
-            FILE *file = fopen(".." U_FILE_SEP_STRING ".."U_FILE_SEP_STRING "data" U_FILE_SEP_STRING "Makefile.in", "r");
+            FILE *file = fopen(".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING "data" U_FILE_SEP_STRING "Makefile.in", "r");
             if (file) {
                 fclose(file);
-                fgDataDir = ".." U_FILE_SEP_STRING ".."U_FILE_SEP_STRING "data" U_FILE_SEP_STRING;
+                fgDataDir = ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING "data" U_FILE_SEP_STRING;
             }
             else {
-                fgDataDir = ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".."U_FILE_SEP_STRING "data" U_FILE_SEP_STRING;
+                fgDataDir = ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING ".." U_FILE_SEP_STRING "data" U_FILE_SEP_STRING;
             }
         }
     }
@@ -1924,6 +1930,24 @@ UBool IntlTest::assertEquals(const char* message,
 #endif
     return TRUE;
 }
+
+UBool IntlTest::assertEquals(const char* message,
+                             double expected,
+                             double actual) {
+    if (expected != actual) {
+        errln((UnicodeString)"FAIL: " + message + "; got " +
+              actual + 
+              "; expected " + expected);
+        return FALSE;
+    }
+#ifdef VERBOSE_ASSERTIONS
+    else {
+        logln((UnicodeString)"Ok: " + message + "; got " + actual);
+    }
+#endif
+    return TRUE;
+}
+
 
 UBool IntlTest::assertEquals(const char* message,
                              UBool expected,

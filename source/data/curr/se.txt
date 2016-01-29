@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/se.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/se.xml
- */
 se{
     Currencies{
         DKK{
@@ -19,12 +16,16 @@ se{
             "€",
             "euro",
         }
+        FIM{
+            "FIM",
+            "suoma márkki",
+        }
         HKD{
             "HK$",
             "HKD",
         }
         INR{
-            "Rs.",
+            "₹",
             "INR",
         }
         JPY{
@@ -46,6 +47,14 @@ se{
         THB{
             "฿",
             "THB",
+        }
+        XAG{
+            "XAG",
+            "uns silba",
+        }
+        XAU{
+            "XAU",
+            "uns golli",
         }
     }
     CurrencyPlurals{
@@ -70,5 +79,5 @@ se{
         other{"{0} {1}"}
         two{"{0} {1}"}
     }
-    Version{"2.1.7.53"}
+    Version{"2.1.19.14"}
 }

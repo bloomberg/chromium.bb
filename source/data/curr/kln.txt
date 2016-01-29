@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/kln.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/kln.xml
- */
 kln{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ kln{
         BHD{
             "BHD",
             "Rabisiekab Bahrain",
+        }
+        BIF{
+            "BIF",
+            "Rabisiekab Burundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ kln{
             "CN¥",
             "Rabisiekab China",
         }
+        CVE{
+            "CVE",
+            "Rabisiekab Kepuvede",
+        }
+        DJF{
+            "DJF",
+            "Rabisiekab Jibuti",
+        }
         DZD{
             "DZD",
             "Rabisiekab Algerian",
@@ -54,6 +63,10 @@ kln{
         EGP{
             "EGP",
             "Pauditab Misri",
+        }
+        ERN{
+            "ERN",
+            "Rabisiekab Eritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ kln{
             "£",
             "pounditab Uingereza",
         }
+        GHC{
+            "GHC",
+            "Rabisiekab Ghana",
+        }
+        GMD{
+            "GMD",
+            "Rabisiekab Gambia",
+        }
+        GNS{
+            "GNS",
+            "Rabisiekab Guinea",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Rabisiekab India",
         }
         JPY{
@@ -78,6 +103,18 @@ kln{
         KES{
             "Ksh",
             "Silingitab ya Kenya",
+        }
+        KMF{
+            "KMF",
+            "Rabisiekab Komoro",
+        }
+        LRD{
+            "LRD",
+            "Dolaitab Liberia",
+        }
+        LSL{
+            "LSL",
+            "Rabisiekab Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ kln{
             "MWK",
             "Rabisiekaby Malawi",
         }
+        MZM{
+            "MZM",
+            "Rabisiekab Msumbiji",
+        }
         NAD{
             "NAD",
             "Dolaitab Namibia",
@@ -119,13 +160,33 @@ kln{
             "SAR",
             "Rabisiekab Saudia",
         }
+        SCR{
+            "SCR",
+            "Rabisiekab Shelisheli",
+        }
         SDG{
             "SDG",
             "Pouditab Sudan",
         }
+        SHP{
+            "SHP",
+            "Pouditab helena ne tilil",
+        }
         SLL{
             "SLL",
             "Leonit",
+        }
+        SOS{
+            "SOS",
+            "siligitab Somalia",
+        }
+        STD{
+            "STD",
+            "Rabisiekab Sao Tome ak Principe",
+        }
+        SZL{
+            "SZL",
+            "Lilangenit",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ kln{
             "ZAR",
             "Randitab Afrika nebo murot tai",
         }
+        ZMK{
+            "ZMK",
+            "Kwachaitab Zambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwachaitab Zambia",
         }
+        ZWD{
+            "ZWD",
+            "Dolaitab ya Zimbabwe",
+        }
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.14"}
 }

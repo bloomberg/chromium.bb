@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/cs.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/cs.xml
- */
 cs{
     Countries{
+        001{"Svět"}
+        002{"Afrika"}
+        003{"Severní Amerika"}
+        005{"Jižní Amerika"}
+        009{"Oceánie"}
+        011{"Západní Afrika"}
+        013{"Střední Amerika"}
+        014{"Východní Afrika"}
+        015{"Severní Afrika"}
+        017{"Střední Afrika"}
+        018{"Jižní Afrika"}
+        019{"Amerika"}
+        021{"Severní Amerika (oblast)"}
+        029{"Karibik"}
+        030{"Východní Asie"}
+        034{"Jižní Asie"}
+        035{"Jihovýchodní Asie"}
+        039{"Jižní Evropa"}
+        053{"Australasie"}
+        054{"Melanésie"}
+        057{"Mikronésie (region)"}
+        061{"Polynésie"}
+        142{"Asie"}
+        143{"Střední Asie"}
+        145{"Západní Asie"}
+        150{"Evropa"}
+        151{"Východní Evropa"}
+        154{"Severní Evropa"}
+        155{"Západní Evropa"}
         419{"Latinská Amerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ cs{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong – ZAO Číny"}
         HM{"Heardův ostrov a McDonaldovy ostrovy"}
         HN{"Honduras"}
         HR{"Chorvatsko"}
@@ -166,7 +192,7 @@ cs{
         ML{"Mali"}
         MM{"Myanmar (Barma)"}
         MN{"Mongolsko"}
-        MO{"Macao"}
+        MO{"Macao – ZAO Číny"}
         MP{"Severní Mariany"}
         MQ{"Martinik"}
         MR{"Mauritánie"}
@@ -201,7 +227,7 @@ cs{
         PM{"Saint-Pierre a Miquelon"}
         PN{"Pitcairnovy ostrovy"}
         PR{"Portoriko"}
-        PS{"Palestina"}
+        PS{"Palestinská území"}
         PT{"Portugalsko"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,15 +299,19 @@ cs{
         ZW{"Zimbabwe"}
         ZZ{"Neznámá oblast"}
     }
+    Countries%short{
+        GB{"VB"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestina"}
+        US{"USA"}
+    }
     Countries%variant{
         CD{"Kongo (DRK)"}
         CG{"Kongo (republika)"}
+        CI{"Côte d’Ivoire"}
         FK{"Falklandské ostrovy (Malvíny)"}
         MK{"Makedonie (FYROM)"}
     }
-    CountriesShort{
-        GB{"VB"}
-        US{"USA"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.20.4"}
 }

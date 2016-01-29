@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/teo.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/teo.xml
- */
 teo{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ teo{
         BHD{
             "BHD",
             "Ango’otol lok’ Bahareni",
+        }
+        BIF{
+            "BIF",
+            "Ango’otol lok’ Burundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ teo{
             "CN¥",
             "Ango’otol lok’ China",
         }
+        CVE{
+            "CVE",
+            "Ango’otol lok’ Kepuvede",
+        }
+        DJF{
+            "DJF",
+            "Ango’otol lok’ Jibuti",
+        }
         DZD{
             "DZD",
             "Ango’otol lok’ Aljeria",
@@ -54,6 +63,10 @@ teo{
         EGP{
             "EGP",
             "Epaunt lok’ Misri",
+        }
+        ERN{
+            "ERN",
+            "Ango’otol lok’ Eritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ teo{
             "£",
             "Epaunt lok’ Uingereza",
         }
+        GHC{
+            "GHC",
+            "Sedi ya Ghana",
+        }
+        GMD{
+            "GMD",
+            "Dalasi ya Gambia",
+        }
+        GNS{
+            "GNS",
+            "Ango’otol lok’ Gine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Ango’otol lok’ India",
         }
         JPY{
@@ -78,6 +103,18 @@ teo{
         KES{
             "KES",
             "Ango’otol lok’ Kenya",
+        }
+        KMF{
+            "KMF",
+            "Ango’otol lok’ Komoro",
+        }
+        LRD{
+            "LRD",
+            "edola lok’ Liberia",
+        }
+        LSL{
+            "LSL",
+            "Ango’otol lok’ Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ teo{
             "MWK",
             "Ango’otol lok’ Malawi",
         }
+        MZM{
+            "MZM",
+            "Ango’otol lok’ Msumbiji",
+        }
         NAD{
             "NAD",
             "Ango’otol lok’ Namibia",
@@ -119,13 +160,33 @@ teo{
             "SAR",
             "Ango’otol lok’ Saudia",
         }
+        SCR{
+            "SCR",
+            "Ango’otol lok’ Shelisheli",
+        }
         SDG{
             "SDG",
             "Epaunt Lok’ Sudan",
         }
+        SHP{
+            "SHP",
+            "Ango’otol lok’ Santahelena",
+        }
         SLL{
             "SLL",
             "Leoni",
+        }
+        SOS{
+            "SOS",
+            "Ango’otol lok’ Somalia",
+        }
+        STD{
+            "STD",
+            "Ango’otol lok’ Sao Tome na Principe",
+        }
+        SZL{
+            "SZL",
+            "Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ teo{
             "ZAR",
             "Ango’otol lok’ Afrika Kusini",
         }
+        ZMK{
+            "ZMK",
+            "Ango’otol lok’ Zambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Ango’otol lok’ Zambia",
         }
+        ZWD{
+            "ZWD",
+            "Edola lok’Zimbabwe",
+        }
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.14"}
 }

@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2009-2014, International Business Machines
+ *   Copyright (C) 2009-2015, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  *******************************************************************************
  */
@@ -120,7 +120,6 @@ static const struct AssemblyType {
         "\t.section .note.GNU-stack,\"\",%%progbits\n"
         "\t.section .rodata\n"
         "\t.balign 16\n"
-        /* The 3 lines below are added for Chrome. */
         "#ifdef U_HIDE_DATA_SYMBOL\n"
         "\t.hidden %s\n"
         "#endif\n"
@@ -133,7 +132,6 @@ static const struct AssemblyType {
         /*"\t.section __TEXT,__text,regular,pure_instructions\n"
         "\t.section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32\n"*/
         ".globl _%s\n"
-        /* The 3 lines below are added for Chrome. */
         "#ifdef U_HIDE_DATA_SYMBOL\n"
         "\t.private_extern _%s\n"
         "#endif\n"

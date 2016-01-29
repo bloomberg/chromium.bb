@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2014, International Business Machines
+ * Copyright (c) 1997-2015, International Business Machines
  * Corporation and others. All Rights Reserved.
  ********************************************************************/
 
@@ -65,8 +65,10 @@ extern IntlTest *createGenderInfoTest();
 extern IntlTest *createRelativeDateTimeFormatterTest();
 #endif
 extern IntlTest *createMeasureFormatTest();
-extern IntlTest *createScientificFormatHelperTest();
 extern IntlTest *createNumberFormatSpecificationTest();
+extern IntlTest *createScientificNumberFormatterTest();
+extern IntlTest *createNumberFormat2Test(); 
+
 
 #define TESTCLASS(id, TestClass)          \
     case id:                              \
@@ -184,15 +186,6 @@ void IntlTestFormat::runIndexedTest( int32_t index, UBool exec, const char* &nam
           }
           break;
         case 48:
-          name = "ScientificFormatHelperTest";
-          if (exec) {
-            logln("ScientificFormatHelperTest test---");
-            logln((UnicodeString)"");
-            LocalPointer<IntlTest> test(createScientificFormatHelperTest());
-            callTest(*test, par);
-          }
-          break;
-        case 49:
           name = "NumberFormatSpecificationTest";
           if (exec) {
             logln("NumberFormatSpecificationTest test---");
@@ -201,6 +194,24 @@ void IntlTestFormat::runIndexedTest( int32_t index, UBool exec, const char* &nam
             callTest(*test, par);
           }
           break;
+       case 49:
+          name = "ScientificNumberFormatterTest";
+          if (exec) {
+            logln("ScientificNumberFormatterTest test---");
+            logln((UnicodeString)"");
+            LocalPointer<IntlTest> test(createScientificNumberFormatterTest());
+            callTest(*test, par);
+          }
+          break;
+      case 50: 
+        name = "NumberFormat2Test"; 
+          if (exec) { 
+            logln("NumberFormat2Test test---"); 
+            logln((UnicodeString)""); 
+            LocalPointer<IntlTest> test(createNumberFormat2Test()); 
+            callTest(*test, par); 
+          } 
+          break; 
         default: name = ""; break; //needed to end loop
     }
     if (exec) {

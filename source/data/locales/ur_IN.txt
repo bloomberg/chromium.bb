@@ -1,24 +1,16 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ur_IN.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ur_IN.xml
- */
 ur_IN{
     NumberElements{
         default{"arabext"}
-        latn{
-            patterns{
-                decimalFormat{"#,##,##0.###"}
-            }
-        }
     }
-    Version{"2.1.8.19"}
+    Version{"2.1.19.14"}
     calendar{
         generic{
             DateTimePatterns{
@@ -37,106 +29,13 @@ ur_IN{
                 "{1} {0}",
             }
         }
-        gregorian{
-            dayNames{
-                format{
-                    abbreviated{
-                        "اتوار",
-                        "پیر",
-                        "منگل",
-                        "بدھ",
-                        "جمعرات",
-                        "جمعہ",
-                        "ہفتہ",
-                    }
-                    wide{
-                        "اتوار",
-                        "پیر",
-                        "منگل",
-                        "بدھ",
-                        "جمعرات",
-                        "جمعہ",
-                        "ہفتہ",
-                    }
-                }
-                stand-alone{
-                    abbreviated{
-                        "اتوار",
-                        "پیر",
-                        "منگل",
-                        "بدھ",
-                        "جمعرات",
-                        "جمعہ",
-                        "ہفتہ",
-                    }
-                    short{
-                        "اتوار",
-                        "پیر",
-                        "منگل",
-                        "بدھ",
-                        "جمعرات",
-                        "جمعہ",
-                        "ہفتہ",
-                    }
-                    wide{
-                        "اتوار",
-                        "پیر",
-                        "منگل",
-                        "بدھ",
-                        "جمعرات",
-                        "جمعہ",
-                        "ہفتہ",
-                    }
-                }
-            }
-            eras{
-                abbreviated{
-                    "قبل مسیح",
-                    "عیسوی",
-                }
-                wide{
-                    "قبل مسیح",
-                    "عیسوی",
-                }
-            }
-            quarters{
-                format{
-                    abbreviated{
-                        "Q1",
-                        "Q2",
-                        "Q3",
-                        "Q4",
-                    }
-                }
-                stand-alone{
-                    abbreviated{
-                        "Q1",
-                        "Q2",
-                        "Q3",
-                        "Q4",
-                    }
-                }
-            }
-        }
-    }
-    delimiters{
-        alternateQuotationEnd{"'"}
-        alternateQuotationStart{"'"}
-        quotationEnd{"\u0022"}
-        quotationStart{"\u0022"}
     }
     fields{
-        day{
-            relative{
-                "-1"{"کل"}
-                "1"{"کل"}
-            }
-        }
         day-narrow{
             relativeTime{
                 past{
-                    one{"{0} دنوں قبل"}
-                    other{"{0} دنوں قبل"}
+                    one{"{0} دن قبل"}
+                    other{"{0} دن قبل"}
                 }
             }
         }
@@ -145,10 +44,6 @@ ur_IN{
                 future{
                     one{"{0} دنوں میں"}
                     other{"{0} دنوں میں"}
-                }
-                past{
-                    one{"{0} دنوں پہلے"}
-                    other{"{0} دنوں پہلے"}
                 }
             }
         }
@@ -202,8 +97,7 @@ ur_IN{
         }
         mon{
             relative{
-                "-1"{"پچھلے پیر"}
-                "0"{"اس پیر"}
+                "-1"{"پچھلے سوموار"}
             }
         }
         month{
@@ -234,20 +128,6 @@ ur_IN{
         }
         month-short{
             dn{"مہینہ"}
-        }
-        quarter-narrow{
-            relativeTime{
-                past{
-                    one{"{0} سہ ماہی قبل"}
-                    other{"{0} سہ ماہی قبل"}
-                }
-            }
-        }
-        sat{
-            relative{
-                "-1"{"پچھلے ہفتہ"}
-                "0"{"اس ہفتہ"}
-            }
         }
         second{
             relativeTime{
@@ -299,7 +179,7 @@ ur_IN{
                 }
                 past{
                     one{"{0} ہفتہ قبل"}
-                    other{"{0} ہفتوں قبل"}
+                    other{"{0} ہفتے قبل"}
                 }
             }
         }
@@ -315,7 +195,7 @@ ur_IN{
             relativeTime{
                 past{
                     one{"{0} ہفتے قبل"}
-                    other{"{0} ہفتوں قبل"}
+                    other{"{0} ہفتے قبل"}
                 }
             }
         }
@@ -324,10 +204,6 @@ ur_IN{
                 future{
                     one{"{0} سال میں"}
                     other{"{0} سالوں میں"}
-                }
-                past{
-                    one{"{0} سال پہلے"}
-                    other{"{0} سالوں پہلے"}
                 }
             }
         }

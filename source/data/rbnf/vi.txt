@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/rbnf/vi.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/xml/rbnf/vi.xml
- */
 vi{
     RBNFRules{
         OrdinalRules{
@@ -66,5 +63,5 @@ vi{
             "5: th\u1EE9 =%spellout-cardinal=;",
         }
     }
-    Version{"2.0.82.42"}
+    Version{"2.1.19.14"}
 }

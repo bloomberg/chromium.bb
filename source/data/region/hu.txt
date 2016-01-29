@@ -1,20 +1,46 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/hu.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/hu.xml
- */
 hu{
     Countries{
+        001{"Világ"}
+        002{"Afrika"}
+        003{"Észak-Amerika"}
+        005{"Dél-Amerika"}
+        009{"Óceánia"}
+        011{"Nyugat-Afrika"}
+        013{"Közép-Amerika"}
+        014{"Kelet-Afrika"}
+        015{"Észak-Afrika"}
+        017{"Közép-Afrika"}
+        018{"Afrika déli része"}
+        019{"Amerika"}
+        021{"Amerika északi része"}
+        029{"Karib-térség"}
+        030{"Kelet-Ázsia"}
+        034{"Dél-Ázsia"}
+        035{"Délkelet-Ázsia"}
+        039{"Dél-Európa"}
+        053{"Ausztrálázsia"}
+        054{"Melanézia"}
+        057{"Mikronéziai régió"}
+        061{"Polinézia"}
+        142{"Ázsia"}
+        143{"Közép-Ázsia"}
+        145{"Nyugat-Ázsia"}
+        150{"Európa"}
+        151{"Kelet-Európa"}
+        154{"Észak-Európa"}
+        155{"Nyugat-Európa"}
         419{"Latin-Amerika"}
         AC{"Ascension-sziget"}
         AD{"Andorra"}
-        AE{"Egyesült Arab Emirátus"}
+        AE{"Egyesült Arab Emírségek"}
         AF{"Afganisztán"}
         AG{"Antigua és Barbuda"}
         AI{"Anguilla"}
@@ -88,7 +114,7 @@ hu{
         ET{"Etiópia"}
         EU{"Európai Unió"}
         FI{"Finnország"}
-        FJ{"Fidzsi-szigetek"}
+        FJ{"Fidzsi"}
         FK{"Falkland-szigetek"}
         FM{"Mikronézia"}
         FO{"Feröer-szigetek"}
@@ -110,9 +136,9 @@ hu{
         GS{"Déli-Georgia és Déli-Sandwich-szigetek"}
         GT{"Guatemala"}
         GU{"Guam"}
-        GW{"Guinea-Bissau"}
+        GW{"Bissau-Guinea"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong SAR Kína"}
         HM{"Heard-sziget és McDonald-szigetek"}
         HN{"Honduras"}
         HR{"Horvátország"}
@@ -166,7 +192,7 @@ hu{
         ML{"Mali"}
         MM{"Mianmar (Burma)"}
         MN{"Mongólia"}
-        MO{"Makaó"}
+        MO{"Makaó SAR Kína"}
         MP{"Északi Mariana-szigetek"}
         MQ{"Martinique"}
         MR{"Mauritánia"}
@@ -201,7 +227,7 @@ hu{
         PM{"Saint Pierre és Miquelon"}
         PN{"Pitcairn-szigetek"}
         PR{"Puerto Rico"}
-        PS{"Palesztina"}
+        PS{"Palesztin Terület"}
         PT{"Portugália"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,15 +299,18 @@ hu{
         ZW{"Zimbabwe"}
         ZZ{"Ismeretlen körzet"}
     }
+    Countries%short{
+        GB{"UK"}
+        HK{"Hongkong"}
+        MO{"Makaó"}
+        PS{"Palesztina"}
+        US{"USA"}
+    }
     Countries%variant{
         CD{"Kongó (KDK)"}
         CG{"Kongó (Köztársaság)"}
         FK{"Falkland-szigetek (Malvin-szigetek)"}
         MK{"Macedónia (MVJK)"}
     }
-    CountriesShort{
-        GB{"UK"}
-        US{"USA"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
 }

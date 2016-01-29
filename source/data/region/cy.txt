@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/cy.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/cy.xml
- */
 cy{
     Countries{
+        001{"Y Byd"}
+        002{"Affrica"}
+        003{"Gogledd America"}
+        005{"De America"}
+        009{"Oceania"}
+        011{"Gorllewin Affrica"}
+        013{"Canolbarth America"}
+        014{"Dwyrain Affrica"}
+        015{"Gogledd Affrica"}
+        017{"Canol Affrica"}
+        018{"Deheudir Affrica"}
+        019{"Yr Amerig"}
+        021{"America i’r Gogledd o Fecsico"}
+        029{"Y Caribî"}
+        030{"Dwyrain Asia"}
+        034{"De Asia"}
+        035{"De-Ddwyrain Asia"}
+        039{"De Ewrop"}
+        053{"Awstralasia"}
+        054{"Melanesia"}
+        057{"Rhanbarth Micronesia"}
+        061{"Polynesia"}
+        142{"Asia"}
+        143{"Canol Asia"}
+        145{"Gorllewin Asia"}
+        150{"Ewrop"}
+        151{"Dwyrain Ewrop"}
+        154{"Gogledd Ewrop"}
+        155{"Gorllewin Ewrop"}
         419{"America Ladin"}
         AC{"Ynys Ascension"}
         AD{"Andorra"}
@@ -91,7 +117,7 @@ cy{
         FJ{"Fiji"}
         FK{"Ynysoedd y Falkland/Malvinas"}
         FM{"Micronesia"}
-        FO{"Føroyar"}
+        FO{"Ynysoedd Ffaro"}
         FR{"Ffrainc"}
         GA{"Gabon"}
         GB{"Y Deyrnas Unedig"}
@@ -112,7 +138,7 @@ cy{
         GU{"Guam"}
         GW{"Guiné-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong RhGA Tsieina"}
         HM{"Ynys Heard ac Ynysoedd McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -166,7 +192,7 @@ cy{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau RhGA Tsieina"}
         MP{"Ynysoedd Gogledd Mariana"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -195,13 +221,13 @@ cy{
         PE{"Periw"}
         PF{"Polynesia Ffrengig"}
         PG{"Papua Guinea Newydd"}
-        PH{"Pilipinas"}
+        PH{"Y Philipinau"}
         PK{"Pakistan"}
         PL{"Gwlad Pwyl"}
         PM{"Saint-Pierre-et-Miquelon"}
         PN{"Ynysoedd Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palesteina"}
+        PS{"Tiriogaethau Palesteinaidd"}
         PT{"Portiwgal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -224,7 +250,7 @@ cy{
         SK{"Slofacia"}
         SL{"Sierra Leone"}
         SM{"San Marino"}
-        SN{"Sénégal"}
+        SN{"Senegal"}
         SO{"Somalia"}
         SR{"Suriname"}
         SS{"De Swdan"}
@@ -273,16 +299,20 @@ cy{
         ZW{"Zimbabwe"}
         ZZ{"Rhanbarth Anhysbys"}
     }
+    Countries%short{
+        GB{"DU"}
+        HK{"Hong Kong"}
+        MO{"Macau"}
+        PS{"Palesteina"}
+        US{"UDA"}
+    }
     Countries%variant{
         CD{"y Congo (G.Dd.C.)"}
         CG{"Y Congo (Gweriniaeth)"}
+        CI{"Arfordir Ifori"}
         FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
         MK{"Macedonia (CWIM)"}
         TL{"Dwyrain Timor"}
     }
-    CountriesShort{
-        GB{"DU"}
-        US{"UDA"}
-    }
-    Version{"2.1.7.80"}
+    Version{"2.1.20.4"}
 }

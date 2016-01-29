@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/en.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/en.xml
- */
 en{
     Countries{
+        001{"World"}
+        002{"Africa"}
+        003{"North America"}
+        005{"South America"}
+        009{"Oceania"}
+        011{"Western Africa"}
+        013{"Central America"}
+        014{"Eastern Africa"}
+        015{"Northern Africa"}
+        017{"Middle Africa"}
+        018{"Southern Africa"}
+        019{"Americas"}
+        021{"Northern America"}
+        029{"Caribbean"}
+        030{"Eastern Asia"}
+        034{"Southern Asia"}
+        035{"Southeast Asia"}
+        039{"Southern Europe"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Micronesian Region"}
+        061{"Polynesia"}
+        142{"Asia"}
+        143{"Central Asia"}
+        145{"Western Asia"}
+        150{"Europe"}
+        151{"Eastern Europe"}
+        154{"Northern Europe"}
+        155{"Western Europe"}
         419{"Latin America"}
         AC{"Ascension Island"}
         AD{"Andorra"}
@@ -53,9 +79,9 @@ en{
         BZ{"Belize"}
         CA{"Canada"}
         CC{"Cocos (Keeling) Islands"}
-        CD{"Congo (DRC)"}
+        CD{"Congo - Kinshasa"}
         CF{"Central African Republic"}
-        CG{"Congo (Republic)"}
+        CG{"Congo - Brazzaville"}
         CH{"Switzerland"}
         CI{"Côte d’Ivoire"}
         CK{"Cook Islands"}
@@ -89,7 +115,7 @@ en{
         EU{"European Union"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"Falkland Islands (Islas Malvinas)"}
+        FK{"Falkland Islands"}
         FM{"Micronesia"}
         FO{"Faroe Islands"}
         FR{"France"}
@@ -112,7 +138,7 @@ en{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong SAR China"}
         HM{"Heard & McDonald Islands"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -162,11 +188,11 @@ en{
         MF{"St. Martin"}
         MG{"Madagascar"}
         MH{"Marshall Islands"}
-        MK{"Macedonia (FYROM)"}
+        MK{"Macedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau SAR China"}
         MP{"Northern Mariana Islands"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -201,7 +227,7 @@ en{
         PM{"St. Pierre & Miquelon"}
         PN{"Pitcairn Islands"}
         PR{"Puerto Rico"}
-        PS{"Palestine"}
+        PS{"Palestinian Territories"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,6 +299,15 @@ en{
         ZW{"Zimbabwe"}
         ZZ{"Unknown Region"}
     }
+    Countries%short{
+        BA{"Bosnia"}
+        GB{"UK"}
+        HK{"Hong Kong"}
+        MM{"Myanmar"}
+        MO{"Macau"}
+        PS{"Palestine"}
+        US{"US"}
+    }
     Countries%variant{
         CD{"Congo (DRC)"}
         CG{"Congo (Republic)"}
@@ -281,11 +316,5 @@ en{
         MK{"Macedonia (FYROM)"}
         TL{"East Timor"}
     }
-    CountriesShort{
-        BA{"Bosnia"}
-        GB{"U.K."}
-        MM{"Myanmar"}
-        US{"U.S."}
-    }
-    Version{"2.1.8.87"}
+    Version{"2.1.19.72"}
 }

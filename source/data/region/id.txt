@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/id.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/id.xml
- */
 id{
     Countries{
+        001{"Dunia"}
+        002{"Afrika"}
+        003{"Amerika Utara"}
+        005{"Amerika Selatan"}
+        009{"Oseania"}
+        011{"Afrika Bagian Barat"}
+        013{"Amerika Tengah"}
+        014{"Afrika Bagian Timur"}
+        015{"Afrika Bagian Utara"}
+        017{"Afrika Bagian Tengah"}
+        018{"Afrika Bagian Selatan"}
+        019{"Amerika"}
+        021{"Amerika Bagian Utara"}
+        029{"Kepulauan Karibia"}
+        030{"Asia Bagian Timur"}
+        034{"Asia Bagian Selatan"}
+        035{"Asia Tenggara"}
+        039{"Eropa Bagian Selatan"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Wilayah Mikronesia"}
+        061{"Polinesia"}
+        142{"Asia"}
+        143{"Asia Tengah"}
+        145{"Asia Bagian Barat"}
+        150{"Eropa"}
+        151{"Eropa Bagian Timur"}
+        154{"Eropa Bagian Utara"}
+        155{"Eropa Bagian Barat"}
         419{"Amerika Latin"}
         AC{"Pulau Ascension"}
         AD{"Andorra"}
@@ -107,12 +133,12 @@ id{
         GP{"Guadeloupe"}
         GQ{"Guinea Ekuatorial"}
         GR{"Yunani"}
-        GS{"Georgia Selatan dan Kepulauan Sandwich Selatan"}
+        GS{"Georgia Selatan & Kep. Sandwich Selatan"}
         GT{"Guatemala"}
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong SAR China"}
         HM{"Pulau Heard dan Kepulauan McDonald"}
         HN{"Honduras"}
         HR{"Kroasia"}
@@ -166,7 +192,7 @@ id{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Makau"}
+        MO{"Makau SAR China"}
         MP{"Kepulauan Mariana Utara"}
         MQ{"Martinik"}
         MR{"Mauritania"}
@@ -201,7 +227,7 @@ id{
         PM{"Saint Pierre dan Miquelon"}
         PN{"Kepulauan Pitcairn"}
         PR{"Puerto Riko"}
-        PS{"Palestina"}
+        PS{"Wilayah Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,6 +299,13 @@ id{
         ZW{"Zimbabwe"}
         ZZ{"Wilayah Tidak Dikenal"}
     }
+    Countries%short{
+        GB{"GB"}
+        HK{"Hong Kong"}
+        MO{"Makau"}
+        PS{"Palestina"}
+        US{"A.S."}
+    }
     Countries%variant{
         CD{"Kongo (RDK)"}
         CG{"Kongo (Republik)"}
@@ -281,9 +314,5 @@ id{
         MK{"Makedonia (BRY)"}
         TL{"Timor Timur"}
     }
-    CountriesShort{
-        GB{"GB"}
-        US{"A.S."}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
 }

@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/to.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/to.xml
- */
 to{
     Countries{
+        001{"Māmani"}
+        002{"ʻAfilika"}
+        003{"ʻAmelika tokelau"}
+        005{"ʻAmelika tonga"}
+        009{"ʻOsēnia"}
+        011{"ʻAfilika fakahihifo"}
+        013{"ʻAmelika lotoloto"}
+        014{"ʻAfilika fakahahake"}
+        015{"ʻAfilika fakatokelau"}
+        017{"ʻAfilika lotoloto"}
+        018{"ʻAfilika fakatonga"}
+        019{"Ongo ʻAmelika"}
+        021{"ʻAmelika fakatokelau"}
+        029{"Kalipiane"}
+        030{"ʻĒsia fakahahake"}
+        034{"ʻĒsia fakatonga"}
+        035{"ʻĒsia fakatongahahake"}
+        039{"ʻIulope fakatonga"}
+        053{"ʻAositelēlēsia"}
+        054{"Melanīsia"}
+        057{"Potu fonua Mikolonīsia"}
+        061{"Polinīsia"}
+        142{"ʻĒsia"}
+        143{"ʻĒsia lotoloto"}
+        145{"ʻĒsia fakahihifo"}
+        150{"ʻIulope"}
+        151{"ʻIulope fakahahake"}
+        154{"ʻIulope fakatokelau"}
+        155{"ʻIulope fakahihifo"}
         419{"ʻAmelika fakalatina"}
         AC{"Motu ʻAsenisini"}
         AD{"ʻAnitola"}
@@ -112,7 +138,7 @@ to{
         GU{"Kuamu"}
         GW{"Kini-Pisau"}
         GY{"Kuiana"}
-        HK{"Hongi Kongi"}
+        HK{"Hongi Kongi SAR Siaina"}
         HM{"ʻOtumotu Heati mo Makitonali"}
         HN{"Honitulasi"}
         HR{"Kuloisia"}
@@ -166,7 +192,7 @@ to{
         ML{"Māli"}
         MM{"Pema"}
         MN{"Mongokōlia"}
-        MO{"Makau"}
+        MO{"Makau SAR Siaina"}
         MP{"ʻOtumotu Maliana tokelau"}
         MQ{"Māteniki"}
         MR{"Maulitenia"}
@@ -201,7 +227,7 @@ to{
         PM{"Sā Piea mo Mikeloni"}
         PN{"ʻOtumotu Pitikeni"}
         PR{"Pueto Liko"}
-        PS{"Palesitaine"}
+        PS{"Potu Palesitaine"}
         PT{"Potukali"}
         PW{"Palau"}
         PY{"Palakuai"}
@@ -241,7 +267,7 @@ to{
         TH{"Tailani"}
         TJ{"Tasikitani"}
         TK{"Tokelau"}
-        TL{"Timoa Hahake"}
+        TL{"Timoa hahake"}
         TM{"Tūkimenisitani"}
         TN{"Tunīsia"}
         TO{"Tonga"}
@@ -273,14 +299,17 @@ to{
         ZW{"Simipapuei"}
         ZZ{"Potu fonua taʻeʻiloa pe hala"}
     }
+    Countries%short{
+        GB{"Pilitānia"}
+        HK{"Hongi Kongi"}
+        MO{"Makau"}
+        PS{"Palesitaine"}
+        US{"ʻAmelika"}
+    }
     Countries%variant{
         CD{"Kongo (LTK)"}
         CG{"Kongo (Lipapilika)"}
         MK{"Masetōnia (FYROM)"}
     }
-    CountriesShort{
-        GB{"Pilitānia"}
-        US{"ʻAmelika"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.14"}
 }

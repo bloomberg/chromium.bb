@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ko.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ko.xml
- */
 ko{
-    Version{"2.1.9.31"}
+    Version{"2.1.19.94"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"아비장"}
@@ -687,11 +684,11 @@ ko{
         "Asia:Calcutta"{
             ec{"콜카타"}
         }
+        "Asia:Chita"{
+            ec{"치타"}
+        }
         "Asia:Choibalsan"{
             ec{"초이발산"}
-        }
-        "Asia:Chongqing"{
-            ec{"충칭"}
         }
         "Asia:Colombo"{
             ec{"콜롬보"}
@@ -713,9 +710,6 @@ ko{
         }
         "Asia:Gaza"{
             ec{"가자"}
-        }
-        "Asia:Harbin"{
-            ec{"하얼빈"}
         }
         "Asia:Hebron"{
             ec{"헤브론"}
@@ -746,9 +740,6 @@ ko{
         }
         "Asia:Karachi"{
             ec{"카라치"}
-        }
-        "Asia:Kashgar"{
-            ec{"카슈가르"}
         }
         "Asia:Katmandu"{
             ec{"카트만두"}
@@ -836,6 +827,9 @@ ko{
         }
         "Asia:Singapore"{
             ec{"싱가포르"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"스레드네콜림스크"}
         }
         "Asia:Taipei"{
             ec{"타이베이"}
@@ -1020,7 +1014,7 @@ ko{
         }
         "Europe:London"{
             ec{"런던"}
-            ld{"영국 일광 절약 시간"}
+            ld{"영국 하계 표준시"}
         }
         "Europe:Luxembourg"{
             ec{"룩셈부르크"}
@@ -1156,6 +1150,9 @@ ko{
         }
         "Pacific:Auckland"{
             ec{"오클랜드"}
+        }
+        "Pacific:Bougainville"{
+            ec{"부갱빌"}
         }
         "Pacific:Chatham"{
             ec{"채텀"}
@@ -1303,24 +1300,24 @@ ko{
             ls{"아마존 표준시"}
         }
         "meta:America_Central"{
-            ld{"묵미 중부 하계 표준시"}
-            lg{"묵미 중부 시간"}
-            ls{"묵미 중부 표준시"}
+            ld{"미 중부 하계 표준시"}
+            lg{"미 중부 시간"}
+            ls{"미 중부 표준시"}
         }
         "meta:America_Eastern"{
-            ld{"묵미 동부 하계 표준시"}
-            lg{"묵미 동부 시간"}
-            ls{"묵미 동부 표준시"}
+            ld{"미 동부 하계 표준시"}
+            lg{"미 동부 시간"}
+            ls{"미 동부 표준시"}
         }
         "meta:America_Mountain"{
-            ld{"묵미 로키 산맥 하계 표준시"}
-            lg{"묵미 로키 산맥 시간"}
-            ls{"북미 로키 산맥 표준시"}
+            ld{"미 산지 하계 표준시"}
+            lg{"미 산지 시간"}
+            ls{"미 산악 표준시"}
         }
         "meta:America_Pacific"{
-            ld{"북미 태평양 하계 표준시"}
-            lg{"묵미 태평양 시간"}
-            ls{"묵미 태평양 표준시"}
+            ld{"미 태평양 하계 표준시"}
+            lg{"미 태평양 시간"}
+            ls{"미 태평양 표준시"}
         }
         "meta:Anadyr"{
             ld{"아나디리 서머 타임"}
@@ -1363,29 +1360,29 @@ ko{
             ls{"아르메니아 표준시"}
         }
         "meta:Atlantic"{
-            ld{"북미 대서양 하계 표준시"}
-            lg{"북미 대서양 시간"}
-            ls{"북미 대서양 표준시"}
+            ld{"미 대서양 하계 표준시"}
+            lg{"대서양 시간"}
+            ls{"대서양 표준시"}
         }
         "meta:Australia_Central"{
-            ld{"호주 중부 하계 표준시"}
-            lg{"호주 중부 시간"}
-            ls{"호주 중부 표준시"}
+            ld{"오스트레일리아 중부 하계 표준시"}
+            lg{"오스트레일리아 중부 시간"}
+            ls{"오스트레일리아 중부 표준시"}
         }
         "meta:Australia_CentralWestern"{
-            ld{"호주 중서부 하계 표준시"}
-            lg{"호주 중서부 시간"}
-            ls{"호주 중서부 표준시"}
+            ld{"오스트레일리아 중서부 하계 표준시"}
+            lg{"오스트레일리아 중서부 시간"}
+            ls{"오스트레일리아 중서부 표준시"}
         }
         "meta:Australia_Eastern"{
-            ld{"호주 동부 하계 표준시"}
-            lg{"호주 동부 시간"}
-            ls{"호주 동부 표준시"}
+            ld{"오스트레일리아 동부 하계 표준시"}
+            lg{"오스트레일리아 동부 시간"}
+            ls{"오스트레일리아 동부 표준시"}
         }
         "meta:Australia_Western"{
-            ld{"호주 서부 하계 표준시"}
-            lg{"호주 서부 시간"}
-            ls{"호주 서부 표준시"}
+            ld{"오스트레일리아 서부 하계 표준시"}
+            lg{"오스트레일리아 서부 시간"}
+            ls{"오스트레일리아 서부 표준시"}
         }
         "meta:Azerbaijan"{
             ld{"아제르바이잔 하계 표준시"}
@@ -1499,13 +1496,13 @@ ko{
             ls{"극동 유럽 표준시"}
         }
         "meta:Europe_Western"{
-            ld{"서유럽 하계 표준시"}
+            ld{"서유럽 서머 타임"}
             lg{"서유럽 시간"}
             ls{"서유럽 표준시"}
         }
         "meta:Falkland"{
-            ld{"포클랜드 하계 표준시"}
-            lg{"포클랜드 시간"}
+            ld{"포클랜드 제도 하계 표준시"}
+            lg{"포클랜드 제도 시간"}
             ls{"포클랜드 제도 표준시"}
         }
         "meta:Fiji"{
@@ -1617,9 +1614,9 @@ ko{
             ls{"서부 카자흐스탄 시간"}
         }
         "meta:Korea"{
-            ld{"한국 하계 표준시"}
-            lg{"한국 시간"}
-            ls{"한국 표준시"}
+            ld{"대한민국 하계 표준시"}
+            lg{"대한민국 시간"}
+            ls{"대한민국 표준시"}
         }
         "meta:Kosrae"{
             ls{"코스라에섬 시간"}
@@ -1703,7 +1700,7 @@ ko{
             ls{"네팔 시간"}
         }
         "meta:New_Caledonia"{
-            ld{"뉴 칼레도니아 하계 표준시"}
+            ld{"뉴칼레도니아 하계 표준시"}
             lg{"뉴칼레도니아 시간"}
             ls{"뉴칼레도니아 표준시"}
         }
@@ -1739,7 +1736,7 @@ ko{
             ls{"옴스크 표준시"}
         }
         "meta:Pakistan"{
-            ld{"파키스탄 서머 타임"}
+            ld{"파키스탄 하계 표준시"}
             lg{"파키스탄 시간"}
             ls{"파키스탄 표준시"}
         }

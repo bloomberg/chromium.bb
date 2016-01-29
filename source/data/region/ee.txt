@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ee.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ee.xml
- */
 ee{
     Countries{
+        001{"xexeme"}
+        002{"Afrika nutome"}
+        003{"Dziehe Amerika nutome"}
+        005{"Anyiehe Amerika nutome"}
+        009{"Oceania nutome"}
+        011{"Ɣetoɖoƒelɔƒo Afrika nutome"}
+        013{"Titina Amerika nutome"}
+        014{"Ɣedzeƒe Afrika nutome"}
+        015{"Dziehe Afrika nutome"}
+        017{"Titina Afrika nutome"}
+        018{"Anyiehelɔƒo Afrika nutome"}
+        019{"Amerika nutome"}
+        021{"Dziehelɔƒo Amerika nutome"}
+        029{"Karibbea nutome"}
+        030{"Ɣedzeƒe Asia nutome"}
+        034{"Anyiehelɔƒo Asia nutome"}
+        035{"Anyiehe Ɣedzeƒe Afrika nutome"}
+        039{"Anyiehelɔƒo Europa nutome"}
+        053{"Australia kple New Zealand nutome"}
+        054{"Melanesia nutome"}
+        057{"Mikronesia"}
+        061{"Pɔlinesia nutome"}
+        142{"Asia nutome"}
+        143{"Titina Asia nutome"}
+        145{"Ɣetoɖoƒelɔƒo Asia nutome"}
+        150{"Europa nutome"}
+        151{"Ɣedzeƒe Europa nutome"}
+        154{"Dziehelɔƒo Europa nutome"}
+        155{"Ɣetoɖoƒelɔƒo Europa nutome"}
         419{"Latin Amerika nutome"}
         AC{"Ascension ƒudomekpo nutome"}
         AD{"Andorra nutome"}
@@ -50,7 +76,7 @@ ee{
         BW{"Botswana nutome"}
         BY{"Belarus nutome"}
         BZ{"Belize nutome"}
-        CA{"Kanada nutome"}
+        CA{"Canada nutome"}
         CC{"Kokos (Kiling) fudomekpo nutome"}
         CD{"Kongo Kinshasa nutome"}
         CF{"Titina Afrika repɔblik nutome"}
@@ -82,7 +108,7 @@ ee{
         EG{"Egypte nutome"}
         EH{"Ɣetoɖoƒe Sahara nutome"}
         ER{"Eritrea nutome"}
-        ES{"Spania nutome"}
+        ES{"Spain nutome"}
         ET{"Etiopia nutome"}
         EU{"Europa Wɔɖeka nutome"}
         FI{"Finland nutome"}
@@ -90,7 +116,7 @@ ee{
         FK{"Falkland ƒudomekpowo nutome"}
         FM{"Mikronesia nutome"}
         FO{"Faroe ƒudomekpowo nutome"}
-        FR{"Frans nutome"}
+        FR{"France nutome"}
         GA{"Gabɔn nutome"}
         GB{"United Kingdom nutome"}
         GD{"Grenada nutome"}
@@ -104,13 +130,13 @@ ee{
         GN{"Guini nutome"}
         GP{"Guadelupe nutome"}
         GQ{"Ekuatorial Guini nutome"}
-        GR{"Grisi nutome"}
+        GR{"Greece nutome"}
         GS{"Anyiehe Georgia kple Anyiehe Sandwich ƒudomekpowo nutome"}
         GT{"Guatemala nutome"}
         GU{"Guam nutome"}
         GW{"Gini-Bisao nutome"}
         GY{"Guyanadu"}
-        HK{"Hɔng Kɔng nutome"}
+        HK{"Hɔng Kɔng SAR Tsaina nutome"}
         HM{"Heard kple Mcdonald ƒudomekpowo nutome"}
         HN{"Hondurasdu"}
         HR{"Kroatsia nutome"}
@@ -164,7 +190,7 @@ ee{
         ML{"Mali nutome"}
         MM{"Myanmar (Burma) nutome"}
         MN{"Mongolia nutome"}
-        MO{"Macau nutome"}
+        MO{"Macau SAR Tsaina nutome"}
         MP{"Dziehe Marina ƒudomekpowo nutome"}
         MQ{"Martiniki nutome"}
         MR{"Mauritania nutome"}
@@ -173,7 +199,7 @@ ee{
         MU{"mauritiusdukɔ"}
         MV{"maldivesdukɔ"}
         MW{"Malawi nutome"}
-        MX{"Meksico nutome"}
+        MX{"Mexico nutome"}
         MY{"Malaysia nutome"}
         MZ{"Mozambiki nutome"}
         NA{"Namibia nutome"}
@@ -182,7 +208,7 @@ ee{
         NF{"Norfolk ƒudomekpo nutome"}
         NG{"Nigeria nutome"}
         NI{"Nicaraguadukɔ"}
-        NL{"Nedalands nutome"}
+        NL{"Netherlands nutome"}
         NO{"Norway nutome"}
         NP{"Nepal nutome"}
         NR{"Nauru nutome"}
@@ -233,7 +259,7 @@ ee{
         TD{"Tsad nutome"}
         TF{"Anyiehe Franseme nutome"}
         TG{"Togo nutome"}
-        TH{"Tailand nutome"}
+        TH{"Thailand nutome"}
         TJ{"Tajikistan nutome"}
         TK{"Tokelau nutome"}
         TL{"Timor-Leste nutome"}
@@ -262,10 +288,14 @@ ee{
         WS{"Samoa nutome"}
         YE{"Yemen nutome"}
         YT{"Mayotte nutome"}
-        ZA{"Anyiehe Afrika nutome"}
+        ZA{"Anyiehe Africa nutome"}
         ZM{"Zambia nutome"}
         ZW{"Zimbabwe nutome"}
         ZZ{"nutome manya"}
+    }
+    Countries%short{
+        HK{"Hɔng Kɔng nutome"}
+        MO{"Macau nutome"}
     }
     Countries%variant{
         CD{"Kongo demokratik repɔblik nutome"}
@@ -275,5 +305,5 @@ ee{
         MK{"Makedonia (FYROM) nutome"}
         TL{"Ɣedzeƒe Timɔ nutome"}
     }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.14"}
 }

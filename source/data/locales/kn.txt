@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/kn.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/kn.xml
- */
 kn{
-    AuxExemplarCharacters{"[\u200C\u200D]"}
+    AuxExemplarCharacters{"[\u200C\u200D ೞ]"}
     Ellipsis{
         final{"{0}…"}
         initial{"…{0}"}
@@ -21,18 +18,14 @@ kn{
     }
     ExemplarCharacters{
         "[\u0CBC ೦ ೧ ೨ ೩ ೪ ೫ ೬ ೭ ೮ ೯ ಅ ಆ ಇ ಈ ಉ ಊ ಋ ೠ ಌ ೡ ಎ ಏ ಐ ಒ ಓ ಔ ಂ ಃ ಕ ಖ ಗ ಘ ಙ ಚ "
-        "ಛ ಜ ಝ ಞ ಟ ಠ ಡ ಢ ಣ ತ ಥ ದ ಧ ನ ಪ ಫ ಬ ಭ ಮ ಯ ರ ಱ ಲ ವ ಶ ಷ ಸ ಹ ಳ ೞ ಽ ಾ \u0CBF ೀ ು ೂ"
-	"\u200C \u200D"
-        " ೃ ೄ \u0CC6 ೇ ೈ ೊ ೋ \u0CCC \u0CCD ೕ ೖ]"
+        "ಛ ಜ ಝ ಞ ಟ ಠ ಡ ಢ ಣ ತ ಥ ದ ಧ ನ ಪ ಫ ಬ ಭ ಮ ಯ ರ ಱ ಲ ವ ಶ ಷ ಸ ಹ ಳ ಽ ಾ \u0CBF ೀ ು ೂ ೃ"
+        " ೄ \u0CC6 ೇ ೈ ೊ ೋ \u0CCC \u0CCD ೕ ೖ]"
     }
     ExemplarCharactersIndex{
         "[ಅ ಆ ಇ ಈ ಉ ಊ ಋ ೠ ಌ ೡ ಎ ಏ ಐ ಒ ಓ ಔ ಕ ಖ ಗ ಘ ಙ ಚ ಛ ಜ ಝ ಞ ಟ ಠ ಡ ಢ ಣ ತ ಥ ದ ಧ ನ ಪ ಫ"
         " ಬ ಭ ಮ ಯ ರ ಱ ಲ ವ ಶ ಷ ಸ ಹ ಳ ೞ]"
     }
     ExemplarCharactersPunctuation{"[\\- ‐ – — , ; \\: ! ? . … ' ‘ ’ \u0022 “ ” ( ) \\[ \\] @ * / \\& # ′ ″]"}
-    LocaleScript{
-        "Knda",
-    }
     MoreInformation{"?"}
     NumberElements{
         default{"latn"}
@@ -101,6 +94,56 @@ kn{
                 }
             }
             patternsShort{
+                currencyFormat{
+                    1000{
+                        one{"¤0ಸಾ"}
+                        other{"¤0ಸಾ"}
+                    }
+                    10000{
+                        one{"¤00ಸಾ"}
+                        other{"¤00ಸಾ"}
+                    }
+                    100000{
+                        one{"¤000ಸಾ"}
+                        other{"¤000ಸಾ"}
+                    }
+                    1000000{
+                        one{"¤0ಮಿ"}
+                        other{"¤0ಮಿ"}
+                    }
+                    10000000{
+                        one{"¤00ಮಿ"}
+                        other{"¤00ಮಿ"}
+                    }
+                    100000000{
+                        one{"¤000ಮಿ"}
+                        other{"¤000ಮಿ"}
+                    }
+                    1000000000{
+                        one{"¤0ಬಿ"}
+                        other{"¤0ಬಿ"}
+                    }
+                    10000000000{
+                        one{"¤00ಬಿ"}
+                        other{"¤00ಬಿ"}
+                    }
+                    100000000000{
+                        one{"¤000ಬಿ"}
+                        other{"¤000ಬಿ"}
+                    }
+                    1000000000000{
+                        one{"¤0ಟ್ರಿ"}
+                        other{"¤0ಟ್ರಿ"}
+                    }
+                    10000000000000{
+                        one{"¤00ಟ್ರಿ"}
+                        other{"¤00ಟ್ರಿ"}
+                    }
+                    100000000000000{
+                        one{"¤000ಟ್ರಿ"}
+                        other{"¤000ಟ್ರಿ"}
+                    }
+                }
                 decimalFormat{
                     1000{
                         one{"0ಸಾ"}
@@ -170,7 +213,7 @@ kn{
         minimumGroupingDigits{"1"}
         native{"knda"}
     }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.77"}
     calendar{
         generic{
             DateTimePatterns{
@@ -189,6 +232,7 @@ kn{
                 "{1} {0}",
             }
             availableFormats{
+                E{"ccc"}
                 Ed{"d E"}
                 Gy{"G y"}
                 GyMMM{"G y MMM"}
@@ -242,8 +286,8 @@ kn{
                     M{"M–M"}
                 }
                 MEd{
-                    M{"d/M, E - d/M, E"}
-                    d{"d/M, E - d/M, E"}
+                    M{"d/M, E – d/M, E"}
+                    d{"d/M, E – d/M, E"}
                 }
                 MMM{
                     M{"MMM–MMM"}
@@ -253,12 +297,12 @@ kn{
                     d{"MMM d, E – MMM d, E"}
                 }
                 MMMd{
-                    M{"d MMM - d MMM"}
+                    M{"d MMM – d MMM"}
                     d{"d –d MMM"}
                 }
                 Md{
                     M{"d/M – d/M"}
-                    d{"d/M - d/M"}
+                    d{"d/M – d/M"}
                 }
                 d{
                     d{"d–d"}
@@ -280,7 +324,7 @@ kn{
                 }
                 hv{
                     a{"h a – h a v"}
-                    h{"h-h a v"}
+                    h{"h–h a v"}
                 }
                 y{
                     y{"y–y G"}
@@ -290,9 +334,9 @@ kn{
                     y{"M/y – M/y GGGGG"}
                 }
                 yMEd{
-                    M{"d/M/y, E - d/M/y G"}
+                    M{"d/M/y, E – d/M/y G"}
                     d{"GGGGG y-MM-dd, E – y-MM-dd, E"}
-                    y{"d/M/y, E - d/M/y, E G"}
+                    y{"d/M/y, E – d/M/y, E G"}
                 }
                 yMMM{
                     M{"G y MMM–MMM"}
@@ -340,15 +384,13 @@ kn{
                 "EEEE, MMMM d, y",
                 "MMMM d, y",
                 "MMM d, y",
-                "M/d/yy",
+                "d/M/yy",
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
             }
-            NoonMarker{"ಮಧ್ಯಾಹ್ನ"}
-            NoonMarkerNarrow{"ಮ"}
             appendItems{
                 Timezone{"{0} {1}"}
             }
@@ -366,6 +408,8 @@ kn{
                 H{"HH"}
                 Hm{"HH:mm"}
                 Hms{"HH:mm:ss"}
+                Hmsv{"HH:mm:ss v"}
+                Hmv{"HH:mm v"}
                 M{"L"}
                 MEd{"d/M, E"}
                 MMM{"LLL"}
@@ -373,11 +417,13 @@ kn{
                 MMMMd{"d MMMM"}
                 MMMd{"MMM d"}
                 MMdd{"dd-MM"}
-                Md{"M/d"}
+                Md{"d/M"}
                 d{"d"}
                 h{"h a"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
+                hmsv{"h:mm:ss a v"}
+                hmv{"h:mm a v"}
                 ms{"mm:ss"}
                 y{"y"}
                 yM{"M/y"}
@@ -387,7 +433,7 @@ kn{
                 yMMMEd{"E, MMM d, y"}
                 yMMMM{"MMMM y"}
                 yMMMd{"MMM d,y"}
-                yMd{"M/d/y"}
+                yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
             }
@@ -469,6 +515,56 @@ kn{
                     }
                 }
             }
+            dayPeriod{
+                format{
+                    abbreviated{
+                        afternoon1{"ಮಧ್ಯಾಹ್ನ"}
+                        evening1{"ಸಂಜೆ"}
+                        midnight{"ಮಧ್ಯ ರಾತ್ರಿ"}
+                        morning1{"ಬೆಳಗ್ಗೆ"}
+                        night1{"ರಾತ್ರಿ"}
+                    }
+                    narrow{
+                        afternoon1{"ಮಧ್ಯಾಹ್ನ"}
+                        evening1{"ಸಂಜೆ"}
+                        midnight{"ಮಧ್ಯರಾತ್ರಿ"}
+                        morning1{"ಬೆಳಗ್ಗೆ"}
+                        night1{"ರಾತ್ರಿ"}
+                    }
+                    wide{
+                        afternoon1{"ಮಧ್ಯಾಹ್ನ"}
+                        evening1{"ಸಂಜೆ"}
+                        midnight{"ಮಧ್ಯ ರಾತ್ರಿ"}
+                        morning1{"ಬೆಳಗ್ಗೆ"}
+                        night1{"ರಾತ್ರಿ"}
+                    }
+                }
+                stand-alone{
+                    abbreviated{
+                        afternoon1{"ಮಧ್ಯಾಹ್ನ"}
+                        evening1{"ಸಂಜೆ"}
+                        midnight{"ಮಧ್ಯರಾತ್ರಿ"}
+                        morning1{"ಬೆಳಗ್ಗೆ"}
+                        night1{"ರಾತ್ರಿ"}
+                    }
+                    narrow{
+                        afternoon1{"ಮಧ್ಯಾಹ್ನ"}
+                        evening1{"ಸಂಜೆ"}
+                        midnight{"ಮಧ್ಯರಾತ್ರಿ"}
+                        morning1{"ಬೆಳಗ್ಗೆ"}
+                        night1{"ರಾತ್ರಿ"}
+                    }
+                    wide{
+                        afternoon1{"ಮಧ್ಯಾಹ್ನ"}
+                        am{"ಪೂರ್ವಾಹ್ನ"}
+                        evening1{"ಸಂಜೆ"}
+                        midnight{"ಮಧ್ಯರಾತ್ರಿ"}
+                        morning1{"ಬೆಳಗ್ಗೆ"}
+                        night1{"ರಾತ್ರಿ"}
+                        pm{"ಅಪರಾಹ್ನ"}
+                    }
+                }
+            }
             eras{
                 abbreviated{
                     "ಕ್ರಿ.ಪೂ",
@@ -506,23 +602,23 @@ kn{
                     M{"M–M"}
                 }
                 MEd{
-                    M{"E, M/d - E, M/d"}
-                    d{"E, M/d - E, M/d"}
+                    M{"E, M/d – E, M/d"}
+                    d{"E, M/d – E, M/d"}
                 }
                 MMM{
                     M{"MMM–MMM"}
                 }
                 MMMEd{
-                    M{"d MMM, E - d MMM, E"}
-                    d{"E, MMM d - E, MMM d"}
+                    M{"MMM d, E – MMM d, E"}
+                    d{"MMM d, E – MMM d, E"}
                 }
                 MMMd{
-                    M{"d MMM - d MMM"}
-                    d{"MMM d - d"}
+                    M{"d MMM – d MMM"}
+                    d{"MMM d – d"}
                 }
                 Md{
-                    M{"M/d - M/d"}
-                    d{"M/d - M/d"}
+                    M{"M/d – M/d"}
+                    d{"M/d – M/d"}
                 }
                 d{
                     d{"d–d"}
@@ -554,32 +650,32 @@ kn{
                     y{"M/y – M/y"}
                 }
                 yMEd{
-                    M{"E, M/d/y - E, M/d/y"}
-                    d{"d/M/y,E - d/M/y,E,"}
-                    y{"E, M/d/y - E, M/d/y"}
+                    M{"E, M/d/y – E, M/d/y"}
+                    d{"d/M/y,E – d/M/y,E,"}
+                    y{"E, M/d/y – E, M/d/y"}
                 }
                 yMMM{
                     M{"MMM–MMM y"}
-                    y{"MMM y - MMM y"}
+                    y{"MMM y – MMM y"}
                 }
                 yMMMEd{
-                    M{"E, MMM d - E, MMMM d, y"}
-                    d{"E, MMM d - E, MMM d,y"}
-                    y{"d MMM, y E - d MMM, y E"}
+                    M{"E, MMM d – E, MMMM d, y"}
+                    d{"E, MMM d – E, MMM d,y"}
+                    y{"d MMM, y E – d MMM, y E"}
                 }
                 yMMMM{
                     M{"MMMM – MMMM y"}
                     y{"MMMM y – MMMM y"}
                 }
                 yMMMd{
-                    M{"d MMM - d MMM, y"}
-                    d{"MMM d-d,y"}
-                    y{"d, MMM, y - d, MMM, y"}
+                    M{"d MMM – d MMM, y"}
+                    d{"MMM d–d,y"}
+                    y{"d, MMM, y – d, MMM, y"}
                 }
                 yMd{
-                    M{"M/d/y - M/d/y"}
-                    d{"M/d/y - M/d/y"}
-                    y{"M/d/y - M/d/y"}
+                    M{"M/d/y – M/d/y"}
+                    d{"M/d/y – M/d/y"}
+                    y{"M/d/y – M/d/y"}
                 }
             }
             monthNames{
@@ -722,11 +818,6 @@ kn{
         quotationEnd{"”"}
         quotationStart{"“"}
     }
-    durationUnits{
-        hm{"h:mm"}
-        hms{"h:mm:ss"}
-        ms{"m:ss"}
-    }
     fields{
         day{
             dn{"ದಿನ"}
@@ -749,7 +840,11 @@ kn{
             }
         }
         day-narrow{
-            dn{"ದಿ"}
+            dn{"ದಿನ"}
+            relative{
+                "-2"{"ಮೊನ್ನೆ"}
+                "2"{"ನಾಡಿದ್ದು"}
+            }
             relativeTime{
                 future{
                     one{"{0} ದಿನದಲ್ಲಿ"}
@@ -763,6 +858,10 @@ kn{
         }
         day-short{
             dn{"ದಿನ"}
+            relative{
+                "-2"{"ಮೊನ್ನೆ"}
+                "2"{"ನಾಡಿದ್ದು"}
+            }
             relativeTime{
                 future{
                     one{"{0} ದಿನದಲ್ಲಿ"}
@@ -920,6 +1019,11 @@ kn{
         }
         month-narrow{
             dn{"ತಿಂಗಳು"}
+            relative{
+                "-1"{"ಕಳೆದ ತಿಂಗಳು"}
+                "0"{"ಈ ತಿಂಗಳು"}
+                "1"{"ಮುಂದಿನ ತಿಂಗಳು"}
+            }
             relativeTime{
                 future{
                     one{"{0} ತಿಂಗಳಲ್ಲಿ"}
@@ -933,6 +1037,11 @@ kn{
         }
         month-short{
             dn{"ತಿಂಗಳು"}
+            relative{
+                "-1"{"ಕಳೆದ ತಿಂಗಳು"}
+                "0"{"ಈ ತಿಂಗಳು"}
+                "1"{"ಮುಂದಿನ ತಿಂಗಳು"}
+            }
             relativeTime{
                 future{
                     one{"{0} ತಿಂಗಳಲ್ಲಿ"}
@@ -946,6 +1055,11 @@ kn{
         }
         quarter{
             dn{"ತ್ರೈಮಾಸಿಕ"}
+            relative{
+                "-1"{"ಕಳೆದ ತ್ರೈಮಾಸಿಕ"}
+                "0"{"ಈ ತ್ರೈಮಾಸಿಕ"}
+                "1"{"ಮುಂದಿನ ತ್ರೈಮಾಸಿಕ"}
+            }
             relativeTime{
                 future{
                     one{"{0} ತ್ರೈಮಾಸಿಕದಲ್ಲಿ"}
@@ -959,6 +1073,11 @@ kn{
         }
         quarter-narrow{
             dn{"ತ್ರೈಮಾಸಿಕ"}
+            relative{
+                "-1"{"ಕಳೆದ ತ್ರೈಮಾಸಿಕ"}
+                "0"{"ಈ ತ್ರೈಮಾಸಿಕ"}
+                "1"{"ಮುಂದಿನ ತ್ರೈಮಾಸಿಕ"}
+            }
             relativeTime{
                 future{
                     one{"+{0} ತ್ರೈ"}
@@ -972,6 +1091,11 @@ kn{
         }
         quarter-short{
             dn{"ತ್ರೈಮಾಸಿಕ"}
+            relative{
+                "-1"{"ಕಳೆದ ತ್ರೈಮಾಸಿಕ"}
+                "0"{"ಈ ತ್ರೈಮಾಸಿಕ"}
+                "1"{"ಮುಂದಿನ ತ್ರೈಮಾಸಿಕ"}
+            }
             relativeTime{
                 future{
                     one{"{0} ತ್ರೈ.ಮಾ.ದಲ್ಲಿ"}
@@ -1150,6 +1274,11 @@ kn{
         }
         week-narrow{
             dn{"ವಾರ"}
+            relative{
+                "-1"{"ಕಳೆದ ವಾರ"}
+                "0"{"ಈ ವಾರ"}
+                "1"{"ಮುಂದಿನ ವಾರ"}
+            }
             relativeTime{
                 future{
                     one{"{0} ವಾರದಲ್ಲಿ"}
@@ -1163,6 +1292,11 @@ kn{
         }
         week-short{
             dn{"ವಾರ"}
+            relative{
+                "-1"{"ಕಳೆದ ವಾರ"}
+                "0"{"ಈ ವಾರ"}
+                "1"{"ಮುಂದಿನ ವಾರ"}
+            }
             relativeTime{
                 future{
                     one{"{0} ವಾರದಲ್ಲಿ"}
@@ -1197,6 +1331,11 @@ kn{
         }
         year-narrow{
             dn{"ವರ್ಷ"}
+            relative{
+                "-1"{"ಕಳೆದ ವರ್ಷ"}
+                "0"{"ಈ ವರ್ಷ"}
+                "1"{"ಮುಂದಿನ ವರ್ಷ"}
+            }
             relativeTime{
                 future{
                     one{"{0} ವರ್ಷದಲ್ಲಿ"}
@@ -1210,6 +1349,11 @@ kn{
         }
         year-short{
             dn{"ವರ್ಷ"}
+            relative{
+                "-1"{"ಕಳೆದ ವರ್ಷ"}
+                "0"{"ಈ ವರ್ಷ"}
+                "1"{"ಮುಂದಿನ ವರ್ಷ"}
+            }
             relativeTime{
                 future{
                     one{"{0} ವರ್ಷದಲ್ಲಿ"}

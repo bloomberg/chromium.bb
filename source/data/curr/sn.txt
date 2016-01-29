@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/sn.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/sn.xml
- */
 sn{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ sn{
         BHD{
             "BHD",
             "Dhinari re Bhahareni",
+        }
+        BIF{
+            "BIF",
+            "Furenki re Bhurundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ sn{
             "CN¥",
             "Yuan Renminbi ye China",
         }
+        CVE{
+            "CVE",
+            "Dhora re Escudo",
+        }
+        DJF{
+            "DJF",
+            "Furenki re Jibhuti",
+        }
         DZD{
             "DZD",
             "Dhinari re Aljeria",
@@ -54,6 +63,10 @@ sn{
         EGP{
             "EGP",
             "Paundi re Ijipita",
+        }
+        ERN{
+            "ERN",
+            "Nakfa re Eritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ sn{
             "£",
             "Paundi ye Bhiriteni",
         }
+        GHC{
+            "GHC",
+            "Sedi ye Ghana",
+        }
+        GMD{
+            "GMD",
+            "Dalasi ye Gambia",
+        }
+        GNS{
+            "GNS",
+            "Furenki re Gine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Rupe re India",
         }
         JPY{
@@ -78,6 +103,18 @@ sn{
         KES{
             "KES",
             "Shiringi ye Kenya",
+        }
+        KMF{
+            "KMF",
+            "Furenki re Komoro",
+        }
+        LRD{
+            "LRD",
+            "Dora re Liberia",
+        }
+        LSL{
+            "LSL",
+            "Loti ye Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ sn{
             "MWK",
             "Kwacha ye Malawi",
         }
+        MZM{
+            "MZM",
+            "Metika ye Mozambiki",
+        }
         NAD{
             "NAD",
             "Dora re Namibia",
@@ -119,13 +160,37 @@ sn{
             "SAR",
             "Riyali re Saudi",
         }
+        SCR{
+            "SCR",
+            "Rupi re Seyisheri",
+        }
         SDG{
             "SDG",
             "Dinari re Sudani",
         }
+        SDP{
+            "SDP",
+            "Paundi re Sudani",
+        }
+        SHP{
+            "SHP",
+            "Paundi re Senti Helena",
+        }
         SLL{
             "SLL",
             "Leoni",
+        }
+        SOS{
+            "SOS",
+            "Shiringi re Somalia",
+        }
+        STD{
+            "STD",
+            "Dobra re Sao Tome ne Principe",
+        }
+        SZL{
+            "SZL",
+            "Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ sn{
             "ZAR",
             "Randi",
         }
+        ZMK{
+            "ZMK",
+            "Kwacha ye Zambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwacha ye Zambia",
         }
+        ZWD{
+            "ZWD",
+            "Dora re Zimbabwe",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

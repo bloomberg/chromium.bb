@@ -212,7 +212,7 @@ typedef size_t uintptr_t;
  */
 #ifdef U_HAVE_STD_ATOMICS
     /* Use the predefined value. */
-#elif !defined(__cplusplus) || __cplusplus<201103L
+#elif U_CPLUSPLUS_VERSION < 11
     /* Not C++11, disable use of atomics */
 #   define U_HAVE_STD_ATOMICS 0
 #elif __clang__ && __clang_major__==3 && __clang_minor__<=1
@@ -236,10 +236,7 @@ typedef size_t uintptr_t;
  */
 #ifdef U_HAVE_CLANG_ATOMICS
     /* Use the predefined value. */
-#elif !defined(__clang__)
-#    define U_HAVE_CLANG_ATOMICS 0
-#else
-#if __has_builtin(__c11_atomic_load) && \
+#elif __has_builtin(__c11_atomic_load) && \
     __has_builtin(__c11_atomic_store) && \
     __has_builtin(__c11_atomic_fetch_add) && \
     __has_builtin(__c11_atomic_fetch_sub)
@@ -247,27 +244,6 @@ typedef size_t uintptr_t;
 #else
 #    define U_HAVE_CLANG_ATOMICS 0
 #endif
-#endif
-
-/*===========================================================================*/
-/** @{ Code alignment                                                        */
-/*===========================================================================*/
-
-/**
- * \def U_ALIGN_CODE
- * This is used to align code fragments to a specific byte boundary.
- * This is useful for getting consistent performance test results.
- * @internal
- */
-#ifdef U_ALIGN_CODE
-    /* Use the predefined value. */
-#elif defined(_MSC_VER) && defined(_M_IX86) && !defined(_MANAGED)
-#   define U_ALIGN_CODE(boundarySize) __asm  align boundarySize
-#else
-#   define U_ALIGN_CODE(boundarySize) 
-#endif
-
-/** @} */
 
 /*===========================================================================*/
 /** @{ Programs used by ICU code                                             */
@@ -501,12 +477,6 @@ U_INTERNAL int32_t  U_EXPORT2 uprv_timezone(void);
  * @internal
  */
 U_INTERNAL const char* U_EXPORT2 uprv_tzname(int n);
-
-/**
- * Reset the global tzname cache.
- * @internal
- */
-U_INTERNAL void uprv_tzname_clear_cache();
 
 /**
  * Get UTC (GMT) time measured in milliseconds since 0:00 on 1/1/1970.

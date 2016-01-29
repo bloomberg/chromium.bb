@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/pl.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/pl.xml
- */
 pl{
     Countries{
+        001{"świat"}
+        002{"Afryka"}
+        003{"Ameryka Północna"}
+        005{"Ameryka Południowa"}
+        009{"Oceania"}
+        011{"Afryka Zachodnia"}
+        013{"Ameryka Środkowa"}
+        014{"Afryka Wschodnia"}
+        015{"Afryka Północna"}
+        017{"Afryka Środkowa"}
+        018{"Afryka Południowa"}
+        019{"Ameryka"}
+        021{"Ameryka Północna (USA, Kanada)"}
+        029{"Karaiby"}
+        030{"Azja Wschodnia"}
+        034{"Azja Południowa"}
+        035{"Azja Południowo-Wschodnia"}
+        039{"Europa Południowa"}
+        053{"Australazja"}
+        054{"Melanezja"}
+        057{"Region Mikronezji"}
+        061{"Polinezja"}
+        142{"Azja"}
+        143{"Azja Środkowa"}
+        145{"Azja Zachodnia"}
+        150{"Europa"}
+        151{"Europa Wschodnia"}
+        154{"Europa Północna"}
+        155{"Europa Zachodnia"}
         419{"Ameryka Łacińska"}
         AC{"Wyspa Wniebowstąpienia"}
         AD{"Andora"}
@@ -98,7 +124,7 @@ pl{
         GD{"Grenada"}
         GE{"Gruzja"}
         GF{"Gujana Francuska"}
-        GG{"Wyspa Guernsey"}
+        GG{"Guernsey"}
         GH{"Ghana"}
         GI{"Gibraltar"}
         GL{"Grenlandia"}
@@ -112,7 +138,7 @@ pl{
         GU{"Guam"}
         GW{"Gwinea Bissau"}
         GY{"Gujana"}
-        HK{"Hongkong"}
+        HK{"SRA Hongkong (Chiny)"}
         HM{"Wyspy Heard i McDonalda"}
         HN{"Honduras"}
         HR{"Chorwacja"}
@@ -129,7 +155,7 @@ pl{
         IR{"Iran"}
         IS{"Islandia"}
         IT{"Włochy"}
-        JE{"Wyspa Jersey"}
+        JE{"Jersey"}
         JM{"Jamajka"}
         JO{"Jordania"}
         JP{"Japonia"}
@@ -166,7 +192,7 @@ pl{
         ML{"Mali"}
         MM{"Mjanma (Birma)"}
         MN{"Mongolia"}
-        MO{"Makau"}
+        MO{"SRA Makau (Chiny)"}
         MP{"Mariany Północne"}
         MQ{"Martynika"}
         MR{"Mauretania"}
@@ -201,7 +227,7 @@ pl{
         PM{"Saint-Pierre i Miquelon"}
         PN{"Pitcairn"}
         PR{"Portoryko"}
-        PS{"Palestyna"}
+        PS{"Terytoria Palestyńskie"}
         PT{"Portugalia"}
         PW{"Palau"}
         PY{"Paragwaj"}
@@ -236,7 +262,7 @@ pl{
         TA{"Tristan da Cunha"}
         TC{"Turks i Caicos"}
         TD{"Czad"}
-        TF{"Francuskie Terytoria Południowe"}
+        TF{"Francuskie Terytoria Południowe i Antarktyczne"}
         TG{"Togo"}
         TH{"Tajlandia"}
         TJ{"Tadżykistan"}
@@ -273,15 +299,18 @@ pl{
         ZW{"Zimbabwe"}
         ZZ{"Nieznany region"}
     }
+    Countries%short{
+        GB{"GB"}
+        HK{"Hongkong"}
+        MO{"Makau"}
+        PS{"Palestyna"}
+        US{"USA"}
+    }
     Countries%variant{
         CG{"Republika Konga"}
         CI{"Wybrzeże Kości Słoniowej"}
         FK{"Falklandy (Malwiny)"}
         TL{"Timor-Leste"}
     }
-    CountriesShort{
-        GB{"GB"}
-        US{"USA"}
-    }
-    Version{"2.1.8.95"}
+    Version{"2.1.19.14"}
 }

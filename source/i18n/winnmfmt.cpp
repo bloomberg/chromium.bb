@@ -1,6 +1,6 @@
 /*
 ********************************************************************************
-*   Copyright (C) 2005-2014, International Business Machines
+*   Copyright (C) 2005-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 ********************************************************************************
 *
@@ -136,7 +136,7 @@ static void freeCurrencyFormat(CURRENCYFMTW *fmt)
 }
 
 Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErrorCode &status)
-  : NumberFormat(), fCurrency(currency), fFractionDigitsSet(FALSE), fFormatInfo(NULL)
+  : NumberFormat(), fCurrency(currency), fFormatInfo(NULL), fFractionDigitsSet(FALSE)
 {
     if (!U_FAILURE(status)) {
         fLCID = locale.getLCID();
@@ -209,17 +209,17 @@ Format *Win32NumberFormat::clone(void) const
 
 UnicodeString& Win32NumberFormat::format(double number, UnicodeString& appendTo, FieldPosition& pos) const
 {
-    return variadicFormat(getMaximumFractionDigits(), appendTo, L"%.16f", number);
+    return format(getMaximumFractionDigits(), appendTo, L"%.16f", number);
 }
 
 UnicodeString& Win32NumberFormat::format(int32_t number, UnicodeString& appendTo, FieldPosition& pos) const
 {
-    return variadicFormat(getMinimumFractionDigits(), appendTo, L"%I32d", number);
+    return format(getMinimumFractionDigits(), appendTo, L"%I32d", number);
 }
 
 UnicodeString& Win32NumberFormat::format(int64_t number, UnicodeString& appendTo, FieldPosition& pos) const
 {
-    return variadicFormat(getMinimumFractionDigits(), appendTo, L"%I64d", number);
+    return format(getMinimumFractionDigits(), appendTo, L"%I64d", number);
 }
 
 void Win32NumberFormat::parse(const UnicodeString& text, Formattable& result, ParsePosition& parsePosition) const
@@ -242,7 +242,7 @@ void Win32NumberFormat::setMinimumFractionDigits(int32_t newValue)
     NumberFormat::setMinimumFractionDigits(newValue);
 }
 
-UnicodeString &Win32NumberFormat::variadicFormat(int32_t numDigits, UnicodeString &appendTo, const wchar_t *fmt, ...) const
+UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appendTo, const wchar_t *fmt, ...) const
 {
     wchar_t nStackBuffer[STACK_BUFFER_SIZE];
     wchar_t *nBuffer = nStackBuffer;

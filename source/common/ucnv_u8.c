@@ -1,6 +1,6 @@
 /*  
 **********************************************************************
-*   Copyright (C) 2002-2012, International Business Machines
+*   Copyright (C) 2002-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 **********************************************************************
 *   file name:  ucnv_u8.c
@@ -89,7 +89,7 @@ utf8_minChar32[7]={ 0, 0, 0x80, 0x800, 0x10000, 0xffffffff, 0xffffffff };
 
 static UBool hasCESU8Data(const UConverter *cnv)
 {
-#if UCONFIG_NO_NON_HTML5_CONVERSION
+#if UCONFIG_ONLY_HTML_CONVERSION
     return FALSE;
 #else
     return (UBool)(cnv->sharedData == &_CESU8Data);

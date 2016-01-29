@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/rof.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/rof.xml
- */
 rof{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ rof{
         BHD{
             "BHD",
             "heleri sa Bahareni",
+        }
+        BIF{
+            "BIF",
+            "heleri sa Burundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ rof{
             "CN¥",
             "heleri sa China",
         }
+        CVE{
+            "CVE",
+            "heleri sa Kepuvede",
+        }
+        DJF{
+            "DJF",
+            "heleri sa Jibuti",
+        }
         DZD{
             "DZD",
             "heleri sa Aljeria",
@@ -54,6 +63,10 @@ rof{
         EGP{
             "EGP",
             "heleri sa Misri",
+        }
+        ERN{
+            "ERN",
+            "heleri sa Eritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ rof{
             "£",
             "heleri sa Uingereza",
         }
+        GHC{
+            "GHC",
+            "heleri sa Ghana",
+        }
+        GMD{
+            "GMD",
+            "heleri sa Gambia",
+        }
+        GNS{
+            "GNS",
+            "heleri sa Gine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "heleri sa India",
         }
         JPY{
@@ -78,6 +103,18 @@ rof{
         KES{
             "KES",
             "heleri sa Kenya",
+        }
+        KMF{
+            "KMF",
+            "heleri sa Komoro",
+        }
+        LRD{
+            "LRD",
+            "heleri sa Liberia",
+        }
+        LSL{
+            "LSL",
+            "heleri sa Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ rof{
             "MWK",
             "heleri sa Malawi",
         }
+        MZM{
+            "MZM",
+            "heleri sa Msumbiji",
+        }
         NAD{
             "NAD",
             "heleri sa Namibia",
@@ -119,13 +160,33 @@ rof{
             "SAR",
             "heleri sa Saudia",
         }
+        SCR{
+            "SCR",
+            "heleri sa Shelisheli",
+        }
         SDG{
             "SDG",
             "heleri sa Sudani",
         }
+        SHP{
+            "SHP",
+            "heleri sa Santahelena",
+        }
         SLL{
             "SLL",
             "leoni",
+        }
+        SOS{
+            "SOS",
+            "heleri sa Somalia",
+        }
+        STD{
+            "STD",
+            "heleri sa Sao Tome na Principe",
+        }
+        SZL{
+            "SZL",
+            "lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ rof{
             "ZAR",
             "heleri sa Afrika Kusini",
         }
+        ZMK{
+            "ZMK",
+            "heleri sa Zambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "heleri sa Zambia",
         }
+        ZWD{
+            "ZWD",
+            "heleri sa Zimbabwe",
+        }
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.14"}
 }

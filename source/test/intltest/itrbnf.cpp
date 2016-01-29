@@ -1,6 +1,6 @@
 /*
  *******************************************************************************
- * Copyright (C) 1996-2014, International Business Machines Corporation and    *
+ * Copyright (C) 1996-2015, International Business Machines Corporation and    *
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
@@ -19,6 +19,7 @@
 #include "unicode/ustring.h"
 #include "unicode/decimfmt.h"
 #include "unicode/udata.h"
+#include "putilimp.h"
 #include "testutil.h"
 
 #include <string.h>
@@ -66,6 +67,9 @@ void IntlTestRBNF::runIndexedTest(int32_t index, UBool exec, const char* &name, 
         TESTCASE(18, TestMultiplierSubstitution);
         TESTCASE(19, TestSetDecimalFormatSymbols);
         TESTCASE(20, TestPluralRules);
+        TESTCASE(21, TestMultiplePluralRules);
+        TESTCASE(22, TestInfinityNaN);
+        TESTCASE(23, TestVariableDecimalPoint);
 #else
         TESTCASE(0, TestRBNFDisabled);
 #endif
@@ -341,6 +345,72 @@ IntlTestRBNF::TestAPI() {
   delete formatter;
 }
 
+/**
+ * Perform a simple spot check on the parsing going into an infinite loop for alternate rules.
+ */
+void IntlTestRBNF::TestMultiplePluralRules() {
+    // This is trying to model the feminine form, but don't worry about the details too much.
+    // We're trying to test the plural rules where there are different prefixes.
+    UnicodeString rules("%spellout-cardinal-feminine-genitive:"
+                "0: zero;"
+                "1: ono;"
+                "2: two;"
+                "1000: << $(cardinal,one{thousand}few{thousanF}other{thousanO})$[ >>];"
+                "%spellout-cardinal-feminine:"
+                "x.x: [<< $(cardinal,one{singleton}other{plurality})$ ]>%%fractions>;"
+                "0: zero;"
+                "1: one;"
+                "2: two;"
+                "1000: << $(cardinal,one{thousand}few{thousanF}other{thousanO})$[ >>];"
+                "%%fractions:"
+                "10: <%spellout-cardinal-feminine< $(cardinal,one{oneth}other{tenth})$;"
+                "100: <%spellout-cardinal-feminine< $(cardinal,one{1hundredth}other{hundredth})$;");
+    UErrorCode status = U_ZERO_ERROR;
+    UParseError pError;
+    RuleBasedNumberFormat formatter(rules, Locale("ru"), pError, status);
+    Formattable result;
+    UnicodeString resultStr;
+    FieldPosition pos;
+
+    if (U_FAILURE(status)) {
+        dataerrln("Unable to create formatter - %s", u_errorName(status));
+        return;
+    }
+
+    formatter.parse(formatter.format(1000.0, resultStr, pos, status), result, status);
+    if (1000 != result.getLong() || resultStr != UNICODE_STRING_SIMPLE("one thousand")) {
+        errln("RuleBasedNumberFormat did not return the correct value. Got: %d", result.getLong());
+        errln(resultStr);
+    }
+    resultStr.remove();
+    formatter.parse(formatter.format(1000.0, UnicodeString("%spellout-cardinal-feminine-genitive"), resultStr, pos, status), result, status);
+    if (1000 != result.getLong() || resultStr != UNICODE_STRING_SIMPLE("ono thousand")) {
+        errln("RuleBasedNumberFormat(cardinal-feminine-genitive) did not return the correct value. Got: %d", result.getLong());
+        errln(resultStr);
+    }
+    resultStr.remove();
+    formatter.parse(formatter.format(1000.0, UnicodeString("%spellout-cardinal-feminine"), resultStr, pos, status), result, status);
+    if (1000 != result.getLong() || resultStr != UNICODE_STRING_SIMPLE("one thousand")) {
+        errln("RuleBasedNumberFormat(spellout-cardinal-feminine) did not return the correct value. Got: %d", result.getLong());
+        errln(resultStr);
+    }
+    static const char* const testData[][2] = {
+        { "0", "zero" },
+        { "1", "one" },
+        { "2", "two" },
+        { "0.1", "one oneth" },
+        { "0.2", "two tenth" },
+        { "1.1", "one singleton one oneth" },
+        { "1.2", "one singleton two tenth" },
+        { "2.1", "two plurality one oneth" },
+        { "2.2", "two plurality two tenth" },
+        { "0.01", "one 1hundredth" },
+        { "0.02", "two hundredth" },
+        { NULL, NULL }
+    };
+    doTest(&formatter, testData, TRUE);
+}
+
 void IntlTestRBNF::TestFractionalRuleSet()
 {
     UnicodeString fracRules(
@@ -426,7 +496,7 @@ void IntlTestRBNF::TestFractionalRuleSet()
             { "1.2856", "1 2/7" },
             { NULL, NULL }
         };
-       doTest(&formatter, testData, FALSE); // exact values aren't parsable from fractions
+        doTest(&formatter, testData, FALSE); // exact values aren't parsable from fractions
     }
 }
 
@@ -2060,6 +2130,93 @@ void IntlTestRBNF::TestPluralRules() {
 
 }
 
+void IntlTestRBNF::TestInfinityNaN() {
+    UErrorCode status = U_ZERO_ERROR;
+    UParseError parseError;
+    UnicodeString enRules("%default:"
+            "-x: minus >>;"
+            "Inf: infinite;"
+            "NaN: not a number;"
+            "0: =#,##0=;");
+    RuleBasedNumberFormat enFormatter(enRules, Locale::getEnglish(), parseError, status);
+    const char * const enTestData[][2] = {
+            {"1", "1"},
+            {"\\u221E", "infinite"},
+            {"-\\u221E", "minus infinite"},
+            {"NaN", "not a number"},
+            { NULL, NULL }
+    };
+    if (U_FAILURE(status)) {
+        dataerrln("Unable to create RuleBasedNumberFormat - " + UnicodeString(u_errorName(status)));
+        return;
+    }
+
+    doTest(&enFormatter, enTestData, true);
+
+    // Test the default behavior when the rules are undefined.
+    UnicodeString enRules2("%default:"
+            "-x: ->>;"
+            "0: =#,##0=;");
+    RuleBasedNumberFormat enFormatter2(enRules2, Locale::getEnglish(), parseError, status);
+    if (U_FAILURE(status)) {
+        errln("Unable to create RuleBasedNumberFormat - " + UnicodeString(u_errorName(status)));
+        return;
+    }
+    const char * const enDefaultTestData[][2] = {
+            {"1", "1"},
+            {"\\u221E", "\\u221E"},
+            {"-\\u221E", "-\\u221E"},
+            {"NaN", "NaN"},
+            { NULL, NULL }
+    };
+
+    doTest(&enFormatter2, enDefaultTestData, true);
+}
+
+void IntlTestRBNF::TestVariableDecimalPoint() {
+    UErrorCode status = U_ZERO_ERROR;
+    UParseError parseError;
+    UnicodeString enRules("%spellout-numbering:"
+            "-x: minus >>;"
+            "x.x: << point >>;"
+            "x,x: << comma >>;"
+            "0.x: xpoint >>;"
+            "0,x: xcomma >>;"
+            "0: zero;"
+            "1: one;"
+            "2: two;"
+            "3: three;"
+            "4: four;"
+            "5: five;"
+            "6: six;"
+            "7: seven;"
+            "8: eight;"
+            "9: nine;");
+    RuleBasedNumberFormat enFormatter(enRules, Locale::getEnglish(), parseError, status);
+    const char * const enTestPointData[][2] = {
+            {"1.1", "one point one"},
+            {"1.23", "one point two three"},
+            {"0.4", "xpoint four"},
+            { NULL, NULL }
+    };
+    if (U_FAILURE(status)) {
+        dataerrln("Unable to create RuleBasedNumberFormat - " + UnicodeString(u_errorName(status)));
+        return;
+    }
+    doTest(&enFormatter, enTestPointData, true);
+
+    DecimalFormatSymbols decimalFormatSymbols(Locale::getEnglish(), status);
+    decimalFormatSymbols.setSymbol(DecimalFormatSymbols::kDecimalSeparatorSymbol, UNICODE_STRING_SIMPLE(","));
+    enFormatter.setDecimalFormatSymbols(decimalFormatSymbols);
+    const char * const enTestCommaData[][2] = {
+            {"1.1", "one comma one"},
+            {"1.23", "one comma two three"},
+            {"0.4", "xcomma four"},
+            { NULL, NULL }
+    };
+    doTest(&enFormatter, enTestCommaData, true);
+}
+
 void 
 IntlTestRBNF::doTest(RuleBasedNumberFormat* formatter, const char* const testData[][2], UBool testParsing) 
 {
@@ -2078,7 +2235,8 @@ IntlTestRBNF::doTest(RuleBasedNumberFormat* formatter, const char* const testDat
 
             log("[%i] %s = ", i, numString);
             Formattable expectedNumber;
-            decFmt.parse(numString, expectedNumber, status);
+            UnicodeString escapedNumString = UnicodeString(numString, -1, US_INV).unescape();
+            decFmt.parse(escapedNumString, expectedNumber, status);
             if (U_FAILURE(status)) {
                 errln("FAIL: decFmt could not parse %s", numString);
                 break;
@@ -2115,7 +2273,9 @@ IntlTestRBNF::doTest(RuleBasedNumberFormat* formatter, const char* const testDat
                                 errln(msg);
                                 break;
                             } else {
-                                if (parsedNumber != expectedNumber) {
+                                if (parsedNumber != expectedNumber
+                                    && (!uprv_isNaN(parsedNumber.getDouble()) || !uprv_isNaN(expectedNumber.getDouble())))
+                                {
                                     UnicodeString msg = "FAIL: parse failed for ";
                                     msg.append(actualString);
                                     msg.append(", expected ");

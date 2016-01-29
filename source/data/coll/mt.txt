@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/collation/mt.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/xml/collation/mt.xml
- */
 mt{
-    Version{"2.1.7.49"}
+    Version{"2.1.19.14"}
     collations{
         standard{
             Sequence{
@@ -21,7 +18,7 @@ mt{
                 "&[before 1]i<ħ<<<Ħ"
                 "&[before 1]z<ż<<<Ż"
             }
-            Version{"26"}
+            Version{"28"}
         }
     }
 }

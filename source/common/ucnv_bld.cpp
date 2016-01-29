@@ -1,11 +1,11 @@
 /*
  ********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1996-2013, International Business Machines Corporation and
+ * Copyright (c) 1996-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************
  *
- *  uconv_bld.cpp:
+ *  ucnv_bld.cpp:
  *
  *  Defines functions that are used in the creation/initialization/deletion
  *  of converters and related structures.
@@ -64,7 +64,12 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
 #endif
 
     &_Latin1Data,
-    &_UTF8Data, &_UTF16BEData, &_UTF16LEData, &_UTF32BEData, &_UTF32LEData,
+    &_UTF8Data, &_UTF16BEData, &_UTF16LEData,
+#if UCONFIG_ONLY_HTML_CONVERSION
+    NULL, NULL,
+#else
+    &_UTF32BEData, &_UTF32LEData,
+#endif
     NULL,
 
 #if UCONFIG_NO_LEGACY_CONVERSION
@@ -73,7 +78,7 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
     &_ISO2022Data,
 #endif
 
-#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_NO_NON_HTML5_CONVERSION
+#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_ONLY_HTML_CONVERSION
     NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL,
     NULL,
@@ -83,27 +88,27 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
     &_HZData,
 #endif
 
-#if UCONFIG_NO_NON_HTML5_CONVERSION
+#if UCONFIG_ONLY_HTML_CONVERSION
     NULL,
 #else
     &_SCSUData,
 #endif
 
 
-#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_NO_NON_HTML5_CONVERSION
+#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_ONLY_HTML_CONVERSION
     NULL,
 #else
     &_ISCIIData,
 #endif
 
     &_ASCIIData,
-#if UCONFIG_NO_NON_HTML5_CONVERSION
-    NULL, NULL, &_UTF16Data, &_UTF32Data, NULL, NULL,
+#if UCONFIG_ONLY_HTML_CONVERSION
+    NULL, NULL, &_UTF16Data, NULL, NULL, NULL,
 #else
     &_UTF7Data, &_Bocu1Data, &_UTF16Data, &_UTF32Data, &_CESU8Data, &_IMAPData,
 #endif
 
-#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_NO_NON_HTML5_CONVERSION
+#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_ONLY_HTML_CONVERSION
     NULL,
 #else
     &_CompoundTextData
@@ -118,24 +123,24 @@ static struct {
   const char *name;
   const UConverterType type;
 } const cnvNameType[] = {
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "bocu1", UCNV_BOCU1 },
   { "cesu8", UCNV_CESU8 },
 #endif
-#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_ONLY_HTML_CONVERSION
   { "hz",UCNV_HZ },
 #endif
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "imapmailboxname", UCNV_IMAP_MAILBOX },
 #endif
-#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_ONLY_HTML_CONVERSION
   { "iscii", UCNV_ISCII },
 #endif
 #if !UCONFIG_NO_LEGACY_CONVERSION
   { "iso2022", UCNV_ISO_2022 },
 #endif
   { "iso88591", UCNV_LATIN_1 },
-#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_ONLY_HTML_CONVERSION
   { "lmbcs1", UCNV_LMBCS_1 },
   { "lmbcs11",UCNV_LMBCS_11 },
   { "lmbcs16",UCNV_LMBCS_16 },
@@ -149,7 +154,7 @@ static struct {
   { "lmbcs6", UCNV_LMBCS_6 },
   { "lmbcs8", UCNV_LMBCS_8 },
 #endif
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "scsu", UCNV_SCSU },
 #endif
   { "usascii", UCNV_US_ASCII },
@@ -163,6 +168,7 @@ static struct {
   { "utf16oppositeendian", UCNV_UTF16_BigEndian},
   { "utf16platformendian", UCNV_UTF16_LittleEndian },
 #endif
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "utf32", UCNV_UTF32 },
   { "utf32be", UCNV_UTF32_BigEndian },
   { "utf32le", UCNV_UTF32_LittleEndian },
@@ -173,11 +179,12 @@ static struct {
   { "utf32oppositeendian", UCNV_UTF32_BigEndian },
   { "utf32platformendian", UCNV_UTF32_LittleEndian },
 #endif
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#endif
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "utf7", UCNV_UTF7 },
 #endif
   { "utf8", UCNV_UTF8 },
-#if !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "x11compoundtext", UCNV_COMPOUND_TEXT}
 #endif
 };
@@ -1057,7 +1064,7 @@ ucnv_flushCache ()
     i = 0;
     do {
         remaining = 0;
-        pos = -1;
+        pos = UHASH_FIRST;
         while ((e = uhash_nextElement (SHARED_DATA_HASHTABLE, &pos)) != NULL)
         {
             mySharedData = (UConverterSharedData *) e->value.pointer;

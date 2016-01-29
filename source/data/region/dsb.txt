@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/dsb.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/dsb.xml
- */
 dsb{
     Countries{
+        001{"swět"}
+        002{"Afrika"}
+        003{"Pódpołnocna Amerika"}
+        005{"Pódpołdnjowa Amerika"}
+        009{"Oceaniska"}
+        011{"Pódwjacorna Afrika"}
+        013{"Srjejźna Amerika"}
+        014{"pódzajtšna Afrika"}
+        015{"pódpołnocna Afrika"}
+        017{"srjejźna Afrika"}
+        018{"pódpołdnjowa Afrika"}
+        019{"Amerika"}
+        021{"pódpołnocny ameriski kontinent"}
+        029{"Karibiska"}
+        030{"pódzajtšna Azija"}
+        034{"pódpołdnjowa Azija"}
+        035{"krotkozajtšna Azija"}
+        039{"pódpołdnjowa Europa"}
+        053{"Awstralazija"}
+        054{"Melaneziska"}
+        057{"Mikroneziska (kupowy region)"}
+        061{"Polyneziska"}
+        142{"Azija"}
+        143{"centralna Azija"}
+        145{"pódwjacorna Azija"}
+        150{"Europa"}
+        151{"pódzajtšna Europa"}
+        154{"pódpołnocna Europa"}
+        155{"pódwjacorna Europa"}
         419{"Łatyńska Amerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -111,7 +137,7 @@ dsb{
         GU{"Guam"}
         GW{"Gineja-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Wósebna zastojnstwowa cona Hongkong"}
         HM{"Heardowa kupa a McDonaldowe kupy"}
         HN{"Honduras"}
         HR{"Chorwatska"}
@@ -165,7 +191,7 @@ dsb{
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolska"}
-        MO{"Macao"}
+        MO{"Wósebna zastojnstwowa cona Macao"}
         MP{"Pódpołnocne Mariany"}
         MQ{"Martinique"}
         MR{"Mawretańska"}
@@ -200,7 +226,7 @@ dsb{
         PM{"St. Pierre a Miquelon"}
         PN{"Pitcairnowe kupy"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Palestinski awtonomny teritorium"}
         PT{"Portugalska"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -272,6 +298,13 @@ dsb{
         ZW{"Simbabwe"}
         ZZ{"njeznaty region"}
     }
+    Countries%short{
+        GB{"UK"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestina"}
+        US{"USA"}
+    }
     Countries%variant{
         CD{"Kongo (Demokratiska republika)"}
         CG{"Kongo (Republika)"}
@@ -280,9 +313,5 @@ dsb{
         MK{"Makedońska (PRJ)"}
         TL{"Pódzajtšny Timor"}
     }
-    CountriesShort{
-        GB{"UK"}
-        US{"USA"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.14"}
 }

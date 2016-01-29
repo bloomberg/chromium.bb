@@ -1,6 +1,6 @@
 /*
 ********************************************************************************
-*   Copyright (C) 2005-2013, International Business Machines
+*   Copyright (C) 2005-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 ********************************************************************************
 *
@@ -51,6 +51,8 @@ public:
     Win32DateFormat &operator=(const Win32DateFormat &other);
 
     UnicodeString &format(Calendar &cal, UnicodeString &appendTo, FieldPosition &pos) const;
+
+    using DateFormat::format;
 
     void parse(const UnicodeString& text, Calendar& cal, ParsePosition& pos) const;
 

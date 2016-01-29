@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2000-2014, International Business Machines
+ *   Copyright (C) 2000-2015, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  *******************************************************************************
  *   file name:  pkgdata.cpp
@@ -56,6 +56,13 @@ U_CDECL_BEGIN
 #include "pkgtypes.h"
 U_CDECL_END
 
+#if U_HAVE_POPEN
+
+using icu::LocalPointerBase;
+
+U_DEFINE_LOCAL_OPEN_POINTER(LocalPipeFilePointer, FILE, pclose);
+
+#endif
 
 static void loadLists(UPKGOptions *o, UErrorCode *status);
 
@@ -71,6 +78,11 @@ static int32_t pkg_installCommonMode(const char *installDir, const char *fileNam
 
 #ifdef BUILD_DATA_WITHOUT_ASSEMBLY
 static int32_t pkg_createWithoutAssemblyCode(UPKGOptions *o, const char *targetDir, const char mode);
+#endif
+
+#ifdef CAN_WRITE_OBJ_CODE
+static void pkg_createOptMatchArch(char *optMatchArch);
+static void pkg_destroyOptMatchArch(char *optMatchArch);
 #endif
 
 static int32_t pkg_createWithAssemblyCode(const char *targetDir, const char mode, const char *gencFilePath);
@@ -730,7 +742,11 @@ static int32_t pkg_executeOptions(UPKGOptions *o) {
 #endif
                 } else {
 #ifdef CAN_WRITE_OBJ_CODE
-                    writeObjectCode(datFileNamePath, o->tmpDir, o->entryName, NULL, NULL, gencFilePath);
+                    /* Try to detect the arch type, use NULL if unsuccessful */
+                    char optMatchArch[10] = { 0 };
+                    pkg_createOptMatchArch(optMatchArch);
+                    writeObjectCode(datFileNamePath, o->tmpDir, o->entryName, (optMatchArch[0] == 0 ? NULL : optMatchArch), NULL, gencFilePath);
+                    pkg_destroyOptMatchArch(optMatchArch);
 #if U_PLATFORM_IS_LINUX_BASED
                     result = pkg_generateLibraryFile(targetDir, mode, gencFilePath);
 #elif defined(WINDOWS_WITH_MSVC)
@@ -816,6 +832,10 @@ static int32_t initializePkgDataFlags(UPKGOptions *o) {
                     pkgDataFlags[i][0] = 0;
                 } else {
                     fprintf(stderr,"Error allocating memory for pkgDataFlags.\n");
+                    /* If an error occurs, ensure that the rest of the array is NULL */
+                    for (int32_t n = i + 1; n < PKGDATA_FLAGS_SIZE; n++) {
+                        pkgDataFlags[n] = NULL;
+                    }
                     return -1;
                 }
             }
@@ -837,7 +857,10 @@ static int32_t initializePkgDataFlags(UPKGOptions *o) {
         tmpResult = parseFlagsFile(o->options, pkgDataFlags, currentBufferSize, FLAG_NAMES, (int32_t)PKGDATA_FLAGS_SIZE, &status);
         if (status == U_BUFFER_OVERFLOW_ERROR) {
             for (int32_t i = 0; i < PKGDATA_FLAGS_SIZE; i++) {
-                uprv_free(pkgDataFlags[i]);
+                if (pkgDataFlags[i]) {
+                    uprv_free(pkgDataFlags[i]);
+                    pkgDataFlags[i] = NULL;
+                }
             }
             currentBufferSize = tmpResult;
         } else if (U_FAILURE(status)) {
@@ -888,7 +911,8 @@ static void createFileNames(UPKGOptions *o, const char mode, const char *version
         }
 
 #if U_PLATFORM == U_PF_MINGW
-        sprintf(libFileNames[LIB_FILE_MINGW], "%s%s.lib", pkgDataFlags[LIBPREFIX], libName);
+        // Name the import library lib*.dll.a
+        sprintf(libFileNames[LIB_FILE_MINGW], "lib%s.dll.a", libName);
 #elif U_PLATFORM == U_PF_CYGWIN
         sprintf(libFileNames[LIB_FILE_CYGWIN], "cyg%s%s%s",
                 libName,
@@ -2078,7 +2102,7 @@ static void loadLists(UPKGOptions *o, UErrorCode *status)
 /* Try calling icu-config directly to get the option file. */
  static int32_t pkg_getOptionsFromICUConfig(UBool verbose, UOption *option) {
 #if U_HAVE_POPEN
-    FILE *p = NULL;
+    LocalPipeFilePointer p;
     size_t n;
     static char buf[512] = "";
     icu::CharString cmdBuf;
@@ -2097,23 +2121,20 @@ static void loadLists(UPKGOptions *o, UErrorCode *status)
       if(verbose) {
         fprintf(stdout, "# Calling icu-config: %s\n", cmdBuf.data());
       }
-      p = popen(cmdBuf.data(), "r");
+      p.adoptInstead(popen(cmdBuf.data(), "r"));
     }
 
-      if(p == NULL || (n = fread(buf, 1, UPRV_LENGTHOF(buf)-1, p)) <= 0) {
-      if(verbose) {
-        fprintf(stdout, "# Calling icu-config: %s\n", cmd);
-      }
-      pclose(p);
+    if(p.isNull() || (n = fread(buf, 1, UPRV_LENGTHOF(buf)-1, p.getAlias())) <= 0) {
+        if(verbose) {
+            fprintf(stdout, "# Calling icu-config: %s\n", cmd);
+        }
 
-      p = popen(cmd, "r");
-      if(p == NULL || (n = fread(buf, 1, UPRV_LENGTHOF(buf)-1, p)) <= 0) {
-          fprintf(stderr, "%s: icu-config: No icu-config found. (fix PATH or use -O option)\n", progname);
-          return -1;
-      }
+        p.adoptInstead(popen(cmd, "r"));
+        if(p.isNull() || (n = fread(buf, 1, UPRV_LENGTHOF(buf)-1, p.getAlias())) <= 0) {
+            fprintf(stderr, "%s: icu-config: No icu-config found. (fix PATH or use -O option)\n", progname);
+            return -1;
+        }
     }
-
-    pclose(p);
 
     for (int32_t length = strlen(buf) - 1; length >= 0; length--) {
         if (buf[length] == '\n' || buf[length] == ' ') {
@@ -2146,3 +2167,45 @@ static void loadLists(UPKGOptions *o, UErrorCode *status)
     return -1;
 #endif
 }
+
+#ifdef CAN_WRITE_OBJ_CODE
+ /* Create optMatchArch for genccode architecture detection */
+static void pkg_createOptMatchArch(char *optMatchArch) {
+#if !defined(WINDOWS_WITH_MSVC) || defined(USING_CYGWIN)
+    const char* code = "void oma(){}";
+    const char* source = "oma.c";
+    const char* obj = "oma.obj";
+    FileStream* stream = NULL;
+
+    stream = T_FileStream_open(source,"w");
+    if (stream != NULL) {
+        T_FileStream_writeLine(stream, code);
+        T_FileStream_close(stream);
+
+        char cmd[LARGE_BUFFER_MAX_SIZE];
+        sprintf(cmd, "%s %s -o %s",
+            pkgDataFlags[COMPILER],
+            source,
+            obj);
+
+        if (runCommand(cmd) == 0){
+            sprintf(optMatchArch, "%s", obj);
+        }
+        else {
+            fprintf(stderr, "Failed to compile %s\n", source);
+        }
+        if(!T_FileStream_remove(source)){
+            fprintf(stderr, "T_FileStream_remove failed to delete %s\n", source);
+        }
+    }
+    else {
+        fprintf(stderr, "T_FileStream_open failed to open %s for writing\n", source);
+    }
+#endif
+}
+static void pkg_destroyOptMatchArch(char *optMatchArch) {
+    if(T_FileStream_file_exists(optMatchArch) && !T_FileStream_remove(optMatchArch)){
+        fprintf(stderr, "T_FileStream_remove failed to delete %s\n", optMatchArch);
+    }
+}
+#endif

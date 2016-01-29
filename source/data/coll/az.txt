@@ -1,20 +1,21 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/collation/az.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/xml/collation/az.xml
- */
 az{
-    Version{"2.1.6.34"}
+    Version{"2.1.19.14"}
     collations{
         search{
-            Sequence{"[import und-u-co-search][import az-u-co-standard][reorder others]"}
-            Version{"26"}
+            Sequence{
+                "[import und-u-co-search]"
+                "[import az-u-co-standard]"
+                "[reorder others]"
+            }
+            Version{"28"}
         }
         standard{
             Sequence{
@@ -31,7 +32,7 @@ az{
                 "&H<x<<<X"
                 "&Z<w<<<W"
             }
-            Version{"26"}
+            Version{"28"}
         }
     }
 }

@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2014, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -480,7 +480,7 @@ testLCID(UResourceBundle *currentBundle,
             log_verbose("WARNING: %-5s resolves to %s (0x%.4x)\n",
                 localeName, lcidStringC, expectedLCID);
         }
-        else if (strncmp(localeName, "hsb", 3) != 0 || !log_knownIssue("11216", "Duplicate LCID mapping for language hsb")) {
+        else {
             log_err("ERROR:   %-5s has 0x%.4x and the number resolves wrongfully to %s\n",
                 localeName, expectedLCID, lcidStringC);
         }
@@ -988,6 +988,10 @@ static void VerifyTranslation(void) {
                     end = ures_getSize(resArray);
                 }
 
+                if ((uprv_strncmp(currLoc,"lrc",3) == 0 || uprv_strncmp(currLoc,"mzn",3) == 0) && 
+                        log_knownIssue("cldrbug:8899", "lrc and mzn locales don't have translated day names")) {
+                    end = 0;
+                }
 
                 for (idx = 0; idx < end; idx++) {
                     const UChar *fromBundleStr = ures_getStringByIndex(resArray, idx, &langSize, &errorCode);
@@ -996,7 +1000,7 @@ static void VerifyTranslation(void) {
                         continue;
                     }
                     strIdx = findStringSetMismatch(currLoc, fromBundleStr, langSize, mergedExemplarSet, TRUE, &badChar);
-                    if (strIdx >= 0) {
+                    if ( strIdx >= 0 ) { 
                         log_err("getDayNames(%s, %d) at index %d returned characters not in the exemplar characters: %04X.\n",
                             currLoc, idx, strIdx, badChar);
                     }
@@ -1083,6 +1087,10 @@ static void VerifyTranslation(void) {
                } else {
                    if ( strstr(fullLoc, "_US")!=NULL || strstr(fullLoc, "_MM")!=NULL || strstr(fullLoc, "_LR")!=NULL ) {
                        if(measurementSystem != UMS_US){
+                            log_err("ulocdata_getMeasurementSystem did not return expected data for locale %s \n", currLoc);
+                       }
+                   } else if ( strstr(fullLoc, "_GB")!=NULL ) {
+                       if(measurementSystem != UMS_UK){
                             log_err("ulocdata_getMeasurementSystem did not return expected data for locale %s \n", currLoc);
                        }
                    } else if (measurementSystem != UMS_SI) {

@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ga.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/ga.xml
- */
 ga{
     Countries{
+        001{"An Domhan"}
+        002{"An Afraic"}
+        003{"Meiriceá Thuaidh"}
+        005{"Meiriceá Theas"}
+        009{"An Aigéine"}
+        011{"Iarthar na hAfraice"}
+        013{"Meiriceá Láir"}
+        014{"Oirthear na hAfraice"}
+        015{"Tuaisceart na hAfraice"}
+        017{"An Afraic Láir"}
+        018{"Deisceart na hAfraice"}
+        019{"Críocha Mheiriceá"}
+        021{"Tuaisceart Mheiriceá"}
+        029{"An Mhuir Chairib"}
+        030{"Oirthear na hÁise"}
+        034{"Deisceart na hÁise"}
+        035{"Oirdheisceart na hÁise"}
+        039{"Deisceart na hEorpa"}
+        053{"An Astraláise"}
+        054{"An Mheilinéis"}
+        057{"An Réigiún Micrinéiseach"}
+        061{"An Pholainéis"}
+        142{"An Áise"}
+        143{"An Áise Láir"}
+        145{"Iarthar na hÁise"}
+        150{"An Eoraip"}
+        151{"Oirthear na hEorpa"}
+        154{"Tuaisceart na hEorpa"}
+        155{"Iarthar na hEorpa"}
         419{"Meiriceá Laidineach"}
         AC{"Oileán na Deascabhála"}
         AD{"Andóra"}
@@ -112,7 +138,7 @@ ga{
         GU{"Guam"}
         GW{"Guine Bissau"}
         GY{"An Ghuáin"}
-        HK{"Hong Cong"}
+        HK{"S.R.R. na Síne Hong Cong"}
         HM{"Oileán Heard agus Oileáin McDonald"}
         HN{"Hondúras"}
         HR{"An Chróit"}
@@ -166,7 +192,7 @@ ga{
         ML{"Mailí"}
         MM{"Maenmar (Burma)"}
         MN{"An Mhongóil"}
-        MO{"Macao"}
+        MO{"S.R.R. na Síne Macao"}
         MP{"Na hOileáin Mháirianacha Thuaidh"}
         MQ{"Martinique"}
         MR{"An Mháratáin"}
@@ -201,7 +227,7 @@ ga{
         PM{"Saint-Pierre-et-Miquelon"}
         PN{"Oileáin Pitcairn"}
         PR{"Portó Ríce"}
-        PS{"An Phalaistín"}
+        PS{"Na Críocha Palaistíneacha"}
         PT{"An Phortaingéil"}
         PW{"Palau"}
         PY{"Paragua"}
@@ -273,15 +299,18 @@ ga{
         ZW{"An tSiombáib"}
         ZZ{"Réigiún Anaithnid"}
     }
+    Countries%short{
+        GB{"RA"}
+        HK{"Hong Cong"}
+        MO{"Macao"}
+        PS{"An Phalaistín"}
+        US{"SAM"}
+    }
     Countries%variant{
         CD{"An Congó (PDC)"}
         CG{"An Congó (Poblacht)"}
         FK{"Oileáin Fháclainne (Islas Malvinas)"}
         MK{"An Mhacadóin (PIIM)"}
     }
-    CountriesShort{
-        GB{"RA"}
-        US{"SAM"}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.17"}
 }

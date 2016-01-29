@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/bas.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/bas.xml
- */
 bas{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ bas{
         BHD{
             "BHD",
             "Dinâr Bàraìn",
+        }
+        BIF{
+            "BIF",
+            "Frǎŋ bùrundì",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ bas{
             "CN¥",
             "Yùan kinà",
         }
+        CVE{
+            "CVE",
+            "Èskudò kabwe᷆r",
+        }
+        DJF{
+            "DJF",
+            "Frǎŋ jìbutì",
+        }
         DZD{
             "DZD",
             "Dìnâr àlgerìà",
@@ -54,6 +63,10 @@ bas{
         EGP{
             "EGP",
             "Paùnd ègîptò",
+        }
+        ERN{
+            "ERN",
+            "Nafkà èrìtrěà",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ bas{
             "£",
             "Stɛrlìŋ ŋgìsì",
         }
+        GHC{
+            "GHC",
+            "Sèdi gānà",
+        }
+        GMD{
+            "GMD",
+            "Dalasì gambìà",
+        }
+        GNS{
+            "GNS",
+            "Frǎŋ gìnê",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Rùpi īndìà",
         }
         JPY{
@@ -78,6 +103,18 @@ bas{
         KES{
             "KES",
             "Silîŋ kenìà",
+        }
+        KMF{
+            "KMF",
+            "Frǎŋ kòmorà",
+        }
+        LRD{
+            "LRD",
+            "Dɔ̀lâr lìberìà",
+        }
+        LSL{
+            "LSL",
+            "Lotì lèsòtò",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ bas{
             "MWK",
             "Kwaca màlawì",
         }
+        MZM{
+            "MZM",
+            "Mètìkal mòsàmbîk",
+        }
         NAD{
             "NAD",
             "Dɔ̀lâr nàmibìà",
@@ -119,13 +160,37 @@ bas{
             "SAR",
             "Rìal sàudì",
         }
+        SCR{
+            "SCR",
+            "Rùpiɛ̀ sèsɛ̂l",
+        }
         SDG{
             "SDG",
             "Dìnâr sùdân",
         }
+        SDP{
+            "SDP",
+            "Paùnd sùdân",
+        }
+        SHP{
+            "SHP",
+            "Paùnd hèlenà",
+        }
         SLL{
             "SLL",
             "Lèonɛ̀",
+        }
+        SOS{
+            "SOS",
+            "Silîŋ sòmàli",
+        }
+        STD{
+            "STD",
+            "Dobrà sàotòme",
+        }
+        SZL{
+            "SZL",
+            "Lìlàŋgeni swàzì",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ bas{
             "ZAR",
             "Rân àfrǐkàsɔ̀",
         }
+        ZMK{
+            "ZMK",
+            "Kwàca sàmbià (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwàca sàmbià",
         }
+        ZWD{
+            "ZWD",
+            "Dɔ̀lâr sìmbàbwê",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

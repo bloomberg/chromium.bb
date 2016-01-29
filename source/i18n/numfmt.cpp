@@ -1,6 +1,6 @@
 /*
 *******************************************************************************
-* Copyright (C) 1997-2014, International Business Machines Corporation and
+* Copyright (C) 1997-2015, International Business Machines Corporation and
 * others. All Rights Reserved.
 *******************************************************************************
 *
@@ -120,6 +120,9 @@ static const UChar * const gLastResortNumberPatterns[UNUM_FORMAT_STYLE_COUNT] = 
     gLastResortPluralCurrencyPat,  // UNUM_CURRENCY_PLURAL
     gLastResortAccountingCurrencyPat, // UNUM_CURRENCY_ACCOUNTING
     gLastResortCurrencyPat,  // UNUM_CASH_CURRENCY 
+    NULL,  // UNUM_DECIMAL_COMPACT_SHORT
+    NULL,  // UNUM_DECIMAL_COMPACT_LONG
+    gLastResortCurrencyPat,  // UNUM_CURRENCY_STANDARD
 };
 
 // Keys used for accessing resource bundles
@@ -145,7 +148,10 @@ static const char *gFormatKeys[UNUM_FORMAT_STYLE_COUNT] = {
     "currencyFormat",  // UNUM_CURRENCY_ISO
     "currencyFormat",  // UNUM_CURRENCY_PLURAL
     "accountingFormat",  // UNUM_CURRENCY_ACCOUNTING
-    "currencyFormat"  // UNUM_CASH_CURRENCY
+    "currencyFormat",  // UNUM_CASH_CURRENCY
+    NULL,  // UNUM_DECIMAL_COMPACT_SHORT
+    NULL,  // UNUM_DECIMAL_COMPACT_LONG
+    "currencyFormat",  // UNUM_CURRENCY_STANDARD
 };
 
 // Static hashtable cache of NumberingSystem objects used by NumberFormat
@@ -731,7 +737,7 @@ CurrencyAmount* NumberFormat::parseCurrency(const UnicodeString& text,
         UErrorCode ec = U_ZERO_ERROR;
         getEffectiveCurrency(curr, ec);
         if (U_SUCCESS(ec)) {
-            LocalPointer<CurrencyAmount> currAmt(new CurrencyAmount(parseResult, curr, ec));
+            LocalPointer<CurrencyAmount> currAmt(new CurrencyAmount(parseResult, curr, ec), ec);
             if (U_FAILURE(ec)) {
                 pos.setIndex(start); // indicate failure
             } else {
@@ -1020,8 +1026,18 @@ NumberFormat::getAvailableLocales(void)
 #endif /* UCONFIG_NO_SERVICE */
 // -------------------------------------
 
+enum { kKeyValueLenMax = 32 };
+
 NumberFormat*
 NumberFormat::internalCreateInstance(const Locale& loc, UNumberFormatStyle kind, UErrorCode& status) {
+    if (kind == UNUM_CURRENCY) {
+        char cfKeyValue[kKeyValueLenMax] = {0};
+        UErrorCode kvStatus = U_ZERO_ERROR;
+        int32_t kLen = loc.getKeywordValue("cf", cfKeyValue, kKeyValueLenMax, kvStatus);
+        if (U_SUCCESS(kvStatus) && kLen > 0 && uprv_strcmp(cfKeyValue,"account")==0) {
+            kind = UNUM_CURRENCY_ACCOUNTING;
+        }
+    }
 #if !UCONFIG_NO_SERVICE
     if (haveService()) {
         return (NumberFormat*)gService->get(loc, kind, status);
@@ -1322,6 +1338,7 @@ NumberFormat::makeInstance(const Locale& desiredLocale,
             case UNUM_CURRENCY_PLURAL:
             case UNUM_CURRENCY_ACCOUNTING:
             case UNUM_CASH_CURRENCY:
+            case UNUM_CURRENCY_STANDARD:
                 f = new Win32NumberFormat(desiredLocale, curr, status);
 
                 if (U_SUCCESS(status)) {
@@ -1375,9 +1392,8 @@ NumberFormat::makeInstance(const Locale& desiredLocale,
     }
     else {
         // Loads the decimal symbols of the desired locale.
-        symbolsToAdopt.adoptInstead(new DecimalFormatSymbols(desiredLocale, status));
-        if (symbolsToAdopt.isNull()) {
-            status = U_MEMORY_ALLOCATION_ERROR;
+        symbolsToAdopt.adoptInsteadAndCheckErrorCode(new DecimalFormatSymbols(desiredLocale, status), status);
+        if (U_FAILURE(status)) {
             return NULL;
         }
 
@@ -1407,7 +1423,7 @@ NumberFormat::makeInstance(const Locale& desiredLocale,
         return NULL;
     }
     if(style==UNUM_CURRENCY || style == UNUM_CURRENCY_ISO || style == UNUM_CURRENCY_ACCOUNTING 
-        || style == UNUM_CASH_CURRENCY){
+        || style == UNUM_CASH_CURRENCY || style == UNUM_CURRENCY_STANDARD){
         const UChar* currPattern = symbolsToAdopt->getCurrencyPattern();
         if(currPattern!=NULL){
             pattern.setTo(currPattern, u_strlen(currPattern));

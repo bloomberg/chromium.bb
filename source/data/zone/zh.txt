@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/zh.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/zh.xml
- */
 zh{
-    Version{"2.1.8.9"}
+    Version{"2.1.20.31"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"阿比让"}
@@ -687,11 +684,11 @@ zh{
         "Asia:Calcutta"{
             ec{"加尔各答"}
         }
+        "Asia:Chita"{
+            ec{"赤塔"}
+        }
         "Asia:Choibalsan"{
             ec{"乔巴山"}
-        }
-        "Asia:Chongqing"{
-            ec{"重庆"}
         }
         "Asia:Colombo"{
             ec{"科伦坡"}
@@ -713,9 +710,6 @@ zh{
         }
         "Asia:Gaza"{
             ec{"加沙"}
-        }
-        "Asia:Harbin"{
-            ec{"哈尔滨"}
         }
         "Asia:Hebron"{
             ec{"希伯伦"}
@@ -746,9 +740,6 @@ zh{
         }
         "Asia:Karachi"{
             ec{"卡拉奇"}
-        }
-        "Asia:Kashgar"{
-            ec{"喀什葛尔"}
         }
         "Asia:Katmandu"{
             ec{"加德满都"}
@@ -837,14 +828,11 @@ zh{
         "Asia:Singapore"{
             ec{"新加坡"}
         }
+        "Asia:Srednekolymsk"{
+            ec{"中科雷姆斯克"}
+        }
         "Asia:Taipei"{
             ec{"台北"}
-            ld{"台北夏令时间"}
-            lg{"台北时间"}
-            ls{"台北标准时间"}
-            sd{"台北"}
-            sg{"台北"}
-            ss{"台北"}
         }
         "Asia:Tashkent"{
             ec{"塔什干"}
@@ -1162,6 +1150,9 @@ zh{
         }
         "Pacific:Auckland"{
             ec{"奥克兰"}
+        }
+        "Pacific:Bougainville"{
+            ec{"布干维尔"}
         }
         "Pacific:Chatham"{
             ec{"查塔姆"}

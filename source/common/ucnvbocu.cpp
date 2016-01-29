@@ -1,7 +1,7 @@
 /*
 ******************************************************************************
 *
-*   Copyright (C) 2002-2011, International Business Machines
+*   Copyright (C) 2002-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
@@ -19,7 +19,7 @@
 
 #include "unicode/utypes.h"
 
-#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_NON_HTML5_CONVERSION
+#if !UCONFIG_NO_CONVERSION && !UCONFIG_ONLY_HTML_CONVERSION
 
 #include "unicode/ucnv.h"
 #include "unicode/ucnv_cb.h"
@@ -398,8 +398,6 @@ _Bocu1FromUnicodeWithOffsets(UConverterFromUnicodeArgs *pArgs,
     int32_t prev, c, diff;
 
     int32_t sourceIndex, nextSourceIndex;
-
-U_ALIGN_CODE(16)
 
     /* set up the local pointers */
     cnv=pArgs->converter;
@@ -1170,8 +1168,6 @@ _Bocu1ToUnicode(UConverterToUnicodeArgs *pArgs,
 
     int8_t byteIndex;
     uint8_t *bytes;
-
-U_ALIGN_CODE(16)
 
     /* set up the local pointers */
     cnv=pArgs->converter;

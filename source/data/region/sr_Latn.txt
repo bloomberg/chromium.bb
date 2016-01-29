@@ -1,17 +1,43 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/sr_Latn.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/sr_Latn.xml
- */
 sr_Latn{
     %%Parent{"root"}
     Countries{
+        001{"svet"}
+        002{"Afrika"}
+        003{"Severnoamerički kontinent"}
+        005{"Južna Amerika"}
+        009{"Okeanija"}
+        011{"Zapadna Afrika"}
+        013{"Centralna Amerika"}
+        014{"Istočna Afrika"}
+        015{"Severna Afrika"}
+        017{"Centralna Afrika"}
+        018{"Južna Afrika"}
+        019{"Severna i Južna Amerika"}
+        021{"Severna Amerika"}
+        029{"Karibi"}
+        030{"Istočna Azija"}
+        034{"Južna Azija"}
+        035{"Jugoistočna Azija"}
+        039{"Južna Evropa"}
+        053{"Australija i Novi Zeland"}
+        054{"Melanezija"}
+        057{"Mikronezijski region"}
+        061{"Polinezija"}
+        142{"Azija"}
+        143{"Centralna Azija"}
+        145{"Zapadna Azija"}
+        150{"Evropa"}
+        151{"Istočna Evropa"}
+        154{"Severna Evropa"}
+        155{"Zapadna Evropa"}
         419{"Latinska Amerika"}
         AC{"Ostrvo Asension"}
         AD{"Andora"}
@@ -53,7 +79,7 @@ sr_Latn{
         BY{"Belorusija"}
         BZ{"Belize"}
         CA{"Kanada"}
-        CC{"Kokos (Keling) Ostrva"}
+        CC{"Kokosova (Kilingova) Ostrva"}
         CD{"Kongo - Kinšasa"}
         CF{"Centralnoafrička Republika"}
         CG{"Kongo - Brazavil"}
@@ -113,7 +139,7 @@ sr_Latn{
         GU{"Guam"}
         GW{"Gvineja-Bisao"}
         GY{"Gvajana"}
-        HK{"Hong Kong"}
+        HK{"SAR Hongkong (Kina)"}
         HM{"Ostrva Herd i Mekdonald"}
         HN{"Honduras"}
         HR{"Hrvatska"}
@@ -167,7 +193,7 @@ sr_Latn{
         ML{"Mali"}
         MM{"Mijanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Makao"}
+        MO{"SAR Makao (Kina)"}
         MP{"Severna Marijanska Ostrva"}
         MQ{"Martinik"}
         MR{"Mauritanija"}
@@ -182,7 +208,7 @@ sr_Latn{
         NA{"Namibija"}
         NC{"Nova Kaledonija"}
         NE{"Niger"}
-        NF{"Norfolk Ostrvo"}
+        NF{"Ostrvo Norfok"}
         NG{"Nigerija"}
         NI{"Nikaragva"}
         NL{"Holandija"}
@@ -202,7 +228,7 @@ sr_Latn{
         PM{"Sen Pjer i Mikelon"}
         PN{"Pitkern"}
         PR{"Portoriko"}
-        PS{"Palestina"}
+        PS{"Palestinske teritorije"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -274,15 +300,18 @@ sr_Latn{
         ZW{"Zimbabve"}
         ZZ{"Nepoznat region"}
     }
+    Countries%short{
+        GB{"UK"}
+        HK{"Hong Kong"}
+        MO{"Makao"}
+        PS{"Palestina"}
+        US{"SAD"}
+    }
     Countries%variant{
         CD{"Kongo (DRK)"}
         CG{"Kongo (Republika)"}
         FK{"Foklandska (Malvinska) ostrva"}
         MK{"Makedonija (BJRM)"}
     }
-    CountriesShort{
-        GB{"UK"}
-        US{"SAD"}
-    }
-    Version{"2.1.8.20"}
+    Version{"2.1.20.4"}
 }

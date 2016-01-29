@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/tzm.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/tzm.xml
- */
 tzm{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ tzm{
         BHD{
             "BHD",
             "Ḍinar Ubaḥrayni",
+        }
+        BIF{
+            "BIF",
+            "Frank Uburundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ tzm{
             "CN¥",
             "Ywan Renminbi Ucinwi",
         }
+        CVE{
+            "CVE",
+            "Iskudu Ukabuvirdyani",
+        }
+        DJF{
+            "DJF",
+            "Frank Uğibuti",
+        }
         DZD{
             "DZD",
             "Ḍinar Udzayri",
@@ -54,6 +63,10 @@ tzm{
         EGP{
             "EGP",
             "Junih Umiṣṛi",
+        }
+        ERN{
+            "ERN",
+            "Nakfa Uyritri",
         }
         ETB{
             "ETB",
@@ -65,10 +78,22 @@ tzm{
         }
         GBP{
             "£",
-            "Junih Usterlini Ubriṭani",
+            "Junih Ubriṭani",
+        }
+        GHC{
+            "GHC",
+            "Sidi Uɣani",
+        }
+        GMD{
+            "GMD",
+            "Dalasi Agambi",
+        }
+        GNS{
+            "GNS",
+            "Frank Uɣini",
         }
         INR{
-            "Rs.",
+            "₹",
             "Rupi Uḥindi",
         }
         JPY{
@@ -78,6 +103,18 @@ tzm{
         KES{
             "KES",
             "Cillin Ukini",
+        }
+        KMF{
+            "KMF",
+            "Frank Uqumuri",
+        }
+        LRD{
+            "LRD",
+            "Ḍular Ulibiri",
+        }
+        LSL{
+            "LSL",
+            "Luti Ulusuṭi",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ tzm{
             "MWK",
             "Kwača Umalawi",
         }
+        MZM{
+            "MZM",
+            "Mitikal Umuzambiqi",
+        }
         NAD{
             "NAD",
             "Ḍular Unamibi",
@@ -119,13 +160,37 @@ tzm{
             "SAR",
             "Ryal Usaεudi",
         }
+        SCR{
+            "SCR",
+            "Rupi Usicili",
+        }
         SDG{
             "SDG",
             "Junih Usudani",
         }
+        SDP{
+            "SDP",
+            "Junih Usudani (1956–2007)",
+        }
+        SHP{
+            "SHP",
+            "Junih Usantehilini",
+        }
         SLL{
             "SLL",
             "Lyun Usirralyuni",
+        }
+        SOS{
+            "SOS",
+            "Cilin Uṣumali",
+        }
+        STD{
+            "STD",
+            "Dubra Usawṭumi",
+        }
+        SZL{
+            "SZL",
+            "Lilanjini Uswazi",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ tzm{
             "ZAR",
             "Rand Ufriki Unzul",
         }
+        ZMK{
+            "ZMK",
+            "Kwača Uzambi (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwača Uzambi",
         }
+        ZWD{
+            "ZWD",
+            "Ḍular Uzimbabwi",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }

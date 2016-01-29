@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/de_CH.xml
@@ -16,6 +16,7 @@ de_CH{
         latn{
             patterns{
                 currencyFormat{"¤ #,##0.00;¤-#,##0.00"}
+                percentFormat{"#,##0%"}
             }
             symbols{
                 decimal{"."}
@@ -23,11 +24,5 @@ de_CH{
             }
         }
     }
-    Version{"2.1.8.21"}
-    delimiters{
-        alternateQuotationEnd{"›"}
-        alternateQuotationStart{"‹"}
-        quotationEnd{"»"}
-        quotationStart{"«"}
-    }
+    Version{"2.1.19.87"}
 }

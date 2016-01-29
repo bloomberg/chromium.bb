@@ -1,5 +1,5 @@
 # -*- icu-dependencies -*-
-# Copyright (C) 2011-2014, International Business Machines
+# Copyright (C) 2011-2015, International Business Machines
 # Corporation and others. All Rights Reserved.
 #
 # file name: dependencies.txt
@@ -132,6 +132,7 @@ library: common
     # All files in the common library are listed in its dependencies.
   deps
     # Libraries and groups that the common library depends on.
+    pluralmap
     date_interval
     breakiterator
     uts46 filterednormalizer2 normalizer2 loadednormalizer2 canonical_iterator
@@ -161,6 +162,12 @@ library: common
     icuplug
     platform
 
+group: pluralmap
+    # TODO: Move to i18n library, ticket #11926.
+    pluralmap.o
+  deps
+    platform
+
 group: date_interval  # class DateInterval
     dtintrv.o
   deps
@@ -175,11 +182,15 @@ group: breakiterator
     rbbi.o rbbinode.o rbbiscan.o rbbisetb.o rbbistbl.o rbbitblb.o
     rbbidata.o rbbirb.o
     dictionarydata.o dictbe.o
+    # BreakIterator::makeInstance() factory implementation makes for circular dependency
+    # between BreakIterator base and FilteredBreakIteratorBuilder.
+    filteredbrk.o
   deps
     resourcebundle service_registration
     schriter utext uniset_core uniset_props
     uhash ustack utrie
     ucharstrie bytestrie
+    ucharstriebuilder  # for filteredbrk.o
     normlzr  # for dictbe.o, should switch to Normalizer2
     uvector32 # for dictbe.o
 
@@ -506,7 +517,7 @@ group: service_registration
     hashtable uvector
 
 group: listformatter
-    listformatter.o
+    listformatter.o ulistformatter.o
   deps
     resourcebundle simplepatternformatter
 
@@ -740,7 +751,6 @@ library: i18n
     region localedata genderinfo charset_detector spoof_detection
     alphabetic_index collation collation_builder string_search
     formatting formattable_cnv regex regex_cnv translit
-    filteredbreakiterator
     universal_time_scale
     uclean_i18n
 
@@ -800,10 +810,6 @@ group: collation
     uclean_i18n propname
 
 group: collation_builder
-    # The CollationBaseDataBuilder is only called from genuca, and maybe from tests.
-    # It is in the i18n library so that it gets maintained and refactored together with
-    # related code.
-    collationbasedatabuilder.o
     collationbuilder.o collationdatabuilder.o collationfastlatinbuilder.o
     collationruleparser.o collationweights.o
   deps
@@ -823,10 +829,15 @@ group: formatting
     # currencyformat
     curramt.o currfmt.o currpinf.o currunit.o
     # decimalformat
-    dcfmtsym.o decfmtst.o decimfmt.o decimalformatpattern.o compactdecimalformat.o
-    numfmt.o numsys.o unumsys.o unum.o winnmfmt.o
-    # scientificformathelper - would depend on dcfmtsym, so would be circular.
-    scientificformathelper.o
+    dcfmtsym.o numsys.o unumsys.o
+    affixpatternparser.o decimfmtimpl.o digitaffix.o digitaffixesandpadding.o
+    digitformatter.o digitgrouping.o digitinterval.o
+    pluralaffix.o precision.o smallintformatter.o valueformatter.o
+    decfmtst.o decimfmt.o decimalformatpattern.o compactdecimalformat.o
+    numfmt.o unum.o
+    winnmfmt.o
+    # scientificnumberformatter - would depend on dcfmtsym, so would be circular.
+    scientificnumberformatter.o
     # rbnf
     nfrs.o nfrule.o nfsubs.o rbnf.o
     # measureformat
@@ -861,7 +872,7 @@ group: sharedbreakiterator
     breakiterator
 
 group: digitlist
-    digitlst.o decContext.o decNumber.o
+    digitlst.o decContext.o decNumber.o visibledigits.o
   deps
     platform
 
@@ -877,7 +888,7 @@ group: formattable_cnv
     formattable unistr_cnv conversion
 
 group: format
-    format.o fphdlimp.o fpositer.o
+    format.o fphdlimp.o fpositer.o ufieldpositer.o
   deps
     resourcebundle parsepos uvector32
 
@@ -910,17 +921,6 @@ group: translit
     common
     formatting  # for Transliterator::getDisplayName()
     uclean_i18n
-
-# This is off by default, UCONFIG_NO_FILTERED_BREAK_ITERATION=0
-# so, you will see warnings:
-#Info:  group filteredbreakiterator  does not need to depend on  breakiterator
-#Info:  group filteredbreakiterator  does not need to depend on  ucharstriebuilder
-group: filteredbreakiterator
-    filteredbrk.o
-  deps
-    breakiterator ucharstriebuilder
-    # depends on global new/delete and STL. Not recording these here.
-    # http://bugs.icu-project.org/trac/ticket/10990
 
 group: universal_time_scale
     utmscale.o

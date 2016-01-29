@@ -1,17 +1,14 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/sr_Latn.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/sr_Latn.xml
- */
 sr_Latn{
     %%Parent{"root"}
-    Version{"2.1.8.20"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidžan"}
@@ -688,11 +685,11 @@ sr_Latn{
         "Asia:Calcutta"{
             ec{"Kalkuta"}
         }
+        "Asia:Chita"{
+            ec{"Čita"}
+        }
         "Asia:Choibalsan"{
             ec{"Čojbalsan"}
-        }
-        "Asia:Chongqing"{
-            ec{"Čongking"}
         }
         "Asia:Colombo"{
             ec{"Kolombo"}
@@ -714,9 +711,6 @@ sr_Latn{
         }
         "Asia:Gaza"{
             ec{"Gaza"}
-        }
-        "Asia:Harbin"{
-            ec{"Harbin"}
         }
         "Asia:Hebron"{
             ec{"Hebron"}
@@ -747,9 +741,6 @@ sr_Latn{
         }
         "Asia:Karachi"{
             ec{"Karači"}
-        }
-        "Asia:Kashgar"{
-            ec{"Kašgar"}
         }
         "Asia:Katmandu"{
             ec{"Katmandu"}
@@ -838,6 +829,9 @@ sr_Latn{
         "Asia:Singapore"{
             ec{"Singapur"}
         }
+        "Asia:Srednekolymsk"{
+            ec{"Srednjekolimsk"}
+        }
         "Asia:Taipei"{
             ec{"Tajpej"}
         }
@@ -920,7 +914,7 @@ sr_Latn{
             ec{"Broken Hil"}
         }
         "Australia:Currie"{
-            ec{"Kurie"}
+            ec{"Kari"}
         }
         "Australia:Darwin"{
             ec{"Darvin"}
@@ -987,7 +981,7 @@ sr_Latn{
         }
         "Europe:Dublin"{
             ec{"Dablin"}
-            ld{"irsko letnje vreme"}
+            ld{"Irska standardno vreme"}
         }
         "Europe:Gibraltar"{
             ec{"Gibraltar"}
@@ -1021,7 +1015,7 @@ sr_Latn{
         }
         "Europe:London"{
             ec{"London"}
-            ld{"britansko letnje vreme"}
+            ld{"Britanija letnje računanje vremena"}
         }
         "Europe:Luxembourg"{
             ec{"Luksemburg"}
@@ -1158,6 +1152,9 @@ sr_Latn{
         "Pacific:Auckland"{
             ec{"Okland"}
         }
+        "Pacific:Bougainville"{
+            ec{"Buganvil"}
+        }
         "Pacific:Chatham"{
             ec{"Čatam"}
         }
@@ -1289,9 +1286,9 @@ sr_Latn{
             ls{"Zapadno-afričko standardno vreme"}
         }
         "meta:Alaska"{
-            ld{"Aljaško letnje vreme"}
-            lg{"Aljaško vreme"}
-            ls{"Aljaško standardno vreme"}
+            ld{"Aljaska, letnje računanje vremena"}
+            lg{"Aljaska"}
+            ls{"Aljaska, standardno vreme"}
         }
         "meta:Almaty"{
             ld{"Almati letnje računanje vremena"}
@@ -1359,9 +1356,9 @@ sr_Latn{
             ls{"Zapadna Argentina standardno vreme"}
         }
         "meta:Armenia"{
-            ld{"Armenija letnje računanje vremena"}
-            lg{"Armenija vreme"}
-            ls{"Armenija standardno vreme"}
+            ld{"Jermenija letnje računanje vremena"}
+            lg{"Jermenija vreme"}
+            ls{"Jermenija standardno vreme"}
         }
         "meta:Atlantic"{
             ld{"Atlansko ltnje računanje vremena"}
@@ -1418,9 +1415,9 @@ sr_Latn{
             ls{"Brunej Darusalum vreme"}
         }
         "meta:Cape_Verde"{
-            ld{"Zelenortsko letnje računanje vremena"}
-            lg{"Zelenirtsko vreme"}
-            ls{"Zelenirtsko standardno vreme"}
+            ld{"Zelenortska Ostrva letnje računanje vremena"}
+            lg{"Zelenortska Ostrva vreme"}
+            ls{"Zelenortska Ostrva standardno vreme"}
         }
         "meta:Chamorro"{
             ls{"Čamoro vreme"}
@@ -1446,7 +1443,7 @@ sr_Latn{
             ls{"Čojbalsan standardno vreme"}
         }
         "meta:Christmas"{
-            ls{"Božićna ostrva vreme"}
+            ls{"Božićno ostrvo vreme"}
         }
         "meta:Cocos"{
             ls{"Kokos (Keling) Ostrva vreme"}
@@ -1534,7 +1531,7 @@ sr_Latn{
             ls{"Galapagos vreme"}
         }
         "meta:Gambier"{
-            ls{"Gambijer vreme"}
+            ls{"Gambije vreme"}
         }
         "meta:Georgia"{
             ld{"Gruzija letnje računanje vremena"}
@@ -1647,7 +1644,7 @@ sr_Latn{
             ls{"Šri Lanka vreme"}
         }
         "meta:Line_Islands"{
-            ls{"Line Ostrva vreme"}
+            ls{"Ostrva Lajn vreme"}
         }
         "meta:Lord_Howe"{
             ld{"Lord Hov letnje računanje vremena"}
@@ -1660,7 +1657,7 @@ sr_Latn{
             ls{"Makao standardno vreme"}
         }
         "meta:Macquarie"{
-            ls{"Makverijsko vreme"}
+            ls{"Ostrvo Makveri vreme"}
         }
         "meta:Magadan"{
             ld{"Magadan letnje računanje vremena"}
@@ -1793,7 +1790,7 @@ sr_Latn{
             ls{"Pitkern vreme"}
         }
         "meta:Ponape"{
-            ls{"Ponpei vreme"}
+            ls{"Ponpej vreme"}
         }
         "meta:Qyzylorda"{
             ld{"Kizilorda letnje računanje vremena"}
@@ -1834,7 +1831,7 @@ sr_Latn{
             ls{"Južna Džordžija vreme"}
         }
         "meta:Suriname"{
-            ls{"Surinam"}
+            ls{"Surinam vreme"}
         }
         "meta:Syowa"{
             ls{"Šova vreme"}

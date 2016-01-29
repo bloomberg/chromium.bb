@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/es_MX.xml
@@ -17,9 +17,9 @@ es_MX{
             "ALL",
             "lek albanés",
         }
-        AMD{
-            "AMD",
-            "dram armenio",
+        ANG{
+            "Naf",
+            "florín de las Antillas Neerlandesas",
         }
         AOA{
             "Kz",
@@ -33,17 +33,21 @@ es_MX{
             "AU$",
             "dólar australiano",
         }
+        AWG{
+            "Afl.",
+            "florín arubeño",
+        }
         BDT{
             "BDT",
             "taka de Bangladesh",
         }
-        BGN{
-            "BGN",
-            "lev búlgaro",
-        }
         BND{
             "BND",
             "dólar de Brunéi",
+        }
+        BTN{
+            "BTN",
+            "ngultrum butanés",
         }
         BWP{
             "BWP",
@@ -57,10 +61,6 @@ es_MX{
             "ETB",
             "birr etíope",
         }
-        GBP{
-            "GBP",
-            "libra esterlina británica",
-        }
         GEL{
             "GEL",
             "lari georgiano",
@@ -68,6 +68,10 @@ es_MX{
         GHS{
             "GHS",
             "cedi ghanés",
+        }
+        GMD{
+            "GMD",
+            "dalasi gambiano",
         }
         HKD{
             "HKD",
@@ -77,17 +81,9 @@ es_MX{
             "HRK",
             "kuna croata",
         }
-        HUF{
-            "HUF",
-            "florín húngaro",
-        }
         ILS{
             "ILS",
             "nuevo shéquel israelí",
-        }
-        JMD{
-            "JMD",
-            "dólar jamaiquino",
         }
         JPY{
             "JPY",
@@ -113,13 +109,13 @@ es_MX{
             "LKR",
             "rupia de Sri Lanka",
         }
-        LTL{
-            "LTL",
-            "litas lituano",
-        }
         MGA{
             "MGA",
             "ariary malgache",
+        }
+        MMK{
+            "MMK",
+            "kyat de Myanmar",
         }
         MNT{
             "MNT",
@@ -129,9 +125,9 @@ es_MX{
             "MRO",
             "ouguiya mauritano",
         }
-        MWK{
-            "MWK",
-            "kwacha malauí",
+        MVR{
+            "MVR",
+            "rufiyaa de Maldivas",
         }
         MXN{
             "$",
@@ -165,9 +161,25 @@ es_MX{
             "SAR",
             "riyal saudí",
         }
+        SBD{
+            "SBD",
+            "dólar de las Islas Salomón",
+        }
+        SCR{
+            "SCR",
+            "rupia de Seychelles",
+        }
         SLL{
             "SLL",
             "leone de Sierra Leona",
+        }
+        STD{
+            "STD",
+            "dobra de Santo Tomé y Príncipe",
+        }
+        SZL{
+            "SZL",
+            "lilangeni suazi",
         }
         THB{
             "THB",
@@ -176,6 +188,10 @@ es_MX{
         TMT{
             "TMT",
             "manat turkmeno",
+        }
+        TOP{
+            "TOP",
+            "paʻanga tongano",
         }
         UAH{
             "UAH",
@@ -189,12 +205,24 @@ es_MX{
             "VND",
             "dong vietnamita",
         }
+        VUV{
+            "VUV",
+            "vatu vanuatuense",
+        }
+        WST{
+            "WST",
+            "tala samoano",
+        }
+        XPF{
+            "XPF",
+            "franco CFP",
+        }
         ZAR{
             "ZAR",
             "rand sudafricano",
         }
         ZMW{
-            "ZMK",
+            "ZMW",
             "kwacha zambiano",
         }
     }
@@ -225,17 +253,13 @@ es_MX{
             one{"taka de Bangladesh"}
             other{"taka de Bangladesh"}
         }
-        BGN{
-            one{"lev búlgaro"}
-            other{"levas búlgaras"}
-        }
-        BHD{
-            one{"dinar bahreiní"}
-            other{"dinares bahreiníes"}
-        }
         BND{
             one{"dólar de Brunéi"}
             other{"dólares de Brunéi"}
+        }
+        BTN{
+            one{"ngultrum butanés"}
+            other{"ngultrum butaneses"}
         }
         BWP{
             one{"pula botsuano"}
@@ -245,13 +269,13 @@ es_MX{
             one{"yuan chino"}
             other{"yuanes chinos"}
         }
+        ERN{
+            one{"nakfa eritreo"}
+            other{"nakfas eritreos"}
+        }
         ETB{
             one{"birr etíope"}
             other{"birrs etíopes"}
-        }
-        GBP{
-            one{"libra esterlina británica"}
-            other{"libras esterlinas británicas"}
         }
         GEL{
             one{"lari georgiano"}
@@ -261,6 +285,10 @@ es_MX{
             one{"cedi ghanés"}
             other{"cedis ghaneses"}
         }
+        GMD{
+            one{"dalasi gambiano"}
+            other{"dalasis gambianos"}
+        }
         HKD{
             one{"dólar de Hong Kong"}
             other{"dólares de Hong Kong"}
@@ -269,17 +297,9 @@ es_MX{
             one{"kuna croata"}
             other{"kunas croatas"}
         }
-        HUF{
-            one{"florín húngaro"}
-            other{"florines húngaros"}
-        }
         ILS{
             one{"nuevo shéquel israelí"}
             other{"nuevos shéquels israelíes"}
-        }
-        JMD{
-            one{"dólar jamaiquino"}
-            other{"dólares jamaiquinos"}
         }
         JPY{
             one{"yen japonés"}
@@ -305,13 +325,17 @@ es_MX{
             one{"rupia de Sri Lanka"}
             other{"rupias de Sri Lanka"}
         }
-        LTL{
-            one{"litas lituana"}
-            other{"litas lituanas"}
+        LVL{
+            one{"lats letón"}
+            other{"lats letones"}
         }
         MGA{
             one{"ariary malgache"}
             other{"ariarys malgaches"}
+        }
+        MMK{
+            one{"kyat de Myanmar"}
+            other{"kyats de Myanmar"}
         }
         MNT{
             one{"tugrik mongol"}
@@ -320,6 +344,10 @@ es_MX{
         MRO{
             one{"ouguiya mauritano"}
             other{"ouguiyas mauritanos"}
+        }
+        MVR{
+            one{"rufiyaa de Maldivas"}
+            other{"rufiyaas de Maldivas"}
         }
         MWK{
             one{"kwacha malauí"}
@@ -357,9 +385,25 @@ es_MX{
             one{"riyal saudí"}
             other{"riyales saudíes"}
         }
+        SBD{
+            one{"dólar de las Islas Salomón"}
+            other{"dólares de las Islas Salomón"}
+        }
+        SCR{
+            one{"rupia de Seychelles"}
+            other{"rupias de Seychelles"}
+        }
         SLL{
             one{"leone de Sierra Leona"}
             other{"leones de Sierra Leona"}
+        }
+        STD{
+            one{"dobra de Santo Tomé y Príncipe"}
+            other{"dobras de Santo Tomé y Príncipe"}
+        }
+        SZL{
+            one{"lilangeni suazi"}
+            other{"lilangenis suazis"}
         }
         THB{
             one{"baht tailandés"}
@@ -368,6 +412,10 @@ es_MX{
         TMT{
             one{"manat turkmeno"}
             other{"manats turkmenos"}
+        }
+        TOP{
+            one{"paʻanga tongano"}
+            other{"paʻangas tonganos"}
         }
         UAH{
             one{"grivna ucraniana"}
@@ -381,6 +429,14 @@ es_MX{
             one{"dong vietnamita"}
             other{"dongs vietnamitas"}
         }
+        VUV{
+            one{"vatu vanuatuense"}
+            other{"vatus vanuatuenses"}
+        }
+        WST{
+            one{"tala samoano"}
+            other{"talas samoanos"}
+        }
         ZAR{
             one{"rand sudafricano"}
             other{"rands sudafricanos"}
@@ -390,5 +446,5 @@ es_MX{
             other{"kwachas zambianos"}
         }
     }
-    Version{"2.1.8.19"}
+    Version{"2.1.19.94"}
 }

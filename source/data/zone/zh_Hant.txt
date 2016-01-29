@@ -1,17 +1,14 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/zh_Hant.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/zh_Hant.xml
- */
 zh_Hant{
     %%Parent{"root"}
-    Version{"2.1.8.95"}
+    Version{"2.1.19.89"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"阿比讓"}
@@ -688,11 +685,11 @@ zh_Hant{
         "Asia:Calcutta"{
             ec{"加爾各答"}
         }
+        "Asia:Chita"{
+            ec{"赤塔"}
+        }
         "Asia:Choibalsan"{
             ec{"喬巴山"}
-        }
-        "Asia:Chongqing"{
-            ec{"重慶"}
         }
         "Asia:Colombo"{
             ec{"可倫坡"}
@@ -714,9 +711,6 @@ zh_Hant{
         }
         "Asia:Gaza"{
             ec{"加薩"}
-        }
-        "Asia:Harbin"{
-            ec{"哈爾濱"}
         }
         "Asia:Hebron"{
             ec{"赫布隆"}
@@ -747,9 +741,6 @@ zh_Hant{
         }
         "Asia:Karachi"{
             ec{"喀拉蚩"}
-        }
-        "Asia:Kashgar"{
-            ec{"喀什米爾"}
         }
         "Asia:Katmandu"{
             ec{"加德滿都"}
@@ -782,7 +773,7 @@ zh_Hant{
             ec{"馬尼拉"}
         }
         "Asia:Muscat"{
-            ec{"馬斯喀特"}
+            ec{"馬斯開特"}
         }
         "Asia:Nicosia"{
             ec{"尼古西亞"}
@@ -838,14 +829,11 @@ zh_Hant{
         "Asia:Singapore"{
             ec{"新加坡"}
         }
+        "Asia:Srednekolymsk"{
+            ec{"中科雷姆斯克"}
+        }
         "Asia:Taipei"{
             ec{"台北"}
-            ld{"台北夏令時間"}
-            lg{"台北時間"}
-            ls{"台北標準時間"}
-            sd{"台北"}
-            sg{"台北"}
-            ss{"台北"}
         }
         "Asia:Tashkent"{
             ec{"塔什干"}
@@ -1117,7 +1105,7 @@ zh_Hant{
             ec{"華沙"}
         }
         "Europe:Zagreb"{
-            ec{"札格雷布"}
+            ec{"札格瑞布"}
         }
         "Europe:Zaporozhye"{
             ec{"札波羅結"}
@@ -1163,6 +1151,9 @@ zh_Hant{
         }
         "Pacific:Auckland"{
             ec{"奧克蘭"}
+        }
+        "Pacific:Bougainville"{
+            ec{"布干維爾"}
         }
         "Pacific:Chatham"{
             ec{"查坦"}

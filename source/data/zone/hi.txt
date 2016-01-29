@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/hi.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/hi.xml
- */
 hi{
-    Version{"2.1.8.9"}
+    Version{"2.1.19.47"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"अबिदजान"}
@@ -391,7 +388,7 @@ hi{
             ec{"ज्यूनाउ"}
         }
         "America:Kentucky:Monticello"{
-            ec{"मोंटीसेलो, केंचुकी"}
+            ec{"मोंटीसेलो, केंटकी"}
         }
         "America:Kralendijk"{
             ec{"क्रालैंडिजिक"}
@@ -687,11 +684,11 @@ hi{
         "Asia:Calcutta"{
             ec{"कोलकाता"}
         }
+        "Asia:Chita"{
+            ec{"त्शिता"}
+        }
         "Asia:Choibalsan"{
             ec{"चोइबालसन"}
-        }
-        "Asia:Chongqing"{
-            ec{"चोंगकिंग"}
         }
         "Asia:Colombo"{
             ec{"कोलंबो"}
@@ -713,9 +710,6 @@ hi{
         }
         "Asia:Gaza"{
             ec{"गाज़ा"}
-        }
-        "Asia:Harbin"{
-            ec{"हर्बिन"}
         }
         "Asia:Hebron"{
             ec{"हेब्रोन"}
@@ -746,9 +740,6 @@ hi{
         }
         "Asia:Karachi"{
             ec{"कराची"}
-        }
-        "Asia:Kashgar"{
-            ec{"काश्गर"}
         }
         "Asia:Katmandu"{
             ec{"काठमांडू"}
@@ -836,6 +827,9 @@ hi{
         }
         "Asia:Singapore"{
             ec{"सिंगापुर"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"स्रेद्निकोलिमस्क"}
         }
         "Asia:Taipei"{
             ec{"ताईपेई"}
@@ -1156,6 +1150,9 @@ hi{
         }
         "Pacific:Auckland"{
             ec{"ऑकलैंड"}
+        }
+        "Pacific:Bougainville"{
+            ec{"बोगनविल"}
         }
         "Pacific:Chatham"{
             ec{"चाथम"}

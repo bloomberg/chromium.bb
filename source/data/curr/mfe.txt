@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/mfe.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/mfe.xml
- */
 mfe{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ mfe{
         BHD{
             "BHD",
             "dinar bahreïn",
+        }
+        BIF{
+            "BIF",
+            "fran burunde",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ mfe{
             "CN¥",
             "yuan renminbi sinwa",
         }
+        CVE{
+            "CVE",
+            "eskudo kapverdien",
+        }
+        DJF{
+            "DJF",
+            "fran djiboutien",
+        }
         DZD{
             "DZD",
             "dinar alzerien",
@@ -54,6 +63,10 @@ mfe{
         EGP{
             "EGP",
             "liv ezipsien",
+        }
+        ERN{
+            "ERN",
+            "nafka erythreen",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ mfe{
             "£",
             "liv sterlin",
         }
+        GHC{
+            "GHC",
+            "sedi ganeen",
+        }
+        GMD{
+            "GMD",
+            "dalasi gambien",
+        }
+        GNS{
+            "GNS",
+            "fran gineen",
+        }
         INR{
-            "Rs.",
+            "₹",
             "roupi",
         }
         JPY{
@@ -78,6 +103,18 @@ mfe{
         KES{
             "KES",
             "shiling kenyan",
+        }
+        KMF{
+            "KMF",
+            "fran komorien",
+        }
+        LRD{
+            "LRD",
+            "dolar liberien",
+        }
+        LSL{
+            "LSL",
+            "loti lezoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ mfe{
             "MWK",
             "kwacha malawit",
         }
+        MZM{
+            "MZM",
+            "metikal mozanbikin",
+        }
         NAD{
             "NAD",
             "dolar namibien",
@@ -119,13 +160,37 @@ mfe{
             "SAR",
             "rial saoudien",
         }
+        SCR{
+            "SCR",
+            "roupi seselwa",
+        }
         SDG{
             "SDG",
             "dinar soudane",
         }
+        SDP{
+            "SDP",
+            "liv soudane",
+        }
+        SHP{
+            "SHP",
+            "liv Sainte-Hélène",
+        }
         SLL{
             "SLL",
             "leonn Sierra-Leone",
+        }
+        SOS{
+            "SOS",
+            "shilingi somalien",
+        }
+        STD{
+            "STD",
+            "dobra santomeen",
+        }
+        SZL{
+            "SZL",
+            "lilangeni swazi",
         }
         TND{
             "TND",
@@ -155,10 +220,18 @@ mfe{
             "ZAR",
             "rand sid-afrikin",
         }
+        ZMK{
+            "ZMK",
+            "kwacha zanbien (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "kwacha zanbien",
         }
+        ZWD{
+            "ZWD",
+            "dolar zimbawe",
+        }
     }
-    Version{"2.1.7.39"}
+    Version{"2.1.19.14"}
 }

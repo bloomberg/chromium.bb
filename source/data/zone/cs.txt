@@ -1,16 +1,13 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/cs.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/cs.xml
- */
 cs{
-    Version{"2.1.8.9"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidžan"}
@@ -687,11 +684,11 @@ cs{
         "Asia:Calcutta"{
             ec{"Kalkata"}
         }
+        "Asia:Chita"{
+            ec{"Čita"}
+        }
         "Asia:Choibalsan"{
             ec{"Čojbalsan"}
-        }
-        "Asia:Chongqing"{
-            ec{"Čchung-čching"}
         }
         "Asia:Colombo"{
             ec{"Kolombo"}
@@ -713,9 +710,6 @@ cs{
         }
         "Asia:Gaza"{
             ec{"Gaza"}
-        }
-        "Asia:Harbin"{
-            ec{"Charbin"}
         }
         "Asia:Hebron"{
             ec{"Hebron"}
@@ -746,9 +740,6 @@ cs{
         }
         "Asia:Karachi"{
             ec{"Karáčí"}
-        }
-        "Asia:Kashgar"{
-            ec{"Kašghar"}
         }
         "Asia:Katmandu"{
             ec{"Káthmándú"}
@@ -836,6 +827,9 @@ cs{
         }
         "Asia:Singapore"{
             ec{"Singapur"}
+        }
+        "Asia:Srednekolymsk"{
+            ec{"Sredněkolymsk"}
         }
         "Asia:Taipei"{
             ec{"Tchaj-pej"}
@@ -1156,6 +1150,9 @@ cs{
         }
         "Pacific:Auckland"{
             ec{"Auckland"}
+        }
+        "Pacific:Bougainville"{
+            ec{"Bougainville"}
         }
         "Pacific:Chatham"{
             ec{"Chathamské ostrovy"}

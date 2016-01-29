@@ -1,16 +1,42 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/fil.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/fil.xml
- */
 fil{
     Countries{
+        001{"Mundo"}
+        002{"Africa"}
+        003{"Hilagang Amerika"}
+        005{"Timog Amerika"}
+        009{"Oceania"}
+        011{"Kanlurang Africa"}
+        013{"Gitnang Amerika"}
+        014{"Silangang Africa"}
+        015{"Hilagang Africa"}
+        017{"Gitnang Africa"}
+        018{"Katimugang Africa"}
+        019{"Americas"}
+        021{"Northern America"}
+        029{"Carribbean"}
+        030{"Silangang Asya"}
+        034{"Katimugang Asya"}
+        035{"Timog-Silangang Asya"}
+        039{"Katimugang Europe"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Rehiyon ng Micronesia"}
+        061{"Polynesia"}
+        142{"Asya"}
+        143{"Gitnang Asya"}
+        145{"Kanlurang Asya"}
+        150{"Europe"}
+        151{"Silangang Europe"}
+        154{"Hilagang Europe"}
+        155{"Kanlurang Europe"}
         419{"Latin America"}
         AC{"Acsencion island"}
         AD{"Andorra"}
@@ -112,7 +138,7 @@ fil{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong SAR China"}
         HM{"Heard Island and McDonald Islands"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -139,8 +165,8 @@ fil{
         KI{"Kiribati"}
         KM{"Comoros"}
         KN{"Saint Kitts and Nevis"}
-        KP{"North Korea"}
-        KR{"South Korea"}
+        KP{"Hilagang Korea"}
+        KR{"Timog Korea"}
         KW{"Kuwait"}
         KY{"Cayman Islands"}
         KZ{"Kazakhstan"}
@@ -166,7 +192,7 @@ fil{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau SAR China"}
         MP{"Northern Mariana Islands"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -201,7 +227,7 @@ fil{
         PM{"Saint Pierre and Miquelon"}
         PN{"Pitcairn Islands"}
         PR{"Puerto Rico"}
-        PS{"Palestine"}
+        PS{"Palestinian Territories"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -273,17 +299,20 @@ fil{
         ZW{"Zimbabwe"}
         ZZ{"Hindi Kilalang Rehiyon"}
     }
+    Countries%short{
+        GB{"U.K."}
+        HK{"Hong Kong"}
+        MO{"Macau"}
+        PS{"Palestine"}
+        US{"U.S."}
+    }
     Countries%variant{
         CD{"Congo (DRC)"}
-        CG{"Congo (Republic)"}
+        CG{"Congo (Republika)"}
         CI{"Ivory Coast"}
         FK{"Falkland Islands (Islas Malvinas)"}
         MK{"Macedonia (FYROM)"}
         TL{"East Timor"}
     }
-    CountriesShort{
-        GB{"U.K."}
-        US{"U.S."}
-    }
-    Version{"2.1.8.9"}
+    Version{"2.1.19.94"}
 }

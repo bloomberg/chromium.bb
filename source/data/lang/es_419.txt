@@ -1,37 +1,36 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/es_419.xml
 // *
 // ***************************************************************************
 es_419{
+    Keys{
+        ms{"sm"}
+    }
     Languages{
-        az{"azerbaiyano"}
         eu{"vasco"}
-        mr{"maratí"}
+        luo{"luo"}
+        sw{"swahili"}
+        swc{"swahili del Congo"}
+        vai{"vai"}
     }
-    Languages%variant{
-        ps{"Pastú"}
-        ug{"Uyghur"}
-    }
-    LanguagesShort{
+    Languages%short{
         en_GB{"inglés (R. U.)"}
     }
-    Scripts{
-        Laoo{"laosiano"}
-        Mlym{"malayalam"}
-        Sinh{"sinhala"}
+    Languages%variant{
+        ps{"pashtún"}
+        ug{"uighur"}
     }
-    Scripts%stand-alone{
-        Hans{"Han simplificado"}
-        Hant{"Han tradicional"}
+    Types{
+        numbers{
+            knda{"números en kannada"}
+            laoo{"números en lao"}
+        }
     }
-    Scripts%variant{
-        Arab{"persa-árabe"}
-    }
-    Version{"2.1.8.19"}
+    Version{"2.1.19.14"}
     codePatterns{
         script{"Alfabeto: {0}"}
     }

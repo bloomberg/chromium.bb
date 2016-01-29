@@ -1,14 +1,11 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2014 International Business Machines
+// * Copyright (C) 2015 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/kam.xml
 // *
 // ***************************************************************************
-/**
- * ICU <specials> source: <path>/common/main/kam.xml
- */
 kam{
     Currencies{
         AED{
@@ -26,6 +23,10 @@ kam{
         BHD{
             "BHD",
             "Dinari ya Bahareni",
+        }
+        BIF{
+            "BIF",
+            "Faranga ya Burundi",
         }
         BWP{
             "BWP",
@@ -47,6 +48,14 @@ kam{
             "CN¥",
             "Yuan Renminbi ya China",
         }
+        CVE{
+            "CVE",
+            "Eskudo ya Kepuvede",
+        }
+        DJF{
+            "DJF",
+            "Faranga ya Jibuti",
+        }
         DZD{
             "DZD",
             "Dinari ya Aljeria",
@@ -54,6 +63,10 @@ kam{
         EGP{
             "EGP",
             "Vaundi ya Misili",
+        }
+        ERN{
+            "ERN",
+            "Nakfa ya Eritrea",
         }
         ETB{
             "ETB",
@@ -67,8 +80,20 @@ kam{
             "£",
             "Pauni ya Uingereza",
         }
+        GHC{
+            "GHC",
+            "Sedi ya Ghana",
+        }
+        GMD{
+            "GMD",
+            "Ndalasi ya Gambia",
+        }
+        GNS{
+            "GNS",
+            "Faranga ya Gine",
+        }
         INR{
-            "Rs.",
+            "₹",
             "Rupia ya India",
         }
         JPY{
@@ -78,6 +103,18 @@ kam{
         KES{
             "Ksh",
             "Silingi ya Kenya",
+        }
+        KMF{
+            "KMF",
+            "Faranga ya Komoro",
+        }
+        LRD{
+            "LRD",
+            "Dola ya Liberia",
+        }
+        LSL{
+            "LSL",
+            "Loti ya Lesoto",
         }
         LYD{
             "LYD",
@@ -103,6 +140,10 @@ kam{
             "MWK",
             "Kwacha ya Malawi",
         }
+        MZM{
+            "MZM",
+            "Metikali ya Msumbiji",
+        }
         NAD{
             "NAD",
             "Ndola ya Namibia",
@@ -119,13 +160,33 @@ kam{
             "SAR",
             "Riyal ya Saudia",
         }
+        SCR{
+            "SCR",
+            "Rupia ya Shelisheli",
+        }
         SDG{
             "SDG",
             "Vaũndi ya Sudani",
         }
+        SHP{
+            "SHP",
+            "Vaũndi ya Santahelena",
+        }
         SLL{
             "SLL",
             "Leoni",
+        }
+        SOS{
+            "SOS",
+            "Silingi ya Somalia",
+        }
+        STD{
+            "STD",
+            "Dobra ya Sao Tome na Principe",
+        }
+        SZL{
+            "SZL",
+            "Lilangeni",
         }
         TND{
             "TND",
@@ -155,10 +216,18 @@ kam{
             "ZAR",
             "Randi ya Afrika Kusini",
         }
+        ZMK{
+            "ZMK",
+            "Kwacha ya Zambia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
         }
+        ZWD{
+            "ZWD",
+            "Ndola ya Zimbabwe",
+        }
     }
-    Version{"2.1.6.69"}
+    Version{"2.1.19.14"}
 }
