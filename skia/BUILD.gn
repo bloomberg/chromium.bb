@@ -182,6 +182,7 @@ config("skia_library_config") {
   # matches the GYP build.
   include_dirs = [
     "//third_party/skia/include/private",
+    "//third_party/skia/include/client/android",
     "//third_party/skia/src/core",
     "//third_party/skia/src/image",
     "//third_party/skia/src/opts",
