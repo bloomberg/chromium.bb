@@ -59,7 +59,7 @@ const char kBlinkStaticMemberPrefix[] = "s_";
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
-  name = decl.getNameAsString();
+  StringRef original_name = decl.getName();
 
   if (const auto* method = clang::dyn_cast<const clang::CXXMethodDecl>(&decl)) {
     if (!method->isStatic()) {
@@ -67,12 +67,13 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
       static const char* kBlacklist[] = {"begin", "end", "rbegin", "rend",
                                          "trace"};
       for (const auto& b : kBlacklist) {
-        if (name == b)
+        if (original_name == b)
           return false;
       }
     }
   }
 
+  name = original_name.str();
   name[0] = clang::toUppercase(name[0]);
   return true;
 }
@@ -244,6 +245,10 @@ class RewriterBase : public MatchFinder::MatchCallback {
     std::string new_name;
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
     clang::ASTContext* context = result.Context;
+    // If false, there's no name to be renamed.
+    if (!decl->getIdentifier())
+      return;
+    // If false, the name was not suitable for renaming.
     if (!GetNameForDecl(*decl, *context, new_name))
       return;
     llvm::StringRef old_name = decl->getName();
