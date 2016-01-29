@@ -181,6 +181,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -1453,6 +1454,11 @@ bool Browser::RequestAppBanner(content::WebContents* web_contents) {
                               web_contents->GetLastCommittedURL(), true);
     return true;
   }
+
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_DEBUG,
+      "App banners are currently disabled. Please check chrome://flags/#" +
+          std::string(switches::kEnableAddToShelf));
   return false;
 }
 
