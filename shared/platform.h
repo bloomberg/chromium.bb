@@ -75,8 +75,9 @@ weston_platform_get_egl_display(EGLenum platform, void *native_display,
 	static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
 
 	if (!get_platform_display) {
-		get_platform_display = weston_platform_get_egl_proc_address(
-			"eglGetPlatformDisplayEXT");
+		get_platform_display = (PFNEGLGETPLATFORMDISPLAYEXTPROC)
+            weston_platform_get_egl_proc_address(
+                "eglGetPlatformDisplayEXT");
 	}
 
 	if (get_platform_display)
@@ -95,8 +96,9 @@ weston_platform_create_egl_surface(EGLDisplay dpy, EGLConfig config,
 		create_platform_window = NULL;
 
 	if (!create_platform_window) {
-		create_platform_window = weston_platform_get_egl_proc_address(
-				"eglCreatePlatformWindowSurfaceEXT");
+		create_platform_window = (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC)
+            weston_platform_get_egl_proc_address(
+                "eglCreatePlatformWindowSurfaceEXT");
 	}
 
 	if (create_platform_window)
