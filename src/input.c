@@ -390,6 +390,9 @@ weston_pointer_send_frame(struct weston_pointer *pointer)
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 
+	if (!pointer->focus_client)
+		return;
+
 	resource_list = &pointer->focus_client->pointer_resources;
 	wl_resource_for_each(resource, resource_list)
 		pointer_send_frame(resource);
