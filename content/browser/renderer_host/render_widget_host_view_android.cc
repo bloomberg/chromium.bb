@@ -18,8 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
-#include "cc/layers/delegated_frame_provider.h"
-#include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
@@ -345,8 +343,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   SetContentViewCore(NULL);
   DCHECK(ack_callbacks_.empty());
-  if (resource_collection_.get())
-    resource_collection_->SetClient(NULL);
   DCHECK(!surface_factory_);
   DCHECK(surface_id_.is_null());
 }
@@ -443,21 +439,16 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
 scoped_refptr<cc::Layer> RenderWidgetHostViewAndroid::CreateDelegatedLayer()
     const {
   scoped_refptr<cc::Layer> delegated_layer;
-  if (!surface_id_.is_null()) {
-    cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
-    DCHECK(manager);
-    // manager must outlive compositors using it.
-    scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
-        Compositor::LayerSettings(),
-        base::Bind(&SatisfyCallback, base::Unretained(manager)),
-        base::Bind(&RequireCallback, base::Unretained(manager)));
-    surface_layer->SetSurfaceId(surface_id_, 1.f, texture_size_in_layer_);
-    delegated_layer = surface_layer;
-  } else {
-    DCHECK(frame_provider_.get());
-    delegated_layer = cc::DelegatedRendererLayer::Create(
-        Compositor::LayerSettings(), frame_provider_);
-  }
+  DCHECK(!surface_id_.is_null());
+  cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
+  DCHECK(manager);
+  // manager must outlive compositors using it.
+  scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
+      Compositor::LayerSettings(),
+      base::Bind(&SatisfyCallback, base::Unretained(manager)),
+      base::Bind(&RequireCallback, base::Unretained(manager)));
+  surface_layer->SetSurfaceId(surface_id_, 1.f, texture_size_in_layer_);
+  delegated_layer = surface_layer;
   delegated_layer->SetBounds(texture_size_in_layer_);
   delegated_layer->SetIsDrawable(true);
   delegated_layer->SetContentsOpaque(true);
@@ -905,7 +896,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   ui::WindowAndroidCompositor* compositor =
       content_view_core_window_android_->GetCompositor();
   DCHECK(compositor);
-  DCHECK(frame_provider_.get() || !surface_id_.is_null());
+  DCHECK(!surface_id_.is_null());
   scoped_refptr<cc::Layer> layer = CreateDelegatedLayer();
   DCHECK(layer);
   layer->SetHideLayerAndSubtree(true);
@@ -954,8 +945,6 @@ void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty())
     ack.resources.swap(surface_returned_resources_);
-  if (resource_collection_.get())
-    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
   host_->Send(new ViewMsg_SwapCompositorFrameAck(host_->GetRoutingID(),
                                                  output_surface_id, ack));
 }
@@ -964,22 +953,11 @@ void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
     uint32_t output_surface_id) {
   DCHECK(host_);
   cc::CompositorFrameAck ack;
-  if (!surface_returned_resources_.empty()) {
-    ack.resources.swap(surface_returned_resources_);
-  } else {
-    DCHECK(resource_collection_.get());
-    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  }
+  DCHECK(!surface_returned_resources_.empty());
+  ack.resources.swap(surface_returned_resources_);
 
   host_->Send(new ViewMsg_ReclaimCompositorResources(host_->GetRoutingID(),
                                                      output_surface_id, ack));
-}
-
-void RenderWidgetHostViewAndroid::UnusedResourcesAreAvailable() {
-  DCHECK(surface_id_.is_null());
-  if (ack_callbacks_.size())
-    return;
-  SendReturnedDelegatedResources(last_output_surface_id_);
 }
 
 void RenderWidgetHostViewAndroid::ReturnResources(
@@ -1000,7 +978,6 @@ void RenderWidgetHostViewAndroid::SetBeginFrameSource(
 
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
   RemoveLayers();
-  frame_provider_ = NULL;
   if (!surface_id_.is_null()) {
     DCHECK(surface_factory_.get());
     surface_factory_->Destroy(surface_id_);
@@ -1013,14 +990,6 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
     uint32_t output_surface_id) {
   if (output_surface_id == last_output_surface_id_)
     return;
-  // Drop the cc::DelegatedFrameResourceCollection so that we will not return
-  // any resources from the old output surface with the new output surface id.
-  if (resource_collection_.get()) {
-    resource_collection_->SetClient(NULL);
-    if (resource_collection_->LoseAllResources())
-      SendReturnedDelegatedResources(last_output_surface_id_);
-    resource_collection_ = NULL;
-  }
   DestroyDelegatedContent();
   surface_factory_.reset();
   if (!surface_returned_resources_.empty())
@@ -1032,53 +1001,35 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
-  if (manager) {
-    if (!surface_factory_) {
-      surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
-    }
-    if (surface_id_.is_null() ||
-        texture_size_in_layer_ != current_surface_size_ ||
-        location_bar_content_translation_ !=
-            frame->metadata.location_bar_content_translation ||
-        current_viewport_selection_ != frame->metadata.selection) {
-      RemoveLayers();
-      if (!surface_id_.is_null())
-        surface_factory_->Destroy(surface_id_);
-      surface_id_ = id_allocator_->GenerateId();
-      surface_factory_->Create(surface_id_);
-      layer_ = CreateDelegatedLayer();
-
-      DCHECK(layer_);
-
-      current_surface_size_ = texture_size_in_layer_;
-      location_bar_content_translation_ =
-          frame->metadata.location_bar_content_translation;
-      current_viewport_selection_ = frame->metadata.selection;
-      AttachLayers();
-    }
-
-    cc::SurfaceFactory::DrawCallback ack_callback =
-        base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
-                   weak_ptr_factory_.GetWeakPtr());
-    surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
-                                            ack_callback);
-  } else {
-    if (!resource_collection_.get()) {
-      resource_collection_ = new cc::DelegatedFrameResourceCollection;
-      resource_collection_->SetClient(this);
-    }
-    if (!frame_provider_.get() ||
-        texture_size_in_layer_ != frame_provider_->frame_size()) {
-      RemoveLayers();
-      frame_provider_ = new cc::DelegatedFrameProvider(
-          resource_collection_.get(), std::move(frame->delegated_frame_data));
-      layer_ = cc::DelegatedRendererLayer::Create(Compositor::LayerSettings(),
-                                                  frame_provider_);
-      AttachLayers();
-    } else {
-      frame_provider_->SetFrameData(std::move(frame->delegated_frame_data));
-    }
+  if (!surface_factory_) {
+    surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
   }
+  if (surface_id_.is_null() ||
+      texture_size_in_layer_ != current_surface_size_ ||
+      location_bar_content_translation_ !=
+          frame->metadata.location_bar_content_translation ||
+      current_viewport_selection_ != frame->metadata.selection) {
+    RemoveLayers();
+    if (!surface_id_.is_null())
+      surface_factory_->Destroy(surface_id_);
+    surface_id_ = id_allocator_->GenerateId();
+    surface_factory_->Create(surface_id_);
+    layer_ = CreateDelegatedLayer();
+
+    DCHECK(layer_);
+
+    current_surface_size_ = texture_size_in_layer_;
+    location_bar_content_translation_ =
+        frame->metadata.location_bar_content_translation;
+    current_viewport_selection_ = frame->metadata.selection;
+    AttachLayers();
+  }
+
+  cc::SurfaceFactory::DrawCallback ack_callback =
+      base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
+                 weak_ptr_factory_.GetWeakPtr());
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+                                          ack_callback);
 }
 
 void RenderWidgetHostViewAndroid::SwapDelegatedFrame(

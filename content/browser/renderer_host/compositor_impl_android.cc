@@ -187,7 +187,6 @@ class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
 
 static bool g_initialized = false;
 
-bool g_use_surface_manager = false;
 base::LazyInstance<cc::SurfaceManager> g_surface_manager =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -220,7 +219,6 @@ Compositor* Compositor::Create(CompositorClient* client,
 void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
   g_initialized = true;
-  g_use_surface_manager = true;
 }
 
 // static
@@ -240,8 +238,6 @@ bool CompositorImpl::IsInitialized() {
 
 // static
 cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
-  if (!g_use_surface_manager)
-    return nullptr;
   return g_surface_manager.Pointer();
 }
 
@@ -259,8 +255,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create(Compositor::LayerSettings())),
       resource_manager_(root_window),
-      surface_id_allocator_(GetSurfaceManager() ? CreateSurfaceIdAllocator()
-                                                : nullptr),
+      surface_id_allocator_(CreateSurfaceIdAllocator()),
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
@@ -375,8 +370,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->visible());
   host_->SetRootLayer(root_layer_);
-  if (surface_id_allocator_)
-    host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
+  host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
   host_->SetViewportSize(size_);
   host_->set_has_transparent_background(has_transparent_background_);
   host_->SetDeviceScaleFactor(device_scale_factor_);
@@ -554,24 +548,20 @@ void CompositorImpl::CreateOutputSurface() {
                      base::Unretained(this))));
 
   cc::SurfaceManager* manager = GetSurfaceManager();
-  if (manager) {
-    display_client_.reset(
-        new cc::OnscreenDisplayClient(std::move(real_output_surface), manager,
-                                      HostSharedBitmapManager::current(),
-                                      BrowserGpuMemoryBufferManager::current(),
-                                      host_->settings().renderer_settings,
-                                      base::ThreadTaskRunnerHandle::Get()));
-    scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
-        new cc::SurfaceDisplayOutputSurface(
-            manager, surface_id_allocator_.get(), context_provider, nullptr));
+  display_client_.reset(
+      new cc::OnscreenDisplayClient(std::move(real_output_surface), manager,
+                                    HostSharedBitmapManager::current(),
+                                    BrowserGpuMemoryBufferManager::current(),
+                                    host_->settings().renderer_settings,
+                                    base::ThreadTaskRunnerHandle::Get()));
+  scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
+      new cc::SurfaceDisplayOutputSurface(
+          manager, surface_id_allocator_.get(), context_provider, nullptr));
 
-    display_client_->set_surface_output_surface(surface_output_surface.get());
-    surface_output_surface->set_display_client(display_client_.get());
-    display_client_->display()->Resize(size_);
-    host_->SetOutputSurface(std::move(surface_output_surface));
-  } else {
-    host_->SetOutputSurface(std::move(real_output_surface));
-  }
+  display_client_->set_surface_output_surface(surface_output_surface.get());
+  surface_output_surface->set_display_client(display_client_.get());
+  display_client_->display()->Resize(size_);
+  host_->SetOutputSurface(std::move(surface_output_surface));
 }
 
 void CompositorImpl::PopulateGpuCapabilities(

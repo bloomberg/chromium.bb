@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
-#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
@@ -42,8 +41,6 @@ struct ViewHostMsg_TextInputState_Params;
 
 namespace cc {
 class CopyOutputResult;
-class DelegatedFrameProvider;
-class DelegatedRendererLayer;
 class Layer;
 class SurfaceFactory;
 class SurfaceIdAllocator;
@@ -70,7 +67,6 @@ struct NativeWebKeyboardEvent;
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
-      public cc::DelegatedFrameResourceCollectionClient,
       public cc::SurfaceFactoryClient,
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
@@ -167,9 +163,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                           size_t start_offset,
                                           size_t end_offset) override;
   void OnDidNavigateMainFrameToNewPage() override;
-
-  // cc::DelegatedFrameResourceCollectionClient implementation.
-  void UnusedResourcesAreAvailable() override;
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
@@ -362,8 +355,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Body background color of the underlying document.
   SkColor cached_background_color_;
 
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
   scoped_refptr<cc::Layer> layer_;
 
   scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
