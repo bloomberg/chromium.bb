@@ -315,73 +315,36 @@ void DocumentLoader::finishedLoading(double finishTime)
     clearMainResourceHandle();
 }
 
-bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
-{
-    int status = redirectResponse.httpStatusCode();
-    if (((status >= 301 && status <= 303) || status == 307)
-        && m_originalRequest.httpMethod() == HTTPNames::POST)
-        return true;
-
-    return false;
-}
-
-void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
-{
-    ASSERT_UNUSED(resource, resource == m_mainResource);
-    willSendRequest(request, redirectResponse);
-}
-
 void DocumentLoader::updateRequest(Resource* resource, const ResourceRequest& request)
 {
     ASSERT_UNUSED(resource, resource == m_mainResource);
     m_request = request;
 }
 
-static bool isFormSubmission(NavigationType type)
+void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
-    return type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;
-}
+    ASSERT_UNUSED(resource, resource == m_mainResource);
+    ASSERT(!redirectResponse.isNull());
+    m_request = request;
 
-void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
-{
-    // Note that there are no asserts here as there are for the other callbacks. This is due to the
-    // fact that this "callback" is sent when starting every load, and the state of callback
-    // deferrals plays less of a part in this function in preventing the bad behavior deferring
-    // callbacks is meant to prevent.
-    ASSERT(!newRequest.isNull());
-    if (isFormSubmission(m_navigationType) && !m_frame->document()->contentSecurityPolicy()->allowFormAction(newRequest.url())) {
-        cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
+    // If the redirecting url is not allowed to display content from the target origin,
+    // then block the redirect.
+    const KURL& requestURL = m_request.url();
+    RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
+    if (!redirectingOrigin->canDisplay(requestURL)) {
+        FrameLoader::reportLocalLoadFailed(m_frame, requestURL.string());
+        cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
+        return;
+    }
+    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem())) {
+        cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
         return;
     }
 
     ASSERT(timing().fetchStart());
-    if (!redirectResponse.isNull()) {
-        // If the redirecting url is not allowed to display content from the target origin,
-        // then block the redirect.
-        RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
-        if (!redirectingOrigin->canDisplay(newRequest.url())) {
-            FrameLoader::reportLocalLoadFailed(m_frame, newRequest.url().string());
-            cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
-            return;
-        }
-        timing().addRedirect(redirectResponse.url(), newRequest.url());
-    }
-
-    // If we're fielding a redirect in response to a POST, force a load from origin, since
-    // this is a common site technique to return to a page viewing some data that the POST
-    // just modified.
-    if (newRequest.cachePolicy() == UseProtocolCachePolicy && isRedirectAfterPost(newRequest, redirectResponse))
-        newRequest.setCachePolicy(ReloadBypassingCache);
-
-    m_request = newRequest;
-
-    if (redirectResponse.isNull())
-        return;
-
-    appendRedirect(newRequest.url());
-    frameLoader()->receivedMainResourceRedirect(m_request.url());
-    if (!frameLoader()->shouldContinueForNavigationPolicy(newRequest, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem()))
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+    timing().addRedirect(redirectResponse.url(), requestURL);
+    appendRedirect(requestURL);
+    frameLoader()->receivedMainResourceRedirect(requestURL);
 }
 
 static bool canShowMIMEType(const String& mimeType, Page* page)
@@ -747,11 +710,6 @@ void DocumentLoader::startLoadingMainResource()
     ASSERT(timing().navigationStart());
     ASSERT(!timing().fetchStart());
     timing().markFetchStart();
-    willSendRequest(m_request, ResourceResponse());
-
-    // willSendRequest() may lead to our LocalFrame being detached or cancelling the load via nulling the ResourceRequest.
-    if (!m_frame || m_request.isNull())
-        return;
 
     m_applicationCacheHost->willStartLoadingMainResource(m_request);
     prepareSubframeArchiveLoadIfNeeded();

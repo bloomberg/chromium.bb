@@ -173,7 +173,6 @@ private:
 
     void prepareSubframeArchiveLoadIfNeeded();
 
-    void willSendRequest(ResourceRequest&, const ResourceResponse&);
     void finishedLoading(double finishTime);
     void mainReceivedError(const ResourceError&);
     void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);

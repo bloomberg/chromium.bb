@@ -1329,6 +1329,10 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
         return false;
     }
 
+    bool isFormSubmission = type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;
+    if (isFormSubmission && !m_frame->document()->contentSecurityPolicy()->allowFormAction(request.url()))
+        return false;
+
     policy = client()->decidePolicyForNavigation(request, loader, type, policy, replacesCurrentHistoryItem);
     if (policy == NavigationPolicyCurrentTab)
         return true;
