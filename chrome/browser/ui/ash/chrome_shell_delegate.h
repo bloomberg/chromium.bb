@@ -18,10 +18,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/shell_observer.h"
-#endif
-
 class Browser;
 
 namespace ash {
@@ -92,21 +88,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                const content::NotificationDetails& details) override;
 
  private:
-#if defined(OS_CHROMEOS)
-  // An Observer to track session state and start/stop ARC accordingly.
-  class ArcSessionObserver : public ash::ShellObserver {
-   public:
-    ArcSessionObserver();
-    ~ArcSessionObserver() override;
-
-    // ash::ShellObserver overrides:
-    void OnLoginStateChanged(ash::user::LoginStatus status) override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ArcSessionObserver);
-  };
-#endif
-
   void PlatformInit();
 
   static ChromeShellDelegate* instance_;
@@ -124,9 +105,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;
-
-  // An Observer to track session state and start/stop ARC accordingly.
-  scoped_ptr<ArcSessionObserver> arc_session_observer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

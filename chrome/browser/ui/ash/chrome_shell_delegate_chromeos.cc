@@ -37,8 +37,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/aura/window.h"
@@ -231,17 +229,11 @@ void ChromeShellDelegate::PreInit() {
   display_configuration_observer_.reset(
       new chromeos::DisplayConfigurationObserver());
 
-  arc_session_observer_.reset(new ArcSessionObserver);
-
   chrome_user_metrics_recorder_.reset(new ChromeUserMetricsRecorder);
 }
 
 void ChromeShellDelegate::PreShutdown() {
   display_configuration_observer_.reset();
-
-  // Remove the ARC observer now since it uses the ash::Shell instance in its
-  // destructor, which is unavailable after PreShutdown() returns.
-  arc_session_observer_.reset();
 
   chrome_user_metrics_recorder_.reset();
 }
@@ -309,36 +301,4 @@ void ChromeShellDelegate::PlatformInit() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
-}
-
-ChromeShellDelegate::ArcSessionObserver::ArcSessionObserver() {
-  ash::Shell::GetInstance()->AddShellObserver(this);
-}
-
-ChromeShellDelegate::ArcSessionObserver::~ArcSessionObserver() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
-}
-
-void ChromeShellDelegate::ArcSessionObserver::OnLoginStateChanged(
-    ash::user::LoginStatus status) {
-  switch (status) {
-    case ash::user::LOGGED_IN_LOCKED:
-    case ash::user::LOGGED_IN_KIOSK_APP:
-      return;
-
-    case ash::user::LOGGED_IN_NONE:
-      arc::ArcServiceManager::Get()->arc_bridge_service()->Shutdown();
-      break;
-
-    case ash::user::LOGGED_IN_USER:
-    case ash::user::LOGGED_IN_OWNER:
-    case ash::user::LOGGED_IN_GUEST:
-    case ash::user::LOGGED_IN_PUBLIC:
-    case ash::user::LOGGED_IN_SUPERVISED:
-      if (arc::ArcBridgeService::GetEnabled(
-              base::CommandLine::ForCurrentProcess())) {
-        arc::ArcServiceManager::Get()->arc_bridge_service()->HandleStartup();
-      }
-      break;
-  }
 }

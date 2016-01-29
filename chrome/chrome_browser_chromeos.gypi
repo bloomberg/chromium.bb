@@ -54,6 +54,8 @@
         'browser/chromeos/app_mode/startup_app_launcher.h',
         'browser/chromeos/arc/arc_auth_service.cc',
         'browser/chromeos/arc/arc_auth_service.h',
+        'browser/chromeos/arc/arc_auth_ui.cc',
+        'browser/chromeos/arc/arc_auth_ui.h',
         'browser/chromeos/arc/arc_intent_helper_bridge.cc',
         'browser/chromeos/arc/arc_intent_helper_bridge.h',
         'browser/chromeos/arc/settings_bridge.cc',

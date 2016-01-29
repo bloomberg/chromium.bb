@@ -10,26 +10,28 @@ FakeArcBridgeService::FakeArcBridgeService() {
 }
 
 FakeArcBridgeService::~FakeArcBridgeService() {
-  if (state() != State::STOPPED) {
-    SetState(State::STOPPED);
-  }
+  SetStopped();
 }
 
 void FakeArcBridgeService::DetectAvailability() {
 }
 
 void FakeArcBridgeService::HandleStartup() {
+  SetReady();
 }
 
 void FakeArcBridgeService::Shutdown() {
+  SetStopped();
 }
 
 void FakeArcBridgeService::SetReady() {
-  SetState(State::READY);
+  if (state() != State::READY)
+    SetState(State::READY);
 }
 
 void FakeArcBridgeService::SetStopped() {
-  SetState(State::STOPPED);
+  if (state() != State::STOPPED)
+    SetState(State::STOPPED);
 }
 
 bool FakeArcBridgeService::HasObserver(const Observer* observer) {

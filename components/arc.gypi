@@ -36,6 +36,8 @@
         'arc/arc_service.h',
         'arc/arc_service_manager.cc',
         'arc/arc_service_manager.h',
+        'arc/auth/arc_auth_fetcher.cc',
+        'arc/auth/arc_auth_fetcher.h',
         'arc/clipboard/arc_clipboard_bridge.cc',
         'arc/clipboard/arc_clipboard_bridge.h',
         'arc/ime/arc_ime_bridge.cc',

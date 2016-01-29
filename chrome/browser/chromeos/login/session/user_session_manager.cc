@@ -33,6 +33,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -1145,6 +1146,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       DCHECK(arc::ArcServiceManager::Get());
       arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
           multi_user_util::GetAccountIdFromProfile(profile));
+      arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile);
     }
   }
 
@@ -1785,6 +1787,11 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
+  if (arc::ArcBridgeService::GetEnabled(
+          base::CommandLine::ForCurrentProcess())) {
+    DCHECK(arc::ArcServiceManager::Get());
+    arc::ArcAuthService::Get()->Shutdown();
+  }
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
   first_run::GoodiesDisplayer::Delete();
