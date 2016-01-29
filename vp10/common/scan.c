@@ -716,15 +716,13 @@ const scan_order vp10_scan_orders[TX_SIZES][TX_TYPES] = {
     { col_scan_16x16, vp10_col_iscan_16x16, col_scan_16x16_neighbors },
     { default_scan_16x16, vp10_default_iscan_16x16,
       default_scan_16x16_neighbors } },
-  {
-      // TX_32X32
-      { default_scan_32x32, vp10_default_iscan_32x32,
-        default_scan_32x32_neighbors },
-      { default_scan_32x32, vp10_default_iscan_32x32,
-        default_scan_32x32_neighbors },
-      { default_scan_32x32, vp10_default_iscan_32x32,
-        default_scan_32x32_neighbors },
-      { default_scan_32x32, vp10_default_iscan_32x32,
-        default_scan_32x32_neighbors },
-  }
+  { // TX_32X32
+    { default_scan_32x32, vp10_default_iscan_32x32,
+      default_scan_32x32_neighbors },
+    { default_scan_32x32, vp10_default_iscan_32x32,
+      default_scan_32x32_neighbors },
+    { default_scan_32x32, vp10_default_iscan_32x32,
+      default_scan_32x32_neighbors },
+    { default_scan_32x32, vp10_default_iscan_32x32,
+      default_scan_32x32_neighbors } },
 };
