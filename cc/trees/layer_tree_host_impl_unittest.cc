@@ -714,11 +714,10 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   DrawFrame();
-  LayerImpl* root = host_impl_->active_tree()->root_layer();
 
   // With registered event handlers, wheel scrolls don't necessarily
   // have to go to the main thread.
-  root->SetHaveWheelEventHandlers(true);
+  host_impl_->active_tree()->set_have_wheel_event_handlers(true);
   InputHandler::ScrollStatus status =
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                    InputHandler::WHEEL);
@@ -736,7 +735,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
 
   // And if the handlers go away, wheel scrolls can again be processed
   // on impl (despite the scroll-blocks-on mode).
-  root->SetHaveWheelEventHandlers(false);
+  host_impl_->active_tree()->set_have_wheel_event_handlers(false);
   status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                    InputHandler::WHEEL);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);

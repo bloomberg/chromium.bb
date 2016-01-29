@@ -224,6 +224,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void RegisterSelection(const LayerSelection& selection);
 
+  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
+  void SetHaveWheelEventHandlers(bool have_event_handlers);
+
   const LayerTreeSettings& settings() const { return settings_; }
 
   void SetDebugState(const LayerTreeDebugState& debug_state);
@@ -528,6 +531,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   SkColor background_color_;
   bool has_transparent_background_;
+
+  bool have_wheel_event_handlers_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   scoped_ptr<AnimationHost> animation_host_;

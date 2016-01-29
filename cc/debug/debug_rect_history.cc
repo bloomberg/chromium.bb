@@ -14,6 +14,7 @@
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -180,7 +181,7 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
-  if (!layer->have_wheel_event_handlers())
+  if (!layer->layer_tree_impl()->have_wheel_event_handlers())
     return;
 
   debug_rects_.push_back(

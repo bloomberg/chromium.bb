@@ -192,7 +192,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool IsCurrentlyScrollingLayerAt(
       const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) const override;
-  bool HaveWheelEventHandlersAt(const gfx::Point& viewport_point) override;
+  bool HaveWheelEventHandlers() const override;
   bool DoTouchEventsBlockScrollAt(const gfx::Point& viewport_port) override;
   scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;

@@ -125,10 +125,6 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     new_layer->SetScrollClipLayerId(scrollable ? new_layer->id()
                                                : Layer::INVALID_ID);
 
-  bool wheel_handler;
-  if (dict->GetBoolean("WheelHandler", &wheel_handler))
-    new_layer->SetHaveWheelEventHandlers(wheel_handler);
-
   bool scroll_handler;
   if (dict->GetBoolean("ScrollHandler", &scroll_handler))
     new_layer->SetHaveScrollEventHandlers(scroll_handler);

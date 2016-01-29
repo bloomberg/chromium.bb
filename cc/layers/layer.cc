@@ -71,7 +71,6 @@ Layer::Layer(const LayerSettings& settings)
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
       should_flatten_transform_from_property_tree_(false),
-      have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
@@ -971,15 +970,6 @@ void Layer::ClearMainThreadScrollingReasons() {
   SetNeedsCommit();
 }
 
-void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (have_wheel_event_handlers_ == have_wheel_event_handlers)
-    return;
-
-  have_wheel_event_handlers_ = have_wheel_event_handlers;
-  SetNeedsCommit();
-}
-
 void Layer::SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
   DCHECK(IsPropertyChangeAllowed());
   if (have_scroll_event_handlers_ == have_scroll_event_handlers)
@@ -1223,7 +1213,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
@@ -1493,7 +1482,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
 
   base->set_masks_to_bounds(masks_to_bounds_);
   base->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  base->set_have_wheel_event_handlers(have_wheel_event_handlers_);
   base->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   RegionToProto(non_fast_scrollable_region_,
                 base->mutable_non_fast_scrollable_region());
@@ -1579,7 +1567,6 @@ void Layer::FromLayerSpecificPropertiesProto(
   has_render_surface_ = base.has_render_surface();
   masks_to_bounds_ = base.masks_to_bounds();
   main_thread_scrolling_reasons_ = base.main_thread_scrolling_reasons();
-  have_wheel_event_handlers_ = base.have_wheel_event_handlers();
   have_scroll_event_handlers_ = base.have_scroll_event_handlers();
   non_fast_scrollable_region_ =
       RegionFromProto(base.non_fast_scrollable_region());

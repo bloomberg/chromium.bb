@@ -67,6 +67,8 @@ class WebLayerTreeViewImplForTesting
   void clearViewportLayers() override;
   void registerSelection(const blink::WebSelection& selection) override;
   void clearSelection() override;
+  void setHaveWheelEventHandlers(bool have_event_handlers) override;
+  bool haveWheelEventHandlers() const override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}

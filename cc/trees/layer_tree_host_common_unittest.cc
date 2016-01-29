@@ -9117,15 +9117,15 @@ TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
   SetLayerPropertiesForTesting(child, identity, gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true, false, false);
 
-  EXPECT_EQ(root->layer_or_descendant_has_input_handler(), false);
+  EXPECT_EQ(root->layer_or_descendant_has_touch_handler(), false);
 
-  child->SetHaveWheelEventHandlers(true);
+  child->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(root->layer_or_descendant_has_input_handler(), true);
+  EXPECT_EQ(root->layer_or_descendant_has_touch_handler(), true);
 
-  child->SetHaveWheelEventHandlers(false);
+  child->SetTouchEventHandlerRegion(gfx::Rect());
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(root->layer_or_descendant_has_input_handler(), false);
+  EXPECT_EQ(root->layer_or_descendant_has_touch_handler(), false);
 }
 
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
@@ -9621,7 +9621,7 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
   render_surface->SetMasksToBounds(true);
   test_layer->SetDrawsContent(true);
   test_layer->SetOpacity(0);
-  test_layer->SetHaveWheelEventHandlers(true);
+  test_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 20, 20));
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(translation, test_layer->ScreenSpaceTransform());

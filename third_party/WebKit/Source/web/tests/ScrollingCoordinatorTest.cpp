@@ -94,6 +94,8 @@ public:
     WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
     LocalFrame* frame() const { return m_helper.webViewImpl()->mainFrameImpl()->frame(); }
 
+    WebLayerTreeView* webLayerTreeView() const { return webViewImpl()->layerTreeView(); }
+
 protected:
     std::string m_baseURL;
     FrameTestHelpers::TestWebViewClient m_mockWebViewClient;
@@ -124,7 +126,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_TRUE(rootScrollLayer->scrollable());
     ASSERT_FALSE(rootScrollLayer->shouldScrollOnMainThread());
-    ASSERT_FALSE(rootScrollLayer->haveWheelEventHandlers());
+    ASSERT_FALSE(webLayerTreeView()->haveWheelEventHandlers());
 }
 
 TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting)
@@ -310,8 +312,7 @@ TEST_F(ScrollingCoordinatorTest, wheelEventHandler)
     navigateTo(m_baseURL + "wheel-event-handler.html");
     forceFullCompositingUpdate();
 
-    WebLayer* rootScrollLayer = getRootScrollLayer();
-    ASSERT_TRUE(rootScrollLayer->haveWheelEventHandlers());
+    ASSERT_TRUE(webLayerTreeView()->haveWheelEventHandlers());
 }
 
 TEST_F(ScrollingCoordinatorTest, scrollEventHandler)

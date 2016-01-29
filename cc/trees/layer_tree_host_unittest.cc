@@ -1333,6 +1333,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
+    layer_tree_host()->SetHaveWheelEventHandlers(true);
 
     PostSetNeedsCommitToMainThread();
   }
@@ -1340,6 +1341,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_EQ(gfx::Size(20, 20), impl->DrawViewportSize());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
+    EXPECT_TRUE(impl->active_tree()->have_wheel_event_handlers());
 
     EndTest();
   }

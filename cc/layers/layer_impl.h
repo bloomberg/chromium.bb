@@ -503,11 +503,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return !!main_thread_scrolling_reasons_;
   }
 
-  void SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
-    have_wheel_event_handlers_ = have_wheel_event_handlers;
-  }
-  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
-
   void SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
     have_scroll_event_handlers_ = have_scroll_event_handlers;
   }
@@ -663,14 +658,14 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   bool layer_or_descendant_is_drawn() { return layer_or_descendant_is_drawn_; }
 
-  void set_layer_or_descendant_has_input_handler(
-      bool layer_or_descendant_has_input_handler) {
-    layer_or_descendant_has_input_handler_ =
-        layer_or_descendant_has_input_handler;
+  void set_layer_or_descendant_has_touch_handler(
+      bool layer_or_descendant_has_touch_handler) {
+    layer_or_descendant_has_touch_handler_ =
+        layer_or_descendant_has_touch_handler;
   }
 
-  bool layer_or_descendant_has_input_handler() {
-    return layer_or_descendant_has_input_handler_;
+  bool layer_or_descendant_has_touch_handler() {
+    return layer_or_descendant_has_touch_handler_;
   }
 
   void set_sorted_for_recursion(bool sorted_for_recursion) {
@@ -766,7 +761,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   gfx::Vector2dF offset_to_transform_parent_;
   uint32_t main_thread_scrolling_reasons_;
-  bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
 
   bool user_scrollable_horizontal_ : 1;
@@ -881,8 +875,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool frame_timing_requests_dirty_;
   bool visited_;
   bool layer_or_descendant_is_drawn_;
-  // If true, the layer or one of its descendants has a wheel or touch handler.
-  bool layer_or_descendant_has_input_handler_;
+  // If true, the layer or one of its descendants has a touch handler.
+  bool layer_or_descendant_has_touch_handler_;
   bool sorted_for_recursion_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);

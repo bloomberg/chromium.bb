@@ -141,7 +141,12 @@ public:
     virtual void registerSelection(const WebSelection&) { }
     virtual void clearSelection() { }
 
+    // Input properties ---------------------------------------------------
+    virtual void setHaveWheelEventHandlers(bool) { };
+
     // Debugging / dangerous ---------------------------------------------
+
+    virtual bool haveWheelEventHandlers() const { return false; };
 
     virtual int layerTreeId() const { return 0; }
 

@@ -284,9 +284,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return !!main_thread_scrolling_reasons_;
   }
 
-  void SetHaveWheelEventHandlers(bool have_wheel_event_handlers);
-  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
-
   void SetHaveScrollEventHandlers(bool have_scroll_event_handlers);
   bool have_scroll_event_handlers() const {
     return have_scroll_event_handlers_;
@@ -723,7 +720,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::Vector2dF offset_to_transform_parent_;
   uint32_t main_thread_scrolling_reasons_;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;

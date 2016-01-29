@@ -170,7 +170,7 @@ class CC_EXPORT InputHandler {
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
                                            ScrollInputType type) const = 0;
 
-  virtual bool HaveWheelEventHandlersAt(const gfx::Point& viewport_point) = 0;
+  virtual bool HaveWheelEventHandlers() const = 0;
 
   // Whether the page should be given the opportunity to suppress scrolling by
   // consuming touch events that started at |viewport_point|.

@@ -374,9 +374,6 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* FindLayerThatIsHitByPoint(const gfx::PointF& screen_space_point);
 
-  LayerImpl* FindLayerWithWheelHandlerThatIsHitByPoint(
-      const gfx::PointF& screen_space_point);
-
   LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
       const gfx::PointF& screen_space_point);
 
@@ -438,6 +435,11 @@ class CC_EXPORT LayerTreeImpl {
   bool TransformAnimationBoundsForBox(const LayerImpl* layer,
                                       const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
+
+  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
+  void set_have_wheel_event_handlers(bool have_event_handlers) {
+    have_wheel_event_handlers_ = have_event_handlers;
+  }
 
  protected:
   explicit LayerTreeImpl(
@@ -526,10 +528,11 @@ class CC_EXPORT LayerTreeImpl {
 
   int render_surface_layer_list_id_;
 
+  bool have_wheel_event_handlers_;
+
   // Whether or not Blink's viewport size was shrunk by the height of the top
   // controls at the time of the last layout.
   bool top_controls_shrink_blink_size_;
-
   float top_controls_height_;
 
   // The amount that the top controls are shown from 0 (hidden) to 1 (fully

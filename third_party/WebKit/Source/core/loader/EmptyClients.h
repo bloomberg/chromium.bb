@@ -157,6 +157,9 @@ public:
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override {}
 
     void needTouchEvents(bool) override {}
+    void setHaveWheelEventHandlers(bool) override {}
+    bool haveWheelEventHandlers() const override { return false; }
+
     void setTouchAction(TouchAction) override {}
 
     void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame*) override {}

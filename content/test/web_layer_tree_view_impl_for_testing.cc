@@ -200,4 +200,13 @@ void WebLayerTreeViewImplForTesting::registerSelection(
 void WebLayerTreeViewImplForTesting::clearSelection() {
 }
 
+void WebLayerTreeViewImplForTesting::setHaveWheelEventHandlers(
+    bool have_event_handlers) {
+  layer_tree_host_->SetHaveWheelEventHandlers(have_event_handlers);
+}
+
+bool WebLayerTreeViewImplForTesting::haveWheelEventHandlers() const {
+  return layer_tree_host_->have_wheel_event_handlers();
+}
+
 }  // namespace content

@@ -131,7 +131,7 @@ class MockInputHandler : public cc::InputHandler {
                      bool(const gfx::Point& point,
                           cc::InputHandler::ScrollInputType type));
 
-  MOCK_METHOD1(HaveWheelEventHandlersAt, bool(const gfx::Point& point));
+  MOCK_CONST_METHOD0(HaveWheelEventHandlers, bool());
   MOCK_METHOD1(DoTouchEventsBlockScrollAt, bool(const gfx::Point& point));
 
   MOCK_METHOD0(RequestUpdateForSynchronousInputHandler, void());
@@ -625,7 +625,7 @@ TEST_P(InputHandlerProxyTest, GesturePinch) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
-  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlersAt(testing::_))
+  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlers())
       .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -674,7 +674,7 @@ TEST_P(InputHandlerProxyTest, GesturePinchWithWheelHandler) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
-  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlersAt(testing::_))
+  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlers())
       .WillOnce(testing::Return(true));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
@@ -723,7 +723,7 @@ TEST_P(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
-  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlersAt(testing::_))
+  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlers())
       .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));

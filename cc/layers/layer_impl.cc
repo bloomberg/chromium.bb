@@ -60,7 +60,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       scroll_clip_layer_id_(Layer::INVALID_ID),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
-      have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
@@ -99,7 +98,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       frame_timing_requests_dirty_(false),
       visited_(false),
       layer_or_descendant_is_drawn_(false),
-      layer_or_descendant_has_input_handler_(false),
+      layer_or_descendant_has_touch_handler_(false),
       sorted_for_recursion_(false) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
@@ -557,7 +556,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
   }
 
   if ((type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) &&
-      have_wheel_event_handlers()) {
+      layer_tree_impl_->have_wheel_event_handlers()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
     scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
@@ -615,7 +614,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
@@ -765,8 +763,6 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   if (scrollable())
     result->SetBoolean("Scrollable", true);
 
-  if (have_wheel_event_handlers_)
-    result->SetBoolean("WheelHandler", have_wheel_event_handlers_);
   if (have_scroll_event_handlers_)
     result->SetBoolean("ScrollHandler", have_scroll_event_handlers_);
   if (!touch_event_handler_region_.IsEmpty()) {
@@ -1728,13 +1724,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   if (!touch_event_handler_region_.IsEmpty()) {
     state->BeginArray("touch_event_handler_region");
     touch_event_handler_region_.AsValueInto(state);
-    state->EndArray();
-  }
-  if (have_wheel_event_handlers_) {
-    gfx::Rect wheel_rect(bounds());
-    Region wheel_region(wheel_rect);
-    state->BeginArray("wheel_event_handler_region");
-    wheel_region.AsValueInto(state);
     state->EndArray();
   }
   if (have_scroll_event_handlers_) {

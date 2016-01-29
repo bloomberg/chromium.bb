@@ -334,13 +334,13 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   if (layer->num_copy_requests_in_target_subtree() > 0)
     return false;
 
-  // We cannot skip the the subtree if a descendant has a wheel or touch handler
+  // We cannot skip the the subtree if a descendant has a touch handler
   // or the hit testing code will break (it requires fresh transforms, etc).
   // Though we don't need visible rect for hit testing, we need render surface's
   // drawable content rect which depends on layer's drawable content rect which
   // in turn depends on layer's clip rect that is computed while computing
   // visible rects.
-  if (layer->layer_or_descendant_has_input_handler())
+  if (layer->layer_or_descendant_has_touch_handler())
     return false;
 
   // If the layer is not drawn, then skip it and its subtree.

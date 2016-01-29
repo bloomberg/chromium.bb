@@ -745,6 +745,14 @@ void RenderWidgetCompositor::clearSelection() {
   layer_tree_host_->RegisterSelection(empty_selection);
 }
 
+void RenderWidgetCompositor::setHaveWheelEventHandlers(bool value) {
+  layer_tree_host_->SetHaveWheelEventHandlers(value);
+}
+
+bool RenderWidgetCompositor::haveWheelEventHandlers() const {
+  return layer_tree_host_->have_wheel_event_handlers();
+}
+
 void CompositeAndReadbackAsyncCallback(
     blink::WebCompositeAndReadbackAsyncCallback* callback,
     scoped_ptr<cc::CopyOutputResult> result) {

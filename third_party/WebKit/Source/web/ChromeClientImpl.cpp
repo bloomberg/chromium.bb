@@ -881,6 +881,19 @@ void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
     m_webView->hasTouchEventHandlers(needsTouchEvents);
 }
 
+void ChromeClientImpl::setHaveWheelEventHandlers(bool hasEventHandlers)
+{
+    if (WebLayerTreeView* treeView = m_webView->layerTreeView())
+        treeView->setHaveWheelEventHandlers(hasEventHandlers);
+}
+
+bool ChromeClientImpl::haveWheelEventHandlers() const
+{
+    if (WebLayerTreeView* treeView = m_webView->layerTreeView())
+        return treeView->haveWheelEventHandlers();
+    return false;
+}
+
 void ChromeClientImpl::setTouchAction(TouchAction touchAction)
 {
     if (WebViewClient* client = m_webView->client())

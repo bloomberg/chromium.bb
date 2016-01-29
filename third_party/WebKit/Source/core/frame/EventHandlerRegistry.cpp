@@ -203,8 +203,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
             scrollingCoordinator->updateHaveScrollEventHandlers();
         break;
     case WheelEvent:
-        if (scrollingCoordinator)
-            scrollingCoordinator->updateHaveWheelEventHandlers();
+        m_frameHost->chromeClient().setHaveWheelEventHandlers(hasActiveHandlers);
         break;
     case TouchEvent:
         m_frameHost->chromeClient().needTouchEvents(hasActiveHandlers);

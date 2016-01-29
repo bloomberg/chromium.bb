@@ -572,16 +572,8 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   return false;
 }
 
-bool LayerTreeHostImpl::HaveWheelEventHandlersAt(
-    const gfx::Point& viewport_point) {
-  gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
-
-  LayerImpl* layer_impl =
-      active_tree_->FindLayerWithWheelHandlerThatIsHitByPoint(
-          device_viewport_point);
-
-  return layer_impl != NULL;
+bool LayerTreeHostImpl::HaveWheelEventHandlers() const {
+  return active_tree_->have_wheel_event_handlers();
 }
 
 static LayerImpl* NextLayerInScrollOrder(LayerImpl* layer) {

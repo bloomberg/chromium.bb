@@ -320,14 +320,6 @@ bool WebLayerImpl::userScrollableVertical() const {
   return layer_->user_scrollable_vertical();
 }
 
-void WebLayerImpl::setHaveWheelEventHandlers(bool have_wheel_event_handlers) {
-  layer_->SetHaveWheelEventHandlers(have_wheel_event_handlers);
-}
-
-bool WebLayerImpl::haveWheelEventHandlers() const {
-  return layer_->have_wheel_event_handlers();
-}
-
 void WebLayerImpl::setHaveScrollEventHandlers(bool have_scroll_event_handlers) {
   layer_->SetHaveScrollEventHandlers(have_scroll_event_handlers);
 }

@@ -45,6 +45,7 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/ChromeClient.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -79,7 +80,7 @@ static PassRefPtr<TypeBuilder::LayerTree::ScrollRect> buildScrollRect(const WebR
     return scrollRectObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > buildScrollRectsForLayer(GraphicsLayer* graphicsLayer)
+static PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>> buildScrollRectsForLayer(GraphicsLayer* graphicsLayer, bool reportWheelScrollers)
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > scrollRects = TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>::create();
     WebLayer* webLayer = graphicsLayer->platformLayer();
@@ -89,14 +90,14 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > build
     for (size_t i = 0; i < webLayer->touchEventHandlerRegion().size(); ++i) {
         scrollRects->addItem(buildScrollRect(webLayer->touchEventHandlerRegion()[i], TypeBuilder::LayerTree::ScrollRect::Type::TouchEventHandler));
     }
-    if (webLayer->haveWheelEventHandlers()) {
+    if (reportWheelScrollers) {
         WebRect webRect(webLayer->position().x, webLayer->position().y, webLayer->bounds().width, webLayer->bounds().height);
         scrollRects->addItem(buildScrollRect(webRect, TypeBuilder::LayerTree::ScrollRect::Type::WheelEventHandler));
     }
     return scrollRects->length() ? scrollRects.release() : nullptr;
 }
 
-static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId)
+static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId, bool reportWheelEventListeners)
 {
     WebLayer* webLayer = graphicsLayer->platformLayer();
     RefPtr<TypeBuilder::LayerTree::Layer> layerObject = TypeBuilder::LayerTree::Layer::create()
@@ -138,7 +139,7 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
             layerObject->setAnchorY(0.0);
         layerObject->setAnchorZ(transformOrigin.z());
     }
-    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > scrollRects = buildScrollRectsForLayer(graphicsLayer);
+    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect>> scrollRects = buildScrollRectsForLayer(graphicsLayer, reportWheelEventListeners);
     if (scrollRects)
         layerObject->setScrollRects(scrollRects.release());
     return layerObject;
@@ -210,7 +211,10 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
     LayerIdToNodeIdMap layerIdToNodeIdMap;
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
     buildLayerIdToNodeIdMap(compositor->rootLayer(), layerIdToNodeIdMap);
-    gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers);
+    int scrollingLayerId = m_inspectedFrames->root()->view()->layerForScrolling()->platformLayer()->id();
+    bool haveWheelEventHandlers = m_inspectedFrames->root()->chromeClient().haveWheelEventHandlers();
+
+    gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers, haveWheelEventHandlers, scrollingLayerId);
     return layers.release();
 }
 
@@ -233,16 +237,16 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(PaintLayer* root, LayerIdT
     }
 }
 
-void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
+void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer>>& layers, bool hasWheelEventHandlers, int scrollingLayerId)
 {
     int layerId = root->platformLayer()->id();
     if (m_pageOverlayLayerIds.find(layerId) != WTF::kNotFound)
         return;
-    layers->addItem(buildObjectForLayer(root, layerIdToNodeIdMap.get(layerId)));
+    layers->addItem(buildObjectForLayer(root, layerIdToNodeIdMap.get(layerId), hasWheelEventHandlers && layerId == scrollingLayerId));
     if (GraphicsLayer* replica = root->replicaLayer())
-        gatherGraphicsLayers(replica, layerIdToNodeIdMap, layers);
+        gatherGraphicsLayers(replica, layerIdToNodeIdMap, layers, hasWheelEventHandlers, scrollingLayerId);
     for (size_t i = 0, size = root->children().size(); i < size; ++i)
-        gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
+        gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers, hasWheelEventHandlers, scrollingLayerId);
 }
 
 int InspectorLayerTreeAgent::idForNode(Node* node)

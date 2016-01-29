@@ -680,19 +680,6 @@ void ScrollingCoordinator::willDestroyLayer(PaintLayer* layer)
     m_layersWithTouchRects.remove(layer);
 }
 
-void ScrollingCoordinator::updateHaveWheelEventHandlers()
-{
-    ASSERT(isMainThread());
-    ASSERT(m_page);
-    if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
-        return;
-
-    if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
-        bool haveHandlers = m_page->frameHost().eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::WheelEvent);
-        scrollLayer->setHaveWheelEventHandlers(haveHandlers);
-    }
-}
-
 void ScrollingCoordinator::updateHaveScrollEventHandlers()
 {
     ASSERT(isMainThread());
@@ -960,7 +947,6 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
         return;
 
     notifyGeometryChanged();
-    updateHaveWheelEventHandlers();
     updateHaveScrollEventHandlers();
 }
 

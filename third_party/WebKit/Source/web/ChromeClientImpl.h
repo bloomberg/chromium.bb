@@ -112,6 +112,8 @@ public:
     void setCursor(const Cursor&, LocalFrame* localRoot) override;
     Cursor lastSetCursorForTesting() const override;
     void needTouchEvents(bool needTouchEvents) override;
+    void setHaveWheelEventHandlers(bool hasEventHandlers) override;
+    bool haveWheelEventHandlers() const override;
     void setTouchAction(TouchAction) override;
 
     GraphicsLayerFactory* graphicsLayerFactory() const override;

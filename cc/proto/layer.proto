@@ -88,7 +88,6 @@ message BaseLayerProperties {
   // repeated FilterOperation background_filters = 13;
   optional bool masks_to_bounds = 14;
   optional uint32 main_thread_scrolling_reasons = 15;
-  optional bool have_wheel_event_handlers = 16;
   optional bool have_scroll_event_handlers = 17;
   optional Region non_fast_scrollable_region = 18;
   optional Region touch_event_handler_region = 19;
