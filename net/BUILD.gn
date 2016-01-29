@@ -130,8 +130,6 @@ if (!is_nacl) {
 
   if (!use_kerberos) {
     net_shared_sources -= [
-      "http/http_auth_gssapi_posix.cc",
-      "http/http_auth_gssapi_posix.h",
       "http/http_auth_handler_negotiate.cc",
       "http/http_auth_handler_negotiate.h",
     ]
@@ -258,10 +256,15 @@ if (!is_nacl) {
         "cert/cert_database_openssl.cc",
         "cert/cert_verify_proc_openssl.cc",
         "cert/test_root_certs_openssl.cc",
-        "http/http_auth_gssapi_posix.cc",
-        "http/http_auth_gssapi_posix.h",
       ]
     }
+  }
+
+  if (!use_kerberos || is_android) {
+    net_shared_sources -= [
+      "http/http_auth_gssapi_posix.cc",
+      "http/http_auth_gssapi_posix.h",
+    ]
   }
 
   if (use_glib && use_gconf && !is_chromeos) {

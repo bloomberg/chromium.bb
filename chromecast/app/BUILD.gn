@@ -30,6 +30,8 @@ source_set("cast_crash_client") {
   sources = [
     "android/cast_crash_reporter_client_android.cc",
     "android/cast_crash_reporter_client_android.h",
+    "android/crash_handler.cc",
+    "android/crash_handler.h",
     "linux/cast_crash_reporter_client.cc",
     "linux/cast_crash_reporter_client.h",
   ]
@@ -37,11 +39,20 @@ source_set("cast_crash_client") {
   deps = [
     "//base",
     "//chromecast/base",
+    "//chromecast/common",
     "//chromecast/crash",
     "//components/crash/content/app",
     "//components/crash/content/app:lib",
     "//content/public/common",
   ]
+
+  if (is_android) {
+    deps += [
+      "//breakpad:client",
+      "//chromecast/base:cast_version",
+      "//chromecast/browser:jni_headers",
+    ]
+  }
 }
 
 # TODO(kmackay) Consider renaming this.
@@ -62,6 +73,7 @@ test("cast_shell_unittests") {
   ]
 }
 
+# GYP target: chromecast.gyp:cast_shell_resources
 grit("resources") {
   source = "//chromecast/app/resources/shell_resources.grd"
 

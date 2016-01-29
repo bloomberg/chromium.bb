@@ -10,10 +10,6 @@ source_set("media") {
     "cast_browser_cdm_factory.h",
     "cast_media_client_android.cc",
     "cast_media_client_android.h",
-    "cma_media_pipeline_client.cc",
-    "cma_media_pipeline_client.h",
-    "cma_message_filter_host.cc",
-    "cma_message_filter_host.h",
     "media_pipeline_host.cc",
     "media_pipeline_host.h",
   ]
@@ -30,4 +26,15 @@ source_set("media") {
     "//content/public/browser",
     "//media",
   ]
+
+  if (is_android) {
+    deps += [ "//components/cdm/browser" ]
+  } else {
+    sources += [
+      "cma_media_pipeline_client.cc",
+      "cma_media_pipeline_client.h",
+      "cma_message_filter_host.cc",
+      "cma_message_filter_host.h",
+    ]
+  }
 }

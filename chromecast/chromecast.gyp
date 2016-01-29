@@ -180,10 +180,10 @@
         '../breakpad/src',
       ],
       'sources' : [
-        'app/android/crash_handler.cc',
-        'app/android/crash_handler.h',
         'app/android/cast_crash_reporter_client_android.cc',
         'app/android/cast_crash_reporter_client_android.h',
+        'app/android/crash_handler.cc',
+        'app/android/crash_handler.h',
         'app/linux/cast_crash_reporter_client.cc',
         'app/linux/cast_crash_reporter_client.h',
       ],
@@ -230,6 +230,7 @@
         }],
       ],
     },
+    # GN target: //chromecast/app:resources
     {
       'target_name': 'cast_shell_resources',
       'type': 'none',
@@ -248,6 +249,7 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
+    # GN target: //chromecast:cast_shell_pak
     {
       'target_name': 'cast_shell_pak',
       'type': 'none',
@@ -311,6 +313,7 @@
     },  # end of target 'cast_shell_pak'
     # This target contains all content-embedder implementation that is
     # non-platform-specific.
+    # GN target: This target is dissolved into many targets on GN.
     {
       'target_name': 'cast_shell_common',
       'type': '<(component)',
@@ -463,6 +466,7 @@
         }],
       ],
     },
+    # GN target: //chromecast/base:cast_sys_info
     {
       'target_name': 'cast_sys_info',
       'type': '<(component)',
@@ -491,6 +495,7 @@
         }],
       ],
     },  # end of target 'cast_sys_info'
+    # GN target: //chromecast/base:cast_version_header
     {
       'target_name': 'cast_version_header',
       'type': 'none',

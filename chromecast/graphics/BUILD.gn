@@ -3,18 +3,21 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//build/config/ui.gni")
 
-source_set("graphics") {
-  sources = [
-    "cast_screen.cc",
-    "cast_screen.h",
-  ]
+if (use_aura) {
+  source_set("graphics") {
+    sources = [
+      "cast_screen.cc",
+      "cast_screen.h",
+    ]
 
-  deps = [
-    "//ui/aura",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
+    deps = [
+      "//ui/aura",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+    ]
+  }
 }
 
 shared_library("libcast_graphics_1.0") {

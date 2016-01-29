@@ -7,8 +7,16 @@ import("//media/media_options.gni")
 import("//testing/test.gni")
 import("//build/config/ui.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("browser") {
   sources = [
+    "android/cast_window_android.cc",
+    "android/cast_window_android.h",
+    "android/cast_window_manager.cc",
+    "android/cast_window_manager.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
     "cast_browser_main_parts.cc",
@@ -61,18 +69,22 @@ source_set("browser") {
     ]
   }
 
+  public_deps = [
+    "//chromecast/browser/media",
+  ]
+
   deps = [
     "//base",
     "//base:i18n",
     "//base:prefs",
     "//cc",
+    "//chromecast/app:cast_crash_client",
     "//chromecast/app:chromecast_settings",
     "//chromecast/app:resources",
     "//chromecast/base",
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
     "//chromecast/common",
-    "//chromecast/graphics",
     "//chromecast/media",
     "//chromecast/net",
     "//chromecast/service",
@@ -96,25 +108,27 @@ source_set("browser") {
     "//ipc",
     "//media",
     "//net",
-    "//ui/aura",
     "//ui/base",
     "//ui/compositor",
     "//ui/gl",
   ]
 
-  if (!is_android) {
+  if (is_linux) {
     sources += [
       "metrics/external_metrics.cc",
       "metrics/external_metrics.h",
     ]
 
-    public_deps = [
-      "//chromecast/browser/media",
-    ]
-
     deps += [
       "//build/linux:fontconfig",
+      "//chromecast/graphics",
       "//components/metrics:serialization",
+      "//ui/aura",
+    ]
+  } else if (is_android) {
+    deps += [
+      ":jni_headers",
+      "//components/external_video_surface",
     ]
   }
 
@@ -185,5 +199,19 @@ test("cast_shell_browser_test") {
     # Link default libcast_media_1.0 statically not to link dummy one
     # dynamically for public unittests.
     deps += [ "//chromecast/media/base:libcast_media_1.0_default_core" ]
+  }
+}
+
+if (is_android) {
+  generate_jni("jni_headers") {
+    sources = [
+      "android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java",
+      "android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java",
+      "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
+      "android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java",
+      "android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java",
+    ]
+
+    jni_package = "chromecast"
   }
 }

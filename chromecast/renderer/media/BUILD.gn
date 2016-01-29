@@ -4,60 +4,75 @@
 
 import("//testing/test.gni")
 
+# All Chromecast platforms except Android should support the CMA pipeline by
+# default for media playback.
+enable_cma = !is_android
+
 source_set("media") {
   sources = [
-    "audio_pipeline_proxy.cc",
-    "audio_pipeline_proxy.h",
     "capabilities_message_filter.cc",
     "capabilities_message_filter.h",
-    "chromecast_media_renderer_factory.cc",
-    "chromecast_media_renderer_factory.h",
-    "cma_message_filter_proxy.cc",
-    "cma_message_filter_proxy.h",
-    "cma_renderer.cc",
-    "cma_renderer.h",
-    "demuxer_stream_adapter.cc",
-    "demuxer_stream_adapter.h",
-    "hole_frame_factory.cc",
-    "hole_frame_factory.h",
-    "media_channel_proxy.cc",
-    "media_channel_proxy.h",
-    "media_pipeline_proxy.cc",
-    "media_pipeline_proxy.h",
-    "video_pipeline_proxy.cc",
-    "video_pipeline_proxy.h",
   ]
 
   deps = [
     "//base",
     "//chromecast/common/media",
-    "//chromecast/media",
-    "//content/public/renderer",
-    "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/common",
+    "//chromecast/media/base",
     "//ipc",
-    "//media",
-    "//ui/gfx/geometry",
   ]
+
+  if (enable_cma) {
+    sources += [
+      "audio_pipeline_proxy.cc",
+      "audio_pipeline_proxy.h",
+      "chromecast_media_renderer_factory.cc",
+      "chromecast_media_renderer_factory.h",
+      "cma_message_filter_proxy.cc",
+      "cma_message_filter_proxy.h",
+      "cma_renderer.cc",
+      "cma_renderer.h",
+      "demuxer_stream_adapter.cc",
+      "demuxer_stream_adapter.h",
+      "hole_frame_factory.cc",
+      "hole_frame_factory.h",
+      "media_channel_proxy.cc",
+      "media_channel_proxy.h",
+      "media_pipeline_proxy.cc",
+      "media_pipeline_proxy.h",
+      "video_pipeline_proxy.cc",
+      "video_pipeline_proxy.h",
+    ]
+
+    deps += [
+      "//chromecast/media",
+      "//content/public/renderer",
+      "//gpu/command_buffer/client:gles2_interface",
+      "//gpu/command_buffer/common",
+      "//media",
+      "//ui/gfx/geometry",
+    ]
+  }
 }
 
-# GYP target: chromecast_tests.gypi:cast_renderer_media_unittests
-test("cast_renderer_media_unittests") {
-  sources = [
-    "demuxer_stream_adapter_unittest.cc",
-    "demuxer_stream_for_test.cc",
-    "demuxer_stream_for_test.h",
-    "multi_demuxer_stream_adapter_unittest.cc",
-  ]
+if (enable_cma) {
+  # GYP target: chromecast_tests.gypi:cast_renderer_media_unittests
+  test("cast_renderer_media_unittests") {
+    sources = [
+      "demuxer_stream_adapter_unittest.cc",
+      "demuxer_stream_for_test.cc",
+      "demuxer_stream_for_test.h",
+      "multi_demuxer_stream_adapter_unittest.cc",
+    ]
 
-  deps = [
-    ":media",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//chromecast/media/cma/base",
-    "//chromecast/public/media",
-    "//media",
-    "//testing/gtest:gtest",
-  ]
+    deps = [
+      ":media",
+      "//base",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//chromecast/media/cma/base",
+      "//chromecast/public/media",
+      "//media",
+      "//testing/gtest:gtest",
+    ]
+  }
 }
