@@ -137,8 +137,16 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
 
     ScopedJavaLocalRef<jstring> description =
         ConvertUTF8ToJavaString(env, identity_info.identity_status_description);
-    base::string16 certificate_label =
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
+    base::string16 certificate_label;
+
+    // Only show the certificate viewer link if the connection actually used a
+    // certificate.
+    if (identity_info.identity_status !=
+        WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT) {
+      certificate_label =
+          l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
+    }
+
     Java_ConnectionInfoPopup_addCertificateSection(
         env,
         popup_jobject_.obj(),
