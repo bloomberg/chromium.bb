@@ -34,7 +34,9 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -123,6 +125,10 @@ const char kCpuOveruseEncodeUsage[] = "googCpuOveruseEncodeUsage";
 const char kHighStartBitrate[] = "googHighStartBitrate";
 const char kPayloadPadding[] = "googPayloadPadding";
 // End of names from libjingle
+// Names that have been used in the past, but should now be ignored.
+// Kept around for backwards compatibility.
+// https://crbug.com/579729
+const char kGoogLeakyBucket[] = "googLeakyBucket";
 
 // Names used for testing.
 const char kTestConstraint1[] = "valid_and_supported_1";
@@ -247,7 +253,7 @@ static bool toBoolean(const WebString& asWebString)
     // https://crbug.com/576582
 }
 
-static void parseOldStyleNames(const WebVector<WebMediaConstraint>& oldNames, WebMediaTrackConstraintSet& result, MediaErrorState& errorState)
+static void parseOldStyleNames(ExecutionContext* context, const WebVector<WebMediaConstraint>& oldNames, bool reportUnknownNames, WebMediaTrackConstraintSet& result, MediaErrorState& errorState)
 {
     for (const WebMediaConstraint& constraint : oldNames) {
         if (constraint.m_name.equals(kMinAspectRatio)) {
@@ -353,32 +359,44 @@ static void parseOldStyleNames(const WebVector<WebMediaConstraint>& oldNames, We
             result.googHighStartBitrate.setExact(atoi(constraint.m_value.utf8().c_str()));
         } else if (constraint.m_name.equals(kPayloadPadding)) {
             result.googPayloadPadding.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kGoogLeakyBucket)) {
+            context->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel,
+                "Obsolete constraint named " + String(constraint.m_name)
+                + " is ignored. Please stop using it."));
         } else if (constraint.m_name.equals(kTestConstraint1)
             || constraint.m_name.equals(kTestConstraint2)) {
             // These constraints are only for testing parsing.
             // Values 0 and 1 are legal, all others are a ConstraintError.
-            if (!constraint.m_value.equals("0") && !constraint.m_value.equals("1"))
+            if (!constraint.m_value.equals("0") && !constraint.m_value.equals("1")) {
                 errorState.throwConstraintError("Illegal value for constraint", constraint.m_name);
+            }
         } else {
-            // TODO(hta): UMA stats for unknown constraints passed.
-            // https://crbug.com/576613
-            WTF_LOG(Media, "Unknown constraint name detected");
-            errorState.throwConstraintError("Unknown name of constraint detected", constraint.m_name);
+            if (reportUnknownNames) {
+                // TODO(hta): UMA stats for unknown constraints passed.
+                // https://crbug.com/576613
+                context->addConsoleMessage(
+                    ConsoleMessage::create(
+                        DeprecationMessageSource,
+                        WarningMessageLevel,
+                        "Unknown constraint named "
+                        + String(constraint.m_name) + " rejected"));
+                errorState.throwConstraintError("Unknown name of constraint detected", constraint.m_name);
+            }
         }
     }
 }
 
-static WebMediaConstraints createFromNamedConstraints(WebVector<WebMediaConstraint>& mandatory, const WebVector<WebMediaConstraint>& optional, MediaErrorState& errorState)
+static WebMediaConstraints createFromNamedConstraints(ExecutionContext* context, WebVector<WebMediaConstraint>& mandatory, const WebVector<WebMediaConstraint>& optional, MediaErrorState& errorState)
 {
     WebMediaTrackConstraintSet basic;
     WebMediaTrackConstraintSet advanced;
     WebMediaConstraints constraints;
-    parseOldStyleNames(mandatory, basic, errorState);
+    parseOldStyleNames(context, mandatory, true, basic, errorState);
     if (errorState.hadException())
         return constraints;
-    // We ignore errors in optional constraints.
+    // We ignore unknow names and syntax errors in optional constraints.
     MediaErrorState ignoredErrorState;
-    parseOldStyleNames(optional, advanced, ignoredErrorState);
+    parseOldStyleNames(context, optional, false, advanced, ignoredErrorState);
     WebVector<WebMediaTrackConstraintSet> advancedVector(&advanced, 1);
     // Use the 4-argument initializer until Chrome has been converted.
     constraints.initialize(optional, mandatory, basic, advancedVector);
@@ -386,7 +404,7 @@ static WebMediaConstraints createFromNamedConstraints(WebVector<WebMediaConstrai
 }
 
 // Deprecated.
-WebMediaConstraints create(const ExecutionContext* context, const Dictionary& constraintsDictionary, MediaErrorState& errorState)
+WebMediaConstraints create(ExecutionContext* context, const Dictionary& constraintsDictionary, MediaErrorState& errorState)
 {
     WebVector<WebMediaConstraint> optional;
     WebVector<WebMediaConstraint> mandatory;
@@ -395,7 +413,7 @@ WebMediaConstraints create(const ExecutionContext* context, const Dictionary& co
         return WebMediaConstraints();
     }
     UseCounter::count(context, UseCounter::MediaStreamConstraintsFromDictionary);
-    return createFromNamedConstraints(mandatory, optional, errorState);
+    return createFromNamedConstraints(context, mandatory, optional, errorState);
 }
 
 void copyLongConstraint(const ConstrainLongRange& blinkForm, LongConstraint& webForm)
@@ -493,7 +511,7 @@ void copyConstraints(const MediaTrackConstraintSet& constraintsIn, WebMediaTrack
     }
 }
 
-WebMediaConstraints create(const ExecutionContext* context, const MediaTrackConstraintSet& constraintsIn, MediaErrorState& errorState)
+WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraintSet& constraintsIn, MediaErrorState& errorState)
 {
     WebMediaConstraints constraints;
     WebMediaTrackConstraintSet constraintBuffer;
@@ -513,7 +531,7 @@ WebMediaConstraints create(const ExecutionContext* context, const MediaTrackCons
             return WebMediaConstraints();
         }
         UseCounter::count(context, UseCounter::MediaStreamConstraintsNameValue);
-        return createFromNamedConstraints(mandatory, optional, errorState);
+        return createFromNamedConstraints(context, mandatory, optional, errorState);
     }
     UseCounter::count(context, UseCounter::MediaStreamConstraintsConformant);
     constraints.initialize(constraintBuffer, advancedBuffer);
