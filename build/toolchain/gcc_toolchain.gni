@@ -425,6 +425,10 @@ template("gcc_toolchain") {
   }
 }
 
+declare_args() {
+  clang_dir = "//third_party/llvm-build/Release+Asserts"
+}
+
 # This is a shorthand for gcc_toolchain instances based on the
 # Chromium-built version of Clang.  Only the toolchain_cpu and
 # toolchain_os variables need to be specified by the invoker, and
@@ -444,8 +448,7 @@ template("clang_toolchain") {
   }
 
   gcc_toolchain(target_name) {
-    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                         root_build_dir)
+    prefix = rebase_path(clang_dir + "/bin", root_build_dir)
     cc = "$prefix/clang"
     cxx = "$prefix/clang++"
     ld = cxx
