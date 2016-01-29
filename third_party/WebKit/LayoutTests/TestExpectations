@@ -41,6 +41,10 @@ crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-e
 crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html [ Timeout Failure ]
 crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_template.html [ Timeout Failure ]
 crbug.com/569901 [ Debug ] imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html [ Timeout Failure ]
+crbug.com/569901 [ Debug ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Timeout ]
+crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_doctype01.html [ Timeout ]
+crbug.com/569901 [ Debug ] fast/frames/cached-frame-counter.html [ Timeout ]
+crbug.com/569901 [ Debug ] http/tests/security/w3c/cross-origin-objects.html [ Timeout ]
 
 crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
 crbug.com/299010 [ Linux Debug ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
