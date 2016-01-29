@@ -996,8 +996,6 @@
       'weborigin/SecurityPolicy.cpp',
       'weborigin/SecurityPolicy.h',
       'win/HWndDC.h',
-      'win/SystemInfo.cpp',
-      'win/SystemInfo.h',
     ],
     'platform_test_files': [
       'ClockTest.cpp',

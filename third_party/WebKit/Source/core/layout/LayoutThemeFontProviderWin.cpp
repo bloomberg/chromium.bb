@@ -29,15 +29,8 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/win/HWndDC.h"
-#include "platform/win/SystemInfo.h"
 #include "wtf/text/WTFString.h"
 #include <windows.h>
-
-#define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(structName, member) \
-    offsetof(structName, member) + \
-    (sizeof static_cast<structName*>(nullptr)->member)
-#define NONCLIENTMETRICS_SIZE_PRE_VISTA \
-    SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 
 namespace blink {
 
@@ -59,10 +52,8 @@ static float pointsToPixels(float points)
 
 static bool getNonClientMetrics(NONCLIENTMETRICS* metrics)
 {
-    static UINT size = isWindowsVistaOrGreater() ?
-        sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
-    metrics->cbSize = size;
-    bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, size, metrics, 0);
+    metrics->cbSize = sizeof(NONCLIENTMETRICS);
+    bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), metrics, 0);
     ASSERT_UNUSED(success, success);
     return success;
 }
