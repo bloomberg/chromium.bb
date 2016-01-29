@@ -44,11 +44,170 @@ repack("pak") {
   output = "$root_out_dir/blimp_engine.pak"
 }
 
+source_set("app") {
+  sources = [
+    "app/blimp_browser_main_parts.cc",
+    "app/blimp_browser_main_parts.h",
+    "app/blimp_content_browser_client.cc",
+    "app/blimp_content_browser_client.h",
+    "app/blimp_content_main_delegate.cc",
+    "app/blimp_content_main_delegate.h",
+    "app/blimp_content_renderer_client.cc",
+    "app/blimp_content_renderer_client.h",
+    "app/blimp_engine_config.cc",
+    "app/blimp_engine_config.h",
+    "app/blimp_network_delegate.cc",
+    "app/blimp_network_delegate.h",
+    "app/blimp_permission_manager.cc",
+    "app/blimp_permission_manager.h",
+    "app/blimp_url_request_context_getter.cc",
+    "app/blimp_url_request_context_getter.h",
+    "app/switches.cc",
+    "app/switches.h",
+  ]
+
+  deps = [
+    ":app_ui",
+    ":common",
+    ":session",
+    "//base",
+    "//blimp/common/proto",
+    "//components/web_cache/renderer",
+    "//content",
+    "//content/public/app:both",
+    "//content/public/browser",
+    "//content/public/common",
+    "//content/public/renderer",
+    "//content/public/utility",
+  ]
+}
+
+source_set("app_ui") {
+  sources = [
+    "app/ui/blimp_layout_manager.cc",
+    "app/ui/blimp_layout_manager.h",
+    "app/ui/blimp_screen.cc",
+    "app/ui/blimp_screen.h",
+  ]
+
+  if (!use_x11) {
+    sources += [
+      "app/ui/blimp_ui_context_factory.cc",
+      "app/ui/blimp_ui_context_factory.h",
+      "app/ui/blimp_window_tree_host.cc",
+      "app/ui/blimp_window_tree_host.h",
+    ]
+  }
+
+  deps = [
+    "//ui/aura",
+    "//ui/gfx",
+    "//ui/platform_window",
+  ]
+
+  if (!use_x11) {
+    deps += [
+      "//blimp/common:blimp_common",
+      "//cc",
+      "//cc/surfaces",
+      "//ui/compositor",
+      "//ui/events",
+      "//ui/platform_window",
+      "//ui/platform_window/stub/",
+    ]
+  }
+}
+
+source_set("common") {
+  sources = [
+    "common/blimp_browser_context.cc",
+    "common/blimp_browser_context.h",
+    "common/blimp_content_client.cc",
+    "common/blimp_content_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/version_info",
+    "//content/public/common",
+    "//ui/base",
+  ]
+}
+
+source_set("feature") {
+  sources = [
+    "feature/engine_render_widget_feature.cc",
+    "feature/engine_render_widget_feature.h",
+  ]
+
+  deps = [
+    "//base",
+    "//blimp/common/proto",
+    "//ui/base",
+    "//ui/base/ime",
+    "//ui/resources",
+    "//ui/wm",
+  ]
+}
+
+source_set("session") {
+  sources = [
+    "session/blimp_engine_session.cc",
+    "session/blimp_engine_session.h",
+  ]
+
+  deps = [
+    ":feature",
+    "//base",
+    "//blimp/common:blimp_common",
+    "//blimp/common/proto",
+    "//blimp/net:blimp_net",
+    "//content",
+    "//net",
+  ]
+}
+
+source_set("app_unit_tests") {
+  testonly = true
+
+  sources = [
+    "app/blimp_engine_config_unittest.cc",
+  ]
+
+  deps = [
+    ":app",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("feature_unit_tests") {
+  testonly = true
+
+  sources = [
+    "feature/engine_render_widget_feature_unittest.cc",
+  ]
+
+  deps = [
+    ":feature",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//blimp/common/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
   deps = [
-    "//blimp/engine/browser:unit_tests",
+    ":app_unit_tests",
+    ":feature_unit_tests",
   ]
 }
 
@@ -59,9 +218,10 @@ if (is_linux) {
     ]
 
     deps = [
+      ":app",
       ":pak",
-      "//blimp/engine/app",
       "//blimp/net:blimp_net",
+      "//content/public/app:both",
     ]
   }
 
