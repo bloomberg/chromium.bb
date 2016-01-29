@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_METRICS_IOS_STABILITY_METRICS_PROVIDER_H_
-#define IOS_CHROME_BROWSER_METRICS_IOS_STABILITY_METRICS_PROVIDER_H_
+#ifndef IOS_CHROME_BROWSER_METRICS_MOBILE_SESSION_SHUTDOWN_METRICS_PROVIDER_H_
+#define IOS_CHROME_BROWSER_METRICS_MOBILE_SESSION_SHUTDOWN_METRICS_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,12 +25,11 @@ enum MobileSessionShutdownType {
   MOBILE_SESSION_SHUTDOWN_TYPE_COUNT,
 };
 
-// TODO(crbug.com/538547): Rename this class to something more specific.
-class IOSStabilityMetricsProvider : public metrics::MetricsProvider {
+class MobileSessionShutdownMetricsProvider : public metrics::MetricsProvider {
  public:
-  explicit IOSStabilityMetricsProvider(
+  explicit MobileSessionShutdownMetricsProvider(
       metrics::MetricsService* metrics_service);
-  ~IOSStabilityMetricsProvider() override;
+  ~MobileSessionShutdownMetricsProvider() override;
 
   // metrics::MetricsProvider
   bool HasInitialStabilityMetrics() override;
@@ -58,7 +57,7 @@ class IOSStabilityMetricsProvider : public metrics::MetricsProvider {
 
  private:
   metrics::MetricsService* metrics_service_;
-  DISALLOW_COPY_AND_ASSIGN(IOSStabilityMetricsProvider);
+  DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProvider);
 };
 
-#endif  // IOS_CHROME_BROWSER_METRICS_IOS_STABILITY_METRICS_PROVIDER_H_
+#endif  // IOS_CHROME_BROWSER_METRICS_MOBILE_SESSION_SHUTDOWN_METRICS_PROVIDER_H_

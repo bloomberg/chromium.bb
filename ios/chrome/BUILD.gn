@@ -17,7 +17,7 @@ test("ios_chrome_unittests") {
     "browser/installation_notifier_unittest.mm",
     "browser/metrics/ios_chrome_metrics_service_accessor_unittest.cc",
     "browser/metrics/ios_chrome_stability_metrics_provider_unittest.cc",
-    "browser/metrics/ios_stability_metrics_provider_unittest.mm",
+    "browser/metrics/mobile_session_shutdown_metrics_provider_unittest.mm",
     "browser/metrics/previous_session_info_unittest.mm",
     "browser/net/cookie_util_unittest.mm",
     "browser/net/image_fetcher_unittest.mm",

@@ -42,7 +42,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
-#include "ios/chrome/browser/metrics/ios_stability_metrics_provider.h"
+#include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #include "ios/chrome/browser/ui/browser_otr_state.h"
@@ -251,14 +251,9 @@ void IOSChromeMetricsServiceClient::Initialize() {
           SigninStatusMetricsProvider::CreateInstance(make_scoped_ptr(
               new IOSChromeSigninStatusMetricsProviderDelegate))));
 
-  scoped_ptr<metrics::MetricsProvider> ios_stability_metrics_provider(
-      new IOSStabilityMetricsProvider(metrics_service_.get()));
-  if (ios_stability_metrics_provider) {
-    metrics_service_->RegisterMetricsProvider(
-        std::move(ios_stability_metrics_provider));
-  } else {
-    NOTREACHED() << "No IOSStabilityMetricsProvider registered.";
-  }
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new MobileSessionShutdownMetricsProvider(metrics_service_.get())));
 }
 
 void IOSChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {

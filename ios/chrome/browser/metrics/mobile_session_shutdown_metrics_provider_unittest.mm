@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/metrics/ios_stability_metrics_provider.h"
+#include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -24,28 +24,28 @@ bool IsMetricsReportingEnabled() {
 
 }  // namespace
 
-// An IOSStabilityMetricsProvider that returns fake values for the last session
-// environment query methods.
-class IOSStabilityMetricsProviderForTesting
-    : public IOSStabilityMetricsProvider {
+// An MobileSessionShutdownMetricsProvider that returns fake values for the last
+// session environment query methods.
+class MobileSessionShutdownMetricsProviderForTesting
+    : public MobileSessionShutdownMetricsProvider {
  public:
-  explicit IOSStabilityMetricsProviderForTesting(
+  explicit MobileSessionShutdownMetricsProviderForTesting(
       metrics::MetricsService* metrics_service)
-      : IOSStabilityMetricsProvider(metrics_service) {}
+      : MobileSessionShutdownMetricsProvider(metrics_service) {}
 
-  void SetIsFirstLaunchAfterUpgrade(bool value) {
+  void set_is_first_launch_after_upgrade(bool value) {
     is_first_launch_after_upgrade_ = value;
   }
-  void SetHasCrashLogs(bool value) { has_crash_logs_ = value; }
-  void SetHasUploadedCrashReportsInBackground(bool value) {
+  void set_has_crash_logs(bool value) { has_crash_logs_ = value; }
+  void set_has_uploaded_crash_reports_in_background(bool value) {
     has_uploaded_crash_reports_in_background_ = value;
   }
-  void SetReceivedMemoryWarningBeforeLastShutdown(bool value) {
+  void set_received_memory_warning_before_last_shutdown(bool value) {
     received_memory_warning_before_last_shutdown_ = value;
   }
 
  protected:
-  // IOSStabilityMetricsProvider:
+  // MobileSessionShutdownMetricsProvider:
   bool IsFirstLaunchAfterUpgrade() override {
     return is_first_launch_after_upgrade_;
   }
@@ -64,12 +64,13 @@ class IOSStabilityMetricsProviderForTesting
   bool has_uploaded_crash_reports_in_background_;
   bool received_memory_warning_before_last_shutdown_;
 
-  DISALLOW_COPY_AND_ASSIGN(IOSStabilityMetricsProviderForTesting);
+  DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProviderForTesting);
 };
 
-class IOSStabilityMetricsProviderTest : public testing::TestWithParam<int> {
+class MobileSessionShutdownMetricsProviderTest
+    : public testing::TestWithParam<int> {
  public:
-  IOSStabilityMetricsProviderTest() {
+  MobileSessionShutdownMetricsProviderTest() {
     metrics::MetricsService::RegisterPrefs(local_state_.registry());
   }
 
@@ -78,25 +79,25 @@ class IOSStabilityMetricsProviderTest : public testing::TestWithParam<int> {
   metrics::TestMetricsServiceClient metrics_client_;
   scoped_ptr<metrics::MetricsStateManager> metrics_state_;
   scoped_ptr<metrics::MetricsService> metrics_service_;
-  scoped_ptr<IOSStabilityMetricsProviderForTesting> metrics_provider_;
+  scoped_ptr<MobileSessionShutdownMetricsProviderForTesting> metrics_provider_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IOSStabilityMetricsProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProviderTest);
 };
 
 // Verifies that a sample is recorded in the correct bucket of the shutdown type
 // histogram when ProvideStabilityMetrics is invoked.
 //
 // This parameterized test receives a parameter in the range [0, 32), which is
-// used to generate values for five booleans based on the binary
-// representation of the parameter. The bits are assigned as follows (from
-// least significant to most significant):
+// used to generate values for five booleans based on the binary representation
+// of the parameter. The bits are assigned as follows (from least significant to
+// most significant):
 //  - received memory warning;
 //  - crash log present;
 //  - uploaded crash reports in background;
 //  - last shutdown was clean;
 //  - first launch after upgrade.
-TEST_P(IOSStabilityMetricsProviderTest, ProvideStabilityMetrics) {
+TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   const bool received_memory_warning = GetParam() % 2;
   const bool has_crash_logs = (GetParam() >> 1) % 2;
   const bool has_uploaded_crash_reports_in_background = (GetParam() >> 2) % 2;
@@ -153,16 +154,16 @@ TEST_P(IOSStabilityMetricsProviderTest, ProvideStabilityMetrics) {
       metrics_state_.get(), &metrics_client_, &local_state_));
 
   // Create the metrics provider to test.
-  metrics_provider_.reset(
-      new IOSStabilityMetricsProviderForTesting(metrics_service_.get()));
+  metrics_provider_.reset(new MobileSessionShutdownMetricsProviderForTesting(
+      metrics_service_.get()));
 
   // Setup the metrics provider for the current test.
-  metrics_provider_->SetIsFirstLaunchAfterUpgrade(
+  metrics_provider_->set_is_first_launch_after_upgrade(
       is_first_launch_after_upgrade);
-  metrics_provider_->SetReceivedMemoryWarningBeforeLastShutdown(
+  metrics_provider_->set_received_memory_warning_before_last_shutdown(
       received_memory_warning);
-  metrics_provider_->SetHasCrashLogs(has_crash_logs);
-  metrics_provider_->SetHasUploadedCrashReportsInBackground(
+  metrics_provider_->set_has_crash_logs(has_crash_logs);
+  metrics_provider_->set_has_uploaded_crash_reports_in_background(
       has_uploaded_crash_reports_in_background);
 
   // Create a histogram tester for verifying samples written to the shutdown
@@ -177,5 +178,5 @@ TEST_P(IOSStabilityMetricsProviderTest, ProvideStabilityMetrics) {
 }
 
 INSTANTIATE_TEST_CASE_P(/* No InstantiationName */,
-                        IOSStabilityMetricsProviderTest,
+                        MobileSessionShutdownMetricsProviderTest,
                         testing::Range(0, 32));

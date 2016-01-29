@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/metrics/ios_stability_metrics_provider.h"
+#include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 
 #include <Foundation/Foundation.h>
 
@@ -23,31 +23,30 @@ void LogShutdownType(MobileSessionShutdownType type) {
 
 }  // namespace
 
-IOSStabilityMetricsProvider::IOSStabilityMetricsProvider(
+MobileSessionShutdownMetricsProvider::MobileSessionShutdownMetricsProvider(
     metrics::MetricsService* metrics_service)
     : metrics_service_(metrics_service) {
   DCHECK(metrics_service_);
 }
 
-IOSStabilityMetricsProvider::~IOSStabilityMetricsProvider() {
-}
+MobileSessionShutdownMetricsProvider::~MobileSessionShutdownMetricsProvider() {}
 
-bool IOSStabilityMetricsProvider::HasInitialStabilityMetrics() {
+bool MobileSessionShutdownMetricsProvider::HasInitialStabilityMetrics() {
   return true;
 }
 
-void IOSStabilityMetricsProvider::ProvideInitialStabilityMetrics(
+void MobileSessionShutdownMetricsProvider::ProvideInitialStabilityMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
-  // If this is the first launch after an upgrade, existing crash reports
-  // may have been deleted before this code runs, so log this case in its
-  // own bucket.
+  // If this is the first launch after an upgrade, existing crash reports may
+  // have been deleted before this code runs, so log this case in its own
+  // bucket.
   if (IsFirstLaunchAfterUpgrade()) {
     LogShutdownType(FIRST_LAUNCH_AFTER_UPGRADE);
     return;
   }
 
-  // If the last app lifetime did not end with a crash, then log it as a
-  // normal shutdown while in the background.
+  // If the last app lifetime did not end with a crash, then log it as a normal
+  // shutdown while in the background.
   if (metrics_service_->WasLastShutdownClean()) {
     LogShutdownType(SHUTDOWN_IN_BACKGROUND);
     return;
@@ -73,19 +72,21 @@ void IOSStabilityMetricsProvider::ProvideInitialStabilityMetrics(
   LogShutdownType(shutdown_type);
 }
 
-bool IOSStabilityMetricsProvider::IsFirstLaunchAfterUpgrade() {
+bool MobileSessionShutdownMetricsProvider::IsFirstLaunchAfterUpgrade() {
   return [[PreviousSessionInfo sharedInstance] isFirstSessionAfterUpgrade];
 }
 
-bool IOSStabilityMetricsProvider::HasCrashLogs() {
+bool MobileSessionShutdownMetricsProvider::HasCrashLogs() {
   return breakpad_helper::HasReportToUpload();
 }
 
-bool IOSStabilityMetricsProvider::HasUploadedCrashReportsInBackground() {
+bool MobileSessionShutdownMetricsProvider::
+    HasUploadedCrashReportsInBackground() {
   return [CrashReportBackgroundUploader hasUploadedCrashReportsInBackground];
 }
 
-bool IOSStabilityMetricsProvider::ReceivedMemoryWarningBeforeLastShutdown() {
+bool MobileSessionShutdownMetricsProvider::
+    ReceivedMemoryWarningBeforeLastShutdown() {
   return [[PreviousSessionInfo sharedInstance]
       didSeeMemoryWarningShortlyBeforeTerminating];
 }
