@@ -41,10 +41,6 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // The RenderWidgetHost got the focus.
   virtual void RenderWidgetGotFocus() = 0;
 
-  // The RenderWidgetHost will be hidden or shown.
-  virtual void RenderWidgetWillBeHidden() = 0;
-  virtual void RenderWidgetWillBeShown() = 0;
-
   // The RenderWidgetHost forwarded a mouse event.
   virtual void RenderWidgetDidForwardMouseEvent(
       const blink::WebMouseEvent& mouse_event) = 0;

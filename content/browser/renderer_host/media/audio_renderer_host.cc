@@ -17,7 +17,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
@@ -31,7 +30,6 @@
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_manager_base.h"
@@ -50,27 +48,6 @@ namespace {
 // Accessed on IO thread.
 base::LazyInstance<media::AudioStreamsTracker> g_audio_streams_tracker =
     LAZY_INSTANCE_INITIALIZER;
-
-// TODO(aiolos): This is a temporary hack until the resource scheduler is
-// migrated to RenderFrames for the Site Isolation project. It's called in
-// response to low frequency playback state changes. http://crbug.com/472869
-int RenderFrameIdToRenderViewId(int render_process_id, int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHost* const frame =
-      RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return frame ? frame->GetRenderViewHost()->GetRoutingID() : MSG_ROUTING_NONE;
-}
-
-void NotifyResourceDispatcherOfAudioStateChange(int render_process_id,
-                                                bool is_playing,
-                                                int render_view_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (render_view_id == MSG_ROUTING_NONE || !ResourceDispatcherHostImpl::Get())
-    return;
-
-  ResourceDispatcherHostImpl::Get()->OnAudioRenderHostStreamStateChanged(
-      render_process_id, render_view_id, is_playing);
-}
 
 media::AudioParameters DummyParams() {
   return media::AudioParameters(
@@ -738,10 +715,7 @@ void AudioRendererHost::UpdateNumPlayingStreams(AudioEntry* entry,
   if (entry->playing() == is_playing)
     return;
 
-  bool should_alert_resource_scheduler;
   if (is_playing) {
-    should_alert_resource_scheduler =
-        !RenderFrameHasActiveAudio(entry->render_frame_id());
     entry->set_playing(true);
     base::AtomicRefCountInc(&num_playing_streams_);
 
@@ -755,9 +729,6 @@ void AudioRendererHost::UpdateNumPlayingStreams(AudioEntry* entry,
     }
   } else {
     entry->set_playing(false);
-    should_alert_resource_scheduler =
-        !RenderFrameHasActiveAudio(entry->render_frame_id());
-
     // Inform the RenderProcessHost when there is no more audio playing.
     if (!base::AtomicRefCountDec(&num_playing_streams_)) {
       BrowserThread::PostTask(
@@ -765,15 +736,6 @@ void AudioRendererHost::UpdateNumPlayingStreams(AudioEntry* entry,
           base::Bind(&NotifyRenderProcessHostThatAudioStateChanged,
                      render_process_id_));
     }
-  }
-
-  if (should_alert_resource_scheduler && ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderFrameIdToRenderViewId, render_process_id_,
-                   entry->render_frame_id()),
-        base::Bind(&NotifyResourceDispatcherOfAudioStateChange,
-                   render_process_id_, is_playing));
   }
 }
 

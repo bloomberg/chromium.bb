@@ -1762,10 +1762,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
-                                                         int route_id,
-                                                         bool is_visible,
-                                                         bool is_audible) {
-  scheduler_->OnClientCreated(child_id, route_id, is_visible, is_audible);
+                                                         int route_id) {
+  scheduler_->OnClientCreated(child_id, route_id);
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
@@ -1779,29 +1777,6 @@ void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
                                                               int route_id,
                                                               bool is_loading) {
   scheduler_->OnLoadingStateChanged(child_id, route_id, !is_loading);
-}
-
-void ResourceDispatcherHostImpl::OnRenderViewHostWasHidden(
-    int child_id,
-    int route_id) {
-  scheduler_->OnVisibilityChanged(child_id, route_id, false);
-}
-
-void ResourceDispatcherHostImpl::OnRenderViewHostWasShown(
-    int child_id,
-    int route_id) {
-  scheduler_->OnVisibilityChanged(child_id, route_id, true);
-}
-
-void ResourceDispatcherHostImpl::OnAudioRenderHostStreamStateChanged(
-    int child_id,
-    int route_id,
-    bool is_playing) {
-  // The ResourceDispatcherHost may have already been shut down.
-  // See http://crbug.com/455098
-  if (!scheduler_)
-    return;
-  scheduler_->OnAudibilityChanged(child_id, route_id, is_playing);
 }
 
 // This function is only used for saving feature.

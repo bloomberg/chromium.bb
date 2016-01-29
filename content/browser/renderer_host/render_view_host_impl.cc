@@ -36,7 +36,6 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
-#include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -242,21 +241,11 @@ RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
   GetProcess()->EnableSendQueue();
 
   if (ResourceDispatcherHostImpl::Get()) {
-    bool has_active_audio = false;
-    if (has_initialized_audio_host) {
-      scoped_refptr<AudioRendererHost> arh =
-          static_cast<RenderProcessHostImpl*>(GetProcess())
-              ->audio_renderer_host();
-      if (arh.get())
-        has_active_audio =
-            arh->RenderFrameHasActiveAudio(main_frame_routing_id_);
-    }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostCreated,
                    base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID(),
-                   !GetWidget()->is_hidden(), has_active_audio));
+                   GetProcess()->GetID(), GetRoutingID()));
   }
 }
 
@@ -957,26 +946,6 @@ void RenderViewHostImpl::ShutdownAndDestroy() {
 
   GetWidget()->ShutdownAndDestroyWidget(false);
   delete this;
-}
-
-void RenderViewHostImpl::RenderWidgetWillBeHidden() {
-  if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostWasHidden,
-                   base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID()));
-  }
-}
-
-void RenderViewHostImpl::RenderWidgetWillBeShown() {
-  if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostWasShown,
-                   base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID()));
-  }
 }
 
 void RenderViewHostImpl::CreateNewWindow(

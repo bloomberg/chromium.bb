@@ -40588,6 +40588,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.ClientLoadedTime.Active">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the ResourceScheduler is informed of a
@@ -40599,6 +40602,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.ClientLoadedTime.Background">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the ResourceScheduler is informed of a
@@ -40610,6 +40616,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.ClientLoadedTime.Other">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the ResourceScheduler is informed of a
@@ -40621,6 +40630,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.ClientLoadedTime.Other.SwitchedToActive">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between the last time that a Client becomes
@@ -40632,6 +40644,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.RequestTimeDeferred.Active">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time the ResourceScheduler is throttling a request after
@@ -40641,6 +40656,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.RequestTimeDeferred.Background">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time the ResourceScheduler is throttling a request after
@@ -40650,6 +40668,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.RequestTimeDeferred.Other">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time the ResourceScheduler is throttling a request after
@@ -40662,6 +40683,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.RequestTimeThrottled.Active">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the request was created and when the
@@ -40671,6 +40695,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.RequestTimeThrottled.Background">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the request was created and when the
@@ -40680,6 +40707,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourceScheduler.RequestTimeThrottled.Other">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the request was created and when the
@@ -86243,6 +86273,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourceSchedulerClientBreakDown">
+  <obsolete>
+    Deprecated 1/2016
+  </obsolete>
   <suffix name="1Client" label="One Client in the ResourceScheduler."/>
   <suffix name="Max5Clients"
       label="Two to five Clients in the ResourceScheduler."/>

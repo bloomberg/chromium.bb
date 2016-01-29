@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
-#include "base/time/time.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
@@ -39,10 +38,6 @@ enum StartMode {
 };
 
 // Field trial constants
-const char kThrottleCoalesceFieldTrial[] = "RequestThrottlingAndCoalescing";
-const char kThrottleCoalesceFieldTrialThrottle[] = "Throttle";
-const char kThrottleCoalesceFieldTrialCoalesce[] = "Coalesce";
-
 const char kRequestLimitFieldTrial[] = "OutstandingRequestLimiting";
 const char kRequestLimitFieldTrialGroupPrefix[] = "Limit";
 
@@ -56,46 +51,10 @@ const RequestAttributes kAttributeInFlight = 0x01;
 const RequestAttributes kAttributeDelayable = 0x02;
 const RequestAttributes kAttributeLayoutBlocking = 0x04;
 
-// Post ResourceScheduler histograms of the following forms:
-// If |histogram_suffix| is NULL or the empty string:
-//   ResourceScheduler.base_name.histogram_name
-// Else:
-//   ResourceScheduler.base_name.histogram_name.histogram_suffix
-void PostHistogram(const char* base_name,
-                   const char* histogram_name,
-                   const char* histogram_suffix,
-                   base::TimeDelta time) {
-  std::string histogram =
-      base::StringPrintf("ResourceScheduler.%s.%s", base_name, histogram_name);
-  if (histogram_suffix && histogram_suffix[0] != '\0')
-    histogram = histogram + "." + histogram_suffix;
-  base::HistogramBase* histogram_counter = base::Histogram::FactoryTimeGet(
-      histogram, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMinutes(5), 50,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_counter->AddTime(time);
-}
-
-// For use with PostHistogram to specify the correct string for histogram
-// suffixes based on number of Clients.
-const char* GetNumClientsString(size_t num_clients) {
-  if (num_clients == 1)
-    return "1Client";
-  else if (num_clients <= 5)
-    return "Max5Clients";
-  else if (num_clients <= 15)
-    return "Max15Clients";
-  else if (num_clients <= 30)
-    return "Max30Clients";
-  return "Over30Clients";
-}
-
 }  // namespace
 
-static const size_t kCoalescedTimerPeriod = 5000;
 static const size_t kDefaultMaxNumDelayableRequestsPerClient = 10;
 static const size_t kMaxNumDelayableRequestsPerHost = 6;
-static const size_t kMaxNumThrottledRequestsPerClient = 1;
 static const size_t kDefaultMaxNumDelayableWhileLayoutBlocking = 1;
 static const net::RequestPriority
     kDefaultLayoutBlockingPriorityThreshold = net::LOW;
@@ -191,7 +150,6 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
                            const RequestPriorityParams& priority,
                            bool is_async)
       : client_id_(client_id),
-        client_state_on_creation_(scheduler->GetClientState(client_id_)),
         request_(request),
         ready_(false),
         deferred_(false),
@@ -224,8 +182,6 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
     if (!request_->status().is_success())
       return;
 
-    bool was_deferred = deferred_;
-
     // If the request was deferred, need to start it.  Otherwise, will just not
     // defer starting it in the first place, and the value of |start_mode|
     // makes no difference.
@@ -245,32 +201,6 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
     }
 
     ready_ = true;
-
-    // The rest of this method is just collecting histograms.
-
-    base::TimeTicks time = base::TimeTicks::Now();
-    ClientState current_state = scheduler_->GetClientState(client_id_);
-    // Note: the client state isn't perfectly accurate since it won't capture
-    // tabs which have switched between active and background multiple times.
-    // Ex: A tab with the following transitions Active -> Background -> Active
-    // will be recorded as Active.
-    const char* client_state = "Other";
-    if (current_state == client_state_on_creation_ && current_state == ACTIVE) {
-      client_state = "Active";
-    } else if (current_state == client_state_on_creation_ &&
-               current_state == BACKGROUND) {
-      client_state = "Background";
-    }
-
-    base::TimeDelta time_was_deferred = base::TimeDelta::FromMicroseconds(0);
-    if (was_deferred)
-      time_was_deferred = time - time_deferred_;
-    PostHistogram("RequestTimeDeferred", client_state, NULL, time_was_deferred);
-    PostHistogram("RequestTimeThrottled", client_state, NULL,
-                  time - request_->creation_time());
-    // TODO(aiolos): Remove one of the above histograms after gaining an
-    // understanding of the difference between them and which one is more
-    // interesting.
   }
 
   void set_request_priority_params(const RequestPriorityParams& priority) {
@@ -313,13 +243,11 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   // ResourceThrottle interface:
   void WillStartRequest(bool* defer) override {
     deferred_ = *defer = !ready_;
-    time_deferred_ = base::TimeTicks::Now();
   }
 
   const char* GetNameForLogging() const override { return "ResourceScheduler"; }
 
   const ClientId client_id_;
-  const ResourceScheduler::ClientState client_state_on_creation_;
   net::URLRequest* request_;
   bool ready_;
   bool deferred_;
@@ -328,7 +256,6 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   ResourceScheduler* scheduler_;
   RequestPriorityParams priority_;
   uint32_t fifo_ordering_;
-  base::TimeTicks time_deferred_;
 
   base::WeakPtrFactory<ResourceScheduler::ScheduledResourceRequest>
       weak_ptr_factory_;
@@ -365,29 +292,15 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client {
  public:
-  explicit Client(ResourceScheduler* scheduler,
-                  bool is_visible,
-                  bool is_audible)
-      : is_audible_(is_audible),
-        is_visible_(is_visible),
-        is_loaded_(false),
-        is_paused_(false),
+  explicit Client(ResourceScheduler* scheduler)
+      : is_loaded_(false),
         has_html_body_(false),
         using_spdy_proxy_(false),
-        load_started_time_(base::TimeTicks::Now()),
         scheduler_(scheduler),
         in_flight_delayable_count_(0),
-        total_layout_blocking_count_(0),
-        throttle_state_(ResourceScheduler::THROTTLED) {}
+        total_layout_blocking_count_(0) {}
 
-  ~Client() {
-    // Update to default state and pause to ensure the scheduler has a
-    // correct count of relevant types of clients.
-    is_visible_ = false;
-    is_audible_ = false;
-    is_paused_ = true;
-    UpdateThrottleState();
-  }
+  ~Client() {}
 
   void ScheduleRequest(net::URLRequest* url_request,
                        ScheduledResourceRequest* request) {
@@ -415,10 +328,9 @@ class ResourceScheduler::Client {
   RequestSet StartAndRemoveAllRequests() {
     // First start any pending requests so that they will be moved into
     // in_flight_requests_. This may exceed the limits
-    // kDefaultMaxNumDelayableRequestsPerClient, kMaxNumDelayableRequestsPerHost
-    // and kMaxNumThrottledRequestsPerClient, so this method must not do
-    // anything that depends on those limits before calling
-    // ClearInFlightRequests() below.
+    // kDefaultMaxNumDelayableRequestsPerClient and
+    // kMaxNumDelayableRequestsPerHost, so this method must not do anything that
+    // depends on those limits before calling ClearInFlightRequests() below.
     while (!pending_requests_.IsEmpty()) {
       ScheduledResourceRequest* request =
           *pending_requests_.GetNextHighestIterator();
@@ -437,102 +349,10 @@ class ResourceScheduler::Client {
     return unowned_requests;
   }
 
-  bool is_active() const { return is_visible_ || is_audible_; }
-
   bool is_loaded() const { return is_loaded_; }
 
-  bool is_visible() const { return is_visible_; }
-
-  void OnAudibilityChanged(bool is_audible) {
-    UpdateState(is_audible, &is_audible_);
-  }
-
-  void OnVisibilityChanged(bool is_visible) {
-    UpdateState(is_visible, &is_visible_);
-  }
-
-  // Function to update any client state variable used to determine whether a
-  // Client is active or background. Used for is_visible_ and is_audible_.
-  void UpdateState(bool new_state, bool* current_state) {
-    bool was_active = is_active();
-    *current_state = new_state;
-    if (was_active == is_active())
-      return;
-    last_active_switch_time_ = base::TimeTicks::Now();
-    UpdateThrottleState();
-  }
-
   void OnLoadingStateChanged(bool is_loaded) {
-    if (is_loaded == is_loaded_) {
-      return;
-    }
     is_loaded_ = is_loaded;
-    UpdateThrottleState();
-    if (!is_loaded_) {
-      load_started_time_ = base::TimeTicks::Now();
-      last_active_switch_time_ = base::TimeTicks();
-      return;
-    }
-    base::TimeTicks cur_time = base::TimeTicks::Now();
-    const char* num_clients =
-        GetNumClientsString(scheduler_->client_map_.size());
-    const char* client_catagory = "Other";
-    if (last_active_switch_time_.is_null()) {
-      client_catagory = is_active() ? "Active" : "Background";
-    } else if (is_active()) {
-      base::TimeDelta time_since_active = cur_time - last_active_switch_time_;
-      PostHistogram("ClientLoadedTime", "Other.SwitchedToActive", NULL,
-                    time_since_active);
-      PostHistogram("ClientLoadedTime", "Other.SwitchedToActive", num_clients,
-                    time_since_active);
-    }
-    base::TimeDelta time_since_load_started = cur_time - load_started_time_;
-    PostHistogram("ClientLoadedTime", client_catagory, NULL,
-                  time_since_load_started);
-    PostHistogram("ClientLoadedTime", client_catagory, num_clients,
-                  time_since_load_started);
-    // TODO(aiolos): The above histograms will not take main resource load time
-    // into account with PlzNavigate into account. The ResourceScheduler also
-    // will load the main resources without a clients with the current logic.
-    // Find a way to fix both of these issues.
-  }
-
-  void SetPaused() {
-    is_paused_ = true;
-    UpdateThrottleState();
-  }
-
-  void UpdateThrottleState() {
-    ClientThrottleState old_throttle_state = throttle_state_;
-    if (!scheduler_->should_throttle()) {
-      SetThrottleState(UNTHROTTLED);
-    } else if (is_active() && !is_loaded_) {
-      SetThrottleState(ACTIVE_AND_LOADING);
-    } else if (is_active()) {
-      SetThrottleState(UNTHROTTLED);
-    } else if (is_paused_) {
-      SetThrottleState(PAUSED);
-    } else if (!scheduler_->active_clients_loaded()) {
-      SetThrottleState(THROTTLED);
-    } else if (is_loaded_ && scheduler_->should_coalesce()) {
-      SetThrottleState(COALESCED);
-    } else if (!is_active()) {
-      SetThrottleState(UNTHROTTLED);
-    }
-
-    if (throttle_state_ == old_throttle_state) {
-      return;
-    }
-    if (throttle_state_ == ACTIVE_AND_LOADING) {
-      scheduler_->IncrementActiveClientsLoading();
-    } else if (old_throttle_state == ACTIVE_AND_LOADING) {
-      scheduler_->DecrementActiveClientsLoading();
-    }
-    if (throttle_state_ == COALESCED) {
-      scheduler_->IncrementCoalescedClients();
-    } else if (old_throttle_state == COALESCED) {
-      scheduler_->DecrementCoalescedClients();
-    }
   }
 
   void OnNavigate() {
@@ -571,50 +391,6 @@ class ResourceScheduler::Client {
       // Check if this request is now able to load at its new priority.
       LoadAnyStartablePendingRequests();
     }
-  }
-
-  // Called on Client creation, when a Client changes user observability,
-  // possibly when all observable Clients have finished loading, and
-  // possibly when this Client has finished loading.
-  // State changes:
-  // Client became observable.
-  //   any state -> UNTHROTTLED
-  // Client is unobservable, but all observable clients finished loading.
-  //   THROTTLED -> UNTHROTTLED
-  // Non-observable client finished loading.
-  //   THROTTLED || UNTHROTTLED -> COALESCED
-  // Non-observable client, an observable client starts loading.
-  //   COALESCED -> THROTTLED
-  // A COALESCED client will transition into UNTHROTTLED when the network is
-  // woken up by a heartbeat and then transition back into COALESCED.
-  void SetThrottleState(ResourceScheduler::ClientThrottleState throttle_state) {
-    if (throttle_state == throttle_state_) {
-      return;
-    }
-    throttle_state_ = throttle_state;
-    if (throttle_state_ != PAUSED) {
-      is_paused_ = false;
-    }
-    LoadAnyStartablePendingRequests();
-    // TODO(aiolos): Stop any started but not inflght requests when
-    // switching to stricter throttle state?
-  }
-
-  ResourceScheduler::ClientThrottleState throttle_state() const {
-    return throttle_state_;
-  }
-
-  void LoadCoalescedRequests() {
-    if (throttle_state_ != COALESCED) {
-      return;
-    }
-    if (scheduler_->active_clients_loaded()) {
-      SetThrottleState(UNTHROTTLED);
-    } else {
-      SetThrottleState(THROTTLED);
-    }
-    LoadAnyStartablePendingRequests();
-    SetThrottleState(COALESCED);
   }
 
  private:
@@ -785,8 +561,6 @@ class ResourceScheduler::Client {
   //  All types of requests:
   //   * If an outstanding request limit is in place, only that number
   //     of requests may be in flight for a single client at the same time.
-  //
-  //  ACTIVE_AND_LOADING and UNTHROTTLED Clients follow these rules:
   //   * Non-delayable, High-priority and request-priority capable requests are
   //     issued immediately.
   //   * Low priority requests are delayable.
@@ -798,21 +572,7 @@ class ResourceScheduler::Client {
   //     loading delayable requests.
   //   * Never exceed 10 delayable requests in flight per client.
   //   * Never exceed 6 delayable requests for a given host.
-  //
-  //  THROTTLED Clients follow these rules:
-  //   * Non-delayable and request-priority-capable requests are issued
-  //     immediately.
-  //   * At most one non-request-priority-capable request will be issued per
-  //     THROTTLED Client
-  //   * If no high priority requests are in flight, start loading low priority
-  //     requests.
-  //
-  //  COALESCED Clients never load requests, with the following exceptions:
-  //   * Non-delayable requests are issued imediately.
-  //   * On a (currently 5 second) heart beat, they load all requests as an
-  //     UNTHROTTLED Client, and then return to the COALESCED state.
-  //   * When an active Client makes a request, they are THROTTLED until the
-  //     active Client finishes loading.
+
   ShouldStartReqResult ShouldStartRequest(
       ScheduledResourceRequest* request) const {
     const net::URLRequest& url_request = *request->url_request();
@@ -823,13 +583,8 @@ class ResourceScheduler::Client {
 
     // TODO(simonjam): This may end up causing disk contention. We should
     // experiment with throttling if that happens.
-    // TODO(aiolos): We probably want to Coalesce these as well to avoid
-    // waking the disk.
     if (!url_request.url().SchemeIsHTTPOrHTTPS())
       return START_REQUEST;
-
-    if (throttle_state_ == COALESCED)
-      return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
 
     if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
       return START_REQUEST;
@@ -850,13 +605,6 @@ class ResourceScheduler::Client {
     // request-priority capable request against the delayable requests limit.
     if (http_server_properties.SupportsRequestPriority(host_port_pair))
       return START_REQUEST;
-
-    if (throttle_state_ == THROTTLED &&
-        in_flight_requests_.size() >= kMaxNumThrottledRequestsPerClient) {
-      // There may still be request-priority-capable requests that should be
-      // issued.
-      return DO_NOT_START_REQUEST_AND_KEEP_SEARCHING;
-    }
 
     // Non-delayable requests.
     if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
@@ -949,52 +697,29 @@ class ResourceScheduler::Client {
     }
   }
 
-  bool is_audible_;
-  bool is_visible_;
   bool is_loaded_;
-  bool is_paused_;
   // Tracks if the main HTML parser has reached the body which marks the end of
   // layout-blocking resources.
   bool has_html_body_;
   bool using_spdy_proxy_;
   RequestQueue pending_requests_;
   RequestSet in_flight_requests_;
-  base::TimeTicks load_started_time_;
-  // The last time the client switched state between active and background.
-  base::TimeTicks last_active_switch_time_;
   ResourceScheduler* scheduler_;
   // The number of delayable in-flight requests.
   size_t in_flight_delayable_count_;
   // The number of layout-blocking in-flight requests.
   size_t total_layout_blocking_count_;
-  ResourceScheduler::ClientThrottleState throttle_state_;
 };
 
 ResourceScheduler::ResourceScheduler()
-    : should_coalesce_(false),
-      should_throttle_(false),
-      active_clients_loading_(0),
-      coalesced_clients_(0),
-      limit_outstanding_requests_(false),
+    : limit_outstanding_requests_(false),
       outstanding_request_limit_(0),
-      non_delayable_threshold_(
-          kDefaultLayoutBlockingPriorityThreshold),
+      non_delayable_threshold_(kDefaultLayoutBlockingPriorityThreshold),
       enable_in_flight_non_delayable_threshold_(false),
       in_flight_non_delayable_threshold_(0),
       max_num_delayable_while_layout_blocking_(
           kDefaultMaxNumDelayableWhileLayoutBlocking),
-      max_num_delayable_requests_(kDefaultMaxNumDelayableRequestsPerClient),
-      coalescing_timer_(new base::Timer(true /* retain_user_task */,
-                                        true /* is_repeating */)) {
-  std::string throttling_trial_group =
-      base::FieldTrialList::FindFullName(kThrottleCoalesceFieldTrial);
-  if (throttling_trial_group == kThrottleCoalesceFieldTrialThrottle) {
-    should_throttle_ = true;
-  } else if (throttling_trial_group == kThrottleCoalesceFieldTrialCoalesce) {
-    should_coalesce_ = true;
-    should_throttle_ = true;
-  }
-
+      max_num_delayable_requests_(kDefaultMaxNumDelayableRequestsPerClient) {
   std::string outstanding_limit_trial_group =
       base::FieldTrialList::FindFullName(kRequestLimitFieldTrial);
   std::vector<std::string> split_group(
@@ -1051,20 +776,6 @@ ResourceScheduler::~ResourceScheduler() {
   DCHECK(client_map_.empty());
 }
 
-void ResourceScheduler::SetThrottleOptionsForTesting(bool should_throttle,
-                                                     bool should_coalesce) {
-  should_coalesce_ = should_coalesce;
-  should_throttle_ = should_throttle;
-  OnLoadingActiveClientsStateChangedForAllClients();
-}
-
-ResourceScheduler::ClientThrottleState
-ResourceScheduler::GetClientStateForTesting(int child_id, int route_id) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  return client->throttle_state();
-}
-
 scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
     int child_id,
     int route_id,
@@ -1109,17 +820,13 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {
 }
 
 void ResourceScheduler::OnClientCreated(int child_id,
-                                        int route_id,
-                                        bool is_visible,
-                                        bool is_audible) {
+                                        int route_id) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!ContainsKey(client_map_, client_id));
 
-  Client* client = new Client(this, is_visible, is_audible);
+  Client* client = new Client(this);
   client_map_[client_id] = client;
-
-  client->UpdateThrottleState();
 }
 
 void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
@@ -1148,23 +855,6 @@ void ResourceScheduler::OnLoadingStateChanged(int child_id,
   Client* client = GetClient(child_id, route_id);
   DCHECK(client);
   client->OnLoadingStateChanged(is_loaded);
-}
-
-void ResourceScheduler::OnVisibilityChanged(int child_id,
-                                            int route_id,
-                                            bool is_visible) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  client->OnVisibilityChanged(is_visible);
-}
-
-void ResourceScheduler::OnAudibilityChanged(int child_id,
-                                            int route_id,
-                                            bool is_audible) {
-  Client* client = GetClient(child_id, route_id);
-  // We might get this call after the client has been deleted.
-  if (client)
-    client->OnAudibilityChanged(is_audible);
 }
 
 void ResourceScheduler::OnNavigate(int child_id, int route_id) {
@@ -1210,12 +900,6 @@ void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(
   client->OnReceivedSpdyProxiedHttpResponse();
 }
 
-bool ResourceScheduler::IsClientVisibleForTesting(int child_id, int route_id) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  return client->is_visible();
-}
-
 bool ResourceScheduler::HasLoadingClients() const {
   for (const auto& client : client_map_) {
     if (!client.second->is_loaded())
@@ -1232,100 +916,6 @@ ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
     return NULL;
   }
   return client_it->second;
-}
-
-void ResourceScheduler::DecrementActiveClientsLoading() {
-  DCHECK_NE(0u, active_clients_loading_);
-  --active_clients_loading_;
-  DCHECK_EQ(active_clients_loading_, CountActiveClientsLoading());
-  if (active_clients_loading_ == 0) {
-    OnLoadingActiveClientsStateChangedForAllClients();
-  }
-}
-
-void ResourceScheduler::IncrementActiveClientsLoading() {
-  ++active_clients_loading_;
-  DCHECK_EQ(active_clients_loading_, CountActiveClientsLoading());
-  if (active_clients_loading_ == 1) {
-    OnLoadingActiveClientsStateChangedForAllClients();
-  }
-}
-
-void ResourceScheduler::OnLoadingActiveClientsStateChangedForAllClients() {
-  ClientMap::iterator client_it = client_map_.begin();
-  while (client_it != client_map_.end()) {
-    Client* client = client_it->second;
-    client->UpdateThrottleState();
-    ++client_it;
-  }
-}
-
-size_t ResourceScheduler::CountActiveClientsLoading() const {
-  size_t active_and_loading = 0;
-  ClientMap::const_iterator client_it = client_map_.begin();
-  while (client_it != client_map_.end()) {
-    Client* client = client_it->second;
-    if (client->throttle_state() == ACTIVE_AND_LOADING) {
-      ++active_and_loading;
-    }
-    ++client_it;
-  }
-  return active_and_loading;
-}
-
-void ResourceScheduler::IncrementCoalescedClients() {
-  ++coalesced_clients_;
-  DCHECK(should_coalesce_);
-  DCHECK_EQ(coalesced_clients_, CountCoalescedClients());
-  if (coalesced_clients_ == 1) {
-    coalescing_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kCoalescedTimerPeriod),
-        base::Bind(&ResourceScheduler::LoadCoalescedRequests,
-                   base::Unretained(this)));
-  }
-}
-
-void ResourceScheduler::DecrementCoalescedClients() {
-  DCHECK(should_coalesce_);
-  DCHECK_NE(0U, coalesced_clients_);
-  --coalesced_clients_;
-  DCHECK_EQ(coalesced_clients_, CountCoalescedClients());
-  if (coalesced_clients_ == 0) {
-    coalescing_timer_->Stop();
-  }
-}
-
-size_t ResourceScheduler::CountCoalescedClients() const {
-  DCHECK(should_coalesce_);
-  size_t coalesced_clients = 0;
-  ClientMap::const_iterator client_it = client_map_.begin();
-  while (client_it != client_map_.end()) {
-    Client* client = client_it->second;
-    if (client->throttle_state() == COALESCED) {
-      ++coalesced_clients;
-    }
-    ++client_it;
-  }
-  return coalesced_clients_;
-}
-
-void ResourceScheduler::LoadCoalescedRequests() {
-  DCHECK(should_coalesce_);
-  ClientMap::iterator client_it = client_map_.begin();
-  while (client_it != client_map_.end()) {
-    Client* client = client_it->second;
-    client->LoadCoalescedRequests();
-    ++client_it;
-  }
-}
-
-ResourceScheduler::ClientState ResourceScheduler::GetClientState(
-    ClientId client_id) const {
-  ClientMap::const_iterator client_it = client_map_.find(client_id);
-  if (client_it == client_map_.end())
-    return UNKNOWN;
-  return client_it->second->is_active() ? ACTIVE : BACKGROUND;
 }
 
 void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
