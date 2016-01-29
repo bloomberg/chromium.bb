@@ -76,10 +76,6 @@ struct ShelfItem {
   // TODO(msw): Support multiple open windows per button.
   uint32_t window_id;
 
-  // Resource id of the image to display on the shelf.
-  // TODO(msw): Support window icons on the shelf.
-  //int image_resource_id;
-
   // Title of the item.
   base::string16 title;
 };

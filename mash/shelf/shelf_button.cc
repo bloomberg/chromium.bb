@@ -22,6 +22,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 namespace {
 
@@ -530,13 +531,13 @@ void ShelfButton::UpdateBar() {
   }
 
   int bar_id = 0;
-  /* TODO(msw): Restore functionality:
+  // TODO(msw): Port IDR_ASH_SHELF_UNDERLINE_* button bar images.
   if (state_ & (STATE_ACTIVE))
-    bar_id = IDR_ASH_SHELF_UNDERLINE_ACTIVE;
+    bar_id = IDR_CHECKBOX_CHECKED;
   else if (state_ & STATE_ATTENTION)
-    bar_id = IDR_ASH_SHELF_UNDERLINE_ATTENTION;
+    bar_id = IDR_CHECKBOX_FOCUSED_CHECKED;
   else if (state_ & STATE_RUNNING)
-    bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;*/
+    bar_id = IDR_CHECKBOX;
 
   if (bar_id != 0) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();

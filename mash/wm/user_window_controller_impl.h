@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 
 namespace mash {
@@ -19,7 +20,8 @@ class WindowManagerApplication;
 class WindowTitleObserver;
 
 class UserWindowControllerImpl : public mojom::UserWindowController,
-                                 public mus::WindowObserver {
+                                 public mus::WindowObserver,
+                                 public mus::WindowTreeConnectionObserver {
  public:
   UserWindowControllerImpl();
   ~UserWindowControllerImpl() override;
@@ -36,6 +38,10 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
 
   // mus::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
+
+  // mus::WindowTreeConnectionObserver:
+  void OnWindowTreeFocusChanged(mus::Window* gained_focus,
+                                mus::Window* lost_focus) override;
 
   // mojom::UserWindowController:
   void AddUserWindowObserver(mojom::UserWindowObserverPtr observer) override;

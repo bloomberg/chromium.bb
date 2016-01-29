@@ -9,6 +9,8 @@
 #include "mash/shelf/shelf_model_observer.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace mash {
 namespace shelf {
@@ -173,22 +175,6 @@ void ShelfModel::RemoveObserver(ShelfModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
-  DCHECK(index >= 0 && index <= item_count() + 1);
-
-  // Clamp |index| to the allowed range for the type as determined by |weight|.
-  ShelfItem weight_dummy;
-  weight_dummy.type = type;
-  index = std::max(std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                                    CompareByWeight) - items_.begin(),
-                   static_cast<ShelfItems::difference_type>(index));
-  index = std::min(std::upper_bound(items_.begin(), items_.end(), weight_dummy,
-                                    CompareByWeight) - items_.begin(),
-                   static_cast<ShelfItems::difference_type>(index));
-
-  return index;
-}
-
 void ShelfModel::OnUserWindowObserverAdded(
     mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) {
   for (size_t i = 0; i < user_windows.size(); ++i)
@@ -198,7 +184,10 @@ void ShelfModel::OnUserWindowObserverAdded(
 void ShelfModel::OnUserWindowAdded(mash::wm::mojom::UserWindowPtr user_window) {
   ShelfItem item;
   item.type = TYPE_MOJO_APP;
-  item.status = STATUS_RUNNING;
+  // TODO(msw): Support actual window icons.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  item.status = user_window->window_has_focus ? STATUS_ACTIVE : STATUS_RUNNING;
   item.window_id = user_window->window_id;
   item.title = user_window->window_title.To<base::string16>();
   Add(item);
@@ -215,6 +204,30 @@ void ShelfModel::OnUserWindowTitleChanged(uint32_t window_id,
   items_[index].title = window_title.To<base::string16>();
   FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
                     ShelfItemChanged(index, old_item));
+}
+
+void ShelfModel::OnUserWindowFocusChanged(uint32_t window_id, bool has_focus) {
+  const int index = ItemIndexByWindowID(window_id);
+  ShelfItem old_item(items_[index]);
+  items_[index].status = has_focus ? STATUS_ACTIVE : STATUS_RUNNING;
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
+                    ShelfItemChanged(index, old_item));
+}
+
+int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
+  DCHECK(index >= 0 && index <= item_count() + 1);
+
+  // Clamp |index| to the allowed range for the type as determined by |weight|.
+  ShelfItem weight_dummy;
+  weight_dummy.type = type;
+  index = std::max(std::lower_bound(items_.begin(), items_.end(), weight_dummy,
+                                    CompareByWeight) - items_.begin(),
+                   static_cast<ShelfItems::difference_type>(index));
+  index = std::min(std::upper_bound(items_.begin(), items_.end(), weight_dummy,
+                                    CompareByWeight) - items_.begin(),
+                   static_cast<ShelfItems::difference_type>(index));
+
+  return index;
 }
 
 int ShelfModel::ItemIndexByWindowID(uint32_t window_id) const {

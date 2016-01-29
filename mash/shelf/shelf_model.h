@@ -92,13 +92,14 @@ class ShelfModel : public mash::wm::mojom::UserWindowObserver {
   }
 
  private:
-   // Overridden from mash::wm::mojom::UserWindowObserver:
-   void OnUserWindowObserverAdded(
-       mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) override;
-   void OnUserWindowAdded(mash::wm::mojom::UserWindowPtr user_window) override;
-   void OnUserWindowRemoved(uint32_t window_id) override;
-   void OnUserWindowTitleChanged(uint32_t window_id,
-                                 const mojo::String& window_title) override;
+  // Overridden from mash::wm::mojom::UserWindowObserver:
+  void OnUserWindowObserverAdded(
+      mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) override;
+  void OnUserWindowAdded(mash::wm::mojom::UserWindowPtr user_window) override;
+  void OnUserWindowRemoved(uint32_t window_id) override;
+  void OnUserWindowTitleChanged(uint32_t window_id,
+                                const mojo::String& window_title) override;
+  void OnUserWindowFocusChanged(uint32_t window_id, bool has_focus) override;
 
   // Makes sure |index| is in line with the type-based order of items. If that
   // is not the case, adjusts index by shifting it to the valid range and

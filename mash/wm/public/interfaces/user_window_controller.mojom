@@ -7,6 +7,7 @@ module mash.wm.mojom;
 struct UserWindow {
   uint32 window_id;
   string window_title;
+  bool window_has_focus;
 };
 
 // An observer of user windows within mojom::Container::USER_WINDOWS.
@@ -17,7 +18,10 @@ interface UserWindowObserver {
 
   OnUserWindowAdded(UserWindow user_window);
   OnUserWindowRemoved(uint32 window_id);
+
   OnUserWindowTitleChanged(uint32 window_id, string window_title);
+
+  OnUserWindowFocusChanged(uint32 window_id, bool has_focus);
 };
 
 // An interface allowing system UIs to manage the set of user windows.

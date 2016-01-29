@@ -14,14 +14,12 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -783,6 +781,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
+    case TYPE_MOJO_APP:
     case TYPE_DIALOG:
     case TYPE_APP_PANEL: {
       ShelfButton* button = ShelfButton::Create(this, this);
@@ -796,17 +795,6 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
       /* TODO(msw): Restore functionality:
       view = new AppListButton(this, this);*/
       view = new views::LabelButton(nullptr, item.title);
-      break;
-    }
-
-    case TYPE_MOJO_APP: {
-      // TODO(msw): Support item images, etc.
-      ShelfButton* button = ShelfButton::Create(this, this);
-      int image_resource_id = IDR_DEFAULT_FAVICON;
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      button->SetImage(*rb.GetImageSkiaNamed(image_resource_id));
-      ReflectItemStatus(item, button);
-      view = button;
       break;
     }
 
@@ -1484,22 +1472,18 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
+    case TYPE_MOJO_APP:
     case TYPE_DIALOG:
     case TYPE_APP_PANEL: {
       CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
       ShelfButton* button = static_cast<ShelfButton*>(view);
+      button->SetTooltipText(item.title);
       ReflectItemStatus(item, button);
       // The browser shortcut is currently not a "real" item and as such the
       // the image is bogous as well. We therefore keep the image as is for it.
       if (item.type != TYPE_BROWSER_SHORTCUT)
         button->SetImage(item.image);
       button->SchedulePaint();
-      break;
-    }
-    case TYPE_MOJO_APP: {
-      CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
-      ShelfButton* button = static_cast<ShelfButton*>(view);
-      button->SetTooltipText(item.title);
       break;
     }
 
@@ -1808,8 +1792,7 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
         views::MENU_ANCHOR_BUBBLE_ABOVE, views::MENU_ANCHOR_BUBBLE_RIGHT,
         views::MENU_ANCHOR_BUBBLE_LEFT, views::MENU_ANCHOR_BUBBLE_BELOW);
   }
-  // If this gets deleted while we are in the menu, the shelf will be gone
-  // as well.
+  // If this gets deleted while we are in the menu, the shelf will also be gone.
   bool got_deleted = false;
   got_deleted_ = &got_deleted;
 
@@ -1840,8 +1823,7 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
   if (owner_overflow_bubble_)
     owner_overflow_bubble_->HideBubbleAndRefreshButton();*/
 
-  // Unpinning an item will reset the |launcher_menu_runner_| before coming
-  // here.
+  // Unpinning an item will reset |launcher_menu_runner_| before coming here.
   if (launcher_menu_runner_)
     closing_event_time_ = launcher_menu_runner_->closing_event_time();
   /* TODO(msw): Restore functionality:
