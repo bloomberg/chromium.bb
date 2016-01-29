@@ -38,9 +38,9 @@ class VIEWS_EXPORT AXAuraObjCache {
   AXAuraObjWrapper* GetOrCreate(aura::Window* window);
 
   // Gets an id given an Aura view.
-  int32_t GetID(View* view);
-  int32_t GetID(Widget* widget);
-  int32_t GetID(aura::Window* window);
+  int32_t GetID(View* view) const;
+  int32_t GetID(Widget* widget) const;
+  int32_t GetID(aura::Window* window) const;
 
   // Gets the next unique id for this cache. Useful for non-Aura view backed
   // views.
@@ -78,8 +78,9 @@ class VIEWS_EXPORT AXAuraObjCache {
       std::map<AuraView*, int32_t>& aura_view_to_id_map);
 
   template <typename AuraView>
-  int32_t GetIDInternal(AuraView* aura_view,
-                        std::map<AuraView*, int32_t>& aura_view_to_id_map);
+  int32_t GetIDInternal(
+      AuraView* aura_view,
+      const std::map<AuraView*, int32_t>& aura_view_to_id_map) const;
 
   template <typename AuraView>
   void RemoveInternal(AuraView* aura_view,
