@@ -22,11 +22,16 @@ config("static_config") {
 config("ldconfig") {
   visibility = [ ":*" ]
 
-  # Chromecast executables depend on several shared libraries in $ORIGIN. Add
-  # $ORIGIN to the rpath of these executables. This is not inherited by default
-  # when depending on these targets for security reasons (see comments in
-  # //build/config/gcc/BUILD.gn)
-  configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  # Chromecast executables depend on several shared libraries in
+  # /oem_cast_shlib, $ORIGIN, and $ORIGIN/lib. Add these rpaths to each binary.
+  # This is explicitly disabled in Chrome for security reasons (see comments in
+  # //build/config/gcc/BUILD.gn), but necessary on Chromecast so that OEM's may
+  # override the default libraries shipped in the Cast receiver package.
+  ldflags = [
+    "-Wl,-rpath=/oem_cast_shlib",
+    "-Wl,-rpath=\$ORIGIN/lib",
+    "-Wl,-rpath=\$ORIGIN",
+  ]
 }
 
 config("executable_config") {
