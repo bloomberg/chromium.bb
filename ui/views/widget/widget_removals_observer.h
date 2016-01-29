@@ -18,7 +18,11 @@ class View;
 // from |View|.
 class VIEWS_EXPORT WidgetRemovalsObserver {
  public:
-  // Called immediately before a descendant view of |widget| is removed.
+  // Called immediately before a descendant view of |widget| is removed
+  // from this widget. Won't be called if the view is moved within the
+  // same widget, but will be called if it's moved to a different widget.
+  // Only called on the root of a view tree; it implies that all of the
+  // descendants of |view| will be removed.
   virtual void OnWillRemoveView(Widget* widget, View* view) {}
 
  protected:
