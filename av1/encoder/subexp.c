@@ -141,8 +141,10 @@ int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
                                               const aom_prob *oldp,
                                               aom_prob *bestp, aom_prob upd,
                                               int stepsize, int probwt) {
-  int i, old_b, new_b, update_b, savings, bestsavings, step;
+  int i, old_b, new_b, update_b, savings, bestsavings;
   int newp;
+  const int step_sign = *bestp > oldp[PIVOT_NODE] ? -1 : 1;
+  const int step = stepsize * step_sign;
   aom_prob bestnewp, newplist[ENTROPY_NODES], oldplist[ENTROPY_NODES];
   av1_model_to_full_probs(oldp, oldplist);
   memcpy(newplist, oldp, sizeof(aom_prob) * UNCONSTRAINED_NODES);
@@ -153,39 +155,20 @@ int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
   bestsavings = 0;
   bestnewp = oldp[PIVOT_NODE];
 
-  if (*bestp > oldp[PIVOT_NODE]) {
-    step = -stepsize;
-    for (newp = *bestp; newp > oldp[PIVOT_NODE]; newp += step) {
-      if (newp < 1 || newp > 255) continue;
-      newplist[PIVOT_NODE] = newp;
-      av1_model_to_full_probs(newplist, newplist);
-      for (i = UNCONSTRAINED_NODES, new_b = 0; i < ENTROPY_NODES; ++i)
-        new_b += cost_branch256(ct + 2 * i, newplist[i]);
-      new_b += cost_branch256(ct + 2 * PIVOT_NODE, newplist[PIVOT_NODE]);
-      update_b =
-          prob_diff_update_cost(newp, oldp[PIVOT_NODE]) + av1_cost_upd256;
-      savings = old_b - new_b - update_b * probwt;
-      if (savings > bestsavings) {
-        bestsavings = savings;
-        bestnewp = newp;
-      }
-    }
-  } else {
-    step = stepsize;
-    for (newp = *bestp; newp < oldp[PIVOT_NODE]; newp += step) {
-      if (newp < 1 || newp > 255) continue;
-      newplist[PIVOT_NODE] = newp;
-      av1_model_to_full_probs(newplist, newplist);
-      for (i = UNCONSTRAINED_NODES, new_b = 0; i < ENTROPY_NODES; ++i)
-        new_b += cost_branch256(ct + 2 * i, newplist[i]);
-      new_b += cost_branch256(ct + 2 * PIVOT_NODE, newplist[PIVOT_NODE]);
-      update_b =
-          prob_diff_update_cost(newp, oldp[PIVOT_NODE]) + av1_cost_upd256;
-      savings = old_b - new_b - probwt * update_b;
-      if (savings > bestsavings) {
-        bestsavings = savings;
-        bestnewp = newp;
-      }
+  assert(stepsize > 0);
+
+  for (newp = *bestp; (newp - oldp[PIVOT_NODE]) * step_sign < 0; newp += step) {
+    if (newp < 1 || newp > 255) continue;
+    newplist[PIVOT_NODE] = newp;
+    av1_model_to_full_probs(newplist, newplist);
+    for (i = UNCONSTRAINED_NODES, new_b = 0; i < ENTROPY_NODES; ++i)
+      new_b += cost_branch256(ct + 2 * i, newplist[i]);
+    new_b += cost_branch256(ct + 2 * PIVOT_NODE, newplist[PIVOT_NODE]);
+    update_b = prob_diff_update_cost(newp, oldp[PIVOT_NODE]) + av1_cost_upd256;
+    savings = old_b - new_b - update_b * probwt;
+    if (savings > bestsavings) {
+      bestsavings = savings;
+      bestnewp = newp;
     }
   }
 
