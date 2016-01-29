@@ -371,6 +371,9 @@
         "test": "base_unittests"
       },
       {
+        "test": "blimp_unittests"
+      },
+      {
         "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
