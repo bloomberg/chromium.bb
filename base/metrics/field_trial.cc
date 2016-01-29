@@ -638,7 +638,7 @@ void FieldTrialList::Register(FieldTrial* trial) {
     return;
   }
   AutoLock auto_lock(global_->lock_);
-  DCHECK(!global_->PreLockedFind(trial->trial_name()));
+  CHECK(!global_->PreLockedFind(trial->trial_name())) << trial->trial_name();
   trial->AddRef();
   trial->SetTrialRegistered();
   global_->registered_[trial->trial_name()] = trial;

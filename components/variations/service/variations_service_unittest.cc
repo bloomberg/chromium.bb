@@ -276,6 +276,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
   TestVariationsService service(
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
+  service.SetCreateTrialsFromSeedCalledForTesting(false);
 
   // Store a seed.
   service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
@@ -306,6 +307,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
   TestVariationsService service(
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
+  service.SetCreateTrialsFromSeedCalledForTesting(false);
 
   // Store a seed. To simulate a first run, |prefs::kVariationsLastFetchTime|
   // is left empty.
@@ -336,6 +338,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromOutdatedSeed) {
   TestVariationsService service(
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
+  service.SetCreateTrialsFromSeedCalledForTesting(false);
 
   // Store a seed, with a fetch time 31 days in the past.
   const base::Time seed_date =

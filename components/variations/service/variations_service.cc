@@ -300,6 +300,7 @@ VariationsService::~VariationsService() {
 
 bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(!create_trials_from_seed_called_);
 
   create_trials_from_seed_called_ = true;
 
