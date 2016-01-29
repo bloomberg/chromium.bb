@@ -139,6 +139,13 @@ void MenuMessageLoopAura::Run(MenuController* controller,
       observer.reset(new ActivationChangeObserverImpl(controller, root));
   }
 
+  scoped_ptr<MenuKeyEventHandler> menu_event_filter;
+  if (!nested_menu) {
+    // If this is a nested menu, then the MenuKeyEventHandler would have been
+    // created already in the top parent menu. So no need to recreate it here.
+    menu_event_filter.reset(new MenuKeyEventHandler);
+  }
+
   base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow(loop);
   base::RunLoop run_loop;

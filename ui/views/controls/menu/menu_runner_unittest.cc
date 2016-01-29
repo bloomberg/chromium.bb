@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -126,25 +125,6 @@ TEST_F(MenuRunnerTest, AsynchronousRun) {
   EXPECT_TRUE(runner->IsRunning());
 
   runner->Cancel();
-  EXPECT_FALSE(runner->IsRunning());
-  TestMenuDelegate* delegate = menu_delegate();
-  EXPECT_EQ(1, delegate->on_menu_closed_called());
-  EXPECT_EQ(nullptr, delegate->on_menu_closed_menu());
-  EXPECT_EQ(MenuRunner::NORMAL_EXIT, delegate->on_menu_closed_run_result());
-}
-
-// Tests that when a menu is run asynchronously, key events are handled properly
-// by testing that Escape key closes the menu.
-TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
-  InitMenuRunner(MenuRunner::ASYNC);
-  MenuRunner* runner = menu_runner();
-  MenuRunner::RunResult result = runner->RunMenuAt(
-      owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
-  EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
-  EXPECT_TRUE(runner->IsRunning());
-
-  ui::test::EventGenerator generator(GetContext(), owner()->GetNativeWindow());
-  generator.PressKey(ui::VKEY_ESCAPE, 0);
   EXPECT_FALSE(runner->IsRunning());
   TestMenuDelegate* delegate = menu_delegate();
   EXPECT_EQ(1, delegate->on_menu_closed_called());
