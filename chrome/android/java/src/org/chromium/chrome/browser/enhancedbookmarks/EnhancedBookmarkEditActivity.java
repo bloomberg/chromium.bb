@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -336,14 +335,16 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     private void openBookmark() {
         // TODO(kkimlabs): Refactor this out to handle the intent in ChromeActivity.
-        if (DeviceFormFactor.isTablet(this)) {
-            EnhancedBookmarkUtils.openBookmark(
-                    mModel, this, mBookmarkId, LaunchLocation.BOOKMARK_EDITOR);
-        } else {
+        // If this activity was started via startActivityForResult(), set the result. Otherwise,
+        // launch the bookmark directly.
+        if (getCallingActivity() != null) {
             Intent intent = new Intent();
             intent.putExtra(
                     EnhancedBookmarkActivity.INTENT_VISIT_BOOKMARK_ID, mBookmarkId.toString());
             setResult(RESULT_OK, intent);
+        } else {
+            EnhancedBookmarkUtils.openBookmark(
+                    mModel, this, mBookmarkId, LaunchLocation.BOOKMARK_EDITOR);
         }
         finish();
     }

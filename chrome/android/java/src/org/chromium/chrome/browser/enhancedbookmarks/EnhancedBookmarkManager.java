@@ -56,6 +56,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private final Stack<EnhancedBookmarkUIState> mStateStack = new Stack<>();
     private LargeIconBridge mLargeIconBridge;
     private String mInitialUrl;
+    private boolean mIsDialogUi;
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
 
@@ -110,9 +111,12 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
      * Creates an instance of {@link EnhancedBookmarkManager}. It also initializes resources,
      * bookmark models and jni bridges.
      * @param activity The activity context to use.
+     * @param isDialogUi Whether the main bookmarks UI will be shown in a dialog, not a NativePage.
      */
-    public EnhancedBookmarkManager(Activity activity) {
+    public EnhancedBookmarkManager(Activity activity, boolean isDialogUi) {
         mActivity = activity;
+        mIsDialogUi = isDialogUi;
+
         mEnhancedBookmarksModel = new EnhancedBookmarksModel();
         mMainView = (ViewGroup) mActivity.getLayoutInflater().inflate(R.layout.eb_main, null);
         mDrawer = (DrawerLayout) mMainView.findViewById(R.id.eb_drawer_layout);
@@ -282,6 +286,11 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     }
 
     // EnhancedBookmarkDelegate implementations.
+
+    @Override
+    public boolean isDialogUi() {
+        return mIsDialogUi;
+    }
 
     @Override
     public void openFolder(BookmarkId folder) {

@@ -13,8 +13,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 import java.util.List;
 
 /**
- * Interface used among EnhancedBookmark UI components to broadcast UI change notifications and get
- * bookmark data model.
+ * Interface used by UI components in the main bookmarks UI to broadcast UI change notifications
+ * and get bookmark data model.
  */
 interface EnhancedBookmarkDelegate {
 
@@ -28,6 +28,13 @@ interface EnhancedBookmarkDelegate {
          */
         public void onBookmarkUIStateChange(String url);
     }
+
+    /**
+     * Returns whether the bookmarks UI will be shown in a dialog, instead of a NativePage. This is
+     * typically true on phones and false on tablets, but not always, e.g. in multi-window mode or
+     * after upgrading to the new bookmarks.
+     */
+    boolean isDialogUi();
 
     /**
      * Corresponds to "All Items" list item in the side drawer. Shows all bookmarks.

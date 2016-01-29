@@ -86,8 +86,7 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
         }
 
         @Override
-        public NativePage buildBookmarksPage(Activity activity, Tab tab,
-                TabModelSelector tabModelSelector) {
+        public NativePage buildBookmarksPage(Activity activity, Tab tab) {
             return new MockNativePage(NativePageType.BOOKMARKS);
         }
 

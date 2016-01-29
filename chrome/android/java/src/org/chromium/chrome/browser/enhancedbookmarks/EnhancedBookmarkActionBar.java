@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 
@@ -55,7 +54,6 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         super(context, attrs);
         setNavigationOnClickListener(this);
         inflateMenu(R.menu.eb_action_bar_menu);
-        if (DeviceFormFactor.isTablet(context)) getMenu().removeItem(R.id.close_menu_id);
         setOnMenuItemClickListener(this);
 
         getMenu()
@@ -209,6 +207,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     public void onEnhancedBookmarkDelegateInitialized(EnhancedBookmarkDelegate delegate) {
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
+        if (!delegate.isDialogUi()) getMenu().removeItem(R.id.close_menu_id);
         delegate.getModel().addObserver(mBookmarkModelObserver);
     }
 

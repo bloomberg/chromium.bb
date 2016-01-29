@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Creates NativePage objects to show chrome-native:// URLs using the native Android view system.
@@ -36,14 +35,8 @@ public class NativePageFactory {
             }
         }
 
-        protected NativePage buildBookmarksPage(Activity activity, Tab tab,
-                TabModelSelector tabModelSelector) {
-            if (DeviceFormFactor.isTablet(activity)) {
-                return EnhancedBookmarkPage.buildPage(activity, tab);
-            } else {
-                // TODO(kkimlabs): Remove BookmarksPage completely. http://crbug.com/502911
-                return BookmarksPage.buildPage(activity, tab, tabModelSelector);
-            }
+        protected NativePage buildBookmarksPage(Activity activity, Tab tab) {
+            return new EnhancedBookmarkPage(activity, tab);
         }
 
         protected NativePage buildRecentTabsPage(Activity activity, Tab tab) {
@@ -117,8 +110,7 @@ public class NativePageFactory {
                 page = sNativePageBuilder.buildNewTabPage(activity, tab, tabModelSelector);
                 break;
             case BOOKMARKS:
-                page = sNativePageBuilder.buildBookmarksPage(activity, tab, tabModelSelector);
-                if (page == null) return null;  // Enhanced Bookmarks page is not shown on phone
+                page = sNativePageBuilder.buildBookmarksPage(activity, tab);
                 break;
             case RECENT_TABS:
                 page = sNativePageBuilder.buildRecentTabsPage(activity, tab);
