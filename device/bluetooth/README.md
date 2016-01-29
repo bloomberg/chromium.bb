@@ -124,3 +124,8 @@ Thus:
             * ... and so on for characteristics and descriptors.
 
 Fake objects are controlled by `bluetooth_test_android.cc`.
+
+See also: [Class Diagram of Web Bluetooth through Bluetooth Android][Class]
+
+[Class]: https://sites.google.com/a/chromium.org/dev/developers/design-documents/bluetooth-design-docs/web-bluetooth-through-bluetooth-android-class-diagram
+

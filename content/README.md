@@ -4,3 +4,8 @@ browser.
 Developer documentation:
 http://www.chromium.org/developers/content-module
 
+Internal Documentation:
+
+* [Bluetooth](browser/bluetooth/README.md)
+
+
