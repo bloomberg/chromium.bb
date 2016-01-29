@@ -367,16 +367,25 @@ uint32_t RenderWidgetHostViewChildFrame::GetSurfaceIdNamespace() {
 
 void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
+  if (!host_)
+    return;
+
   host_->ForwardKeyboardEvent(event);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseEvent(
     const blink::WebMouseEvent& event) {
+  if (!host_)
+    return;
+
   host_->ForwardMouseEvent(event);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
+  if (!host_)
+    return;
+
   if (event.deltaX != 0 || event.deltaY != 0)
     host_->ForwardWheelEvent(event);
 }
