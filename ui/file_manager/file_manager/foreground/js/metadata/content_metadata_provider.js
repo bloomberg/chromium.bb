@@ -280,6 +280,11 @@ ContentMetadataProvider.prototype.onLog_ = function(arglist) {
 ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     function(entry, metadata) {
   return new Promise(function(resolve, reject) {
+    if (!metadata) {
+      resolve(this.createError_(entry.toURL(), 'Reading a thumbnail image',
+          "Failed to parse metadata"));
+      return;
+    }
     var item = new MetadataItem();
     var mimeType = metadata['mimeType'];
     item.contentMimeType = mimeType;
@@ -318,7 +323,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
         resolve(item);
       };
       reader.onerror = function(e) {
-        reject(this.createError_(entry.toURL(), 'Reading a thumbnail image',
+        resolve(this.createError_(entry.toURL(), 'Reading a thumbnail image',
             reader.error.toString()));
       }.bind(this);
       reader.readAsDataURL(metadata.attachedImages[0]);

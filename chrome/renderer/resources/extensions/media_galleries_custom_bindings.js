@@ -107,7 +107,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
 
   apiFunctions.setCustomCallback('getMetadata',
       function(name, request, callback, response) {
-    if (response.attachedImagesBlobInfo) {
+    if (response && response.attachedImagesBlobInfo) {
       for (var i = 0; i < response.attachedImagesBlobInfo.length; i++) {
         var blobInfo = response.attachedImagesBlobInfo[i];
         var blob = blobNatives.TakeBrowserProcessBlob(
@@ -117,7 +117,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     }
 
     if (callback)
-      callback(response.metadata);
+      callback(response ? response.metadata : null);
 
     // The UUID was in position 0 in the setUpdateArgumentsPostValidate
     // function.

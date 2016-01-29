@@ -59,6 +59,18 @@ function ImageTagsTest() {
   RunMetadataTest("test.jpg", {}, verifyMetadata);
 }
 
+function InvalidMultimediaFileTest() {
+  function verifyMetadata(metadata) {
+    chrome.test.assertEq(null, metadata);
+
+    chrome.test.succeed();
+  }
+
+  // Read a file that is not audio or video.
+  // We use getMetadata directly to test with invalid media data.
+  chrome.mediaGalleries.getMetadata(new Blob([]), verifyMetadata);
+}
+
 function MP3MIMETypeOnlyTest() {
   function verifyMetadata(metadata) {
     chrome.test.assertEq("audio/mpeg", metadata.mimeType);
@@ -181,7 +193,8 @@ chrome.test.getConfig(function(config) {
   // Should still be able to sniff MP3 MIME type without proprietary codecs.
   var testsToRun = [
     ImageMIMETypeOnlyTest,
-    ImageTagsTest
+    ImageTagsTest,
+    InvalidMultimediaFileTest
   ];
 
   if (useProprietaryCodecs) {
