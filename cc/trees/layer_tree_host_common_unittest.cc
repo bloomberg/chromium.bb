@@ -6587,10 +6587,23 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
                                gfx::Size(50, 50), true, false, true);
   SetLayerPropertiesForTesting(scroll_parent, identity_transform,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
-                               true, false, true);
+                               true, false, false);
+  scroll_parent_target->SetMasksToBounds(true);
 
-  ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(scroll_child->DrawTransform(), identity_transform);
+  float device_scale_factor = 1.5f;
+  LayerImplList render_surface_layer_list_impl;
+  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, root->bounds(), identity_transform, &render_surface_layer_list_impl,
+      root->layer_tree_impl()->current_render_surface_list_id());
+  inputs.device_scale_factor = device_scale_factor;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_EQ(scroll_child->visible_layer_rect(), gfx::Rect(10, 10, 40, 40));
+  EXPECT_EQ(scroll_child->clip_rect(), gfx::Rect(15, 15, 75, 75));
+  gfx::Transform scale;
+  scale.Scale(1.5f, 1.5f);
+  EXPECT_EQ(scroll_child->DrawTransform(), scale);
 }
 
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
