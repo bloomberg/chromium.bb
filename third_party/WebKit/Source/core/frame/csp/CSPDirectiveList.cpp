@@ -129,6 +129,11 @@ bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashVa
     return !directive || directive->allowHash(hashValue);
 }
 
+bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const
+{
+    return !directive || directive->allowDynamic();
+}
+
 bool CSPDirectiveList::checkSource(SourceListDirective* directive, const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
     return !directive || directive->allows(url, redirectStatus);
@@ -410,6 +415,11 @@ bool CSPDirectiveList::allowScriptHash(const CSPHashValue& hashValue) const
 bool CSPDirectiveList::allowStyleHash(const CSPHashValue& hashValue) const
 {
     return checkHash(operativeDirective(m_styleSrc.get()), hashValue);
+}
+
+bool CSPDirectiveList::allowDynamic() const
+{
+    return checkDynamic(operativeDirective(m_scriptSrc.get()));
 }
 
 const String& CSPDirectiveList::pluginTypesText() const

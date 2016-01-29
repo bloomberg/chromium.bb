@@ -37,6 +37,11 @@ bool SourceListDirective::allowEval() const
     return m_sourceList.allowEval();
 }
 
+bool SourceListDirective::allowDynamic() const
+{
+    return m_sourceList.allowDynamic();
+}
+
 bool SourceListDirective::allowNonce(const String& nonce) const
 {
     return m_sourceList.allowNonce(nonce.stripWhiteSpace());

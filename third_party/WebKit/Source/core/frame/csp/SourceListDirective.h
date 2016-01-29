@@ -25,6 +25,7 @@ public:
     bool allows(const KURL&, blink::ContentSecurityPolicy::RedirectStatus) const;
     bool allowInline() const;
     bool allowEval() const;
+    bool allowDynamic() const;
     bool allowNonce(const String& nonce) const;
     bool allowHash(const CSPHashValue&) const;
     bool isHashOrNoncePresent() const;

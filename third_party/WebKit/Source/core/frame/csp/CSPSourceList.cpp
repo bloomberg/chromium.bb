@@ -38,6 +38,7 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& direct
     , m_allowStar(false)
     , m_allowInline(false)
     , m_allowEval(false)
+    , m_allowDynamic(false)
     , m_hashAlgorithmsUsed(0)
 {
 }
@@ -71,6 +72,11 @@ bool CSPSourceList::allowInline() const
 bool CSPSourceList::allowEval() const
 {
     return m_allowEval;
+}
+
+bool CSPSourceList::allowDynamic() const
+{
+    return m_allowDynamic;
 }
 
 bool CSPSourceList::allowNonce(const String& nonce) const
@@ -161,6 +167,11 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
 
     if (equalIgnoringCase("'unsafe-eval'", begin, end - begin)) {
         addSourceUnsafeEval();
+        return true;
+    }
+
+    if (equalIgnoringCase("'unsafe-dynamic'", begin, end - begin)) {
+        addSourceUnsafeDynamic();
         return true;
     }
 
@@ -479,6 +490,11 @@ void CSPSourceList::addSourceUnsafeInline()
 void CSPSourceList::addSourceUnsafeEval()
 {
     m_allowEval = true;
+}
+
+void CSPSourceList::addSourceUnsafeDynamic()
+{
+    m_allowDynamic = true;
 }
 
 void CSPSourceList::addSourceNonce(const String& nonce)

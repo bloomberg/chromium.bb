@@ -159,6 +159,7 @@ public:
     // an exception, ContentSecurityPolicy does not log a violation
     // message to the console because it would be redundant.
     bool allowEval(ScriptState* = nullptr, ReportingStatus = SendReport, ExceptionStatus = WillNotThrowException) const;
+    bool allowDynamic() const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
     // Checks whether the plugin type should be allowed in the given
     // document; enforces the CSP rule that PluginDocuments inherit

@@ -303,7 +303,10 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
             request.setCrossOriginAccessControl(elementDocument->securityOrigin(), crossOrigin);
         request.setCharset(scriptCharset());
 
-        bool scriptPassesCSP = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
+        // Skip fetch-related CSP checks if the script element has a valid nonce, or if dynamically
+        // injected script is whitelisted and this script is not parser-inserted.
+        bool scriptPassesCSP = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr)) || (!isParserInserted() && elementDocument->contentSecurityPolicy()->allowDynamic());
+
         if (scriptPassesCSP)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
         request.setDefer(defer);
@@ -369,7 +372,8 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     const ContentSecurityPolicy* csp = elementDocument->contentSecurityPolicy();
     bool shouldBypassMainWorldCSP = (frame && frame->script().shouldBypassMainWorldCSP())
         || csp->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr))
-        || csp->allowScriptWithHash(sourceCode.source().toString());
+        || csp->allowScriptWithHash(sourceCode.source().toString())
+        || (!isParserInserted() && csp->allowDynamic());
 
     if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_startLineNumber, sourceCode.source().toString()))) {
         return false;
