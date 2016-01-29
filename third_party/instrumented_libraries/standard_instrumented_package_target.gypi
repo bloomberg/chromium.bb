@@ -12,7 +12,7 @@
     {
       'action_name': '<(_package_name)',
       'inputs': [
-        # TODO(earthdok): reintroduce some sort of dependency
+        # TODO(eugenis): reintroduce some sort of dependency
         # See http://crbug.com/343515
         #'download_build_install.py',
       ],

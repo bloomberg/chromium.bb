@@ -183,7 +183,7 @@ class InstrumentedPackageBuilder(object):
       self.shell_call('rm -rf %s' % self._working_dir)
 
   def fix_rpaths(self, directory):
-    # TODO(earthdok): reimplement fix_rpaths.sh in Python.
+    # TODO(eugenis): reimplement fix_rpaths.sh in Python.
     script = real_path('scripts/fix_rpaths.sh')
     self.shell_call("%s %s" % (script, directory))
 

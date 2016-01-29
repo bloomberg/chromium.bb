@@ -237,14 +237,14 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
 
   if (len == 0 || (len == -1 && errno == ECONNRESET)) {
     // EOF from the browser. We should die.
-    // TODO(earthdok): call __sanititizer_cov_dump() here to obtain code
+    // TODO(eugenis): call __sanititizer_cov_dump() here to obtain code
     // coverage for the Zygote. Currently it's not possible because of
     // confusion over who is responsible for closing the file descriptor.
     for (int fd : extra_fds_) {
       PCHECK(0 == IGNORE_EINTR(close(fd)));
     }
 #if !defined(SANITIZER_COVERAGE)
-    // TODO(earthdok): add watchdog thread before using this in builds not
+    // TODO(eugenis): add watchdog thread before using this in builds not
     // using sanitizer coverage.
     CHECK(extra_children_.empty());
 #endif

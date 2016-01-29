@@ -4388,7 +4388,7 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=address',
-                  # TODO(earthdok): Re-enable. http://crbug.com/427202
+                  # TODO(eugenis): Re-enable. http://crbug.com/427202
                   #'-fsanitize-blacklist=<(asan_blacklist)',
                 ],
                 'ldflags': [

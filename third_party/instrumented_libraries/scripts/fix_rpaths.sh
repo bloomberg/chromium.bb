@@ -11,7 +11,7 @@ function fix_rpath {
   if [ -w "$1" ]
   then
     # Only attempt to fix RPATH if the entry actually exists.
-    # FIXME(earthdok): find out why zlib1g on Precise doesn't get RPATH set.
+    # FIXME(eugenis): find out why zlib1g on Precise doesn't get RPATH set.
     if chrpath -l $1
     then
       echo "fix_rpaths.sh: fixing $1"
@@ -19,7 +19,7 @@ function fix_rpath {
         | sed s/RPATH=//g) $1
     fi
   else
-    # FIXME(earthdok): libcups2 DSOs are created non-writable, causing this
+    # FIXME(eugenis): libcups2 DSOs are created non-writable, causing this
     # script to fail. As a temporary measure, ignore non-writable files.
     echo "fix_rpaths.sh: skipping non-writable file $1"
   fi

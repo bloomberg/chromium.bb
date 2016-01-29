@@ -25,7 +25,7 @@ char kLSanDefaultSuppressions[] =
 // Leaks in Nvidia's libGL.
 "leak:libGL.so\n"
 
-// TODO(earthdok): revisit NSS suppressions after the switch to BoringSSL
+// TODO(eugenis): revisit NSS suppressions after the switch to BoringSSL
 // NSS leaks in CertDatabaseNSSTest tests. http://crbug.com/51988
 "leak:net::NSSCertDatabase::ImportFromPKCS12\n"
 "leak:net::NSSCertDatabase::ListCerts\n"

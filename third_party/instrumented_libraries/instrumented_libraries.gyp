@@ -530,7 +530,7 @@
     {
       'package_name': 'nss',
       'dependencies=': [
-        # TODO(earthdok): get rid of this dependency
+        # TODO(eugenis): get rid of this dependency
         '<(_sanitizer_type)-libnspr4',
       ],
       'patch': 'patches/nss.diff',
@@ -630,7 +630,7 @@
           '--disable-static',
           # Without this flag there's a linking step that doesn't honor LDFLAGS
           # and fails.
-          # TODO(earthdok): find a better fix.
+          # TODO(eugenis): find a better fix.
           '--disable-gudev'
       ],
       'pre_build': 'scripts/pre-build/udev.sh',
@@ -726,7 +726,7 @@
           '--enable-gtk-doc',
           # --enable-introspection introduces a build step that attempts to run
           # a just-built binary and crashes. Vala requires introspection.
-          # TODO(earthdok): find a better fix.
+          # TODO(eugenis): find a better fix.
           '--disable-introspection',
           '--disable-vala',
       ],

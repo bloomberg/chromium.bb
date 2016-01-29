@@ -12,7 +12,7 @@ then
   sudo goobuntu-config set include_deb_src true
 fi
 
-# TODO(earthdok): find a way to pull the list from the build config.
+# TODO(eugenis): find a way to pull the list from the build config.
 common_packages="\
 atk1.0 \
 dee \

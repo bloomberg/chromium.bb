@@ -240,7 +240,7 @@ int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
     // than suppress. See http://crbug.com/176888#c7
     // In theory any CUPS function can trigger this leak, but in
     // PrintBackendCUPS, this is the most likely spot.
-    // TODO(earthdok): remove this once the leak is fixed.
+    // TODO(eugenis): remove this once the leak is fixed.
     ANNOTATE_SCOPED_MEMORY_LEAK;
     return cupsGetDests(dests);
   } else {
