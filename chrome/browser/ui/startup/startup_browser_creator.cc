@@ -24,6 +24,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_profile.h"
@@ -556,14 +558,16 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     GURL url = GURL(param.MaybeAsASCII());
 
 #if defined(OS_WIN)
-    if (ShouldRedirectWindowsDesktopSearchToDefaultSearchEngine(
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile);
+    DCHECK(template_url_service);
+    base::string16 search_terms;
+    if (DetectWindowsDesktopSearch(
+            url, template_url_service->search_terms_data(), &search_terms)) {
+      base::RecordAction(base::UserMetricsAction("DesktopSearch"));
+
+      if (ShouldRedirectWindowsDesktopSearchToDefaultSearchEngine(
             profile->GetPrefs())) {
-      TemplateURLService* template_url_service =
-          TemplateURLServiceFactory::GetForProfile(profile);
-      DCHECK(template_url_service);
-      base::string16 search_terms;
-      if (DetectWindowsDesktopSearch(
-              url, template_url_service->search_terms_data(), &search_terms)) {
         const GURL search_url(GetDefaultSearchURLForSearchTerms(
             template_url_service, search_terms));
         if (search_url.is_valid()) {

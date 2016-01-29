@@ -2646,6 +2646,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="DesktopSearch">
+  <owner>fdoray@chromium.org</owner>
+  <description>
+    Recorded when a desktop search is opened in Chrome. This is currently
+    Windows-specific.
+  </description>
+</action>
+
 <action name="Desktop_SwitchTask">
   <owner>bruthig@google.com</owner>
   <owner>tdanderson@google.com</owner>
