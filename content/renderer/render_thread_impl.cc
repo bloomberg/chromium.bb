@@ -965,14 +965,27 @@ void RenderThreadImpl::Shutdown() {
   // Shut down the message loop and the renderer scheduler before shutting down
   // Blink. This prevents a scenario where a pending task in the message loop
   // accesses Blink objects after Blink shuts down.
-  // This must be at the very end of the shutdown sequence. You must not touch
-  // the message loop after this.
   renderer_scheduler_->Shutdown();
-  main_message_loop_.reset();
+  if (main_message_loop_)
+    main_message_loop_->RunUntilIdle();
+
   if (blink_platform_impl_) {
     blink_platform_impl_->Shutdown();
+    // This must be at the very end of the shutdown sequence.
+    // blink::shutdown() must be called after all strong references from
+    // Chromium to Blink are cleared.
     blink::shutdown();
   }
+
+  // Delay shutting down DiscardableSharedMemoryManager until blink::shutdown
+  // is complete, because blink::shutdown destructs Blink Resources and they
+  // may try to unlock their underlying discardable memory.
+  ChildThreadImpl::ShutdownDiscardableSharedMemoryManager();
+
+  // The message loop must be cleared after shutting down
+  // the DiscardableSharedMemoryManager, which needs to send messages
+  // to the browser process.
+  main_message_loop_.reset();
 
   lazy_tls.Pointer()->Set(NULL);
 }

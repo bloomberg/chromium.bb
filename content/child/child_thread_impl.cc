@@ -518,8 +518,9 @@ void ChildThreadImpl::Shutdown() {
   file_system_dispatcher_.reset();
   quota_dispatcher_.reset();
   WebFileSystemImpl::DeleteThreadSpecificInstance();
-  // ChildDiscardableSharedMemoryManager has to be destroyed while
-  // |thread_safe_sender_| and |message_loop_| are still valid.
+}
+
+void ChildThreadImpl::ShutdownDiscardableSharedMemoryManager() {
   discardable_shared_memory_manager_.reset();
 }
 

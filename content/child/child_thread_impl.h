@@ -80,6 +80,7 @@ class CONTENT_EXPORT ChildThreadImpl
   // should be joined in Shutdown().
   ~ChildThreadImpl() override;
   virtual void Shutdown();
+  void ShutdownDiscardableSharedMemoryManager();
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
