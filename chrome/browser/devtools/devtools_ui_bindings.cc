@@ -651,10 +651,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
                                              const std::string& headers,
                                              int stream_id) {
   GURL gurl(url);
-  bool schemeIsAllowed = gurl.is_valid() &&
-      (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
-       gurl.SchemeIs(url::kDataScheme) || gurl.SchemeIs(url::kFtpScheme));
-  if (!gurl.is_valid() || !schemeIsAllowed) {
+  if (!gurl.is_valid()) {
     base::DictionaryValue response;
     response.SetInteger("statusCode", 404);
     callback.Run(&response);
