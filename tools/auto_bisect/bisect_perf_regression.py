@@ -54,8 +54,8 @@ import StringIO
 import sys
 import time
 
-sys.path.append(os.path.join(
-    os.path.dirname(__file__), os.path.pardir, 'telemetry'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
+                             'third_party', 'catapult', 'telemetry'))
 
 from bisect_printer import BisectPrinter
 from bisect_results import BisectResults

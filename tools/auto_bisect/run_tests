@@ -28,7 +28,7 @@ def main():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout, format=fmt)
 
   # Running the tests depends on having the below modules in PYTHONPATH.
-  sys.path.append(os.path.join(SRC, 'tools', 'telemetry'))
+  sys.path.append(os.path.join(SRC, 'third_party', 'catapult', 'telemetry'))
   sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 
   suite = unittest.TestSuite()

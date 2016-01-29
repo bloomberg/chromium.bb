@@ -15,7 +15,7 @@ import os
 # Paths to bisect config files relative to this script.
 CONFIG_FILES = [
     'bisect.cfg',
-    os.path.join(os.path.pardir, 'run-perf-test.cfg'),
+    os.path.join('..', 'run-perf-test.cfg'),
 ]
 
 
@@ -88,10 +88,9 @@ def _RunUnitTests(input_api, output_api):
 def _RunPyLint(input_api, output_api):
   """Runs unit tests for auto-bisect."""
   telemetry_path = os.path.join(
-      input_api.PresubmitLocalPath(), os.path.pardir, 'telemetry')
+      input_api.PresubmitLocalPath(), '..', '..', 'third_party', 'telemetry')
   mock_path = os.path.join(
-      input_api.PresubmitLocalPath(), os.path.pardir, os.path.pardir,
-      'third_party', 'pymock')
+      input_api.PresubmitLocalPath(), '..', '..', 'third_party', 'pymock')
   disabled_warnings = [
       'relative-import',
   ]
