@@ -379,7 +379,7 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
         var media = medias[i];
         InspectorTest.addResult(media.textContent);
     }
-    var selector = section._titleElement.querySelector(".selector");
+    var selector = section._titleElement.querySelector(".selector") || section._titleElement.querySelector(".keyframe-key");
     var selectorText = includeSelectorGroupMarks ? buildMarkedSelectors(selector) : selector.textContent;
     // Dump " {".
     selectorText += selector.nextSibling.textContent;

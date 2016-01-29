@@ -1,0 +1,69 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="../styles/resources/keyframes.css">
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<style>
+@keyframes animName {
+    from, 20% {
+        margin-left: 200px;
+        color: red;
+    }
+    to {
+        margin-left: 500px;
+    }
+}
+</style>
+<script>
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("element", step1);
+
+    function step1()
+    {
+        InspectorTest.addResult("=== Before key modification ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+        var section = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[1].sections[1];
+        section.startEditingSelector();
+        section._selectorElement.textContent = "1%";
+        section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        InspectorTest.waitForSelectorCommitted(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("=== After key modification ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.domModel.undo();
+        InspectorTest.waitForStyles("element", step3, true);
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult("=== After undo ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+
+        InspectorTest.domModel.redo();
+        InspectorTest.waitForStyles("element", step4, true);
+    }
+
+    function step4()
+    {
+        InspectorTest.addResult("=== After redo ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<div id="element"></div>
+<p>
+Tests that keyframes are shown in styles pane.
+</p>
+
+</body>
+</html>

@@ -371,7 +371,8 @@ public:
     enum Type {
         SetRuleSelector,
         SetStyleText,
-        SetMediaRuleText
+        SetMediaRuleText,
+        SetKeyframeKey
     };
 
     ModifyRuleAction(Type type, InspectorStyleSheet* styleSheet, const SourceRange& range, const String& text)
@@ -398,6 +399,8 @@ public:
             return m_styleSheet->setStyleText(m_newRange, m_oldText, nullptr, nullptr, exceptionState);
         case SetMediaRuleText:
             return m_styleSheet->setMediaRuleText(m_newRange, m_oldText, nullptr, nullptr, exceptionState);
+        case SetKeyframeKey:
+            return m_styleSheet->setKeyframeKey(m_newRange, m_oldText, nullptr, nullptr, exceptionState);
         default:
             ASSERT_NOT_REACHED();
         }
@@ -415,6 +418,9 @@ public:
             break;
         case SetMediaRuleText:
             m_cssRule = m_styleSheet->setMediaRuleText(m_oldRange, m_newText, &m_newRange, &m_oldText, exceptionState);
+            break;
+        case SetKeyframeKey:
+            m_cssRule = m_styleSheet->setKeyframeKey(m_oldRange, m_newText, &m_newRange, &m_oldText, exceptionState);
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -838,7 +844,7 @@ void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBui
     }
 }
 
-void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoElementMatches>>& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries)
+void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoElementMatches>>& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>>& cssKeyframesRules)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element) {
@@ -914,6 +920,8 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
         parentElement = parentElement->parentOrShadowHostElement();
     }
     inheritedEntries = entries.release();
+
+    cssKeyframesRules = animationsForNode(element);
 }
 
 template<class CSSRuleCollection>
@@ -936,33 +944,15 @@ static CSSKeyframesRule* findKeyframesRule(CSSRuleCollection* cssRules, StyleRul
     return result;
 }
 
-void InspectorCSSAgent::getCSSAnimationsForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>>& cssKeyframesRules)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>> InspectorCSSAgent::animationsForNode(Element* element)
 {
-    Element* element = elementForId(errorString, nodeId);
-    if (!element) {
-        *errorString = "Node not found";
-        return;
-    }
-
-    PseudoId elementPseudoId = element->pseudoId();
-    if (elementPseudoId) {
-        element = element->parentOrShadowHostElement();
-        if (!element) {
-            *errorString = "Pseudo element has no parent";
-            return;
-        }
-    }
-
-    cssKeyframesRules = TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>> cssKeyframesRules = TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>::create();
     Document* ownerDocument = element->ownerDocument();
-    // A non-active document has no styles.
-    if (!ownerDocument->isActive())
-        return;
 
     StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
     RefPtr<ComputedStyle> style = styleResolver.styleForElement(element);
     if (!style)
-        return;
+        return cssKeyframesRules;
     const CSSAnimationData* animationData = style->animations();
     for (size_t i = 0; animationData && i < animationData->nameList().size(); ++i) {
         AtomicString animationName(animationData->nameList()[i]);
@@ -986,8 +976,10 @@ void InspectorCSSAgent::getCSSAnimationsForNode(ErrorString* errorString, int no
             continue;
 
         RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframeRule>> keyframes = TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframeRule>::create();
-        for (unsigned j = 0; j < cssKeyframesRule->length(); ++j)
-            keyframes->addItem(buildObjectForKeyframeRule(cssKeyframesRule->item(j)));
+        for (unsigned j = 0; j < cssKeyframesRule->length(); ++j) {
+            InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(cssKeyframesRule->parentStyleSheet());
+            keyframes->addItem(inspectorStyleSheet->buildObjectForKeyframeRule(cssKeyframesRule->item(j)));
+        }
 
         InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(cssKeyframesRule->parentStyleSheet());
         RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = inspectorStyleSheet->sourceDataForRule(cssKeyframesRule);
@@ -998,6 +990,7 @@ void InspectorCSSAgent::getCSSAnimationsForNode(ErrorString* errorString, int no
             .setKeyframes(keyframes);
         cssKeyframesRules->addItem(keyframesRuleObject);
     }
+    return cssKeyframesRules;
 }
 
 void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle)
@@ -1179,6 +1172,36 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
             return;
         }
         result = inspectorStyleSheet->buildObjectForSelectorList(rule.get());
+    }
+    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+}
+
+void InspectorCSSAgent::setKeyframeKey(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& keyText, RefPtr<TypeBuilder::CSS::Value>& result)
+{
+    FrontendOperationScope scope;
+    InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
+    if (!inspectorStyleSheet) {
+        *errorString = "Stylesheet not found";
+        return;
+    }
+    SourceRange keyRange;
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &keyRange))
+        return;
+
+    TrackExceptionState exceptionState;
+    RefPtrWillBeRawPtr<ModifyRuleAction> action = adoptRefWillBeNoop(new ModifyRuleAction(ModifyRuleAction::SetKeyframeKey, inspectorStyleSheet, keyRange, keyText));
+    bool success = m_domAgent->history()->perform(action, exceptionState);
+    if (success) {
+        RefPtrWillBeRawPtr<CSSKeyframeRule> rule = toCSSKeyframeRule(action->takeRule().get());
+        InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(rule->parentStyleSheet());
+        if (!inspectorStyleSheet) {
+            *errorString = "Failed to get inspector style sheet for rule.";
+            return;
+        }
+
+        RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = inspectorStyleSheet->sourceDataForRule(rule);
+        result = TypeBuilder::CSS::Value::create().setText(rule->keyText());
+        result->setRange(inspectorStyleSheet->buildSourceRangeObject(sourceData->ruleHeaderRange));
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
@@ -1718,19 +1741,6 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
     }
 
     return result;
-}
-
-PassRefPtr<TypeBuilder::CSS::CSSKeyframeRule> InspectorCSSAgent::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
-{
-    InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(keyframeRule->parentStyleSheet());
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = inspectorStyleSheet->sourceDataForRule(keyframeRule);
-    RefPtr<TypeBuilder::CSS::Value> keyText = TypeBuilder::CSS::Value::create().setText(keyframeRule->keyText());
-    keyText->setRange(inspectorStyleSheet->buildSourceRangeObject(sourceData->ruleHeaderRange));
-    RefPtr<TypeBuilder::CSS::CSSKeyframeRule> object = TypeBuilder::CSS::CSSKeyframeRule::create()
-        // TODO(samli): keyText() normalises 'from' and 'to' keyword values.
-        .setKeyText(keyText)
-        .setStyle(inspectorStyleSheet->buildObjectForStyle(keyframeRule->style()));
-    return object;
 }
 
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttributesStyle(Element* element)

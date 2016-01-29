@@ -147,7 +147,7 @@ InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback, omitL
 
 InspectorTest.loadAndDumpCSSAnimationsForNode = function(nodeId, callback)
 {
-    InspectorTest.sendCommandOrDie("CSS.getCSSAnimationsForNode", { "nodeId": nodeId }, cssAnimationsLoaded);
+    InspectorTest.sendCommandOrDie("CSS.getMatchedStylesForNode", { "nodeId": nodeId }, cssAnimationsLoaded);
 
     function cssAnimationsLoaded(result)
     {

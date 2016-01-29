@@ -48,7 +48,7 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(rule.style);
-                    rule.setSelectorText(nodeId, "body", successCallback);
+                    rule.setSelectorText(nodeId, "body").then(successCallback);
                 }
             }
 

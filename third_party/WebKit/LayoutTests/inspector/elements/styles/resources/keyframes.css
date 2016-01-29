@@ -4,13 +4,13 @@
 
 @keyframes styleSheetAnim {
     from {
-        width: 100px;
+        padding-left: 100px;
     }
     10% {
-        width: 150px;
+        padding-left: 150px;
     }
     100% {
-        width: 200px;
+        padding-left: 200px;
     }
 }
 

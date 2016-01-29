@@ -40,25 +40,25 @@ function test()
 
     function step1(node)
     {
-        InspectorTest.CSSAgent.getCSSAnimationsForNode(node.id, onCSSAnimations.bind(null, node.id));
+        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onCSSAnimations.bind(null, node.id));
     }
 
-    function onCSSAnimations(nodeId, error, rules)
+    function onCSSAnimations(nodeId, error, inlinePayload, attributesPayload, matchedPayload, pseudoPayload, inheritedPayload, animationsPayload)
     {
-        for (var i = 0; i < rules.length; ++i)
-            dumpRule(rules[i]);
+        for (var i = 0; i < animationsPayload.length; ++i)
+            dumpRule(animationsPayload[i]);
 
         InspectorTest.addResult("\n>> Modifying keyframe rule");
-        var style = new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, rules[1].keyframes[0].style, WebInspector.CSSStyleDeclaration.Type.Regular);
+        var style = new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, animationsPayload[1].keyframes[0].style, WebInspector.CSSStyleDeclaration.Type.Regular);
         style.setText("width: 123px");
 
-        InspectorTest.CSSAgent.getCSSAnimationsForNode(nodeId, onModifiedAnimations);
+        InspectorTest.CSSAgent.getMatchedStylesForNode(nodeId, onModifiedAnimations);
     }
 
-    function onModifiedAnimations(error, rules)
+    function onModifiedAnimations(error, inlinePayload, attributesPayload, matchedPayload, pseudoPayload, inheritedPayload, animationsPayload)
     {
-        for (var i = 0; i < rules.length; ++i)
-            dumpRule(rules[i]);
+        for (var i = 0; i < animationsPayload.length; ++i)
+            dumpRule(animationsPayload[i]);
         InspectorTest.completeTest();
     }
 }

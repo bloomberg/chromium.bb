@@ -17,8 +17,8 @@
         assert_equals(rules[i].findRule('0%').cssText, '0% { right: 0px; }');
         assert_equals(rules[i].findRule('   0%   ').cssText, '0% { right: 0px; }');
         assert_equals(rules[i].findRule('from').cssText, '0% { right: 0px; }');
-        assert_equals(rules[i].findRule('    FROM ,    50%   , 100%  ').cssText, '0%,50%,100% { left: 100px; }');
-        assert_equals(rules[i].findRule('  0% , 50%, to  ').cssText, '0%,50%,100% { left: 100px; }');
+        assert_equals(rules[i].findRule('    FROM ,    50%   , 100%  ').cssText, '0%, 50%, 100% { left: 100px; }');
+        assert_equals(rules[i].findRule('  0% , 50%, to  ').cssText, '0%, 50%, 100% { left: 100px; }');
         assert_equals(rules[i].findRule('100%').cssText, '100% { right: 100px; }');
         assert_equals(rules[i].findRule('to').cssText, '100% { right: 100px; }');
         assert_equals(rules[i].findRule('1%'), null);

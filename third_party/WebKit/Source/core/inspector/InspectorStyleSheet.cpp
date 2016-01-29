@@ -372,6 +372,28 @@ bool verifyStyleText(Document* document, const String& text)
     return verifyRuleText(document, "div {" + text + "}");
 }
 
+bool verifyKeyframeKeyText(Document* document, const String& keyText)
+{
+    RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(strictCSSParserContext());
+    RuleSourceDataList sourceData;
+    String text = "@keyframes boguzAnim { " + keyText + " { -webkit-boguz-propertee : none; } }";
+    StyleSheetHandler handler(text, document, &sourceData);
+    CSSParser::parseSheetForInspector(parserContextForDocument(document), styleSheet.get(), text, handler);
+
+    // Exactly two should be parsed.
+    unsigned ruleCount = sourceData.size();
+    if (ruleCount != 2 || sourceData.at(0)->type != StyleRule::Keyframes || sourceData.at(1)->type != StyleRule::Keyframe)
+        return false;
+
+    // Exactly one property should be in keyframe rule.
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(1)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
+    if (propertyCount != 1)
+        return false;
+
+    return true;
+}
+
 bool verifySelectorText(Document* document, const String& selectorText)
 {
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
@@ -996,6 +1018,34 @@ RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::setRuleSelector(const Sour
     return styleRule;
 }
 
+PassRefPtrWillBeRawPtr<CSSKeyframeRule> InspectorStyleSheet::setKeyframeKey(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
+{
+    if (!verifyKeyframeKeyText(m_pageStyleSheet->ownerDocument(), text)) {
+        exceptionState.throwDOMException(SyntaxError, "Keyframe key text is not valid.");
+        return nullptr;
+    }
+
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = findRuleByHeaderRange(range);
+    if (!sourceData || !sourceData->styleSourceData) {
+        exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing source range");
+        return nullptr;
+    }
+
+    RefPtrWillBeRawPtr<CSSRule> rule = ruleForSourceData(sourceData);
+    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::KEYFRAME_RULE) {
+        exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
+        return nullptr;
+    }
+
+    RefPtrWillBeRawPtr<CSSKeyframeRule> keyframeRule = toCSSKeyframeRule(rule.get());
+    keyframeRule->setKeyText(text, exceptionState);
+
+    replaceText(sourceData->ruleHeaderRange, text, newRange, oldText);
+    onStyleSheetTextChanged();
+
+    return keyframeRule;
+}
+
 PassRefPtrWillBeRawPtr<CSSRule> InspectorStyleSheet::setStyleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
 {
     if (!verifyStyleText(m_pageStyleSheet->ownerDocument(), text)) {
@@ -1367,6 +1417,24 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWit
             result->setStyleSheetId(id());
     }
 
+    return result.release();
+}
+
+PassRefPtr<TypeBuilder::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
+{
+    CSSStyleSheet* styleSheet = pageStyleSheet();
+    if (!styleSheet)
+        return nullptr;
+
+    RefPtr<TypeBuilder::CSS::Value> keyText = TypeBuilder::CSS::Value::create().setText(keyframeRule->keyText());
+    keyText->setRange(buildSourceRangeObject(sourceDataForRule(keyframeRule)->ruleHeaderRange));
+    RefPtr<TypeBuilder::CSS::CSSKeyframeRule> result = TypeBuilder::CSS::CSSKeyframeRule::create()
+        // TODO(samli): keyText() normalises 'from' and 'to' keyword values.
+        .setKeyText(keyText)
+        .setOrigin(m_origin)
+        .setStyle(buildObjectForStyle(keyframeRule->style()));
+    if (canBind(m_origin) && !id().isEmpty())
+        result->setStyleSheetId(id());
     return result.release();
 }
 
