@@ -248,7 +248,7 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
     InspectorInstrumentation::willSendRequest(frame(), identifier, ensureLoaderForNotifications(), request, redirectResponse, initiatorInfo);
 }
 
-void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, ResourceLoader* resourceLoader)
+void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, ResourceLoader* resourceLoader)
 {
     LinkLoader::CanLoadResources resourceLoadingPolicy = LinkLoader::LoadResourcesAndPreconnect;
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
@@ -262,8 +262,8 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
     }
     LinkLoader::loadLinkFromHeader(response.httpHeaderField(HTTPNames::Link), frame()->document(), NetworkHintsInterfaceImpl(), resourceLoadingPolicy);
 
-    if (response.hasMajorCertificateErrors() && resourceLoader)
-        MixedContentChecker::handleCertificateError(frame(), resourceLoader->originalRequest(), response);
+    if (response.hasMajorCertificateErrors())
+        MixedContentChecker::handleCertificateError(frame(), response, frameType, requestContext);
 
     frame()->loader().progress().incrementProgress(identifier, response);
     frame()->loader().client()->dispatchDidReceiveResponse(m_documentLoader, identifier, response);
@@ -308,8 +308,7 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier, const Resource
         frame()->console().didFailLoading(identifier, error);
 }
 
-
-void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const Resource* resource)
+void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const Resource* resource, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
 {
     ResourceRequest request(resource->url());
     unsigned long identifier = createUniqueIdentifier();
@@ -318,7 +317,7 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const Resource* r
 
     InspectorInstrumentation::markResourceAsCached(frame(), identifier);
     if (!resource->response().isNull())
-        dispatchDidReceiveResponse(identifier, resource->response());
+        dispatchDidReceiveResponse(identifier, resource->response(), frameType, requestContext);
 
     if (resource->encodedSize() > 0)
         dispatchDidReceiveData(identifier, 0, resource->encodedSize(), 0);

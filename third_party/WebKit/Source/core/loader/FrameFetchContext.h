@@ -73,8 +73,8 @@ public:
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const override;
     void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
     void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-    void dispatchDidLoadResourceFromMemoryCache(const Resource*) override;
-    void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0) override;
+    void dispatchDidLoadResourceFromMemoryCache(const Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext) override;
+    void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, ResourceLoader* = 0) override;
     void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength) override;
     void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength)  override;
     void dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength) override;

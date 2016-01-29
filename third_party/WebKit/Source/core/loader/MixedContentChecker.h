@@ -78,7 +78,7 @@ public:
     // for a mixed content check for the given frame type.
     static Frame* effectiveFrameForFrameType(LocalFrame*, WebURLRequest::FrameType);
 
-    static void handleCertificateError(LocalFrame*, const ResourceRequest&, const ResourceResponse&);
+    static void handleCertificateError(LocalFrame*, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext);
 
 private:
     FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);

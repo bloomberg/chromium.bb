@@ -248,7 +248,7 @@ static const int kMaxValidatedURLsSize = 10000;
 void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type, bool isStaticData)
 {
     if (type == ResourceLoadingFromCache && resource->status() == Resource::Cached && !m_validatedURLs.contains(resource->url()))
-        context().dispatchDidLoadResourceFromMemoryCache(resource);
+        context().dispatchDidLoadResourceFromMemoryCache(resource, request.resourceRequest().frameType(), request.resourceRequest().requestContext());
 
     if (isStaticData)
         return;
@@ -928,7 +928,7 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
             return;
         }
     }
-    context().dispatchDidReceiveResponse(resource->identifier(), response, resource->loader());
+    context().dispatchDidReceiveResponse(resource->identifier(), response, resource->resourceRequest().frameType(), resource->resourceRequest().requestContext(), resource->loader());
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)

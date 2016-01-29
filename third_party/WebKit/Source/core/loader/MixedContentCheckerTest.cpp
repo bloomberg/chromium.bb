@@ -93,24 +93,19 @@ TEST(MixedContentCheckerTest, HandleCertificateError)
     KURL ranUrl(KURL(), "https://example-ran.test");
 
     dummyPageHolder->frame().document()->setURL(mainResourceUrl);
-    ResourceRequest request1(ranUrl);
-    request1.setRequestContext(WebURLRequest::RequestContextScript);
-    request1.setFrameType(WebURLRequest::FrameTypeNone);
     ResourceResponse response1;
     response1.setURL(ranUrl);
     response1.setSecurityInfo("security info1");
     EXPECT_CALL(*client, didRunContentWithCertificateErrors(ranUrl, response1.getSecurityInfo(), WebURL(mainResourceUrl), CString()));
-    MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), request1, response1);
+    MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), response1, WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextScript);
 
-    ResourceRequest request2(displayedUrl);
-    request2.setRequestContext(WebURLRequest::RequestContextImage);
-    request2.setFrameType(WebURLRequest::FrameTypeNone);
     ResourceResponse response2;
-    ASSERT_EQ(MixedContentChecker::ContextTypeOptionallyBlockable, MixedContentChecker::contextTypeFromContext(request2.requestContext(), &dummyPageHolder->frame()));
+    WebURLRequest::RequestContext requestContext = WebURLRequest::RequestContextImage;
+    ASSERT_EQ(MixedContentChecker::ContextTypeOptionallyBlockable, MixedContentChecker::contextTypeFromContext(requestContext, &dummyPageHolder->frame()));
     response2.setURL(displayedUrl);
     response2.setSecurityInfo("security info2");
     EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(displayedUrl, response2.getSecurityInfo(), WebURL(mainResourceUrl), CString()));
-    MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), request2, response2);
+    MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), response2, WebURLRequest::FrameTypeNone, requestContext);
 }
 
 } // namespace blink

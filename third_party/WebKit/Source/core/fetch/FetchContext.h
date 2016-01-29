@@ -75,8 +75,8 @@ public:
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
     virtual void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
-    virtual void dispatchDidLoadResourceFromMemoryCache(const Resource*);
-    virtual void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0);
+    virtual void dispatchDidLoadResourceFromMemoryCache(const Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext);
+    virtual void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, ResourceLoader* = 0);
     virtual void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     virtual void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength);
     virtual void dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength);

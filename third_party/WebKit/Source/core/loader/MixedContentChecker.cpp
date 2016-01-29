@@ -474,9 +474,8 @@ Frame* MixedContentChecker::effectiveFrameForFrameType(LocalFrame* frame, WebURL
     return parentFrame;
 }
 
-void MixedContentChecker::handleCertificateError(LocalFrame* frame, const ResourceRequest& request, const ResourceResponse& response)
+void MixedContentChecker::handleCertificateError(LocalFrame* frame, const ResourceResponse& response, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
 {
-    WebURLRequest::FrameType frameType = request.frameType();
     Frame* effectiveFrame = effectiveFrameForFrameType(frame, frameType);
     if (frameType == WebURLRequest::FrameTypeTopLevel || !effectiveFrame)
         return;
@@ -491,7 +490,6 @@ void MixedContentChecker::handleCertificateError(LocalFrame* frame, const Resour
     // distinguish mixed content signals from different frames on the
     // same page.
     FrameLoaderClient* client = frame->loader().client();
-    WebURLRequest::RequestContext requestContext = request.requestContext();
     ContextType contextType = MixedContentChecker::contextTypeFromContext(requestContext, effectiveFrame);
     if (contextType == ContextTypeBlockable) {
         client->didRunContentWithCertificateErrors(response.url(), response.getSecurityInfo(), mainResourceUrlForFrame(effectiveFrame), localEffectiveFrame->loader().documentLoader()->response().getSecurityInfo());
