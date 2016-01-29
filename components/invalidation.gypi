@@ -165,6 +165,8 @@
         # Note: sources list duplicated in GN build.
         'invalidation/impl/fake_invalidation_handler.cc',
         'invalidation/impl/fake_invalidation_handler.h',
+        'invalidation/impl/fake_invalidation_service.cc',
+        'invalidation/impl/fake_invalidation_service.h',
         'invalidation/impl/fake_invalidation_state_tracker.cc',
         'invalidation/impl/fake_invalidation_state_tracker.h',
         'invalidation/impl/fake_invalidator.cc',

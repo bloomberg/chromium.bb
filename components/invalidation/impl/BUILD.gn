@@ -151,6 +151,8 @@ static_library("test_support") {
   sources = [
     "fake_invalidation_handler.cc",
     "fake_invalidation_handler.h",
+    "fake_invalidation_service.cc",
+    "fake_invalidation_service.h",
     "fake_invalidation_state_tracker.cc",
     "fake_invalidation_state_tracker.h",
     "fake_invalidator.cc",
@@ -176,7 +178,9 @@ static_library("test_support") {
     "//base",
     "//components/gcm_driver:test_support",
     "//components/keyed_service/core",
+    "//components/signin/core/browser:test_support",
     "//google_apis",
+    "//google_apis:test_support",
     "//jingle:notifier",
     "//net",
     "//testing/gmock",

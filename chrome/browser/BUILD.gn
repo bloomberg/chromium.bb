@@ -1093,8 +1093,6 @@ source_set("test_support") {
     "download/download_test_file_activity_observer.h",
     "download/test_download_shelf.cc",
     "download/test_download_shelf.h",
-    "invalidation/fake_invalidation_service.cc",
-    "invalidation/fake_invalidation_service.h",
     "media/fake_desktop_media_list.cc",
     "media/fake_desktop_media_list.h",
     "net/dns_probe_test_util.cc",

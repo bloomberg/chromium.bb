@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INVALIDATION_FAKE_INVALIDATION_SERVICE_H_
-#define CHROME_BROWSER_INVALIDATION_FAKE_INVALIDATION_SERVICE_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATION_SERVICE_H_
+#define COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATION_SERVICE_H_
 
 #include <list>
 #include <utility>
@@ -69,4 +69,4 @@ class FakeInvalidationService : public InvalidationService {
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_FAKE_INVALIDATION_SERVICE_H_
+#endif  // COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATION_SERVICE_H_

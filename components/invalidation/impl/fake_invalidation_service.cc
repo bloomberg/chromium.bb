@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/fake_invalidation_service.h"
+#include "components/invalidation/impl/fake_invalidation_service.h"
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/values.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 

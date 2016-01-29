@@ -23,7 +23,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -46,6 +45,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
+#include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
@@ -177,7 +177,7 @@ class TestTypedUrlSyncableService : public TypedUrlSyncableService {
   // suite, and make sure typed_url_syncable_service_unittest.cc and the various
   // typed url integration tests.
  public:
-  TestTypedUrlSyncableService(history::HistoryBackend* history_backend)
+  explicit TestTypedUrlSyncableService(history::HistoryBackend* history_backend)
       : TypedUrlSyncableService(history_backend) {}
 
   static void WriteToSyncNode(const history::URLRow& url,
