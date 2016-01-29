@@ -741,6 +741,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->settings()->setRootLayerScrolls(
       command_line.HasSwitch(switches::kRootLayerScrolls));
+  webview()->settings()->setScrollAnchoringEnabled(
+      command_line.HasSwitch(switches::kEnableScrollAnchoring));
 
   ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
 

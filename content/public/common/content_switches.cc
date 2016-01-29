@@ -431,6 +431,9 @@ const char kV8SnapshotPassedByFD[] = "v8-snapshot-passed-by-fd";
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 
+// Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
+const char kEnableScrollAnchoring[]         = "enable-scroll-anchoring";
+
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 

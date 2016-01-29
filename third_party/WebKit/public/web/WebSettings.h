@@ -191,6 +191,7 @@ public:
     virtual void setRootLayerScrolls(bool) = 0;
     virtual void setRubberBandingOnCompositorThread(bool) = 0;
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
+    virtual void setScrollAnchoringEnabled(bool) = 0;
     virtual void setSelectTrailingWhitespaceEnabled(bool) = 0;
     virtual void setSelectionIncludesAltImageText(bool) = 0;
     virtual void setSelectionStrategy(SelectionStrategyType) = 0;

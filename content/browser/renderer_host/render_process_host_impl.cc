@@ -1443,6 +1443,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePrefixedEncryptedMedia,
     switches::kEnableRGBA4444Textures,
     switches::kEnableRendererMojoChannel,
+    switches::kEnableScrollAnchoring,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSlimmingPaintV2,
     switches::kEnableSmoothScrolling,
