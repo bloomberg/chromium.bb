@@ -961,6 +961,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
             } catch (ActivityNotFoundException ex) {
                 Log.d(TAG, "activity not found for " + intent.getType()
                         + " over " + intent.getData().getScheme(), ex);
+            } catch (SecurityException ex) {
+                Log.d(TAG, "cannot open intent: " + intent, ex);
             }
         }
         return false;
