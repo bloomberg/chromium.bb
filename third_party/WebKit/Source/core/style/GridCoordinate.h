@@ -31,7 +31,7 @@
 #ifndef GridCoordinate_h
 #define GridCoordinate_h
 
-#include "core/style/GridResolvedPosition.h"
+#include "core/style/GridPositionsResolver.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"

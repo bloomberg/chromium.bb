@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GridResolvedPosition_h
-#define GridResolvedPosition_h
+#ifndef GridPositionsResolver_h
+#define GridPositionsResolver_h
 
 #include "core/style/GridPosition.h"
 #include "wtf/Allocator.h"
@@ -27,8 +27,7 @@ enum GridTrackSizingDirection {
 };
 
 // This is a utility class with all the code related to grid items positions resolution.
-// TODO(rego): Rename class to GridPositionsResolver.
-class GridResolvedPosition {
+class GridPositionsResolver {
     DISALLOW_NEW();
 public:
 
@@ -47,4 +46,4 @@ public:
 
 } // namespace blink
 
-#endif // GridResolvedPosition_h
+#endif // GridPositionsResolver_h
