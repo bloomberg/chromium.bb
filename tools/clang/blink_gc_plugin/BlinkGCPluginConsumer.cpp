@@ -973,23 +973,19 @@ void BlinkGCPluginConsumer::ReportClassRequiresTraceMethod(RecordInfo* info) {
                    diag_class_requires_trace_method_)
       << info->record();
 
-  // Use an intermediate map to sort the notes by source location.
-  std::map<clang::SourceLocation, BasePoint*> BaseNotes;
-  for (auto& pair : info->GetBases()) {
-    if (pair.second.NeedsTracing().IsNeeded())
-      BaseNotes.insert(std::make_pair(pair.first->getLocStart(), &pair.second));
+  for (RecordInfo::Bases::iterator it = info->GetBases().begin();
+       it != info->GetBases().end();
+       ++it) {
+    if (it->second.NeedsTracing().IsNeeded())
+      NoteBaseRequiresTracing(&it->second);
   }
-  for (auto& pair : BaseNotes)
-    NoteBaseRequiresTracing(pair.second);
 
-  // Use an intermediate map to sort the notes by source location.
-  std::map<clang::SourceLocation, clang::FieldDecl*> FieldNotes;
-  for (auto& pair : info->GetFields()) {
-    if (!pair.second.IsProperlyTraced())
-      FieldNotes.insert(std::make_pair(pair.first->getLocStart(), pair.first));
+  for (RecordInfo::Fields::iterator it = info->GetFields().begin();
+       it != info->GetFields().end();
+       ++it) {
+    if (!it->second.IsProperlyTraced())
+      NoteFieldRequiresTracing(info, it->first);
   }
-  for (auto& pair : FieldNotes)
-    NoteFieldRequiresTracing(info, pair.second);
 }
 
 void BlinkGCPluginConsumer::ReportBaseRequiresTracing(
