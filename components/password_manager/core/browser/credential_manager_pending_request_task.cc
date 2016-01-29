@@ -8,6 +8,7 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -86,8 +87,13 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   // We only perform zero-click sign-in when the result is completely
   // unambigious. If there is one and only one entry, and zero-click is
   // enabled for that entry, return it.
+  //
+  // Moreover, we only return such a credential if the user has opted-in via the
+  // first-run experience.
   if (local_results.size() == 1u && !local_results[0]->skip_zero_click &&
-      delegate_->IsZeroClickAllowed()) {
+      delegate_->IsZeroClickAllowed() &&
+      !password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          delegate_->client()->GetPrefs())) {
     CredentialInfo info(*local_results[0],
                         local_results[0]->federation_url.is_empty()
                             ? CredentialType::CREDENTIAL_TYPE_PASSWORD

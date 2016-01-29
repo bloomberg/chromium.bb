@@ -67,6 +67,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {
     prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableAutosignin,
                                            true);
+    prefs_.registry()->RegisterBooleanPref(
+        prefs::kWasAutoSignInFirstRunExperienceShown, true);
   }
   ~MockPasswordManagerClient() override {}
 
@@ -109,6 +111,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   void set_zero_click_enabled(bool zero_click_enabled) {
     prefs_.SetBoolean(prefs::kCredentialsEnableAutosignin, zero_click_enabled);
+  }
+
+  void set_first_run_seen(bool first_run_seen) {
+    prefs_.SetBoolean(prefs::kWasAutoSignInFirstRunExperienceShown,
+                      first_run_seen);
   }
 
  private:
@@ -290,6 +297,25 @@ class CredentialManagerDispatcherTest
   scoped_ptr<SlightlyLessStubbyPasswordManagerDriver> stub_driver_;
   scoped_ptr<CredentialManagerDispatcher> dispatcher_;
 };
+
+TEST_F(CredentialManagerDispatcherTest, IsZeroClickAllowed) {
+  // IsZeroClickAllowed is uneffected by the first-run status.
+  client_->set_zero_click_enabled(true);
+  client_->set_first_run_seen(true);
+  EXPECT_TRUE(dispatcher()->IsZeroClickAllowed());
+
+  client_->set_zero_click_enabled(true);
+  client_->set_first_run_seen(false);
+  EXPECT_TRUE(dispatcher()->IsZeroClickAllowed());
+
+  client_->set_zero_click_enabled(false);
+  client_->set_first_run_seen(true);
+  EXPECT_FALSE(dispatcher()->IsZeroClickAllowed());
+
+  client_->set_zero_click_enabled(false);
+  client_->set_first_run_seen(false);
+  EXPECT_FALSE(dispatcher()->IsZeroClickAllowed());
+}
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
@@ -567,6 +593,17 @@ TEST_F(CredentialManagerDispatcherTest,
   dispatcher()->OnRequestCredential(kRequestId, true, federations);
 
   ExpectZeroClickSignInSuccess();
+}
+
+TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithoutFirstRun) {
+  client_->set_first_run_seen(false);
+
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  ExpectZeroClickSignInFailure();
 }
 
 TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithTLSErrors) {
