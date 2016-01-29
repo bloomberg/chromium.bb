@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.remote;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordHistogram;
 
 /**
  * Record statistics on interesting cast events and actions.
@@ -77,6 +78,20 @@ public class RecordCastAction {
      */
     public static void castMediaType(int mediaType) {
         if (LibraryLoader.isInitialized()) nativeRecordCastMediaType(mediaType);
+    }
+
+    /**
+     * Record if the remotely played media element is alive when the
+     * {@link ExpandedControllerActivity} is shown.
+     *
+     * @param isMediaElementAlive if the media element is alive.
+     */
+    public static void recordFullscreenControlsShown(boolean isMediaElementAlive) {
+        if (LibraryLoader.isInitialized()) {
+            RecordHistogram.recordBooleanHistogram(
+                    "Cast.Sender.MediaElementPresentWhenShowFullscreenControls",
+                    isMediaElementAlive);
+        }
     }
 
     // Cast sending

@@ -181,6 +181,12 @@ public class ExpandedControllerActivity
         super.onResume();
         if (mVideoInfo.state == PlayerState.FINISHED) finish();
         if (mMediaRouteController == null) return;
+
+        // Lifetime of the media element is bound to that of the {@link MediaStateListener}
+        // of the {@link MediaRouteController}.
+        RecordCastAction.recordFullscreenControlsShown(
+                mMediaRouteController.getMediaStateListener() != null);
+
         mMediaRouteController.prepareMediaRoute();
 
         ImageView iv = (ImageView) findViewById(R.id.cast_background_image);

@@ -3955,6 +3955,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.MediaElementPresentWhenShowFullscreenControls"
+    enum="BooleanPresent">
+  <owner>aberent@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <summary>
+    Indicates whether the corresponding media element on the page was present
+    when the fullscreen remote playback controls were shown.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.Overlay" enum="CastOverlayEvents">
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
