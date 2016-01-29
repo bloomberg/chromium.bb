@@ -47,6 +47,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
   ASSERT_NE(nullptr, form.get());
 
+  EXPECT_EQ(autofill::PasswordForm::TYPE_API, form->type);
   EXPECT_EQ(info.icon, form->icon_url);
   EXPECT_EQ(info.name, form->display_name);
   EXPECT_EQ(origin_, form->origin);

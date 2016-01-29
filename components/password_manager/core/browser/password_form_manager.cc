@@ -1004,6 +1004,8 @@ void PasswordFormManager::CreatePendingCredentials() {
     selected_username_ = provisionally_saved_form_->username_value;
     is_new_login_ = false;
   } else if (client_->IsUpdatePasswordUIEnabled() && !best_matches_.empty() &&
+             provisionally_saved_form_->type !=
+                 autofill::PasswordForm::TYPE_API &&
              (provisionally_saved_form_
                   ->IsPossibleChangePasswordFormWithoutUsername() ||
               provisionally_saved_form_->username_element.empty())) {

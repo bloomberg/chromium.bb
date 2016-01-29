@@ -52,6 +52,7 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
   form->password_value = info.password;
   form->username_value = info.id;
   form->scheme = autofill::PasswordForm::SCHEME_HTML;
+  form->type = autofill::PasswordForm::TYPE_API;
 
   form->signon_realm =
       info.type == CredentialType::CREDENTIAL_TYPE_PASSWORD
