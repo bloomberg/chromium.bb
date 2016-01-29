@@ -40,9 +40,9 @@ public:
         , m_lastCommand(PathSegUnknown)
     { }
 
-private:
     void emitSegment(const PathSegmentData&) override;
 
+private:
     void emitClose();
     void emitMoveTo(const FloatPoint&);
     void emitLineTo(const FloatPoint&);

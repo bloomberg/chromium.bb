@@ -21,20 +21,6 @@
 
 namespace blink {
 
-bool SVGPathByteStreamSource::hasMoreData() const
-{
-    return m_streamCurrent < m_streamEnd;
-}
-
-SVGPathSegType SVGPathByteStreamSource::peekSegmentType()
-{
-    ASSERT(hasMoreData());
-    ASSERT(m_streamCurrent + sizeof(unsigned short) <= m_streamEnd);
-    unsigned short commandBytes;
-    memcpy(&commandBytes, m_streamCurrent, sizeof(commandBytes));
-    return static_cast<SVGPathSegType>(commandBytes);
-}
-
 PathSegmentData SVGPathByteStreamSource::parseSegment()
 {
     ASSERT(hasMoreData());

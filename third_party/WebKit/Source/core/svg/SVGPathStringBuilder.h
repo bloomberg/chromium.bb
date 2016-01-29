@@ -30,9 +30,9 @@ class CORE_EXPORT SVGPathStringBuilder final : public SVGPathConsumer {
 public:
     String result();
 
-private:
     void emitSegment(const PathSegmentData&) override;
 
+private:
     StringBuilder m_stringBuilder;
 };
 

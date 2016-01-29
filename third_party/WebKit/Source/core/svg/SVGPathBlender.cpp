@@ -19,9 +19,9 @@
 
 #include "core/svg/SVGPathBlender.h"
 
+#include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathData.h"
-#include "core/svg/SVGPathSource.h"
 #include "platform/animation/AnimationUtilities.h"
 
 namespace blink {
@@ -255,7 +255,7 @@ bool SVGPathBlender::BlendState::blendSegments(const PathSegmentData& fromSeg, c
     return true;
 }
 
-SVGPathBlender::SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer* consumer)
+SVGPathBlender::SVGPathBlender(SVGPathByteStreamSource* fromSource, SVGPathByteStreamSource* toSource, SVGPathConsumer* consumer)
     : m_fromSource(fromSource)
     , m_toSource(toSource)
     , m_consumer(consumer)

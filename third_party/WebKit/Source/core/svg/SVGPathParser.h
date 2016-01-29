@@ -31,36 +31,23 @@
 namespace blink {
 
 class SVGPathConsumer;
-class SVGPathSource;
 
-class CORE_EXPORT SVGPathParser final {
-    WTF_MAKE_NONCOPYABLE(SVGPathParser);
-    STACK_ALLOCATED();
-public:
-    SVGPathParser(SVGPathSource* source, SVGPathConsumer* consumer)
-        : m_source(source)
-        , m_consumer(consumer)
-    {
-        ASSERT(m_source);
-        ASSERT(m_consumer);
-    }
+namespace SVGPathParser {
 
-    bool parsePathDataFromSource(bool checkForInitialMoveTo = true)
-    {
-        ASSERT(m_source);
-        ASSERT(m_consumer);
-        if (checkForInitialMoveTo && !initialCommandIsMoveTo())
+template<typename SourceType, typename ConsumerType>
+inline bool parsePath(SourceType& source, ConsumerType& consumer)
+{
+    while (source.hasMoreData()) {
+        PathSegmentData segment = source.parseSegment();
+        if (segment.command == PathSegUnknown)
             return false;
-        return parsePath();
+
+        consumer.emitSegment(segment);
     }
+    return true;
+}
 
-private:
-    bool initialCommandIsMoveTo();
-    bool parsePath();
-
-    SVGPathSource* m_source;
-    SVGPathConsumer* m_consumer;
-};
+} // namespace SVGPathParser
 
 class SVGPathNormalizer {
     STACK_ALLOCATED();

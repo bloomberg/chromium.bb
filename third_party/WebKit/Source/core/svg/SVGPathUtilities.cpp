@@ -35,8 +35,7 @@ bool buildPathFromString(const String& d, Path& result)
 
     SVGPathBuilder builder(result);
     SVGPathStringSource source(d);
-    SVGPathParser parser(&source, &builder);
-    return parser.parsePathDataFromSource();
+    return SVGPathParser::parsePath(source, builder);
 }
 
 bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result)
@@ -46,8 +45,7 @@ bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result)
 
     SVGPathBuilder builder(result);
     SVGPathByteStreamSource source(stream);
-    SVGPathParser parser(&source, &builder);
-    return parser.parsePathDataFromSource();
+    return SVGPathParser::parsePath(source, builder);
 }
 
 String buildStringFromByteStream(const SVGPathByteStream& stream)
@@ -57,8 +55,7 @@ String buildStringFromByteStream(const SVGPathByteStream& stream)
 
     SVGPathStringBuilder builder;
     SVGPathByteStreamSource source(stream);
-    SVGPathParser parser(&source, &builder);
-    parser.parsePathDataFromSource();
+    SVGPathParser::parsePath(source, builder);
     return builder.result();
 }
 
@@ -73,8 +70,7 @@ SVGParsingError buildByteStreamFromString(const String& d, SVGPathByteStream& re
 
     SVGPathByteStreamBuilder builder(result);
     SVGPathStringSource source(d);
-    SVGPathParser parser(&source, &builder);
-    parser.parsePathDataFromSource();
+    SVGPathParser::parsePath(source, builder);
     result.shrinkToFit();
     return source.parseError();
 }

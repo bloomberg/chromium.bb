@@ -6,12 +6,14 @@
 #define InterpolatedSVGPathSource_h
 
 #include "core/animation/SVGPathSegInterpolationFunctions.h"
-#include "core/svg/SVGPathSource.h"
+#include "core/svg/SVGPathData.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class InterpolatedSVGPathSource : public SVGPathSource {
+class InterpolatedSVGPathSource {
+    WTF_MAKE_NONCOPYABLE(InterpolatedSVGPathSource);
+    STACK_ALLOCATED();
 public:
     InterpolatedSVGPathSource(const InterpolableList& listValue, const Vector<SVGPathSegType>& pathSegTypes)
         : m_currentIndex(0)
@@ -21,11 +23,10 @@ public:
         ASSERT(m_interpolablePathSegs.length() == m_pathSegTypes.size());
     }
 
-private:
-    bool hasMoreData() const override;
-    SVGPathSegType peekSegmentType() override;
-    PathSegmentData parseSegment() override;
+    bool hasMoreData() const;
+    PathSegmentData parseSegment();
 
+private:
     PathCoordinates m_currentCoordinates;
     size_t m_currentIndex;
     const InterpolableList& m_interpolablePathSegs;
@@ -35,12 +36,6 @@ private:
 bool InterpolatedSVGPathSource::hasMoreData() const
 {
     return m_currentIndex < m_interpolablePathSegs.length();
-}
-
-SVGPathSegType InterpolatedSVGPathSource::peekSegmentType()
-{
-    ASSERT(hasMoreData());
-    return m_pathSegTypes.at(m_currentIndex);
 }
 
 PathSegmentData InterpolatedSVGPathSource::parseSegment()

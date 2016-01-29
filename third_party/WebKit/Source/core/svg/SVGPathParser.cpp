@@ -24,34 +24,10 @@
 #include "core/svg/SVGPathParser.h"
 
 #include "core/svg/SVGPathConsumer.h"
-#include "core/svg/SVGPathSource.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
-
-bool SVGPathParser::initialCommandIsMoveTo()
-{
-    // If the path is empty it is still valid, so return true.
-    if (!m_source->hasMoreData())
-        return true;
-
-    SVGPathSegType command = m_source->peekSegmentType();
-    // Path must start with moveTo.
-    return command == PathSegMoveToAbs || command == PathSegMoveToRel;
-}
-
-bool SVGPathParser::parsePath()
-{
-    while (m_source->hasMoreData()) {
-        PathSegmentData segment = m_source->parseSegment();
-        if (segment.command == PathSegUnknown)
-            return false;
-
-        m_consumer->emitSegment(segment);
-    }
-    return true;
-}
 
 static FloatPoint reflectedPoint(const FloatPoint& reflectIn, const FloatPoint& pointToReflect)
 {

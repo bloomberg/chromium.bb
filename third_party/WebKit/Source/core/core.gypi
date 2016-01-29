@@ -3508,7 +3508,6 @@
             'svg/SVGPathParser.h',
             'svg/SVGPathQuery.cpp',
             'svg/SVGPathQuery.h',
-            'svg/SVGPathSource.h',
             'svg/SVGPathStringBuilder.cpp',
             'svg/SVGPathStringBuilder.h',
             'svg/SVGPathStringSource.cpp',

@@ -17,8 +17,7 @@ bool parsePath(const char* input, String& output)
     String inputString(input);
     SVGPathStringSource source(inputString);
     SVGPathStringBuilder builder;
-    SVGPathParser parser(&source, &builder);
-    bool hadError = parser.parsePathDataFromSource();
+    bool hadError = SVGPathParser::parsePath(source, builder);
     output = builder.result();
     // Coerce a null result to empty.
     if (output.isNull())
@@ -146,8 +145,7 @@ SVGParsingError parsePathWithError(const char* input)
     String inputString(input);
     SVGPathStringSource source(inputString);
     SVGPathStringBuilder builder;
-    SVGPathParser parser(&source, &builder);
-    parser.parsePathDataFromSource();
+    SVGPathParser::parsePath(source, builder);
     return source.parseError();
 }
 

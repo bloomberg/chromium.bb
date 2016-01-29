@@ -27,13 +27,13 @@ namespace blink {
 
 struct PathSegmentData;
 class SVGPathConsumer;
-class SVGPathSource;
+class SVGPathByteStreamSource;
 
 class SVGPathBlender final {
     WTF_MAKE_NONCOPYABLE(SVGPathBlender);
     STACK_ALLOCATED();
 public:
-    SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer*);
+    SVGPathBlender(SVGPathByteStreamSource* fromSource, SVGPathByteStreamSource* toSource, SVGPathConsumer*);
 
     bool addAnimatedPath(unsigned repeatCount);
     bool blendAnimatedPath(float);
@@ -42,8 +42,8 @@ private:
     class BlendState;
     bool blendAnimatedPath(BlendState&);
 
-    SVGPathSource* m_fromSource;
-    SVGPathSource* m_toSource;
+    SVGPathByteStreamSource* m_fromSource;
+    SVGPathByteStreamSource* m_toSource;
     SVGPathConsumer* m_consumer;
 };
 
