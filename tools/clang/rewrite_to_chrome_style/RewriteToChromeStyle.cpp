@@ -53,6 +53,12 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
 
+// This is available in newer clang revisions... but alas, Chrome has not rolled
+// that far yet.
+AST_MATCHER(clang::FunctionDecl, isDefaulted) {
+  return Node.isDefaulted();
+}
+
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 
@@ -230,6 +236,7 @@ struct TargetNodeTraits<clang::CXXCtorInitializer> {
   static const char kName[];
   static clang::CharSourceRange GetRange(
       const clang::CXXCtorInitializer& init) {
+    assert(init.isWritten());
     return clang::CharSourceRange::getTokenRange(init.getSourceLocation());
   }
 };
@@ -415,7 +422,16 @@ int main(int argc, const char* argv[]) {
   //     ...
   //   }
   // matches |x| in if (x).
-  auto member_matcher = id("expr", memberExpr(member(field_decl_matcher)));
+  auto member_matcher = id(
+      "expr",
+      memberExpr(
+          member(field_decl_matcher),
+          // Needed to avoid matching member references in functions (which will
+          // be an ancestor of the member reference) synthesized by the
+          // compiler, such as a synthesized copy constructor.
+          // This skips explicitly defaulted functions as well, but that's OK:
+          // there's nothing interesting to rewrite in those either.
+          unless(hasAncestor(functionDecl(isDefaulted())))));
   auto decl_ref_matcher = id("expr", declRefExpr(to(var_decl_matcher)));
 
   MemberRewriter member_rewriter(&replacements);
@@ -531,7 +547,8 @@ int main(int argc, const char* argv[]) {
   // matches each initializer in the constructor for S.
   auto constructor_initializer_matcher =
       cxxConstructorDecl(forEachConstructorInitializer(
-          id("initializer", cxxCtorInitializer(forField(field_decl_matcher)))));
+          id("initializer",
+             cxxCtorInitializer(forField(field_decl_matcher), isWritten()))));
 
   ConstructorInitializerRewriter constructor_initializer_rewriter(
       &replacements);
