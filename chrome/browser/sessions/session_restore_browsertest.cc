@@ -556,7 +556,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 #else
 #define MAYBE_WindowWithOneTab WindowWithOneTab
 #endif
-
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_WindowWithOneTab) {
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
@@ -1404,7 +1403,13 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
   new_browser->tab_strip_model()->ActivateTabAt(1, true);
 }
 
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, CorrectLoadingOrder) {
+// PRE_CorrectLoadingOrder is flaky on ChromeOS MSAN. https://crbug.com/582323.
+#if defined (OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_CorrectLoadingOrder DISABLED_CorrectLoadingOrder
+#else
+#define MAYBE_CorrectLoadingOrder CorrectLoadingOrder
+#endif
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
   int activation_order[] = {4, 2, 5, 0, 3, 1};
   Profile* profile = browser()->profile();
 
