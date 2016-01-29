@@ -56,12 +56,6 @@ struct NaClValidationCache;
 
 struct NaClChromeMainArgs {
   /*
-   * Handle for bootstrapping a NaCl IMC connection to the trusted
-   * PPAPI plugin.  This is optional.
-   */
-  NaClHandle imc_bootstrap_handle;
-
-  /*
    * DEPRECATED: superseded by irt_desc.
    * TODO(ncbray): remove
    * File descriptor for the NaCl integrated runtime (IRT) library.

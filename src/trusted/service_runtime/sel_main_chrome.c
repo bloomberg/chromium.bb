@@ -83,7 +83,6 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args = malloc(sizeof(*args));
   if (args == NULL)
     return NULL;
-  args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
   args->irt_fd = -1;
   args->irt_desc = NULL;
   args->irt_load_optional = 0;
@@ -178,7 +177,6 @@ static void NaClLoadIrt(struct NaClApp *nap, struct NaClDesc *irt_desc) {
 
 static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   NaClErrorCode errcode = LOAD_OK;
-  int has_bootstrap_channel = args->imc_bootstrap_handle != NACL_INVALID_HANDLE;
 
   CHECK(g_initialized);
 
@@ -277,22 +275,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(nap);
-
-  if (has_bootstrap_channel) {
-    NaClCreateServiceSocket(nap);
-    /*
-     * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
-     * not be reported via the crash log mechanism (for Chromium
-     * embedding of NaCl, shown in the JavaScript console).
-     *
-     * Some errors, such as due to NaClRunSelQualificationTests, do not
-     * trigger a LOG_FATAL but instead set module_load_status to be sent
-     * in the start_module RPC reply.  Log messages associated with such
-     * errors would be seen, since NaClSetUpBootstrapChannel will get
-     * called.
-     */
-    NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
-  }
 
   CHECK(args->nexe_desc != NULL);
   NaClAppLoadModule(nap, args->nexe_desc, NULL, NULL);
