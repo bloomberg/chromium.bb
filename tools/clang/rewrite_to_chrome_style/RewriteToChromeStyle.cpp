@@ -157,6 +157,15 @@ bool IsProbablyConst(const clang::VarDecl& decl,
   if (!initializer)
     return false;
 
+  // If the expression is dependent on a template input, then we are not
+  // sure if it can be compile-time generated as calling isEvaluatable() is
+  // not valid on |initializer|.
+  // TODO(crbug.com/581218): We could probably look at each compiled
+  // instantiation of the template and see if they are all compile-time
+  // isEvaluable().
+  if (initializer->isInstantiationDependent())
+    return false;
+
   // If the expression can be evaluated at compile time, then it should have a
   // kFoo style name. Otherwise, not.
   return initializer->isEvaluatable(context);
