@@ -1359,22 +1359,34 @@ TEST_P(Mp3FastSeekIntegrationTest, FastSeekAccuracy_MP3) {
   EXPECT_HASH_EQ(config.hash, GetAudioHash());
 }
 
+// TODO(CHCUNNINGHAM): Re-enable for OSX once 1% flakiness is root caused.
+// See http://crbug.com/571898
+#if !defined(OS_MACOSX)
 // CBR seeks should always be fast and accurate.
 INSTANTIATE_TEST_CASE_P(
-    CBRSeeks,
+    CBRSeek_HasTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-has-TOC.mp3",
-                                        "-0.71,0.36,2.96,2.68,2.10,-1.08,"),
-                      Mp3FastSeekParams("bear-audio-10s-CBR-no-TOC.mp3",
+                                        "-0.71,0.36,2.96,2.68,2.10,-1.08,")));
+#endif
+
+INSTANTIATE_TEST_CASE_P(
+    CBRSeeks_NoTOC,
+    Mp3FastSeekIntegrationTest,
+    ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-no-TOC.mp3",
                                         "0.95,0.56,1.34,0.47,1.77,0.84,")));
 
 // VBR seeks can be fast *OR* accurate, but not both. We chose fast.
 INSTANTIATE_TEST_CASE_P(
-    VBRSeeks,
+    VBRSeeks_HasTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-has-TOC.mp3",
-                                        "-0.15,-0.83,0.54,1.00,1.94,0.93,"),
-                      Mp3FastSeekParams("bear-audio-10s-VBR-no-TOC.mp3",
+                                        "-0.15,-0.83,0.54,1.00,1.94,0.93,")));
+
+INSTANTIATE_TEST_CASE_P(
+    VBRSeeks_NoTOC,
+    Mp3FastSeekIntegrationTest,
+    ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-no-TOC.mp3",
                                         "-0.22,0.80,1.19,0.73,-0.31,-1.12,")));
 #endif  // !defined(DISABLE_CLOCKLESS_TESTS)
 
