@@ -47,7 +47,8 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       accept_carriage_return_(false),
       enabled_(false),
       is_candidate_popup_open_(false),
-      composing_window_handle_(NULL) {
+      composing_window_handle_(NULL),
+      weak_ptr_factory_(this) {
   SetDelegate(delegate);
 }
 
@@ -166,16 +167,41 @@ void InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   if (char_msgs.size() == 1)
     event->set_character(static_cast<base::char16>(char_msgs[0].wParam));
 
+  // Dispatches the key events to the Chrome IME extension which is listening to
+  // key events on the following two situations:
+  // 1) |char_msgs| is empty when the event is non-character key.
+  // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
+  // messages have been combined in the event processing flow.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMergeKeyCharEvents) &&
+      char_msgs.size() <= 1 && GetEngine() &&
+      GetEngine()->IsInterestedInKeyEvent()) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback = base::Bind(
+        &InputMethodWin::ProcessKeyEventDone, weak_ptr_factory_.GetWeakPtr(),
+        base::Owned(new ui::KeyEvent(*event)),
+        base::Owned(new std::vector<MSG>(char_msgs)));
+    GetEngine()->ProcessKeyEvent(*event, callback);
+  } else {
+    ProcessKeyEventDone(event, &char_msgs, false);
+  }
+}
+
+void InputMethodWin::ProcessKeyEventDone(ui::KeyEvent* event,
+                                         const std::vector<MSG>* char_msgs,
+                                         bool is_handled) {
+  DCHECK(event);
+  if (is_handled)
+    return;
+
   ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
   if (details.dispatcher_destroyed || details.target_destroyed ||
       event->stopped_propagation()) {
     return;
   }
 
-  for (size_t i = 0; i < char_msgs.size(); ++i) {
-    MSG msg = char_msgs[i];
+  BOOL handled;
+  for (const auto& msg : (*char_msgs))
     OnChar(msg.hwnd, msg.message, msg.wParam, msg.lParam, msg, &handled);
-  }
 }
 
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
