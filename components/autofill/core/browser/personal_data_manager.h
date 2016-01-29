@@ -92,15 +92,15 @@ class PersonalDataManager : public KeyedService,
   // Scans the given |form| for importable Autofill data. If the form includes
   // sufficient address data for a new profile, it is immediately imported. If
   // the form includes sufficient credit card data for a new credit card, it is
-  // stored into |credit_card| so that we can prompt the user whether to save
-  // this data. If the form contains credit card data already present in a local
-  // credit card entry *and* |should_return_local_card| is true, the data is
-  // stored into |credit_card| so that we can prompt the user whether to upload
-  // it.
+  // stored into |imported_credit_card| so that we can prompt the user whether
+  // to save this data. If the form contains credit card data already present in
+  // a local credit card entry *and* |should_return_local_card| is true, the
+  // data is stored into |imported_credit_card| so that we can prompt the user
+  // whether to upload it.
   // Returns |true| if sufficient address or credit card data was found.
   bool ImportFormData(const FormStructure& form,
                       bool should_return_local_card,
-                      scoped_ptr<CreditCard>* credit_card);
+                      scoped_ptr<CreditCard>* imported_credit_card);
 
   // Called to indicate |data_model| was used (to fill in a form). Updates
   // the database accordingly. Can invalidate |data_model|, particularly if
@@ -358,6 +358,20 @@ class PersonalDataManager : public KeyedService,
 
   // Called when the value of prefs::kAutofillEnabled changes.
   void EnabledPrefChanged();
+
+  // Go through the |form| fields and attempt to extract and import an address
+  // profile. Returns true on extraction success. There are many reasons that
+  // extraction may fail (see implementation).
+  bool ImportAddressProfile(const FormStructure& form);
+
+  // Go through the |form| fields and attempt to extract a new credit card in
+  // |imported_credit_card|, or update an existing card.
+  // |should_return_local_card| will indicate whether |imported_credit_card| is
+  // filled even if an existing card was updated. Success is defined as having a
+  // new card to import, or having merged with an existing card.
+  bool ImportCreditCard(const FormStructure& form,
+                        bool should_return_local_card,
+                        scoped_ptr<CreditCard>* imported_credit_card);
 
   // Functionally equivalent to GetProfiles(), but also records metrics if
   // |record_metrics| is true. Metrics should be recorded when the returned

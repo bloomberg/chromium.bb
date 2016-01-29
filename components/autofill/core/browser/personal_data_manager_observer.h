@@ -14,6 +14,8 @@ class PersonalDataManagerObserver {
  public:
   // Notifies the observer that the PersonalDataManager changed in some way.
   virtual void OnPersonalDataChanged() = 0;
+
+  // Called when there is insufficient data to fill a form. Used for testing.
   virtual void OnInsufficientFormData() {}
 
  protected:
