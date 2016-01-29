@@ -293,3 +293,11 @@ TEST_F(ThreadTest, ThreadNotStarted) {
   Thread a("Inert");
   EXPECT_EQ(nullptr, a.task_runner());
 }
+
+TEST_F(ThreadTest, MultipleWaitUntilThreadStarted) {
+  Thread a("MultipleWaitUntilThreadStarted");
+  EXPECT_TRUE(a.Start());
+  // It's OK to call WaitUntilThreadStarted() multiple times.
+  EXPECT_TRUE(a.WaitUntilThreadStarted());
+  EXPECT_TRUE(a.WaitUntilThreadStarted());
+}
