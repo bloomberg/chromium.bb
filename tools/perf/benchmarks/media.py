@@ -39,6 +39,7 @@ class _MSEMeasurement(page_test.PageTest):
 # xp: crbug.com/475191
 # win8: crbug.com/531618
 # win7: crbug.com/555079
+# crbug.com/565180: Only include cases that report time_to_play
 @benchmark.Disabled('android', 'xp', 'win8', 'win7')
 class Media(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios."""
@@ -48,6 +49,17 @@ class Media(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'media.tough_video_cases'
+
+# crbug.com/565180: Only include cases that don't report time_to_play
+@benchmark.Disabled('android', 'xp', 'win8', 'win7')
+class MediaExtra(perf_benchmark.PerfBenchmark):
+  """Obtains extra media metrics for key user scenarios."""
+  test = media.Media
+  page_set = page_sets.ToughVideoCasesExtraPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'media.tough_video_cases_extra'
 
 
 @benchmark.Disabled('android', 'mac', 'xp')

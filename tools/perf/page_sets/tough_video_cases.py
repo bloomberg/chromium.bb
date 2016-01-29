@@ -549,7 +549,7 @@ class Page40(ToughVideoCasesPage):
 
 class ToughVideoCasesPageSet(story.StorySet):
   """
-  Description: Video Stack Perf benchmark
+  Description: Video Stack Perf benchmark that report time_to_play.
   """
   def __init__(self):
     super(ToughVideoCasesPageSet, self).__init__(
@@ -573,6 +573,24 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page16(self))
     self.AddStory(Page17(self))
     self.AddStory(Page18(self))
+    self.AddStory(Page30(self))
+    self.AddStory(Page32(self))
+    self.AddStory(Page34(self))
+    self.AddStory(Page36(self))
+    self.AddStory(Page37(self))
+    self.AddStory(Page38(self))
+    self.AddStory(Page39(self))
+    self.AddStory(Page40(self))
+
+
+class ToughVideoCasesExtraPageSet(story.StorySet):
+  """
+  Description: Video Stack Perf benchmark that don't report time_to_play.
+  """
+  def __init__(self):
+    super(ToughVideoCasesExtraPageSet, self).__init__(
+            cloud_storage_bucket=story.PARTNER_BUCKET)
+
     self.AddStory(Page19(self))
     self.AddStory(Page20(self))
     self.AddStory(Page21(self))
@@ -584,14 +602,6 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page27(self))
     self.AddStory(Page28(self))
     self.AddStory(Page29(self))
-    self.AddStory(Page30(self))
     self.AddStory(Page31(self))
-    self.AddStory(Page32(self))
     self.AddStory(Page33(self))
-    self.AddStory(Page34(self))
     self.AddStory(Page35(self))
-    self.AddStory(Page36(self))
-    self.AddStory(Page37(self))
-    self.AddStory(Page38(self))
-    self.AddStory(Page39(self))
-    self.AddStory(Page40(self))
