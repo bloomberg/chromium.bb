@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_default_packet_writer.h"
+#include "net/quic/quic_chromium_packet_writer.h"
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -13,14 +13,14 @@
 
 namespace net {
 
-QuicDefaultPacketWriter::QuicDefaultPacketWriter() : weak_factory_(this) {}
+QuicChromiumPacketWriter::QuicChromiumPacketWriter() : weak_factory_(this) {}
 
-QuicDefaultPacketWriter::QuicDefaultPacketWriter(Socket* socket)
+QuicChromiumPacketWriter::QuicChromiumPacketWriter(Socket* socket)
     : socket_(socket), write_blocked_(false), weak_factory_(this) {}
 
-QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
+QuicChromiumPacketWriter::~QuicChromiumPacketWriter() {}
 
-WriteResult QuicDefaultPacketWriter::WritePacket(
+WriteResult QuicChromiumPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
@@ -30,7 +30,7 @@ WriteResult QuicDefaultPacketWriter::WritePacket(
   DCHECK(!IsWriteBlocked());
   base::TimeTicks now = base::TimeTicks::Now();
   int rv = socket_->Write(buf.get(), buf_len,
-                          base::Bind(&QuicDefaultPacketWriter::OnWriteComplete,
+                          base::Bind(&QuicChromiumPacketWriter::OnWriteComplete,
                                      weak_factory_.GetWeakPtr()));
   WriteStatus status = WRITE_STATUS_OK;
   if (rv < 0) {
@@ -53,21 +53,21 @@ WriteResult QuicDefaultPacketWriter::WritePacket(
   return WriteResult(status, rv);
 }
 
-bool QuicDefaultPacketWriter::IsWriteBlockedDataBuffered() const {
+bool QuicChromiumPacketWriter::IsWriteBlockedDataBuffered() const {
   // Chrome sockets' Write() methods buffer the data until the Write is
   // permitted.
   return true;
 }
 
-bool QuicDefaultPacketWriter::IsWriteBlocked() const {
+bool QuicChromiumPacketWriter::IsWriteBlocked() const {
   return write_blocked_;
 }
 
-void QuicDefaultPacketWriter::SetWritable() {
+void QuicChromiumPacketWriter::SetWritable() {
   write_blocked_ = false;
 }
 
-void QuicDefaultPacketWriter::OnWriteComplete(int rv) {
+void QuicChromiumPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   write_blocked_ = false;
   if (rv < 0) {
@@ -76,7 +76,7 @@ void QuicDefaultPacketWriter::OnWriteComplete(int rv) {
   connection_->OnCanWrite();
 }
 
-QuicByteCount QuicDefaultPacketWriter::GetMaxPacketSize(
+QuicByteCount QuicChromiumPacketWriter::GetMaxPacketSize(
     const IPEndPoint& peer_address) const {
   return kMaxPacketSize;
 }

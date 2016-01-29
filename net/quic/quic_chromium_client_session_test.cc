@@ -23,11 +23,11 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_chromium_connection_helper.h"
+#include "net/quic/quic_chromium_packet_reader.h"
+#include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_http_utils.h"
-#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -72,8 +72,8 @@ class QuicChromiumClientSessionTest
                                                    base::Bind(&base::RandInt),
                                                    &net_log_, NetLog::Source());
     socket->Connect(kIpEndPoint);
-    QuicDefaultPacketWriter* writer =
-        new net::QuicDefaultPacketWriter(socket.get());
+    QuicChromiumPacketWriter* writer =
+        new net::QuicChromiumPacketWriter(socket.get());
     QuicConnection* connection = new QuicConnection(
         0, kIpEndPoint, &helper_, writer, true, Perspective::IS_CLIENT,
         SupportedVersions(GetParam()));
@@ -110,8 +110,8 @@ class QuicChromiumClientSessionTest
 
   QuicPacketWriter* CreateQuicPacketWriter(DatagramClientSocket* socket,
                                            QuicConnection* connection) const {
-    scoped_ptr<QuicDefaultPacketWriter> writer(
-        new QuicDefaultPacketWriter(socket));
+    scoped_ptr<QuicChromiumPacketWriter> writer(
+        new QuicChromiumPacketWriter(socket));
     writer->SetConnection(connection);
     return writer.release();
   }
@@ -350,7 +350,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
   // Create reader and writer.
-  scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
+  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
       new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
       QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
       bound_net_log_.bound()));
@@ -394,10 +394,12 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
     EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
     // Create reader and writer.
-    scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
-        new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
-        QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
-        bound_net_log_.bound()));
+    scoped_ptr<QuicChromiumPacketReader> new_reader(
+        new QuicChromiumPacketReader(new_socket.get(), &clock_, session_.get(),
+                                     kQuicYieldAfterPacketsRead,
+                                     QuicTime::Delta::FromMilliseconds(
+                                         kQuicYieldAfterDurationMilliseconds),
+                                     bound_net_log_.bound()));
     scoped_ptr<QuicPacketWriter> new_writer(
         CreateQuicPacketWriter(new_socket.get(), session_->connection()));
 
@@ -450,7 +452,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
   // Create reader and writer.
-  scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
+  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
       new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
       QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
       bound_net_log_.bound()));
@@ -501,7 +503,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketWriteError) {
   EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
 
   // Create reader and writer.
-  scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
+  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
       new_socket.get(), &clock_, session_.get(), kQuicYieldAfterPacketsRead,
       QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
       bound_net_log_.bound()));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_packet_reader.h"
+#include "net/quic/quic_chromium_packet_reader.h"
 
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,12 +14,13 @@
 
 namespace net {
 
-QuicPacketReader::QuicPacketReader(DatagramClientSocket* socket,
-                                   QuicClock* clock,
-                                   Visitor* visitor,
-                                   int yield_after_packets,
-                                   QuicTime::Delta yield_after_duration,
-                                   const BoundNetLog& net_log)
+QuicChromiumPacketReader::QuicChromiumPacketReader(
+    DatagramClientSocket* socket,
+    QuicClock* clock,
+    Visitor* visitor,
+    int yield_after_packets,
+    QuicTime::Delta yield_after_duration,
+    const BoundNetLog& net_log)
     : socket_(socket),
       visitor_(visitor),
       read_pending_(false),
@@ -32,9 +33,9 @@ QuicPacketReader::QuicPacketReader(DatagramClientSocket* socket,
       net_log_(net_log),
       weak_factory_(this) {}
 
-QuicPacketReader::~QuicPacketReader() {}
+QuicChromiumPacketReader::~QuicChromiumPacketReader() {}
 
-void QuicPacketReader::StartReading() {
+void QuicChromiumPacketReader::StartReading() {
   if (read_pending_)
     return;
 
@@ -44,7 +45,7 @@ void QuicPacketReader::StartReading() {
   DCHECK(socket_);
   read_pending_ = true;
   int rv = socket_->Read(read_buffer_.get(), read_buffer_->size(),
-                         base::Bind(&QuicPacketReader::OnReadComplete,
+                         base::Bind(&QuicChromiumPacketReader::OnReadComplete,
                                     weak_factory_.GetWeakPtr()));
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.AsyncRead", rv == ERR_IO_PENDING);
   if (rv == ERR_IO_PENDING) {
@@ -59,14 +60,14 @@ void QuicPacketReader::StartReading() {
     // Schedule the work through the message loop to 1) prevent infinite
     // recursion and 2) avoid blocking the thread for too long.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&QuicPacketReader::OnReadComplete,
+        FROM_HERE, base::Bind(&QuicChromiumPacketReader::OnReadComplete,
                               weak_factory_.GetWeakPtr(), rv));
   } else {
     OnReadComplete(rv);
   }
 }
 
-void QuicPacketReader::OnReadComplete(int result) {
+void QuicChromiumPacketReader::OnReadComplete(int result) {
   read_pending_ = false;
   if (result == 0)
     result = ERR_CONNECTION_CLOSED;

@@ -26,10 +26,10 @@
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
 #include "net/quic/quic_chromium_connection_helper.h"
+#include "net/quic/quic_chromium_packet_reader.h"
+#include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_utils.h"
-#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -214,7 +214,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                                    &random_generator_));
     connection_ = new TestQuicConnection(
         SupportedVersions(GetParam()), connection_id_, peer_addr_,
-        helper_.get(), new QuicDefaultPacketWriter(socket));
+        helper_.get(), new QuicChromiumPacketWriter(socket));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     session_.reset(new QuicChromiumClientSession(

@@ -491,7 +491,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then
-  // QuicPacketReader::StartReading() yields by doing a PostTask().
+  // QuicChromiumPacketReader::StartReading() yields by doing a PostTask().
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
 

@@ -3278,23 +3278,25 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
 
-  // Set up the TaskObserver to verify QuicPacketReader::StartReading posts a
-  // task.
+  // Set up the TaskObserver to verify QuicChromiumPacketReader::StartReading
+  // posts a task.
   // TODO(rtenneti): Change SpdySessionTestTaskObserver to NetTestTaskObserver??
-  SpdySessionTestTaskObserver observer("quic_packet_reader.cc", "StartReading");
+  SpdySessionTestTaskObserver observer("quic_chromium_packet_reader.cc",
+                                       "StartReading");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
                                 /*cert_verify_flags=*/0, host_port_pair_.host(),
                                 "GET", net_log_, callback_.callback()));
 
-  // Call run_loop so that QuicPacketReader::OnReadComplete() gets called.
+  // Call run_loop so that QuicChromiumPacketReader::OnReadComplete() gets
+  // called.
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 
   // Verify task that the observer's executed_count is 1, which indicates
-  // QuicPacketReader::StartReading() has posted only one task and yielded the
-  // read.
+  // QuicChromiumPacketReader::StartReading() has posted only one task and
+  // yielded the read.
   EXPECT_EQ(1u, observer.executed_count());
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
@@ -3325,23 +3327,25 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
 
-  // Set up the TaskObserver to verify QuicPacketReader::StartReading posts a
-  // task.
+  // Set up the TaskObserver to verify QuicChromiumPacketReader::StartReading
+  // posts a task.
   // TODO(rtenneti): Change SpdySessionTestTaskObserver to NetTestTaskObserver??
-  SpdySessionTestTaskObserver observer("quic_packet_reader.cc", "StartReading");
+  SpdySessionTestTaskObserver observer("quic_chromium_packet_reader.cc",
+                                       "StartReading");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
                                 /*cert_verify_flags=*/0, host_port_pair_.host(),
                                 "GET", net_log_, callback_.callback()));
 
-  // Call run_loop so that QuicPacketReader::OnReadComplete() gets called.
+  // Call run_loop so that QuicChromiumPacketReader::OnReadComplete() gets
+  // called.
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 
   // Verify task that the observer's executed_count is 1, which indicates
-  // QuicPacketReader::StartReading() has posted only one task and yielded the
-  // read.
+  // QuicChromiumPacketReader::StartReading() has posted only one task and
+  // yielded the read.
   EXPECT_EQ(1u, observer.executed_count());
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();

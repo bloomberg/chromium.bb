@@ -19,8 +19,8 @@
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
+#include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_config.h"
-#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_spdy_stream.h"
 #include "net/tools/quic/quic_client_base.h"
 
@@ -38,7 +38,7 @@ class QuicClientPeer;
 
 class QuicSimpleClient : public QuicClientBase,
                          public QuicSpdyStream::Visitor,
-                         public QuicPacketReader::Visitor {
+                         public QuicChromiumPacketReader::Visitor {
  public:
   class ResponseListener {
    public:
@@ -128,7 +128,7 @@ class QuicSimpleClient : public QuicClientBase,
   // Migrate to a new socket during an active connection.
   bool MigrateSocket(const IPAddressNumber& new_host);
 
-  // QuicPacketReader::Visitor
+  // QuicChromiumPacketReader::Visitor
   void OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const QuicEncryptedPacket& packet,
                 IPEndPoint local_address,
@@ -254,7 +254,7 @@ class QuicSimpleClient : public QuicClientBase,
   // The log used for the sockets.
   NetLog net_log_;
 
-  scoped_ptr<QuicPacketReader> packet_reader_;
+  scoped_ptr<QuicChromiumPacketReader> packet_reader_;
 
   bool packet_reader_started_;
 

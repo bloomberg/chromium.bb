@@ -20,12 +20,12 @@ class QuicClock;
 class QuicTime;
 
 // If more than this many packets have been read or more than that many
-// milliseconds have passed, QuicPacketReader::StartReading() yields by doing a
-// QuicPacketReader::PostTask().
+// milliseconds have passed, QuicChromiumPacketReader::StartReading() yields by
+// doing a QuicChromiumPacketReader::PostTask().
 const int kQuicYieldAfterPacketsRead = 32;
 const int kQuicYieldAfterDurationMilliseconds = 20;
 
-class NET_EXPORT_PRIVATE QuicPacketReader {
+class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
  public:
   class NET_EXPORT_PRIVATE Visitor {
    public:
@@ -37,13 +37,13 @@ class NET_EXPORT_PRIVATE QuicPacketReader {
                           IPEndPoint peer_address) = 0;
   };
 
-  QuicPacketReader(DatagramClientSocket* socket,
-                   QuicClock* clock,
-                   Visitor* visitor,
-                   int yield_after_packets,
-                   QuicTime::Delta yield_after_duration,
-                   const BoundNetLog& net_log);
-  virtual ~QuicPacketReader();
+  QuicChromiumPacketReader(DatagramClientSocket* socket,
+                           QuicClock* clock,
+                           Visitor* visitor,
+                           int yield_after_packets,
+                           QuicTime::Delta yield_after_duration,
+                           const BoundNetLog& net_log);
+  virtual ~QuicChromiumPacketReader();
 
   // Causes the QuicConnectionHelper to start reading from the socket
   // and passing the data along to the QuicConnection.
@@ -64,9 +64,9 @@ class NET_EXPORT_PRIVATE QuicPacketReader {
   scoped_refptr<IOBufferWithSize> read_buffer_;
   BoundNetLog net_log_;
 
-  base::WeakPtrFactory<QuicPacketReader> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumPacketReader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicPacketReader);
+  DISALLOW_COPY_AND_ASSIGN(QuicChromiumPacketReader);
 };
 
 }  // namespace net

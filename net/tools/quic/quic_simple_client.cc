@@ -12,10 +12,10 @@
 #include "net/http/http_response_info.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_chromium_connection_helper.h"
+#include "net/quic/quic_chromium_packet_reader.h"
+#include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
-#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/spdy_utils.h"
@@ -142,7 +142,7 @@ bool QuicSimpleClient::CreateUDPSocket() {
   }
 
   socket_.swap(socket);
-  packet_reader_.reset(new QuicPacketReader(
+  packet_reader_.reset(new QuicChromiumPacketReader(
       socket_.get(), &clock_, this, kQuicYieldAfterPacketsRead,
       QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
       BoundNetLog()));
@@ -384,7 +384,7 @@ QuicChromiumConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
 }
 
 QuicPacketWriter* QuicSimpleClient::CreateQuicPacketWriter() {
-  return new QuicDefaultPacketWriter(socket_.get());
+  return new QuicChromiumPacketWriter(socket_.get());
 }
 
 void QuicSimpleClient::OnReadError(int result,

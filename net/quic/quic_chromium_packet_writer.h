@@ -20,11 +20,11 @@ namespace net {
 struct WriteResult;
 
 // Chrome specific packet writer which uses a datagram Socket for writing data.
-class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
+class NET_EXPORT_PRIVATE QuicChromiumPacketWriter : public QuicPacketWriter {
  public:
-  QuicDefaultPacketWriter();
-  explicit QuicDefaultPacketWriter(Socket* socket);
-  ~QuicDefaultPacketWriter() override;
+  QuicChromiumPacketWriter();
+  explicit QuicChromiumPacketWriter(Socket* socket);
+  ~QuicChromiumPacketWriter() override;
 
   // QuicPacketWriter
   WriteResult WritePacket(const char* buffer,
@@ -49,9 +49,9 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   // Whether a write is currently in flight.
   bool write_blocked_;
 
-  base::WeakPtrFactory<QuicDefaultPacketWriter> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumPacketWriter> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicDefaultPacketWriter);
+  DISALLOW_COPY_AND_ASSIGN(QuicChromiumPacketWriter);
 };
 
 }  // namespace net

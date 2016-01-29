@@ -35,13 +35,13 @@
 #include "net/quic/port_suggester.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_connection_helper.h"
+#include "net/quic/quic_chromium_packet_reader.h"
+#include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_http_stream.h"
-#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/socket/client_socket_factory.h"
@@ -1272,11 +1272,11 @@ void QuicStreamFactory::MigrateSessionToNetwork(
     HistogramMigrationStatus(MIGRATION_STATUS_INTERNAL_ERROR);
     return;
   }
-  scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
+  scoped_ptr<QuicChromiumPacketReader> new_reader(new QuicChromiumPacketReader(
       socket.get(), clock_.get(), session, yield_after_packets_,
       yield_after_duration_, session->net_log()));
   scoped_ptr<QuicPacketWriter> new_writer(
-      new QuicDefaultPacketWriter(socket.get()));
+      new QuicChromiumPacketWriter(socket.get()));
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
                                 std::move(new_writer))) {
@@ -1426,7 +1426,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
         random_generator_));
   }
 
-  QuicDefaultPacketWriter* writer = new QuicDefaultPacketWriter(socket.get());
+  QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(socket.get());
   QuicConnectionId connection_id = random_generator_->RandUint64();
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), writer, true /* owns_writer */,

@@ -200,7 +200,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       disabled_reason_(QUIC_DISABLED_NOT),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
-  packet_readers_.push_back(make_scoped_ptr(new QuicPacketReader(
+  packet_readers_.push_back(make_scoped_ptr(new QuicChromiumPacketReader(
       sockets_.back().get(), clock, this, yield_after_packets,
       yield_after_duration, net_log_)));
   crypto_stream_.reset(
@@ -1002,7 +1002,7 @@ void QuicChromiumClientSession::OnConnectTimeout() {
 
 bool QuicChromiumClientSession::MigrateToSocket(
     scoped_ptr<DatagramClientSocket> socket,
-    scoped_ptr<QuicPacketReader> reader,
+    scoped_ptr<QuicChromiumPacketReader> reader,
     scoped_ptr<QuicPacketWriter> writer) {
   DCHECK_EQ(sockets_.size(), packet_readers_.size());
   if (sockets_.size() >= kMaxReadersPerQuicSession) {

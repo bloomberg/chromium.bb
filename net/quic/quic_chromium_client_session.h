@@ -23,10 +23,10 @@
 #include "net/cert/ct_verify_result.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_chromium_client_stream.h"
+#include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_crypto_client_stream.h"
-#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
@@ -48,7 +48,7 @@ class QuicChromiumClientSessionPeer;
 
 class NET_EXPORT_PRIVATE QuicChromiumClientSession
     : public QuicClientSessionBase,
-      public QuicPacketReader::Visitor {
+      public QuicChromiumPacketReader::Visitor {
  public:
   // Reasons to disable QUIC, that is under certain pathological
   // connection errors.  Note: these values must be kept in sync with
@@ -177,7 +177,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
 
-  // QuicPacketReader::Visitor methods:
+  // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const QuicEncryptedPacket& packet,
                 IPEndPoint local_address,
@@ -233,7 +233,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Returns false if number of migrations exceeds kMaxReadersPerQuicSession.
   // Takes ownership of |socket|, |reader|, and |writer|.
   bool MigrateToSocket(scoped_ptr<DatagramClientSocket> socket,
-                       scoped_ptr<QuicPacketReader> reader,
+                       scoped_ptr<QuicChromiumPacketReader> reader,
                        scoped_ptr<QuicPacketWriter> writer);
 
   // Returns current default socket. This is the socket over which all
@@ -302,7 +302,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   size_t num_total_streams_;
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
-  std::vector<scoped_ptr<QuicPacketReader>> packet_readers_;
+  std::vector<scoped_ptr<QuicChromiumPacketReader>> packet_readers_;
   base::TimeTicks dns_resolution_end_time_;
   base::TimeTicks handshake_start_;  // Time the handshake was started.
   scoped_ptr<QuicConnectionLogger> logger_;
