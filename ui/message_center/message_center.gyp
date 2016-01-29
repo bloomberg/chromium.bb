@@ -66,6 +66,8 @@
         'notifier_settings.h',
         'popup_timer.cc',
         'popup_timer.h',
+        'popup_timers_controller.cc',
+        'popup_timers_controller.h',
         'views/bounded_label.cc',
         'views/bounded_label.h',
         'views/constants.h',
