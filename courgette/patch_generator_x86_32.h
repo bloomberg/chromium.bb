@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/ensemble.h"
+#include "courgette/program_detector.h"
 
 namespace courgette {
 
@@ -61,7 +62,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
 
     // Generate old version of program using |corrected_parameters|.
     // TODO(sra): refactor to use same code from patcher_.
-    AssemblyProgram* old_program = NULL;
+    scoped_ptr<AssemblyProgram> old_program;
     Status old_parse_status =
         ParseDetectedExecutable(old_element_->region().start(),
                                 old_element_->region().length(),
@@ -71,52 +72,46 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
       return old_parse_status;
     }
 
-    AssemblyProgram* new_program = NULL;
+    // TODO(huangs): Move the block below to right before |new_program| gets
+    // used, so we can reduce Courgette-gen peak memory.
+    scoped_ptr<AssemblyProgram> new_program;
     Status new_parse_status =
         ParseDetectedExecutable(new_element_->region().start(),
                                 new_element_->region().length(),
                                 &new_program);
     if (new_parse_status != C_OK) {
-      DeleteAssemblyProgram(old_program);
       LOG(ERROR) << "Cannot parse an executable " << new_element_->Name();
       return new_parse_status;
     }
 
-    EncodedProgram* old_encoded = NULL;
-    Status old_encode_status = Encode(old_program, &old_encoded);
-    if (old_encode_status != C_OK) {
-      DeleteAssemblyProgram(old_program);
+    scoped_ptr<EncodedProgram> old_encoded;
+    Status old_encode_status = Encode(*old_program, &old_encoded);
+    if (old_encode_status != C_OK)
       return old_encode_status;
-    }
 
     Status old_write_status =
-        WriteEncodedProgram(old_encoded, old_transformed_element);
-    DeleteEncodedProgram(old_encoded);
-    if (old_write_status != C_OK) {
-      DeleteAssemblyProgram(old_program);
+        WriteEncodedProgram(old_encoded.get(), old_transformed_element);
+
+    old_encoded.reset();
+
+    if (old_write_status != C_OK)
       return old_write_status;
-    }
 
-    Status adjust_status = Adjust(*old_program, new_program);
-    DeleteAssemblyProgram(old_program);
-    if (adjust_status != C_OK) {
-      DeleteAssemblyProgram(new_program);
+    Status adjust_status = Adjust(*old_program, new_program.get());
+    old_program.reset();
+    if (adjust_status != C_OK)
       return adjust_status;
-    }
 
-    EncodedProgram* new_encoded = NULL;
-    Status new_encode_status = Encode(new_program, &new_encoded);
-    DeleteAssemblyProgram(new_program);
+    scoped_ptr<EncodedProgram> new_encoded;
+    Status new_encode_status = Encode(*new_program, &new_encoded);
     if (new_encode_status != C_OK)
       return new_encode_status;
 
-    Status new_write_status =
-        WriteEncodedProgram(new_encoded, new_transformed_element);
-    DeleteEncodedProgram(new_encoded);
-    if (new_write_status != C_OK)
-      return new_write_status;
+    new_program.reset();
 
-    return C_OK;
+    Status new_write_status =
+        WriteEncodedProgram(new_encoded.get(), new_transformed_element);
+    return new_write_status;
   }
 
   Status Reform(SourceStreamSet* transformed_element,
@@ -134,4 +129,5 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
 };
 
 }  // namespace courgette
+
 #endif  // COURGETTE_WIN32_X86_GENERATOR_H_

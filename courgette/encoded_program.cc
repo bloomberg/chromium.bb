@@ -10,11 +10,11 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,7 +22,6 @@
 #include "courgette/courgette.h"
 #include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/streams.h"
-#include "courgette/types_elf.h"
 
 namespace courgette {
 
@@ -781,14 +780,15 @@ Status WriteEncodedProgram(EncodedProgram* encoded, SinkStreamSet* sink) {
   return C_OK;
 }
 
-Status ReadEncodedProgram(SourceStreamSet* streams, EncodedProgram** output) {
-  EncodedProgram* encoded = new EncodedProgram();
-  if (encoded->ReadFrom(streams)) {
-    *output = encoded;
-    return C_OK;
-  }
-  delete encoded;
-  return C_DESERIALIZATION_FAILED;
+Status ReadEncodedProgram(SourceStreamSet* streams,
+                          scoped_ptr<EncodedProgram>* output) {
+  output->reset();
+  scoped_ptr<EncodedProgram> encoded(new EncodedProgram());
+  if (!encoded->ReadFrom(streams))
+    return C_DESERIALIZATION_FAILED;
+
+  *output = std::move(encoded);
+  return C_OK;
 }
 
 Status Assemble(EncodedProgram* encoded, SinkStream* buffer) {
@@ -796,10 +796,6 @@ Status Assemble(EncodedProgram* encoded, SinkStream* buffer) {
   if (assembled)
     return C_OK;
   return C_ASSEMBLY_FAILED;
-}
-
-void DeleteEncodedProgram(EncodedProgram* encoded) {
-  delete encoded;
 }
 
 }  // namespace courgette

@@ -8,7 +8,11 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "courgette/assembly_program.h"
+#include "courgette/encoded_program.h"
 #include "courgette/ensemble.h"
+#include "courgette/program_detector.h"
 
 namespace courgette {
 
@@ -48,39 +52,32 @@ class PatcherX86_32 : public TransformationPatcher {
     if (!corrected_parameters->Empty())
       return C_GENERAL_ERROR;   // Don't expect any corrected parameters.
 
-    AssemblyProgram* program = NULL;
+    scoped_ptr<AssemblyProgram> program;
     status = ParseDetectedExecutable(ensemble_region_.start() + base_offset_,
                                      base_length_,
                                      &program);
     if (status != C_OK)
       return status;
 
-    EncodedProgram* encoded = NULL;
-    status = Encode(program, &encoded);
-    DeleteAssemblyProgram(program);
+    scoped_ptr<EncodedProgram> encoded;
+    status = Encode(*program, &encoded);
     if (status != C_OK)
       return status;
 
-    status = WriteEncodedProgram(encoded, transformed_element);
-    DeleteEncodedProgram(encoded);
+    program.reset();
 
-    return status;
+    return WriteEncodedProgram(encoded.get(), transformed_element);
   }
 
   Status Reform(SourceStreamSet* transformed_element,
                 SinkStream* reformed_element) {
     Status status;
-    EncodedProgram* encoded_program = NULL;
+    scoped_ptr<EncodedProgram> encoded_program;
     status = ReadEncodedProgram(transformed_element, &encoded_program);
     if (status != C_OK)
       return status;
 
-    status = Assemble(encoded_program, reformed_element);
-    DeleteEncodedProgram(encoded_program);
-    if (status != C_OK)
-      return status;
-
-    return C_OK;
+    return Assemble(encoded_program.get(), reformed_element);
   }
 
  private:
@@ -93,4 +90,5 @@ class PatcherX86_32 : public TransformationPatcher {
 };
 
 }  // namespace
+
 #endif  // COURGETTE_WIN32_X86_PATCHER_H_

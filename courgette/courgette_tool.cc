@@ -13,10 +13,14 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
+#include "courgette/encoded_program.h"
+#include "courgette/program_detector.h"
 #include "courgette/streams.h"
 #include "courgette/third_party/bsdiff.h"
 
@@ -76,30 +80,27 @@ void Disassemble(const base::FilePath& input_file,
                  const base::FilePath& output_file) {
   std::string buffer = ReadOrFail(input_file, "input");
 
-  courgette::AssemblyProgram* program = NULL;
+  scoped_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_status =
       courgette::ParseDetectedExecutable(buffer.c_str(), buffer.length(),
                                          &program);
-
   if (parse_status != courgette::C_OK)
     Problem("Can't parse input (code = %d).", parse_status);
 
-  courgette::EncodedProgram* encoded = NULL;
-  const courgette::Status encode_status = Encode(program, &encoded);
-
-  courgette::DeleteAssemblyProgram(program);
-
+  scoped_ptr<courgette::EncodedProgram> encoded;
+  const courgette::Status encode_status = Encode(*program, &encoded);
   if (encode_status != courgette::C_OK)
     Problem("Can't encode program.");
 
-  courgette::SinkStreamSet sinks;
+  program.reset();
 
+  courgette::SinkStreamSet sinks;
   const courgette::Status write_status =
-    courgette::WriteEncodedProgram(encoded, &sinks);
+    courgette::WriteEncodedProgram(encoded.get(), &sinks);
   if (write_status != courgette::C_OK)
     Problem("Can't serialize encoded program.");
 
-  courgette::DeleteEncodedProgram(encoded);
+  encoded.reset();
 
   courgette::SinkStream sink;
   if (!sinks.CopyTo(&sink))
@@ -159,7 +160,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
   std::string program_buffer = ReadOrFail(program_file, "program");
   std::string model_buffer = ReadOrFail(model_file, "reference");
 
-  courgette::AssemblyProgram* program = NULL;
+  scoped_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
       courgette::ParseDetectedExecutable(program_buffer.c_str(),
                                          program_buffer.length(),
@@ -167,7 +168,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input (code = %d).", parse_program_status);
 
-  courgette::AssemblyProgram* model = NULL;
+  scoped_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
       courgette::ParseDetectedExecutable(model_buffer.c_str(),
                                          model_buffer.length(),
@@ -175,26 +176,26 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input (code = %d).", parse_model_status);
 
-  const courgette::Status adjust_status = Adjust(*model, program);
+  const courgette::Status adjust_status = Adjust(*model, program.get());
   if (adjust_status != courgette::C_OK)
     Problem("Can't adjust program.");
 
-  courgette::EncodedProgram* encoded = NULL;
-  const courgette::Status encode_status = Encode(program, &encoded);
+  model.reset();
 
-  courgette::DeleteAssemblyProgram(program);
-
+  scoped_ptr<courgette::EncodedProgram> encoded;
+  const courgette::Status encode_status = Encode(*program, &encoded);
   if (encode_status != courgette::C_OK)
     Problem("Can't encode program.");
 
-  courgette::SinkStreamSet sinks;
+  program.reset();
 
+  courgette::SinkStreamSet sinks;
   const courgette::Status write_status =
-    courgette::WriteEncodedProgram(encoded, &sinks);
+    courgette::WriteEncodedProgram(encoded.get(), &sinks);
   if (write_status != courgette::C_OK)
     Problem("Can't serialize encoded program.");
 
-  courgette::DeleteEncodedProgram(encoded);
+  encoded.reset();
 
   courgette::SinkStream sink;
   if (!sinks.CopyTo(&sink))
@@ -215,7 +216,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
   std::string model_buffer = ReadOrFail(model_file, "'old'");
   std::string program_buffer = ReadOrFail(program_file, "'new'");
 
-  courgette::AssemblyProgram* model = NULL;
+  scoped_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
       courgette::ParseDetectedExecutable(model_buffer.c_str(),
                                          model_buffer.length(),
@@ -223,7 +224,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input (code = %d).", parse_model_status);
 
-  courgette::AssemblyProgram* program = NULL;
+  scoped_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
       courgette::ParseDetectedExecutable(program_buffer.c_str(),
                                          program_buffer.length(),
@@ -232,37 +233,41 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
     Problem("Can't parse program input (code = %d).", parse_program_status);
 
   if (adjust) {
-    const courgette::Status adjust_status = Adjust(*model, program);
+    const courgette::Status adjust_status = Adjust(*model, program.get());
     if (adjust_status != courgette::C_OK)
       Problem("Can't adjust program.");
   }
 
-  courgette::EncodedProgram* encoded_program = NULL;
+  scoped_ptr<courgette::EncodedProgram> encoded_program;
   const courgette::Status encode_program_status =
-      Encode(program, &encoded_program);
-  courgette::DeleteAssemblyProgram(program);
+      Encode(*program, &encoded_program);
   if (encode_program_status != courgette::C_OK)
     Problem("Can't encode program.");
 
-  courgette::EncodedProgram* encoded_model = NULL;
-  const courgette::Status encode_model_status = Encode(model, &encoded_model);
-  courgette::DeleteAssemblyProgram(model);
+  program.reset();
+
+  scoped_ptr<courgette::EncodedProgram> encoded_model;
+  const courgette::Status encode_model_status = Encode(*model, &encoded_model);
   if (encode_model_status != courgette::C_OK)
     Problem("Can't encode model.");
 
+  model.reset();
+
   courgette::SinkStreamSet program_sinks;
   const courgette::Status write_program_status =
-    courgette::WriteEncodedProgram(encoded_program, &program_sinks);
+    courgette::WriteEncodedProgram(encoded_program.get(), &program_sinks);
   if (write_program_status != courgette::C_OK)
     Problem("Can't serialize encoded program.");
-  courgette::DeleteEncodedProgram(encoded_program);
+
+  encoded_program.reset();
 
   courgette::SinkStreamSet model_sinks;
   const courgette::Status write_model_status =
-    courgette::WriteEncodedProgram(encoded_model, &model_sinks);
+    courgette::WriteEncodedProgram(encoded_model.get(), &model_sinks);
   if (write_model_status != courgette::C_OK)
     Problem("Can't serialize encoded model.");
-  courgette::DeleteEncodedProgram(encoded_model);
+
+  encoded_model.reset();
 
   courgette::SinkStream empty_sink;
   for (int i = 0;  ; ++i) {
@@ -295,14 +300,16 @@ void Assemble(const base::FilePath& input_file,
   if (!sources.Init(buffer.c_str(), buffer.length()))
     Problem("Bad input file.");
 
-  courgette::EncodedProgram* encoded = NULL;
-  const courgette::Status read_status = ReadEncodedProgram(&sources, &encoded);
+  scoped_ptr<courgette::EncodedProgram> encoded;
+  const courgette::Status read_status =
+      courgette::ReadEncodedProgram(&sources, &encoded);
   if (read_status != courgette::C_OK)
     Problem("Bad encoded program.");
 
   courgette::SinkStream sink;
 
-  const courgette::Status assemble_status = courgette::Assemble(encoded, &sink);
+  const courgette::Status assemble_status =
+      courgette::Assemble(encoded.get(), &sink);
   if (assemble_status != courgette::C_OK)
     Problem("Can't assemble.");
 
