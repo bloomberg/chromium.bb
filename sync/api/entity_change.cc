@@ -7,26 +7,26 @@
 namespace syncer_v2 {
 
 // static
-EntityChange EntityChange::CreateAdd(std::string client_key,
+EntityChange EntityChange::CreateAdd(std::string client_tag,
                                      EntityDataPtr data) {
-  return EntityChange(client_key, ACTION_ADD, data);
+  return EntityChange(client_tag, ACTION_ADD, data);
 }
 
 // static
-EntityChange EntityChange::CreateUpdate(std::string client_key,
+EntityChange EntityChange::CreateUpdate(std::string client_tag,
                                         EntityDataPtr data) {
-  return EntityChange(client_key, ACTION_UPDATE, data);
+  return EntityChange(client_tag, ACTION_UPDATE, data);
 }
 
 // static
-EntityChange EntityChange::CreateDelete(std::string client_key) {
-  return EntityChange(client_key, ACTION_DELETE, EntityDataPtr());
+EntityChange EntityChange::CreateDelete(std::string client_tag) {
+  return EntityChange(client_tag, ACTION_DELETE, EntityDataPtr());
 }
 
-EntityChange::EntityChange(std::string client_key,
+EntityChange::EntityChange(std::string client_tag,
                            ChangeType type,
                            EntityDataPtr data)
-    : client_key_(client_key), type_(type), data_(data) {}
+    : client_tag_(client_tag), type_(type), data_(data) {}
 
 EntityChange::~EntityChange() {}
 

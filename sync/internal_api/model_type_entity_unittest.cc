@@ -116,7 +116,7 @@ class ModelTypeEntityTest : public ::testing::Test {
 TEST_F(ModelTypeEntityTest, NewItem) {
   scoped_ptr<ModelTypeEntity> entity(NewLocalItem("asdf"));
 
-  EXPECT_EQ(entity->client_key(), "asdf");
+  EXPECT_EQ(entity->client_tag(), "asdf");
   EXPECT_EQ(entity->metadata().client_tag_hash(), GetSyncableHash("asdf"));
 
   EXPECT_FALSE(entity->HasCommitData());
@@ -140,7 +140,7 @@ TEST_F(ModelTypeEntityTest, NewLocalItem) {
 TEST_F(ModelTypeEntityTest, FromServerUpdate) {
   scoped_ptr<ModelTypeEntity> entity(NewServerItem());
 
-  EXPECT_EQ(entity->client_key(), kClientTag);
+  EXPECT_EQ(entity->client_tag(), kClientTag);
   EXPECT_EQ(entity->metadata().client_tag_hash(), kClientTagHash);
   EXPECT_FALSE(HasSpecificsHash(entity));
 

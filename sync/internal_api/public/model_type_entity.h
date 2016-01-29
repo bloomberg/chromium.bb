@@ -37,8 +37,8 @@ class SYNC_EXPORT ModelTypeEntity {
 
   ~ModelTypeEntity();
 
-  // Returns entity's client key.
-  const std::string& client_key() const { return client_key_; }
+  // Returns entity's client tag.
+  const std::string& client_tag() const { return client_tag_; }
 
   // Returns entity's metadata.
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
@@ -115,7 +115,7 @@ class SYNC_EXPORT ModelTypeEntity {
   friend class ModelTypeEntityTest;
 
   // The constructor swaps the data from the passed metadata.
-  ModelTypeEntity(const std::string& client_key,
+  ModelTypeEntity(const std::string& client_tag,
                   sync_pb::EntityMetadata* metadata);
 
   // Increment sequence number in the metadata.
@@ -124,8 +124,8 @@ class SYNC_EXPORT ModelTypeEntity {
   // Update hash string for EntitySpecifics in the metadata.
   void UpdateSpecificsHash(const sync_pb::EntitySpecifics& specifics);
 
-  // Client key. Should always be available.
-  std::string client_key_;
+  // Client tag. Should always be available.
+  std::string client_tag_;
 
   // Serializable Sync metadata.
   sync_pb::EntityMetadata metadata_;

@@ -21,20 +21,20 @@ class SYNC_EXPORT EntityChange {
     ACTION_DELETE
   };
 
-  static EntityChange CreateAdd(std::string client_key, EntityDataPtr data);
-  static EntityChange CreateUpdate(std::string client_key, EntityDataPtr data);
-  static EntityChange CreateDelete(std::string client_key);
+  static EntityChange CreateAdd(std::string client_tag, EntityDataPtr data);
+  static EntityChange CreateUpdate(std::string client_tag, EntityDataPtr data);
+  static EntityChange CreateDelete(std::string client_tag);
 
   virtual ~EntityChange();
 
-  std::string client_key() const { return client_key_; }
+  std::string client_tag() const { return client_tag_; }
   ChangeType type() const { return type_; }
   const EntityData& data() const { return data_.value(); }
 
  private:
-  EntityChange(std::string client_key, ChangeType type, EntityDataPtr data);
+  EntityChange(std::string client_tag, ChangeType type, EntityDataPtr data);
 
-  std::string client_key_;
+  std::string client_tag_;
   ChangeType type_;
   EntityDataPtr data_;
 };

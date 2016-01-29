@@ -18,7 +18,7 @@ TEST(DataBatchImplTest, PutAndNextWithReuse) {
   batch.Put("one", make_scoped_ptr(entity1));
   EXPECT_TRUE(batch.HasNext());
 
-  const KeyAndData& pair1 = batch.Next();
+  const TagAndData& pair1 = batch.Next();
   EXPECT_FALSE(batch.HasNext());
   EXPECT_EQ("one", pair1.first);
   EXPECT_EQ(entity1, pair1.second.get());
@@ -26,7 +26,7 @@ TEST(DataBatchImplTest, PutAndNextWithReuse) {
   batch.Put("two", make_scoped_ptr(entity2));
   EXPECT_TRUE(batch.HasNext());
 
-  const KeyAndData& pair2 = batch.Next();
+  const TagAndData& pair2 = batch.Next();
   EXPECT_FALSE(batch.HasNext());
   EXPECT_EQ("two", pair2.first);
   EXPECT_EQ(entity2, pair2.second.get());
@@ -45,7 +45,7 @@ TEST(DataBatchImplTest, PutAndNextInterleaved) {
   batch.Put("two", make_scoped_ptr(entity2));
   EXPECT_TRUE(batch.HasNext());
 
-  const KeyAndData& pair1 = batch.Next();
+  const TagAndData& pair1 = batch.Next();
   EXPECT_TRUE(batch.HasNext());
   EXPECT_EQ("one", pair1.first);
   EXPECT_EQ(entity1, pair1.second.get());
@@ -53,18 +53,18 @@ TEST(DataBatchImplTest, PutAndNextInterleaved) {
   batch.Put("three", make_scoped_ptr(entity3));
   EXPECT_TRUE(batch.HasNext());
 
-  const KeyAndData& pair2 = batch.Next();
+  const TagAndData& pair2 = batch.Next();
   EXPECT_TRUE(batch.HasNext());
   EXPECT_EQ("two", pair2.first);
   EXPECT_EQ(entity2, pair2.second.get());
 
-  const KeyAndData& pair3 = batch.Next();
+  const TagAndData& pair3 = batch.Next();
   EXPECT_FALSE(batch.HasNext());
   EXPECT_EQ("three", pair3.first);
   EXPECT_EQ(entity3, pair3.second.get());
 }
 
-TEST(DataBatchImplTest, PutAndNextSharedKey) {
+TEST(DataBatchImplTest, PutAndNextSharedTag) {
   EntityData* entity1 = new EntityData();
   EntityData* entity2 = new EntityData();
 
@@ -76,12 +76,12 @@ TEST(DataBatchImplTest, PutAndNextSharedKey) {
   batch.Put("same", make_scoped_ptr(entity2));
   EXPECT_TRUE(batch.HasNext());
 
-  const KeyAndData& pair1 = batch.Next();
+  const TagAndData& pair1 = batch.Next();
   EXPECT_TRUE(batch.HasNext());
   EXPECT_EQ("same", pair1.first);
   EXPECT_EQ(entity1, pair1.second.get());
 
-  const KeyAndData& pair2 = batch.Next();
+  const TagAndData& pair2 = batch.Next();
   EXPECT_FALSE(batch.HasNext());
   EXPECT_EQ("same", pair2.first);
   EXPECT_EQ(entity2, pair2.second.get());

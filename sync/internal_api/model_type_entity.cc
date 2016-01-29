@@ -34,9 +34,9 @@ scoped_ptr<ModelTypeEntity> ModelTypeEntity::CreateNew(
       new ModelTypeEntity(client_tag, &metadata));
 }
 
-ModelTypeEntity::ModelTypeEntity(const std::string& client_key,
+ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
                                  sync_pb::EntityMetadata* metadata)
-    : client_key_(client_key), commit_requested_sequence_number_(0) {
+    : client_tag_(client_tag), commit_requested_sequence_number_(0) {
   DCHECK(metadata);
   DCHECK(metadata->has_client_tag_hash());
   metadata_.Swap(metadata);

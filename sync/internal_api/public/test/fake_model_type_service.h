@@ -34,7 +34,7 @@ class FakeModelTypeService : public ModelTypeService {
 
   void LoadMetadata(MetadataCallback callback) override;
 
-  void GetData(ClientKeyList client_keys, DataCallback callback) override;
+  void GetData(ClientTagList client_tags, DataCallback callback) override;
 
   void GetAllData(DataCallback callback) override;
 

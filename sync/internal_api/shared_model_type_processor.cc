@@ -181,7 +181,7 @@ void SharedModelTypeProcessor::Put(const std::string& client_tag,
   } else {
     // The service is updating an existing entity.
     entity = it->second.get();
-    DCHECK_EQ(client_tag, entity->client_key());
+    DCHECK_EQ(client_tag, entity->client_tag());
   }
 
   // TODO(stanisc): crbug.com/561829: Avoid committing a change if there is no
@@ -193,10 +193,10 @@ void SharedModelTypeProcessor::Put(const std::string& client_tag,
 }
 
 void SharedModelTypeProcessor::Delete(
-    const std::string& client_key,
+    const std::string& client_tag,
     MetadataChangeList* metadata_change_list) {
   const std::string client_tag_hash(
-      syncer::syncable::GenerateSyncableHash(type_, client_key));
+      syncer::syncable::GenerateSyncableHash(type_, client_tag));
 
   // TODO(skym): crbug.com/561818: Search by client_tag rather than
   // client_tag_hash.
@@ -205,14 +205,14 @@ void SharedModelTypeProcessor::Delete(
     // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
     DLOG(WARNING) << "Attempted to delete missing item."
-                  << " client tag: " << client_key;
+                  << " client tag: " << client_tag;
     return;
   }
 
   ModelTypeEntity* entity = it->second.get();
   entity->Delete();
 
-  metadata_change_list->UpdateMetadata(client_key, entity->metadata());
+  metadata_change_list->UpdateMetadata(client_tag, entity->metadata());
 
   FlushPendingCommitRequests();
 }
@@ -268,7 +268,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
       // TODO(stanisc): crbug.com/573333: Delete case.
       // This might be the right place to clear a metadata entry that has
       // been deleted locally and confirmed deleted by the server.
-      change_list->UpdateMetadata(it->second->client_key(),
+      change_list->UpdateMetadata(it->second->client_tag(),
                                   it->second->metadata());
     }
   }
@@ -312,27 +312,27 @@ void SharedModelTypeProcessor::OnUpdateReceived(
       }
 
       // Let the service define |client_tag| based on the entity data.
-      std::string client_key = service_->GetClientTag(data);
+      std::string client_tag = service_->GetClientTag(data);
 
       scoped_ptr<ModelTypeEntity> scoped_entity = ModelTypeEntity::CreateNew(
-          client_key, client_tag_hash, data.id, data.creation_time);
+          client_tag, client_tag_hash, data.id, data.creation_time);
       entity = scoped_entity.get();
       entities_.insert(
           std::make_pair(client_tag_hash, std::move(scoped_entity)));
 
       entity_changes.push_back(
-          EntityChange::CreateAdd(client_key, response_data.entity));
+          EntityChange::CreateAdd(client_tag, response_data.entity));
 
     } else {
       entity = it->second.get();
       if (data.is_deleted()) {
         entity_changes.push_back(
-            EntityChange::CreateDelete(entity->client_key()));
+            EntityChange::CreateDelete(entity->client_tag()));
       } else {
         // TODO(stanisc): crbug.com/561829: Avoid sending an update to the
         // service if there is no actual change.
         entity_changes.push_back(EntityChange::CreateUpdate(
-            entity->client_key(), response_data.entity));
+            entity->client_tag(), response_data.entity));
       }
     }
 
@@ -340,7 +340,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     // TODO(stanisc): crbug.com/573333: Delete case.
     // This might be the right place to clear metadata entry instead of
     // updating it.
-    metadata_changes->UpdateMetadata(entity->client_key(), entity->metadata());
+    metadata_changes->UpdateMetadata(entity->client_tag(), entity->metadata());
 
     // TODO(stanisc): crbug.com/521867: Do something special when conflicts are
     // detected.
@@ -358,7 +358,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     }
   }
 
-  // TODO: crbug.com/529498: stop saving pending updates.
+  // TODO(stanisc): crbug.com/529498: stop saving pending updates.
   // Save pending updates in the appropriate data structure.
   for (auto list_it = pending_updates.begin(); list_it != pending_updates.end();
        ++list_it) {

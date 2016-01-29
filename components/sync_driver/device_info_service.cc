@@ -65,7 +65,7 @@ void DeviceInfoService::LoadMetadata(MetadataCallback callback) {
   // TODO(skym): Implementation.
 }
 
-void DeviceInfoService::GetData(ClientKeyList client_keys,
+void DeviceInfoService::GetData(ClientTagList client_tags,
                                 DataCallback callback) {
   // TODO(skym): Implementation.
 }

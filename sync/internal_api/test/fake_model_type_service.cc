@@ -29,7 +29,7 @@ syncer::SyncError FakeModelTypeService::ApplySyncChanges(
 
 void FakeModelTypeService::LoadMetadata(MetadataCallback callback) {}
 
-void FakeModelTypeService::GetData(ClientKeyList client_keys,
+void FakeModelTypeService::GetData(ClientTagList client_tags,
                                    DataCallback callback) {}
 
 void FakeModelTypeService::GetAllData(DataCallback callback) {}

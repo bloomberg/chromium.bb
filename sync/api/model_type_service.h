@@ -31,7 +31,7 @@ class SYNC_EXPORT ModelTypeService {
       DataCallback;
   typedef base::Callback<void(syncer::SyncError, scoped_ptr<MetadataBatch>)>
       MetadataCallback;
-  typedef std::vector<std::string> ClientKeyList;
+  typedef std::vector<std::string> ClientTagList;
 
   ModelTypeService();
 
@@ -59,8 +59,8 @@ class SYNC_EXPORT ModelTypeService {
   // Asynchronously retrieve the sync metadata.
   virtual void LoadMetadata(MetadataCallback callback) = 0;
 
-  // Asynchronously retrieve the corresponding sync data for |client_keys|.
-  virtual void GetData(ClientKeyList client_keys, DataCallback callback) = 0;
+  // Asynchronously retrieve the corresponding sync data for |client_tags|.
+  virtual void GetData(ClientTagList client_tags, DataCallback callback) = 0;
 
   // Asynchronously retrieve all of the local sync data.
   virtual void GetAllData(DataCallback callback) = 0;

@@ -52,7 +52,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
       syncer_v2::EntityChangeList entity_changes) override;
   void LoadMetadata(MetadataCallback callback) override;
-  void GetData(ClientKeyList client_keys, DataCallback callback) override;
+  void GetData(ClientTagList client_tags, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const syncer_v2::EntityData& entity_data) override;
 

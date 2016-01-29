@@ -65,10 +65,10 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   bool IsConnected() const;
 
   // ModelTypeChangeProcessor implementation.
-  void Put(const std::string& client_key,
+  void Put(const std::string& client_tag,
            scoped_ptr<EntityData> entity_data,
            MetadataChangeList* metadata_change_list) override;
-  void Delete(const std::string& client_key,
+  void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
 
   // Returns the list of pending updates.
