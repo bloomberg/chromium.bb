@@ -305,16 +305,12 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     }
   }
 
-  cc::DelegatedFrameProvider* frame_provider() const {
-    return GetDelegatedFrameHost()->FrameProviderForTesting();
-  }
-
   cc::SurfaceId surface_id() const {
     return GetDelegatedFrameHost()->SurfaceIdForTesting();
   }
 
   bool HasFrameData() const {
-    return frame_provider() || !surface_id().is_null();
+    return !surface_id().is_null();
   }
 
   bool released_front_lock_active() const {
@@ -2222,9 +2218,6 @@ TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
   view_->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
 
-  // Save the frame provider.
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
-      view_->frame_provider();
   cc::SurfaceId surface_id = view_->surface_id();
 
   // This frame will have the same number of physical pixels, but has a new
@@ -2232,13 +2225,10 @@ TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
   view_->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(2.f, frame_size, gfx::Rect(frame_size)));
 
-  // When we get a new frame with the same frame size in physical pixels, but a
-  // different scale, we should generate a new frame provider, as the final
-  // result will need to be scaled differently to the screen.
-  if (frame_provider.get())
-    EXPECT_NE(frame_provider.get(), view_->frame_provider());
-  else
-    EXPECT_NE(surface_id, view_->surface_id());
+  // When we get a new frame with the same frame size in physical pixels, but
+  // a different scale, we should generate a surface, as the final result will
+  // need to be scaled differently to the screen.
+  EXPECT_NE(surface_id, view_->surface_id());
 }
 
 class RenderWidgetHostViewAuraCopyRequestTest
