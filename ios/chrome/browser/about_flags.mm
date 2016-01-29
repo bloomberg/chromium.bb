@@ -21,7 +21,6 @@
 #include "base/sys_info.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_switches_ios.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
@@ -56,13 +55,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
-    {"enhanced-bookmarks-experiment", IDS_FLAGS_ENHANCED_BOOKMARKS_NAME,
-     IDS_FLAGS_ENHANCED_BOOKMARKS_DESCRIPTION,
-     flags_ui::kOsIos,
-     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kEnhancedBookmarksExperiment,
-                                         "1",
-                                         switches::kEnhancedBookmarksExperiment,
-                                         "0")},
 };
 
 // Add all switches from experimental flags to |command_line|.
@@ -124,17 +116,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableIOSPasswordGeneration);
   } else if ([enablePasswordGenerationValue isEqualToString:@"Disabled"]) {
     command_line->AppendSwitch(switches::kDisableIOSPasswordGeneration);
-  }
-
-  // Populate command line flags from EnableBookmarkCollections.
-  NSString* bookmarkCollectionState =
-      [defaults stringForKey:@"BookmarkCollectionState"];
-  if ([bookmarkCollectionState isEqualToString:@"OptIn"]) {
-    command_line->AppendSwitchNative(switches::kEnhancedBookmarksExperiment,
-                                     "1");
-  } else if ([bookmarkCollectionState isEqualToString:@"OptOut"]) {
-    command_line->AppendSwitchNative(switches::kEnhancedBookmarksExperiment,
-                                     "0");
   }
 
   // Web page replay flags.

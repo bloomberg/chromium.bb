@@ -404,24 +404,6 @@
             ]
           }
         ]
-      },
-      {
-        "name": "setVersion",
-        "type": "function",
-        "description": "Sets the version to use when updating enhanced bookmarks.",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "version",
-            "description": "The version to set."
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "optional": true,
-            "parameters": []
-          }
-        ]
       }
     ],
     "events": [

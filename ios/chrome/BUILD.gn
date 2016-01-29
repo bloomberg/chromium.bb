@@ -45,7 +45,6 @@ test("ios_chrome_unittests") {
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/bookmarks/test",
-    "//components/enhanced_bookmarks:test_support",
     "//components/favicon_base",
     "//components/metrics",
     "//components/metrics:test_support",

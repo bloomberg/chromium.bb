@@ -191,7 +191,6 @@
       <part file="data_reduction_proxy_strings.grdp" />
       <part file="dialog_strings.grdp" />
       <part file="dom_distiller_strings.grdp" />
-      <part file="enhanced_bookmarks_strings.grdp" />
       <part file="error_page_strings.grdp" />
       <part file="flags_ui_strings.grdp" />
       <part file="history_ui_strings.grdp" />

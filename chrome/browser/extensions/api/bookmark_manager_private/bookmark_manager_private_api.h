@@ -403,19 +403,6 @@ class BookmarkManagerPrivateGetRedoInfoFunction
   bool RunOnReady() override;
 };
 
-class BookmarkManagerPrivateSetVersionFunction
-    : public extensions::BookmarksFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.setVersion",
-                             BOOKMARKMANAGERPRIVATE_SETVERSION);
-
- protected:
-  ~BookmarkManagerPrivateSetVersionFunction() override {}
-
-  // ExtensionFunction:
-  bool RunOnReady() override;
-};
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_

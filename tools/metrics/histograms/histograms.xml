@@ -63894,7 +63894,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="902" label="DELETED_COPRESENCESOCKET_DESTROYPEER"/>
   <int value="903" label="DELETED_COPRESENCESOCKET_SEND"/>
   <int value="904" label="DELETED_COPRESENCESOCKET_DISCONNECT"/>
-  <int value="905" label="BOOKMARKMANAGERPRIVATE_SETVERSION"/>
+  <int value="905" label="DELETED_BOOKMARKMANAGERPRIVATE_SETVERSION"/>
   <int value="906" label="FILESYSTEMPROVIDER_NOTIFY"/>
   <int value="907" label="USB_GETUSERSELECTEDDEVICES"/>
   <int value="908" label="INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG"/>

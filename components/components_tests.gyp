@@ -236,12 +236,6 @@
     'data_use_measurement_unittest_sources': [
       'data_use_measurement/content/data_use_measurement_unittest.cc',
     ],
-    'enhanced_bookmarks_unittest_sources': [
-      'enhanced_bookmarks/enhanced_bookmark_model_unittest.cc',
-      'enhanced_bookmarks/image_store_ios_unittest.mm',
-      'enhanced_bookmarks/image_store_unittest.cc',
-      'enhanced_bookmarks/item_position_unittest.cc',
-    ],
     'error_page_unittest_sources': [
       'error_page/renderer/net_error_helper_core_unittest.cc',
     ],
@@ -919,7 +913,6 @@
         '<@(device_event_log_unittest_sources)',
         '<@(dom_distiller_unittest_sources)',
         '<@(domain_reliability_unittest_sources)',
-        '<@(enhanced_bookmarks_unittest_sources)',
         '<@(favicon_base_unittest_sources)',
         '<@(favicon_unittest_sources)',
         '<@(flags_ui_unittest_sources)',
@@ -1031,8 +1024,6 @@
         'components.gyp:dom_distiller_protos',
         'components.gyp:dom_distiller_test_support',
         'components.gyp:domain_reliability',
-        'components.gyp:enhanced_bookmarks',
-        'components.gyp:enhanced_bookmarks_test_support',
         'components.gyp:favicon_base',
         'components.gyp:favicon_core',
         'components.gyp:flags_ui',

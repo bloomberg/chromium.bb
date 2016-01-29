@@ -7,63 +7,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks
-source_set("enhanced_bookmarks") {
-  sources = [
-    "bookmark_server_cluster_service.cc",
-    "bookmark_server_cluster_service.h",
-    "bookmark_server_service.cc",
-    "bookmark_server_service.h",
-    "enhanced_bookmark_model.cc",
-    "enhanced_bookmark_model.h",
-    "enhanced_bookmark_model_observer.h",
-    "enhanced_bookmark_switches_ios.cc",
-    "enhanced_bookmark_switches_ios.h",
-    "enhanced_bookmark_utils.cc",
-    "enhanced_bookmark_utils.h",
-    "image_record.cc",
-    "image_record.h",
-    "image_store.cc",
-    "image_store.h",
-    "image_store_util.cc",
-    "image_store_util.h",
-    "image_store_util_ios.mm",
-    "item_position.cc",
-    "item_position.h",
-    "metadata_accessor.cc",
-    "metadata_accessor.h",
-    "persistent_image_store.cc",
-    "persistent_image_store.h",
-    "pref_names.cc",
-    "pref_names.h",
-  ]
-
-  deps = [
-    "//base",
-    "//base:prefs",
-    "//components/bookmarks/browser",
-    "//components/enhanced_bookmarks/proto",
-    "//components/keyed_service/core",
-    "//components/offline_pages",
-    "//components/pref_registry",
-    "//components/signin/core/browser",
-    "//components/sync_driver",
-    "//components/variations",
-    "//google_apis",
-    "//net",
-    "//skia",
-    "//sql",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//url",
-  ]
-
-  if (is_ios) {
-    sources -= [ "image_store_util.cc" ]
-  }
-}
-
 if (is_android) {
   # GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks_java_enums_srcjar
   java_cpp_enum("enhanced_bookmarks_java_enums_srcjar") {
@@ -71,41 +14,4 @@ if (is_android) {
       "enhanced_bookmark_utils.h",
     ]
   }
-}
-
-# GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks_test_support
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "test_image_store.cc",
-    "test_image_store.h",
-  ]
-
-  public_deps = [
-    ":enhanced_bookmarks",
-    "//base",
-    "//skia",
-    "//testing/gtest",
-    "//ui/gfx/geometry",
-    "//url",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "enhanced_bookmark_model_unittest.cc",
-    "image_store_ios_unittest.mm",
-    "image_store_unittest.cc",
-    "item_position_unittest.cc",
-  ]
-  deps = [
-    ":test_support",
-    "//base",
-    "//components/bookmarks/browser",
-    "//components/bookmarks/test",
-    "//components/enhanced_bookmarks/proto",
-    "//sql",
-    "//ui/gfx",
-  ]
 }

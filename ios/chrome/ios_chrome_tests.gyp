@@ -15,7 +15,6 @@
         '../../base/base.gyp:base_prefs_test_support',
         '../../base/base.gyp:test_support_base',
         '../../components/components.gyp:bookmarks_test_support',
-        '../../components/components.gyp:enhanced_bookmarks_test_support',
         '../../components/components.gyp:favicon_base',
         '../../components/components.gyp:metrics',
         '../../components/components.gyp:metrics_test_support',

@@ -19,7 +19,6 @@ include_rules = [
   "+components/dom_distiller/core",
   "+components/dom_distiller/ios",
   "+components/domain_reliability",
-  "+components/enhanced_bookmarks",
   "+components/favicon/core",
   "+components/favicon_base",
   "+components/flags_ui",

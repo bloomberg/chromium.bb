@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/enhanced_bookmarks/persistent_image_store.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
@@ -86,8 +85,8 @@ void ChromeBrowserMainPartsAndroid::PostProfileInit() {
   // Previously we stored information related to salient images for bookmarks
   // in a local file. We replaced the salient images with favicons. As part
   // of the clean up, the local file needs to be deleted. See crbug.com/499415.
-  base::FilePath bookmark_image_file_path = profile()->GetPath().Append(
-      PersistentImageStore::kBookmarkImageStoreDb);
+  base::FilePath bookmark_image_file_path =
+      profile()->GetPath().Append("BookmarkImageAndUrlStore.db");
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeleteFileTask, bookmark_image_file_path),

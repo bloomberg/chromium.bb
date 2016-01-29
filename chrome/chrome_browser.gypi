@@ -1459,10 +1459,6 @@
       'browser/bookmarks/managed_bookmark_service_factory.h',
       'browser/bookmarks/startup_task_runner_service_factory.cc',
       'browser/bookmarks/startup_task_runner_service_factory.h',
-      'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.cc',
-      'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h',
-      'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
-      'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
     ],
     'chrome_browser_offline_pages_sources': [
       'browser/android/offline_pages/offline_page_bridge.cc',
@@ -3153,7 +3149,6 @@
         '../components/components.gyp:data_usage_core',
         '../components/components.gyp:data_use_measurement_core',
         '../components/components.gyp:domain_reliability',
-        '../components/components.gyp:enhanced_bookmarks',
         '../components/components.gyp:favicon_base',
         '../components/components.gyp:favicon_core',
         '../components/components.gyp:gcm_driver',
@@ -3752,7 +3747,6 @@
               'dependencies': [
                 '../components/components.gyp:data_reduction_proxy_content',
                 '../components/components.gyp:data_usage_android',
-                '../components/components.gyp:enhanced_bookmarks',
                 '../components/components.gyp:offline_pages',
                 '../components/components.gyp:precache_content',
                 '../components/components.gyp:precache_core',

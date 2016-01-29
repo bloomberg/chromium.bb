@@ -18,7 +18,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -33,7 +32,6 @@
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_view_host.h"
@@ -67,7 +65,6 @@ namespace Paste = api::bookmark_manager_private::Paste;
 namespace RedoInfo = api::bookmark_manager_private::GetRedoInfo;
 namespace RemoveTrees = api::bookmark_manager_private::RemoveTrees;
 namespace SetMetaInfo = api::bookmark_manager_private::SetMetaInfo;
-namespace SetVersion = api::bookmark_manager_private::SetVersion;
 namespace SortChildren = api::bookmark_manager_private::SortChildren;
 namespace StartDrag = api::bookmark_manager_private::StartDrag;
 namespace UndoInfo = api::bookmark_manager_private::GetUndoInfo;
@@ -854,17 +851,6 @@ bool BookmarkManagerPrivateGetRedoInfoFunction::RunOnReady() {
   result.label = base::UTF16ToUTF8(undo_manager->GetRedoLabel());
 
   results_ = RedoInfo::Results::Create(result);
-  return true;
-}
-
-bool BookmarkManagerPrivateSetVersionFunction::RunOnReady() {
-  scoped_ptr<SetVersion::Params> params = SetVersion::Params::Create(*args_);
-
-  enhanced_bookmarks::EnhancedBookmarkModel* model =
-      enhanced_bookmarks::EnhancedBookmarkModelFactory::GetForBrowserContext(
-          browser_context());
-  model->SetVersionSuffix(params->version);
-
   return true;
 }
 

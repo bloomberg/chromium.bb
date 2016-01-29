@@ -230,7 +230,6 @@ test("components_unittests") {
       "//components/autofill/core/browser:unit_tests",
       "//components/autofill/core/common:unit_tests",
       "//components/browser_sync/browser:unit_tests",
-      "//components/enhanced_bookmarks:unit_tests",
       "//components/favicon/core:unit_tests",
       "//components/favicon_base:unit_tests",
       "//components/gcm_driver:unit_tests",
