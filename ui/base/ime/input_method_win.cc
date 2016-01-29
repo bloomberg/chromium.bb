@@ -52,6 +52,8 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
   SetDelegate(delegate);
 }
 
+InputMethodWin::~InputMethodWin() {}
+
 bool InputMethodWin::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
     InputMethod::NativeEventResult* result) {
