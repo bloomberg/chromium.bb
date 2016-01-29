@@ -31,7 +31,3 @@
 -ExtensionApiTest.TabsOnUpdated
 -ExtensionURLRewriteBrowserTest.NewTabPageURL
 -IsolatedAppTest.*
-
-# crbug.com/568710: Some PhishingClassifierDelegateTest are not compatible
-# with out-of-process iframes:
--PhishingClassifierDelegateTest.*

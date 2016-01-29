@@ -3,7 +3,3 @@
 
 # crbug.com/574997: Navigating to a file: URL for a non-existing dir.
 -SSLUITest.TestMarkNonSecureAs
-
-# crbug.com/568710: Some PhishingClassifierDelegateTest are not compatible
-# with out-of-process iframes:
--PhishingClassifierDelegateTest.*
