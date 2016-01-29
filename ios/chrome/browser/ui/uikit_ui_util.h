@@ -235,4 +235,7 @@ bool IsCompactTablet(id<UITraitEnvironment> environment);
 // iPad horizontal size class.
 bool IsCompactTablet();
 
+// Returns the current first responder.
+UIResponder* GetFirstResponder();
+
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_

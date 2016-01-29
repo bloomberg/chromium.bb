@@ -17,6 +17,7 @@
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/ios/uikit_util.h"
@@ -55,7 +56,18 @@ void GetRGBA(UIColor* color, CGFloat* r, CGFloat* g, CGFloat* b, CGFloat* a) {
   }
 }
 
+// Store a reference to the current first responder.
+UIResponder* gFirstResponder = nil;
+
 }  // namespace
+
+@implementation UIResponder (FirstResponder)
+
+- (void)cr_markSelfCurrentFirstResponder {
+  gFirstResponder = self;
+}
+
+@end
 
 void SetA11yLabelAndUiAutomationName(UIView* element,
                                      int idsAccessibilityLabel,
@@ -573,4 +585,18 @@ bool IsCompactTablet(id<UITraitEnvironment> environment) {
 
 bool IsCompactTablet() {
   return IsIPadIdiom() && IsCompact();
+}
+
+// Returns the current first responder.
+UIResponder* GetFirstResponder() {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK(!gFirstResponder);
+  [[UIApplication sharedApplication]
+      sendAction:@selector(cr_markSelfCurrentFirstResponder)
+              to:nil
+            from:nil
+        forEvent:nil];
+  UIResponder* firstResponder = gFirstResponder;
+  gFirstResponder = nil;
+  return firstResponder;
 }
