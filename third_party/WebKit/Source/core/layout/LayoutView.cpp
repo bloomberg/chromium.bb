@@ -239,7 +239,7 @@ void LayoutView::layout()
     if (!document().paginated())
         setPageLogicalHeight(0);
 
-    if (shouldUsePrintingLayout()) {
+    if (pageLogicalHeight() && shouldUsePrintingLayout()) {
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
         if (!m_fragmentationContext)
             m_fragmentationContext = adoptPtr(new ViewFragmentationContext(*this));
