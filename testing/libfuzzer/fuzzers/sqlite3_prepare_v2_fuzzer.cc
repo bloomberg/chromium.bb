@@ -32,7 +32,8 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   selector <<= 1;
 
   sqlite3_stmt* statement = NULL;
-  int result = sqlite3_prepare_v2(db, (const char*)(data + 1), size - 1,
+  int result = sqlite3_prepare_v2(db, (const char*)(data + 1),
+                                  static_cast<int>(size) - 1,
                                   &statement, NULL);
   if (result == SQLITE_OK) {
     // Use selector value to randomize number of iterations.

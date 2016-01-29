@@ -17,7 +17,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   uint8_t ch = data[0];
   int lang_len = ch & 0xF;
   int html_lang_len = (ch >> 4) & 0xF;
-  int text_len = size - lang_len - html_lang_len;
+  int text_len = static_cast<int>(size) - lang_len - html_lang_len;
   if ((text_len < 0) || (text_len % 2 != 0)) {
     return 0;
   }
