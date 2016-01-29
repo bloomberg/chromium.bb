@@ -86328,7 +86328,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.PrefixSetSizeKilobytes"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SameVersionStartupCounts">
+<histogram_suffixes name="SameVersionStartupCounts" separator=".">
   <suffix name="1" label="1st startup with same version"/>
   <suffix name="2" label="2nd startup with same version"/>
   <suffix name="3" label="3rd startup with same version"/>
