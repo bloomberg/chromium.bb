@@ -67,7 +67,8 @@ public class CronetTestFramework {
 
     public URLStreamHandlerFactory mStreamHandlerFactory;
     public CronetEngine mCronetEngine;
-    @SuppressWarnings("deprecation") HttpUrlRequestFactory mRequestFactory;
+    @SuppressWarnings("deprecation")
+    HttpUrlRequestFactory mRequestFactory;
 
     private final String[] mCommandLine;
     private final Context mContext;

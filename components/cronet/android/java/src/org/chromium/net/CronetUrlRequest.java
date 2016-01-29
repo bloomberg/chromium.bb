@@ -44,12 +44,16 @@ final class CronetUrlRequest implements UrlRequest {
             new UrlRequestMetrics(null, null, null, null);
 
     /* Native adapter object, owned by UrlRequest. */
-    @GuardedBy("mUrlRequestAdapterLock") private long mUrlRequestAdapter;
+    @GuardedBy("mUrlRequestAdapterLock")
+    private long mUrlRequestAdapter;
 
-    @GuardedBy("mUrlRequestAdapterLock") private boolean mStarted = false;
+    @GuardedBy("mUrlRequestAdapterLock")
+    private boolean mStarted = false;
     private boolean mDisableCache = false;
-    @GuardedBy("mUrlRequestAdapterLock") private boolean mWaitingOnRedirect = false;
-    @GuardedBy("mUrlRequestAdapterLock") private boolean mWaitingOnRead = false;
+    @GuardedBy("mUrlRequestAdapterLock")
+    private boolean mWaitingOnRedirect = false;
+    @GuardedBy("mUrlRequestAdapterLock")
+    private boolean mWaitingOnRead = false;
     /*
      * When a read call completes, should the ByteBuffer limit() be updated
      * instead of the position(). This controls legacy read() behavior.
