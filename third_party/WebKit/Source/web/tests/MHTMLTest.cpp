@@ -38,6 +38,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -230,6 +231,22 @@ TEST_F(MHTMLTest, TestMHTMLEncoding)
         }
     }
     EXPECT_EQ(12, sectionCheckedCount);
+}
+
+TEST_F(MHTMLTest, MHTMLFromScheme)
+{
+    addTestResources();
+    RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html", MHTMLArchive::UseDefaultEncoding);
+    KURL httpURL = toKURL("http://www.example.com");
+    KURL fileURL = toKURL("file://foo");
+    KURL specialSchemeURL = toKURL("fooscheme://bar");
+
+    // MHTMLArchives can be initialized from any local scheme, but never a remote scheme.
+    EXPECT_EQ(nullptr, MHTMLArchive::create(httpURL, data.get()));
+    EXPECT_NE(nullptr, MHTMLArchive::create(fileURL, data.get()));
+    EXPECT_EQ(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
+    SchemeRegistry::registerURLSchemeAsLocal("fooscheme");
+    EXPECT_NE(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
 }
 
 } // namespace blink

@@ -44,7 +44,6 @@ class String;
 namespace blink {
 
 class ArchiveResource;
-class MHTMLArchive;
 class MIMEHeader;
 class SharedBuffer;
 
@@ -53,13 +52,7 @@ class PLATFORM_EXPORT MHTMLParser final {
 public:
     explicit MHTMLParser(SharedBuffer*);
 
-    PassRefPtrWillBeRawPtr<MHTMLArchive> parseArchive();
-
-    size_t frameCount() const;
-    MHTMLArchive* frameAt(size_t) const;
-
-    size_t subResourceCount() const;
-    ArchiveResource* subResourceAt(size_t) const;
+    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> parseArchive();
 
     // Translates |contentIDFromMimeHeader| (of the form "<foo@bar.com>")
     // into a cid-scheme URI (of the form "cid:foo@bar.com").
@@ -70,14 +63,10 @@ public:
     static KURL convertContentIDToURI(const String& contentID);
 
 private:
-    PassRefPtrWillBeRawPtr<MHTMLArchive> parseArchiveWithHeader(MIMEHeader*);
+    bool parseArchiveWithHeader(MIMEHeader*, WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>>&);
     PassRefPtrWillBeRawPtr<ArchiveResource> parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
 
-    void addResourceToArchive(ArchiveResource*, MHTMLArchive*);
-
     SharedBufferChunkReader m_lineReader;
-    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> m_resources;
-    WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive>> m_frames;
 };
 
 } // namespace blink

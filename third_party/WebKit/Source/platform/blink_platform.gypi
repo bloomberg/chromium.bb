@@ -816,8 +816,6 @@
       'mediastream/RTCStatsResponseBase.h',
       'mediastream/RTCVoidRequest.h',
       'mhtml/ArchiveResource.cpp',
-      'mhtml/ArchiveResourceCollection.cpp',
-      'mhtml/ArchiveResourceCollection.h',
       'mhtml/MHTMLArchive.cpp',
       'mhtml/MHTMLArchive.h',
       'mhtml/MHTMLParser.cpp',

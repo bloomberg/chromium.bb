@@ -61,6 +61,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Logging.h"
+#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -708,6 +709,18 @@ void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type, FetchReques
     const ContentSecurityPolicy* csp = m_document->contentSecurityPolicy();
     if (csp->shouldSendCSPHeader(type))
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("CSP", "active");
+}
+
+MHTMLArchive* FrameFetchContext::archive() const
+{
+    ASSERT(!isMainFrame());
+    // TODO(nasko): How should this work with OOPIF?
+    // The MHTMLArchive is parsed as a whole, but can be constructed from
+    // frames in mutliple processes. In that case, which process should parse
+    // it and how should the output be spread back across multiple processes?
+    if (!frame()->tree().parent()->isLocalFrame())
+        return nullptr;
+    return toLocalFrame(frame()->tree().parent())->loader().documentLoader()->fetcher()->archive();
 }
 
 void FrameFetchContext::countClientHintsDPR()

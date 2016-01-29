@@ -39,7 +39,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/ArchiveResourceCollection.h"
+#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -854,20 +854,24 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
     m_preloads.clear();
 }
 
-void ResourceFetcher::addAllArchiveResources(MHTMLArchive* archive)
+ArchiveResource* ResourceFetcher::createArchive(Resource* resource)
 {
-    ASSERT(archive);
-    if (!m_archiveResourceCollection)
-        m_archiveResourceCollection = ArchiveResourceCollection::create();
-    m_archiveResourceCollection->addAllResources(archive);
+    // Only the top-frame can load MHTML.
+    if (!context().isMainFrame())
+        return nullptr;
+    m_archive = MHTMLArchive::create(resource->url(), resource->resourceBuffer());
+    return m_archive ? m_archive->mainResource() : nullptr;
 }
 
 bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequest& request)
 {
-    if (!m_archiveResourceCollection)
+    if (resource->type() == Resource::MainResource && !context().isMainFrame())
+        m_archive = context().archive();
+
+    if (!m_archive)
         return false;
 
-    ArchiveResource* archiveResource = m_archiveResourceCollection->archiveResourceForURL(request.url());
+    ArchiveResource* archiveResource = m_archive->subresourceForURL(request.url());
     if (!archiveResource) {
         resource->error(Resource::LoadError);
         return false;
@@ -1161,7 +1165,7 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
 DEFINE_TRACE(ResourceFetcher)
 {
     visitor->trace(m_context);
-    visitor->trace(m_archiveResourceCollection);
+    visitor->trace(m_archive);
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);
 #if ENABLE(OILPAN)

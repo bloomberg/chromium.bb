@@ -45,9 +45,7 @@ public:
         const KURL&,
         const String& contentId,
         const AtomicString& mimeType,
-        const AtomicString& textEncoding,
-        const String& frameName,
-        const ResourceResponse& = ResourceResponse());
+        const AtomicString& textEncoding);
 
     ~ArchiveResource();
 
@@ -57,7 +55,6 @@ public:
     SharedBuffer* data() const { return m_data.get(); }
     const AtomicString& mimeType() const { return m_mimeType; }
     const AtomicString& textEncoding() const { return m_textEncoding; }
-    const String& frameName() const { return m_frameName; }
 
     DEFINE_INLINE_TRACE() { }
 
@@ -67,9 +64,7 @@ private:
         const KURL&,
         const String& contentID,
         const AtomicString& mimeType,
-        const AtomicString& textEncoding,
-        const String& frameName,
-        const ResourceResponse&);
+        const AtomicString& textEncoding);
 
     KURL m_url;
     String m_contentID;
@@ -77,7 +72,6 @@ private:
     RefPtr<SharedBuffer> m_data;
     AtomicString m_mimeType;
     AtomicString m_textEncoding;
-    String m_frameName;
 };
 
 } // namespace blink

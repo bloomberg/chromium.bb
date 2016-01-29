@@ -45,7 +45,7 @@
 
 namespace blink {
 
-class ArchiveResourceCollection;
+class ArchiveResource;
 class CSSStyleSheetResource;
 class DocumentResource;
 class FontResource;
@@ -100,8 +100,8 @@ public:
     void preloadStarted(Resource*);
     void printPreloadStats();
 
-    void addAllArchiveResources(MHTMLArchive*);
-    ArchiveResourceCollection* archiveResourceCollection() const { return m_archiveResourceCollection.get(); }
+    MHTMLArchive* archive() const { return m_archive.get(); }
+    ArchiveResource* createArchive(Resource*);
 
     void setDefersLoading(bool);
     void stopFetching();
@@ -194,7 +194,7 @@ private:
     // is revalidated. What we really want to hold here is not the ResourcePtr
     // but the underlying Resource.
     OwnPtrWillBeMember<WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>> m_preloads;
-    OwnPtrWillBeMember<ArchiveResourceCollection> m_archiveResourceCollection;
+    RefPtrWillBeMember<MHTMLArchive> m_archive;
 
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 

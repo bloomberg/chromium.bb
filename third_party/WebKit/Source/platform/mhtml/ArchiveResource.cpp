@@ -35,16 +35,14 @@ inline ArchiveResource::ArchiveResource(
     const KURL& url,
     const String& contentID,
     const AtomicString& mimeType,
-    const AtomicString& textEncoding,
-    const String& frameName,
-    const ResourceResponse& response)
+    const AtomicString& textEncoding)
     : m_url(url)
     , m_contentID(contentID)
-    , m_response(response)
+    , m_response(
+        ResourceResponse(url, mimeType, data->size(), textEncoding, String()))
     , m_data(data)
     , m_mimeType(mimeType)
     , m_textEncoding(textEncoding)
-    , m_frameName(frameName)
 {
     ASSERT(m_data);
 }
@@ -58,20 +56,10 @@ PassRefPtrWillBeRawPtr<ArchiveResource> ArchiveResource::create(
     const KURL& url,
     const String& contentID,
     const AtomicString& mimeType,
-    const AtomicString& textEncoding,
-    const String& frameName,
-    const ResourceResponse& response)
+    const AtomicString& textEncoding)
 {
-    if (!data)
-        return nullptr;
-    if (response.isNull()) {
-        const ResourceResponse& resourceResponse = ResourceResponse(
-            url, mimeType, data->size(), textEncoding, String());
-        return adoptRefWillBeNoop(new ArchiveResource(
-            data, url, contentID, mimeType, textEncoding, frameName, resourceResponse));
-    }
     return adoptRefWillBeNoop(new ArchiveResource(
-        data, url, contentID, mimeType, textEncoding, frameName, response));
+        data, url, contentID, mimeType, textEncoding));
 }
 
 } // namespace blink

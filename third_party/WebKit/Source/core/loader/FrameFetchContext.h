@@ -104,6 +104,8 @@ public:
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
 
+    MHTMLArchive* archive() const override;
+
     ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) override;
 
     void countClientHintsDPR() override;

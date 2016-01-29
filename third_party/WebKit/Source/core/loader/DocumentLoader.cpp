@@ -65,8 +65,6 @@
 #include "platform/ThreadedDataReceiver.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/ArchiveResourceCollection.h"
-#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -127,7 +125,6 @@ DEFINE_TRACE(DocumentLoader)
     visitor->trace(m_fetcher);
     // TODO(sof): start tracing ResourcePtr<>s (and m_mainResource.)
     visitor->trace(m_writer);
-    visitor->trace(m_archive);
     visitor->trace(m_documentLoadTiming);
     visitor->trace(m_applicationCacheHost);
     visitor->trace(m_contentSecurityPolicy);
@@ -375,11 +372,6 @@ bool DocumentLoader::shouldContinueForResponse() const
 
     if (!canShowMIMEType(m_response.mimeType(), m_frame->page()))
         return false;
-
-    // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks.
-    if (isArchiveMIMEType(m_response.mimeType()) && !SchemeRegistry::shouldTreatURLSchemeAsLocal(m_request.url().protocol()))
-        return false;
-
     return true;
 }
 
@@ -613,53 +605,23 @@ void DocumentLoader::clearMainResourceHandle()
 
 bool DocumentLoader::maybeCreateArchive()
 {
-    // Only the top-frame can load MHTML.
-    if (m_frame->tree().parent())
-        return false;
-
     // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
     if (!isArchiveMIMEType(m_response.mimeType()))
         return false;
 
     ASSERT(m_mainResource);
-    m_archive = MHTMLArchive::create(m_response.url(), m_mainResource->resourceBuffer());
-    // Invalid MHTML.
-    if (!m_archive || !m_archive->mainResource()) {
-        m_archive.clear();
+    ArchiveResource* mainResource = m_fetcher->createArchive(m_mainResource.get());
+    if (!mainResource)
         return false;
-    }
-
-    m_fetcher->addAllArchiveResources(m_archive.get());
-    ArchiveResource* mainResource = m_archive->mainResource();
-
     // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
     // relative URLs are resolved properly.
-    ensureWriter(mainResource->mimeType(), m_archive->mainResource()->url());
+    ensureWriter(mainResource->mimeType(), mainResource->url());
 
     // The Document has now been created.
     document()->enforceSandboxFlags(SandboxAll);
 
     commitData(mainResource->data()->data(), mainResource->data()->size());
     return true;
-}
-
-void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
-{
-    if (!m_frame->tree().parent() || !m_frame->tree().parent()->isLocalFrame())
-        return;
-
-    ArchiveResourceCollection* parentCollection = toLocalFrame(m_frame->tree().parent())->loader().documentLoader()->fetcher()->archiveResourceCollection();
-    if (!parentCollection)
-        return;
-
-    m_archive = parentCollection->popSubframeArchive(m_frame->tree().uniqueName(), m_request.url());
-
-    if (!m_archive)
-        return;
-    m_fetcher->addAllArchiveResources(m_archive.get());
-
-    ArchiveResource* mainResource = m_archive->mainResource();
-    m_substituteData = SubstituteData(mainResource->data(), mainResource->mimeType(), mainResource->textEncoding(), KURL());
 }
 
 const AtomicString& DocumentLoader::responseMIMEType() const
@@ -712,7 +674,6 @@ void DocumentLoader::startLoadingMainResource()
     timing().markFetchStart();
 
     m_applicationCacheHost->willStartLoadingMainResource(m_request);
-    prepareSubframeArchiveLoadIfNeeded();
 
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,

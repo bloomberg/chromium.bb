@@ -56,7 +56,6 @@ class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
 class FrameLoader;
-class MHTMLArchive;
 class ResourceLoader;
 class ThreadedDataReceiver;
 
@@ -171,8 +170,6 @@ private:
 
     bool maybeCreateArchive();
 
-    void prepareSubframeArchiveLoadIfNeeded();
-
     void finishedLoading(double finishTime);
     void mainReceivedError(const ResourceError&);
     void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
@@ -215,8 +212,6 @@ private:
     bool m_replacesCurrentHistoryItem;
 
     NavigationType m_navigationType;
-
-    RefPtrWillBeMember<MHTMLArchive> m_archive;
 
     DocumentLoadTiming m_documentLoadTiming;
 

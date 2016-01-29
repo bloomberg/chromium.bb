@@ -68,15 +68,6 @@ MHTMLArchive::MHTMLArchive()
 
 MHTMLArchive::~MHTMLArchive()
 {
-#if !ENABLE(OILPAN)
-    // Because all frames know about each other we need to perform a deep clearing of the archives graph.
-    clearAllSubframeArchives();
-#endif
-}
-
-PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLArchive::create()
-{
-    return adoptRefWillBeNoop(new MHTMLArchive);
 }
 
 PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
@@ -86,21 +77,20 @@ PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, Share
         return nullptr;
 
     MHTMLParser parser(data);
-    RefPtrWillBeRawPtr<MHTMLArchive> mainArchive = parser.parseArchive();
-    if (!mainArchive)
+    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> resources = parser.parseArchive();
+    if (resources.isEmpty())
         return nullptr; // Invalid MHTML file.
 
-    // Since MHTML is a flat format, we need to make all frames aware of all resources.
-    for (size_t i = 0; i < parser.frameCount(); ++i) {
-        RefPtrWillBeRawPtr<MHTMLArchive> archive = parser.frameAt(i);
-        for (size_t j = 1; j < parser.frameCount(); ++j) {
-            if (i != j)
-                archive->addSubframeArchive(parser.frameAt(j));
-        }
-        for (size_t j = 0; j < parser.subResourceCount(); ++j)
-            archive->addSubresource(parser.subResourceAt(j));
+    RefPtrWillBeRawPtr<MHTMLArchive> archive = adoptRefWillBeNoop(new MHTMLArchive);
+    // The first document suitable resource is the main resource of the top frame.
+    for (size_t i = 0; i < resources.size(); ++i) {
+        const AtomicString& mimeType = resources[i]->mimeType();
+        if (archive->mainResource() || !MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType) || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) || mimeType == "text/css")
+            archive->addSubresource(resources[i].get());
+        else
+            archive->setMainResource(resources[i].get());
     }
-    return mainArchive.release();
+    return archive.release();
 }
 
 void MHTMLArchive::generateMHTMLHeader(
@@ -229,45 +219,31 @@ void MHTMLArchive::generateMHTMLFooter(
     outputBuffer.append(asciiString.data(), asciiString.length());
 }
 
-#if !ENABLE(OILPAN)
-void MHTMLArchive::clearAllSubframeArchives()
-{
-    SubFrameArchives clearedArchives;
-    clearAllSubframeArchivesImpl(&clearedArchives);
-}
-
-void MHTMLArchive::clearAllSubframeArchivesImpl(SubFrameArchives* clearedArchives)
-{
-    for (SubFrameArchives::iterator it = m_subframeArchives.begin(); it != m_subframeArchives.end(); ++it) {
-        if (!clearedArchives->contains(*it)) {
-            clearedArchives->append(*it);
-            (*it)->clearAllSubframeArchivesImpl(clearedArchives);
-        }
-    }
-    m_subframeArchives.clear();
-}
-#endif
-
 void MHTMLArchive::setMainResource(PassRefPtrWillBeRawPtr<ArchiveResource> mainResource)
 {
     m_mainResource = mainResource;
 }
 
-void MHTMLArchive::addSubresource(PassRefPtrWillBeRawPtr<ArchiveResource> subResource)
+void MHTMLArchive::addSubresource(ArchiveResource* resource)
 {
-    m_subresources.append(subResource);
+    const KURL& url = resource->url();
+    m_subresources.set(url, resource);
+    KURL cidURI = MHTMLParser::convertContentIDToURI(resource->contentID());
+    if (cidURI.isValid())
+        m_subresources.set(cidURI, resource);
 }
 
-void MHTMLArchive::addSubframeArchive(PassRefPtrWillBeRawPtr<MHTMLArchive> subframeArchive)
+ArchiveResource* MHTMLArchive::subresourceForURL(const KURL& url) const
 {
-    m_subframeArchives.append(subframeArchive);
+    return m_subresources.get(url.string());
 }
 
 DEFINE_TRACE(MHTMLArchive)
 {
     visitor->trace(m_mainResource);
+#if ENABLE(OILPAN)
     visitor->trace(m_subresources);
-    visitor->trace(m_subframeArchives);
+#endif
 }
 
 } // namespace blink

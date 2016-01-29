@@ -43,6 +43,7 @@
 namespace blink {
 
 class KURL;
+class MHTMLArchive;
 class ResourceError;
 class ResourceLoader;
 class ResourceResponse;
@@ -105,6 +106,8 @@ public:
     virtual void upgradeInsecureRequest(FetchRequest&);
     virtual void addClientHintsIfNecessary(FetchRequest&);
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
+
+    virtual MHTMLArchive* archive() const { return nullptr; }
 
     virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) { return priority; }
 
