@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/disassembler.h"
 #include "courgette/label_manager.h"
 #include "courgette/memory_allocator.h"
@@ -141,11 +140,5 @@ class EncodedProgram {
   DISALLOW_COPY_AND_ASSIGN(EncodedProgram);
 };
 
-// Deserializes program from a stream set to |*output|. Returns C_OK if
-// successful, otherwise assigns |*output| to null and returns an error status.
-Status ReadEncodedProgram(SourceStreamSet* source,
-                          scoped_ptr<EncodedProgram>* output);
-
 }  // namespace courgette
-
 #endif  // COURGETTE_ENCODED_PROGRAM_H_

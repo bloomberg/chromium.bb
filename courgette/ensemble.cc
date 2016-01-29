@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/strings/string_number_conversions.h"
-#include "courgette/program_detector.h"
+
 #include "courgette/region.h"
 #include "courgette/simple_delta.h"
 #include "courgette/streams.h"
@@ -41,9 +41,11 @@ Status Ensemble::FindEmbeddedElements() {
   while (position < length) {
     ExecutableType type;
     size_t detected_length;
+
     Status result = DetectExecutableType(start + position,
                                          length - position,
                                          &type, &detected_length);
+
     if (result == C_OK) {
       Region region(start + position, detected_length);
 

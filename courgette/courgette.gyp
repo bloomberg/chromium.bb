@@ -40,8 +40,6 @@
       'label_manager.h',
       'memory_allocator.cc',
       'memory_allocator.h',
-      'program_detector.cc',
-      'program_detector.h',
       'region.h',
       'rel32_finder_win32_x86.cc',
       'rel32_finder_win32_x86.h',

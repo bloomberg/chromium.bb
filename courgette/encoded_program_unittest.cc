@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
 #include "courgette/label_manager.h"
 #include "courgette/streams.h"

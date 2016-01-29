@@ -42,8 +42,6 @@ static_library("courgette_lib") {
     "memory_allocator.h",
     "patch_generator_x86_32.h",
     "patcher_x86_32.h",
-    "program_detector.cc",
-    "program_detector.h",
     "region.h",
     "rel32_finder_win32_x86.cc",
     "rel32_finder_win32_x86.h",

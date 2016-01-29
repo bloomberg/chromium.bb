@@ -4,12 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
-#include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
-#include "courgette/encoded_program.h"
-#include "courgette/program_detector.h"
 #include "courgette/streams.h"
 
 class EncodeDecodeTest : public BaseTest {
@@ -24,25 +20,25 @@ void EncodeDecodeTest::TestAssembleToStreamDisassemble(
   const void* original_buffer = file.c_str();
   size_t original_length = file.length();
 
-  scoped_ptr<courgette::AssemblyProgram> program;
+  courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_status =
       courgette::ParseDetectedExecutable(original_buffer,
                                          original_length,
                                          &program);
   EXPECT_EQ(courgette::C_OK, parse_status);
 
-  scoped_ptr<courgette::EncodedProgram> encoded;
-  const courgette::Status encode_status = Encode(*program, &encoded);
+  courgette::EncodedProgram* encoded = NULL;
+
+  const courgette::Status encode_status = Encode(program, &encoded);
   EXPECT_EQ(courgette::C_OK, encode_status);
 
-  program.reset();
+  DeleteAssemblyProgram(program);
 
   courgette::SinkStreamSet sinks;
-  const courgette::Status write_status =
-      WriteEncodedProgram(encoded.get(), &sinks);
+  const courgette::Status write_status = WriteEncodedProgram(encoded, &sinks);
   EXPECT_EQ(courgette::C_OK, write_status);
 
-  encoded.reset();
+  DeleteEncodedProgram(encoded);
 
   courgette::SinkStream sink;
   bool can_collect = sinks.CopyTo(&sink);
@@ -57,22 +53,21 @@ void EncodeDecodeTest::TestAssembleToStreamDisassemble(
   bool can_get_source_streams = sources.Init(buffer, length);
   EXPECT_TRUE(can_get_source_streams);
 
-  scoped_ptr<courgette::EncodedProgram> encoded2;
+  courgette::EncodedProgram *encoded2 = NULL;
   const courgette::Status read_status = ReadEncodedProgram(&sources, &encoded2);
   EXPECT_EQ(courgette::C_OK, read_status);
 
   courgette::SinkStream assembled;
-  const courgette::Status assemble_status =
-      Assemble(encoded2.get(), &assembled);
+  const courgette::Status assemble_status = Assemble(encoded2, &assembled);
   EXPECT_EQ(courgette::C_OK, assemble_status);
-
-  encoded2.reset();
 
   const void* assembled_buffer = assembled.Buffer();
   size_t assembled_length = assembled.Length();
 
   EXPECT_EQ(original_length, assembled_length);
   EXPECT_EQ(0, memcmp(original_buffer, assembled_buffer, original_length));
+
+  DeleteEncodedProgram(encoded2);
 }
 
 TEST_F(EncodeDecodeTest, PE) {

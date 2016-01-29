@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "courgette/courgette.h"
+#include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
 #include "courgette/label_manager.h"
 #include "courgette/memory_allocator.h"
@@ -132,7 +132,7 @@ class AssemblyProgram {
   void UnassignIndexes();
   void AssignRemainingIndexes();
 
-  scoped_ptr<EncodedProgram> Encode() const;
+  EncodedProgram* Encode() const;
 
   // Accessor for instruction list.
   const InstructionVector& instructions() const {
@@ -191,12 +191,5 @@ class AssemblyProgram {
   DISALLOW_COPY_AND_ASSIGN(AssemblyProgram);
 };
 
-// Converts |program| into encoded form, returning it as |*output|.
-// Returns C_OK if succeeded, otherwise returns an error status and sets
-// |*output| to null.
-Status Encode(const AssemblyProgram& program,
-              scoped_ptr<EncodedProgram>* output);
-
 }  // namespace courgette
-
 #endif  // COURGETTE_ASSEMBLY_PROGRAM_H_
