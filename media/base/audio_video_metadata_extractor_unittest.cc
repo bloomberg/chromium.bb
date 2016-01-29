@@ -39,6 +39,13 @@ scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
   return extractor;
 }
 
+const std::string GetTagValue(
+    const media::AudioVideoMetadataExtractor::TagDictionary& tags,
+    const char* tag_name) {
+  auto tag_data = tags.find(tag_name);
+  return tag_data == tags.end() ? "" : tag_data->second;
+}
+
 TEST(AudioVideoMetadataExtractorTest, InvalidFile) {
   GetExtractor("ten_byte_file", true, false, 0, -1, -1);
 }
@@ -56,7 +63,7 @@ TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
   EXPECT_EQ(1u, extractor->stream_infos()[1].tags.size());
   EXPECT_EQ("vorbis", extractor->stream_infos()[1].type);
   EXPECT_EQ("Processed by SoX",
-            extractor->stream_infos()[1].tags.find("COMMENT")->second);
+            GetTagValue(extractor->stream_infos()[1].tags, "COMMENT"));
 
   EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
@@ -72,9 +79,9 @@ TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
 
   EXPECT_EQ(2u, extractor->stream_infos()[0].tags.size());
   EXPECT_EQ("Lavf54.37.100",
-            extractor->stream_infos()[0].tags.find("encoder")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "encoder"));
   EXPECT_EQ("Amadeus Pro",
-            extractor->stream_infos()[0].tags.find("encoded_by")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "encoded_by"));
 
   EXPECT_EQ("pcm_u8", extractor->stream_infos()[1].type);
   EXPECT_EQ(0u, extractor->stream_infos()[1].tags.size());
@@ -92,7 +99,7 @@ TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
   EXPECT_EQ("matroska,webm", extractor->stream_infos()[0].type);
   EXPECT_EQ(1u, extractor->stream_infos()[0].tags.size());
   EXPECT_EQ("Lavf53.9.0",
-            extractor->stream_infos()[0].tags.find("ENCODER")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "ENCODER"));
 
   EXPECT_EQ("vp8", extractor->stream_infos()[1].type);
   EXPECT_EQ(0u, extractor->stream_infos()[1].tags.size());
@@ -109,7 +116,7 @@ TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
   EXPECT_EQ("pcm_s16le", extractor->stream_infos()[5].type);
   EXPECT_EQ(1u, extractor->stream_infos()[5].tags.size());
   EXPECT_EQ("Lavc52.32.0",
-            extractor->stream_infos()[5].tags.find("ENCODER")->second);
+            GetTagValue(extractor->stream_infos()[5].tags, "ENCODER"));
 
   EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
@@ -125,33 +132,31 @@ TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
 
   EXPECT_EQ("mov,mp4,m4a,3gp,3g2,mj2", extractor->stream_infos()[0].type);
   EXPECT_EQ(4u, extractor->stream_infos()[0].tags.size());
-  EXPECT_EQ(
-      "isom3gp4",
-      extractor->stream_infos()[0].tags.find("compatible_brands")->second);
-  EXPECT_EQ(
-      "2014-02-11 00:39:25",
-      extractor->stream_infos()[0].tags.find("creation_time")->second);
+  EXPECT_EQ("isom3gp4", GetTagValue(extractor->stream_infos()[0].tags,
+                                    "compatible_brands"));
+  EXPECT_EQ("2014-02-11 00:39:25",
+            GetTagValue(extractor->stream_infos()[0].tags, "creation_time"));
   EXPECT_EQ("isom",
-            extractor->stream_infos()[0].tags.find("major_brand")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "major_brand"));
   EXPECT_EQ("0",
-            extractor->stream_infos()[0].tags.find("minor_version")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "minor_version"));
 
   EXPECT_EQ("h264", extractor->stream_infos()[1].type);
   EXPECT_EQ(5u, extractor->stream_infos()[1].tags.size());
   EXPECT_EQ("2014-02-11 00:39:25",
-            extractor->stream_infos()[1].tags.find("creation_time")->second);
+            GetTagValue(extractor->stream_infos()[1].tags, "creation_time"));
   EXPECT_EQ("VideoHandle",
-            extractor->stream_infos()[1].tags.find("handler_name")->second);
-  EXPECT_EQ("eng", extractor->stream_infos()[1].tags.find("language")->second);
-  EXPECT_EQ("90", extractor->stream_infos()[1].tags.find("rotate")->second);
+            GetTagValue(extractor->stream_infos()[1].tags, "handler_name"));
+  EXPECT_EQ("eng", GetTagValue(extractor->stream_infos()[1].tags, "language"));
+  EXPECT_EQ("90", GetTagValue(extractor->stream_infos()[1].tags, "rotate"));
 
   EXPECT_EQ("aac", extractor->stream_infos()[2].type);
   EXPECT_EQ(3u, extractor->stream_infos()[2].tags.size());
   EXPECT_EQ("2014-02-11 00:39:25",
-            extractor->stream_infos()[2].tags.find("creation_time")->second);
+            GetTagValue(extractor->stream_infos()[2].tags, "creation_time"));
   EXPECT_EQ("SoundHandle",
-            extractor->stream_infos()[2].tags.find("handler_name")->second);
-  EXPECT_EQ("eng", extractor->stream_infos()[2].tags.find("language")->second);
+            GetTagValue(extractor->stream_infos()[2].tags, "handler_name"));
+  EXPECT_EQ("eng", GetTagValue(extractor->stream_infos()[2].tags, "language"));
 
   EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
@@ -173,23 +178,23 @@ TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
   EXPECT_EQ("mp3", extractor->stream_infos()[0].type);
   EXPECT_EQ(7u, extractor->stream_infos()[0].tags.size());
   EXPECT_EQ("OK Computer",
-            extractor->stream_infos()[0].tags.find("album")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "album"));
   EXPECT_EQ("Radiohead",
-            extractor->stream_infos()[0].tags.find("artist")->second);
-  EXPECT_EQ("1997", extractor->stream_infos()[0].tags.find("date")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "artist"));
+  EXPECT_EQ("1997", GetTagValue(extractor->stream_infos()[0].tags, "date"));
   EXPECT_EQ("Lavf54.4.100",
-            extractor->stream_infos()[0].tags.find("encoder")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "encoder"));
   EXPECT_EQ("Alternative",
-            extractor->stream_infos()[0].tags.find("genre")->second);
-  EXPECT_EQ("Airbag", extractor->stream_infos()[0].tags.find("title")->second);
-  EXPECT_EQ("1", extractor->stream_infos()[0].tags.find("track")->second);
+            GetTagValue(extractor->stream_infos()[0].tags, "genre"));
+  EXPECT_EQ("Airbag", GetTagValue(extractor->stream_infos()[0].tags, "title"));
+  EXPECT_EQ("1", GetTagValue(extractor->stream_infos()[0].tags, "track"));
 
   EXPECT_EQ("mp3", extractor->stream_infos()[1].type);
   EXPECT_EQ(0u, extractor->stream_infos()[1].tags.size());
 
   EXPECT_EQ("png", extractor->stream_infos()[2].type);
   EXPECT_EQ(1u, extractor->stream_infos()[2].tags.size());
-  EXPECT_EQ("Other", extractor->stream_infos()[2].tags.find("comment")->second);
+  EXPECT_EQ("Other", GetTagValue(extractor->stream_infos()[2].tags, "comment"));
 
   EXPECT_EQ(1u, extractor->attached_images_bytes().size());
   EXPECT_EQ(155752u, extractor->attached_images_bytes()[0].size());
