@@ -28,11 +28,6 @@ void sk_abort_no_print() {
     abort();
 }
 
-void sk_throw() {
-    SkASSERT(!"sk_throw");
-    abort();
-}
-
 void sk_out_of_memory(void) {
     SkASSERT(!"sk_out_of_memory");
     abort();
