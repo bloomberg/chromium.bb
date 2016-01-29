@@ -287,7 +287,7 @@ char kTSanDefaultSuppressions[] =
 "deadlock:mojo::edk::MessagePipeDispatcher::TransportStarted\n"
 
 // http://crbug.com/582274
-"usrsctp_close\n"
+"race:usrsctp_close\n"
 
 // End of suppressions.
 ;  // Please keep this semicolon.
