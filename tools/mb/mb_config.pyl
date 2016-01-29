@@ -74,6 +74,7 @@
     'libfuzzer_upload_bot_msan': ['gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs'],
     'drfuzz_upload_bot_win32': ['gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs'],
     'drfuzz_upload_bot_win64': ['gn', 'release', 'drmemory', 'drfuzz', 'x64', 'proprietary_codecs'],
+    'gyp_valgrind_bot': ['gyp', 'release', 'x64', 'valgrind'],
 
     # This is just for completeness; any bot that uses this config
     # should never actually run MB.
@@ -415,6 +416,11 @@
     'drmemory': {
       'gn_args': 'is_component_build=true enable_iterator_debugging=false',
       'gyp_defines': 'component=shared_library build_for_tool=drmemory',
+    },
+
+    'valgrind': {
+      # TODO: add gn_args for 'build_for_tool=memcheck'
+      'gyp_defines': 'build_for_tool=memcheck',
     }
   },
 
@@ -550,6 +556,14 @@
       'WebKit Linux Oilpan (dbg)': 'swarming_gn_oilpan_debug_bot_x64',
       'Android Builder': 'gyp_release_bot_android',
       'WebKit Android (Nexus4)': 'gyp_release_bot_android',
+    },
+    'chromium.memory.fyi': {
+      'Chromium Linux Builder (valgrind)': 'gyp_valgrind_bot',
+      'Linux Tests (valgrind)(1)': 'gyp_valgrind_bot',
+      'Linux Tests (valgrind)(2)': 'gyp_valgrind_bot',
+      'Linux Tests (valgrind)(3)': 'gyp_valgrind_bot',
+      'Linux Tests (valgrind)(4)': 'gyp_valgrind_bot',
+      'Linux Tests (valgrind)(5)': 'gyp_valgrind_bot',
     },
     'chromium.fyi': {
       'CFI Linux': 'gn_cfi_release_bot',
