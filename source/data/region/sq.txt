@@ -137,7 +137,7 @@ sq{
         GU{"Guam"}
         GW{"Guine-Bisau"}
         GY{"Guajanë"}
-        HK{"RVAK i Hong Kongut"}
+        HK{"Hong Kong"}
         HM{"Ishulli Hërd dhe Ishujt Mekdonaldë"}
         HN{"Honduras"}
         HR{"Kroaci"}
@@ -191,7 +191,7 @@ sq{
         ML{"Mali"}
         MM{"Mianmar (Burma)"}
         MN{"Mongoli"}
-        MO{"RVAK i Makaos"}
+        MO{"Makao"}
         MP{"Ishujt e Marianës Veriore"}
         MQ{"Martinik"}
         MR{"Mauritani"}
@@ -226,7 +226,7 @@ sq{
         PM{"Shën-Peir dhe Mikuelon"}
         PN{"Ishujt Pitkernë"}
         PR{"Porto-Riko"}
-        PS{"Territoret Palestineze"}
+        PS{"Palestinë"}
         PT{"Portugali"}
         PW{"Palau"}
         PY{"Paraguai"}
@@ -300,9 +300,6 @@ sq{
     }
     Countries%short{
         GB{"Mbretëria e Bashkuar"}
-        HK{"Hong Kong"}
-        MO{"Makao"}
-        PS{"Palestinë"}
         US{"SHBA"}
     }
     Countries%variant{

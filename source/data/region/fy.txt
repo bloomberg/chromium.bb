@@ -138,7 +138,7 @@ fy{
         GU{"Guam"}
         GW{"Guinee-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong SAR van Sina"}
+        HK{"Hongkong"}
         HM{"Heard- en McDonaldeilannen"}
         HN{"Honduras"}
         HR{"Kroatië"}
@@ -192,7 +192,7 @@ fy{
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongolië"}
-        MO{"Macao SAR van Sina"}
+        MO{"Macao"}
         MP{"Noardlike Marianeneilannen"}
         MQ{"Martinique"}
         MR{"Mauritanië"}
@@ -227,7 +227,7 @@ fy{
         PM{"Saint-Pierre en Miquelon"}
         PN{"Pitcairneilannen"}
         PR{"Puerto Rico"}
-        PS{"Palestynske gebieten"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -301,9 +301,6 @@ fy{
     }
     Countries%short{
         GB{"VK"}
-        HK{"Hongkong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"VS"}
     }
     Countries%variant{

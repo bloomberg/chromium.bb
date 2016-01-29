@@ -398,18 +398,18 @@ en{
                         "Mo12",
                     }
                     wide{
-                        "Month1",
-                        "Month2",
-                        "Month3",
-                        "Month4",
-                        "Month5",
-                        "Month6",
-                        "Month7",
-                        "Month8",
-                        "Month9",
-                        "Month10",
-                        "Month11",
-                        "Month12",
+                        "1",
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "10",
+                        "11",
+                        "12",
                     }
                 }
             }

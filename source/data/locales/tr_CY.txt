@@ -18,7 +18,7 @@ tr_CY{
                 "d MMMM y EEEE",
                 "d MMMM y",
                 "d MMM y",
-                "d.MM.y",
+                "d MM y",
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",

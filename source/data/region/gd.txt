@@ -138,7 +138,7 @@ gd{
         GU{"Guam"}
         GW{"Gini-Bioso"}
         GY{"Guidheàna"}
-        HK{"Hong Kong SAR na Sìne"}
+        HK{"Hong Kong"}
         HM{"Eilean Heard is MhicDhòmhnaill"}
         HN{"Hondùras"}
         HR{"A’ Chròthais"}
@@ -192,7 +192,7 @@ gd{
         ML{"Màili"}
         MM{"Miànmar"}
         MN{"Dùthaich nam Mongol"}
-        MO{"Macàthu SAR na Sìne"}
+        MO{"Macàthu"}
         MP{"Na h-Eileanan Mairianach a Tuath"}
         MQ{"Mairtinic"}
         MR{"Moratàinea"}
@@ -227,7 +227,7 @@ gd{
         PM{"Saint Pierre agus Miquelon"}
         PN{"Eilean Peit a’ Chàirn"}
         PR{"Porto Rìceo"}
-        PS{"Na Ranntairean Palastaineach"}
+        PS{"Palastain"}
         PT{"A’ Phortagail"}
         PW{"Palabh"}
         PY{"Paraguaidh"}
@@ -301,9 +301,6 @@ gd{
     }
     Countries%short{
         GB{"RA"}
-        HK{"Hong Kong"}
-        MO{"Macàthu"}
-        PS{"Palastain"}
         US{"SA"}
     }
     Countries%variant{

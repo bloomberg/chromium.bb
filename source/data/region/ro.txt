@@ -138,7 +138,7 @@ ro{
         GU{"Guam"}
         GW{"Guineea-Bissau"}
         GY{"Guyana"}
-        HK{"R.A.S. Hong Kong a Chinei"}
+        HK{"Hong Kong"}
         HM{"Insula Heard și Insulele McDonald"}
         HN{"Honduras"}
         HR{"Croația"}
@@ -192,7 +192,7 @@ ro{
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"R.A.S. Macao a Chinei"}
+        MO{"Macao"}
         MP{"Insulele Mariane de Nord"}
         MQ{"Martinica"}
         MR{"Mauritania"}
@@ -227,7 +227,7 @@ ro{
         PM{"Saint-Pierre și Miquelon"}
         PN{"Insulele Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Teritoriile Palestiniene"}
+        PS{"Palestina"}
         PT{"Portugalia"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -301,9 +301,6 @@ ro{
     }
     Countries%short{
         GB{"Regatul Unit"}
-        HK{"Hong Kong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"S.U.A."}
     }
     Countries%variant{

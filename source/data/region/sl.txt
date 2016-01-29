@@ -138,7 +138,7 @@ sl{
         GU{"Guam"}
         GW{"Gvineja Bissau"}
         GY{"Gvajana"}
-        HK{"Posebno administrativno območje LR Kitajske Hong Kong"}
+        HK{"Hongkong"}
         HM{"Heardov otok in McDonaldovi otoki"}
         HN{"Honduras"}
         HR{"Hrvaška"}
@@ -192,7 +192,7 @@ sl{
         ML{"Mali"}
         MM{"Mjanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Posebno administrativno območje LR Kitajske Macao"}
+        MO{"Macao"}
         MP{"Severni Marianski otoki"}
         MQ{"Martinik"}
         MR{"Mavretanija"}
@@ -227,7 +227,7 @@ sl{
         PM{"Saint Pierre in Miquelon"}
         PN{"Pitcairn"}
         PR{"Portoriko"}
-        PS{"Palestinsko ozemlje"}
+        PS{"Palestina"}
         PT{"Portugalska"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -301,9 +301,6 @@ sl{
     }
     Countries%short{
         GB{"ZK"}
-        HK{"Hongkong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"ZDA"}
     }
     Countries%variant{

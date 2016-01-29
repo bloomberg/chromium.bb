@@ -138,7 +138,7 @@ bs{
         GU{"Guam"}
         GW{"Gvineja-Bisao"}
         GY{"Gvajana"}
-        HK{"Hong Kong (S. A. R. Kina)"}
+        HK{"Hong Kong"}
         HM{"Heard i arhipelag McDonald"}
         HN{"Honduras"}
         HR{"Hrvatska"}
@@ -192,7 +192,7 @@ bs{
         ML{"Mali"}
         MM{"Mijanmar"}
         MN{"Mongolija"}
-        MO{"Makao (S. A. R. Kina)"}
+        MO{"Makao"}
         MP{"Sjeverna Marijanska Ostrva"}
         MQ{"Martinik"}
         MR{"Mauritanija"}
@@ -227,7 +227,7 @@ bs{
         PM{"Sveti Petar i Mikelon"}
         PN{"Pitkern"}
         PR{"Porto Riko"}
-        PS{"Palestinska Teritorija"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -301,9 +301,6 @@ bs{
     }
     Countries%short{
         GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"Makao"}
-        PS{"Palestina"}
         US{"SAD"}
     }
     Countries%variant{

@@ -138,7 +138,7 @@ id{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong SAR China"}
+        HK{"Hong Kong"}
         HM{"Pulau Heard dan Kepulauan McDonald"}
         HN{"Honduras"}
         HR{"Kroasia"}
@@ -192,7 +192,7 @@ id{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Makau SAR China"}
+        MO{"Makau"}
         MP{"Kepulauan Mariana Utara"}
         MQ{"Martinik"}
         MR{"Mauritania"}
@@ -227,7 +227,7 @@ id{
         PM{"Saint Pierre dan Miquelon"}
         PN{"Kepulauan Pitcairn"}
         PR{"Puerto Riko"}
-        PS{"Wilayah Palestina"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -301,9 +301,6 @@ id{
     }
     Countries%short{
         GB{"GB"}
-        HK{"Hong Kong"}
-        MO{"Makau"}
-        PS{"Palestina"}
         US{"A.S."}
     }
     Countries%variant{

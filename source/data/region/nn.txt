@@ -136,7 +136,7 @@ nn{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong S.A.R. Kina"}
+        HK{"Hongkong"}
         HM{"Heard- og McDonaldsøyane"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -190,7 +190,7 @@ nn{
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolia"}
-        MO{"Macao S.A.R. Kina"}
+        MO{"Macao"}
         MP{"Nord-Marianane"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -293,10 +293,6 @@ nn{
         ZM{"Zambia"}
         ZW{"Zimbabwe"}
         ZZ{"ukjent område"}
-    }
-    Countries%short{
-        HK{"Hongkong"}
-        MO{"Macao"}
     }
     Version{"2.1.19.14"}
 }

@@ -370,8 +370,8 @@ bn{
         }
         gregorian{
             AmPmMarkers{
-                "AM",
-                "অপরাহ্ণ",
+                "am",
+                "pm",
             }
             AmPmMarkersAbbr{
                 "AM",

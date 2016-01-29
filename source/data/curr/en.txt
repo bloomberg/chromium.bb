@@ -793,7 +793,7 @@ en{
             "Papua New Guinean Kina",
         }
         PHP{
-            "PHP",
+            "Php",
             "Philippine Peso",
         }
         PKR{
