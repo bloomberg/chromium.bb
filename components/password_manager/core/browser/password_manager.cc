@@ -625,7 +625,7 @@ void PasswordManager::OnPasswordFormsRendered(
           if (!provisional_save_manager_->has_generated_password()) {
             if (logger) {
               logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
-                                      visible_forms[i]);
+                                      all_visible_forms_[i]);
               logger->LogMessage(Logger::STRING_DECISION_DROP);
             }
             provisional_save_manager_.reset();
