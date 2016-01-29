@@ -70,8 +70,8 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
   if (const auto* method = clang::dyn_cast<const clang::CXXMethodDecl>(&decl)) {
     if (!method->isStatic()) {
       // Some methods shouldn't be renamed because reasons.
-      static const char* kBlacklist[] = {"begin", "end", "rbegin", "rend",
-                                         "trace"};
+      static const char* kBlacklist[] = {"begin", "end",  "rbegin", "rend",
+                                         "trace", "lock", "unlock", "try_lock"};
       for (const auto& b : kBlacklist) {
         if (original_name == b)
           return false;

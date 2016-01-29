@@ -35,6 +35,10 @@ class Task {
   void rend() {}
   // The trace() method is used by Oilpan, we shouldn't rename it.
   void trace() {}
+  // These are used by std::unique_lock and std::lock_guard.
+  void lock() {}
+  void unlock() {}
+  void try_lock() {}
 };
 
 class Other {
@@ -42,6 +46,7 @@ class Other {
   static void begin() {}
   static void end() {}
   static void trace() {}
+  static void lock() {}
 };
 
 // Test that the actual method definition is also updated.

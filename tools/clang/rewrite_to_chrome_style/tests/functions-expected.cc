@@ -18,8 +18,9 @@ int TestFunctionThatTakesTwoInts(int x, int y) {
 // This is named like the begin() method which isn't renamed, but
 // here it's not a method so it should be.
 void Begin() {}
-// Same for trace().
+// Same for trace() and friends.
 void Trace() {}
+void Lock() {}
 
 // Note: F is already Google style and should not change.
 void F() {
