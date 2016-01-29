@@ -312,3 +312,11 @@ fuzzer_test("icu_uregex_open_fuzzer") {
     "//third_party/icu",
   ]
 }
+
+fuzzer_test("v8_parser") {
+  sources = []
+  deps = [
+    "//v8:parser_fuzzer",
+  ]
+  dict = "dicts/js.dict"
+}
