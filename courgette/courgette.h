@@ -90,30 +90,6 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
 Status GenerateEnsemblePatch(SourceStream* old, SourceStream* target,
                              SinkStream* patch);
 
-// Detects the type of an executable file, and it's length. The length
-// may be slightly smaller than some executables (like ELF), but will include
-// all bytes the courgette algorithm has special benefit for.
-// On success:
-//   Fill in type and detected_length, and return C_OK.
-// On failure:
-//   Fill in type with UNKNOWN, detected_length with 0, and
-//   return C_INPUT_NOT_RECOGNIZED
-Status DetectExecutableType(const void* buffer, size_t length,
-                            ExecutableType* type,
-                            size_t* detected_length);
-
-// Attempts to detect the type of executable, and parse it with the
-// appropriate tools, storing the pointer to the AssemblyProgram in |*output|.
-// Returns C_OK if successful, otherwise returns an error status and sets
-// |*output| to NULL.
-Status ParseDetectedExecutable(const void* buffer, size_t length,
-                               AssemblyProgram** output);
-
-// Converts |program| into encoded form, returning it as |*output|.
-// Returns C_OK if succeeded, otherwise returns an error status and
-// sets |*output| to NULL
-Status Encode(AssemblyProgram* program, EncodedProgram** output);
-
 // Serializes |encoded| into the stream set.
 // Returns C_OK if succeeded, otherwise returns an error status.
 Status WriteEncodedProgram(EncodedProgram* encoded, SinkStreamSet* sink);
@@ -123,20 +99,10 @@ Status WriteEncodedProgram(EncodedProgram* encoded, SinkStreamSet* sink);
 // |buffer| in an undefined state.
 Status Assemble(EncodedProgram* encoded, SinkStream* buffer);
 
-// Deserializes program from the stream set.
-// Returns C_OK if succeeded, otherwise returns an error status and
-// sets |*output| to NULL
-Status ReadEncodedProgram(SourceStreamSet* source, EncodedProgram** output);
-
-// Used to free an AssemblyProgram returned by other APIs.
-void DeleteAssemblyProgram(AssemblyProgram* program);
-
-// Used to free an EncodedProgram returned by other APIs.
-void DeleteEncodedProgram(EncodedProgram* encoded);
-
 // Adjusts |program| to look more like |model|.
 //
 Status Adjust(const AssemblyProgram& model, AssemblyProgram *program);
 
 }  // namespace courgette
+
 #endif  // COURGETTE_COURGETTE_H_
