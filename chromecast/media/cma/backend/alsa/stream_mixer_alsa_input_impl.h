@@ -160,6 +160,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   int max_queued_frames_;
   int fade_frames_remaining_;
   int fade_out_frames_total_;
+  int zeroed_frames_;  // current count of consecutive 0-filled frames
 
   OnReadyToDeleteCb delete_cb_;
 

@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_BASE_DEVICE_CAPABILITIES_IMPL_H_
 #define CHROMECAST_BASE_DEVICE_CAPABILITIES_IMPL_H_
 
+#include <string>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

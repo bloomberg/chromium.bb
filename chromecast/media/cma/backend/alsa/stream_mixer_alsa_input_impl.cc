@@ -76,6 +76,7 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
                          base::Time::kMicrosecondsPerSecond),
       fade_frames_remaining_(0),
       fade_out_frames_total_(0),
+      zeroed_frames_(0),
       weak_factory_(this) {
   DCHECK(delegate_);
   DCHECK(mixer_);
@@ -363,9 +364,13 @@ void StreamMixerAlsaInputImpl::FillFrames(int frame_delay,
       }
       frames_left -= frames_to_copy;
       frames_filled += frames_to_copy;
+      LOG_IF(WARNING, zeroed_frames_ > 0)
+          << "Filled a total of " << zeroed_frames_ << " frames with 0";
+      zeroed_frames_ = 0;
     } else {
       // No data left in queue; fill remaining frames with zeros.
-      LOG(WARNING) << "Filling " << frames_left << " frames with 0";
+      LOG_IF(WARNING, zeroed_frames_ == 0) << "Starting to fill frames with 0";
+      zeroed_frames_ += frames_left;
       output->ZeroFramesPartial(frames_filled, frames_left);
       frames_filled += frames_left;
       frames_left = 0;
@@ -450,7 +455,7 @@ void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
     } else {
       return;
     }
-    LOG(INFO) << "Pausing";
+    LOG(INFO) << "Pausing " << this;
   } else {
     if (state_ == kStateFadingOut) {
       fade_frames_remaining_ = NormalFadeFrames() - fade_frames_remaining_;
@@ -459,7 +464,7 @@ void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
     } else {
       return;
     }
-    LOG(INFO) << "Unpausing";
+    LOG(INFO) << "Unpausing " << this;
     state_ = kStateNormalPlayback;
   }
   DCHECK_GE(fade_frames_remaining_, 0);

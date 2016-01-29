@@ -345,6 +345,8 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
                << unsigned_output_samples_per_second
                << " Hz). This may lead to lower audio quality.";
   }
+  LOG(INFO) << "Sample rate changed from " << output_samples_per_second_
+            << " to " << unsigned_output_samples_per_second;
   output_samples_per_second_ =
       static_cast<int>(unsigned_output_samples_per_second);
 

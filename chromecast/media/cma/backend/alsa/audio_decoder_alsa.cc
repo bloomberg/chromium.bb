@@ -230,7 +230,8 @@ AudioDecoderAlsa::RenderingDelay AudioDecoderAlsa::GetRenderingDelay() {
 void AudioDecoderAlsa::OnDecoderInitialized(bool success) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  LOG(INFO) << "Decoder initialization returned with success = " << success;
+  LOG(INFO) << "Decoder initialization was "
+            << (success ? "successful" : "unsuccessful");
   if (!success)
     delegate_->OnDecoderError();
 }
@@ -289,7 +290,8 @@ void AudioDecoderAlsa::OnWritePcmCompletion(BufferStatus status,
 void AudioDecoderAlsa::OnMixerError() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  LOG(ERROR) << "Mixer error occured.";
+  // TODO(jyw): properly avoid outputting this message when it isn't needed
+  LOG(ERROR) << "Mixer error occurred. Did the sample rate just change?";
   error_ = true;
   delegate_->OnDecoderError();
 }

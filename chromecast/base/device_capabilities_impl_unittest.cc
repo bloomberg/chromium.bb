@@ -56,7 +56,7 @@ class FakeCapabilityManagerSimple : public DeviceCapabilities::Validator {
 
   void Validate(const std::string& path,
                 scoped_ptr<base::Value> proposed_value) override {
-    ASSERT_TRUE(path.find(key_) == 0);
+    ASSERT_EQ(path.find(key_), 0ul);
     if (accept_changes_)
       SetValidatedValue(path, std::move(proposed_value));
   }
@@ -95,7 +95,7 @@ class FakeCapabilityManagerComplex : public DeviceCapabilities::Validator {
 // OnCapabilitiesChanged() without encountering deadlocks/unexpected behavior.
 class FakeCapabilitiesObserver : public DeviceCapabilities::Observer {
  public:
-  FakeCapabilitiesObserver(DeviceCapabilities* capabilities)
+  explicit FakeCapabilitiesObserver(DeviceCapabilities* capabilities)
       : capabilities_(capabilities), removed_as_observer(false) {
     capabilities_->AddCapabilitiesObserver(this);
   }
