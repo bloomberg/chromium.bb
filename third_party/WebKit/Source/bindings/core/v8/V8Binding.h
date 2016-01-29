@@ -64,6 +64,7 @@ class Frame;
 class LocalDOMWindow;
 class LocalFrame;
 class NodeFilter;
+class TracedValue;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 class XPathNSResolver;
@@ -76,10 +77,6 @@ struct V8TypeOf {
     // V8TypeOf for each wrapper class.
     typedef void Type;
 };
-
-namespace TraceEvent {
-class ConvertableToTraceFormat;
-}
 
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
 CORE_EXPORT void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
@@ -1083,7 +1080,7 @@ private:
     mutable v8::Local<v8::Function> m_function;
 };
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Local<v8::Function>);
+PassRefPtr<TracedValue> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Local<v8::Function>);
 
 // Callback functions used by generated code.
 CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);

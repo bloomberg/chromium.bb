@@ -58,7 +58,8 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
-#include "platform/EventTracer.h"
+#include "platform/JSONValues.h"
+#include "platform/TracedValue.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -948,7 +949,7 @@ String DevToolsFunctionInfo::resourceName() const
     return m_resourceName;
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Local<v8::Function> function)
+PassRefPtr<TracedValue> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Local<v8::Function> function)
 {
     DevToolsFunctionInfo info(function);
     return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());

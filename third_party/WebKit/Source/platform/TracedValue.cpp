@@ -25,86 +25,96 @@ TracedValue::~TracedValue()
 
 void TracedValue::setInteger(const char* name, int value)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->SetIntegerWithCopiedName(name, value);
 }
 
 void TracedValue::setDouble(const char* name, double value)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->SetDoubleWithCopiedName(name, value);
 }
 
 void TracedValue::setBoolean(const char* name, bool value)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->SetBooleanWithCopiedName(name, value);
 }
 
 void TracedValue::setString(const char* name, const String& value)
 {
+    ASSERT(m_tracedValue.get());
     StringUTF8Adaptor adaptor(value);
     m_tracedValue->SetStringWithCopiedName(name, adaptor.asStringPiece());
 }
 
 void TracedValue::beginDictionary(const char* name)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->BeginDictionaryWithCopiedName(name);
 }
 
 void TracedValue::beginArray(const char* name)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->BeginArrayWithCopiedName(name);
 }
 
 void TracedValue::endDictionary()
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->EndDictionary();
 }
 
 void TracedValue::pushInteger(int value)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->AppendInteger(value);
 }
 
 void TracedValue::pushDouble(double value)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->AppendDouble(value);
 }
 
 void TracedValue::pushBoolean(bool value)
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->AppendBoolean(value);
 }
 
 void TracedValue::pushString(const String& value)
 {
+    ASSERT(m_tracedValue.get());
     StringUTF8Adaptor adaptor(value);
     m_tracedValue->AppendString(adaptor.asStringPiece());
 }
 
 void TracedValue::beginArray()
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->BeginArray();
 }
 
 void TracedValue::beginDictionary()
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->BeginDictionary();
 }
 
 void TracedValue::endArray()
 {
+    ASSERT(m_tracedValue.get());
     m_tracedValue->EndArray();
 }
 
-String TracedValue::asTraceFormat() const
+String TracedValue::toString() const
 {
+    ASSERT(m_tracedValue.get());
     std::string out;
     m_tracedValue->AppendAsTraceFormat(&out);
     return String::fromUTF8(out.c_str());
-}
-
-void TracedValue::estimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead* overhead)
-{
-    m_tracedValue->EstimateTraceMemoryOverhead(overhead);
 }
 
 } // namespace blink

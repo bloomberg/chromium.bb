@@ -33,6 +33,7 @@
 #include "platform/EventTracer.h"
 #include "platform/TraceEventCommon.h"
 
+#include "platform/TracedValue.h"
 #include "wtf/Allocator.h"
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/Noncopyable.h"
@@ -110,7 +111,7 @@
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
 //                    const unsigned long long* arg_values,
-//                    PassRefPtr<ConvertableToTraceFormat> convertableValues[],
+//                    PassRefPtr<TracedValue> tracedValues[],
 //                    unsigned char flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT \
     blink::EventTracer::addTraceEvent
@@ -374,7 +375,7 @@ static inline void setTraceValue(const WTF::CString& arg, unsigned char* type, u
     *value = typeValue.m_uint;
 }
 
-static inline void setTraceValue(ConvertableToTraceFormat*, unsigned char* type, unsigned long long*)
+static inline void setTraceValue(TracedValue*, unsigned char* type, unsigned long long*)
 {
     *type = TRACE_VALUE_TYPE_CONVERTABLE;
 }
@@ -384,30 +385,30 @@ template<typename T> static inline void setTraceValue(const PassRefPtr<T>& ptr, 
     setTraceValue(ptr.get(), type, value);
 }
 
-template<typename T> struct ConvertableToTraceFormatTraits {
-    static const bool isConvertable = false;
-    static PassRefPtr<ConvertableToTraceFormat> moveFromIfConvertable(const T&)
+template<typename T> struct TracedValueTraits {
+    static const bool isTracedValue = false;
+    static PassRefPtr<TracedValue> moveFromIfTracedValue(const T&)
     {
         return nullptr;
     }
 };
 
-template<typename T> struct ConvertableToTraceFormatTraits<PassRefPtr<T>> {
-    static const bool isConvertable = std::is_convertible<T*, TraceEvent::ConvertableToTraceFormat*>::value;
-    static PassRefPtr<ConvertableToTraceFormat> moveFromIfConvertable(const PassRefPtr<T>& convertableToTraceFormat)
+template<typename T> struct TracedValueTraits<PassRefPtr<T>> {
+    static const bool isTracedValue = std::is_convertible<T*, TracedValue*>::value;
+    static PassRefPtr<TracedValue> moveFromIfTracedValue(const PassRefPtr<T>& tracedValue)
     {
-        return convertableToTraceFormat;
+        return tracedValue;
     }
 };
 
-template<typename T> bool isConvertableToTraceFormat(const T&)
+template<typename T> bool isTracedValue(const T&)
 {
-    return ConvertableToTraceFormatTraits<T>::isConvertable;
+    return TracedValueTraits<T>::isTracedValue;
 }
 
-template<typename T> PassRefPtr<ConvertableToTraceFormat> moveFromIfConvertableToTraceFormat(const T& value)
+template<typename T> PassRefPtr<TracedValue> moveFromIfTracedValue(const T& value)
 {
-    return ConvertableToTraceFormatTraits<T>::moveFromIfConvertable(value);
+    return TracedValueTraits<T>::moveFromIfTracedValue(value);
 }
 
 // These addTraceEvent template functions are defined here instead of in the
@@ -446,11 +447,11 @@ static inline TraceEventHandle addTraceEvent(
     unsigned char argTypes[1];
     unsigned long long argValues[1];
     setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
-    if (isConvertableToTraceFormat(arg1Val)) {
+    if (isTracedValue(arg1Val)) {
         return TRACE_EVENT_API_ADD_TRACE_EVENT(
             phase, categoryEnabled, name, id, bindId, timestamp,
             numArgs, &arg1Name, argTypes, argValues,
-            moveFromIfConvertableToTraceFormat(arg1Val),
+            moveFromIfTracedValue(arg1Val),
             nullptr,
             flags);
     }
@@ -480,12 +481,12 @@ static inline TraceEventHandle addTraceEvent(
     unsigned long long argValues[2];
     setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
     setTraceValue(arg2Val, &argTypes[1], &argValues[1]);
-    if (isConvertableToTraceFormat(arg1Val) || isConvertableToTraceFormat(arg2Val)) {
+    if (isTracedValue(arg1Val) || isTracedValue(arg2Val)) {
         return TRACE_EVENT_API_ADD_TRACE_EVENT(
             phase, categoryEnabled, name, id, bindId, timestamp,
             numArgs, argNames, argTypes, argValues,
-            moveFromIfConvertableToTraceFormat(arg1Val),
-            moveFromIfConvertableToTraceFormat(arg2Val),
+            moveFromIfTracedValue(arg1Val),
+            moveFromIfTracedValue(arg2Val),
             flags);
     }
     return TRACE_EVENT_API_ADD_TRACE_EVENT(

@@ -137,32 +137,33 @@
 //
 //
 // Convertable notes:
-// Converting a large data type to a string can be costly. To help with this,
-// the trace framework provides an interface ConvertableToTraceFormat. If you
-// inherit from it and implement the AppendAsTraceFormat method the trace
-// framework will call back to your object to convert a trace output time. This
-// means, if the category for the event is disabled, the conversion will not
-// happen.
+// Unlike base's trace framework, no convertable support in Blink because of
+// the way we estimate tracing memory overhead. All objects passed to the
+// tracing framework should be allocated by malloc to calculate overhead
+// correctly, while many Blink objects use PartitionAlloc/Oilpan. Convertable
+// is an interface to avoid unnecessary conversion but if we allow to use
+// PartitionAlloc/Oilpan backed objects, overhead estimation could be wrong.
+// For structured objects, you can use TracedValue.
 //
-//   class MyData : public base::trace_event::ConvertableToTraceFormat {
+//   class MyData {
 //    public:
 //     MyData() {}
-//     void AppendAsTraceFormat(std::string* out) const override {
-//       out->append("{\"foo\":1}");
+//     PassRefPtr<TracedValue> toTracedValue() {
+//       RefPtr<TracedValue> tracedValue = TracedValue::create();
+//       tracedValue->setInteger("foo", 1);
+//       tracedValue->beginArray("bar");
+//       tracedValue->pushInteger(2);
+//       tracedValue->pushInteger(3);
+//       tracedValue->endArray();
+//       return tracedValue.release();
 //     }
 //    private:
 //     ~MyData() override {}
-//     DISALLOW_COPY_AND_ASSIGN(MyData);
 //   };
 //
-//   TRACE_EVENT1("foo", "bar", "data",
-//                scoped_refptr<ConvertableToTraceFormat>(new MyData()));
+//   TRACE_EVENT1("foo", "bar", "data", myData.toTracedValue());
 //
-// The trace framework will take ownership if the passed pointer and it will
-// be free'd when the trace buffer is flushed.
-//
-// Note, we only do the conversion when the buffer is flushed, so the provided
-// data object should not be modified after it's passed to the trace framework.
+// The trace framework will take ownership.
 //
 //
 // Thread Safety:

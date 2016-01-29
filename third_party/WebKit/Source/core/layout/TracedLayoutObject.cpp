@@ -99,7 +99,7 @@ void dumpToTracedValue(const LayoutObject& object, bool traceGeometry, TracedVal
 
 } // namespace
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> TracedLayoutObject::create(const LayoutView& view, bool traceGeometry)
+PassRefPtr<TracedValue> TracedLayoutObject::create(const LayoutView& view, bool traceGeometry)
 {
     RefPtr<TracedValue> tracedValue = TracedValue::create();
     dumpToTracedValue(view, traceGeometry, tracedValue.get());

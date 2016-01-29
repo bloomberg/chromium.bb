@@ -13,7 +13,7 @@ namespace blink {
 scoped_ptr<base::Value> parseTracedValue(PassRefPtr<TracedValue> value)
 {
     base::JSONReader reader;
-    CString utf8 = value->asTraceFormat().utf8();
+    CString utf8 = value->toString().utf8();
     return reader.Read(utf8.data());
 }
 

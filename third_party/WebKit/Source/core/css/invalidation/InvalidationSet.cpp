@@ -285,7 +285,7 @@ void InvalidationSet::show() const
     value->beginArray("InvalidationSet");
     toTracedValue(value.get());
     value->endArray();
-    fprintf(stderr, "%s\n", value->asTraceFormat().ascii().data());
+    fprintf(stderr, "%s\n", value->toString().ascii().data());
 }
 #endif // NDEBUG
 

@@ -5,7 +5,7 @@
 #ifndef TracedLayoutObject_h
 #define TracedLayoutObject_h
 
-#include "platform/EventTracer.h"
+#include "platform/TracedValue.h"
 
 namespace blink {
 
@@ -13,7 +13,7 @@ class LayoutView;
 
 class TracedLayoutObject {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> create(const LayoutView&, bool traceGeometry = true);
+    static PassRefPtr<TracedValue> create(const LayoutView&, bool traceGeometry = true);
 };
 
 } // namespace blink

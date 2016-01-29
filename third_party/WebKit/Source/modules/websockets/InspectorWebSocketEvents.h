@@ -6,8 +6,8 @@
 #define InspectorWebSocketEvents_h
 
 #include "core/inspector/InspectorTraceEvents.h"
-#include "platform/EventTracer.h"
 #include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
@@ -20,13 +20,13 @@ class KURL;
 class InspectorWebSocketCreateEvent {
     STATIC_ONLY(InspectorWebSocketCreateEvent);
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
+    static PassRefPtr<TracedValue> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
 };
 
 class InspectorWebSocketEvent {
     STATIC_ONLY(InspectorWebSocketEvent);
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier);
+    static PassRefPtr<TracedValue> data(Document*, unsigned long identifier);
 };
 
 } // namespace blink
