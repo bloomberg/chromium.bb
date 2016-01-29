@@ -1,5 +1,5 @@
 diff --git a/source/common/ucmndata.h b/source/common/ucmndata.h
-index 36163c5..0902921 100644
+index 36163c5..413a2f8 100644
 --- a/source/common/ucmndata.h
 +++ b/source/common/ucmndata.h
 @@ -44,6 +44,20 @@ typedef struct  {
@@ -11,7 +11,7 @@ index 36163c5..0902921 100644
 +    uint32_t count, reserved;
 +    /*
 +    const struct {
-+    const char *const name; 
++    const char *const name;
 +    const void *const data;
 +    } toc[1];
 +    */
@@ -24,10 +24,10 @@ index 36163c5..0902921 100644
      uint32_t dataOffset;
  } UDataOffsetTOCEntry;
 diff --git a/source/common/udata.cpp b/source/common/udata.cpp
-index 0d7df42..e6d8a35 100644
+index d32023b..80bea06 100644
 --- a/source/common/udata.cpp
 +++ b/source/common/udata.cpp
-@@ -620,7 +620,7 @@ U_NAMESPACE_END
+@@ -624,7 +624,7 @@ U_NAMESPACE_END
   *      our common data.                                                *
   *                                                                      *
   *----------------------------------------------------------------------*/
@@ -36,8 +36,8 @@ index 0d7df42..e6d8a35 100644
  
  /*
   * This would be a good place for weak-linkage declarations of
-@@ -666,7 +666,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
-         if(gCommonICUDataArray[commonDataIndex] == NULL) {
+@@ -674,7 +674,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
+             }
              int32_t i;
              for(i = 0; i < commonDataIndex; ++i) {
 -                if(gCommonICUDataArray[i]->pHeader == &U_ICUDATA_ENTRY_POINT) {
@@ -45,17 +45,17 @@ index 0d7df42..e6d8a35 100644
                      /* The linked-in data is already in the list. */
                      return NULL;
                  }
-@@ -685,7 +685,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
-                 setCommonICUDataPointer(uprv_getICUData_conversion(), FALSE, pErrorCode);
-             }
-             */
--            setCommonICUDataPointer(&U_ICUDATA_ENTRY_POINT, FALSE, pErrorCode);
-+            setCommonICUDataPointer(&U_ICUDATA_ENTRY_POINT.hdr, FALSE, pErrorCode);
+@@ -694,7 +694,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
+             setCommonICUDataPointer(uprv_getICUData_conversion(), FALSE, pErrorCode);
          }
-         return gCommonICUDataArray[commonDataIndex];
-     }
+         */
+-        setCommonICUDataPointer(&U_ICUDATA_ENTRY_POINT, FALSE, pErrorCode);
++        setCommonICUDataPointer(&U_ICUDATA_ENTRY_POINT.hdr, FALSE, pErrorCode);
+         {
+             Mutex lock;
+             return gCommonICUDataArray[commonDataIndex];
 diff --git a/source/stubdata/stubdata.c b/source/stubdata/stubdata.c
-index 69a5876..9eac596 100644
+index 69a5876..1426497 100644
 --- a/source/stubdata/stubdata.c
 +++ b/source/stubdata/stubdata.c
 @@ -20,45 +20,34 @@
@@ -114,7 +114,7 @@ index 69a5876..9eac596 100644
 -           {1, 0, 0, 0},   /* format version major, minor, milli, micro */
 -           {0, 0, 0, 0}    /* dataVersion   */
 +            U_CHARSET_FAMILY,
-+            sizeof(UChar),   
++            sizeof(UChar),
 +            0,               /* reserved      */
 +            {                /* data format identifier */
 +               0x54, 0x6f, 0x43, 0x50}, /* "ToCP" */
