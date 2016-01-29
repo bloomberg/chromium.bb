@@ -25,7 +25,7 @@ TEST(BattOrSampleConverterTest, ToSampleSimple) {
 
   // Create a calibration frame with a baseline voltage and current of zero.
   std::vector<RawBattOrSample> calibration_frame;
-  calibration_frame.push_back(RawBattOrSample{0.0, 0.0});
+  calibration_frame.push_back(RawBattOrSample{0, 0});
   BattOrSampleConverter converter(eeprom, calibration_frame);
 
   // Set both the voltage and current to their max values.
