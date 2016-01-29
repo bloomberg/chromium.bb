@@ -23,14 +23,15 @@ namespace memory_pressure {
 // on those that do not have native memory pressure signals.
 class FilteredMemoryPressureCalculator : public MemoryPressureCalculator {
  public:
-  // The minimum time that must pass between successive polls. This enforces an
-  // upper bound on the rate of calls to the contained MemoryPressureCalculator.
-  static const int kMinimumTimeBetweenSamplesMs;
-
   // The cooldown period when transitioning from critical to moderate/no memory
   // pressure, or from moderate to none.
-  static const int kCriticalPressureCooldownPeriodMs;
-  static const int kModeratePressureCooldownPeriodMs;
+  //
+  // These values were experimentally obtained during the initial ChromeOS only
+  // implementation of this feature. By spending a significant cooldown period
+  // at a higher pressure level more time is dedicated to freeing resources and
+  // less churn occurs in the MemoryPressureListener event stream.
+  enum : int { kCriticalPressureCooldownPeriodMs = 5000 };
+  enum : int { kModeratePressureCooldownPeriodMs = 5000 };
 
   // The provided |pressure_calculator| and |tick_clock| must outlive this
   // object.

@@ -6,6 +6,8 @@
 
 namespace memory_pressure {
 
+#if defined(MEMORY_PRESSURE_IS_POLLING)
+
 namespace {
 
 static const int kKBperMB = 1024;
@@ -105,5 +107,7 @@ void DirectMemoryPressureCalculator::InferThresholds() {
     critical_threshold_mb_ = kSmallMemoryDefaultCriticalThresholdMb;
   }
 }
+
+#endif  // defined(MEMORY_PRESSURE_IS_POLLING)
 
 }  // namespace memory_pressure

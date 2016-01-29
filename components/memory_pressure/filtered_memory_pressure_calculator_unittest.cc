@@ -42,36 +42,6 @@ TEST_F(FilteredMemoryPressureCalculatorTest, FirstCallInvokesCalculator) {
   EXPECT_FALSE(filter_.cooldown_in_progress());
 }
 
-TEST_F(FilteredMemoryPressureCalculatorTest, CalculatorNotAlwaysInvoked) {
-  calculator_.SetModerate();
-  EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            filter_.CalculateCurrentPressureLevel());
-  EXPECT_EQ(1, calculator_.calls());
-  EXPECT_FALSE(filter_.cooldown_in_progress());
-
-  // Change the pressure reported by the caculator, but don't expect the filter
-  // to report the critical value until a minimum sampling period has passed.
-  // The level has to be increasing so that hysteresis doesn't come into play.
-  calculator_.SetCritical();
-  EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            filter_.CalculateCurrentPressureLevel());
-  EXPECT_EQ(1, calculator_.calls());
-  EXPECT_FALSE(filter_.cooldown_in_progress());
-
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs / 2);
-  EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            filter_.CalculateCurrentPressureLevel());
-  EXPECT_EQ(1, calculator_.calls());
-  EXPECT_FALSE(filter_.cooldown_in_progress());
-
-  // A sufficient time has passed so now it should report the new level.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
-  EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
-            filter_.CalculateCurrentPressureLevel());
-  EXPECT_EQ(2, calculator_.calls());
-  EXPECT_FALSE(filter_.cooldown_in_progress());
-}
-
 TEST_F(FilteredMemoryPressureCalculatorTest, CooldownCriticalToModerate) {
   calculator_.SetCritical();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
@@ -79,9 +49,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownCriticalToModerate) {
   EXPECT_EQ(1, calculator_.calls());
   EXPECT_FALSE(filter_.cooldown_in_progress());
 
-  // Initiate a cooldown period by jumping sufficiently far ahead for another
-  // sample.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Initiate a cooldown period by stepping forward and taking another sample.
+  Tick(100);
   calculator_.SetModerate();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());
@@ -91,8 +60,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownCriticalToModerate) {
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             filter_.cooldown_high_tide());
 
-  // Step another sample interval and it should still not have changed.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Take another sample and it should still not have changed.
+  Tick(100);
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());
   EXPECT_EQ(3, calculator_.calls());
@@ -116,10 +85,10 @@ TEST_F(FilteredMemoryPressureCalculatorTest,
   EXPECT_EQ(1, calculator_.calls());
   EXPECT_FALSE(filter_.cooldown_in_progress());
 
-  // Initiate a cooldown period by jumping sufficiently far ahead for another
-  // sample. First go directly to no memory pressure before passing back through
+  // Initiate a cooldown period by stepping forward and taking another sample.
+  // First go directly to no memory pressure before passing back through
   // moderate. The final result should be a moderate memory pressure.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  Tick(100);
   calculator_.SetNone();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());
@@ -129,8 +98,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest,
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             filter_.cooldown_high_tide());
 
-  // Step another sample interval and it should still not have changed.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Take another sample and it should still not have changed.
+  Tick(100);
   calculator_.SetModerate();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());
@@ -154,9 +123,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownCriticalToNone) {
   EXPECT_EQ(1, calculator_.calls());
   EXPECT_FALSE(filter_.cooldown_in_progress());
 
-  // Initiate a cooldown period by jumping sufficiently far ahead for another
-  // sample.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Initiate a cooldown period by stepping forward and taking another sample.
+  Tick(100);
   calculator_.SetNone();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());
@@ -166,8 +134,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownCriticalToNone) {
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             filter_.cooldown_high_tide());
 
-  // Step another sample interval and it should still not have changed.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Take another sample and it should still not have changed.
+  Tick(100);
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());
   EXPECT_EQ(3, calculator_.calls());
@@ -176,7 +144,7 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownCriticalToNone) {
             filter_.cooldown_high_tide());
 
   // Step the cooldown period and it should change state.
-  Tick(FilteredMemoryPressureCalculator::kCriticalPressureCooldownPeriodMs);
+  Tick(FilteredMemoryPressureCalculator::kModeratePressureCooldownPeriodMs);
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             filter_.CalculateCurrentPressureLevel());
   EXPECT_EQ(4, calculator_.calls());
@@ -190,9 +158,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownModerateToNone) {
   EXPECT_EQ(1, calculator_.calls());
   EXPECT_FALSE(filter_.cooldown_in_progress());
 
-  // Initiate a cooldown period by jumping sufficiently far ahead for another
-  // sample.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Initiate a cooldown period by stepping forward and taking another sample.
+  Tick(100);
   calculator_.SetNone();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             filter_.CalculateCurrentPressureLevel());
@@ -202,8 +169,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, CooldownModerateToNone) {
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             filter_.cooldown_high_tide());
 
-  // Step another sample interval and it should still not have changed.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Take another sample and it should still not have changed.
+  Tick(100);
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             filter_.CalculateCurrentPressureLevel());
   EXPECT_EQ(3, calculator_.calls());
@@ -226,9 +193,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, InterruptedCooldownModerate) {
   EXPECT_EQ(1, calculator_.calls());
   EXPECT_FALSE(filter_.cooldown_in_progress());
 
-  // Initiate a cooldown period by jumping sufficiently far ahead for another
-  // sample.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Initiate a cooldown period by stepping forward and taking another sample.
+  Tick(100);
   calculator_.SetNone();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             filter_.CalculateCurrentPressureLevel());
@@ -238,10 +204,10 @@ TEST_F(FilteredMemoryPressureCalculatorTest, InterruptedCooldownModerate) {
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             filter_.cooldown_high_tide());
 
-  // Step another sample interval and it should still not have changed. Since
-  // the pressure level has increased back to moderate it should also end the
+  // Take another sample and it should still not have changed. Since the
+  // pressure level has increased back to moderate it should also end the
   // cooldown period.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  Tick(100);
   calculator_.SetModerate();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             filter_.CalculateCurrentPressureLevel());
@@ -256,9 +222,8 @@ TEST_F(FilteredMemoryPressureCalculatorTest, InterruptedCooldownCritical) {
   EXPECT_EQ(1, calculator_.calls());
   EXPECT_FALSE(filter_.cooldown_in_progress());
 
-  // Initiate a cooldown period by jumping sufficiently far ahead for another
-  // sample.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Initiate a cooldown period by stepping forward and taking another sample.
+  Tick(100);
   calculator_.SetNone();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             filter_.CalculateCurrentPressureLevel());
@@ -268,10 +233,10 @@ TEST_F(FilteredMemoryPressureCalculatorTest, InterruptedCooldownCritical) {
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             filter_.cooldown_high_tide());
 
-  // Step another sample interval and it should still not have changed. Since
-  // the pressure level has increased to critical it ends the cooldown period
-  // and immediately reports the critical memory pressure.
-  Tick(FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs);
+  // Take another sample and it should still not have changed. Since the
+  // pressure level has increased to critical it ends the cooldown period and
+  // immediately reports the critical memory pressure.
+  Tick(100);
   calculator_.SetCritical();
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             filter_.CalculateCurrentPressureLevel());

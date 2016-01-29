@@ -11,19 +11,6 @@ namespace memory_pressure {
 
 #if defined(MEMORY_PRESSURE_IS_POLLING)
 
-// 100ms (10Hz) allows a relatively fast respsonse time for rapidly increasing
-// memory usage, but limits the amount of work done in the calculator.
-const int FilteredMemoryPressureCalculator::kMinimumTimeBetweenSamplesMs = 100;
-
-// These values were experimentally obtained during the initial ChromeOS only
-// implementation of this feature. By spending a significant cooldown period in
-// at a higher pressure level more time is dedicated to freeing resources and
-// less churn occurs in the MemoryPressureListener event stream.
-const int FilteredMemoryPressureCalculator::kCriticalPressureCooldownPeriodMs =
-    5000;
-const int FilteredMemoryPressureCalculator::kModeratePressureCooldownPeriodMs =
-    5000;
-
 FilteredMemoryPressureCalculator::FilteredMemoryPressureCalculator(
     MemoryPressureCalculator* pressure_calculator,
     base::TickClock* tick_clock)
@@ -43,13 +30,6 @@ FilteredMemoryPressureCalculator::~FilteredMemoryPressureCalculator() {
 FilteredMemoryPressureCalculator::MemoryPressureLevel
 FilteredMemoryPressureCalculator::CalculateCurrentPressureLevel() {
   base::TimeTicks now = tick_clock_->NowTicks();
-
-  // If its too soon to take a sample then return the precalculated value.
-  if (samples_taken_ &&
-      (now - last_sample_time_) <
-          base::TimeDelta::FromMilliseconds(kMinimumTimeBetweenSamplesMs)) {
-    return current_pressure_level_;
-  }
 
   // Take a sample.
   samples_taken_ = true;

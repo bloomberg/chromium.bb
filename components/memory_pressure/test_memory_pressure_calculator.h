@@ -15,11 +15,16 @@ namespace memory_pressure {
 // A mock memory pressure calculator for unittesting.
 class TestMemoryPressureCalculator : public MemoryPressureCalculator {
  public:
+  // Defaults to no pressure.
   TestMemoryPressureCalculator();
+  explicit TestMemoryPressureCalculator(MemoryPressureLevel level);
   ~TestMemoryPressureCalculator() override {}
 
   // MemoryPressureCalculator implementation.
   MemoryPressureLevel CalculateCurrentPressureLevel() override;
+
+  // Sets the mock calculator to return the given pressure level.
+  void SetLevel(MemoryPressureLevel level);
 
   // Sets the mock calculator to return no pressure.
   void SetNone();

@@ -25,6 +25,8 @@
         'memory_pressure/memory_pressure_calculator.h',
         'memory_pressure/memory_pressure_listener.cc',
         'memory_pressure/memory_pressure_listener.h',
+        'memory_pressure/memory_pressure_monitor.cc',
+        'memory_pressure/memory_pressure_monitor.h',
         'memory_pressure/memory_pressure_stats_collector.cc',
         'memory_pressure/memory_pressure_stats_collector.h',
       ],

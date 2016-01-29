@@ -8,6 +8,8 @@
 
 namespace memory_pressure {
 
+#if defined(MEMORY_PRESSURE_IS_POLLING)
+
 namespace {
 
 static const int kKBperMB = 1024;
@@ -171,5 +173,7 @@ TEST_F(DirectMemoryPressureCalculatorTest,
 
   ASSERT_NO_FATAL_FAILURE(CalculateCurrentPressureLevelTest(&calc));
 }
+
+#endif  // defined(MEMORY_PRESSURE_IS_POLLING)
 
 }  // namespace memory_pressure

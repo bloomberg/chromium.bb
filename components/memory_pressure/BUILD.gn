@@ -15,6 +15,8 @@ source_set("memory_pressure") {
     "memory_pressure_calculator.h",
     "memory_pressure_listener.cc",
     "memory_pressure_listener.h",
+    "memory_pressure_monitor.cc",
+    "memory_pressure_monitor.h",
     "memory_pressure_stats_collector.cc",
     "memory_pressure_stats_collector.h",
   ]
@@ -30,6 +32,7 @@ source_set("unit_tests") {
     "direct_memory_pressure_calculator_linux_unittest.cc",
     "direct_memory_pressure_calculator_win_unittest.cc",
     "filtered_memory_pressure_calculator_unittest.cc",
+    "memory_pressure_monitor_unittest.cc",
     "memory_pressure_stats_collector_unittest.cc",
     "test_memory_pressure_calculator.cc",
     "test_memory_pressure_calculator.h",
@@ -38,6 +41,7 @@ source_set("unit_tests") {
   deps = [
     ":memory_pressure",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

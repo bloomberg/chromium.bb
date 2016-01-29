@@ -337,6 +337,7 @@
       'memory_pressure/direct_memory_pressure_calculator_linux_unittest.cc',
       'memory_pressure/direct_memory_pressure_calculator_win_unittest.cc',
       'memory_pressure/filtered_memory_pressure_calculator_unittest.cc',
+      'memory_pressure/memory_pressure_monitor_unittest.cc',
       'memory_pressure/memory_pressure_stats_collector_unittest.cc',
       'memory_pressure/test_memory_pressure_calculator.cc',
       'memory_pressure/test_memory_pressure_calculator.h',

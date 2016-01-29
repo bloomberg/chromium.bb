@@ -11,10 +11,18 @@ namespace memory_pressure {
 TestMemoryPressureCalculator::TestMemoryPressureCalculator()
     : level_(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE), calls_(0) {}
 
+TestMemoryPressureCalculator::TestMemoryPressureCalculator(
+    MemoryPressureLevel level)
+    : level_(level), calls_(0) {}
+
 TestMemoryPressureCalculator::MemoryPressureLevel
 TestMemoryPressureCalculator::CalculateCurrentPressureLevel() {
   ++calls_;
   return level_;
+}
+
+void TestMemoryPressureCalculator::SetLevel(MemoryPressureLevel level) {
+  level_ = level;
 }
 
 void TestMemoryPressureCalculator::SetNone() {
