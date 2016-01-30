@@ -9,7 +9,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        'prefs/prefs.gyp:prefs',
+        '../base/base.gyp:base_prefs',
       ],
       'include_dirs': [
         '..',

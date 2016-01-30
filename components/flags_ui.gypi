@@ -13,8 +13,8 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../components/components_strings.gyp:components_strings',
-        '../components/prefs/prefs.gyp:prefs',
         '../ui/base/ui_base.gyp:ui_base',
         'flags_ui_switches',
         'pref_registry',

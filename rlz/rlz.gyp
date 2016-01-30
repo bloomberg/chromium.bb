@@ -130,6 +130,7 @@
         ':rlz_lib',
         ':test_support_rlz',
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/zlib/zlib.gyp:zlib',

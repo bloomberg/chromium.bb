@@ -5,6 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
+    '../base/base.gyp:base_prefs',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../net/net.gyp:net',
     '../ui/base/ui_base.gyp:ui_base',
@@ -14,7 +15,6 @@
     'components_strings.gyp:components_strings',
     'keyed_service_core',
     'pref_registry',
-    'prefs/prefs.gyp:prefs',
     'url_matcher',
   ],
   'defines': [

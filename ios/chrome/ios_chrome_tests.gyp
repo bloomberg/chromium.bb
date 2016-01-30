@@ -12,6 +12,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_prefs_test_support',
         '../../base/base.gyp:test_support_base',
         '../../components/components.gyp:bookmarks_test_support',
         '../../components/components.gyp:favicon_base',
@@ -19,7 +20,6 @@
         '../../components/components.gyp:metrics_test_support',
         '../../components/components.gyp:update_client',
         '../../components/components.gyp:version_info',
-        '../../components/prefs/prefs.gyp:prefs_test_support',
         '../../net/net.gyp:net_test_support',
         '../../skia/skia.gyp:skia',
         '../../testing/gmock.gyp:gmock',

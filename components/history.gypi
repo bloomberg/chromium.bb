@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:base_prefs',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
@@ -26,7 +27,6 @@
         'favicon_base',
         'history_core_common',
         'keyed_service_core',
-        'prefs/prefs.gyp:prefs',
         'query_parser',
         'signin_core_browser',
         'sync_driver',

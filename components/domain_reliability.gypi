@@ -13,9 +13,9 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../components/components.gyp:data_use_measurement_core',
         '../components/components.gyp:keyed_service_core',
-        '../components/prefs/prefs.gyp:prefs',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',

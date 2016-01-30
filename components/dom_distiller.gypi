@@ -54,6 +54,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
         '../third_party/dom_distiller_js/dom_distiller_js.gyp:dom_distiller_js_proto',
@@ -62,7 +63,6 @@
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
         'dom_distiller_protos',
-        'prefs/prefs.gyp:prefs',
         'pref_registry',
         'variations',
       ],

@@ -44,6 +44,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_prefs',
         '../../breakpad/breakpad.gyp:breakpad_client',
         '../../components/components.gyp:language_usage_metrics',
         '../../components/components.gyp:about_handler',
@@ -117,7 +118,6 @@
         '../../components/components.gyp:webp_transcode',
         '../../components/components_resources.gyp:components_resources',
         '../../components/components_strings.gyp:components_strings',
-        '../../components/prefs/prefs.gyp:prefs',
         '../../components/url_formatter/url_formatter.gyp:url_formatter',
         '../../google_apis/google_apis.gyp:google_apis',
         '../../net/net.gyp:net',

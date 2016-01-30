@@ -10,10 +10,10 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../net/net.gyp:net',
         'content_settings_core_browser',
         'content_settings_core_common',
-        'prefs/prefs.gyp:prefs',
       ],
       'include_dirs': [
         '..',
