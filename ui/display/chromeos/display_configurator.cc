@@ -303,11 +303,9 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
     case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
     case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED: {
       if ((new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
-           states.size() != 2) ||
+           states.size() != 2 && num_on_displays != 2) ||
           (new_display_state == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED &&
-           states.size() <= 2) ||
-          (num_on_displays != 0 &&
-           num_on_displays != static_cast<int>(displays.size()))) {
+           num_on_displays <= 2)) {
         LOG(WARNING) << "Ignoring request to enter extended mode with "
                      << states.size() << " connected display(s) and "
                      << num_on_displays << " turned on";

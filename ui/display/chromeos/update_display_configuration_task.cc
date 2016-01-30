@@ -181,32 +181,34 @@ bool UpdateDisplayConfigurationTask::ShouldConfigure() const {
 
 MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
     const {
+  int num_displays = cached_displays_.size();
   int num_on_displays =
-      GetDisplayPower(cached_displays_, new_power_state_, NULL);
-  switch (cached_displays_.size()) {
-    case 0:
-      return MULTIPLE_DISPLAY_STATE_HEADLESS;
-    case 1:
-      return MULTIPLE_DISPLAY_STATE_SINGLE;
-    default: {
-      if (num_on_displays == 1) {
-        // If only one display is currently turned on, return the "single"
-        // state so that its native mode will be used.
-        return MULTIPLE_DISPLAY_STATE_SINGLE;
-      }
-      if (num_on_displays >= 3) {
-        return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
-      } else if (cached_displays_.size() == 2) {
-        if (!layout_manager_->GetStateController())
-          return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
-        // With either both displays on or both displays off, use one of the
-        // dual modes.
-        return layout_manager_->GetStateController()->GetStateForDisplayIds(
-            cached_displays_);
-      }
-      NOTREACHED();
-    }
+      GetDisplayPower(cached_displays_, new_power_state_, nullptr);
+
+  if (num_displays == 0)
+    return MULTIPLE_DISPLAY_STATE_HEADLESS;
+
+  if (num_displays == 1 || num_on_displays == 1) {
+    // If only one display is currently turned on, return the "single" state
+    // so that its native mode will be used.
+    return MULTIPLE_DISPLAY_STATE_SINGLE;
   }
+
+  if (num_displays == 2 || num_on_displays == 2) {
+    // Try to use the saved configuration; otherwise, default to extended.
+    DisplayConfigurator::StateController* state_controller =
+        layout_manager_->GetStateController();
+
+    if (!state_controller)
+      return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+    return state_controller->GetStateForDisplayIds(cached_displays_);
+  }
+
+  if (num_on_displays >= 3) {
+    // 3+ displays are always extended
+    return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
+  }
+
   return MULTIPLE_DISPLAY_STATE_INVALID;
 }
 
