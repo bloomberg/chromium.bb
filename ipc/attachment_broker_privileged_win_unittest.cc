@@ -470,7 +470,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleTwice) {
 
 // An unprivileged process makes a shared memory region and sends it to the
 // privileged process.
-TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendSharedMemoryHandle) {
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendSharedMemoryHandle) {
   Init("SendSharedMemoryHandle");
 
   CommonSetUp();

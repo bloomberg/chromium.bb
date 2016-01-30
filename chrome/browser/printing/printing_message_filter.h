@@ -52,6 +52,12 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
  private:
   ~PrintingMessageFilter() override;
 
+#if defined(OS_WIN)
+  // Used to pass resulting EMF from renderer to browser in printing.
+  void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
+                          base::SharedMemoryHandle* browser_handle);
+#endif
+
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.

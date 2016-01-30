@@ -49,9 +49,14 @@ class DesktopSessionProxy::IpcSharedBufferCore
  public:
   IpcSharedBufferCore(int id,
                       base::SharedMemoryHandle handle,
+                      base::ProcessHandle process,
                       size_t size)
       : id_(id),
+#if defined(OS_WIN)
+        shared_memory_(handle, kReadOnly, process),
+#else  // !defined(OS_WIN)
         shared_memory_(handle, kReadOnly),
+#endif  // !defined(OS_WIN)
         size_(size) {
     if (!shared_memory_.Map(size)) {
       LOG(ERROR) << "Failed to map a shared buffer: id=" << id
@@ -470,7 +475,7 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
-      new IpcSharedBufferCore(id, handle, size);
+      new IpcSharedBufferCore(id, handle, desktop_process_.Handle(), size);
 
   if (shared_buffer->memory() != nullptr &&
       !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {

@@ -205,7 +205,12 @@ void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
   // We duplicate the given file handle when creating a base::SharedMemory
   // instance so that its destructor closes the copy.
   EXPECT_GT(params.data_size, 0U);
+#if defined(OS_WIN)
+  base::SharedMemory metafile_data(params.metafile_data_handle, true,
+                                   GetCurrentProcess());
+#elif defined(OS_MACOSX)
   base::SharedMemory metafile_data(params.metafile_data_handle, true);
+#endif
   metafile_data.Map(params.data_size);
 #if defined(OS_MACOSX)
   printing::PdfMetafileCg metafile;

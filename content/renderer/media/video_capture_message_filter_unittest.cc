@@ -97,23 +97,18 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   Mock::VerifyAndClearExpectations(&delegate);
 
   // VideoCaptureMsg_NewBuffer
-#if defined(OS_WIN)
-  HANDLE h = reinterpret_cast<HANDLE>(10);
-  // Passing a process ID that is not the current process's to prevent
-  // attachment brokering.
   const base::SharedMemoryHandle handle =
-      base::SharedMemoryHandle(h, base::GetCurrentProcId() + 1);
-  EXPECT_CALL(delegate,
-              OnBufferCreated(
-                  ::testing::Property(&base::SharedMemoryHandle::GetHandle, h),
-                  100, 1));
+#if defined(OS_WIN)
+      base::SharedMemoryHandle(reinterpret_cast<HANDLE>(10),
+                               base::GetCurrentProcId());
 #else
-  const base::SharedMemoryHandle handle = base::SharedMemoryHandle(10, true);
-  EXPECT_CALL(delegate, OnBufferCreated(handle, 100, 1));
+      base::SharedMemoryHandle(10, true);
 #endif
+  EXPECT_CALL(delegate, OnBufferCreated(handle, 100, 1));
   filter->OnMessageReceived(VideoCaptureMsg_NewBuffer(
       delegate.device_id(), handle, 100, 1));
   Mock::VerifyAndClearExpectations(&delegate);
+
   // VideoCaptureMsg_BufferReady
   VideoCaptureMsg_BufferReady_Params params;
   params.device_id = delegate.device_id();

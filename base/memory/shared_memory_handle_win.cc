@@ -54,7 +54,7 @@ bool SharedMemoryHandle::BelongsToCurrentProcess() const {
 }
 
 bool SharedMemoryHandle::NeedsBrokering() const {
-  return BelongsToCurrentProcess();
+  return false;
 }
 
 HANDLE SharedMemoryHandle::GetHandle() const {

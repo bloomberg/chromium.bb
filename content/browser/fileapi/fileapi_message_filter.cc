@@ -554,7 +554,11 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToBlob(
         this, bad_message::FAMF_APPEND_SHARED_MEMORY_TO_BLOB);
     return;
   }
+#if defined(OS_WIN)
+  base::SharedMemory shared_memory(handle, true, PeerHandle());
+#else
   base::SharedMemory shared_memory(handle, true);
+#endif
   if (!shared_memory.Map(buffer_size)) {
     ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
     return;
@@ -641,7 +645,11 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToStream(
         this, bad_message::FAMF_APPEND_SHARED_MEMORY_TO_STREAM);
     return;
   }
+#if defined(OS_WIN)
+  base::SharedMemory shared_memory(handle, true, PeerHandle());
+#else
   base::SharedMemory shared_memory(handle, true);
+#endif
   if (!shared_memory.Map(buffer_size)) {
     OnRemoveStream(url);
     return;
