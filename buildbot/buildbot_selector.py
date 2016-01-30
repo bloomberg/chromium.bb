@@ -34,16 +34,10 @@ BOT_ASSIGNMENT = {
     'precise-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
 
-    # Clang.
-    'precise_64-newlib-dbg-clang':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
-    'mac10.7-newlib-dbg-clang':
-        python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
-
     # ASan.
     'precise_64-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
-    'mac10.7-newlib-dbg-asan':
+    'mac-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
 
     # Sanitizer Pnacl toolchain buildbot.
@@ -65,7 +59,7 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
     'precise_64-newlib-x86_64-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
-    'mac10.8-newlib-opt-pnacl':
+    'mac-newlib-opt-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'win7-64-newlib-opt-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
@@ -95,19 +89,6 @@ BOT_ASSIGNMENT = {
     'precise-64-glibc-dbg-valgrind':
         echo + ' "Valgrind bots are disabled: see '
             'https://code.google.com/p/nativeclient/issues/detail?id=3158"',
-    # Coverage.
-    'mac10.6-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage'),
-    'precise-64-32-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 32 newlib --coverage'),
-    'precise-64-64-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage'),
-    'xp-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 32 newlib --coverage'),
 
     ######################################################################
     # Trybots.
@@ -123,28 +104,10 @@ BOT_ASSIGNMENT = {
         echo + ' "Android bots are disabled and going away"',
     'nacl-precise64-newlib-opt-android':
         echo + ' "Android bots are disabled and going away"',
-    # Coverage trybots.
-    'nacl-mac10.6-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage'),
-    'nacl-precise-64-32-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 32 newlib --coverage'),
-    'nacl-precise-64-64-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage'),
-    'nacl-win32-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 32 newlib --coverage'),
-    # Clang trybots.
-    'nacl-precise_64-newlib-dbg-clang':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
-    'nacl-mac10.6-newlib-dbg-clang':
-        python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
     # ASan.
     'nacl-precise_64-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
-    'nacl-mac10.7-newlib-dbg-asan':
+    'nacl-mac-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
     # Pnacl main trybots
     'nacl-precise_64-newlib-arm_qemu-pnacl':
@@ -159,7 +122,7 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
     'nacl-arm_hw_opt_panda':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
-    'nacl-mac10.8_newlib_opt_pnacl':
+    'nacl-mac_newlib_opt_pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'nacl-win7_64_newlib_opt_pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
@@ -289,8 +252,7 @@ special_for_arm = [
 ]
 for platform in [
     'vista', 'win7', 'win8', 'win',
-    'mac10.6', 'mac10.7', 'mac10.8',
-    'lucid', 'precise'] + special_for_arm:
+    'mac', 'lucid', 'precise'] + special_for_arm:
   if platform in special_for_arm:
     arch_variants = ['arm']
   else:
