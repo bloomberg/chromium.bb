@@ -17,6 +17,7 @@
 
 namespace media {
 class AudioBus;
+class AudioParameters;
 }  // namespace media
 
 namespace content {
@@ -47,16 +48,9 @@ class CONTENT_EXPORT AudioTrackRecorder
               base::TimeTicks capture_time) override;
 
  private:
-  friend class AudioTrackRecorderTest;
-  class AudioParameters;
-
   // Forward declaration of nested class for handling encoding.
   // See the implementation file for details.
   class AudioEncoder;
-
-  // Returns the Opus buffer duration in milliseconds, or zero if none will work
-  // for the given |sample_rate|.
-  static int GetOpusBufferDuration(int sample_rate);
 
   // Used to check that we are destroyed on the same thread we were created on.
   base::ThreadChecker main_render_thread_checker_;

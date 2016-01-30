@@ -12,38 +12,93 @@
 #include "base/stl_util.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_converter.h"
+#include "media/base/audio_fifo.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/opus/src/include/opus.h"
 
 // Note that this code follows the Chrome media convention of defining a "frame"
-// as "one multi-channel sample" as opposed to another common definition
-// meaning "a chunk of samples". Here this second definition of "frame" is
-// called a "buffer"; so what might be called "frame duration" is instead
-// "buffer duration", and so on.
+// as "one multi-channel sample" as opposed to another common definition meaning
+// "a chunk of samples". Here this second definition of "frame" is called a
+// "buffer"; so what might be called "frame duration" is instead "buffer
+// duration", and so on.
 
 namespace content {
 
 namespace {
 
-enum {
-  // This is the recommended value, according to documentation in
+enum : int {
+  // Recommended value for opus_encode_float(), according to documentation in
   // third_party/opus/src/include/opus.h, so that the Opus encoder does not
-  // degrade the audio due to memory constraints.
-  OPUS_MAX_PAYLOAD_SIZE = 4000,
+  // degrade the audio due to memory constraints, and is independent of the
+  // duration of the encoded buffer.
+  kOpusMaxDataBytes = 4000,
 
-  // Support for max sampling rate of 48KHz, 2 channels, 60 ms duration.
-  MAX_SAMPLES_PER_BUFFER = 48 * 2 * 60,
+  // Opus preferred sampling rate for encoding. This is also the one WebM likes
+  // to have: https://wiki.xiph.org/MatroskaOpus.
+  kOpusPreferredSamplingRate = 48000,
+
+  // For quality reasons we try to encode 60ms, the maximum Opus buffer.
+  kOpusPreferredBufferDurationMs = 60,
+
+  // Maximum amount of buffers that can be held in the AudioEncoders' AudioFifo.
+  // Recording is not real time, hence a certain buffering is allowed.
+  kMaxNumberOfFifoBuffers = 2,
 };
+
+// The amount of Frames in a 60 ms buffer @ 48000 samples/second.
+const int kOpusPreferredFramesPerBuffer = kOpusPreferredSamplingRate *
+                                          kOpusPreferredBufferDurationMs /
+                                          base::Time::kMillisecondsPerSecond;
+
+// Tries to encode |data_in|'s |num_samples| into |data_out|.
+bool DoEncode(OpusEncoder* opus_encoder,
+              float* data_in,
+              int num_samples,
+              std::string* data_out) {
+  DCHECK_EQ(kOpusPreferredFramesPerBuffer, num_samples);
+
+  data_out->resize(kOpusMaxDataBytes);
+  const opus_int32 result = opus_encode_float(
+      opus_encoder, data_in, num_samples,
+      reinterpret_cast<uint8_t*>(string_as_array(data_out)), kOpusMaxDataBytes);
+
+  if (result > 1) {
+    // TODO(ajose): Investigate improving this. http://crbug.com/547918
+    data_out->resize(result);
+    return true;
+  }
+  // If |result| in {0,1}, do nothing; the documentation says that a return
+  // value of zero or one means the packet does not need to be transmitted.
+  // Otherwise, we have an error.
+  DLOG_IF(ERROR, result < 0) << " encode failed: " << opus_strerror(result);
+  return false;
+}
+
+// Interleaves |audio_bus| channels() of floats into a single output linear
+// |buffer|.
+// TODO(mcasas) https://crbug.com/580391 use AudioBus::ToInterleavedFloat().
+void ToInterleaved(media::AudioBus* audio_bus, float* buffer) {
+  for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+    const float* src = audio_bus->channel(ch);
+    const float* const src_end = src + audio_bus->frames();
+    float* dest = buffer + ch;
+    for (; src < src_end; ++src, dest += audio_bus->channels())
+      *dest = *src;
+  }
+}
 
 }  // anonymous namespace
 
-// Nested class encapsulating opus-related encoding details.
-// AudioEncoder is created and destroyed on ATR's main thread (usually the
-// main render thread) but otherwise should operate entirely on
-// |encoder_thread_|, which is owned by AudioTrackRecorder. Be sure to delete
-// |encoder_thread_| before deleting the AudioEncoder using it.
+// Nested class encapsulating opus-related encoding details. It contains an
+// AudioConverter to adapt incoming data to the format Opus likes to have.
+// AudioEncoder is created and destroyed on ATR's main thread (usually the main
+// render thread) but otherwise should operate entirely on |encoder_thread_|,
+// which is owned by AudioTrackRecorder. Be sure to delete |encoder_thread_|
+// before deleting the AudioEncoder using it.
 class AudioTrackRecorder::AudioEncoder
-    : public base::RefCountedThreadSafe<AudioEncoder> {
+    : public base::RefCountedThreadSafe<AudioEncoder>,
+      public media::AudioConverter::InputCallback {
  public:
   AudioEncoder(const OnEncodedAudioCB& on_encoded_audio_cb,
                int32_t bits_per_second);
@@ -56,17 +111,15 @@ class AudioTrackRecorder::AudioEncoder
  private:
   friend class base::RefCountedThreadSafe<AudioEncoder>;
 
-  ~AudioEncoder();
+  ~AudioEncoder() override;
 
   bool is_initialized() const { return !!opus_encoder_; }
 
-  void DestroyExistingOpusEncoder();
+  // media::AudioConverted::InputCallback implementation.
+  double ProvideInput(media::AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
-  void TransferSamplesIntoBuffer(const media::AudioBus* audio_bus,
-                                 int source_offset,
-                                 int buffer_fill_offset,
-                                 int num_samples);
-  bool EncodeFromFilledBuffer(std::string* out);
+  void DestroyExistingOpusEncoder();
 
   const OnEncodedAudioCB on_encoded_audio_cb_;
 
@@ -75,17 +128,15 @@ class AudioTrackRecorder::AudioEncoder
 
   base::ThreadChecker encoder_thread_checker_;
 
-  // In the case where a call to EncodeAudio() cannot completely fill the
-  // buffer, this points to the position at which to populate data in a later
-  // call.
-  int buffer_fill_end_;
+  // Track Audio (ingress) and Opus encoder input parameters, respectively. They
+  // only differ in their sample_rate() and frames_per_buffer(): output is
+  // 48ksamples/s and 2880, respectively.
+  media::AudioParameters input_params_;
+  media::AudioParameters output_params_;
 
-  int frames_per_buffer_;
-
-  // The duration of one set of frames of encoded audio samples.
-  base::TimeDelta buffer_duration_;
-
-  media::AudioParameters audio_params_;
+  // Sampling rate adapter between an OpusEncoder supported and the provided.
+  scoped_ptr<media::AudioConverter> converter_;
+  scoped_ptr<media::AudioFifo> fifo_;
 
   // Buffer for passing AudioBus data to OpusEncoder.
   scoped_ptr<float[]> buffer_;
@@ -115,50 +166,56 @@ AudioTrackRecorder::AudioEncoder::~AudioEncoder() {
 }
 
 void AudioTrackRecorder::AudioEncoder::OnSetFormat(
-    const media::AudioParameters& params) {
+    const media::AudioParameters& input_params) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(encoder_thread_checker_.CalledOnValidThread());
-  if (audio_params_.Equals(params))
+  if (input_params_.Equals(input_params))
     return;
 
   DestroyExistingOpusEncoder();
 
-  if (!params.IsValid() || params.channels() > 2) {
-    DLOG(ERROR) << "Invalid audio params: " << params.AsHumanReadableString();
+  if (!input_params.IsValid()) {
+    DLOG(ERROR) << "Invalid params: " << input_params.AsHumanReadableString();
     return;
   }
+  input_params_ = input_params;
+  input_params_.set_frames_per_buffer(input_params_.sample_rate() *
+                                      kOpusPreferredBufferDurationMs /
+                                      base::Time::kMillisecondsPerSecond);
 
-  buffer_duration_ = base::TimeDelta::FromMilliseconds(
-      AudioTrackRecorder::GetOpusBufferDuration(params.sample_rate()));
-  if (buffer_duration_ == base::TimeDelta()) {
-    DLOG(ERROR) << "Could not find a valid |buffer_duration| for the given "
-                << "sample rate: " << params.sample_rate();
-    return;
-  }
+  // third_party/libopus supports up to 2 channels (see implementation of
+  // opus_encoder_create()): force |output_params_| to at most those.
+  output_params_ = media::AudioParameters(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::GuessChannelLayout(std::min(input_params_.channels(), 2)),
+      kOpusPreferredSamplingRate,
+      input_params_.bits_per_sample(),
+      kOpusPreferredFramesPerBuffer);
+  DVLOG(1) << "|input_params_|:" << input_params_.AsHumanReadableString()
+           << " -->|output_params_|:" << output_params_.AsHumanReadableString();
 
-  frames_per_buffer_ =
-      params.sample_rate() * buffer_duration_.InMilliseconds() / 1000;
-  if (frames_per_buffer_ * params.channels() > MAX_SAMPLES_PER_BUFFER) {
-    DLOG(ERROR) << "Invalid |frames_per_buffer_|: " << frames_per_buffer_;
-    return;
-  }
+  converter_.reset(new media::AudioConverter(input_params_, output_params_,
+                                             false /* disable_fifo */));
+  converter_->AddInput(this);
+  converter_->PrimeWithSilence();
 
-  // Initialize AudioBus buffer for OpusEncoder.
-  buffer_fill_end_ = 0;
-  buffer_.reset(new float[params.channels() * frames_per_buffer_]);
+  fifo_.reset(new media::AudioFifo(
+      input_params_.channels(),
+      kMaxNumberOfFifoBuffers * input_params_.frames_per_buffer()));
+
+  buffer_.reset(new float[output_params_.channels() *
+                          output_params_.frames_per_buffer()]);
 
   // Initialize OpusEncoder.
-  DCHECK((params.sample_rate() != 48000) || (params.sample_rate() != 24000) ||
-         (params.sample_rate() != 16000) || (params.sample_rate() != 12000) ||
-         (params.sample_rate() != 8000))
-      << "Opus supports only sample rates of {48, 24, 16, 12, 8}000, requested "
-      << params.sample_rate();
   int opus_result;
-  opus_encoder_ = opus_encoder_create(params.sample_rate(), params.channels(),
-                                      OPUS_APPLICATION_AUDIO, &opus_result);
+  opus_encoder_ = opus_encoder_create(output_params_.sample_rate(),
+                                      output_params_.channels(),
+                                      OPUS_APPLICATION_AUDIO,
+                                      &opus_result);
   if (opus_result < 0) {
     DLOG(ERROR) << "Couldn't init opus encoder: " << opus_strerror(opus_result)
-                << ", sample rate: " << params.sample_rate()
-                << ", channels: " << params.channels();
+                << ", sample rate: " << output_params_.sample_rate()
+                << ", channels: " << output_params_.channels();
     return;
   }
 
@@ -172,46 +229,50 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
     DLOG(ERROR) << "Failed to set opus bitrate: " << bitrate;
     return;
   }
-
-  audio_params_ = params;
 }
 
 void AudioTrackRecorder::AudioEncoder::EncodeAudio(
-    scoped_ptr<media::AudioBus> audio_bus,
+    scoped_ptr<media::AudioBus> input_bus,
     const base::TimeTicks& capture_time) {
+  DVLOG(1) << __FUNCTION__ << ", #frames " << input_bus->frames();
   DCHECK(encoder_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(audio_bus->channels(), audio_params_.channels());
+  DCHECK_EQ(input_bus->channels(), input_params_.channels());
+  DCHECK(!capture_time.is_null());
+  DCHECK(converter_);
 
   if (!is_initialized())
     return;
+  // TODO(mcasas): Consider using a std::deque<scoped_ptr<AudioBus>> instead of
+  // an AudioFifo, to avoid copying data needlessly since we know the sizes of
+  // both input and output and they are multiples.
+  fifo_->Push(input_bus.get());
 
-  base::TimeDelta buffer_fill_duration =
-      buffer_fill_end_ * buffer_duration_ / frames_per_buffer_;
-  base::TimeTicks buffer_capture_time = capture_time - buffer_fill_duration;
-
-  // Encode all audio in |audio_bus| into zero or more packets.
-  int src_pos = 0;
-  while (src_pos < audio_bus->frames()) {
-    const int num_samples_to_xfer = std::min(
-        frames_per_buffer_ - buffer_fill_end_, audio_bus->frames() - src_pos);
-    TransferSamplesIntoBuffer(audio_bus.get(), src_pos, buffer_fill_end_,
-                              num_samples_to_xfer);
-    src_pos += num_samples_to_xfer;
-    buffer_fill_end_ += num_samples_to_xfer;
-
-    if (buffer_fill_end_ < frames_per_buffer_)
-      break;
+  // Wait to have enough |input_bus|s to guarantee a satisfactory conversion.
+  while (fifo_->frames() >= input_params_.frames_per_buffer()) {
+    scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
+        output_params_.channels(), kOpusPreferredFramesPerBuffer);
+    converter_->Convert(audio_bus.get());
+    ToInterleaved(audio_bus.get(), buffer_.get());
 
     scoped_ptr<std::string> encoded_data(new std::string());
-    if (EncodeFromFilledBuffer(encoded_data.get())) {
-      on_encoded_audio_cb_.Run(audio_params_, std::move(encoded_data),
-                               buffer_capture_time);
+    if (DoEncode(opus_encoder_, buffer_.get(), kOpusPreferredFramesPerBuffer,
+                 encoded_data.get())) {
+      const base::TimeTicks capture_time_of_first_sample =
+          capture_time -
+          base::TimeDelta::FromMicroseconds(fifo_->frames() *
+                                            base::Time::kMicrosecondsPerSecond /
+                                            input_params_.sample_rate());
+      on_encoded_audio_cb_.Run(output_params_, std::move(encoded_data),
+                               capture_time_of_first_sample);
     }
-
-    // Reset the capture timestamp and internal buffer for next set of frames.
-    buffer_capture_time += buffer_duration_;
-    buffer_fill_end_ = 0;
   }
+}
+
+double AudioTrackRecorder::AudioEncoder::ProvideInput(
+    media::AudioBus* audio_bus,
+    base::TimeDelta buffer_delay) {
+  fifo_->Consume(audio_bus, 0, audio_bus->frames());
+  return 1.0;  // Return volume greater than zero to indicate we have more data.
 }
 
 void AudioTrackRecorder::AudioEncoder::DestroyExistingOpusEncoder() {
@@ -221,48 +282,6 @@ void AudioTrackRecorder::AudioEncoder::DestroyExistingOpusEncoder() {
     opus_encoder_destroy(opus_encoder_);
     opus_encoder_ = nullptr;
   }
-}
-
-void AudioTrackRecorder::AudioEncoder::TransferSamplesIntoBuffer(
-    const media::AudioBus* audio_bus,
-    int source_offset,
-    int buffer_fill_offset,
-    int num_samples) {
-  // TODO(ajose): Consider replacing with AudioBus::ToInterleaved().
-  // http://crbug.com/547918
-  DCHECK(encoder_thread_checker_.CalledOnValidThread());
-  DCHECK(is_initialized());
-  // Opus requires channel-interleaved samples in a single array.
-  for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-    const float* src = audio_bus->channel(ch) + source_offset;
-    const float* const src_end = src + num_samples;
-    float* dest =
-        buffer_.get() + buffer_fill_offset * audio_params_.channels() + ch;
-    for (; src < src_end; ++src, dest += audio_params_.channels())
-      *dest = *src;
-  }
-}
-
-bool AudioTrackRecorder::AudioEncoder::EncodeFromFilledBuffer(
-    std::string* out) {
-  DCHECK(encoder_thread_checker_.CalledOnValidThread());
-  DCHECK(is_initialized());
-
-  out->resize(OPUS_MAX_PAYLOAD_SIZE);
-  const opus_int32 result = opus_encode_float(
-      opus_encoder_, buffer_.get(), frames_per_buffer_,
-      reinterpret_cast<uint8_t*>(string_as_array(out)), OPUS_MAX_PAYLOAD_SIZE);
-  if (result > 1) {
-    // TODO(ajose): Investigate improving this. http://crbug.com/547918
-    out->resize(result);
-    return true;
-  }
-  // If |result| in {0,1}, do nothing; the documentation says that a return
-  // value of zero or one means the packet does not need to be transmitted.
-  // Otherwise, we have an error.
-  DLOG_IF(ERROR, result < 0) << __FUNCTION__
-                             << " failed: " << opus_strerror(result);
-  return false;
 }
 
 AudioTrackRecorder::AudioTrackRecorder(
@@ -314,24 +333,6 @@ void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&AudioEncoder::EncodeAudio, encoder_,
                             base::Passed(&audio_data), capture_time));
-}
-
-int AudioTrackRecorder::GetOpusBufferDuration(int sample_rate) {
-  // Valid buffer durations in millseconds. Note there are other valid
-  // durations for Opus, see https://tools.ietf.org/html/rfc6716#section-2.1.4
-  // Descending order as longer durations can increase compression performance.
-  const std::vector<int> opus_valid_buffer_durations_ms = {60, 40, 20, 10};
-
-  // Search for a duration such that |sample_rate| % |buffers_per_second| == 0,
-  // where |buffers_per_second| = 1000ms / |possible_duration|.
-  for (auto possible_duration : opus_valid_buffer_durations_ms) {
-    if (sample_rate * possible_duration % 1000 == 0) {
-      return possible_duration;
-    }
-  }
-
-  // Otherwise, couldn't find a good duration.
-  return 0;
 }
 
 }  // namespace content

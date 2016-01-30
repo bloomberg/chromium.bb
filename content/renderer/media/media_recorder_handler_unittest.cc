@@ -22,6 +22,7 @@
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::InSequence;
+using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Mock;
 using ::testing::TestWithParam;
@@ -41,25 +42,24 @@ static const std::string kTestAudioTrackId = "audio_track_id";
 static const int kTestAudioChannels = 2;
 static const int kTestAudioBitsPerSample = 16;
 static const int kTestAudioSampleRate = 48000;
-static const int kTestAudioBufferDurationMS = 60;
+static const int kTestAudioBufferDurationMs = 10;
+// Opus works with 60ms buffers, so 6 MediaStreamAudioTrack Buffers are needed
+// to encode one output buffer.
+static const int kRatioOpusToTestAudioBuffers = 6;
 
 struct MediaRecorderTestParams {
   const bool has_video;
   const bool has_audio;
   const char* const mime_type;
   const char* const codecs;
-  const size_t first_encoded_video_frame_size;
-  const size_t second_encoded_video_frame_size;
-  const size_t first_encoded_audio_frame_size;
-  const size_t second_encoded_audio_frame_size;
 };
 
 // Array of valid combinations of video/audio/codecs and expected collected
 // encoded sizes to use for parameterizing MediaRecorderHandlerTest.
 static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
-    {true, false, "video/webm", "vp8", 52, 32, 0, 0},
-    {true, false, "video/webm", "vp9", 33, 18, 0, 0},
-    {false, true, "video/webm", "vp8", 0, 0, 990, 706}};
+    {true, false, "video/webm", "vp8"},
+    {true, false, "video/webm", "vp9"},
+    {false, true, "video/webm", "vp8"}};
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                                  public blink::WebMediaRecorderHandlerClient {
@@ -113,7 +113,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   scoped_ptr<media::AudioBus> NextAudioBus() {
     scoped_ptr<media::AudioBus> bus(media::AudioBus::Create(
         kTestAudioChannels,
-        kTestAudioSampleRate * kTestAudioBufferDurationMS / 1000));
+        kTestAudioSampleRate * kTestAudioBufferDurationMs / 1000));
     audio_source_.OnMoreData(bus.get(), 0, 0);
     return bus;
   }
@@ -221,31 +221,31 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   const scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(160, 80));
 
+  const size_t kEncodedSizeThreshold = 16;
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    const size_t encoded_data_size = GetParam().first_encoded_video_frame_size;
-    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, encoded_data_size, _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
   }
+  Mock::VerifyAndClearExpectations(this);
 
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    const size_t encoded_data_size = GetParam().second_encoded_video_frame_size;
-    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, encoded_data_size, _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -284,38 +284,40 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_STEREO,
       kTestAudioSampleRate, kTestAudioBitsPerSample,
-      kTestAudioSampleRate * kTestAudioBufferDurationMS / 1000);
+      kTestAudioSampleRate * kTestAudioBufferDurationMs / 1000);
   SetAudioFormatForTesting(params);
 
+  const size_t kEncodedSizeThreshold = 24;
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    const size_t kEncodedDataSize = GetParam().first_encoded_audio_frame_size;
-    EXPECT_CALL(*this, writeData(_, Lt(kEncodedDataSize), _)).Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, kEncodedDataSize, _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
+        .Times(AtLeast(1));
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
-    OnAudioBusForTesting(*audio_bus1);
+    for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
+      OnAudioBusForTesting(*audio_bus1);
     run_loop.Run();
   }
+  Mock::VerifyAndClearExpectations(this);
 
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    const size_t kSecondEncodedDataSize =
-        GetParam().second_encoded_audio_frame_size;
-    EXPECT_CALL(*this, writeData(_, Lt(kSecondEncodedDataSize), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, kSecondEncodedDataSize, _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
-    OnAudioBusForTesting(*audio_bus2);
+    for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
+      OnAudioBusForTesting(*audio_bus2);
     run_loop.Run();
   }
 
