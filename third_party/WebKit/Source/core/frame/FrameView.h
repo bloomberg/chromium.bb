@@ -922,6 +922,7 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
 }
 
 DEFINE_TYPE_CASTS(FrameView, Widget, widget, widget->isFrameView(), widget.isFrameView());
+DEFINE_TYPE_CASTS(FrameView, ScrollableArea, scrollableArea, scrollableArea->isFrameView(), scrollableArea.isFrameView());
 
 } // namespace blink
 

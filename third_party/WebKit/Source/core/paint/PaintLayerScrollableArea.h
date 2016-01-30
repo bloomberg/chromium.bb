@@ -332,6 +332,7 @@ public:
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
     Widget* widget() override;
+    bool isPaintLayerScrollableArea() const override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -411,6 +412,10 @@ private:
     bool m_hasBeenDisposed;
 #endif
 };
+
+DEFINE_TYPE_CASTS(PaintLayerScrollableArea, ScrollableArea, scrollableArea,
+    scrollableArea->isPaintLayerScrollableArea(),
+    scrollableArea.isPaintLayerScrollableArea());
 
 } // namespace blink
 

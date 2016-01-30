@@ -280,6 +280,9 @@ public:
     // Returns the widget associated with this ScrollableArea.
     virtual Widget* widget() { return nullptr; }
 
+    virtual bool isFrameView() const { return false; }
+    virtual bool isPaintLayerScrollableArea() const { return false; }
+
     // Need to promptly let go of owned animator objects.
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
