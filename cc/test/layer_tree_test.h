@@ -130,6 +130,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchCompositeImmediately();
   void DispatchNextCommitWaitsForActivation();
 
+  void SetOutputSurfaceOnLayerTreeHost(
+      scoped_ptr<OutputSurface> output_surface);
+  scoped_ptr<OutputSurface> ReleaseOutputSurfaceOnLayerTreeHost();
+  void SetVisibleOnLayerTreeHost(bool visible);
+
   virtual void AfterTest() = 0;
   virtual void WillBeginTest();
   virtual void BeginTest() = 0;

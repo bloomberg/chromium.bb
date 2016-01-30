@@ -26,8 +26,10 @@ scoped_ptr<RemoteChannelImpl> RemoteChannelImpl::Create(
 RemoteChannelImpl::RemoteChannelImpl(LayerTreeHost* layer_tree_host,
                                      RemoteProtoChannel* remote_proto_channel,
                                      TaskRunnerProvider* task_runner_provider)
-    : main_thread_vars_unsafe_(layer_tree_host, remote_proto_channel),
-      task_runner_provider_(task_runner_provider) {
+    : task_runner_provider_(task_runner_provider),
+      main_thread_vars_unsafe_(this, layer_tree_host, remote_proto_channel),
+      compositor_thread_vars_unsafe_(
+          main().remote_channel_weak_factory.GetWeakPtr()) {
   DCHECK(task_runner_provider_->IsMainThread());
 
   main().remote_proto_channel->SetProtoReceiver(this);
@@ -92,6 +94,7 @@ bool RemoteChannelImpl::CommitToActiveTree() const {
 
 void RemoteChannelImpl::SetOutputSurface(OutputSurface* output_surface) {
   DCHECK(task_runner_provider_->IsMainThread());
+
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyImpl::InitializeOutputSurfaceOnImpl,
                             proxy_impl_weak_ptr_, output_surface));
@@ -109,6 +112,7 @@ void RemoteChannelImpl::ReleaseOutputSurface() {
 
 void RemoteChannelImpl::SetVisible(bool visible) {
   DCHECK(task_runner_provider_->IsMainThread());
+
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ProxyImpl::SetVisibleOnImpl, proxy_impl_weak_ptr_, visible));
@@ -205,6 +209,7 @@ void RemoteChannelImpl::Stop() {
   }
 
   main().started = false;
+  main().remote_channel_weak_factory.InvalidateWeakPtrs();
 }
 
 bool RemoteChannelImpl::SupportsImplScrolling() const {
@@ -253,13 +258,32 @@ void RemoteChannelImpl::DidCommitAndDrawFrame() {}
 
 void RemoteChannelImpl::SetAnimationEvents(scoped_ptr<AnimationEvents> queue) {}
 
-void RemoteChannelImpl::DidLoseOutputSurface() {}
+void RemoteChannelImpl::DidLoseOutputSurface() {
+  DCHECK(task_runner_provider_->IsImplThread());
 
-void RemoteChannelImpl::RequestNewOutputSurface() {}
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&RemoteChannelImpl::DidLoseOutputSurfaceOnMain,
+                            impl().remote_channel_weak_ptr));
+}
+
+void RemoteChannelImpl::RequestNewOutputSurface() {
+  DCHECK(task_runner_provider_->IsImplThread());
+
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&RemoteChannelImpl::RequestNewOutputSurfaceOnMain,
+                            impl().remote_channel_weak_ptr));
+}
 
 void RemoteChannelImpl::DidInitializeOutputSurface(
     bool success,
-    const RendererCapabilities& capabilities) {}
+    const RendererCapabilities& capabilities) {
+  DCHECK(task_runner_provider_->IsImplThread());
+
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&RemoteChannelImpl::DidInitializeOutputSurfaceOnMain,
+                 impl().remote_channel_weak_ptr, success, capabilities));
+}
 
 void RemoteChannelImpl::DidCompletePageScaleAnimation() {}
 
@@ -269,6 +293,32 @@ void RemoteChannelImpl::PostFrameTimingEventsOnMain(
 
 void RemoteChannelImpl::BeginMainFrame(
     scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {}
+
+void RemoteChannelImpl::DidLoseOutputSurfaceOnMain() {
+  DCHECK(task_runner_provider_->IsMainThread());
+
+  main().layer_tree_host->DidLoseOutputSurface();
+}
+
+void RemoteChannelImpl::RequestNewOutputSurfaceOnMain() {
+  DCHECK(task_runner_provider_->IsMainThread());
+
+  main().layer_tree_host->RequestNewOutputSurface();
+}
+
+void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
+    bool success,
+    const RendererCapabilities& capabilities) {
+  DCHECK(task_runner_provider_->IsMainThread());
+
+  if (!success) {
+    main().layer_tree_host->DidFailToInitializeOutputSurface();
+    return;
+  }
+
+  main().renderer_capabilities = capabilities;
+  main().layer_tree_host->DidInitializeOutputSurface();
+}
 
 void RemoteChannelImpl::InitializeImplOnImpl(CompletionEvent* completion,
                                              LayerTreeHost* layer_tree_host) {
@@ -325,19 +375,24 @@ base::SingleThreadTaskRunner* RemoteChannelImpl::ImplThreadTaskRunner() const {
 }
 
 RemoteChannelImpl::MainThreadOnly::MainThreadOnly(
+    RemoteChannelImpl* remote_channel_impl,
     LayerTreeHost* layer_tree_host,
     RemoteProtoChannel* remote_proto_channel)
     : layer_tree_host(layer_tree_host),
       remote_proto_channel(remote_proto_channel),
-      started(false) {
+      started(false),
+      remote_channel_weak_factory(remote_channel_impl) {
   DCHECK(layer_tree_host);
   DCHECK(remote_proto_channel);
 }
 
 RemoteChannelImpl::MainThreadOnly::~MainThreadOnly() {}
 
-RemoteChannelImpl::CompositorThreadOnly::CompositorThreadOnly()
-    : proxy_impl(nullptr), proxy_impl_weak_factory(nullptr) {}
+RemoteChannelImpl::CompositorThreadOnly::CompositorThreadOnly(
+    base::WeakPtr<RemoteChannelImpl> remote_channel_weak_ptr)
+    : proxy_impl(nullptr),
+      proxy_impl_weak_factory(nullptr),
+      remote_channel_weak_ptr(remote_channel_weak_ptr) {}
 
 RemoteChannelImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
 

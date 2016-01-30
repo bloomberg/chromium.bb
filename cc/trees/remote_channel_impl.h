@@ -105,7 +105,10 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
     RendererCapabilities renderer_capabilities;
 
-    MainThreadOnly(LayerTreeHost* layer_tree_host,
+    base::WeakPtrFactory<RemoteChannelImpl> remote_channel_weak_factory;
+
+    MainThreadOnly(RemoteChannelImpl*,
+                   LayerTreeHost* layer_tree_host,
                    RemoteProtoChannel* remote_proto_channel);
     ~MainThreadOnly();
   };
@@ -113,8 +116,10 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   struct CompositorThreadOnly {
     scoped_ptr<ProxyImpl> proxy_impl;
     scoped_ptr<base::WeakPtrFactory<ProxyImpl>> proxy_impl_weak_factory;
+    base::WeakPtr<RemoteChannelImpl> remote_channel_weak_ptr;
 
-    CompositorThreadOnly();
+    CompositorThreadOnly(
+        base::WeakPtr<RemoteChannelImpl> remote_channel_weak_ptr);
     ~CompositorThreadOnly();
   };
 
@@ -174,6 +179,11 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
   // called on main thread.
   void HandleProto(const proto::CompositorMessageToImpl& proto);
+  void DidLoseOutputSurfaceOnMain();
+  void RequestNewOutputSurfaceOnMain();
+  void DidInitializeOutputSurfaceOnMain(
+      bool success,
+      const RendererCapabilities& capabilities);
 
   void InitializeImplOnImpl(CompletionEvent* completion,
                             LayerTreeHost* layer_tree_host);
@@ -187,11 +197,11 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   base::SingleThreadTaskRunner* MainThreadTaskRunner() const;
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() const;
 
+  TaskRunnerProvider* task_runner_provider_;
+
   // use accessors instead of these variables directly
   MainThreadOnly main_thread_vars_unsafe_;
   CompositorThreadOnly compositor_thread_vars_unsafe_;
-
-  TaskRunnerProvider* task_runner_provider_;
 
   base::WeakPtr<ProxyImpl> proxy_impl_weak_ptr_;
 

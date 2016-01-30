@@ -234,6 +234,13 @@ void LayerTreeHost::InitializeRemoteServer(
     RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
+
+  // The LayerTreeHost on the server never requests the output surface since
+  // it is only needed on the client. Since ProxyMain aborts commits if
+  // output_surface_lost() is true, always assume we have the output surface
+  // on the server.
+  output_surface_lost_ = false;
+
   InitializeProxy(ProxyMain::CreateRemote(remote_proto_channel, this,
                                           task_runner_provider_.get()),
                   nullptr);

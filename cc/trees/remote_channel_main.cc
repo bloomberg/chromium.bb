@@ -52,7 +52,9 @@ void RemoteChannelMain::UpdateTopControlsStateOnImpl(
     bool animate) {}
 
 void RemoteChannelMain::InitializeOutputSurfaceOnImpl(
-    OutputSurface* output_surface) {}
+    OutputSurface* output_surface) {
+  NOTREACHED() << "Should not be called on the server LayerTreeHost";
+}
 
 void RemoteChannelMain::MainThreadHasStoppedFlingingOnImpl() {
   proto::CompositorMessage proto;
@@ -71,10 +73,13 @@ void RemoteChannelMain::FinishAllRenderingOnImpl(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void RemoteChannelMain::SetVisibleOnImpl(bool visible) {}
+void RemoteChannelMain::SetVisibleOnImpl(bool visible) {
+  NOTIMPLEMENTED() << "Visibility is not controlled by the server";
+}
 
 void RemoteChannelMain::ReleaseOutputSurfaceOnImpl(
     CompletionEvent* completion) {
+  NOTREACHED() << "Should not be called on the server LayerTreeHost";
   completion->Signal();
 }
 

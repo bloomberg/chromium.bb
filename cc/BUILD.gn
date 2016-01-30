@@ -907,6 +907,7 @@ test("cc_unittests") {
     "trees/layer_tree_host_unittest_picture.cc",
     "trees/layer_tree_host_unittest_proxy.cc",
     "trees/layer_tree_host_unittest_record_gpu_histogram.cc",
+    "trees/layer_tree_host_unittest_remote_server.cc",
     "trees/layer_tree_host_unittest_scroll.cc",
     "trees/layer_tree_host_unittest_serialization.cc",
     "trees/layer_tree_host_unittest_video.cc",

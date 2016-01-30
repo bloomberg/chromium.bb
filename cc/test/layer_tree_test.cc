@@ -691,8 +691,35 @@ void LayerTreeTest::PostNextCommitWaitsForActivationToMainThread() {
                  main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::SetOutputSurfaceOnLayerTreeHost(
+    scoped_ptr<OutputSurface> output_surface) {
+  if (IsRemoteTest()) {
+    DCHECK(remote_client_layer_tree_host_);
+    remote_client_layer_tree_host_->SetOutputSurface(std::move(output_surface));
+  } else {
+    layer_tree_host_->SetOutputSurface(std::move(output_surface));
+  }
+}
+
+scoped_ptr<OutputSurface> LayerTreeTest::ReleaseOutputSurfaceOnLayerTreeHost() {
+  if (IsRemoteTest()) {
+    DCHECK(remote_client_layer_tree_host_);
+    return remote_client_layer_tree_host_->ReleaseOutputSurface();
+  }
+  return layer_tree_host_->ReleaseOutputSurface();
+}
+
+void LayerTreeTest::SetVisibleOnLayerTreeHost(bool visible) {
+  layer_tree_host_->SetVisible(visible);
+
+  if (IsRemoteTest()) {
+    DCHECK(remote_client_layer_tree_host_);
+    remote_client_layer_tree_host_->SetVisible(visible);
+  }
+}
+
 void LayerTreeTest::WillBeginTest() {
-  layer_tree_host_->SetVisible(true);
+  SetVisibleOnLayerTreeHost(true);
 }
 
 void LayerTreeTest::DoBeginTest() {
@@ -845,7 +872,7 @@ void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
 void LayerTreeTest::DispatchSetVisible(bool visible) {
   DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetVisible(visible);
+    SetVisibleOnLayerTreeHost(visible);
 }
 
 void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
@@ -917,7 +944,7 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
 }
 
 void LayerTreeTest::RequestNewOutputSurface() {
-  layer_tree_host_->SetOutputSurface(CreateOutputSurface());
+  SetOutputSurfaceOnLayerTreeHost(CreateOutputSurface());
 }
 
 scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
