@@ -4,6 +4,9 @@
 
 package org.chromium.net;
 
+import android.os.ConditionVariable;
+
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -11,13 +14,45 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("cronet")
 public class CronetTestUtil {
+    private static final ConditionVariable sHostResolverBlock = new ConditionVariable();
+
     /**
-     * Start QUIC server on local host.
-     * @return non-zero QUIC server port number on success or 0 if failed.
+     * Registers customized DNS mapping for testing host names used by test servers, namely:
+     * <ul>
+     * <li>{@link QuicTestServer#getServerHost}</li>
+     * <li>{@link NativeTestServer#getSdchURL}</li>'s host
+     * </ul>
+     * @param cronetEngine {@link CronetEngine} that this mapping should apply to.
+     * @param destination host to map to (e.g. 127.0.0.1)
      */
-    public static int startQuicServer() {
-        return nativeStartQuicServer();
+    public static void registerHostResolverProc(CronetEngine cronetEngine, String destination) {
+        long contextAdapter =
+                ((CronetUrlRequestContext) cronetEngine).getUrlRequestContextAdapter();
+        nativeRegisterHostResolverProc(contextAdapter, false, destination);
+        sHostResolverBlock.block();
+        sHostResolverBlock.close();
     }
 
-    private static native int nativeStartQuicServer();
+    /**
+     * Registers customized DNS mapping for testing host names used by test servers.
+     * @param requestFactory {@link HttpUrlRequestFactory} that this mapping should apply to.
+     * @param destination host to map to (e.g. 127.0.0.1)
+     */
+    public static void registerHostResolverProc(
+            HttpUrlRequestFactory requestFactory, String destination) {
+        long contextAdapter = ((ChromiumUrlRequestFactory) requestFactory)
+                                      .getRequestContext()
+                                      .getUrlRequestContextAdapter();
+        nativeRegisterHostResolverProc(contextAdapter, true, destination);
+        sHostResolverBlock.block();
+        sHostResolverBlock.close();
+    }
+
+    @CalledByNative
+    private static void onHostResolverProcRegistered() {
+        sHostResolverBlock.open();
+    }
+
+    private static native void nativeRegisterHostResolverProc(
+            long contextAdapter, boolean isLegacyAPI, String destination);
 }

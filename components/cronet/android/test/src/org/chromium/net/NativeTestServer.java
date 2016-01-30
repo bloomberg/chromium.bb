@@ -5,9 +5,7 @@
 package org.chromium.net;
 
 import android.content.Context;
-import android.os.ConditionVariable;
 
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -16,8 +14,6 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("cronet")
 public final class NativeTestServer {
-    private static final ConditionVariable sHostResolverBlock = new ConditionVariable();
-
     // This variable contains the response body of a request to getSuccessURL().
     public static final String SUCCESS_BODY = "this is a text file\n";
 
@@ -29,19 +25,6 @@ public final class NativeTestServer {
 
     public static void shutdownNativeTestServer() {
         nativeShutdownNativeTestServer();
-    }
-
-    /**
-     * Registers customized DNS mapping for {@link NativeTestServer}.
-     * @param contextAdapter native context adapter object that this
-     *             mapping should apply to.
-     * @param isLegacyAPI {@code true} if this context adapter is a part of the
-     *             old API.
-     */
-    public static void registerHostResolverProc(long contextAdapter, boolean isLegacyAPI) {
-        nativeRegisterHostResolverProc(contextAdapter, isLegacyAPI);
-        sHostResolverBlock.block();
-        sHostResolverBlock.close();
     }
 
     public static String getEchoBodyURL() {
@@ -99,15 +82,8 @@ public final class NativeTestServer {
         return nativeIsDataReductionProxySupported();
     }
 
-    @CalledByNative
-    private static void onHostResolverProcRegistered() {
-        sHostResolverBlock.open();
-    }
-
     private static native boolean nativeStartNativeTestServer(String filePath);
     private static native void nativeShutdownNativeTestServer();
-    private static native void nativeRegisterHostResolverProc(
-            long contextAdapter, boolean isLegacyAPI);
     private static native String nativeGetEchoBodyURL();
     private static native String nativeGetEchoHeaderURL(String header);
     private static native String nativeGetEchoAllHeadersURL();
