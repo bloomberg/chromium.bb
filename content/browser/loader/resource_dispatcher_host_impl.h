@@ -422,6 +422,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                   const ResourceHostMsg_Request& request_data,
                   IPC::Message* sync_result);
 
+  bool IsRequestIDInUse(const GlobalRequestID& id) const;
+
   // Update the ResourceRequestInfo and internal maps when a request is
   // transferred from one process to another.
   void UpdateRequestForTransfer(int child_id,

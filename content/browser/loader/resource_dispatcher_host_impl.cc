@@ -1187,6 +1187,20 @@ void ResourceDispatcherHostImpl::OnSyncLoad(
                sync_result->routing_id());
 }
 
+bool ResourceDispatcherHostImpl::IsRequestIDInUse(
+    const GlobalRequestID& id) const {
+  if (pending_loaders_.find(id) != pending_loaders_.end())
+    return true;
+  for (const auto& blocked_loaders : blocked_loaders_map_) {
+    for (const auto& loader : *blocked_loaders.second.get()) {
+      ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+      if (info->GetGlobalRequestID() == id)
+        return true;
+    }
+  }
+  return false;
+}
+
 void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     int child_id,
     int route_id,
@@ -1280,6 +1294,13 @@ void ResourceDispatcherHostImpl::BeginRequest(
     int route_id) {
   int process_type = filter_->process_type();
   int child_id = filter_->child_id();
+
+  // Reject request id that's currently in use.
+  if (IsRequestIDInUse(GlobalRequestID(child_id, request_id))) {
+    bad_message::ReceivedBadMessage(filter_,
+                                    bad_message::RDH_INVALID_REQUEST_ID);
+    return;
+  }
 
   // PlzNavigate: reject invalid renderer main resource request.
   if (IsBrowserSideNavigationEnabled() &&
