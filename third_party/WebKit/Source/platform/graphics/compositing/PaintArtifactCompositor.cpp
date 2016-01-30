@@ -114,10 +114,7 @@ static gfx::Transform transformToRoot(const TransformPaintPropertyNode* currentS
         matrix = localMatrix * matrix;
         currentSpace = currentSpace->parent();
     }
-
-    gfx::Transform transform;
-    transform.matrix() = TransformationMatrix::toSkMatrix44(matrix);
-    return transform;
+    return gfx::Transform(TransformationMatrix::toSkMatrix44(matrix));
 }
 
 void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
@@ -135,10 +132,15 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         OwnPtr<ContentLayerClientImpl> contentLayerClient = adoptPtr(
             new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
 
+        // Include the offset in the transform, because it needs to apply in
+        // this layer's transform space (whereas layer position applies in its
+        // parent's transform space).
+        gfx::Transform transform = transformToRoot(paintChunk.properties.transform.get());
+        transform.Translate(combinedBounds.x(), combinedBounds.y());
+
         scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
-        layer->SetPosition(gfx::PointF(combinedBounds.origin()));
         layer->SetBounds(combinedBounds.size());
-        layer->SetTransform(transformToRoot(paintChunk.properties.transform.get()));
+        layer->SetTransform(transform);
         layer->SetIsDrawable(true);
         if (paintChunk.knownToBeOpaque)
             layer->SetContentsOpaque(true);
