@@ -199,8 +199,6 @@ private:
     MediaStreamVector m_localStreams;
     MediaStreamVector m_remoteStreams;
 
-    HeapVector<Member<RTCDataChannel>> m_dataChannels;
-
     OwnPtr<WebRTCPeerConnectionHandler> m_peerHandler;
 
     Member<AsyncMethodRunner<RTCPeerConnection>> m_dispatchScheduledEventRunner;

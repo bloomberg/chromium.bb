@@ -796,10 +796,9 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Diction
     DictionaryHelper::get(options, "protocol", protocolString);
     init.protocol = protocolString;
 
-    RTCDataChannel* channel = RTCDataChannel::create(executionContext(), this, m_peerHandler.get(), label, init, exceptionState);
+    RTCDataChannel* channel = RTCDataChannel::create(executionContext(), m_peerHandler.get(), label, init, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    m_dataChannels.append(channel);
     RTCDataChannel::ReadyState handlerState = channel->getHandlerState();
     if (handlerState != RTCDataChannel::ReadyStateConnecting) {
         // There was an early state transition.  Don't miss it!
@@ -925,9 +924,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(WebRTCDataChannelHandler* handle
     if (m_signalingState == SignalingStateClosed)
         return;
 
-    RTCDataChannel* channel = RTCDataChannel::create(executionContext(), this, adoptPtr(handler));
-    m_dataChannels.append(channel);
-
+    RTCDataChannel* channel = RTCDataChannel::create(executionContext(), adoptPtr(handler));
     scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel, false, false, channel));
 }
 
@@ -970,11 +967,6 @@ void RTCPeerConnection::stop()
     m_stopped = true;
     m_iceConnectionState = ICEConnectionStateClosed;
     m_signalingState = SignalingStateClosed;
-
-    HeapVector<Member<RTCDataChannel>>::iterator i = m_dataChannels.begin();
-    for (; i != m_dataChannels.end(); ++i)
-        (*i)->stop();
-    m_dataChannels.clear();
 
     m_dispatchScheduledEventRunner->stop();
 
@@ -1057,7 +1049,6 @@ DEFINE_TRACE(RTCPeerConnection)
 {
     visitor->trace(m_localStreams);
     visitor->trace(m_remoteStreams);
-    visitor->trace(m_dataChannels);
     visitor->trace(m_dispatchScheduledEventRunner);
     visitor->trace(m_scheduledEvents);
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>::trace(visitor);
