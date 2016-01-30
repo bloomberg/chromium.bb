@@ -10,7 +10,6 @@
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"

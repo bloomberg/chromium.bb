@@ -5,11 +5,62 @@
 module mus.mojom;
 
 import "components/mus/public/interfaces/window_manager_constants.mojom";
-import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
-// Represents a core interface that should be implemented by any window manager
-// built on top of Mus.
-interface WindowManagerDeprecated {
-  OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
+// WindowManager is used when a WindowTreeClient attempts to modify
+// a property of the embed root. When this happens WindowTree calls the
+// appropriate function on WindowManager. For example, if a
+// WindowTreeClient calls SetWindowBounds() on its embed root, WindowTree
+// calls WmSetBounds(). WindowManager can then decide if it wants to
+// change the bounds or not.
+//
+// This interface is only used as an associated interface and is associated
+// with WindowTreeClient, further WindowTree requests this interface from
+// WindowTreeClient supplied at the time the WindowTreeHost is created.
+interface WindowManager {
+  // The window's preferred size as defined by its content. Type: gfx::Size.
+  const string kPreferredSize_Property = "prop:preferred-size";
+  // The window's resize behavior. Type: ResizeBehavior.
+  const string kResizeBehavior_Property = "prop:resize-behavior";
+  // Bounds the window is restored to. Type: gfx::Rect.
+  const string kRestoreBounds_Property = "prop:restore-bounds";
+  // Shadow style for the window. Type: mojom::ShadowStyle.
+  const string kShadowStyle_Property = "prop:shadow-style";
+  // The window's show state. Type: ShowState.
+  const string kShowState_Property = "prop:show-state";
+  // The window bounds as set by user input. Type: gfx::Rect.
+  const string kUserSetBounds_Property = "prop:user-set-bounds";
+  const string kWindowType_Property = "prop:window-type";
+  // The window's title. Type: mojom::String
+  const string kWindowTitle_Property = "prop:window-title";
+
+  // When the WindowManager completes a request it must call back to
+  // WindowManagerClient::WmResponse().
+  WmSetBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
+  WmSetProperty(uint32 change_id,
+                uint32 window_id,
+                string name,
+                array<uint8>? value);
+  // Asks the WindowManager to create a new window.
+  WmCreateTopLevelWindow(uint32 change_id,
+                         map<string, array<uint8>> properties);
+};
+
+// This interface is only used as an associated interface and is associated
+// with WindowTree.
+interface WindowManagerClient {
+  // The window manager has completed a request with the specific change id.
+  WmResponse(uint32 change_id, bool response);
+
+  // Calls WindowTreeClient::RequestClose() on the embedded app at the
+  // specified window.
+  WmRequestClose(uint32 window_id);
+
+  // Sets the frame decoration constants of the display the window manager is
+  // associated with.
+  WmSetFrameDecorationValues(FrameDecorationValues values);
+
+  // Response from WmCreateTopLevelWindow() informing the client of the id for
+  // the new window.
+  OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);
 };

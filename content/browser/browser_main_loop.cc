@@ -176,7 +176,6 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/public/cpp/application_impl.h"

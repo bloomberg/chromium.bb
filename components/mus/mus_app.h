@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
@@ -46,7 +45,6 @@ class MandolineUIServicesApp
     : public mojo::ApplicationDelegate,
       public ws::ConnectionManagerDelegate,
       public mojo::InterfaceFactory<mojom::DisplayManager>,
-      public mojo::InterfaceFactory<mojom::WindowManagerDeprecated>,
       public mojo::InterfaceFactory<mojom::WindowTreeFactory>,
       public mojo::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public mojo::InterfaceFactory<mojom::Gpu>,
@@ -79,11 +77,6 @@ class MandolineUIServicesApp
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojom::DisplayManager> request) override;
 
-  // mojo::InterfaceFactory<mojom::WindowManagerDeprecated> implementation.
-  void Create(
-      mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojom::WindowManagerDeprecated> request) override;
-
   // mojo::InterfaceFactory<mojom::WindowTreeFactory>:
   void Create(
       mojo::ApplicationConnection* connection,
@@ -99,15 +92,11 @@ class MandolineUIServicesApp
               mojo::InterfaceRequest<mojom::Gpu> request) override;
 
   // mojom::WindowTreeHostFactory implementation.
-  void CreateWindowTreeHost(
-      mojo::InterfaceRequest<mojom::WindowTreeHost> host,
-      mojom::WindowTreeHostClientPtr host_client,
-      mojom::WindowTreeClientPtr tree_client,
-      mojom::WindowManagerDeprecatedPtr window_manager) override;
+  void CreateWindowTreeHost(mojo::InterfaceRequest<mojom::WindowTreeHost> host,
+                            mojom::WindowTreeHostClientPtr host_client,
+                            mojom::WindowTreeClientPtr tree_client) override;
 
   mojo::WeakBindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
-  scoped_ptr<ws::ForwardingWindowManager> window_manager_impl_;
-  mojo::WeakBindingSet<mojom::WindowManagerDeprecated> window_manager_bindings_;
   mojo::ApplicationImpl* app_impl_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
   scoped_refptr<GpuState> gpu_state_;

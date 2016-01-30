@@ -15,6 +15,7 @@
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
@@ -119,7 +120,8 @@ std::string WindowParentToString(Id window, Id parent) {
 
 // A WindowTreeClient implementation that logs all changes to a tracker.
 class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
-                                 public TestChangeTracker::Delegate {
+                                 public TestChangeTracker::Delegate,
+                                 public mojom::WindowManager {
  public:
   TestWindowTreeClientImpl()
       : binding_(this),
@@ -370,7 +372,31 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   void RequestClose(uint32_t window_id) override {}
   void GetWindowManager(mojo::AssociatedInterfaceRequest<mojom::WindowManager>
-                            internal) override {}
+                            internal) override {
+    window_manager_binding_.reset(
+        new mojo::AssociatedBinding<mojom::WindowManager>(this,
+                                                          std::move(internal)));
+    tree_->GetWindowManagerClient(
+        GetProxy(&window_manager_client_, tree_.associated_group()));
+  }
+
+  // mojom::WindowManager:
+  void WmSetBounds(uint32_t change_id,
+                   uint32_t window_id,
+                   mojo::RectPtr bounds) override {
+    window_manager_client_->WmResponse(change_id, false);
+  }
+  void WmSetProperty(uint32_t change_id,
+                     uint32_t window_id,
+                     const mojo::String& name,
+                     mojo::Array<uint8_t> value) override {
+    window_manager_client_->WmResponse(change_id, false);
+  }
+  void WmCreateTopLevelWindow(
+      uint32_t change_id,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override {
+    NOTIMPLEMENTED();
+  }
 
   TestChangeTracker tracker_;
 
@@ -391,6 +417,10 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   bool on_change_completed_result_;
   bool track_root_bounds_changes_;
   scoped_ptr<base::RunLoop> change_completed_run_loop_;
+
+  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
+      window_manager_binding_;
+  mojom::WindowManagerClientAssociatedPtr window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClientImpl);
 };
@@ -544,7 +574,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
 
     factory->CreateWindowTreeHost(GetProxy(&host_),
                                   mojom::WindowTreeHostClientPtr(),
-                                  std::move(tree_client_ptr), nullptr);
+                                  std::move(tree_client_ptr));
 
     // Next we should get an embed call on the "window manager" client.
     ws_client1_->WaitForIncomingMethodCall();

@@ -90,8 +90,7 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     ConnectionManager* connection_manager,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
-    const scoped_refptr<SurfacesState>& surfaces_state,
-    mojom::WindowManagerDeprecatedPtr window_manager)
+    const scoped_refptr<SurfacesState>& surfaces_state)
     : id_(next_id++),
       delegate_(nullptr),
       connection_manager_(connection_manager),
@@ -99,7 +98,6 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      window_manager_(std::move(window_manager)),
       tree_awaiting_input_ack_(nullptr),
       last_cursor_(0) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();

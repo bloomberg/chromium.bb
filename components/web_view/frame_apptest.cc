@@ -376,7 +376,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
     mus::CreateSingleWindowTreeHost(application_impl(),
                                     mus::mojom::WindowTreeHostClientPtr(), this,
-                                    &host_, nullptr, nullptr);
+                                    &host_, nullptr);
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);

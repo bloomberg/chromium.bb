@@ -14,7 +14,6 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
-                          mojom::WindowManagerDeprecatedPtr window_manager,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeClientPtr tree_client;
   WindowTreeConnection::CreateForWindowManager(
@@ -22,8 +21,7 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
       WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED,
       window_manager_delegate);
   factory->CreateWindowTreeHost(GetProxy(host), std::move(host_client),
-                                std::move(tree_client),
-                                std::move(window_manager));
+                                std::move(tree_client));
 }
 
 void CreateSingleWindowTreeHost(
@@ -31,12 +29,11 @@ void CreateSingleWindowTreeHost(
     mojom::WindowTreeHostClientPtr host_client,
     WindowTreeDelegate* delegate,
     mojom::WindowTreeHostPtr* host,
-    mojom::WindowManagerDeprecatedPtr window_manager,
     WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
   app->ConnectToService("mojo:mus", &factory);
   CreateWindowTreeHost(factory.get(), std::move(host_client), delegate, host,
-                       std::move(window_manager), window_manager_delegate);
+                       window_manager_delegate);
 }
 
 }  // namespace mus

@@ -85,6 +85,7 @@ class WindowTreeConnection {
   virtual bool IsEmbedRoot() = 0;
 
   // Returns the id for this connection.
+  // TODO(sky): remove this. It is not necessarily correct anymore.
   virtual ConnectionSpecificId GetConnectionId() = 0;
 
   virtual void AddObserver(WindowTreeConnectionObserver* observer) = 0;

@@ -114,7 +114,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       web_view_(this) {
   mus::CreateWindowTreeHost(host_factory,
                             host_client_binding_.CreateInterfacePtrAndBind(),
-                            this, &host_, nullptr, nullptr);
+                            this, &host_, nullptr);
 }
 
 void BrowserWindow::LoadURL(const GURL& url) {

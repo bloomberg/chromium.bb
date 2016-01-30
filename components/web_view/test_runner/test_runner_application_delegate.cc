@@ -69,7 +69,7 @@ void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   }
   app_ = app;
   mus::CreateSingleWindowTreeHost(app_, mus::mojom::WindowTreeHostClientPtr(),
-                                  this, &host_, nullptr, nullptr);
+                                  this, &host_, nullptr);
 }
 
 bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(

@@ -472,8 +472,8 @@ class WindowTreeTest : public testing::Test {
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     WindowTreeHostImpl* host = new WindowTreeHostImpl(
         mus::mojom::WindowTreeHostClientPtr(), connection_manager_.get(),
-        nullptr, scoped_refptr<GpuState>(), scoped_refptr<mus::SurfacesState>(),
-        nullptr);
+        nullptr, scoped_refptr<GpuState>(),
+        scoped_refptr<mus::SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
     host_connection_ = new TestWindowTreeHostConnection(

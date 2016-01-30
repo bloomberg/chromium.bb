@@ -52,7 +52,6 @@ class WindowManagerApplication
       public mus::mojom::WindowTreeHostClient,
       public mus::WindowTreeDelegate,
       public mojo::InterfaceFactory<mash::wm::mojom::UserWindowController>,
-      public mojo::InterfaceFactory<mus::mojom::WindowManagerDeprecated>,
       public mojo::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
   WindowManagerApplication();
@@ -99,11 +98,6 @@ class WindowManagerApplication
               mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request)
       override;
 
-  // InterfaceFactory<mus::mojom::WindowManagerDeprecated>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mus::mojom::WindowManagerDeprecated>
-                  request) override;
-
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
 
@@ -127,11 +121,6 @@ class WindowManagerApplication
   // |window_manager_| is created once OnEmbed() is called. Until that time
   // |requests_| stores any pending WindowManager interface requests.
   scoped_ptr<WindowManagerImpl> window_manager_;
-  mojo::WeakBindingSet<mus::mojom::WindowManagerDeprecated>
-      window_manager_binding_;
-  std::vector<
-      scoped_ptr<mojo::InterfaceRequest<mus::mojom::WindowManagerDeprecated>>>
-      requests_;
 
   // |user_window_controller_| is created once OnEmbed() is called. Until that
   // time |user_window_controller_requests_| stores pending interface requests.

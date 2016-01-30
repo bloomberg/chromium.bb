@@ -115,6 +115,12 @@ void WindowTreeImpl::Init(mojom::WindowTreeClient* client,
                                  : WindowTree::kAccessPolicyDefault);
 }
 
+void WindowTreeImpl::ConfigureWindowManager() {
+  DCHECK(!window_manager_internal_);
+  window_manager_internal_ =
+      connection_manager_->GetClientConnection(this)->GetWindowManager();
+}
+
 const ServerWindow* WindowTreeImpl::GetWindow(const WindowId& id) const {
   if (id_ == id.connection_id) {
     auto iter = created_window_map_.find(id);
@@ -1178,14 +1184,13 @@ void WindowTreeImpl::SetPredefinedCursor(uint32_t change_id,
 
 void WindowTreeImpl::GetWindowManagerClient(
     mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal) {
-  if (!access_policy_->CanSetWindowManager() || window_manager_internal_)
+  if (!access_policy_->CanSetWindowManager() || !window_manager_internal_ ||
+      window_manager_internal_client_binding_) {
     return;
+  }
   window_manager_internal_client_binding_.reset(
       new mojo::AssociatedBinding<mojom::WindowManagerClient>(
           this, std::move(internal)));
-
-  window_manager_internal_ =
-      connection_manager_->GetClientConnection(this)->GetWindowManager();
 }
 
 void WindowTreeImpl::WmResponse(uint32_t change_id, bool response) {

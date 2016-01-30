@@ -89,8 +89,7 @@ gfx::Rect WindowManagerImpl::GetMaximizedWindowBounds() const {
 }
 
 mus::Window* WindowManagerImpl::NewTopLevelWindow(
-    std::map<std::string, std::vector<uint8_t>>* properties,
-    mus::mojom::WindowTreeClientPtr client) {
+    std::map<std::string, std::vector<uint8_t>>* properties) {
   DCHECK(state_);
   mus::Window* root = state_->root();
   DCHECK(root);
@@ -106,9 +105,6 @@ mus::Window* WindowManagerImpl::NewTopLevelWindow(
 
   mojom::Container container = GetRequestedContainer(window);
   state_->GetWindowForContainer(container)->AddChild(window);
-
-  if (client)
-    window->Embed(std::move(client));
 
   if (provide_non_client_frame) {
     // NonClientFrameController deletes itself when |window| is destroyed.
@@ -131,14 +127,6 @@ void WindowManagerImpl::OnTreeChanging(const TreeChangeParams& params) {
 
 void WindowManagerImpl::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
   window->Destroy();
-}
-
-void WindowManagerImpl::OpenWindow(
-    mus::mojom::WindowTreeClientPtr client,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
-  mus::Window::SharedProperties properties =
-      transport_properties.To<mus::Window::SharedProperties>();
-  NewTopLevelWindow(&properties, std::move(client));
 }
 
 void WindowManagerImpl::SetWindowManagerClient(
@@ -165,7 +153,7 @@ bool WindowManagerImpl::OnWmSetProperty(
 
 mus::Window* WindowManagerImpl::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  return NewTopLevelWindow(properties, nullptr);
+  return NewTopLevelWindow(properties);
 }
 
 }  // namespace wm

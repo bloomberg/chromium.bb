@@ -53,6 +53,10 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   void Init(mojom::WindowTreeClient* client, mojom::WindowTreePtr tree);
 
+  // Called if this WindowTreeImpl hosts the WindowManager. This happens if
+  // this WindowTreeImpl serves as the root of a WindowTreeHost.
+  void ConfigureWindowManager();
+
   ConnectionSpecificId id() const { return id_; }
 
   mojom::WindowTreeClient* client() { return client_; }

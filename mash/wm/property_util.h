@@ -6,7 +6,6 @@
 #define MASH_WM_PROPERTY_UTIL_H_
 
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 

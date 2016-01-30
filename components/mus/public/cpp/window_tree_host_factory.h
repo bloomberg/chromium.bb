@@ -6,7 +6,6 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_HOST_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -26,7 +25,6 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
-                          mojom::WindowManagerDeprecatedPtr window_manager,
                           WindowManagerDelegate* window_manager_delegate);
 
 // Creates a single host with no client by connecting to the window manager
@@ -36,7 +34,6 @@ void CreateSingleWindowTreeHost(
     mojom::WindowTreeHostClientPtr host_client,
     WindowTreeDelegate* delegate,
     mojom::WindowTreeHostPtr* host,
-    mojom::WindowManagerDeprecatedPtr window_manager,
     WindowManagerDelegate* window_manager_delegate);
 
 }  // namespace mus

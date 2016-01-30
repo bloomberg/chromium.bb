@@ -29,8 +29,6 @@ source_set("lib") {
     "focus_controller.h",
     "focus_controller_delegate.h",
     "focus_controller_observer.h",
-    "forwarding_window_manager.cc",
-    "forwarding_window_manager.h",
     "operation.cc",
     "operation.h",
     "server_window.cc",

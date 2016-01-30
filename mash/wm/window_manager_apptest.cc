@@ -10,7 +10,6 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
@@ -18,45 +17,54 @@
 namespace mash {
 namespace wm {
 
-class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
-                             public mus::WindowTreeDelegate {
+class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
  public:
-  WindowManagerAppTest() {}
-  ~WindowManagerAppTest() override {}
-
- protected:
-  void ConnectToWindowManager(
-      mus::mojom::WindowManagerDeprecatedPtr* window_manager) {
-    application_impl()->ConnectToService("mojo:desktop_wm", window_manager);
-  }
-
-  mus::Window* OpenWindow(mus::mojom::WindowManagerDeprecated* window_manager) {
-    mus::mojom::WindowTreeClientPtr window_tree_client;
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
-        window_tree_client_request = GetProxy(&window_tree_client);
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
-    properties.mark_non_null();
-    window_manager->OpenWindow(std::move(window_tree_client),
-                               std::move(properties));
-    mus::WindowTreeConnection* connection = mus::WindowTreeConnection::Create(
-        this, std::move(window_tree_client_request),
-        mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
-    return *connection->GetRoots().begin();
-  }
+  WindowTreeDelegateImpl() {}
+  ~WindowTreeDelegateImpl() override {}
 
  private:
   // mus::WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override {}
   void OnConnectionLost(mus::WindowTreeConnection* connection) override {}
 
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerAppTest);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeDelegateImpl);
 };
 
-TEST_F(WindowManagerAppTest, OpenWindow) {
-  mus::mojom::WindowManagerDeprecatedPtr connection;
-  ConnectToWindowManager(&connection);
+using WindowManagerAppTest = mojo::test::ApplicationTestBase;
 
-  ASSERT_TRUE(OpenWindow(connection.get()));
+void OnEmbed(bool success, uint16_t id) {
+  ASSERT_TRUE(success);
+}
+
+TEST_F(WindowManagerAppTest, OpenWindow) {
+  WindowTreeDelegateImpl window_tree_delegate;
+
+  // Bring up the the desktop_wm.
+  application_impl()->ConnectToApplication("mojo:desktop_wm");
+
+  // Connect to mus and create a new top level window. The request goes to
+  // the |desktop_wm|, but is async.
+  scoped_ptr<mus::WindowTreeConnection> connection(
+      mus::WindowTreeConnection::Create(&window_tree_delegate,
+                                        application_impl()));
+  mus::Window* top_level_window = connection->NewTopLevelWindow(nullptr);
+  ASSERT_TRUE(top_level_window);
+  mus::Window* child_window = connection->NewWindow();
+  ASSERT_TRUE(child_window);
+  top_level_window->AddChild(child_window);
+
+  // Create another WindowTreeConnection by way of embedding in
+  // |child_window|. This blocks until it succeeds.
+  mus::mojom::WindowTreeClientPtr tree_client;
+  auto tree_client_request = GetProxy(&tree_client);
+  child_window->Embed(std::move(tree_client),
+                      mus::mojom::WindowTree::kAccessPolicyDefault,
+                      base::Bind(&OnEmbed));
+  scoped_ptr<mus::WindowTreeConnection> child_connection(
+      mus::WindowTreeConnection::Create(
+          &window_tree_delegate, std::move(tree_client_request),
+          mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED));
+  ASSERT_TRUE(!child_connection->GetRoots().empty());
 }
 
 }  // namespace wm

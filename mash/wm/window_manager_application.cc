@@ -79,22 +79,16 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
   window_manager_.reset(new WindowManagerImpl());
-  // Don't bind to the WindowManager immediately. Wait for OnEmbed() first.
-  mus::mojom::WindowManagerDeprecatedPtr window_manager;
-  requests_.push_back(make_scoped_ptr(
-      new mojo::InterfaceRequest<mus::mojom::WindowManagerDeprecated>(
-          mojo::GetProxy(&window_manager))));
   user_window_controller_.reset(new UserWindowControllerImpl());
   mus::CreateSingleWindowTreeHost(
       app, host_client_binding_.CreateInterfacePtrAndBind(), this,
-      &window_tree_host_, std::move(window_manager), window_manager_.get());
+      &window_tree_host_, window_manager_.get());
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<mash::wm::mojom::UserWindowController>(this);
   connection->AddService<mus::mojom::AcceleratorRegistrar>(this);
-  connection->AddService<mus::mojom::WindowManagerDeprecated>(this);
   return true;
 }
 
@@ -136,11 +130,6 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
   aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
   window_manager_->Initialize(this);
-
-  for (auto& request : requests_)
-    window_manager_binding_.AddBinding(window_manager_.get(),
-                                       std::move(*request));
-  requests_.clear();
 
   user_window_controller_->Initialize(this);
   for (auto& request : user_window_controller_requests_)
@@ -188,19 +177,6 @@ void WindowManagerApplication::Create(
       std::move(request),
       base::Bind(&WindowManagerApplication::OnAcceleratorRegistrarDestroyed,
                  base::Unretained(this))));
-}
-
-void WindowManagerApplication::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mus::mojom::WindowManagerDeprecated> request) {
-  if (root_) {
-    window_manager_binding_.AddBinding(window_manager_.get(),
-                                       std::move(request));
-  } else {
-    requests_.push_back(make_scoped_ptr(
-        new mojo::InterfaceRequest<mus::mojom::WindowManagerDeprecated>(
-            std::move(request))));
-  }
 }
 
 void WindowManagerApplication::OnWindowDestroyed(mus::Window* window) {

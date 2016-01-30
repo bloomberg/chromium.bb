@@ -6,6 +6,7 @@
 
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/window_tree_host_impl.h"
+#include "components/mus/ws/window_tree_impl.h"
 
 namespace mus {
 
@@ -61,9 +62,11 @@ WindowTreeHostConnectionImpl::~WindowTreeHostConnectionImpl() {}
 
 void WindowTreeHostConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddHost(this);
-  set_window_tree(connection_manager()->EmbedAtWindow(
+  WindowTreeImpl* tree = connection_manager()->EmbedAtWindow(
       window_tree_host()->root_window(),
-      mojom::WindowTree::kAccessPolicyEmbedRoot, std::move(client_)));
+      mojom::WindowTree::kAccessPolicyEmbedRoot, std::move(client_));
+  tree->ConfigureWindowManager();
+  set_window_tree(tree);
 }
 
 }  // namespace ws
