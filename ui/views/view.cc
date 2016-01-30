@@ -1798,14 +1798,11 @@ void View::DoRemoveChildView(View* view,
         next_focusable->previous_focusable_view_ = prev_focusable;
     }
 
-    Widget* widget = GetWidget();
-    if (widget) {
+    if (GetWidget()) {
       UnregisterChildrenForVisibleBoundsNotification(view);
       if (view->visible())
         view->SchedulePaint();
-
-      if (!new_parent || new_parent->GetWidget() != widget)
-        widget->NotifyWillRemoveView(view);
+      GetWidget()->NotifyWillRemoveView(view);
     }
 
     view->PropagateRemoveNotifications(this, new_parent);
