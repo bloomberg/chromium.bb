@@ -29,7 +29,8 @@ InputMethodAuraLinux::InputMethodAuraLinux(
     : text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
       composition_changed_(false),
-      suppress_next_result_(false) {
+      suppress_next_result_(false),
+      weak_ptr_factory_(this) {
   SetDelegate(delegate);
   context_ =
       LinuxInputMethodContextFactory::instance()->CreateInputMethodContext(
@@ -79,6 +80,37 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
     }
   }
 
+  // If there's an active IME extension is listening to the key event, and the
+  // current text input client is not password input client, the key event
+  // should be dispatched to the extension engine in the two conditions:
+  // 1) |filtered| == false: the ET_KEY_PRESSED event of non-character key,
+  // or the ET_KEY_RELEASED event of all key.
+  // 2) |filtered| == true && NeedInsertChar(): the ET_KEY_PRESSED event of
+  // character key.
+  if (text_input_type_ != TEXT_INPUT_TYPE_PASSWORD &&
+      GetEngine() && GetEngine()->IsInterestedInKeyEvent() &&
+      (!filtered || NeedInsertChar())) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
+        base::Bind(&InputMethodAuraLinux::ProcessKeyEventDone,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(new ui::KeyEvent(*event)), filtered);
+    GetEngine()->ProcessKeyEvent(*event, callback);
+  } else {
+    ProcessKeyEventDone(event, filtered, false);
+  }
+}
+
+void InputMethodAuraLinux::ProcessKeyEventDone(ui::KeyEvent* event,
+                                               bool filtered,
+                                               bool is_handled) {
+  DCHECK(event);
+  if (is_handled)
+    return;
+
+  // If the IME extension has not handled the key event, passes the keyevent
+  // back to the previous processing flow. Preconditions for this situation:
+  // 1) |filtered| == false
+  // 2) |filtered| == true && NeedInsertChar()
   ui::EventDispatchDetails details;
   if (event->type() == ui::ET_KEY_PRESSED && filtered) {
     if (NeedInsertChar())
