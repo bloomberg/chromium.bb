@@ -80,17 +80,16 @@ public:
 
     GLenum colorBufferFormat() const;
 
-    // This should always be called before drawArray, drawElements, clear,
-    // readPixels, copyTexImage2D, copyTexSubImage2D if this framebuffer is
-    // currently bound.
-    // Return false if the framebuffer is incomplete.
-    bool onAccess(WebGraphicsContext3D*, const char** reason);
-
     // Software version of glCheckFramebufferStatus(), except that when
     // FRAMEBUFFER_COMPLETE is returned, it is still possible for
     // glCheckFramebufferStatus() to return FRAMEBUFFER_UNSUPPORTED,
     // depending on hardware implementation.
     GLenum checkStatus(const char** reason) const;
+
+    // WebGL 1 specific:
+    //   1) can't allow depth_stencil for depth/stencil attachments, and vice versa.
+    //   2) no conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments.
+    GLenum checkDepthStencilStatus(const char** reason) const;
 
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
 

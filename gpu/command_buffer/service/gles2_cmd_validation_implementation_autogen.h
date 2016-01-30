@@ -1003,6 +1003,12 @@ static const GLenum valid_texture_compare_mode_table[] = {
     GL_NONE, GL_COMPARE_REF_TO_TEXTURE,
 };
 
+static const GLenum valid_texture_depth_renderable_internal_format_table_es3[] =
+    {
+        GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32F,
+        GL_DEPTH24_STENCIL8,  GL_DEPTH32F_STENCIL8,
+};
+
 static const GLenum valid_texture_format_table[] = {
     GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA,
 };
@@ -1211,6 +1217,11 @@ static const GLenum
         GL_RGB5_A1,   GL_RGBA4,      GL_RGB10_A2,       GL_RGBA16F,
 };
 
+static const GLenum
+    valid_texture_stencil_renderable_internal_format_table_es3[] = {
+        GL_STENCIL_INDEX8, GL_DEPTH24_STENCIL8, GL_DEPTH32F_STENCIL8,
+};
+
 static const GLenum valid_texture_target_table[] = {
     GL_TEXTURE_2D,
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -1380,6 +1391,7 @@ Validators::Validators()
                           arraysize(valid_texture_bind_target_table)),
       texture_compare_mode(valid_texture_compare_mode_table,
                            arraysize(valid_texture_compare_mode_table)),
+      texture_depth_renderable_internal_format(),
       texture_format(valid_texture_format_table,
                      arraysize(valid_texture_format_table)),
       texture_internal_format(valid_texture_internal_format_table,
@@ -1397,6 +1409,7 @@ Validators::Validators()
           valid_texture_sized_texture_filterable_internal_format_table,
           arraysize(
               valid_texture_sized_texture_filterable_internal_format_table)),
+      texture_stencil_renderable_internal_format(),
       texture_target(valid_texture_target_table,
                      arraysize(valid_texture_target_table)),
       texture_unsized_internal_format(
@@ -1458,6 +1471,9 @@ void Validators::UpdateValuesES3() {
       arraysize(valid_render_buffer_parameter_table_es3));
   texture_bind_target.AddValues(valid_texture_bind_target_table_es3,
                                 arraysize(valid_texture_bind_target_table_es3));
+  texture_depth_renderable_internal_format.AddValues(
+      valid_texture_depth_renderable_internal_format_table_es3,
+      arraysize(valid_texture_depth_renderable_internal_format_table_es3));
   texture_format.AddValues(valid_texture_format_table_es3,
                            arraysize(valid_texture_format_table_es3));
   texture_internal_format.AddValues(
@@ -1471,6 +1487,9 @@ void Validators::UpdateValuesES3() {
       arraysize(valid_texture_internal_format_storage_table_es3));
   texture_parameter.AddValues(valid_texture_parameter_table_es3,
                               arraysize(valid_texture_parameter_table_es3));
+  texture_stencil_renderable_internal_format.AddValues(
+      valid_texture_stencil_renderable_internal_format_table_es3,
+      arraysize(valid_texture_stencil_renderable_internal_format_table_es3));
   vertex_attrib_type.AddValues(valid_vertex_attrib_type_table_es3,
                                arraysize(valid_vertex_attrib_type_table_es3));
   vertex_attribute.AddValues(valid_vertex_attribute_table_es3,

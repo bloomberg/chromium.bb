@@ -1976,6 +1976,26 @@ _NAMED_TYPE_INFO = {
       'GL_RGBA32I',
     ],
   },
+  'TextureDepthRenderableInternalFormat': {
+    'type': 'GLenum',
+    'valid': [],
+    'valid_es3': [
+      'GL_DEPTH_COMPONENT16',
+      'GL_DEPTH_COMPONENT24',
+      'GL_DEPTH_COMPONENT32F',
+      'GL_DEPTH24_STENCIL8',
+      'GL_DEPTH32F_STENCIL8',
+    ],
+  },
+  'TextureStencilRenderableInternalFormat': {
+    'type': 'GLenum',
+    'valid': [],
+    'valid_es3': [
+      'GL_STENCIL_INDEX8',
+      'GL_DEPTH24_STENCIL8',
+      'GL_DEPTH32F_STENCIL8',
+    ],
+  },
   'TextureSizedTextureFilterableInternalFormat': {
     'type': 'GLenum',
     'valid': [

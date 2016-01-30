@@ -614,11 +614,49 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
     return GL_FRAMEBUFFER_COMPLETE;
 }
 
-bool WebGLFramebuffer::onAccess(WebGraphicsContext3D* context3d, const char** reason)
+GLenum WebGLFramebuffer::checkDepthStencilStatus(const char** reason) const
 {
-    if (checkStatus(reason) != GL_FRAMEBUFFER_COMPLETE)
-        return false;
-    return true;
+    if (context()->isWebGL2OrHigher())
+        return GL_FRAMEBUFFER_COMPLETE;
+    WebGLAttachment* depthAttachment = nullptr;
+    WebGLAttachment* stencilAttachment = nullptr;
+    WebGLAttachment* depthStencilAttachment = nullptr;
+    for (const auto& it : m_attachments) {
+        WebGLAttachment* attachment = it.value.get();
+        ASSERT(attachment);
+        GLenum internalformat = attachment->format();
+        switch (it.key) {
+        case GL_DEPTH_ATTACHMENT:
+            depthAttachment = attachment;
+            if (!isDepthRenderable(internalformat, false)) {
+                *reason = "the internalformat of the attached image is not depth-renderable";
+                return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+            }
+            break;
+        case GL_STENCIL_ATTACHMENT:
+            stencilAttachment = attachment;
+            if (!isStencilRenderable(internalformat, false)) {
+                *reason = "the internalformat of the attached image is not stencil-renderable";
+                return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+            }
+            break;
+        case GL_DEPTH_STENCIL_ATTACHMENT:
+            depthStencilAttachment = attachment;
+            if (internalformat != GL_DEPTH_STENCIL_OES) {
+                *reason = "the internalformat of the attached image is not DEPTH_STENCIL";
+                return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    if ((depthStencilAttachment && (depthAttachment || stencilAttachment))
+        || (depthAttachment && stencilAttachment)) {
+        *reason = "conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments";
+        return GL_FRAMEBUFFER_UNSUPPORTED;
+    }
+    return GL_FRAMEBUFFER_COMPLETE;
 }
 
 bool WebGLFramebuffer::hasStencilBuffer() const

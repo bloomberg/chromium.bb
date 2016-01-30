@@ -51,7 +51,7 @@ class MailboxManagerTest : public GpuServiceTest {
   }
 
   void SetTarget(Texture* texture, GLenum target, GLuint max_level) {
-    texture->SetTarget(NULL, target, max_level);
+    texture->SetTarget(target, max_level);
   }
 
   void SetLevelInfo(Texture* texture,
@@ -65,8 +65,8 @@ class MailboxManagerTest : public GpuServiceTest {
                     GLenum format,
                     GLenum type,
                     const gfx::Rect& cleared_rect) {
-    texture->SetLevelInfo(NULL, target, level, internal_format, width, height,
-                          depth, border, format, type, cleared_rect);
+    texture->SetLevelInfo(target, level, internal_format, width, height, depth,
+                          border, format, type, cleared_rect);
   }
 
   void SetLevelCleared(Texture* texture,

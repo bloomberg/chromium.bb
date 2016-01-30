@@ -119,9 +119,7 @@ class GPU_EXPORT Texture {
 
   uint32_t estimated_size() const { return estimated_size_; }
 
-  bool CanRenderTo() const {
-    return target_ != GL_TEXTURE_EXTERNAL_OES;
-  }
+  bool CanRenderTo(const FeatureInfo* feature_info, GLint level) const;
 
   // The service side OpenGL id of the texture.
   GLuint service_id() const {
@@ -278,6 +276,7 @@ class GPU_EXPORT Texture {
     scoped_refptr<gl::GLImage> image;
     ImageState image_state;
     uint32_t estimated_size;
+    bool internal_workaround;
   };
 
   struct FaceInfo {
@@ -291,8 +290,7 @@ class GPU_EXPORT Texture {
   };
 
   // Set the info for a particular level.
-  void SetLevelInfo(const FeatureInfo* feature_info,
-                    GLenum target,
+  void SetLevelInfo(GLenum target,
                     GLint level,
                     GLenum internal_format,
                     GLsizei width,
@@ -302,6 +300,8 @@ class GPU_EXPORT Texture {
                     GLenum format,
                     GLenum type,
                     const gfx::Rect& cleared_rect);
+
+  void MarkLevelAsInternalWorkaround(GLenum target, GLint level);
 
   // In GLES2 "texture complete" means it has all required mips for filtering
   // down to a 1x1 pixel texture, they are in the correct order, they are all
@@ -349,7 +349,7 @@ class GPU_EXPORT Texture {
       const FeatureInfo* feature_info, GLenum pname, GLfloat param);
 
   // Makes each of the mip levels as though they were generated.
-  void MarkMipmapsGenerated(const FeatureInfo* feature_info);
+  void MarkMipmapsGenerated();
 
   bool NeedsMips() const {
     return sampler_state_.min_filter != GL_NEAREST &&
@@ -397,11 +397,10 @@ class GPU_EXPORT Texture {
   //           GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_RECTANGLE_ARB
   //           GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3)
   //   max_levels: The maximum levels this type of target can have.
-  void SetTarget(
-      const FeatureInfo* feature_info, GLenum target, GLint max_levels);
+  void SetTarget(GLenum target, GLint max_levels);
 
   // Update info about this texture.
-  void Update(const FeatureInfo* feature_info);
+  void Update();
 
   // Appends a signature for the given level.
   void AddToSignature(
@@ -501,9 +500,6 @@ class GPU_EXPORT Texture {
 
   // Whether or not this texture is "cube complete"
   bool cube_complete_;
-
-  // Whether any level 0 faces have changed and should be reverified.
-  bool texture_level0_dirty_;
 
   // Whether or not this texture is non-power-of-two
   bool npot_;

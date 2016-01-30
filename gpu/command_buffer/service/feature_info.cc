@@ -472,6 +472,8 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_format.AddValue(GL_DEPTH_COMPONENT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_SHORT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_INT);
+    validators_.texture_depth_renderable_internal_format.AddValue(
+        GL_DEPTH_COMPONENT);
   }
 
   if (extensions.Contains("GL_EXT_packed_depth_stencil") ||
@@ -484,6 +486,10 @@ void FeatureInfo::InitializeFeatures() {
       validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
       validators_.texture_format.AddValue(GL_DEPTH_STENCIL);
       validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
+      validators_.texture_depth_renderable_internal_format.AddValue(
+          GL_DEPTH_STENCIL);
+      validators_.texture_stencil_renderable_internal_format.AddValue(
+          GL_DEPTH_STENCIL);
     }
     validators_.render_buffer_format.AddValue(GL_DEPTH24_STENCIL8);
   }

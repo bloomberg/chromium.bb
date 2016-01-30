@@ -2014,14 +2014,16 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   framebuffer1->AttachTexture(
       GL_COLOR_ATTACHMENT0, ref1.get(), GL_TEXTURE_2D, 0, 0);
   EXPECT_FALSE(framebuffer_manager1.IsComplete(framebuffer1.get()));
-  EXPECT_NE(kCompleteValue, framebuffer1->IsPossiblyComplete());
+  EXPECT_NE(kCompleteValue,
+            framebuffer1->IsPossiblyComplete(feature_info_.get()));
 
   // Make FBO complete in manager 1.
   texture_manager1_->SetTarget(ref1.get(), GL_TEXTURE_2D);
   texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1,
                                   1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                                   gfx::Rect(1, 1));
-  EXPECT_EQ(kCompleteValue, framebuffer1->IsPossiblyComplete());
+  EXPECT_EQ(kCompleteValue,
+            framebuffer1->IsPossiblyComplete(feature_info_.get()));
   framebuffer_manager1.MarkAsComplete(framebuffer1.get());
   EXPECT_TRUE(framebuffer_manager1.IsComplete(framebuffer1.get()));
 
@@ -2034,7 +2036,8 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   framebuffer2->AttachTexture(
       GL_COLOR_ATTACHMENT0, ref2.get(), GL_TEXTURE_2D, 0, 0);
   EXPECT_FALSE(framebuffer_manager2.IsComplete(framebuffer2.get()));
-  EXPECT_EQ(kCompleteValue, framebuffer2->IsPossiblyComplete());
+  EXPECT_EQ(kCompleteValue,
+            framebuffer2->IsPossiblyComplete(feature_info_.get()));
   framebuffer_manager2.MarkAsComplete(framebuffer2.get());
   EXPECT_TRUE(framebuffer_manager2.IsComplete(framebuffer2.get()));
 
@@ -2043,11 +2046,13 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
                                   1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                                   gfx::Rect(1, 1));
   EXPECT_FALSE(framebuffer_manager1.IsComplete(framebuffer1.get()));
-  EXPECT_EQ(kCompleteValue, framebuffer1->IsPossiblyComplete());
+  EXPECT_EQ(kCompleteValue,
+            framebuffer1->IsPossiblyComplete(feature_info_.get()));
   framebuffer_manager1.MarkAsComplete(framebuffer1.get());
   EXPECT_TRUE(framebuffer_manager1.IsComplete(framebuffer1.get()));
   EXPECT_FALSE(framebuffer_manager2.IsComplete(framebuffer2.get()));
-  EXPECT_EQ(kCompleteValue, framebuffer2->IsPossiblyComplete());
+  EXPECT_EQ(kCompleteValue,
+            framebuffer2->IsPossiblyComplete(feature_info_.get()));
   framebuffer_manager2.MarkAsComplete(framebuffer2.get());
   EXPECT_TRUE(framebuffer_manager2.IsComplete(framebuffer2.get()));
 

@@ -3697,7 +3697,7 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     return true;
   }
 
-  GLenum completeness = framebuffer->IsPossiblyComplete();
+  GLenum completeness = framebuffer->IsPossiblyComplete(feature_info_.get());
   if (completeness != GL_FRAMEBUFFER_COMPLETE) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_FRAMEBUFFER_OPERATION, func_name, "framebuffer incomplete");
@@ -6242,7 +6242,7 @@ GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
   if (!framebuffer) {
     return GL_FRAMEBUFFER_COMPLETE;
   }
-  GLenum completeness = framebuffer->IsPossiblyComplete();
+  GLenum completeness = framebuffer->IsPossiblyComplete(feature_info_.get());
   if (completeness != GL_FRAMEBUFFER_COMPLETE) {
     return completeness;
   }

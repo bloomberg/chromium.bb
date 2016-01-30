@@ -3118,9 +3118,14 @@ DOMArrayBufferView::ViewType WebGL2RenderingContextBase::readPixelsExpectedArray
 
 WebGLFramebuffer* WebGL2RenderingContextBase::getFramebufferBinding(GLenum target)
 {
-    if (target == GL_READ_FRAMEBUFFER)
+    switch (target) {
+    case GL_READ_FRAMEBUFFER:
         return m_readFramebufferBinding.get();
-    return m_framebufferBinding.get();
+    case GL_DRAW_FRAMEBUFFER:
+        return m_framebufferBinding.get();
+    default:
+        return WebGLRenderingContextBase::getFramebufferBinding(target);
+    }
 }
 
 bool WebGL2RenderingContextBase::validateGetFramebufferAttachmentParameterFunc(const char* functionName, GLenum target, GLenum attachment)

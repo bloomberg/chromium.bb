@@ -388,7 +388,7 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
   if (defined_) {
     texture->face_infos_.resize(1);
     texture->face_infos_[0].level_infos.resize(1);
-    texture->SetLevelInfo(NULL, level_info_.target, 0,
+    texture->SetLevelInfo(level_info_.target, 0,
                           level_info_.internal_format, level_info_.width,
                           level_info_.height, level_info_.depth,
                           level_info_.border, level_info_.format,

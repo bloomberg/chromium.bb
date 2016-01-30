@@ -1772,16 +1772,15 @@ GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
         return 0;
     }
     WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
-    if (!framebufferBinding || !framebufferBinding->object())
-        return GL_FRAMEBUFFER_COMPLETE;
-    const char* reason = "framebuffer incomplete";
-    GLenum result = framebufferBinding->checkStatus(&reason);
-    if (result != GL_FRAMEBUFFER_COMPLETE) {
-        emitGLWarning("checkFramebufferStatus", reason);
-        return result;
+    if (framebufferBinding) {
+        const char* reason = "framebuffer incomplete";
+        GLenum status = framebufferBinding->checkDepthStencilStatus(&reason);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            emitGLWarning("checkFramebufferStatus", reason);
+            return status;
+        }
     }
-    result = webContext()->checkFramebufferStatus(target);
-    return result;
+    return webContext()->checkFramebufferStatus(target);
 }
 
 void WebGLRenderingContextBase::clear(GLbitfield mask)
@@ -1793,7 +1792,7 @@ void WebGLRenderingContextBase::clear(GLbitfield mask)
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webContext(), &reason)) {
+    if (m_framebufferBinding && m_framebufferBinding->checkDepthStencilStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "clear", reason);
         return;
     }
@@ -3733,7 +3732,7 @@ bool WebGLRenderingContextBase::validateReadBufferAndGetInfo(const char* functio
     readFramebufferBinding = getFramebufferBinding(target);
     if (readFramebufferBinding) {
         const char* reason = "framebuffer incomplete";
-        if (!readFramebufferBinding->onAccess(webContext(), &reason)) {
+        if (readFramebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
             synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
             return false;
         }
@@ -6580,7 +6579,7 @@ bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLe
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webContext(), &reason)) {
+    if (m_framebufferBinding && m_framebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
         return false;
     }
@@ -6609,7 +6608,7 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webContext(), &reason)) {
+    if (m_framebufferBinding && m_framebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
         return false;
     }

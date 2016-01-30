@@ -183,7 +183,7 @@ TEST_F(FramebufferInfoTest, Basic) {
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(0),
             framebuffer_->GetReadBufferInternalFormat());
@@ -238,14 +238,14 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Try a format that's not good for COLOR_ATTACHMENT0.
   renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kBadFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Try a good format.
   renderbuffer_manager_->SetInfo(
@@ -255,7 +255,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   // check adding another
@@ -275,7 +275,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   // of attachments it could either get INCOMPLETE_ATTACHMENT because it's 0,0
   // or INCOMPLETE_DIMENSIONS because it's not the same size as the other
   // attachment.
-  GLenum status = framebuffer_->IsPossiblyComplete();
+  GLenum status = framebuffer_->IsPossiblyComplete(feature_info_.get());
   EXPECT_TRUE(
       status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT ||
       status == GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT);
@@ -284,7 +284,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   renderbuffer_manager_->SetInfo(
       renderbuffer2, kSamples2, kFormat2, kWidth2, kHeight2);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_FALSE(framebuffer_->IsCleared());
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
 
@@ -294,7 +294,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Check adding one that is already cleared.
@@ -314,7 +314,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_TRUE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   // Check marking the renderbuffer as unclared.
@@ -325,7 +325,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_TRUE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   const Framebuffer::Attachment* attachment =
@@ -366,7 +366,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_EQ(kFormat4, attachment->internal_format());
   EXPECT_FALSE(attachment->cleared());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Check changing an attachment.
   renderbuffer_manager_->SetInfo(
@@ -381,7 +381,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(attachment->cleared());
   EXPECT_FALSE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Check removing it.
   framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, NULL);
@@ -393,18 +393,18 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   EXPECT_TRUE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Remove depth, Set color to 0 size.
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, NULL);
   renderbuffer_manager_->SetInfo(renderbuffer1, kSamples1, kFormat1, 0, 0);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Remove color.
   framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 }
 
 TEST_F(FramebufferInfoTest, AttachTexture) {
@@ -439,7 +439,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_FALSE(
       framebuffer_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   texture_manager_->CreateTexture(kTextureClient1Id, kTextureService1Id);
   scoped_refptr<TextureRef> texture1(
@@ -451,7 +451,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
       GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1, kSamples1);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(0),
             framebuffer_->GetReadBufferInternalFormat());
@@ -462,20 +462,20 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
       texture1.get(), GL_TEXTURE_2D, kLevel1, kBadFormat1, kWidth1, kHeight1,
       kDepth, kBorder, kBadFormat1, kType, gfx::Rect(kWidth1, kHeight1));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Try a good format.
   texture_manager_->SetLevelInfo(texture1.get(), GL_TEXTURE_2D, kLevel1,
                                  kFormat1, kWidth1, kHeight1, kDepth, kBorder,
                                  kFormat1, kType, gfx::Rect());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_FALSE(framebuffer_->IsCleared());
   texture_manager_->SetLevelInfo(texture1.get(), GL_TEXTURE_2D, kLevel1,
                                  kFormat1, kWidth1, kHeight1, kDepth, kBorder,
                                  kFormat1, kType, gfx::Rect(kWidth1, kHeight1));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetReadBufferInternalFormat());
@@ -504,7 +504,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(static_cast<GLenum>(kFormat2),
             framebuffer_->GetReadBufferInternalFormat());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   attachment = framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
@@ -529,7 +529,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(static_cast<GLenum>(kFormat3),
             framebuffer_->GetReadBufferInternalFormat());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   // Set to size 0
@@ -537,7 +537,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
                                  kFormat3, 0, 0, kDepth, kBorder, kFormat3,
                                  kType, gfx::Rect());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Check removing it.
   framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0, 0);
@@ -546,7 +546,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
             framebuffer_->GetReadBufferInternalFormat());
 
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 }
 
@@ -691,7 +691,7 @@ TEST_F(FramebufferInfoFloatTest, AttachFloatTexture) {
   // Texture with a sized float internalformat is allowed as an attachment
   // since float color attachment extension is present.
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 }
 
 TEST_F(FramebufferInfoTest, UnbindRenderbuffer) {
@@ -947,8 +947,8 @@ TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
       renderbuffer2, kSamples2, kFormat2, kWidth2, kHeight2);
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer2);
 
-  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-            framebuffer_->IsPossiblyComplete());
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT),
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
 }
 
 TEST_F(FramebufferInfoES3Test, ReadBuffer) {

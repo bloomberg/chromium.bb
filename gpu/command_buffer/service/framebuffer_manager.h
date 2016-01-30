@@ -21,6 +21,7 @@
 namespace gpu {
 namespace gles2 {
 
+class FeatureInfo;
 class FramebufferCompletenessCache;
 class FramebufferManager;
 class Renderbuffer;
@@ -48,7 +49,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual bool IsTexture(TextureRef* texture) const = 0;
     virtual bool IsRenderbuffer(
         Renderbuffer* renderbuffer) const = 0;
-    virtual bool CanRenderTo() const = 0;
+    virtual bool CanRenderTo(const FeatureInfo* feature_info) const = 0;
     virtual void DetachFromFramebuffer(Framebuffer* framebuffer) const = 0;
     virtual bool ValidForAttachmentType(GLenum attachment_type,
                                         uint32_t max_color_attachments) = 0;
@@ -134,7 +135,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // Note that receiving GL_FRAMEBUFFER_COMPLETE from this function does
   // not mean the real OpenGL will consider it framebuffer complete. It just
   // means it passed our tests.
-  GLenum IsPossiblyComplete() const;
+  GLenum IsPossiblyComplete(const FeatureInfo* feature_info) const;
 
   // Implements optimized glGetFramebufferStatus.
   GLenum GetStatus(TextureManager* texture_manager, GLenum target) const;

@@ -67,7 +67,7 @@ class RenderbufferAttachment
     return renderbuffer_.get() == renderbuffer;
   }
 
-  bool CanRenderTo() const override { return true; }
+  bool CanRenderTo(const FeatureInfo*) const override { return true; }
 
   void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
     // Nothing to do for renderbuffers.
@@ -183,8 +183,8 @@ class TextureAttachment
     return texture_ref_.get();
   }
 
-  bool CanRenderTo() const override {
-    return texture_ref_->texture()->CanRenderTo();
+  bool CanRenderTo(const FeatureInfo* feature_info) const override {
+    return texture_ref_->texture()->CanRenderTo(feature_info, level_);
   }
 
   void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
@@ -468,7 +468,7 @@ GLenum Framebuffer::GetReadBufferTextureType() const {
   return attachment->texture_type();
 }
 
-GLenum Framebuffer::IsPossiblyComplete() const {
+GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
   if (attachments_.empty()) {
     return GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;
   }
@@ -489,16 +489,14 @@ GLenum Framebuffer::IsPossiblyComplete() const {
       if (width == 0 || height == 0) {
         return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
       }
-    } else if (manager_->context_type() != CONTEXT_TYPE_WEBGL2) {
-      // TODO(zmo): revisit this if we create ES3 contexts for clients other
-      // than WebGL 2.
-      if (attachment->width() != width || attachment->height() != height) {
-        return GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT;
-      }
+    } else if (attachment->width() != width || attachment->height() != height) {
+      // Since DirectX doesn't allow attachments to be of different sizes,
+      // even though ES3 allows it, it is still forbidden to ensure consistent
+      // behaviors across platforms.
+      return GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT;
     }
-
-    if (!attachment->CanRenderTo()) {
-      return GL_FRAMEBUFFER_UNSUPPORTED;
+    if (!attachment->CanRenderTo(feature_info)) {
+      return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
     }
   }
 
