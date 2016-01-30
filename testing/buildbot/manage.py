@@ -33,18 +33,33 @@ SKIP = {
   'non_filter_builders', 'non_filter_tests_builders',
 
   # These are not supported on Swarming yet.
+
+  # Android Cloud is still experimental and involves spinning up an Android
+  # instance on GCE.  Swarming doesn't work in that environment yet.
+  'Android Cloud Tests',
+
+  # Recipes don't promise execution on jelly bean.  This could work if the
+  # OS dimensions go into the recipe, they're set in the json file, and
+  # jelly bean devices are in the pool.  For now, just blacklist.
+  'Jelly Bean Tester',
+  'KitKat Tablet Tester',
+  'Lollipop Consumer Tester',
+  'Lollipop Low-end Tester',
+  'Lollipop Phone Tester',
+  'Lollipop Tablet Tester',
+  'Marshmallow 64 bit Tester',
+  'Marshmallow Tablet Tester',
+
   # http://crbug.com/472205
   'Chromium Mac 10.10',
+  'Chromium Mac 10.11',
+
   # http://crbug.com/441429
   'Linux Trusty (32)', 'Linux Trusty (dbg)(32)',
 
   # http://crbug.com/480053
   'Linux GN',
   'Linux GN (dbg)',
-
-  # Unmaintained builders on chromium.fyi
-  'ClangToTMac',
-  'ClangToTMacASan',
 
   # This builder is fine, but win8_chromium_ng uses GN and this configuration,
   # which breaks everything.
