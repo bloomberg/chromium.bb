@@ -271,6 +271,7 @@ fuzzer_test("libxml_xml_read_memory_fuzzer") {
   deps = [
     "//third_party/libxml:libxml",
   ]
+  dict = "dicts/xml.dict"
 }
 
 fuzzer_test("unicode_string_codepage_create_fuzzer") {
