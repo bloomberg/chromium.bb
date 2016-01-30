@@ -1260,8 +1260,13 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   ServiceWorkerRequestHandler* handler =
       ServiceWorkerRequestHandler::GetHandler(loader_ptr->request());
   if (handler) {
-    handler->CompleteCrossSiteTransfer(
-        child_id, request_data.service_worker_provider_id);
+    if (!handler->SanityCheckIsSameContext(filter_->service_worker_context())) {
+      bad_message::ReceivedBadMessage(
+          filter_, bad_message::RDHI_WRONG_STORAGE_PARTITION);
+    } else {
+      handler->CompleteCrossSiteTransfer(
+          child_id, request_data.service_worker_provider_id);
+    }
   }
 
   // We should have a CrossSiteResourceHandler to finish the transfer.

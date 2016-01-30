@@ -57901,6 +57901,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="104" label="DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE"/>
   <int value="105" label="BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN"/>
   <int value="106" label="ACI_WRONG_STORAGE_PARTITION"/>
+  <int value="107" label="RDHI_WRONG_STORAGE_PARTITION"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

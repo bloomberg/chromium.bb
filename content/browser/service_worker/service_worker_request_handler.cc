@@ -232,6 +232,13 @@ void ServiceWorkerRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
   CompleteCrossSiteTransfer(old_process_id_, old_provider_id_);
 }
 
+bool ServiceWorkerRequestHandler::SanityCheckIsSameContext(
+    ServiceWorkerContextWrapper* wrapper) {
+  if (!wrapper)
+    return !context_;
+  return context_.get() == wrapper->context();
+}
+
 ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {
 }
 
