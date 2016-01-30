@@ -254,8 +254,8 @@ void LayoutReplaced::computePositionedLogicalWidth(LogicalExtentComputedValues& 
      *    ('rtl'), set 'margin-left' ('margin-right') to zero and solve for
      *    'margin-right' ('margin-left').
     \*-----------------------------------------------------------------------*/
-    LayoutUnit logicalLeftValue = 0;
-    LayoutUnit logicalRightValue = 0;
+    LayoutUnit logicalLeftValue;
+    LayoutUnit logicalRightValue;
 
     if (marginLogicalLeft.isAuto() && marginLogicalRight.isAuto()) {
         // 'left' and 'right' cannot be 'auto' due to step 3
@@ -415,8 +415,8 @@ void LayoutReplaced::computePositionedLogicalHeight(LogicalExtentComputedValues&
      *    'auto', solve the equation under the extra constraint that the two
      *    margins must get equal values.
     \*-----------------------------------------------------------------------*/
-    LayoutUnit logicalTopValue = 0;
-    LayoutUnit logicalBottomValue = 0;
+    LayoutUnit logicalTopValue;
+    LayoutUnit logicalBottomValue;
 
     if (marginBefore.isAuto() && marginAfter.isAuto()) {
         // 'top' and 'bottom' cannot be 'auto' due to step 2 and 3 combined.

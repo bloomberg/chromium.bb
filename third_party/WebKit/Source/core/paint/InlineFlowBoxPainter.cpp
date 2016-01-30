@@ -129,7 +129,7 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(const LayoutPoint& paint
     // strip. Even though that strip has been broken up across multiple lines, you still paint it
     // as though you had one single line. This means each line has to pick up the background where
     // the previous line left off.
-    LayoutUnit logicalOffsetOnLine = 0;
+    LayoutUnit logicalOffsetOnLine;
     LayoutUnit totalLogicalWidth;
     if (direction == LTR) {
         for (const InlineFlowBox* curr = m_inlineFlowBox.prevLineBox(); curr; curr = curr->prevLineBox())

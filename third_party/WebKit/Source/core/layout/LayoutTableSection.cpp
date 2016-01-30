@@ -726,7 +726,7 @@ int LayoutTableSection::calcRowLogicalHeight()
 
     for (unsigned r = 0; r < m_grid.size(); r++) {
         m_grid[r].baseline = -1;
-        LayoutUnit baselineDescent = 0;
+        LayoutUnit baselineDescent;
 
         if (m_grid[r].logicalHeight.isSpecified()) {
             // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).

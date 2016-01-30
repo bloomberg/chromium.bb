@@ -239,7 +239,7 @@ void LayoutDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
             && parent()->style()->boxAlign() == BSTRETCH))
             relayoutChildren = true;
 
-        setHeight(0);
+        setHeight(LayoutUnit());
 
         m_stretchingChildren = false;
 

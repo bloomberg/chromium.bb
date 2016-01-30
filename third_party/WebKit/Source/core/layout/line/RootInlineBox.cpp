@@ -134,7 +134,7 @@ LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool l
     // of that glyph.  Mark all of the objects that intersect the ellipsis box as not painting (as being
     // truncated).
     bool foundBox = false;
-    LayoutUnit truncatedWidth = 0;
+    LayoutUnit truncatedWidth;
     LayoutUnit position = placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth, foundBox);
     ellipsisBox->setLogicalLeft(position);
     return truncatedWidth;
@@ -196,8 +196,8 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     if (isSVGRootInlineBox())
         return 0;
 
-    LayoutUnit maxPositionTop = 0;
-    LayoutUnit maxPositionBottom = 0;
+    LayoutUnit maxPositionTop;
+    LayoutUnit maxPositionBottom;
     int maxAscent = 0;
     int maxDescent = 0;
     bool setMaxAscent = false;
@@ -250,7 +250,7 @@ LayoutUnit RootInlineBox::maxLogicalTop() const
 
 LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
 {
-    LayoutUnit result = 0;
+    LayoutUnit result;
 
     if (!lineLayoutItem().style()->isFlippedLinesWritingMode()) {
         // Annotations under the previous line may push us down.
@@ -622,7 +622,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
             return verticalPosition;
     }
 
-    LayoutUnit verticalPosition = 0;
+    LayoutUnit verticalPosition;
     EVerticalAlign verticalAlign = boxModel.style()->verticalAlign();
     if (verticalAlign == TOP || verticalAlign == BOTTOM)
         return 0;

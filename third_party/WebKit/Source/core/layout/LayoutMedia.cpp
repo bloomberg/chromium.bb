@@ -52,7 +52,7 @@ void LayoutMedia::layout()
 
     LayoutImage::layout();
 
-    LayoutSize newSize = contentBoxRect().size();
+    LayoutRect newRect = contentBoxRect();
 
     LayoutState state(*this, locationOffset());
 
@@ -73,23 +73,23 @@ void LayoutMedia::layout()
             ASSERT_NOT_REACHED();
 #endif
 
-        if (newSize == oldSize && !child->needsLayout())
+        if (newRect.size() == oldSize && !child->needsLayout())
             continue;
 
         LayoutBox* layoutBox = toLayoutBox(child);
-        layoutBox->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
+        layoutBox->setLocation(newRect.location());
         // TODO(philipj): Remove the mutableStyleRef() and depend on CSS
         // width/height: inherit to match the media element size.
-        layoutBox->mutableStyleRef().setHeight(Length(newSize.height(), Fixed));
-        layoutBox->mutableStyleRef().setWidth(Length(newSize.width(), Fixed));
+        layoutBox->mutableStyleRef().setHeight(Length(newRect.height(), Fixed));
+        layoutBox->mutableStyleRef().setWidth(Length(newRect.width(), Fixed));
         layoutBox->forceLayout();
     }
 
     clearNeedsLayout();
 
     // Notify our MediaControls that a layout has happened.
-    if (mediaElement() && mediaElement()->mediaControls() && newSize.width() != oldSize.width())
-        mediaElement()->mediaControls()->notifyPanelWidthChanged(newSize.width());
+    if (mediaElement() && mediaElement()->mediaControls() && newRect.width() != oldSize.width())
+        mediaElement()->mediaControls()->notifyPanelWidthChanged(newRect.width());
 }
 
 bool LayoutMedia::isChildAllowed(LayoutObject* child, const ComputedStyle&) const

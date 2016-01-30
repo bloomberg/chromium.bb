@@ -588,7 +588,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         setLogicalTop(roundToInt(top + maxAscent - fontMetrics.ascent(baselineType)));
     }
 
-    LayoutUnit adjustmentForChildrenWithSameLineHeightAndBaseline = 0;
+    LayoutUnit adjustmentForChildrenWithSameLineHeightAndBaseline;
     if (descendantsHaveSameLineHeightAndBaseline()) {
         adjustmentForChildrenWithSameLineHeightAndBaseline = logicalTop();
         if (parent())
@@ -622,7 +622,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         LayoutUnit newLogicalTopIncludingMargins = newLogicalTop;
         LayoutUnit boxHeight = curr->logicalHeight();
         LayoutUnit boxHeightIncludingMargins = boxHeight;
-        LayoutUnit borderPaddingHeight = 0;
+        LayoutUnit borderPaddingHeight;
         if (curr->isText() || curr->isInlineFlowBox()) {
             const FontMetrics& fontMetrics = curr->lineLayoutItem().style(isFirstLineStyle())->fontMetrics();
             newLogicalTop += curr->baselinePosition(baselineType) - fontMetrics.ascent(baselineType);
@@ -1138,7 +1138,7 @@ void InlineFlowBox::clearTruncation()
 
 LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosition) const
 {
-    LayoutUnit result = 0;
+    LayoutUnit result;
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->lineLayoutItem().isOutOfFlowPositioned())
             continue; // Positioned placeholders don't affect calculations.
@@ -1186,7 +1186,7 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
 
 LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPosition) const
 {
-    LayoutUnit result = 0;
+    LayoutUnit result;
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->lineLayoutItem().isOutOfFlowPositioned())
             continue; // Positioned placeholders don't affect calculations.

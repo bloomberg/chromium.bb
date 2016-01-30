@@ -1002,7 +1002,7 @@ void FrameView::layout()
 
             LayoutSize oldSize = m_size;
 
-            m_size = LayoutSize(layoutSize().width(), layoutSize().height());
+            m_size = LayoutSize(layoutSize());
 
             if (oldSize != m_size && !m_firstLayout) {
                 LayoutBox* rootLayoutObject = document->documentElement() ? document->documentElement()->layoutBox() : 0;
@@ -1416,7 +1416,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         if (isEnclosedInCompositingLayer()) {
             LayoutRect rect(frameLayoutObject->borderLeft() + frameLayoutObject->paddingLeft(),
                 frameLayoutObject->borderTop() + frameLayoutObject->paddingTop(),
-                visibleWidth(), visibleHeight());
+                LayoutUnit(visibleWidth()), LayoutUnit(visibleHeight()));
             // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
             DisablePaintInvalidationStateAsserts disabler;
             frameLayoutObject->invalidatePaintRectangle(rect);
@@ -2717,7 +2717,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             LayoutUnit docLogicalHeight = horizontalWritingMode ? updatedDocumentRect.height() : updatedDocumentRect.width();
             LayoutUnit docLogicalTop = horizontalWritingMode ? updatedDocumentRect.y() : updatedDocumentRect.x();
             LayoutUnit docLogicalRight = horizontalWritingMode ? updatedDocumentRect.maxX() : updatedDocumentRect.maxY();
-            LayoutUnit clippedLogicalLeft = 0;
+            LayoutUnit clippedLogicalLeft;
             if (!layoutView->style()->isLeftToRightDirection())
                 clippedLogicalLeft = docLogicalRight - pageLogicalWidth;
             LayoutRect overflow(clippedLogicalLeft, docLogicalTop, pageLogicalWidth, docLogicalHeight);

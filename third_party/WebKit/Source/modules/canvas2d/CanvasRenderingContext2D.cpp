@@ -1162,7 +1162,7 @@ void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
     // Offset by the canvas rect
     LayoutRect pathRect(boundingRect);
     IntRect canvasRect = layoutBox->absoluteContentBox();
-    pathRect.move(canvasRect.x(), canvasRect.y());
+    pathRect.moveBy(canvasRect.location());
 
     renderer->scrollRectToVisible(
         pathRect, ScrollAlignment::alignCenterAlways, ScrollAlignment::alignTopAlways);

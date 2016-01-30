@@ -382,7 +382,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context, const L
     if (m_inlineTextBox.truncation() == cFullTruncation)
         return;
 
-    LayoutUnit start = 0; // start of line to draw, relative to tx
+    LayoutUnit start; // start of line to draw, relative to tx
     LayoutUnit width = m_inlineTextBox.logicalWidth(); // how much line to draw
 
     // Determine whether we need to measure text

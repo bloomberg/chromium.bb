@@ -53,7 +53,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         else
             textX = contentLeft + m_layoutFileUploadControl.contentWidth() - buttonAndSpacingWidth - textWidth;
 
-        LayoutUnit textY = 0;
+        LayoutUnit textY;
         // We want to match the button's baseline
         // FIXME: Make this work with transforms.
         if (LayoutButton* buttonLayoutObject = toLayoutButton(button->layoutObject()))

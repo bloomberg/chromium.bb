@@ -135,7 +135,7 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
     // FIXME: Need to over-paint 1 pixel to workaround some rounding problems.
     // https://bugs.webkit.org/show_bug.cgi?id=108283
     LayoutRect inflatedRect = rect;
-    inflatedRect.inflate(1);
+    inflatedRect.inflate(LayoutUnit(1));
 
     // FIXME: We should use mapLocalToAncestor() since we know we're not un-rooted.
     mapCaretRectToCaretPainter(node->layoutObject(), caretPainter, inflatedRect);

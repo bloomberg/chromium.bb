@@ -228,7 +228,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
 
     const Font& font = style()->font();
 
-    LayoutUnit logicalWidth = 0;
+    LayoutUnit logicalWidth;
     switch (listStyleCategory()) {
     case ListStyleCategory::None:
         break;
@@ -252,8 +252,8 @@ void LayoutListMarker::updateMargins()
 {
     const FontMetrics& fontMetrics = style()->fontMetrics();
 
-    LayoutUnit marginStart = 0;
-    LayoutUnit marginEnd = 0;
+    LayoutUnit marginStart;
+    LayoutUnit marginEnd;
 
     if (isInside()) {
         if (isImage()) {

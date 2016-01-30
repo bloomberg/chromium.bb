@@ -1559,7 +1559,7 @@ GridSpan LayoutGrid::cachedGridSpan(const LayoutBox& gridItem, GridTrackSizingDi
 LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection direction, const Vector<GridTrack>& tracks) const
 {
     const GridSpan& span = cachedGridSpan(child, direction);
-    LayoutUnit gridAreaBreadth = 0;
+    LayoutUnit gridAreaBreadth;
     for (const auto& trackPosition : span)
         gridAreaBreadth += tracks[trackPosition].baseSize();
 

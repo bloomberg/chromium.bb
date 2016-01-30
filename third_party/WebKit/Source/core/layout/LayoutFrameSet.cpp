@@ -66,8 +66,8 @@ void LayoutFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
 void LayoutFrameSet::computePreferredLogicalWidths()
 {
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
+    m_minPreferredLogicalWidth = LayoutUnit();
+    m_maxPreferredLogicalWidth = LayoutUnit();
     clearPreferredLogicalWidthsDirty();
 }
 
@@ -360,8 +360,8 @@ void LayoutFrameSet::layout()
     ASSERT(needsLayout());
 
     if (!parent()->isFrameSet() && !document().printing()) {
-        setWidth(view()->viewWidth());
-        setHeight(view()->viewHeight());
+        setWidth(LayoutUnit(view()->viewWidth()));
+        setHeight(LayoutUnit(view()->viewHeight()));
     }
 
     unsigned cols = frameSet()->totalCols();
@@ -372,7 +372,7 @@ void LayoutFrameSet::layout()
         m_cols.resize(cols);
     }
 
-    LayoutUnit borderThickness = frameSet()->border();
+    LayoutUnit borderThickness(frameSet()->border());
     layOutAxis(m_rows, frameSet()->rowLengths(), size().height() - (rows - 1) * borderThickness);
     layOutAxis(m_cols, frameSet()->colLengths(), size().width() - (cols - 1) * borderThickness);
 
@@ -390,8 +390,8 @@ void LayoutFrameSet::layout()
 static void clearNeedsLayoutOnHiddenFrames(LayoutBox* frame)
 {
     for (; frame; frame = frame->nextSiblingBox()) {
-        frame->setWidth(0);
-        frame->setHeight(0);
+        frame->setWidth(LayoutUnit());
+        frame->setHeight(LayoutUnit());
         frame->clearNeedsLayout();
         clearNeedsLayoutOnHiddenFrames(frame->firstChildBox());
     }
@@ -410,11 +410,11 @@ void LayoutFrameSet::positionFrames()
     LayoutSize size;
     LayoutPoint position;
     for (int r = 0; r < rows; r++) {
-        position.setX(0);
-        size.setHeight(m_rows.m_sizes[r]);
+        position.setX(LayoutUnit());
+        size.setHeight(LayoutUnit(m_rows.m_sizes[r]));
         for (int c = 0; c < cols; c++) {
             child->setLocation(position);
-            size.setWidth(m_cols.m_sizes[c]);
+            size.setWidth(LayoutUnit(m_cols.m_sizes[c]));
 
             // has to be resized and itself resize its contents
             if (size != child->size()) {

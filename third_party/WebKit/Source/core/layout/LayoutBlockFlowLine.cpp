@@ -433,7 +433,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 
     const Font& font = layoutText->style(lineInfo.isFirstLine())->font();
 
-    LayoutUnit hyphenWidth = 0;
+    LayoutUnit hyphenWidth;
     if (toInlineTextBox(run->m_box)->hasHyphen())
         hyphenWidth = layoutText->hyphenWidth(font, run->direction());
 
@@ -912,7 +912,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                     layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
                 if (paginated) {
-                    LayoutUnit adjustment = 0;
+                    LayoutUnit adjustment;
                     adjustLinePositionForPagination(*lineBox, adjustment);
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine() ? IndentText : DoNotIndentText);
@@ -1640,7 +1640,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     if (!layoutState.isFullLayout()) {
         // Paginate all of the clean lines.
         bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
-        LayoutUnit paginationDelta = 0;
+        LayoutUnit paginationDelta;
         for (curr = firstRootBox(); curr && !curr->isDirty(); curr = curr->nextRootBox()) {
             if (paginated) {
                 paginationDelta -= curr->paginationStrut();

@@ -334,8 +334,8 @@ void LayoutListItem::positionListMarker()
 {
     if (m_marker && m_marker->parent() && m_marker->parent()->isBox() && !m_marker->isInside() && m_marker->inlineBoxWrapper()) {
         LayoutUnit markerOldLogicalLeft = m_marker->logicalLeft();
-        LayoutUnit blockOffset = 0;
-        LayoutUnit lineOffset = 0;
+        LayoutUnit blockOffset;
+        LayoutUnit lineOffset;
         for (LayoutBox* o = m_marker->parentBox(); o != this; o = o->parentBox()) {
             blockOffset += o->logicalTop();
             lineOffset += o->logicalLeft();

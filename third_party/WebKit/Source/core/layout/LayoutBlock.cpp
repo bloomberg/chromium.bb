@@ -1158,7 +1158,7 @@ LayoutUnit LayoutBlock::marginIntrinsicLogicalWidthForChild(LayoutBox& child) co
     // Fixed margins can be added in as is.
     Length marginLeft = child.style()->marginStartUsing(style());
     Length marginRight = child.style()->marginEndUsing(style());
-    LayoutUnit margin = 0;
+    LayoutUnit margin;
     if (marginLeft.isFixed())
         margin += marginLeft.value();
     if (marginRight.isFixed())
@@ -1555,7 +1555,7 @@ void LayoutBlock::dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutSco
 
 LayoutUnit LayoutBlock::textIndentOffset() const
 {
-    LayoutUnit cw = 0;
+    LayoutUnit cw;
     if (style()->textIndent().hasPercent())
         cw = containingBlock()->availableLogicalWidth();
     return minimumValueForLength(style()->textIndent(), cw);
@@ -1981,7 +1981,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
 
     LayoutObject* child = firstChild();
     LayoutBlock* containingBlock = this->containingBlock();
-    LayoutUnit floatLeftWidth = 0, floatRightWidth = 0;
+    LayoutUnit floatLeftWidth, floatRightWidth;
     while (child) {
         // Positioned children don't affect the min/max width. Spanners only affect the min/max
         // width of the multicol container, not the flow thread.
@@ -2008,9 +2008,9 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         // Fixed margins can be added in as is.
         Length startMarginLength = childStyle->marginStartUsing(&styleToUse);
         Length endMarginLength = childStyle->marginEndUsing(&styleToUse);
-        LayoutUnit margin = 0;
-        LayoutUnit marginStart = 0;
-        LayoutUnit marginEnd = 0;
+        LayoutUnit margin;
+        LayoutUnit marginStart;
+        LayoutUnit marginEnd;
         if (startMarginLength.isFixed())
             marginStart += startMarginLength.value();
         if (endMarginLength.isFixed())

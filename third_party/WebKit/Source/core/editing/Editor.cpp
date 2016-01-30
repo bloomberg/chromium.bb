@@ -1118,7 +1118,7 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
 
 IntRect Editor::firstRectForRange(const EphemeralRange& range) const
 {
-    LayoutUnit extraWidthToEndOfLine = 0;
+    LayoutUnit extraWidthToEndOfLine;
     ASSERT(range.isNotNull());
 
     IntRect startCaretRect = RenderedPosition(createVisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);

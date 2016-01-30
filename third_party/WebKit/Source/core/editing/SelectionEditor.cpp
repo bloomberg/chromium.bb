@@ -693,7 +693,7 @@ bool SelectionEditor::modify(EAlteration alter, unsigned verticalDistance, Verti
     willBeModified(alter, direction == FrameSelection::DirectionUp ? DirectionBackward : DirectionForward);
 
     VisiblePosition pos;
-    LayoutUnit xPos = 0;
+    LayoutUnit xPos;
     switch (alter) {
     case FrameSelection::AlterationMove:
         pos = createVisiblePosition(direction == FrameSelection::DirectionUp ? m_selection.start() : m_selection.end(), m_selection.affinity());
@@ -778,7 +778,7 @@ static int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition
 
 LayoutUnit SelectionEditor::lineDirectionPointForBlockDirectionNavigation(EPositionType type)
 {
-    LayoutUnit x = 0;
+    LayoutUnit x;
 
     if (m_selection.isNone())
         return x;

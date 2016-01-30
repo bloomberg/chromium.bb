@@ -194,8 +194,8 @@ bool scrollInDirection(LocalFrame* frame, WebFocusType type)
     ASSERT(frame);
 
     if (frame && canScrollInDirection(frame->document(), type)) {
-        LayoutUnit dx = 0;
-        LayoutUnit dy = 0;
+        LayoutUnit dx;
+        LayoutUnit dy;
         switch (type) {
         case WebFocusTypeLeft:
             dx = - ScrollableArea::pixelsPerLineStep();
@@ -230,8 +230,8 @@ bool scrollInDirection(Node* container, WebFocusType type)
         return false;
 
     if (canScrollInDirection(container, type)) {
-        LayoutUnit dx = 0;
-        LayoutUnit dy = 0;
+        LayoutUnit dx;
+        LayoutUnit dy;
         switch (type) {
         case WebFocusTypeLeft:
             dx = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollLeft());

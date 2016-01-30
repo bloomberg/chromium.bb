@@ -82,9 +82,9 @@ void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint
     LayoutObject* child = m_layoutFrameSet.firstChild();
     size_t rows = m_layoutFrameSet.rows().m_sizes.size();
     size_t cols = m_layoutFrameSet.columns().m_sizes.size();
-    LayoutUnit yPos = 0;
+    LayoutUnit yPos;
     for (size_t r = 0; r < rows; r++) {
-        LayoutUnit xPos = 0;
+        LayoutUnit xPos;
         for (size_t c = 0; c < cols; c++) {
             xPos += m_layoutFrameSet.columns().m_sizes[c];
             if (shouldPaintBorderAfter(m_layoutFrameSet.columns(), c)) {

@@ -228,7 +228,8 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
     // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
     float widthScale = m_image->hasRelativeSize() ? 1.0f : multiplier;
     float heightScale = m_image->hasRelativeSize() ? 1.0f : multiplier;
-    LayoutSize minimumSize(size.width() > 0 ? 1 : 0, size.height() > 0 ? 1 : 0);
+    LayoutSize minimumSize(size.width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
+        LayoutUnit(size.height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit()));
     size.scale(widthScale, heightScale);
     size.clampToMinimumSize(minimumSize);
     ASSERT(multiplier != 1.0f || (size.width().fraction() == 0.0f && size.height().fraction() == 0.0f));

@@ -2136,8 +2136,8 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
 
 LayoutUnit LayoutBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth) const
 {
-    LayoutUnit marginStart = 0;
-    LayoutUnit marginEnd = 0;
+    LayoutUnit marginStart;
+    LayoutUnit marginEnd;
     return fillAvailableMeasure(availableLogicalWidth, marginStart, marginEnd);
 }
 
@@ -2156,8 +2156,8 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWid
     if (logicalWidthLength.type() == FillAvailable)
         return fillAvailableMeasure(availableLogicalWidth);
 
-    LayoutUnit minLogicalWidth = 0;
-    LayoutUnit maxLogicalWidth = 0;
+    LayoutUnit minLogicalWidth;
+    LayoutUnit maxLogicalWidth;
     computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
 
     if (logicalWidthLength.type() == MinContent)
@@ -2190,8 +2190,8 @@ LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length&
     if (logicalWidth.isIntrinsic())
         return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth, borderAndPaddingLogicalWidth());
 
-    LayoutUnit marginStart = 0;
-    LayoutUnit marginEnd = 0;
+    LayoutUnit marginStart;
+    LayoutUnit marginEnd;
     LayoutUnit logicalWidthResult = fillAvailableMeasure(availableLogicalWidth, marginStart, marginEnd);
 
     if (shrinkToAvoidFloats() && cb->isLayoutBlockFlow() && toLayoutBlockFlow(cb)->containsFloats())
@@ -2583,7 +2583,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     bool skippedAutoHeightContainingBlock = false;
     LayoutBlock* cb = containingBlock();
     const LayoutBox* containingBlockChild = this;
-    LayoutUnit rootMarginBorderPaddingHeight = 0;
+    LayoutUnit rootMarginBorderPaddingHeight;
     while (!cb->isLayoutView() && skipContainingBlockForPercentHeightCalculation(cb)) {
         if (cb->isBody() || cb->isDocumentElement())
             rootMarginBorderPaddingHeight += cb->marginBefore() + cb->marginAfter() + cb->borderAndPaddingLogicalHeight();
@@ -2699,7 +2699,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(SizeType sizeType, const 
     case MinContent:
     case MaxContent: {
         // MinContent/MaxContent don't need the availableLogicalWidth argument.
-        LayoutUnit availableLogicalWidth = 0;
+        LayoutUnit availableLogicalWidth;
         return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth, borderAndPaddingLogicalWidth()) - borderAndPaddingLogicalWidth();
     }
     case FitContent:
@@ -3484,7 +3484,7 @@ void LayoutBox::computePositionedLogicalHeightUsing(SizeType heightSizeType, Len
 
     const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, false);
 
-    LayoutUnit logicalTopValue = 0;
+    LayoutUnit logicalTopValue;
 
     bool logicalHeightIsAuto = logicalHeightLength.isAuto();
     bool logicalTopIsAuto = logicalTop.isAuto();

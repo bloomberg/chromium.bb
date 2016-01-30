@@ -388,8 +388,8 @@ void LayoutSVGText::layout()
     setLogicalHeight(beforeEdge);
 
     LayoutState state(*this, locationOffset());
-    LayoutUnit paintInvalidationLogicalTop = 0;
-    LayoutUnit paintInvalidationLogicalBottom = 0;
+    LayoutUnit paintInvalidationLogicalTop;
+    LayoutUnit paintInvalidationLogicalBottom;
     layoutInlineChildren(true, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, afterEdge);
 
     if (m_needsReordering)
