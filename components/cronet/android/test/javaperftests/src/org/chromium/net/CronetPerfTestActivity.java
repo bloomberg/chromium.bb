@@ -11,8 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Debug;
 
-import org.chromium.base.PathUtils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +38,6 @@ import java.util.concurrent.TimeUnit;
  * Runs networking benchmarks and saves results to a file.
  */
 public class CronetPerfTestActivity extends Activity {
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_perf_test";
     // Benchmark configuration passed down from host via Intent data.
     // Call getConfig*(key) to extract individual configuration values.
     private Uri mConfig;
@@ -163,49 +160,31 @@ public class CronetPerfTestActivity extends Activity {
                 default:
                     throw new IllegalArgumentException("Unknown size: " + size);
             }
-            final String scheme;
-            final String host;
             final int port;
             switch (protocol) {
                 case HTTP:
-                    scheme = "http";
-                    host = getConfigString("HOST_IP");
                     port = getConfigInt("HTTP_PORT");
                     break;
                 case QUIC:
-                    scheme = "https";
-                    host = getConfigString("HOST");
                     port = getConfigInt("QUIC_PORT");
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown protocol: " + protocol);
             }
             try {
-                mUrl = new URL(scheme, host, port, resource);
+                mUrl = new URL("http", getConfigString("HOST"), port, resource);
             } catch (MalformedURLException e) {
-                throw new IllegalArgumentException(
-                        "Bad URL: " + host + ":" + port + "/" + resource);
+                throw new IllegalArgumentException("Bad URL: " + getConfigString("HOST") + ":"
+                        + port + "/" + resource);
             }
             final CronetEngine.Builder cronetEngineBuilder =
                     new CronetEngine.Builder(CronetPerfTestActivity.this);
-            cronetEngineBuilder.setLibraryName("cronet_tests");
             if (mProtocol == Protocol.QUIC) {
                 cronetEngineBuilder.enableQUIC(true);
-                cronetEngineBuilder.addQuicHint(host, port, port);
-                cronetEngineBuilder.setMockCertVerifierForTesting(
-                        MockCertVerifier.createMockCertVerifier(
-                                new String[] {getConfigString("QUIC_CERT_FILE")}));
-            }
-
-            try {
-                JSONObject quicParams = new JSONObject().put("host_whitelist", host);
-                JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
-                cronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
-            } catch (JSONException e) {
-                throw new IllegalStateException("JSON failed: " + e);
+                cronetEngineBuilder.addQuicHint(getConfigString("HOST"), getConfigInt("QUIC_PORT"),
+                        getConfigInt("QUIC_PORT"));
             }
             mCronetEngine = cronetEngineBuilder.build();
-            CronetTestUtil.registerHostResolverProc(mCronetEngine, getConfigString("HOST_IP"));
             mName = buildBenchmarkName(mode, direction, protocol, concurrency, mIterations);
             mConcurrency = concurrency;
             mResults = results;
@@ -404,7 +383,6 @@ public class CronetPerfTestActivity extends Activity {
             private class Callback extends UrlRequest.Callback {
                 private final ByteBuffer mBuffer;
                 private final Runnable mCompletionCallback;
-                private int mBytesReceived;
 
                 Callback(ByteBuffer buffer, Runnable completionCallback) {
                     mBuffer = buffer;
@@ -426,18 +404,12 @@ public class CronetPerfTestActivity extends Activity {
                 @Override
                 public void onReadCompleted(
                         UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
-                    mBytesReceived += byteBuffer.position();
                     mBuffer.clear();
                     request.readNew(mBuffer);
                 }
 
                 @Override
                 public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
-                    if (info.getHttpStatusCode() != 200 || mBytesReceived != mLength) {
-                        System.out.println("Failed: response code: " + info.getHttpStatusCode()
-                                + " bytes: " + mBytesReceived);
-                        mFailed = true;
-                    }
                     mCompletionCallback.run();
                 }
 
@@ -610,7 +582,6 @@ public class CronetPerfTestActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         mConfig = getIntent().getData();
         // Execute benchmarks on another thread to avoid networking on main thread.
         new BenchmarkTask().execute();

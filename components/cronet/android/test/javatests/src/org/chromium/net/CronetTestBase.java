@@ -20,7 +20,6 @@ import java.net.URL;
  */
 public class CronetTestBase extends AndroidTestCase {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_test";
-    private static final String LOOPBACK_ADDRESS = "127.0.0.1";
 
     private CronetTestFramework mCronetTestFramework;
     // {@code true} when test is being run against system HttpURLConnection implementation.
@@ -164,11 +163,16 @@ public class CronetTestBase extends AndroidTestCase {
      * @param isLegacyAPI true if the test should use the legacy API.
      */
     protected void registerHostResolver(CronetTestFramework framework, boolean isLegacyAPI) {
+        long urlRequestContextAdapter;
         if (isLegacyAPI) {
-            CronetTestUtil.registerHostResolverProc(framework.mRequestFactory, LOOPBACK_ADDRESS);
+            urlRequestContextAdapter = ((ChromiumUrlRequestFactory) framework.mRequestFactory)
+                                               .getRequestContext()
+                                               .getUrlRequestContextAdapter();
         } else {
-            CronetTestUtil.registerHostResolverProc(framework.mCronetEngine, LOOPBACK_ADDRESS);
+            urlRequestContextAdapter = ((CronetUrlRequestContext) framework.mCronetEngine)
+                                               .getUrlRequestContextAdapter();
         }
+        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, isLegacyAPI);
     }
 
     void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {

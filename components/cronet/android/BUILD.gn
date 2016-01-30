@@ -371,8 +371,6 @@ shared_library("cronet_tests") {
   testonly = true
   sources = [
     "test/cronet_test_jni.cc",
-    "test/cronet_test_util.cc",
-    "test/cronet_test_util.h",
     "test/cronet_url_request_context_config_test.cc",
     "test/cronet_url_request_context_config_test.h",
     "test/mock_cert_verifier.cc",
@@ -436,8 +434,6 @@ android_library("cronet_test_apk_java") {
     "//base:base_java",
     "//net/android:net_java_test_support",
   ]
-
-  run_findbugs = true
 
   if (cronet_enable_bidirectional_stream) {
     java_files += [
@@ -507,8 +503,10 @@ android_apk("cronet_test_apk") {
   run_findbugs = true
 }
 
-android_library("cronet_javatests") {
-  testonly = true
+instrumentation_test_apk("cronet_test_instrumentation_apk") {
+  apk_name = "CronetTestInstrumentation"
+  apk_under_test = ":cronet_test_apk"
+  android_manifest = "test/javatests/AndroidManifest.xml"
 
   java_files = [
     "test/javatests/src/org/chromium/net/ChromiumUrlRequestTest.java",
@@ -560,62 +558,6 @@ android_library("cronet_javatests") {
       "test/javatests/src/org/chromium/net/TestBidirectionalStreamCallback.java",
     ]
   }
-}
-
-instrumentation_test_apk("cronet_test_instrumentation_apk") {
-  apk_name = "CronetTestInstrumentation"
-  apk_under_test = ":cronet_test_apk"
-  android_manifest = "test/javatests/AndroidManifest.xml"
-
-  deps = [
-    ":cronet_api",
-    ":cronet_java",
-    ":cronet_javatests",
-    ":cronet_test_apk_java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//net/android:net_java",
-    "//net/android:net_java_test_support",
-  ]
-
-  run_findbugs = true
-}
-
-android_library("cronet_perf_test_apk_java") {
-  testonly = true
-  java_files =
-      [ "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java" ]
-
-  deps = [
-    ":cronet_api",
-    ":cronet_java",
-    ":cronet_javatests",
-    ":cronet_test_apk_java",
-    "//base:base_java",
-  ]
-
-  run_findbugs = true
-}
-
-android_apk("cronet_perf_test_apk") {
-  testonly = true
-  apk_name = "CronetPerfTest"
-  android_manifest = "test/javaperftests/AndroidManifest.xml"
-  native_libs = [ "libcronet_tests.so" ]
-
-  deps = [
-    ":cronet_perf_test_apk_java",
-    ":cronet_test_apk_java",
-    ":cronet_tests",
-    "//base:base_java",
-  ]
-
-  run_findbugs = true
-  proguard_enabled = true
-  proguard_configs = [
-    "proguard.cfg",
-    "test/javaperftests/proguard.cfg",
-  ]
 }
 
 test("cronet_unittests") {
