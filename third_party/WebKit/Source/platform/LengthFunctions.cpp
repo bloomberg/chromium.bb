@@ -44,7 +44,7 @@ float floatValueForLength(const Length& length, float maximumValue)
     case Auto:
         return static_cast<float>(maximumValue);
     case Calculated:
-        return length.nonNanCalculatedValue(maximumValue);
+        return length.nonNanCalculatedValue(LayoutUnit(maximumValue));
     case MinContent:
     case MaxContent:
     case FitContent:
@@ -63,15 +63,15 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue)
 {
     switch (length.type()) {
     case Fixed:
-        return length.value();
+        return LayoutUnit(length.value());
     case Percent:
         // Don't remove the extra cast to float. It is needed for rounding on 32-bit Intel machines that use the FPU stack.
-        return static_cast<float>(maximumValue * length.percent() / 100.0f);
+        return LayoutUnit(static_cast<float>(maximumValue * length.percent() / 100.0f));
     case Calculated:
-        return length.nonNanCalculatedValue(maximumValue.toFloat());
+        return LayoutUnit(length.nonNanCalculatedValue(maximumValue));
     case FillAvailable:
     case Auto:
-        return 0;
+        return LayoutUnit();
     case MinContent:
     case MaxContent:
     case FitContent:
@@ -80,10 +80,10 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue)
     case DeviceHeight:
     case MaxSizeNone:
         ASSERT_NOT_REACHED();
-        return 0;
+        return LayoutUnit();
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit roundedMinimumValueForLength(const Length& length, LayoutUnit maximumValue)
@@ -111,10 +111,10 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue)
     case DeviceHeight:
     case MaxSizeNone:
         ASSERT_NOT_REACHED();
-        return 0;
+        return LayoutUnit();
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 FloatSize floatSizeForLengthSize(const LengthSize& lengthSize, const FloatSize& boxSize)

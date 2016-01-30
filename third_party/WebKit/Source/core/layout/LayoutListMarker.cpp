@@ -119,8 +119,8 @@ LayoutRect LayoutListMarker::localSelectionRect() const
         ? inlineBoxWrapper()->logicalBottom() - root.selectionBottom()
         : root.selectionTop() - inlineBoxWrapper()->logicalTop();
     return blockStyle->isHorizontalWritingMode()
-        ? LayoutRect(0, newLogicalTop, size().width(), root.selectionHeight())
-        : LayoutRect(newLogicalTop, 0, root.selectionHeight(), size().height());
+        ? LayoutRect(LayoutUnit(), newLogicalTop, size().width(), root.selectionHeight())
+        : LayoutRect(newLogicalTop, LayoutUnit(), root.selectionHeight(), size().height());
 }
 
 void LayoutListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const

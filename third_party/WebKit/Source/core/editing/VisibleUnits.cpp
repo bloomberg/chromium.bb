@@ -1274,9 +1274,9 @@ static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInli
         absoluteBlockPoint -= FloatSize(containingBlock.scrolledContentOffset());
 
     if (root->block().isHorizontalWritingMode())
-        return LayoutPoint(lineDirectionPoint - absoluteBlockPoint.x(), root->blockDirectionPointInLine());
+        return LayoutPoint(LayoutUnit(lineDirectionPoint - absoluteBlockPoint.x()), root->blockDirectionPointInLine());
 
-    return LayoutPoint(root->blockDirectionPointInLine(), lineDirectionPoint - absoluteBlockPoint.y());
+    return LayoutPoint(root->blockDirectionPointInLine(), LayoutUnit(lineDirectionPoint - absoluteBlockPoint.y()));
 }
 
 VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)

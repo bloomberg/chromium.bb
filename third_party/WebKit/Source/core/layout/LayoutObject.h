@@ -993,7 +993,7 @@ public:
     // However CSS 3 calls it the "min-content inline size".
     // https://drafts.csswg.org/css-sizing-3/#min-content-inline-size
     // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
-    virtual LayoutUnit minPreferredLogicalWidth() const { return 0; }
+    virtual LayoutUnit minPreferredLogicalWidth() const { return LayoutUnit(); }
 
     // This function returns the maximum logical width this object can have.
     //
@@ -1003,7 +1003,7 @@ public:
     // the "max-content inline size".
     // https://drafts.csswg.org/css-sizing-3/#max-content-inline-size
     // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
-    virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
+    virtual LayoutUnit maxPreferredLogicalWidth() const { return LayoutUnit(); }
 
     const ComputedStyle* style() const { return m_style.get(); }
     ComputedStyle* mutableStyle() const { return m_style.get(); }

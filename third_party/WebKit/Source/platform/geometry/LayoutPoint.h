@@ -61,6 +61,7 @@ public:
     void move(const LayoutSize& s) { move(s.width(), s.height()); }
     void move(const IntSize& s) { move(s.width(), s.height()); }
     void moveBy(const LayoutPoint& offset) { move(offset.x(), offset.y()); }
+    void move(int dx, int dy) { move(LayoutUnit(dx), LayoutUnit(dy)); }
     void move(LayoutUnit dx, LayoutUnit dy) { m_x += dx; m_y += dy; }
     void scale(float sx, float sy)
     {

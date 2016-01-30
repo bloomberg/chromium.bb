@@ -121,23 +121,23 @@ public:
     {
         LayoutUnit delta = edge - x();
         setX(edge);
-        setWidth(std::max<LayoutUnit>(0, width() - delta));
+        setWidth((width() - delta).clampToZero());
     }
     void shiftMaxXEdgeTo(LayoutUnit edge)
     {
         LayoutUnit delta = edge - maxX();
-        setWidth(std::max<LayoutUnit>(0, width() + delta));
+        setWidth((width() + delta).clampToZero());
     }
     void shiftYEdgeTo(LayoutUnit edge)
     {
         LayoutUnit delta = edge - y();
         setY(edge);
-        setHeight(std::max<LayoutUnit>(0, height() - delta));
+        setHeight((height() - delta).clampToZero());
     }
     void shiftMaxYEdgeTo(LayoutUnit edge)
     {
         LayoutUnit delta = edge - maxY();
-        setHeight(std::max<LayoutUnit>(0, height() + delta));
+        setHeight((height() + delta).clampToZero());
     }
 
     LayoutPoint minXMinYCorner() const { return m_location; } // typically topLeft

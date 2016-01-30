@@ -65,7 +65,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutUnit logicalExtent = logicalVisualOverflow.width();
 
     // We round the y-axis to ensure consistent line heights.
-    LayoutPoint adjustedPaintOffset = LayoutPoint(paintOffset.x(), paintOffset.y().round());
+    LayoutPoint adjustedPaintOffset = LayoutPoint(paintOffset.x(), LayoutUnit(paintOffset.y().round()));
 
     if (m_inlineTextBox.isHorizontal()) {
         if (!paintInfo.cullRect().intersectsHorizontalRange(logicalStart, logicalStart + logicalExtent))
@@ -111,7 +111,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             LayoutUnit widthOfVisibleText = m_inlineTextBox.lineLayoutItem().width(m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
             LayoutUnit widthOfHiddenText = m_inlineTextBox.logicalWidth() - widthOfVisibleText;
             // FIXME: The hit testing logic also needs to take this translation into account.
-            LayoutSize truncationOffset(m_inlineTextBox.isLeftToRightDirection() ? widthOfHiddenText : -widthOfHiddenText, 0);
+            LayoutSize truncationOffset(m_inlineTextBox.isLeftToRightDirection() ? widthOfHiddenText : -widthOfHiddenText, LayoutUnit());
             adjustedPaintOffset.move(m_inlineTextBox.isHorizontal() ? truncationOffset : truncationOffset.transposedSize());
         }
     }
@@ -738,7 +738,7 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
     if (m_inlineTextBox.truncation() != cNoTruncation) {
         width = m_inlineTextBox.lineLayoutItem().width(m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
         if (!m_inlineTextBox.isLeftToRightDirection())
-            localOrigin.move(m_inlineTextBox.logicalWidth() - width, 0);
+            localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
     }
 
     // Get the text decoration colors.

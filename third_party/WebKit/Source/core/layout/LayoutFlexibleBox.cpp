@@ -1484,7 +1484,7 @@ void LayoutFlexibleBox::adjustAlignmentForChild(LayoutBox& child, LayoutUnit del
         return;
     }
 
-    setFlowAwareLocationForChild(child, flowAwareLocationForChild(child) + LayoutSize(0, delta));
+    setFlowAwareLocationForChild(child, flowAwareLocationForChild(child) + LayoutSize(LayoutUnit(), delta));
 }
 
 void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)

@@ -3611,7 +3611,7 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
     bool ltr = box ? box->isLeftToRightDirection() : style()->isLeftToRightDirection();
 
     if ((!caretOffset) ^ ltr)
-        rect.move(LayoutSize(size().width() - caretWidth(), 0));
+        rect.move(LayoutSize(size().width() - caretWidth(), LayoutUnit()));
 
     if (box) {
         RootInlineBox& rootBox = box->root();

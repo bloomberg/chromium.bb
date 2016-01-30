@@ -130,13 +130,13 @@ public:
     LayoutUnit marginLogicalLeft() const
     {
         if (!includeLogicalLeftEdge())
-            return 0;
+            return LayoutUnit();
         return isHorizontal() ? boxModelObject().marginLeft() : boxModelObject().marginTop();
     }
     LayoutUnit marginLogicalRight() const
     {
         if (!includeLogicalRightEdge())
-            return 0;
+            return LayoutUnit();
         return isHorizontal() ? boxModelObject().marginRight() : boxModelObject().marginBottom();
     }
     int borderLogicalLeft() const

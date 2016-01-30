@@ -56,7 +56,7 @@ public:
         : m_spannerPlaceholder(nullptr)
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
-        , m_previousBorderBoxSize(-1, -1)
+        , m_previousBorderBoxSize(LayoutUnit(-1), LayoutUnit(-1))
         , m_percentHeightContainer(nullptr)
     {
     }
@@ -319,7 +319,7 @@ public:
     // Note that those functions have their origin at this box's CSS border box.
     // As such their location doesn't account for 'top'/'left'.
     LayoutRect borderBoxRect() const { return LayoutRect(LayoutPoint(), size()); }
-    LayoutRect paddingBoxRect() const { return LayoutRect(borderLeft(), borderTop(), clientWidth(), clientHeight()); }
+    LayoutRect paddingBoxRect() const { return LayoutRect(LayoutUnit(borderLeft()), LayoutUnit(borderTop()), clientWidth(), clientHeight()); }
     IntRect pixelSnappedBorderBoxRect() const { return IntRect(IntPoint(), m_frameRect.pixelSnappedSize()); }
     IntRect borderBoundingBox() const final { return pixelSnappedBorderBoxRect(); }
 
@@ -401,8 +401,8 @@ public:
 
     // More IE extensions.  clientWidth and clientHeight represent the interior of an object
     // excluding border and scrollbar.  clientLeft/Top are just the borderLeftWidth and borderTopWidth.
-    LayoutUnit clientLeft() const { return borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? verticalScrollbarWidth() : 0); }
-    LayoutUnit clientTop() const { return borderTop(); }
+    LayoutUnit clientLeft() const { return LayoutUnit(borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? verticalScrollbarWidth() : 0)); }
+    LayoutUnit clientTop() const { return LayoutUnit(borderTop()); }
     LayoutUnit clientWidth() const;
     LayoutUnit clientHeight() const;
     LayoutUnit clientLogicalWidth() const { return style()->isHorizontalWritingMode() ? clientWidth() : clientHeight(); }
@@ -482,7 +482,10 @@ public:
     virtual bool isSelfCollapsingBlock() const { return false; }
     virtual LayoutUnit collapsedMarginBefore() const { return marginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const { return marginAfter(); }
-    LayoutRectOutsets collapsedMarginBoxLogicalOutsets() const { return LayoutRectOutsets(collapsedMarginBefore(), 0, collapsedMarginAfter(), 0); }
+    LayoutRectOutsets collapsedMarginBoxLogicalOutsets() const
+    {
+        return LayoutRectOutsets(collapsedMarginBefore(), LayoutUnit(), collapsedMarginAfter(), LayoutUnit());
+    }
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;

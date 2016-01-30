@@ -71,8 +71,8 @@ void LayoutRect::intersect(const LayoutRect& other)
 
     // Return a clean empty rectangle for non-intersecting cases.
     if (newLocation.x() >= newMaxPoint.x() || newLocation.y() >= newMaxPoint.y()) {
-        newLocation = LayoutPoint(0, 0);
-        newMaxPoint = LayoutPoint(0, 0);
+        newLocation = LayoutPoint();
+        newMaxPoint = LayoutPoint();
     }
 
     m_location = newLocation;

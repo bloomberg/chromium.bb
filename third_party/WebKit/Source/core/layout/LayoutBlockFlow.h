@@ -99,24 +99,24 @@ public:
 
     void deleteLineBoxTree() final;
 
-    LayoutUnit availableLogicalWidthForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit availableLogicalWidthForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
-        return max<LayoutUnit>(0, logicalRightOffsetForLine(position, indentText, logicalHeight) - logicalLeftOffsetForLine(position, indentText, logicalHeight));
+        return (logicalRightOffsetForLine(position, indentText, logicalHeight) - logicalLeftOffsetForLine(position, indentText, logicalHeight)).clampToZero();
     }
-    LayoutUnit logicalRightOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalRightOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return logicalRightOffsetForLine(position, logicalRightOffsetForContent(), indentText, logicalHeight);
     }
-    LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return logicalLeftOffsetForLine(position, logicalLeftOffsetForContent(), indentText, logicalHeight);
     }
-    LayoutUnit startOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit startOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return style()->isLeftToRightDirection() ? logicalLeftOffsetForLine(position, indentText, logicalHeight)
             : logicalWidth() - logicalRightOffsetForLine(position, indentText, logicalHeight);
     }
-    LayoutUnit endOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit endOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return !style()->isLeftToRightDirection() ? logicalLeftOffsetForLine(position, indentText, logicalHeight)
             : logicalWidth() - logicalRightOffsetForLine(position, indentText, logicalHeight);
@@ -447,19 +447,19 @@ public:
 
         static LayoutUnit positiveMarginBeforeDefault(const LayoutBlockFlow* block)
         {
-            return std::max<LayoutUnit>(block->marginBefore(), 0);
+            return block->marginBefore().clampToZero();
         }
         static LayoutUnit negativeMarginBeforeDefault(const LayoutBlockFlow* block)
         {
-            return std::max<LayoutUnit>(-block->marginBefore(), 0);
+            return (-block->marginBefore()).clampToZero();
         }
         static LayoutUnit positiveMarginAfterDefault(const LayoutBlockFlow* block)
         {
-            return std::max<LayoutUnit>(block->marginAfter(), 0);
+            return block->marginAfter().clampToZero();
         }
         static LayoutUnit negativeMarginAfterDefault(const LayoutBlockFlow* block)
         {
-            return std::max<LayoutUnit>(-block->marginAfter(), 0);
+            return (-block->marginAfter()).clampToZero();
         }
 
         MarginValues m_margins;

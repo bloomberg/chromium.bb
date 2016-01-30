@@ -481,18 +481,18 @@ void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
     const ComputedStyle* columnStyle = columnBlock->style();
     LayoutUnit availableWidth = columnBlock->contentLogicalWidth();
     LayoutUnit columnGap = columnBlock->columnGap();
-    LayoutUnit computedColumnWidth = max<LayoutUnit>(1, LayoutUnit(columnStyle->columnWidth()));
+    LayoutUnit computedColumnWidth = max(LayoutUnit(1), LayoutUnit(columnStyle->columnWidth()));
     unsigned computedColumnCount = max<int>(1, columnStyle->columnCount());
 
     ASSERT(!columnStyle->hasAutoColumnCount() || !columnStyle->hasAutoColumnWidth());
     if (columnStyle->hasAutoColumnWidth() && !columnStyle->hasAutoColumnCount()) {
         count = computedColumnCount;
-        width = std::max<LayoutUnit>(0, (availableWidth - ((count - 1) * columnGap)) / count);
+        width = ((availableWidth - ((count - 1) * columnGap)) / count).clampToZero();
     } else if (!columnStyle->hasAutoColumnWidth() && columnStyle->hasAutoColumnCount()) {
-        count = std::max<LayoutUnit>(1, (availableWidth + columnGap) / (computedColumnWidth + columnGap));
+        count = std::max(LayoutUnit(1), (availableWidth + columnGap) / (computedColumnWidth + columnGap));
         width = ((availableWidth + columnGap) / count) - columnGap;
     } else {
-        count = std::max<LayoutUnit>(std::min<LayoutUnit>(computedColumnCount, (availableWidth + columnGap) / (computedColumnWidth + columnGap)), 1);
+        count = std::max(std::min(LayoutUnit(computedColumnCount), (availableWidth + columnGap) / (computedColumnWidth + columnGap)), LayoutUnit(1));
         width = ((availableWidth + columnGap) / count) - columnGap;
     }
 }

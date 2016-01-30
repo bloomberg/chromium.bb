@@ -35,6 +35,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include "wtf/SaturatedArithmetic.h"
+#include <algorithm>
 #include <limits.h>
 #include <limits>
 #include <stdlib.h>
@@ -65,6 +66,7 @@ class LayoutUnit {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LayoutUnit() : m_value(0) { }
+    // TODO(leviw): All of the below constructors should be explicit. crbug.com/581254
     LayoutUnit(int value) { setValue(value); }
     LayoutUnit(unsigned short value) { setValue(value); }
     LayoutUnit(unsigned value) { setValue(value); }
@@ -154,6 +156,11 @@ public:
             return intMinForLayoutUnit;
 
         return m_value >> kLayoutUnitFractionalBits;
+    }
+
+    LayoutUnit clampToZero() const
+    {
+        return std::max(*this, LayoutUnit());
     }
 
     LayoutUnit fraction() const
@@ -678,13 +685,13 @@ inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b)
 
 inline LayoutUnit& operator+=(LayoutUnit& a, int b)
 {
-    a = a + b;
+    a = a + LayoutUnit(b);
     return a;
 }
 
 inline LayoutUnit& operator+=(LayoutUnit& a, float b)
 {
-    a = a + b;
+    a = LayoutUnit(a + b);
     return a;
 }
 
@@ -696,7 +703,7 @@ inline float& operator+=(float& a, const LayoutUnit& b)
 
 inline LayoutUnit& operator-=(LayoutUnit& a, int b)
 {
-    a = a - b;
+    a = a - LayoutUnit(b);
     return a;
 }
 
@@ -708,7 +715,7 @@ inline LayoutUnit& operator-=(LayoutUnit& a, const LayoutUnit& b)
 
 inline LayoutUnit& operator-=(LayoutUnit& a, float b)
 {
-    a = a - b;
+    a = LayoutUnit(a - b);
     return a;
 }
 
@@ -723,11 +730,10 @@ inline LayoutUnit& operator*=(LayoutUnit& a, const LayoutUnit& b)
     a = a * b;
     return a;
 }
-// operator*=(LayoutUnit& a, int b) is supported by the operator above plus LayoutUnit(int).
 
 inline LayoutUnit& operator*=(LayoutUnit& a, float b)
 {
-    a = a * b;
+    a = LayoutUnit(a * b);
     return a;
 }
 
@@ -742,11 +748,10 @@ inline LayoutUnit& operator/=(LayoutUnit& a, const LayoutUnit& b)
     a = a / b;
     return a;
 }
-// operator/=(LayoutUnit& a, int b) is supported by the operator above plus LayoutUnit(int).
 
 inline LayoutUnit& operator/=(LayoutUnit& a, float b)
 {
-    a = a / b;
+    a = LayoutUnit(a / b);
     return a;
 }
 

@@ -419,7 +419,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             LayoutUnit childY = yPos;
             switch (style()->boxAlign()) {
             case BCENTER:
-                childY += child->marginTop() + std::max<LayoutUnit>(0, (contentHeight() - (child->size().height() + child->marginHeight())) / 2);
+                childY += child->marginTop() + ((contentHeight() - (child->size().height() + child->marginHeight())) / 2).clampToZero();
                 break;
             case BBASELINE: {
                 LayoutUnit ascent = child->firstLineBoxBaseline();
@@ -563,7 +563,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                     remainingSpace -= (remainingSpace / totalChildren);
                     --totalChildren;
 
-                    placeChild(child, child->location() + LayoutSize(offset, 0));
+                    placeChild(child, child->location() + LayoutSize(offset, LayoutUnit()));
                 }
             }
         } else {
@@ -575,7 +575,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 if (childDoesNotAffectWidthOrFlexing(child))
                     continue;
 
-                placeChild(child, child->location() + LayoutSize(offset, 0));
+                placeChild(child, child->location() + LayoutSize(offset, LayoutUnit()));
             }
         }
     }
@@ -658,7 +658,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             switch (style()->boxAlign()) {
             case BCENTER:
             case BBASELINE: // Baseline just maps to center for vertical boxes
-                childX += child->marginLeft() + std::max<LayoutUnit>(0, (contentWidth() - (child->size().width() + child->marginWidth())) / 2);
+                childX += child->marginLeft() + std::max<LayoutUnit>(LayoutUnit(), (contentWidth() - (child->size().width() + child->marginWidth())) / 2);
                 break;
             case BEND:
                 if (!style()->isLeftToRightDirection())
@@ -813,7 +813,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                     offset += remainingSpace / totalChildren;
                     remainingSpace -= (remainingSpace / totalChildren);
                     --totalChildren;
-                    placeChild(child, child->location() + LayoutSize(0, offset));
+                    placeChild(child, child->location() + LayoutSize(LayoutUnit(), offset));
                 }
             }
         } else {
@@ -824,7 +824,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
                 if (childDoesNotAffectWidthOrFlexing(child))
                     continue;
-                placeChild(child, child->location() + LayoutSize(0, offset));
+                placeChild(child, child->location() + LayoutSize(LayoutUnit(), offset));
             }
         }
     }

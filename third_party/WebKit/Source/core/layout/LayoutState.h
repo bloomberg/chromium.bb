@@ -71,7 +71,7 @@ public:
     // Constructor for sub-tree layout
     explicit LayoutState(LayoutObject& root);
 
-    LayoutState(LayoutBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, bool containingBlockLogicalWidthChanged = false);
+    LayoutState(LayoutBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = LayoutUnit(), bool pageHeightLogicalChanged = false, bool containingBlockLogicalWidthChanged = false);
 
     ~LayoutState();
 

@@ -104,7 +104,7 @@ LayoutSize LayoutVideo::calculateIntrinsicSize()
     // size to 300x1 the video will resize itself in these cases, and audio will
     // have the correct height (it needs to be > 0 for controls to layout properly).
     if (video->ownerDocument() && video->ownerDocument()->isMediaDocument())
-        return LayoutSize(defaultSize().width(), 1);
+        return LayoutSize(defaultSize().width(), LayoutUnit(1));
 
     return defaultSize();
 }

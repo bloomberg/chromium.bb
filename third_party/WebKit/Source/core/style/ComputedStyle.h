@@ -1950,7 +1950,7 @@ inline double adjustDoubleForAbsoluteZoom(double value, const ComputedStyle& sty
 
 inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const ComputedStyle& style)
 {
-    return value / style.effectiveZoom();
+    return LayoutUnit(value / style.effectiveZoom());
 }
 
 inline double adjustScrollForAbsoluteZoom(double scrollOffset, float zoomFactor)
