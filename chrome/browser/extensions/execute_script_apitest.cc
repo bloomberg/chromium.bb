@@ -95,6 +95,13 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFrameAfterLoad) {
   ASSERT_TRUE(RunExtensionTest("executescript/frame_after_load")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, FrameWithHttp204) {
+  host_resolver()->AddRule("b.com", "127.0.0.1");
+  host_resolver()->AddRule("c.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("executescript/http204")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptRunAt) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartEmbeddedTestServer());
