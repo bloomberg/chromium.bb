@@ -229,6 +229,8 @@
               # to unused function warnings. There are a few legit unused
               # functions too.
               '-Wno-unused-function',
+              # vp3data.h's vp31_inter_dequant stores '128' in an int8_t array.
+              '-Wno-constant-conversion',
             ],
           },
           'cflags': [
