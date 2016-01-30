@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "content/browser/memory/memory_message_filter.h"
-#include "content/browser/memory/memory_pressure_controller.h"
+#include "content/browser/memory/memory_pressure_controller_impl.h"
 #include "content/common/memory_messages.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -89,7 +89,7 @@ class MemoryMessageFilterForTesting : public MemoryMessageFilter {
   ~MemoryMessageFilterForTesting() override {}
 };
 
-class MemoryPressureControllerBrowserTest : public ContentBrowserTest {
+class MemoryPressureControllerImplBrowserTest : public ContentBrowserTest {
  public:
   MOCK_METHOD1(OnMemoryPressure,
                void(base::MemoryPressureListener::MemoryPressureLevel level));
@@ -97,14 +97,14 @@ class MemoryPressureControllerBrowserTest : public ContentBrowserTest {
  protected:
   void SetPressureNotificationsSuppressedInAllProcessesAndWait(
       bool suppressed) {
-    MemoryPressureController::GetInstance()
+    MemoryPressureControllerImpl::GetInstance()
         ->SetPressureNotificationsSuppressedInAllProcesses(suppressed);
     RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 
   void SimulatePressureNotificationInAllProcessesAndWait(
       base::MemoryPressureListener::MemoryPressureLevel level) {
-    MemoryPressureController::GetInstance()
+    MemoryPressureControllerImpl::GetInstance()
         ->SimulatePressureNotificationInAllProcesses(level);
     RunAllPendingInMessageLoop(BrowserThread::IO);
   }
@@ -112,7 +112,7 @@ class MemoryPressureControllerBrowserTest : public ContentBrowserTest {
   void SendPressureNotificationAndWait(
       const void* fake_process_host,
       base::MemoryPressureListener::MemoryPressureLevel level) {
-    MemoryPressureController::GetInstance()->SendPressureNotification(
+    MemoryPressureControllerImpl::GetInstance()->SendPressureNotification(
         reinterpret_cast<const RenderProcessHost*>(fake_process_host), level);
     RunAllPendingInMessageLoop(BrowserThread::IO);
   }
@@ -123,7 +123,7 @@ const auto MEMORY_PRESSURE_LEVEL_MODERATE =
 const auto MEMORY_PRESSURE_LEVEL_CRITICAL =
     base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
 
-IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(MemoryPressureControllerImplBrowserTest,
                        SetPressureNotificationsSuppressedInAllProcesses) {
   scoped_refptr<MemoryMessageFilterForTesting> filter1(
       new MemoryMessageFilterForTesting);
@@ -212,13 +212,13 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   testing::Mock::VerifyAndClearExpectations(this);
 }
 
-IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(MemoryPressureControllerImplBrowserTest,
                        SimulatePressureNotificationInAllProcesses) {
   scoped_refptr<MemoryMessageFilterForTesting> filter(
       new MemoryMessageFilterForTesting);
   scoped_ptr<base::MemoryPressureListener> listener(
       new base::MemoryPressureListener(
-          base::Bind(&MemoryPressureControllerBrowserTest::OnMemoryPressure,
+          base::Bind(&MemoryPressureControllerImplBrowserTest::OnMemoryPressure,
                      base::Unretained(this))));
 
   NavigateToURL(shell(), GetTestUrl("", "title.html"));

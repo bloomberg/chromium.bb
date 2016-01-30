@@ -16,6 +16,7 @@ TabStats::TabStats()
       is_discarded(false),
       has_form_entry(false),
       discard_count(0),
+      render_process_host(nullptr),
       renderer_handle(0),
       child_process_host_id(0),
 #if defined(OS_CHROMEOS)

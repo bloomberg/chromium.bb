@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/memory/memory_pressure_controller.h"
+#include "content/browser/memory/memory_pressure_controller_impl.h"
 
 #include "base/bind.h"
 #include "content/browser/memory/memory_message_filter.h"
@@ -10,11 +10,11 @@
 
 namespace content {
 
-MemoryPressureController::MemoryPressureController() {}
+MemoryPressureControllerImpl::MemoryPressureControllerImpl() {}
 
-MemoryPressureController::~MemoryPressureController() {}
+MemoryPressureControllerImpl::~MemoryPressureControllerImpl() {}
 
-void MemoryPressureController::OnMemoryMessageFilterAdded(
+void MemoryPressureControllerImpl::OnMemoryMessageFilterAdded(
     MemoryMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -32,7 +32,7 @@ void MemoryPressureController::OnMemoryMessageFilterAdded(
     filter->SendSetPressureNotificationsSuppressed(true);
 }
 
-void MemoryPressureController::OnMemoryMessageFilterRemoved(
+void MemoryPressureControllerImpl::OnMemoryMessageFilterRemoved(
     MemoryMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -45,20 +45,21 @@ void MemoryPressureController::OnMemoryMessageFilterRemoved(
 }
 
 // static
-MemoryPressureController* MemoryPressureController::GetInstance() {
+MemoryPressureControllerImpl* MemoryPressureControllerImpl::GetInstance() {
   return base::Singleton<
-      MemoryPressureController,
-      base::LeakySingletonTraits<MemoryPressureController>>::get();
+      MemoryPressureControllerImpl,
+      base::LeakySingletonTraits<MemoryPressureControllerImpl>>::get();
 }
 
-void MemoryPressureController::SetPressureNotificationsSuppressedInAllProcesses(
+void
+MemoryPressureControllerImpl::SetPressureNotificationsSuppressedInAllProcesses(
     bool suppressed) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     // Note that passing base::Unretained(this) is safe here because the
     // controller is a leaky singleton.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MemoryPressureController::
+        base::Bind(&MemoryPressureControllerImpl::
                        SetPressureNotificationsSuppressedInAllProcesses,
                    base::Unretained(this), suppressed));
     return;
@@ -72,7 +73,7 @@ void MemoryPressureController::SetPressureNotificationsSuppressedInAllProcesses(
     filter_pair.second->SendSetPressureNotificationsSuppressed(suppressed);
 }
 
-void MemoryPressureController::SimulatePressureNotificationInAllProcesses(
+void MemoryPressureControllerImpl::SimulatePressureNotificationInAllProcesses(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   DCHECK_NE(level, base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
 
@@ -81,7 +82,7 @@ void MemoryPressureController::SimulatePressureNotificationInAllProcesses(
     // controller is a leaky singleton.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MemoryPressureController::
+        base::Bind(&MemoryPressureControllerImpl::
                        SimulatePressureNotificationInAllProcesses,
                    base::Unretained(this), level));
     return;
@@ -95,19 +96,19 @@ void MemoryPressureController::SimulatePressureNotificationInAllProcesses(
     filter_pair.second->SendSimulatePressureNotification(level);
 }
 
-void MemoryPressureController::SendPressureNotification(
+void MemoryPressureControllerImpl::SendPressureNotification(
     const BrowserChildProcessHost* child_process_host,
     base::MemoryPressureListener::MemoryPressureLevel level) {
   SendPressureNotificationImpl(child_process_host, level);
 }
 
-void MemoryPressureController::SendPressureNotification(
+void MemoryPressureControllerImpl::SendPressureNotification(
     const RenderProcessHost* render_process_host,
     base::MemoryPressureListener::MemoryPressureLevel level) {
   SendPressureNotificationImpl(render_process_host, level);
 }
 
-void MemoryPressureController::SendPressureNotificationImpl(
+void MemoryPressureControllerImpl::SendPressureNotificationImpl(
     const void* child_process_host,
     base::MemoryPressureListener::MemoryPressureLevel level) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -117,7 +118,7 @@ void MemoryPressureController::SendPressureNotificationImpl(
     // a map; at no point is it dereferenced.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MemoryPressureController::SendPressureNotificationImpl,
+        base::Bind(&MemoryPressureControllerImpl::SendPressureNotificationImpl,
                    base::Unretained(this), child_process_host, level));
     return;
   }

@@ -6,7 +6,7 @@
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/strings/stringprintf.h"
-#include "content/browser/memory/memory_pressure_controller.h"
+#include "content/browser/memory/memory_pressure_controller_impl.h"
 
 namespace content {
 namespace devtools {
@@ -18,7 +18,7 @@ MemoryHandler::~MemoryHandler() {}
 
 MemoryHandler::Response MemoryHandler::SetPressureNotificationsSuppressed(
     bool suppressed) {
-  content::MemoryPressureController::GetInstance()
+  content::MemoryPressureControllerImpl::GetInstance()
       ->SetPressureNotificationsSuppressedInAllProcesses(suppressed);
   return Response::OK();
 }
@@ -35,7 +35,7 @@ MemoryHandler::Response MemoryHandler::SimulatePressureNotification(
         "Invalid memory pressure level '%s'", level.c_str()));
   }
 
-  MemoryPressureController::GetInstance()
+  MemoryPressureControllerImpl::GetInstance()
       ->SimulatePressureNotificationInAllProcesses(parsed_level);
   return Response::OK();
 }

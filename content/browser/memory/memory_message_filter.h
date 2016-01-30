@@ -36,7 +36,7 @@ class CONTENT_EXPORT MemoryMessageFilter : public BrowserMessageFilter {
       base::MemoryPressureListener::MemoryPressureLevel level);
 
  protected:
-  friend class MemoryPressureController;
+  friend class MemoryPressureControllerImpl;
 
   ~MemoryMessageFilter() override;
 
@@ -46,7 +46,7 @@ class CONTENT_EXPORT MemoryMessageFilter : public BrowserMessageFilter {
  private:
   // The untyped process host and ProcessType associated with this filter
   // instance. The process host is stored as untyped because it is only used as
-  // a key in MemoryPressureController; at no point is it ever deferenced to
+  // a key in MemoryPressureControllerImpl; at no point is it ever deferenced to
   // invoke any members on a process host.
   const void* process_host_;
   ProcessType process_type_;

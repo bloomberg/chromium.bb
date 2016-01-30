@@ -4,7 +4,7 @@
 
 #include "content/browser/memory/memory_message_filter.h"
 
-#include "content/browser/memory/memory_pressure_controller.h"
+#include "content/browser/memory/memory_pressure_controller_impl.h"
 #include "content/common/memory_messages.h"
 
 namespace content {
@@ -27,11 +27,12 @@ MemoryMessageFilter::MemoryMessageFilter(
 MemoryMessageFilter::~MemoryMessageFilter() {}
 
 void MemoryMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  MemoryPressureController::GetInstance()->OnMemoryMessageFilterAdded(this);
+  MemoryPressureControllerImpl::GetInstance()->OnMemoryMessageFilterAdded(this);
 }
 
 void MemoryMessageFilter::OnChannelClosing() {
-  MemoryPressureController::GetInstance()->OnMemoryMessageFilterRemoved(this);
+  MemoryPressureControllerImpl::GetInstance()
+      ->OnMemoryMessageFilterRemoved(this);
 }
 
 bool MemoryMessageFilter::OnMessageReceived(const IPC::Message& message) {

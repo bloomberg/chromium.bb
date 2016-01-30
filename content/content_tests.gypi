@@ -243,7 +243,7 @@
       'browser/media/media_browsertest.h',
       'browser/media/media_canplaytype_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
-      'browser/memory/memory_pressure_controller_browsertest.cc',
+      'browser/memory/memory_pressure_controller_impl_browsertest.cc',
       'browser/message_port_provider_browsertest.cc',
       'browser/mojo_shell_browsertest.cc',
       'browser/net_info_browsertest.cc',
