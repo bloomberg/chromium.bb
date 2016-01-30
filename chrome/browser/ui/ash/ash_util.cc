@@ -11,19 +11,13 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/window_event_dispatcher.h"
 
-#if !defined(OS_CHROMEOS)
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#endif
-
 namespace chrome {
 
 bool ShouldOpenAshOnStartup() {
 #if defined(OS_CHROMEOS)
   return true;
 #else
-  // TODO(scottmg): http://crbug.com/133312, will need this for Win8 too.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kOpenAsh);
+  return false;
 #endif
 }
 

@@ -74,7 +74,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void RequestVideoMemoryUsageStatsUpdate() const override;
   bool ShouldUseSwiftShader() const override;
   void RegisterSwiftShaderPath(const base::FilePath& path) override;
-  bool ShouldUseWarp() const override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's

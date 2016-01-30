@@ -281,7 +281,7 @@ bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
     return true;
   }
 #endif  // OS_CHROMEOS
-  if (use_swiftshader_ || ShouldUseWarp()) {
+  if (use_swiftshader_) {
     // Skia's software rendering is probably more efficient than going through
     // software emulation of the GPU, so use that.
     if (feature == gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
@@ -297,7 +297,7 @@ bool GpuDataManagerImplPrivate::IsDriverBugWorkaroundActive(int feature) const {
 }
 
 size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
-  if (use_swiftshader_ || ShouldUseWarp())
+  if (use_swiftshader_)
     return 1;
   return blacklisted_features_.size();
 }
@@ -321,7 +321,7 @@ void GpuDataManagerImplPrivate::GetGpuProcessHandles(
 
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(
     std::string* reason) const {
-  if (use_swiftshader_ || ShouldUseWarp())
+  if (use_swiftshader_)
     return true;
 
   if (!gpu_process_accessible_) {
@@ -418,13 +418,6 @@ void GpuDataManagerImplPrivate::RegisterSwiftShaderPath(
     const base::FilePath& path) {
   swiftshader_path_ = path;
   EnableSwiftShaderIfNecessary();
-}
-
-bool GpuDataManagerImplPrivate::ShouldUseWarp() const {
-  std::string angle_impl_flag =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseANGLE);
-  return use_warp_ || angle_impl_flag == gfx::kANGLEImplementationWARPName;
 }
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
@@ -606,7 +599,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
 
 void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   // No further update of gpu_info if falling back to SwiftShader.
-  if (use_swiftshader_ || ShouldUseWarp())
+  if (use_swiftshader_)
     return;
 
   bool was_info_available = IsCompleteGpuInfoAvailable();
@@ -713,11 +706,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       gpu_info_.driver_vendor);
   command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
       gpu_info_.driver_version);
-
-  if (ShouldUseWarp() && !command_line->HasSwitch(switches::kUseANGLE)) {
-    command_line->AppendSwitchASCII(switches::kUseANGLE,
-                                    gfx::kANGLEImplementationWARPName);
-  }
 }
 
 void GpuDataManagerImplPrivate::AppendPluginCommandLine(
@@ -787,7 +775,6 @@ void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
   for (int i = 0; i < gpu::NUMBER_OF_GPU_FEATURE_TYPES; ++i)
     blacklisted_features_.insert(i);
 
-  EnableWarpIfNecessary();
   EnableSwiftShaderIfNecessary();
   NotifyGpuInfoUpdate();
 }
@@ -905,8 +892,6 @@ bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuCompositing))
     return false;
-  if (ShouldUseWarp())
-    return true;
   if (ShouldUseSwiftShader())
     return false;
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
@@ -981,7 +966,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
     : complete_gpu_info_already_requested_(false),
       observer_list_(new GpuDataManagerObserverList),
       use_swiftshader_(false),
-      use_warp_(false),
       card_blacklisted_(false),
       update_histograms_(true),
       window_count_(0),
@@ -1058,7 +1042,6 @@ void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
     blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_WEBGL);
   }
 
-  EnableWarpIfNecessary();
   EnableSwiftShaderIfNecessary();
 }
 
@@ -1090,9 +1073,6 @@ void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
 }
 
 void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
-  if (ShouldUseWarp())
-    return;
-
   if (!GpuAccessAllowed(NULL) ||
       blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_WEBGL)) {
     if (!swiftshader_path_.empty() &&
@@ -1100,22 +1080,6 @@ void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
              switches::kDisableSoftwareRasterizer))
       use_swiftshader_ = true;
   }
-}
-
-void GpuDataManagerImplPrivate::EnableWarpIfNecessary() {
-#if defined(OS_WIN)
-  if (use_warp_)
-    return;
-  // We should only use WARP if we are unable to use the regular GPU for
-  // compositing, and if we in Metro mode.
-  use_warp_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kViewerConnect) &&
-              !CanUseGpuBrowserCompositor();
-#endif
-}
-
-void GpuDataManagerImplPrivate::ForceWarpModeForTesting() {
-  use_warp_ = true;
 }
 
 std::string GpuDataManagerImplPrivate::GetDomainFromURL(

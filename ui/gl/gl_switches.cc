@@ -18,7 +18,6 @@ const char kGLImplementationMockName[]        = "mock";
 const char kANGLEImplementationDefaultName[]  = "default";
 const char kANGLEImplementationD3D9Name[]     = "d3d9";
 const char kANGLEImplementationD3D11Name[]    = "d3d11";
-const char kANGLEImplementationWARPName[]     = "warp";
 const char kANGLEImplementationOpenGLName[]   = "gl";
 const char kANGLEImplementationOpenGLESName[] = "gles";
 

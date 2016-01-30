@@ -288,22 +288,6 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 }
 
-TEST_F(GpuDataManagerImplPrivateTest, WarpEnabledOverridesSwiftShader) {
-  // If WARP fallback is enabled on Windows 8 it should not allow SwiftShader
-  // to be enabled.
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    ScopedGpuDataManagerImplPrivate manager;
-    manager->ForceWarpModeForTesting();
-    const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
-    manager->RegisterSwiftShaderPath(test_path);
-    manager->DisableHardwareAcceleration();
-    EXPECT_TRUE(manager->ShouldUseWarp());
-    EXPECT_FALSE(manager->ShouldUseSwiftShader());
-  }
-#endif
-}
-
 TEST_F(GpuDataManagerImplPrivateTest, GpuInfoUpdate) {
   ScopedGpuDataManagerImpl manager;
 

@@ -106,22 +106,6 @@ RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode) {
   if (relaunch_mode == kRelaunchModeDesktop)
     return RELAUNCH_MODE_DESKTOP;
 
-  // On Windows 7 if the current browser is in Chrome OS mode, then restart
-  // into Chrome OS mode.
-  if ((base::win::GetVersion() == base::win::VERSION_WIN7) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kViewerConnect) &&
-      !g_browser_process->local_state()->HasPrefPath(prefs::kRelaunchMode)) {
-    // TODO(ananta)
-    // On Windows 8, the delegate execute process looks up the previously
-    // launched mode from the registry and relaunches into that mode. We need
-    // something similar on Windows 7. For now, set the pref to ensure that
-    // we get relaunched into Chrome OS mode.
-    g_browser_process->local_state()->SetString(
-        prefs::kRelaunchMode, upgrade_util::kRelaunchModeMetro);
-    return RELAUNCH_MODE_METRO;
-  }
-
   return RELAUNCH_MODE_DEFAULT;
 }
 

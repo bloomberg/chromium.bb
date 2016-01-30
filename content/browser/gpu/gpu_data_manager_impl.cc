@@ -81,11 +81,6 @@ void GpuDataManagerImpl::RegisterSwiftShaderPath(
   private_->RegisterSwiftShaderPath(path);
 }
 
-bool GpuDataManagerImpl::ShouldUseWarp() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->ShouldUseWarp();
-}
-
 void GpuDataManagerImpl::AddObserver(
     GpuDataManagerObserver* observer) {
   base::AutoLock auto_lock(lock_);

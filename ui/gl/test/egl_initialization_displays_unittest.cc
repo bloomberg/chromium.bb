@@ -90,15 +90,6 @@ TEST(EGLInitializationDisplaysTest, NonDefaultRenderers) {
 
   std::vector<gfx::DisplayType> displays;
 
-  // WARP
-  command_line->AppendSwitchASCII(switches::kUseANGLE,
-                                  gfx::kANGLEImplementationWARPName);
-  displays.clear();
-  GetEGLInitDisplays(true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gfx::ANGLE_WARP),
-            displays.end());
-  EXPECT_EQ(displays.size(), 1u);
-
   // OpenGL
   command_line->AppendSwitchASCII(switches::kUseANGLE,
                                   gfx::kANGLEImplementationOpenGLName);

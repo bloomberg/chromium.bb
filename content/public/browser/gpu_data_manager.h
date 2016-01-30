@@ -78,10 +78,6 @@ class GpuDataManager {
   // Register a path to SwiftShader.
   virtual void RegisterSwiftShaderPath(const base::FilePath& path) = 0;
 
-  // Returns current state about WARP, which may be due to command-line
-  // arguments or saved state.
-  virtual bool ShouldUseWarp() const = 0;
-
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) = 0;

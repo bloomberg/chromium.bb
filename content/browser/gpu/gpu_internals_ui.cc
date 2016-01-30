@@ -145,10 +145,6 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
       ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
   basic_info->Append(
       NewDescriptionValuePair("Desktop compositing", compositor));
-  if (GpuDataManagerImpl::GetInstance()->ShouldUseWarp()) {
-    basic_info->Append(NewDescriptionValuePair("Using WARP",
-        new base::FundamentalValue(true)));
-  }
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();

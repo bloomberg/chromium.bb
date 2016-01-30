@@ -49,7 +49,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestVideoMemoryUsageStatsUpdate() const;
   bool ShouldUseSwiftShader() const;
   void RegisterSwiftShaderPath(const base::FilePath& path);
-  bool ShouldUseWarp() const;
   void AddObserver(GpuDataManagerObserver* observer);
   void RemoveObserver(GpuDataManagerObserver* observer);
   void UnblockDomainFrom3DAPIs(const GURL& url);
@@ -139,8 +138,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            SwiftShaderRendering2);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           WarpEnabledOverridesSwiftShader);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            GpuInfoUpdate);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            NoGpuInfoUpdateWithSwiftShader);
@@ -215,13 +212,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Try to switch to SwiftShader rendering, if possible and necessary.
   void EnableSwiftShaderIfNecessary();
 
-  // Try to switch to WARP rendering if the GPU hardware is not supported or
-  // absent, and if we are trying to run in Windows Metro mode.
-  void EnableWarpIfNecessary();
-
-  // Use only for testing, forces |use_warp_| to true.
-  void ForceWarpModeForTesting();
-
   // Helper to extract the domain from a given URL.
   std::string GetDomainFromURL(const GURL& url) const;
 
@@ -251,8 +241,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   std::vector<LogMessage> log_messages_;
 
   bool use_swiftshader_;
-
-  bool use_warp_;
 
   base::FilePath swiftshader_path_;
 

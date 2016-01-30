@@ -678,8 +678,6 @@
     ],
     # Aura but not ChromeOS.
     'chrome_browser_ui_aura_non_chromeos': [
-      'browser/ui/aura/active_desktop_monitor.cc',
-      'browser/ui/aura/active_desktop_monitor.h',
       'browser/ui/views/frame/desktop_browser_frame_aura.cc',
       'browser/ui/views/frame/desktop_browser_frame_aura.h',
       'browser/ui/views/message_center/message_center_frame_view.cc',

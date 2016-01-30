@@ -44,8 +44,6 @@ UI_BASE_EXPORT extern const char kTopChromeMDMaterialHybrid[];
 UI_BASE_EXPORT extern const char kTopChromeMDNonMaterial[];
 #endif  // defined(ENABLE_TOPCHROME_MD)
 
-UI_BASE_EXPORT extern const char kViewerConnect[];
-
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

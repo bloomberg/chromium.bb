@@ -11,8 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
-class ActiveDesktopMonitor;
-
 class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAura();
@@ -31,8 +29,6 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   // so that we don't destroy the profile.
   void DetectRunningAsRoot();
 #endif
-
-  scoped_ptr<ActiveDesktopMonitor> active_desktop_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);
 };

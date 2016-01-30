@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,27 +81,6 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
 }
 #endif
 
-#if !defined(OS_CHROMEOS) && defined(USE_ASH)
-// Returns the desktop this process was initially launched in.
-chrome::HostDesktopType GetInitialDesktop() {
-#if defined(OS_WIN) && defined(USE_ASH)
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kViewerConnect) ||
-      command_line->HasSwitch(switches::kViewerLaunchViaAppId)) {
-    return chrome::HOST_DESKTOP_TYPE_ASH;
-  }
-#elif defined(OS_LINUX)
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kOpenAsh))
-    return chrome::HOST_DESKTOP_TYPE_ASH;
-#endif
-
-  return chrome::HOST_DESKTOP_TYPE_NATIVE;
-}
-#endif  // !defined(OS_CHROMEOS) && defined(USE_ASH)
-
 }  // namespace
 
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
@@ -113,12 +91,6 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 
 void ChromeBrowserMainExtraPartsAura::PreEarlyInitialization() {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-#if defined(USE_ASH)
-  if (GetInitialDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
-    ui::InitializeInputMethodForTesting();
-    return;
-  }
-#endif
   // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
   views::LinuxUI* gtk2_ui = BuildGtk2UI();
   gtk2_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
@@ -127,16 +99,7 @@ void ChromeBrowserMainExtraPartsAura::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
-#if !defined(OS_CHROMEOS) && defined(USE_ASH)
-  CHECK(aura::Env::GetInstance());
-  active_desktop_monitor_.reset(new ActiveDesktopMonitor(GetInitialDesktop()));
-#endif
-
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-#if defined(USE_ASH)
-  if (GetInitialDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return;
-#endif
   views::LinuxUI::instance()->Initialize();
 #endif
 }
@@ -168,8 +131,6 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
-  active_desktop_monitor_.reset();
-
   // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
   // after the metrics service is deleted.
 }
