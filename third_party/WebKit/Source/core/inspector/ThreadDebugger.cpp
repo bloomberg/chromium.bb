@@ -25,9 +25,25 @@ void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, EventListenerInf
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
 }
 
-v8::MaybeLocal<v8::Value> ThreadDebugger::compileAndRunInternalScript(const String& script)
+v8::MaybeLocal<v8::Object> ThreadDebugger::instantiateObject(v8::Local<v8::Function> function)
 {
-    return V8ScriptRunner::compileAndRunInternalScript(v8String(m_isolate, script), m_isolate);
+    return V8ScriptRunner::instantiateObject(m_isolate, function);
+}
+
+v8::MaybeLocal<v8::Script> ThreadDebugger::compileScript(v8::Local<v8::Context> context, v8::Local<v8::String> script, const String& fileName)
+{
+    v8::Context::Scope scope(context);
+    return V8ScriptRunner::compileScript(script, fileName, "", TextPosition(), m_isolate);
+}
+
+v8::MaybeLocal<v8::Value> ThreadDebugger::runCompiledScript(v8::Local<v8::Context> context, v8::Local<v8::Script> script)
+{
+    return V8ScriptRunner::runCompiledScript(m_isolate, script, toExecutionContext(context));
+}
+
+v8::MaybeLocal<v8::Value> ThreadDebugger::compileAndRunInternalScript(v8::Local<v8::String> script)
+{
+    return V8ScriptRunner::compileAndRunInternalScript(script, m_isolate);
 }
 
 v8::MaybeLocal<v8::Value> ThreadDebugger::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])

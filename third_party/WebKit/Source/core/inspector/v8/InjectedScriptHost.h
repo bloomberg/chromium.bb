@@ -30,7 +30,6 @@
 #ifndef InjectedScriptHost_h
 #define InjectedScriptHost_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/v8/InjectedScriptHostClient.h"
 #include "wtf/Functional.h"
@@ -46,8 +45,8 @@ class EventTarget;
 class InjectedScriptHostClient;
 class InspectorConsoleAgent;
 class JSONValue;
-class V8DebuggerAgent;
-class V8Debugger;
+class V8DebuggerImpl;
+class V8DebuggerAgentImpl;
 
 class EventListenerInfo;
 
@@ -64,13 +63,17 @@ public:
     using InspectCallback = Function<void(PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>)>;
     using ClearConsoleCallback = Function<void()>;
 
-    void init(V8DebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, PassOwnPtr<ClearConsoleCallback> clearConsoleCallback, V8Debugger* debugger, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
+    void init(PassOwnPtr<InspectCallback> inspectCallback, PassOwnPtr<ClearConsoleCallback> clearConsoleCallback, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
     {
-        m_debuggerAgent = debuggerAgent;
         m_inspectCallback = std::move(inspectCallback);
         m_clearConsoleCallback = std::move(clearConsoleCallback);
-        m_debugger = debugger;
         m_client = std::move(injectedScriptHostClient);
+    }
+
+    void setDebugger(V8DebuggerAgentImpl* debuggerAgent, V8DebuggerImpl* debugger)
+    {
+        m_debuggerAgent = debuggerAgent;
+        m_debugger = debugger;
     }
 
     void disconnect();
@@ -93,7 +96,7 @@ public:
     void monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName);
     void unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber);
 
-    V8Debugger& debugger() { return *m_debugger; }
+    V8DebuggerImpl& debugger() { return *m_debugger; }
     InjectedScriptHostClient* client() { return m_client.get(); }
 
     // FIXME: store this template in per isolate data
@@ -103,10 +106,10 @@ public:
 private:
     InjectedScriptHost();
 
-    V8DebuggerAgent* m_debuggerAgent;
+    V8DebuggerAgentImpl* m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
     OwnPtr<ClearConsoleCallback> m_clearConsoleCallback;
-    V8Debugger* m_debugger;
+    V8DebuggerImpl* m_debugger;
     Vector<OwnPtr<InspectableObject>> m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;
     OwnPtr<InjectedScriptHostClient> m_client;

@@ -63,22 +63,7 @@ void ScriptState::detachGlobalObject()
 
 void ScriptState::disposePerContextData()
 {
-    Vector<Observer*> observers(m_observers);
-    for (auto& observer : observers)
-        observer->willDisposeScriptState(this);
     m_perContextData = nullptr;
-}
-
-void ScriptState::addObserver(Observer* observer)
-{
-    m_observers.append(observer);
-}
-
-void ScriptState::removeObserver(Observer* observer)
-{
-    size_t index = m_observers.find(observer);
-    if (index != kNotFound)
-        m_observers.remove(index);
 }
 
 bool ScriptState::evalEnabled() const

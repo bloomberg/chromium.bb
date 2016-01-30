@@ -39,10 +39,7 @@ namespace blink {
 
 static v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string)
 {
-    v8::Local<v8::String> result;
-    bool success = v8::String::NewFromUtf8(isolate, string.utf8().data(), v8::NewStringType::kNormal).ToLocal(&result);
-    ASSERT_UNUSED(success, success);
-    return result;
+    return v8::String::NewFromUtf8(isolate, string.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
 }
 
 V8FunctionCall::V8FunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& name)

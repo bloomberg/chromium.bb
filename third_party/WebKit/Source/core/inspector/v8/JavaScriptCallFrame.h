@@ -32,18 +32,19 @@
 #define JavaScriptCallFrame_h
 
 
-#include "bindings/core/v8/ScriptState.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
+class V8DebuggerClient;
+
 class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame> {
 public:
-    static PassRefPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
+    static PassRefPtr<JavaScriptCallFrame> create(V8DebuggerClient* client, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
-        return adoptRef(new JavaScriptCallFrame(debuggerContext, callFrame));
+        return adoptRef(new JavaScriptCallFrame(client, debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
 
@@ -75,12 +76,15 @@ public:
     void setWrapperTemplate(v8::Local<v8::FunctionTemplate> wrapperTemplate, v8::Isolate* isolate) { m_wrapperTemplate.Reset(isolate, wrapperTemplate); }
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
 
+    V8DebuggerClient* client() { return m_client; }
+
 private:
-    JavaScriptCallFrame(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
+    JavaScriptCallFrame(V8DebuggerClient*, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
 
     int callV8FunctionReturnInt(const char* name) const;
     String callV8FunctionReturnString(const char* name) const;
 
+    V8DebuggerClient* m_client;
     v8::Isolate* m_isolate;
     RefPtr<JavaScriptCallFrame> m_caller;
     v8::Global<v8::Context> m_debuggerContext;

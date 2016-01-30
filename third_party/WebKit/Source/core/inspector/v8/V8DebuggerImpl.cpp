@@ -31,7 +31,6 @@
 #include "core/inspector/v8/V8DebuggerImpl.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
@@ -59,7 +58,7 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::callDebuggerMethod(const char* functio
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.Get(m_isolate);
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString(functionName)));
     ASSERT(m_isolate->InContext());
-    return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate);
+    return m_client->callInternalFunction(function, debuggerScript, argc, argv);
 }
 
 PassOwnPtr<V8Debugger> V8Debugger::create(v8::Isolate* isolate, V8DebuggerClient* client)
@@ -191,7 +190,7 @@ void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerPar
     v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString("getScripts")));
     v8::Local<v8::Value> argv[] = { v8::Integer::New(m_isolate, contextGroupId) };
     v8::Local<v8::Value> value;
-    if (!V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate).ToLocal(&value))
+    if (!m_client->callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&value))
         return;
     ASSERT(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
@@ -476,7 +475,7 @@ PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames(int maximumLimit,
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
         return nullptr;
-    return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
+    return JavaScriptCallFrame::create(m_client, debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
 v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(ScopeInfoDetails scopeDetails)
@@ -496,7 +495,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFramesInner(ScopeInfoDetails sc
     v8::Local<v8::FunctionTemplate> wrapperTemplate = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_callFrameWrapperTemplate);
     v8::Local<v8::Context> context = m_pausedContext.IsEmpty() ? m_isolate->GetCurrentContext() : m_pausedContext;
     v8::Context::Scope scope(context);
-    v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(wrapperTemplate, context, currentCallFrame.release());
+    v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(m_client, wrapperTemplate, context, currentCallFrame.release());
     return wrapper;
 }
 
@@ -527,7 +526,7 @@ PassRefPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
         return nullptr;
-    return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
+    return JavaScriptCallFrame::create(m_client, debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
 static V8DebuggerImpl* toV8DebuggerImpl(v8::Local<v8::Value> data)
@@ -605,7 +604,7 @@ v8::Local<v8::Value> V8DebuggerImpl::callInternalGetterFunction(v8::Local<v8::Ob
 {
     v8::Local<v8::Value> getterValue = object->Get(v8InternalizedString(functionName));
     ASSERT(!getterValue.IsEmpty() && getterValue->IsFunction());
-    return V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0, m_isolate).ToLocalChecked();
+    return m_client->callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0).ToLocalChecked();
 }
 
 void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
@@ -712,10 +711,10 @@ void V8DebuggerImpl::compileDebuggerScript()
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
-    const WebData& debuggerScriptSourceResource = Platform::current()->loadResource("DebuggerScriptSource.js");
-    String source(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size());
+    const WebData& source = Platform::current()->loadResource("DebuggerScriptSource.js");
+    v8::Local<v8::String> scriptValue = v8::String::NewFromUtf8(m_isolate, source.data(), v8::NewStringType::kInternalized, source.size()).ToLocalChecked();
     v8::Local<v8::Value> value;
-    if (!m_client->compileAndRunInternalScript(source).ToLocal(&value))
+    if (!m_client->compileAndRunInternalScript(scriptValue).ToLocal(&value))
         return;
     ASSERT(value->IsObject());
     m_debuggerScript.Reset(m_isolate, value.As<v8::Object>());

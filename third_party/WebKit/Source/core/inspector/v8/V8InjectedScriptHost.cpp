@@ -5,7 +5,6 @@
 #include "core/inspector/v8/V8InjectedScriptHost.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
@@ -13,7 +12,6 @@
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/v8/EventListenerInfo.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
@@ -261,10 +259,9 @@ void V8InjectedScriptHost::inspectCallback(const v8::FunctionCallbackInfo<v8::Va
     if (info.Length() < 2)
         return;
 
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    ScriptState::Scope scope(scriptState);
-    host->inspectImpl(toJSONValue(scriptState->context(), info[0]), toJSONValue(scriptState->context(), info[1]));
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
+    host->inspectImpl(toJSONValue(context, info[0]), toJSONValue(context, info[1]));
 }
 
 void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -284,7 +281,8 @@ void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value
     ASSERT(isolate->InContext());
     v8::TryCatch tryCatch(isolate);
     v8::Local<v8::Value> result;
-    if (!v8Call(V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate()), result, tryCatch)) {
+    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(isolate->GetCurrentContext(), info.Holder());
+    if (!host->debugger().client()->compileAndRunInternalScript(expression).ToLocal(&result)) {
         v8SetReturnValue(info, tryCatch.ReThrow());
         return;
     }
@@ -319,28 +317,31 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
         return;
 
     v8::TryCatch tryCatch(isolate);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
+
     v8::Local<v8::Script> script;
-    v8::Local<v8::Value> result;
-    if (!v8Call(V8ScriptRunner::compileScript(expression, String(), String(), TextPosition(), isolate), script, tryCatch)) {
+    if (!host->debugger().client()->compileScript(context, expression, String()).ToLocal(&script)) {
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
         return;
     }
 
     v8::Local<v8::Symbol> commandLineAPISymbolValue = commandLineAPISymbol(isolate);
-    v8::Local<v8::Object> global = isolate->GetCurrentContext()->Global();
+    v8::Local<v8::Object> global = context->Global();
     if (info.Length() >= 2 && info[1]->IsObject()) {
         v8::Local<v8::Object> commandLineAPI = info[1]->ToObject(isolate);
         global->Set(commandLineAPISymbolValue, commandLineAPI);
     }
 
-    if (!v8Call(V8ScriptRunner::runCompiledScript(isolate, script, currentExecutionContext(isolate)), result, tryCatch)) {
-        global->Delete(isolate->GetCurrentContext(), commandLineAPISymbolValue);
+    v8::MaybeLocal<v8::Value> result = host->debugger().client()->runCompiledScript(context, script);
+    if (result.IsEmpty()) {
+        global->Delete(context, commandLineAPISymbolValue);
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
         return;
     }
 
-    global->Delete(isolate->GetCurrentContext(), commandLineAPISymbolValue);
-    wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result);
+    global->Delete(context, commandLineAPISymbolValue);
+    wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result.ToLocalChecked());
     wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));
     v8SetReturnValue(info, wrappedResult);
 }
@@ -356,8 +357,7 @@ void V8InjectedScriptHost::setFunctionVariableValueCallback(const v8::FunctionCa
     v8::Local<v8::Value> newValue = info[3];
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    V8DebuggerImpl& debugger = static_cast<V8DebuggerImpl&>(host->debugger());
-    v8SetReturnValue(info, debugger.setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
+    v8SetReturnValue(info, host->debugger().setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
 }
 
 static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& info, String* scriptId, int* lineNumber, int* columnNumber)
@@ -584,9 +584,9 @@ v8::Local<v8::FunctionTemplate> V8InjectedScriptHost::createWrapperTemplate(v8::
     return InjectedScriptHostWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 
-v8::Local<v8::Object> V8InjectedScriptHost::wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<InjectedScriptHost> host)
+v8::Local<v8::Object> V8InjectedScriptHost::wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<InjectedScriptHost> host)
 {
-    return InjectedScriptHostWrapper::wrap(constructorTemplate, context, host);
+    return InjectedScriptHostWrapper::wrap(client, constructorTemplate, context, host);
 }
 
 InjectedScriptHost* V8InjectedScriptHost::unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object)

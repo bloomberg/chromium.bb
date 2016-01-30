@@ -31,10 +31,10 @@
 #include "core/inspector/v8/InjectedScriptManager.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptNative.h"
+#include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8InjectedScriptHost.h"
@@ -148,7 +148,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
     return resultPtr;
 }
 
-v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& scriptSource, v8::Local<v8::Context> context, int id, InjectedScriptNative* injectedScriptNative)
+v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& source, v8::Local<v8::Context> context, int id, InjectedScriptNative* injectedScriptNative)
 {
     v8::Isolate* isolate = context->GetIsolate();
     v8::Context::Scope scope(context);
@@ -159,11 +159,12 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& 
         m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
     }
 
-    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, context, m_injectedScriptHost);
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(m_client, wrapperTemplate, context, m_injectedScriptHost);
     if (scriptHostWrapper.IsEmpty())
         return v8::Local<v8::Object>();
 
     injectedScriptNative->setOnInjectedScriptHost(scriptHostWrapper);
+    v8::Local<v8::String> sourceValue = v8::String::NewFromUtf8(isolate, source.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
 
     // Inject javascript into the context. The compiled script is supposed to evaluate into
     // a single anonymous function(it's anonymous to avoid cluttering the global object with
@@ -171,7 +172,7 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& 
     // injected script id and explicit reference to the inspected global object. The function is expected
     // to create and configure InjectedScript instance that is going to be used by the inspector.
     v8::Local<v8::Value> value;
-    if (!m_client->compileAndRunInternalScript(scriptSource).ToLocal(&value))
+    if (!m_client->compileAndRunInternalScript(sourceValue).ToLocal(&value))
         return v8::Local<v8::Object>();
     ASSERT(value->IsFunction());
 

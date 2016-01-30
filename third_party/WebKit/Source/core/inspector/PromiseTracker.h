@@ -19,9 +19,6 @@
 
 namespace blink {
 
-class ScriptState;
-class ScriptValue;
-
 class PromiseTracker final {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
     USING_FAST_MALLOC(PromiseTracker);
@@ -42,8 +39,8 @@ public:
     bool isEnabled() const { return m_isEnabled; }
     void setEnabled(bool enabled, bool captureStacks);
     void clear();
-    void didReceiveV8PromiseEvent(ScriptState*, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
-    ScriptValue promiseById(int promiseId);
+    void didReceiveV8PromiseEvent(v8::Local<v8::Context>, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
+    v8::Local<v8::Object> promiseById(int promiseId);
 
 private:
     PromiseTracker(Listener*, v8::Isolate*);

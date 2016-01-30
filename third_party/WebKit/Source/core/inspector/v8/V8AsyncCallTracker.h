@@ -5,18 +5,16 @@
 #ifndef V8AsyncCallTracker_h
 #define V8AsyncCallTracker_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
+#include <v8.h>
+
 namespace blink {
 
-class ScriptState;
-
-class V8AsyncCallTracker final : public ScriptState::Observer {
+class V8AsyncCallTracker final {
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
     USING_FAST_MALLOC(V8AsyncCallTracker);
 public:
@@ -30,21 +28,28 @@ public:
     void asyncCallTrackingStateChanged(bool tracking);
     void resetAsyncOperations();
 
-    void didReceiveV8AsyncTaskEvent(ScriptState*, const String& eventType, const String& eventName, int id);
+    void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String& eventType, const String& eventName, int id);
 
-    // ScriptState::Observer implementation:
-    void willDisposeScriptState(ScriptState*) override;
+    void contextDisposed(int contextId);
 
 private:
+    struct Operations {
+        HashMap<String, int> map;
+        int contextId;
+        V8AsyncCallTracker* target;
+        v8::Global<v8::Context> context;
+    };
+
+    static void weakCallback(const v8::WeakCallbackInfo<Operations>& data);
+
     explicit V8AsyncCallTracker(V8DebuggerAgentImpl*);
-    using V8ContextAsyncOperations = HashMap<String, int>;
 
-    void didEnqueueV8AsyncTask(ScriptState*, const String& eventName, int id);
-    void willHandleV8AsyncTask(ScriptState*, const String& eventName, int id);
-    void completeOperations(V8ContextAsyncOperations* contextCallChains);
+    void didEnqueueV8AsyncTask(v8::Local<v8::Context>, const String& eventName, int id);
+    void willHandleV8AsyncTask(v8::Local<v8::Context>, const String& eventName, int id);
+    void completeOperations(const HashMap<String, int>& contextCallChains);
 
-    HashMap<RefPtr<ScriptState>, OwnPtr<V8ContextAsyncOperations>> m_contextAsyncOperationMap;
     V8DebuggerAgentImpl* m_debuggerAgent;
+    HashMap<int, OwnPtr<Operations>> m_idToOperations;
 };
 
 } // namespace blink

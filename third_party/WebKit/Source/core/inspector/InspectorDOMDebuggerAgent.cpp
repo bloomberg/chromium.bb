@@ -40,11 +40,11 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/EventListenerInfo.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
+#include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "platform/JSONValues.h"
 

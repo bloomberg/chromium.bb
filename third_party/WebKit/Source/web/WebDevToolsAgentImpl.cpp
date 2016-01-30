@@ -480,12 +480,9 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8DebuggerAgent());
 
-    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     m_injectedScriptManager->injectedScriptHost()->init(
-        debuggerAgent->v8DebuggerAgent(),
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
         bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()),
-        mainThreadDebugger->debugger(),
         adoptPtr(new PageInjectedScriptHostClient()));
 
     if (m_overlay)

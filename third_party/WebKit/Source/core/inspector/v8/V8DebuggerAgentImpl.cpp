@@ -6,24 +6,24 @@
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptRegexp.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
+#include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
+#include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8AsyncCallTracker.h"
 #include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
 #include "platform/SharedBuffer.h"
@@ -148,7 +148,6 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_state(nullptr)
     , m_frontend(nullptr)
     , m_isolate(debugger->isolate())
-    , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
     , m_scheduledDebuggerStep(NoStep)
     , m_skipNextDebuggerStepOut(false)
@@ -172,6 +171,8 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_compiledScripts(debugger->isolate())
 {
     ASSERT(contextGroupId);
+    m_injectedScriptManager->injectedScriptHost()->setDebugger(this, m_debugger);
+
     // FIXME: remove once InjectedScriptManager moves to v8.
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
     m_promiseTracker = PromiseTracker::create(this, m_isolate);
@@ -229,7 +230,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
 
     debugger().removeAgent(m_contextGroupId);
-    m_pausedScriptState = nullptr;
+    m_pausedContext.Reset();
     m_currentCallStack.Reset();
     m_scripts.clear();
     m_sourceMaps.clear();
@@ -806,8 +807,7 @@ bool V8DebuggerAgentImpl::v8AsyncTaskEventsEnabled() const
 void V8DebuggerAgentImpl::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context, const String& eventType, const String& eventName, int id)
 {
     ASSERT(trackingAsyncCalls());
-    ScriptState* state = ScriptState::from(context);
-    m_v8AsyncCallTracker->didReceiveV8AsyncTaskEvent(state, eventType, eventName, id);
+    m_v8AsyncCallTracker->didReceiveV8AsyncTaskEvent(context, eventType, eventName, id);
 }
 
 bool V8DebuggerAgentImpl::v8PromiseEventsEnabled() const
@@ -818,8 +818,7 @@ bool V8DebuggerAgentImpl::v8PromiseEventsEnabled() const
 void V8DebuggerAgentImpl::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
     ASSERT(m_promiseTracker->isEnabled());
-    ScriptState* scriptState = ScriptState::from(context);
-    m_promiseTracker->didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
+    m_promiseTracker->didReceiveV8PromiseEvent(context, promise, parentPromise, status);
 }
 
 void V8DebuggerAgentImpl::pause(ErrorString* errorString)
@@ -986,10 +985,10 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
 
     v8::HandleScope handles(injectedScript->isolate());
     v8::Context::Scope scope(injectedScript->context());
-    v8::Local<v8::String> source = v8String(m_isolate, expression);
     v8::TryCatch tryCatch(m_isolate);
+    v8::Local<v8::String> expressionValue = v8::String::NewFromUtf8(m_isolate, expression.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
     v8::Local<v8::Script> script;
-    if (!v8Call(V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), m_isolate), script, tryCatch)) {
+    if (!m_debugger->client()->compileScript(injectedScript->context(), expressionValue, sourceURL).ToLocal(&script)) {
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
             exceptionDetails = createExceptionDetails(m_isolate, message);
@@ -1026,21 +1025,24 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
     }
 
     v8::HandleScope handles(m_isolate);
-    v8::Context::Scope scope(injectedScript->context());
+    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Context::Scope scope(context);
     v8::Local<v8::Script> script = v8::Local<v8::Script>::New(m_isolate, m_compiledScripts.Remove(scriptId));
-    ScriptState* scriptState = ScriptState::from(injectedScript->context());
 
-    if (script.IsEmpty() || !scriptState) {
+    if (script.IsEmpty()) {
         *errorString = "Script execution failed";
         return;
     }
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Value> value;
-    if (!v8Call(V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext()), value, tryCatch)) {
+    v8::MaybeLocal<v8::Value> maybeValue = m_debugger->client()->runCompiledScript(context, script);
+    if (maybeValue.IsEmpty()) {
         value = tryCatch.Exception();
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
             exceptionDetails = createExceptionDetails(m_isolate, message);
+    } else {
+        value = maybeValue.ToLocalChecked();
     }
 
     if (value.IsEmpty()) {
@@ -1146,14 +1148,14 @@ void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId
         *errorString = "Promise tracking is disabled";
         return;
     }
-    ScriptValue value = m_promiseTracker->promiseById(promiseId);
-    if (value.isEmpty()) {
+    v8::HandleScope handles(m_isolate);
+    v8::Local<v8::Object> value = m_promiseTracker->promiseById(promiseId);
+    if (value.IsEmpty()) {
         *errorString = "Promise with specified ID not found.";
         return;
     }
-    ScriptState::Scope scope(value.scriptState());
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value.context());
-    promise = injectedScript->wrapObject(value.v8Value(), objectGroup ? *objectGroup : "");
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value->CreationContext());
+    promise = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
 }
 
 void V8DebuggerAgentImpl::didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum eventType, PassRefPtr<TypeBuilder::Debugger::PromiseDetails> promise)
@@ -1194,7 +1196,7 @@ int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String& description)
         m_pausingAsyncOperations.add(m_lastAsyncOperationId);
     }
 
-    if (m_pausedScriptState)
+    if (!m_pausedContext.IsEmpty())
         flushAsyncOperationEvents(nullptr);
     return m_lastAsyncOperationId;
 }
@@ -1431,12 +1433,12 @@ void V8DebuggerAgentImpl::changeJavaScriptRecursionLevel(int step)
 
 PassRefPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
 {
-    if (!m_pausedScriptState || m_currentCallStack.IsEmpty())
+    if (m_pausedContext.IsEmpty() || m_currentCallStack.IsEmpty())
         return Array<CallFrame>::create();
     v8::HandleScope handles(m_isolate);
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState->context());
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedContext.Get(m_isolate));
     if (!injectedScript) {
-        ASSERT_NOT_REACHED();
+        // Context has been reported as removed while on pause.
         return Array<CallFrame>::create();
     }
 
@@ -1446,7 +1448,7 @@ PassRefPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
 
 PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
 {
-    if (!m_pausedScriptState || !trackingAsyncCalls())
+    if (m_pausedContext.IsEmpty() || !trackingAsyncCalls())
         return nullptr;
     const AsyncCallChain* chain = m_currentAsyncCallChain.get();
     if (!chain)
@@ -1459,8 +1461,7 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it, --asyncOrdinal) {
         v8::HandleScope scope(m_isolate);
         v8::Local<v8::Object> callFrames = (*it)->callFrames(m_isolate);
-        ScriptState* scriptState =  ScriptState::from(callFrames->CreationContext());
-        InjectedScript* injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState->context()) : nullptr;
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(callFrames->CreationContext());
         if (!injectedScript) {
             result.clear();
             continue;
@@ -1561,10 +1562,6 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
 
 V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
 {
-    ScriptState* scriptState = ScriptState::from(context);
-    if (!scriptState->contextIsValid())
-        return RequestContinue;
-
     if (isMuteBreakpointInstalled())
         return RequestContinue;
 
@@ -1588,14 +1585,13 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     if (callFrames.IsEmpty())
         return RequestContinue;
 
-    ASSERT(scriptState);
-    ASSERT(!m_pausedScriptState);
-    m_pausedScriptState = scriptState;
+    ASSERT(m_pausedContext.IsEmpty());
+    m_pausedContext.Reset(m_isolate, context);
     m_currentCallStack.Reset(m_isolate, callFrames);
     v8::HandleScope handles(m_isolate);
 
     if (!exception.IsEmpty()) {
-        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState->context());
+        InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
         if (injectedScript) {
             m_breakReason = isPromiseRejection ? InspectorFrontend::Debugger::Reason::PromiseRejection : InspectorFrontend::Debugger::Reason::Exception;
             m_breakAuxData = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup)->openAccessors();
@@ -1642,7 +1638,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
 
 void V8DebuggerAgentImpl::didContinue()
 {
-    m_pausedScriptState = nullptr;
+    m_pausedContext.Reset();
     m_currentCallStack.Reset();
     clearBreakDetails();
     m_frontend->resumed();
@@ -1656,7 +1652,7 @@ bool V8DebuggerAgentImpl::canBreakProgram()
 void V8DebuggerAgentImpl::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
     ASSERT(enabled());
-    if (m_skipAllPauses || m_pausedScriptState || isCallStackEmptyOrBlackboxed())
+    if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCallStackEmptyOrBlackboxed())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
@@ -1683,7 +1679,7 @@ void V8DebuggerAgentImpl::clearStepIntoAsync()
 
 bool V8DebuggerAgentImpl::assertPaused(ErrorString* errorString)
 {
-    if (!m_pausedScriptState) {
+    if (m_pausedContext.IsEmpty()) {
         *errorString = "Can only perform operation while paused.";
         return false;
     }

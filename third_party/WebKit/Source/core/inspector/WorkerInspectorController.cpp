@@ -146,10 +146,8 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     m_agents.append(InspectorTimelineAgent::create());
 
     m_injectedScriptManager->injectedScriptHost()->init(
-        m_workerDebuggerAgent->v8DebuggerAgent(),
         nullptr,
         bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr),
-        m_workerThreadDebugger->debugger(),
         adoptPtr(new WorkerInjectedScriptHostClient()));
 }
 

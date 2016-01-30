@@ -12,10 +12,11 @@
 namespace blink {
 
 class InjectedScriptHost;
+class V8DebuggerClient;
 
 class V8InjectedScriptHost {
 public:
-    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtr<InjectedScriptHost>);
+    static v8::Local<v8::Object> wrap(V8DebuggerClient*, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtr<InjectedScriptHost>);
     static InjectedScriptHost* unwrap(v8::Local<v8::Context>, v8::Local<v8::Object>);
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
 

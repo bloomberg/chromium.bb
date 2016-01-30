@@ -32,9 +32,9 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
+#include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8FunctionCall.h"

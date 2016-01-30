@@ -5,8 +5,6 @@
 #ifndef V8DebuggerAgentImpl_h
 #define V8DebuggerAgentImpl_h
 
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -152,6 +150,8 @@ public:
     bool v8PromiseEventsEnabled() const;
     void didReceiveV8PromiseEvent(v8::Local<v8::Context>, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
 
+    v8::Isolate* isolate() { return m_isolate; }
+
 private:
     bool checkEnabled(ErrorString*);
     void enable();
@@ -208,7 +208,7 @@ private:
     RefPtr<JSONObject> m_state;
     InspectorFrontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
-    RefPtr<ScriptState> m_pausedScriptState;
+    v8::Global<v8::Context> m_pausedContext;
     v8::Global<v8::Object> m_currentCallStack;
     ScriptsMap m_scripts;
     BreakpointIdToDebuggerBreakpointIdsMap m_breakpointIdToDebuggerBreakpointIds;

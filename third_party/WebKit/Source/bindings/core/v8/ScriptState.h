@@ -103,14 +103,6 @@ public:
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
     void disposePerContextData();
 
-    class Observer {
-    public:
-        virtual ~Observer() { }
-        virtual void willDisposeScriptState(ScriptState*) = 0;
-    };
-    void addObserver(Observer*);
-    void removeObserver(Observer*);
-
     bool evalEnabled() const;
     void setEvalEnabled(bool);
     ScriptValue getFromGlobalObject(const char* name);
@@ -136,7 +128,6 @@ private:
 #if ENABLE(ASSERT)
     bool m_globalObjectDetached;
 #endif
-    Vector<Observer*> m_observers;
 };
 
 // ScriptStateProtectingContext keeps the context associated with the ScriptState alive.

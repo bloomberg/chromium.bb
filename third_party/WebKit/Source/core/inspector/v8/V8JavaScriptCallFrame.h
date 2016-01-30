@@ -12,12 +12,13 @@
 namespace blink {
 
 class JavaScriptCallFrame;
+class V8DebuggerClient;
 
 class V8JavaScriptCallFrame {
     STATIC_ONLY(V8JavaScriptCallFrame);
 public:
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
-    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtr<JavaScriptCallFrame>);
+    static v8::Local<v8::Object> wrap(V8DebuggerClient*, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtr<JavaScriptCallFrame>);
     static JavaScriptCallFrame* unwrap(v8::Local<v8::Context>, v8::Local<v8::Object>);
 };
 

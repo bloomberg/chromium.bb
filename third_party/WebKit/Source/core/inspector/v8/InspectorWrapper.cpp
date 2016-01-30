@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "core/inspector/v8/InspectorWrapper.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
 
-#include "bindings/core/v8/V8ScriptRunner.h"
 #include "wtf/RefPtr.h"
 
 #include <v8-debug.h>
@@ -33,19 +33,15 @@ v8::Local<v8::FunctionTemplate> InspectorWrapperBase::createWrapperTemplate(v8::
     return functionTemplate;
 }
 
-v8::Local<v8::Object> InspectorWrapperBase::createWrapper(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context)
+v8::Local<v8::Object> InspectorWrapperBase::createWrapper(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context)
 {
     v8::Local<v8::Function> function;
     if (!constructorTemplate->GetFunction(context).ToLocal(&function))
         return v8::Local<v8::Object>();
 
-    // FIXME: don't depend on V8ScriptRunner
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::MaybeLocal<v8::Object> maybeResult = V8ScriptRunner::instantiateObject(isolate, function);
     v8::Local<v8::Object> result;
-    if (!maybeResult.ToLocal(&result))
+    if (!client->instantiateObject(function).ToLocal(&result))
         return v8::Local<v8::Object>();
-
     return result;
 }
 
@@ -53,8 +49,11 @@ void* InspectorWrapperBase::unwrap(v8::Local<v8::Context> context, v8::Local<v8:
 {
     v8::Isolate* isolate = context->GetIsolate();
     ASSERT(context != v8::Debug::GetDebugContext(isolate));
-    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(ScriptState::from(context), object, v8InternalizedString(isolate, name));
-    if (value.IsEmpty())
+
+    v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, name, v8::NewStringType::kInternalized).ToLocalChecked());
+
+    v8::Local<v8::Value> value;
+    if (!object->GetPrivate(context, privateKey).ToLocal(&value))
         return nullptr;
     if (!value->IsExternal())
         return nullptr;

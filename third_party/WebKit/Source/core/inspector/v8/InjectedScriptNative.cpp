@@ -25,7 +25,7 @@ void InjectedScriptNative::setOnInjectedScriptHost(v8::Local<v8::Object> injecte
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::External> external = v8::External::New(m_isolate, this);
-    v8::Local<v8::Private> privateKey = v8::Private::ForApi(m_isolate, v8::String::NewFromUtf8(m_isolate, privateKeyName));
+    v8::Local<v8::Private> privateKey = v8::Private::ForApi(m_isolate, v8::String::NewFromUtf8(m_isolate, privateKeyName, v8::NewStringType::kInternalized).ToLocalChecked());
     injectedScriptHost->SetPrivate(m_isolate->GetCurrentContext(), privateKey, external);
 }
 
@@ -34,13 +34,11 @@ InjectedScriptNative* InjectedScriptNative::fromInjectedScriptHost(v8::Local<v8:
     v8::Isolate* isolate = injectedScriptObject->GetIsolate();
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, privateKeyName));
-    v8::Local<v8::Value> value;
-    RELEASE_ASSERT(injectedScriptObject->GetPrivate(context, privateKey).ToLocal(&value));
+    v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, privateKeyName, v8::NewStringType::kInternalized).ToLocalChecked());
+    v8::Local<v8::Value> value = injectedScriptObject->GetPrivate(context, privateKey).ToLocalChecked();
+    ASSERT(value->IsExternal());
     v8::Local<v8::External> external = value.As<v8::External>();
-    void* ptr = external->Value();
-    ASSERT(ptr);
-    return static_cast<InjectedScriptNative*>(ptr);
+    return static_cast<InjectedScriptNative*>(external->Value());
 }
 
 int InjectedScriptNative::bind(v8::Local<v8::Value> value, const String& groupName)
