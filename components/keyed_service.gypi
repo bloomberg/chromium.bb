@@ -18,7 +18,7 @@
       'msvs_disabled_warnings': [ 4267, ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
+        'prefs/prefs.gyp:prefs',
         'user_prefs',
       ],
       'sources': [

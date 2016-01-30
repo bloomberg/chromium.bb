@@ -16,7 +16,6 @@
   'conditions': [
     ['configuration_policy==1', {
       'dependencies': [
-        '../base/base.gyp:base_prefs',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
@@ -26,6 +25,7 @@
         'data_use_measurement_core',
         'json_schema',
         'policy',
+        'prefs/prefs.gyp:prefs',
       ],
       'sources': [
         'core/common/async_policy_loader.cc',

@@ -1465,82 +1465,17 @@ if (is_ios || is_android || is_win || (is_linux && !is_chromeos)) {
   }
 }
 
-component("prefs") {
-  sources = [
-    "prefs/default_pref_store.cc",
-    "prefs/default_pref_store.h",
-    "prefs/json_pref_store.cc",
-    "prefs/json_pref_store.h",
-    "prefs/overlay_user_pref_store.cc",
-    "prefs/overlay_user_pref_store.h",
-    "prefs/pref_change_registrar.cc",
-    "prefs/pref_change_registrar.h",
-    "prefs/pref_member.cc",
-    "prefs/pref_member.h",
-    "prefs/pref_notifier_impl.cc",
-    "prefs/pref_notifier_impl.h",
-    "prefs/pref_registry.cc",
-    "prefs/pref_registry.h",
-    "prefs/pref_registry_simple.cc",
-    "prefs/pref_registry_simple.h",
-    "prefs/pref_service.cc",
-    "prefs/pref_service.h",
-    "prefs/pref_service_factory.cc",
-    "prefs/pref_service_factory.h",
-    "prefs/pref_store.cc",
-    "prefs/pref_store.h",
-    "prefs/pref_value_map.cc",
-    "prefs/pref_value_map.h",
-    "prefs/pref_value_store.cc",
-    "prefs/pref_value_store.h",
-    "prefs/scoped_user_pref_update.cc",
-    "prefs/scoped_user_pref_update.h",
-    "prefs/value_map_pref_store.cc",
-    "prefs/value_map_pref_store.h",
-  ]
-  if (!is_ios) {
-    sources += [
-      "prefs/base_prefs_export.h",
-      "prefs/persistent_pref_store.h",
-      "prefs/pref_filter.h",
-      "prefs/pref_notifier.h",
-      "prefs/pref_observer.h",
-      "prefs/writeable_pref_store.h",
-    ]
-  }
-
-  defines = [ "BASE_PREFS_IMPLEMENTATION" ]
-
-  deps = [
-    ":base",
-  ]
-
-  if (!is_debug) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
-}
-
-source_set("prefs_test_support") {
-  testonly = true
-  sources = [
-    "prefs/mock_pref_change_callback.cc",
-    "prefs/mock_pref_change_callback.h",
-    "prefs/pref_store_observer_mock.cc",
-    "prefs/pref_store_observer_mock.h",
-    "prefs/testing_pref_service.cc",
-    "prefs/testing_pref_service.h",
-    "prefs/testing_pref_store.cc",
-    "prefs/testing_pref_store.h",
-  ]
-
+# TODO(brettw) remove these forwarding targets when all references to prefs are
+# updated to point to components.
+group("prefs") {
   public_deps = [
-    ":prefs",
+    "//components/prefs",
   ]
-  deps = [
-    ":base",
-    "//testing/gmock",
-    "//testing/gtest",
+}
+group("prefs_test_support") {
+  testonly = true
+  public_deps = [
+    "//components/prefs:test_support",
   ]
 }
 
@@ -1731,16 +1666,6 @@ test("base_unittests") {
     "posix/file_descriptor_shuffle_unittest.cc",
     "posix/unix_domain_socket_linux_unittest.cc",
     "power_monitor/power_monitor_unittest.cc",
-    "prefs/default_pref_store_unittest.cc",
-    "prefs/json_pref_store_unittest.cc",
-    "prefs/overlay_user_pref_store_unittest.cc",
-    "prefs/pref_change_registrar_unittest.cc",
-    "prefs/pref_member_unittest.cc",
-    "prefs/pref_notifier_impl_unittest.cc",
-    "prefs/pref_service_unittest.cc",
-    "prefs/pref_value_map_unittest.cc",
-    "prefs/pref_value_store_unittest.cc",
-    "prefs/scoped_user_pref_update_unittest.cc",
     "process/memory_unittest.cc",
     "process/memory_unittest_mac.h",
     "process/memory_unittest_mac.mm",
@@ -1860,8 +1785,6 @@ test("base_unittests") {
     ":base",
     ":i18n",
     ":message_loop_tests",
-    ":prefs",
-    ":prefs_test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",

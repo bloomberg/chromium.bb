@@ -13,11 +13,11 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../sync/sync.gyp:sync',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
         'history_core_browser',
+        'prefs/prefs.gyp:prefs',
         'sync_driver',
       ],
       'sources': [

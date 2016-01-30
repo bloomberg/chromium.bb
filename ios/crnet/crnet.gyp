@@ -12,6 +12,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../components/components.gyp:webp_transcode',
+        '../../components/prefs/prefs.gyp:prefs',
         '../../ios/net/ios_net.gyp:ios_net',
         '../../ios/web/ios_web.gyp:user_agent',
         '../../net/net.gyp:net',

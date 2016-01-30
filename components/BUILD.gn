@@ -63,6 +63,7 @@ test("components_unittests") {
     "//components/network_time:unit_tests",
     "//components/open_from_clipboard:unit_tests",
     "//components/os_crypt:unit_tests",
+    "//components/prefs:unit_tests",
     "//components/proxy_config:unit_tests",
     "//components/security_state:unit_tests",
     "//components/sessions:unit_tests",
