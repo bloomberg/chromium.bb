@@ -189,8 +189,10 @@ class PrivetDeviceListerTest : public testing::Test {
     service_description_.metadata = example_attrs_;
     service_description_.last_seen = base::Time() +
         base::TimeDelta::FromSeconds(5);
-    ASSERT_TRUE(net::IPAddress::FromIPLiteral(
-        "1.2.3.4", &service_description_.ip_address));
+    service_description_.ip_address.push_back(1);
+    service_description_.ip_address.push_back(2);
+    service_description_.ip_address.push_back(3);
+    service_description_.ip_address.push_back(4);
   }
 
  protected:

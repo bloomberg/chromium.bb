@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "net/base/ip_address.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/ip_endpoint.h"
 
 using local_discovery::ServiceWatcherImplMac;
@@ -354,7 +354,7 @@ void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
     if (end_point.FromSockAddr(socket, length)) {
       service_description_.address =
           net::HostPortPair::FromIPEndPoint(end_point);
-      service_description_.ip_address = end_point.address();
+      service_description_.ip_address = end_point.address().bytes();
       break;
     }
   }

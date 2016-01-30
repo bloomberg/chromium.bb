@@ -197,7 +197,8 @@ class ServiceResolverImpl
       const net::RecordParsed* record) const;
 
   // Convert an A record to an IP address.
-  net::IPAddress RecordToIPAddress(const net::RecordParsed* record) const;
+  const net::IPAddressNumber& RecordToIPAddress(
+      const net::RecordParsed* record) const;
 
   // Convert an MDns status to a service discovery status.
   RequestStatus MDnsStatusToRequestStatus(
@@ -258,8 +259,8 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
 
   net::MDnsClient* mdns_client_;
 
-  net::IPAddress address_ipv4_;
-  net::IPAddress address_ipv6_;
+  net::IPAddressNumber address_ipv4_;
+  net::IPAddressNumber address_ipv6_;
 
   base::CancelableCallback<void()> timeout_callback_;
 

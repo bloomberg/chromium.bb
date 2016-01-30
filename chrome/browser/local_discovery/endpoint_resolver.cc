@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_util.h"
 
 namespace local_discovery {
 
@@ -41,8 +41,8 @@ void EndpointResolver::ServiceResolveComplete(
 void EndpointResolver::Start(const net::HostPortPair& address,
                              const ResultCallback& callback) {
 #if defined(OS_MACOSX)
-  net::IPAddress ip_address;
-  if (!net::IPAddress::FromIPLiteral(address.host(), &ip_address)) {
+  net::IPAddressNumber ip_address;
+  if (!net::ParseIPLiteralToNumber(address.host(), &ip_address)) {
     NOTREACHED() << address.ToString();
     // Unexpected, but could be a reason for crbug.com/513505
     base::debug::DumpWithoutCrashing();
@@ -70,16 +70,16 @@ void EndpointResolver::DomainResolveComplete(
     uint16_t port,
     const ResultCallback& callback,
     bool success,
-    const net::IPAddress& address_ipv4,
-    const net::IPAddress& address_ipv6) {
+    const net::IPAddressNumber& address_ipv4,
+    const net::IPAddressNumber& address_ipv6) {
   if (!success)
     return callback.Run(net::IPEndPoint());
 
-  net::IPAddress address = address_ipv4;
-  if (!address.IsValid())
+  net::IPAddressNumber address = address_ipv4;
+  if (address.empty())
     address = address_ipv6;
 
-  DCHECK(address.IsValid());
+  DCHECK(!address.empty());
 
   callback.Run(net::IPEndPoint(address, port));
 }

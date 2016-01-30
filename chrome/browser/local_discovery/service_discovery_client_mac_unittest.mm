@@ -127,8 +127,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
 
   const std::string kIp = "2001:4860:4860::8844";
   const uint16_t kPort = 4321;
-  net::IPAddress ip_address;
-  ASSERT_TRUE(net::IPAddress::FromIPLiteral(kIp, &ip_address));
+  net::IPAddressNumber ip_address;
+  ASSERT_TRUE(net::ParseIPLiteralToNumber(kIp, &ip_address));
   net::IPEndPoint endpoint(ip_address, kPort);
   net::SockaddrStorage storage;
   ASSERT_TRUE(endpoint.ToSockAddr(storage.addr, &storage.addr_len));

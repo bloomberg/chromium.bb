@@ -16,7 +16,6 @@
 
 namespace net {
 class HostPortPair;
-class IPAddress;
 class IPEndPoint;
 }
 
@@ -43,8 +42,8 @@ class EndpointResolver {
   void DomainResolveComplete(uint16_t port,
                              const ResultCallback& callback,
                              bool success,
-                             const net::IPAddress& address_ipv4,
-                             const net::IPAddress& address_ipv6);
+                             const net::IPAddressNumber& address_ipv4,
+                             const net::IPAddressNumber& address_ipv6);
 
  private:
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;

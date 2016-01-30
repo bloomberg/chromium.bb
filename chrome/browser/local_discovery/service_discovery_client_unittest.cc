@@ -412,8 +412,10 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
   ServiceResolverTest() {
     metadata_expected_.push_back("hello");
     address_expected_ = net::HostPortPair("myhello.local", 8888);
-    EXPECT_TRUE(
-        net::IPAddress::FromIPLiteral("1.2.3.4", &ip_address_expected_));
+    ip_address_expected_.push_back(1);
+    ip_address_expected_.push_back(2);
+    ip_address_expected_.push_back(3);
+    ip_address_expected_.push_back(4);
   }
 
   ~ServiceResolverTest() {
@@ -438,14 +440,14 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
                void(ServiceResolver::RequestStatus,
                     const std::string&,
                     const std::vector<std::string>&,
-                    const net::IPAddress&));
+                    const net::IPAddressNumber&));
 
  protected:
   scoped_ptr<ServiceResolver> resolver_;
-  net::IPAddress ip_address_;
+  net::IPAddressNumber ip_address_;
   net::HostPortPair address_expected_;
   std::vector<std::string> metadata_expected_;
-  net::IPAddress ip_address_expected_;
+  net::IPAddressNumber ip_address_expected_;
 };
 
 TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
@@ -457,10 +459,11 @@ TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_CALL(
-      *this, OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
-                                         address_expected_.ToString(),
-                                         metadata_expected_, net::IPAddress()));
+  EXPECT_CALL(*this,
+              OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
+                                          address_expected_.ToString(),
+                                          metadata_expected_,
+                                          net::IPAddressNumber()));
 
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 }

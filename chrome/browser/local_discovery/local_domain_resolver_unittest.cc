@@ -69,18 +69,17 @@ class LocalDomainResolverTest : public testing::Test {
     mdns_client_.StartListening(&socket_factory_);
   }
 
-  std::string IPAddressToStringWithInvalid(const net::IPAddress& address) {
-    if (!address.IsValid())
-      return "";
-    return address.ToString();
+  std::string IPAddressToStringWithEmpty(const net::IPAddressNumber& address) {
+    if (address.empty()) return "";
+    return net::IPAddressToString(address);
   }
 
   void AddressCallback(bool resolved,
-                       const net::IPAddress& address_ipv4,
-                       const net::IPAddress& address_ipv6) {
-    AddressCallbackInternal(resolved,
-                            IPAddressToStringWithInvalid(address_ipv4),
-                            IPAddressToStringWithInvalid(address_ipv6));
+                       const net::IPAddressNumber& address_ipv4,
+                       const net::IPAddressNumber& address_ipv6) {
+      AddressCallbackInternal(resolved,
+                              IPAddressToStringWithEmpty(address_ipv4),
+                              IPAddressToStringWithEmpty(address_ipv6));
   }
 
   void RunFor(base::TimeDelta time_period) {
