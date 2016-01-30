@@ -391,9 +391,10 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         // because it will change the tab when the intent is handled, which happens after
         // Chrome gets back to the foreground.
         Intent newIntent = Tab.createBringTabToFrontIntent(mTab.getId());
-        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        mTab.getApplicationContext().startActivity(newIntent);
+        if (newIntent != null) {
+            newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mTab.getApplicationContext().startActivity(newIntent);
+        }
     }
 
     @Override
