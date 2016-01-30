@@ -138,7 +138,7 @@ void distanceDataForNode(WebFocusType, const FocusCandidate& current, FocusCandi
 Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType, Node*);
 LayoutRect nodeRectInAbsoluteCoordinates(Node*, bool ignoreBorder = false);
 LayoutRect frameRectInAbsoluteCoordinates(LocalFrame*);
-LayoutRect virtualRectForDirection(WebFocusType, const LayoutRect& startingRect, LayoutUnit width = 0);
+LayoutRect virtualRectForDirection(WebFocusType, const LayoutRect& startingRect, LayoutUnit width = LayoutUnit());
 LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&, WebFocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);
 

@@ -64,7 +64,7 @@ public:
     float availableWidth() const { return m_availableWidth; }
     float trailingWhitespaceWidth() const { return m_trailingWhitespaceWidth; }
 
-    void updateAvailableWidth(LayoutUnit minimumHeight = 0);
+    void updateAvailableWidth(LayoutUnit minimumHeight = LayoutUnit());
     void shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject&);
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit();

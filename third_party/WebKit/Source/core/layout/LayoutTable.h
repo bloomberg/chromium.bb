@@ -260,7 +260,7 @@ public:
         if (unsigned effectiveColumnCount = numEffCols())
             return static_cast<LayoutUnit>(effectiveColumnCount + 1) * hBorderSpacing();
 
-        return 0;
+        return LayoutUnit();
     }
 
     // The collapsing border model dissallows paddings on table, which is why we
@@ -272,8 +272,8 @@ public:
     LayoutUnit paddingRight() const override;
 
     // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
-    LayoutUnit paddingEnd() const override { return static_cast<int>(LayoutBlock::paddingEnd()); }
-    LayoutUnit paddingStart() const override { return static_cast<int>(LayoutBlock::paddingStart()); }
+    LayoutUnit paddingEnd() const override { return LayoutUnit(static_cast<int>(LayoutBlock::paddingEnd())); }
+    LayoutUnit paddingStart() const override { return LayoutUnit(static_cast<int>(LayoutBlock::paddingStart())); }
 
     LayoutUnit bordersPaddingAndSpacingInRowDirection() const
     {

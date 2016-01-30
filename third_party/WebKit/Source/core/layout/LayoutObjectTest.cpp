@@ -116,7 +116,7 @@ TEST_F(LayoutObjectTest, MapToVisibleRectInContainerSpace)
     LayoutBlock* container = toLayoutBlock(document().getElementById("container")->layoutObject());
     LayoutText* text = toLayoutText(container->lastChild());
 
-    container->setScrollTop(50);
+    container->setScrollTop(LayoutUnit(50));
     LayoutRect rect(0, 60, 20, 20);
     text->mapToVisibleRectInAncestorSpace(container, rect, nullptr);
     EXPECT_TRUE(rect == LayoutRect(0, 10, 20, 20));

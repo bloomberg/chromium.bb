@@ -168,12 +168,12 @@ public:
         return toBlockFlow()->logicalWidthForFloat(floatingObject);
     }
 
-    LayoutUnit logicalRightOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalRightOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return toBlockFlow()->logicalRightOffsetForLine(position, indentText, logicalHeight);
     }
 
-    LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return toBlockFlow()->logicalLeftOffsetForLine(position, indentText, logicalHeight);
     }

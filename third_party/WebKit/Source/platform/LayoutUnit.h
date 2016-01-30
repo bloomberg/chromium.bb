@@ -158,9 +158,14 @@ public:
         return m_value >> kLayoutUnitFractionalBits;
     }
 
-    LayoutUnit clampToZero() const
+    LayoutUnit clampNegativeToZero() const
     {
         return std::max(*this, LayoutUnit());
+    }
+
+    LayoutUnit clampPositiveToZero() const
+    {
+        return std::min(*this, LayoutUnit());
     }
 
     LayoutUnit fraction() const

@@ -144,7 +144,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
         position -= isLeftToRightDirection ? layoutBox()->marginLeft() : layoutBox()->marginRight();
         currentPosition = absoluteThumbOrigin.x() - absoluteSliderContentOrigin.x();
     }
-    position = std::max<LayoutUnit>(0, std::min(position, trackSize));
+    position = std::min(position, trackSize).clampNegativeToZero();
     const Decimal ratio = Decimal::fromDouble(static_cast<double>(position) / trackSize);
     const Decimal fraction = isVertical || !isLeftToRightDirection ? Decimal(1) - ratio : ratio;
     StepRange stepRange(input->createStepRange(RejectAny));

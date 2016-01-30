@@ -584,7 +584,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
                 // This solves above equation for 'width' (== logicalWidth).
                 LayoutUnit marginStart = minimumValueForLength(style()->marginStart(), logicalWidth);
                 LayoutUnit marginEnd = minimumValueForLength(style()->marginEnd(), logicalWidth);
-                logicalWidth = std::max<LayoutUnit>(0, logicalWidth - (marginStart + marginEnd + (size().width() - clientWidth())));
+                logicalWidth = (logicalWidth - (marginStart + marginEnd + (size().width() - clientWidth()))).clampNegativeToZero();
                 return computeReplacedLogicalWidthRespectingMinMaxWidth(logicalWidth, shouldComputePreferred);
             }
         }
@@ -730,8 +730,8 @@ LayoutRect LayoutReplaced::localSelectionRect() const
     RootInlineBox& root = inlineBoxWrapper()->root();
     LayoutUnit newLogicalTop = root.block().style()->isFlippedBlocksWritingMode() ? inlineBoxWrapper()->logicalBottom() - root.selectionBottom() : root.selectionTop() - inlineBoxWrapper()->logicalTop();
     if (root.block().style()->isHorizontalWritingMode())
-        return LayoutRect(0, newLogicalTop, size().width(), root.selectionHeight());
-    return LayoutRect(newLogicalTop, 0, root.selectionHeight(), size().height());
+        return LayoutRect(LayoutUnit(), newLogicalTop, size().width(), root.selectionHeight());
+    return LayoutRect(newLogicalTop, LayoutUnit(), root.selectionHeight(), size().height());
 }
 
 void LayoutReplaced::setSelectionState(SelectionState state)

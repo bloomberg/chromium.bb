@@ -487,7 +487,7 @@ void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
     ASSERT(!columnStyle->hasAutoColumnCount() || !columnStyle->hasAutoColumnWidth());
     if (columnStyle->hasAutoColumnWidth() && !columnStyle->hasAutoColumnCount()) {
         count = computedColumnCount;
-        width = ((availableWidth - ((count - 1) * columnGap)) / count).clampToZero();
+        width = ((availableWidth - ((count - 1) * columnGap)) / count).clampNegativeToZero();
     } else if (!columnStyle->hasAutoColumnWidth() && columnStyle->hasAutoColumnCount()) {
         count = std::max(LayoutUnit(1), (availableWidth + columnGap) / (computedColumnWidth + columnGap));
         width = ((availableWidth + columnGap) / count) - columnGap;

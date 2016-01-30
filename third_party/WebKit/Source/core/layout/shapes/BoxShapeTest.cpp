@@ -82,15 +82,15 @@ TEST_F(BoxShapeTest, zeroRadii)
     // Similarly a "line", specified as top,height to the overlap methods,
     // is defined as top <= y < top + height.
 
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(-9, 1));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(-10, 0));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(-10, 200));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(5, 10));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(59, 1));
+    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-9), LayoutUnit(1)));
+    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(0)));
+    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(200)));
+    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(5), LayoutUnit(10)));
+    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(59), LayoutUnit(1)));
 
-    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(-12, 2));
-    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(60, 1));
-    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(100, 200));
+    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-12), LayoutUnit(2)));
+    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(60), LayoutUnit(1)));
+    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
 
     TEST_EXCLUDED_INTERVAL(shape, -9, 1, -10, 110);
     TEST_EXCLUDED_INTERVAL(shape, -10, 0, -10, 110);

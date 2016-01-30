@@ -38,7 +38,6 @@ public:
         , m_isLastLine(false)
         , m_isEmpty(true)
         , m_previousLineBrokeCleanly(true)
-        , m_floatPaginationStrut(0)
         , m_runsFromLeadingWhitespace(0)
     { }
 
@@ -60,7 +59,7 @@ public:
         m_isEmpty = empty;
         if (!empty && block && floatPaginationStrut()) {
             block.setLogicalHeight(block.logicalHeight() + floatPaginationStrut());
-            setFloatPaginationStrut(0);
+            setFloatPaginationStrut(LayoutUnit());
             lineWidth->updateAvailableWidth();
         }
     }

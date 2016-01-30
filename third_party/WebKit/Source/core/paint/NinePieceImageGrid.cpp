@@ -12,7 +12,7 @@
 
 namespace blink {
 
-static LayoutUnit computeEdgeWidth(const BorderImageLength& borderSlice, int borderSide, const LayoutUnit& imageSide,
+static int computeEdgeWidth(const BorderImageLength& borderSlice, int borderSide, const LayoutUnit& imageSide,
     const LayoutUnit& boxExtent)
 {
     if (borderSlice.isNumber())

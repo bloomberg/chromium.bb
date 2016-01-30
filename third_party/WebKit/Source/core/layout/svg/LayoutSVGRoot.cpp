@@ -50,9 +50,9 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
 {
     LayoutSize intrinsicSize(calculateIntrinsicSize());
     if (!intrinsicSize.width())
-        intrinsicSize.setWidth(defaultWidth);
+        intrinsicSize.setWidth(LayoutUnit(defaultWidth));
     if (!intrinsicSize.height())
-        intrinsicSize.setHeight(defaultHeight);
+        intrinsicSize.setHeight(LayoutUnit(defaultHeight));
     setIntrinsicSize(intrinsicSize);
 }
 
@@ -117,7 +117,7 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred sho
 {
     // When we're embedded through SVGImage (border-image/background-image/<html:img>/...) we're forced to resize to a specific size.
     if (!m_containerSize.isEmpty())
-        return m_containerSize.width();
+        return LayoutUnit(m_containerSize.width());
 
     if (isEmbeddedThroughFrameContainingSVGDocument())
         return containingBlock()->availableLogicalWidth();
@@ -129,7 +129,7 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight() const
 {
     // When we're embedded through SVGImage (border-image/background-image/<html:img>/...) we're forced to resize to a specific size.
     if (!m_containerSize.isEmpty())
-        return m_containerSize.height();
+        return LayoutUnit(m_containerSize.height());
 
     if (isEmbeddedThroughFrameContainingSVGDocument())
         return containingBlock()->availableLogicalHeight(IncludeMarginBorderPadding);

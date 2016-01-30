@@ -143,7 +143,7 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     minLogicalWidth = std::max(LayoutUnit(), minLogicalWidth);
     maxLogicalWidth = std::max(LayoutUnit(), maxLogicalWidth);
 
-    LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
+    LayoutUnit scrollbarWidth(intrinsicScrollbarLogicalWidth());
     maxLogicalWidth += scrollbarWidth;
     minLogicalWidth += scrollbarWidth;
 }
@@ -325,7 +325,7 @@ void LayoutFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineCon
 
 LayoutUnit LayoutFlexibleBox::clientLogicalBottomAfterRepositioning()
 {
-    LayoutUnit maxChildLogicalBottom = 0;
+    LayoutUnit maxChildLogicalBottom;
     for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned())
             continue;
@@ -491,47 +491,47 @@ LayoutFlexibleBox::TransformedWritingMode LayoutFlexibleBox::transformedWritingM
 LayoutUnit LayoutFlexibleBox::flowAwareBorderStart() const
 {
     if (isHorizontalFlow())
-        return isLeftToRightFlow() ? borderLeft() : borderRight();
-    return isLeftToRightFlow() ? borderTop() : borderBottom();
+        return LayoutUnit(isLeftToRightFlow() ? borderLeft() : borderRight());
+    return LayoutUnit(isLeftToRightFlow() ? borderTop() : borderBottom());
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderEnd() const
 {
     if (isHorizontalFlow())
-        return isLeftToRightFlow() ? borderRight() : borderLeft();
-    return isLeftToRightFlow() ? borderBottom() : borderTop();
+        return LayoutUnit(isLeftToRightFlow() ? borderRight() : borderLeft());
+    return LayoutUnit(isLeftToRightFlow() ? borderBottom() : borderTop());
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const
 {
     switch (transformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
-        return borderTop();
+        return LayoutUnit(borderTop());
     case TransformedWritingMode::BottomToTopWritingMode:
-        return borderBottom();
+        return LayoutUnit(borderBottom());
     case TransformedWritingMode::LeftToRightWritingMode:
-        return borderLeft();
+        return LayoutUnit(borderLeft());
     case TransformedWritingMode::RightToLeftWritingMode:
-        return borderRight();
+        return LayoutUnit(borderRight());
     }
     ASSERT_NOT_REACHED();
-    return borderTop();
+    return LayoutUnit(borderTop());
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderAfter() const
 {
     switch (transformedWritingMode()) {
     case TransformedWritingMode::TopToBottomWritingMode:
-        return borderBottom();
+        return LayoutUnit(borderBottom());
     case TransformedWritingMode::BottomToTopWritingMode:
-        return borderTop();
+        return LayoutUnit(borderTop());
     case TransformedWritingMode::LeftToRightWritingMode:
-        return borderRight();
+        return LayoutUnit(borderRight());
     case TransformedWritingMode::RightToLeftWritingMode:
-        return borderLeft();
+        return LayoutUnit(borderLeft());
     }
     ASSERT_NOT_REACHED();
-    return borderTop();
+    return LayoutUnit(borderTop());
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingStart() const
@@ -617,12 +617,12 @@ LayoutUnit LayoutFlexibleBox::crossAxisMarginExtentForChild(const LayoutBox& chi
 
 LayoutUnit LayoutFlexibleBox::crossAxisScrollbarExtent() const
 {
-    return isHorizontalFlow() ? horizontalScrollbarHeight() : verticalScrollbarWidth();
+    return LayoutUnit(isHorizontalFlow() ? horizontalScrollbarHeight() : verticalScrollbarWidth());
 }
 
 LayoutUnit LayoutFlexibleBox::crossAxisScrollbarExtentForChild(const LayoutBox& child) const
 {
-    return isHorizontalFlow() ? child.horizontalScrollbarHeight() : child.verticalScrollbarWidth();
+    return LayoutUnit(isHorizontalFlow() ? child.horizontalScrollbarHeight() : child.verticalScrollbarWidth());
 }
 
 LayoutPoint LayoutFlexibleBox::flowAwareLocationForChild(const LayoutBox& child) const
@@ -653,7 +653,7 @@ LayoutUnit LayoutFlexibleBox::computeMainSizeFromAspectRatioUsing(const LayoutBo
 
     LayoutUnit crossSize;
     if (crossSizeLength.isFixed()) {
-        crossSize = crossSizeLength.value();
+        crossSize = LayoutUnit(crossSizeLength.value());
     } else {
         ASSERT(crossSizeLength.hasPercent());
         crossSize = hasOrthogonalFlow(child) ?
@@ -1593,7 +1593,7 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(LayoutBox& child, LayoutUni
             child.setIntrinsicContentLogicalHeight(childIntrinsicContentLogicalHeight);
         }
     } else if (hasOrthogonalFlow(child) && child.style()->logicalWidth().isAuto()) {
-        LayoutUnit childWidth = std::max<LayoutUnit>(0, lineCrossAxisExtent - crossAxisMarginExtentForChild(child));
+        LayoutUnit childWidth = (lineCrossAxisExtent - crossAxisMarginExtentForChild(child)).clampNegativeToZero();
         childWidth = child.constrainLogicalWidthByMinMax(childWidth, childWidth, this);
 
         if (childWidth != child.logicalWidth()) {

@@ -207,14 +207,14 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         }
     }
 
-    LayoutUnit lowestFloatBottom = 0;
+    LayoutUnit lowestFloatBottom;
     const FloatingObjectSet& floatingObjectSet = set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     if (floatType == FloatingObject::FloatLeftRight) {
         FloatingObject* lowestFloatingObjectLeft = nullptr;
         FloatingObject* lowestFloatingObjectRight = nullptr;
-        LayoutUnit lowestFloatBottomLeft = 0;
-        LayoutUnit lowestFloatBottomRight = 0;
+        LayoutUnit lowestFloatBottomLeft;
+        LayoutUnit lowestFloatBottomRight;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
             FloatingObject& floatingObject = *it->get();
             if (floatingObject.isPlaced()) {

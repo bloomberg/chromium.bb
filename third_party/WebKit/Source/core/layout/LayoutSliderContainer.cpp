@@ -69,7 +69,7 @@ void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
 
     if (input->layoutObject()->isSlider() && !isVertical && input->list()) {
         int offsetFromCenter = LayoutTheme::theme().sliderTickOffsetFromTrackCenter();
-        LayoutUnit trackHeight = 0;
+        LayoutUnit trackHeight;
         if (offsetFromCenter < 0) {
             trackHeight = -2 * offsetFromCenter;
         } else {

@@ -95,7 +95,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, Layo
         // writing mode roots.
         if (layoutObject.paginationBreakability() == LayoutBox::ForbidBreaks) {
             m_flowThread = nullptr;
-            m_pageLogicalHeight = 0;
+            m_pageLogicalHeight = LayoutUnit();
             m_isPaginated = false;
         } else {
             m_isPaginated = m_pageLogicalHeight || m_flowThread;

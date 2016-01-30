@@ -570,9 +570,9 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const
         if (!style()->right().isAuto() && !containingBlock->style()->isLeftToRightDirection())
             offset.setWidth(-valueForLength(style()->right(), containingBlock->availableWidth()));
         else
-            offset.expand(valueForLength(style()->left(), containingBlock->availableWidth()), 0);
+            offset.expand(valueForLength(style()->left(), containingBlock->availableWidth()), LayoutUnit());
     } else if (!style()->right().isAuto()) {
-        offset.expand(-valueForLength(style()->right(), containingBlock->availableWidth()), 0);
+        offset.expand(-valueForLength(style()->right(), containingBlock->availableWidth()), LayoutUnit());
     }
 
     // If the containing block of a relatively positioned element does not
@@ -585,13 +585,13 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const
         && (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight()
             || !style()->top().hasPercent()
             || containingBlock->stretchesToViewport()))
-        offset.expand(0, valueForLength(style()->top(), containingBlock->availableHeight()));
+        offset.expand(LayoutUnit(), valueForLength(style()->top(), containingBlock->availableHeight()));
 
     else if (!style()->bottom().isAuto()
         && (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight()
             || !style()->bottom().hasPercent()
             || containingBlock->stretchesToViewport()))
-        offset.expand(0, -valueForLength(style()->bottom(), containingBlock->availableHeight()));
+        offset.expand(LayoutUnit(), -valueForLength(style()->bottom(), containingBlock->availableHeight()));
 
     return offset;
 }
@@ -669,7 +669,7 @@ int LayoutBoxModelObject::pixelSnappedOffsetHeight() const
 
 LayoutUnit LayoutBoxModelObject::computedCSSPadding(const Length& padding) const
 {
-    LayoutUnit w = 0;
+    LayoutUnit w;
     if (padding.hasPercent())
         w = containingBlockLogicalWidthForContent();
     return minimumValueForLength(padding, w);
@@ -677,12 +677,12 @@ LayoutUnit LayoutBoxModelObject::computedCSSPadding(const Length& padding) const
 
 static inline LayoutUnit resolveWidthForRatio(LayoutUnit height, const FloatSize& intrinsicRatio)
 {
-    return height * intrinsicRatio.width() / intrinsicRatio.height();
+    return LayoutUnit(height * intrinsicRatio.width() / intrinsicRatio.height());
 }
 
 static inline LayoutUnit resolveHeightForRatio(LayoutUnit width, const FloatSize& intrinsicRatio)
 {
-    return width * intrinsicRatio.height() / intrinsicRatio.width();
+    return LayoutUnit(width * intrinsicRatio.height() / intrinsicRatio.width());
 }
 
 static inline LayoutSize resolveAgainstIntrinsicWidthOrHeightAndRatio(const LayoutSize& size, const FloatSize& intrinsicRatio, LayoutUnit useWidth, LayoutUnit useHeight)
@@ -913,7 +913,7 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
             x -= textIndentOffset;
         break;
     }
-    x = std::min(x, (maxX - caretWidth()).clampToZero());
+    x = std::min(x, (maxX - caretWidth()).clampNegativeToZero());
 
     LayoutUnit height = LayoutUnit(style()->fontMetrics().height());
     LayoutUnit verticalSpace = lineHeight(true, currentStyle.isHorizontalWritingMode() ? HorizontalLine : VerticalLine,  PositionOfInteriorLineBoxes) - height;

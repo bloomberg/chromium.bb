@@ -147,7 +147,7 @@ static LayoutUnit marginWidthForChild(LayoutBox* child)
     // Fixed margins can be added in as is.
     Length marginLeft = child->style()->marginLeft();
     Length marginRight = child->style()->marginRight();
-    LayoutUnit margin = 0;
+    LayoutUnit margin;
     if (marginLeft.isFixed())
         margin += marginLeft.value();
     if (marginRight.isFixed())
@@ -211,7 +211,7 @@ void LayoutDeprecatedFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minL
 
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
 
-    LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
+    LayoutUnit scrollbarWidth(intrinsicScrollbarLogicalWidth());
     maxLogicalWidth += scrollbarWidth;
     minLogicalWidth += scrollbarWidth;
 }
@@ -297,9 +297,9 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
     LayoutUnit yPos = borderTop() + paddingTop();
     LayoutUnit xPos = borderLeft() + paddingLeft();
     bool heightSpecified = false;
-    LayoutUnit oldHeight = 0;
+    LayoutUnit oldHeight;
 
-    LayoutUnit remainingSpace = 0;
+    LayoutUnit remainingSpace;
 
 
     FlexBoxIterator iterator(this);
@@ -321,7 +321,8 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         // Our first pass is done without flexing.  We simply lay the children
         // out within the box.  We have to do a layout first in order to determine
         // our box's intrinsic height.
-        LayoutUnit maxAscent = 0, maxDescent = 0;
+        LayoutUnit maxAscent;
+        LayoutUnit maxDescent;
         for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
             if (child->isOutOfFlowPositioned())
                 continue;
@@ -343,7 +344,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
 
             // Update our height and overflow height.
             if (style()->boxAlign() == BBASELINE) {
-                LayoutUnit ascent = child->firstLineBoxBaseline();
+                LayoutUnit ascent(child->firstLineBoxBaseline());
                 if (ascent == -1)
                     ascent = child->size().height() + child->marginBottom();
                 ascent += child->marginTop();
@@ -419,10 +420,10 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             LayoutUnit childY = yPos;
             switch (style()->boxAlign()) {
             case BCENTER:
-                childY += child->marginTop() + ((contentHeight() - (child->size().height() + child->marginHeight())) / 2).clampToZero();
+                childY += child->marginTop() + ((contentHeight() - (child->size().height() + child->marginHeight())) / 2).clampNegativeToZero();
                 break;
             case BBASELINE: {
-                LayoutUnit ascent = child->firstLineBoxBaseline();
+                LayoutUnit ascent(child->firstLineBoxBaseline());
                 if (ascent == -1)
                     ascent = child->size().height() + child->marginBottom();
                 ascent += child->marginTop();
@@ -484,7 +485,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                     // The flex groups may not have any flexible objects this time around.
                     if (!spaceAvailableThisPass || totalFlex == 0.0f) {
                         // If we just couldn't grow/shrink any more, then it's time to transition to the next flex group.
-                        groupRemainingSpace = 0;
+                        groupRemainingSpace = LayoutUnit();
                         continue;
                     }
 
@@ -510,7 +511,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                     }
                     if (groupRemainingSpace == groupRemainingSpaceAtBeginning) {
                         // This is not advancing, avoid getting stuck by distributing the remaining pixels.
-                        LayoutUnit spaceAdd = groupRemainingSpace > 0 ? 1 : -1;
+                        LayoutUnit spaceAdd = LayoutUnit(groupRemainingSpace > 0 ? 1 : -1);
                         for (LayoutBox* child = iterator.first(); child && groupRemainingSpace; child = iterator.next()) {
                             if (allowedChildFlex(child, expanding, i)) {
                                 child->setOverrideLogicalContentWidth(contentWidthForChild(child) + spaceAdd);
@@ -535,7 +536,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
     if (remainingSpace > 0 && ((style()->isLeftToRightDirection() && style()->boxPack() != Start)
         || (!style()->isLeftToRightDirection() && style()->boxPack() != End))) {
         // Children must be repositioned.
-        LayoutUnit offset = 0;
+        LayoutUnit offset;
         if (style()->boxPack() == Justify) {
             // Determine the total number of children.
             int totalChildren = 0;
@@ -591,9 +592,9 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
     LayoutUnit yPos = borderTop() + paddingTop();
     LayoutUnit toAdd = borderBottom() + paddingBottom() + horizontalScrollbarHeight();
     bool heightSpecified = false;
-    LayoutUnit oldHeight = 0;
+    LayoutUnit oldHeight;
 
-    LayoutUnit remainingSpace = 0;
+    LayoutUnit remainingSpace;
 
     FlexBoxIterator iterator(this);
     unsigned highestFlexGroup = 0;
@@ -658,7 +659,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             switch (style()->boxAlign()) {
             case BCENTER:
             case BBASELINE: // Baseline just maps to center for vertical boxes
-                childX += child->marginLeft() + std::max<LayoutUnit>(LayoutUnit(), (contentWidth() - (child->size().width() + child->marginWidth())) / 2);
+                childX += child->marginLeft() + ((contentWidth() - (child->size().width() + child->marginWidth())) / 2).clampNegativeToZero();
                 break;
             case BEND:
                 if (!style()->isLeftToRightDirection())
@@ -738,7 +739,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                     // The flex groups may not have any flexible objects this time around.
                     if (!spaceAvailableThisPass || totalFlex == 0.0f) {
                         // If we just couldn't grow/shrink any more, then it's time to transition to the next flex group.
-                        groupRemainingSpace = 0;
+                        groupRemainingSpace = LayoutUnit();
                         continue;
                     }
 
@@ -761,7 +762,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                     }
                     if (groupRemainingSpace == groupRemainingSpaceAtBeginning) {
                         // This is not advancing, avoid getting stuck by distributing the remaining pixels.
-                        LayoutUnit spaceAdd = groupRemainingSpace > 0 ? 1 : -1;
+                        LayoutUnit spaceAdd = LayoutUnit(groupRemainingSpace > 0 ? 1 : -1);
                         for (LayoutBox* child = iterator.first(); child && groupRemainingSpace; child = iterator.next()) {
                             if (allowedChildFlex(child, expanding, i)) {
                                 child->setOverrideLogicalContentHeight(contentHeightForChild(child) + spaceAdd);
@@ -785,7 +786,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
 
     if (style()->boxPack() != Start && remainingSpace > 0) {
         // Children must be repositioned.
-        LayoutUnit offset = 0;
+        LayoutUnit offset;
         if (style()->boxPack() == Justify) {
             // Determine the total number of children.
             int totalChildren = 0;
@@ -876,7 +877,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         if (lineCount <= numVisibleLines)
             continue;
 
-        LayoutUnit newHeight = blockChild->heightForLineCount(numVisibleLines);
+        LayoutUnit newHeight(blockChild->heightForLineCount(numVisibleLines));
         if (newHeight == child->size().height())
             continue;
 
@@ -919,7 +920,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         // Let the truncation code kick in.
         // FIXME: the text alignment should be recomputed after the width changes due to truncation.
         LayoutUnit blockLeftEdge = destBlock.logicalLeftOffsetForLine(lastVisibleLine->y(), DoNotIndentText);
-        lastVisibleLine->placeEllipsis(ellipsisStr, leftToRight, blockLeftEdge, blockRightEdge, totalWidth);
+        lastVisibleLine->placeEllipsis(ellipsisStr, leftToRight, blockLeftEdge, blockRightEdge, LayoutUnit(totalWidth));
         destBlock.setHasMarkupTruncation(true);
     }
 }
@@ -956,7 +957,7 @@ void LayoutDeprecatedFlexibleBox::placeChild(LayoutBox* child, const LayoutPoint
 LayoutUnit LayoutDeprecatedFlexibleBox::allowedChildFlex(LayoutBox* child, bool expanding, unsigned group)
 {
     if (childDoesNotAffectWidthOrFlexing(child) || child->style()->boxFlex() == 0.0f || child->style()->boxFlexGroup() != group)
-        return 0;
+        return LayoutUnit();
 
     if (expanding) {
         if (isHorizontal()) {
@@ -964,19 +965,19 @@ LayoutUnit LayoutDeprecatedFlexibleBox::allowedChildFlex(LayoutBox* child, bool 
             LayoutUnit maxWidth = LayoutUnit::max();
             LayoutUnit width = contentWidthForChild(child);
             if (child->style()->maxWidth().isFixed())
-                maxWidth = child->style()->maxWidth().value();
+                maxWidth = LayoutUnit(child->style()->maxWidth().value());
             if (maxWidth == LayoutUnit::max())
                 return maxWidth;
-            return std::max<LayoutUnit>(0, maxWidth - width);
+            return (maxWidth - width).clampNegativeToZero();
         }
         // FIXME: For now just handle fixed values.
         LayoutUnit maxHeight = LayoutUnit::max();
         LayoutUnit height = contentHeightForChild(child);
         if (child->style()->maxHeight().isFixed())
-            maxHeight = child->style()->maxHeight().value();
+            maxHeight = LayoutUnit(child->style()->maxHeight().value());
         if (maxHeight == LayoutUnit::max())
             return maxHeight;
-        return std::max<LayoutUnit>(0, maxHeight - height);
+        return (maxHeight - height).clampNegativeToZero();
     }
 
     // FIXME: For now just handle fixed values.
@@ -984,21 +985,21 @@ LayoutUnit LayoutDeprecatedFlexibleBox::allowedChildFlex(LayoutBox* child, bool 
         LayoutUnit minWidth = child->minPreferredLogicalWidth();
         LayoutUnit width = contentWidthForChild(child);
         if (child->style()->minWidth().isFixed())
-            minWidth = child->style()->minWidth().value();
+            minWidth = LayoutUnit(child->style()->minWidth().value());
         else if (child->style()->minWidth().type() == Auto)
-            minWidth = 0;
+            minWidth = LayoutUnit();
 
-        LayoutUnit allowedShrinkage = std::min<LayoutUnit>(0, minWidth - width);
+        LayoutUnit allowedShrinkage = (minWidth - width).clampPositiveToZero();
         return allowedShrinkage;
     }
     Length minHeight = child->style()->minHeight();
     if (minHeight.isFixed() || minHeight.isAuto()) {
-        LayoutUnit minHeight = child->style()->minHeight().value();
+        LayoutUnit minHeight(child->style()->minHeight().value());
         LayoutUnit height = contentHeightForChild(child);
-        LayoutUnit allowedShrinkage = std::min<LayoutUnit>(0, minHeight - height);
+        LayoutUnit allowedShrinkage = (minHeight - height).clampPositiveToZero();
         return allowedShrinkage;
     }
-    return 0;
+    return LayoutUnit();
 }
 
 } // namespace blink

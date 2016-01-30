@@ -150,7 +150,7 @@ LayoutUnit InlineBox::logicalHeight() const
     ASSERT(isInlineFlowBox());
     LineLayoutBoxModel flowObject = boxModelObject();
     const FontMetrics& fontMetrics = lineLayoutItem().style(isFirstLineStyle())->fontMetrics();
-    LayoutUnit result = fontMetrics.height();
+    LayoutUnit result(fontMetrics.height());
     if (parent())
         result += flowObject.borderAndPaddingLogicalHeight();
     return result;
@@ -320,7 +320,7 @@ LayoutUnit InlineBox::placeEllipsisBox(bool, LayoutUnit, LayoutUnit, LayoutUnit,
 {
     // Use -1 to mean "we didn't set the position."
     truncatedWidth += logicalWidth();
-    return -1;
+    return LayoutUnit(-1);
 }
 
 void InlineBox::clearKnownToHaveNoOverflow()

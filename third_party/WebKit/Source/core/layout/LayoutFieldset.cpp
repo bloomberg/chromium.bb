@@ -101,7 +101,7 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
 
         setLogicalLeftForChild(*legend, logicalLeft);
 
-        LayoutUnit fieldsetBorderBefore = borderBefore();
+        LayoutUnit fieldsetBorderBefore = LayoutUnit(borderBefore());
         LayoutUnit legendLogicalHeight = logicalHeightForChild(*legend);
 
         LayoutUnit legendLogicalTop;

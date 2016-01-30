@@ -101,7 +101,7 @@ public:
 
     LayoutUnit availableLogicalWidthForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
-        return (logicalRightOffsetForLine(position, indentText, logicalHeight) - logicalLeftOffsetForLine(position, indentText, logicalHeight)).clampToZero();
+        return (logicalRightOffsetForLine(position, indentText, logicalHeight) - logicalLeftOffsetForLine(position, indentText, logicalHeight)).clampNegativeToZero();
     }
     LayoutUnit logicalRightOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {
@@ -292,11 +292,11 @@ protected:
 
     void addOverflowFromFloats();
 
-    LayoutUnit logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, IndentTextOrNot applyTextIndent, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, IndentTextOrNot applyTextIndent, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return adjustLogicalRightOffsetForLine(logicalRightFloatOffsetForLine(logicalTop, fixedOffset, logicalHeight), applyTextIndent);
     }
-    LayoutUnit logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, IndentTextOrNot applyTextIndent, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, IndentTextOrNot applyTextIndent, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, logicalHeight), applyTextIndent);
     }
@@ -447,19 +447,19 @@ public:
 
         static LayoutUnit positiveMarginBeforeDefault(const LayoutBlockFlow* block)
         {
-            return block->marginBefore().clampToZero();
+            return block->marginBefore().clampNegativeToZero();
         }
         static LayoutUnit negativeMarginBeforeDefault(const LayoutBlockFlow* block)
         {
-            return (-block->marginBefore()).clampToZero();
+            return (-block->marginBefore()).clampNegativeToZero();
         }
         static LayoutUnit positiveMarginAfterDefault(const LayoutBlockFlow* block)
         {
-            return block->marginAfter().clampToZero();
+            return block->marginAfter().clampNegativeToZero();
         }
         static LayoutUnit negativeMarginAfterDefault(const LayoutBlockFlow* block)
         {
-            return (-block->marginAfter()).clampToZero();
+            return (-block->marginAfter()).clampNegativeToZero();
         }
 
         MarginValues m_margins;

@@ -121,23 +121,23 @@ public:
     {
         LayoutUnit delta = edge - x();
         setX(edge);
-        setWidth((width() - delta).clampToZero());
+        setWidth((width() - delta).clampNegativeToZero());
     }
     void shiftMaxXEdgeTo(LayoutUnit edge)
     {
         LayoutUnit delta = edge - maxX();
-        setWidth((width() + delta).clampToZero());
+        setWidth((width() + delta).clampNegativeToZero());
     }
     void shiftYEdgeTo(LayoutUnit edge)
     {
         LayoutUnit delta = edge - y();
         setY(edge);
-        setHeight((height() - delta).clampToZero());
+        setHeight((height() - delta).clampNegativeToZero());
     }
     void shiftMaxYEdgeTo(LayoutUnit edge)
     {
         LayoutUnit delta = edge - maxY();
-        setHeight((height() + delta).clampToZero());
+        setHeight((height() + delta).clampNegativeToZero());
     }
 
     LayoutPoint minXMinYCorner() const { return m_location; } // typically topLeft

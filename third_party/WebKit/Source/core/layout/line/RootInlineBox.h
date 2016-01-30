@@ -61,10 +61,10 @@ public:
 
     LayoutUnit selectionTop() const;
     LayoutUnit selectionBottom() const;
-    LayoutUnit selectionHeight() const { return max<LayoutUnit>(0, selectionBottom() - selectionTop()); }
+    LayoutUnit selectionHeight() const { return (selectionBottom() - selectionTop()).clampNegativeToZero(); }
 
     LayoutUnit selectionTopAdjustedForPrecedingBlock() const;
-    LayoutUnit selectionHeightAdjustedForPrecedingBlock() const { return max<LayoutUnit>(0, selectionBottom() - selectionTopAdjustedForPrecedingBlock()); }
+    LayoutUnit selectionHeightAdjustedForPrecedingBlock() const { return (selectionBottom() - selectionTopAdjustedForPrecedingBlock()).clampNegativeToZero(); }
 
     LayoutUnit blockDirectionPointInLine() const;
 

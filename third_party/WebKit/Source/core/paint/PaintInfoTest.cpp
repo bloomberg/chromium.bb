@@ -33,7 +33,7 @@ TEST_F(PaintInfoTest, intersectsCullRectWithLayoutRect)
     PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0, 0, 1, 1)));
-    EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0.1, 0.1, 0.1, 0.1)));
+    EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(LayoutUnit(0.1), LayoutUnit(0.1), LayoutUnit(0.1), LayoutUnit(0.1))));
 }
 
 TEST_F(PaintInfoTest, intersectsCullRectWithTransform)
@@ -61,16 +61,16 @@ TEST_F(PaintInfoTest, intersectsVerticalRange)
 {
     PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
-    EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(0, 1));
-    EXPECT_FALSE(paintInfo.cullRect().intersectsVerticalRange(100, 101));
+    EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(0), LayoutUnit(1)));
+    EXPECT_FALSE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(100), LayoutUnit(101)));
 }
 
 TEST_F(PaintInfoTest, intersectsHorizontalRange)
 {
     PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
-    EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(0, 1));
-    EXPECT_FALSE(paintInfo.cullRect().intersectsHorizontalRange(50, 51));
+    EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(0), LayoutUnit(1)));
+    EXPECT_FALSE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(50), LayoutUnit(51)));
 }
 
 } // namespace blink

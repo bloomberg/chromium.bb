@@ -281,7 +281,7 @@ void LayoutTable::updateLogicalWidth()
         LayoutUnit marginTotal = marginStart + marginEnd;
 
         // Subtract out our margins to get the available content width.
-        LayoutUnit availableContentLogicalWidth = std::max<LayoutUnit>(0, containerWidthInInlineDirection - marginTotal);
+        LayoutUnit availableContentLogicalWidth = (containerWidthInInlineDirection - marginTotal).clampNegativeToZero();
         if (shrinkToAvoidFloats() && cb->isLayoutBlockFlow() && toLayoutBlockFlow(cb)->containsFloats() && !hasPerpendicularContainingBlock)
             availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toLayoutBlockFlow(cb));
 
@@ -356,7 +356,7 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(const Length& 
     } else {
         ASSERT_NOT_REACHED();
     }
-    return std::max<LayoutUnit>(0, computedLogicalHeight);
+    return computedLogicalHeight.clampNegativeToZero();
 }
 
 void LayoutTable::layoutCaption(LayoutTableCaption& caption)

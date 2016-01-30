@@ -157,20 +157,20 @@ TEST_F(OverflowModelTest, AddContentsVisualOverflowEmpty)
 
 TEST_F(OverflowModelTest, MoveAffectsLayoutOverflow)
 {
-    m_overflow.move(500, 100);
+    m_overflow.move(LayoutUnit(500), LayoutUnit(100));
     EXPECT_EQ(LayoutRect(510, 110, 80, 80), m_overflow.layoutOverflowRect());
 }
 
 TEST_F(OverflowModelTest, MoveAffectsVisualOverflow)
 {
-    m_overflow.move(500, 100);
+    m_overflow.move(LayoutUnit(500), LayoutUnit(100));
     EXPECT_EQ(LayoutRect(500, 100, 100, 100), m_overflow.visualOverflowRect());
 }
 
 TEST_F(OverflowModelTest, MoveAffectsContentsVisualOverflow)
 {
     m_overflow.addContentsVisualOverflow(LayoutRect(0, 0, 10, 10));
-    m_overflow.move(500, 100);
+    m_overflow.move(LayoutUnit(500), LayoutUnit(100));
     EXPECT_EQ(LayoutRect(500, 100, 10, 10), m_overflow.contentsVisualOverflowRect());
 }
 

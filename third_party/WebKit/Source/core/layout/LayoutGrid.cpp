@@ -455,7 +455,7 @@ LayoutUnit LayoutGrid::computeIntrinsicLogicalContentHeightUsing(const Length& l
         if (m_minContentHeight == -1 || m_maxContentHeight == -1)
             return -1;
         LayoutUnit fillAvailableExtent = containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding);
-        return std::min<LayoutUnit>(m_maxContentHeight, std::max<LayoutUnit>(m_minContentHeight, fillAvailableExtent));
+        return std::min<LayoutUnit>(m_maxContentHeight, std::max(m_minContentHeight, fillAvailableExtent));
     }
 
     if (logicalHeightLength.isFillAvailable())
@@ -1012,7 +1012,7 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
         spanningTracksSize += guttersSize(direction, itemSpan.integerSpan());
 
         LayoutUnit extraSpace = currentItemSizeForTrackSizeComputationPhase(phase, gridItemWithSpan.gridItem(), direction, sizingData.columnTracks) - spanningTracksSize;
-        extraSpace = std::max<LayoutUnit>(extraSpace, 0);
+        extraSpace = extraSpace.clampNegativeToZero();
         auto& tracksToGrowBeyondGrowthLimits = sizingData.growBeyondGrowthLimitsTracks.isEmpty() ? sizingData.filteredTracks : sizingData.growBeyondGrowthLimitsTracks;
         distributeSpaceToTracks<phase>(sizingData.filteredTracks, &tracksToGrowBeyondGrowthLimits, sizingData, extraSpace);
     }
@@ -1621,7 +1621,7 @@ static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, Lay
     case OverflowAlignmentSafe:
         // If overflow is 'safe', we have to make sure we don't overflow the 'start'
         // edge (potentially cause some data loss as the overflow is unreachable).
-        return std::max<LayoutUnit>(0, offset);
+        return offset.clampNegativeToZero();
     case OverflowAlignmentUnsafe:
     case OverflowAlignmentDefault:
         // If we overflow our alignment container and overflow is 'true' (default), we

@@ -132,7 +132,11 @@ private:
 
         // Return the column height that this content run would require, considering the implicit
         // breaks assumed so far.
-        LayoutUnit columnLogicalHeight(LayoutUnit startOffset) const { return ceilf((m_breakOffset - startOffset).toFloat() / float(m_assumedImplicitBreaks + 1)); }
+        LayoutUnit columnLogicalHeight(LayoutUnit startOffset) const
+        {
+            // TODO(leviw): This should probably be fromFloatCeil.
+            return LayoutUnit(ceilf((m_breakOffset - startOffset) / float(m_assumedImplicitBreaks + 1)));
+        }
 
     private:
         LayoutUnit m_breakOffset; // Flow thread offset where this run ends.

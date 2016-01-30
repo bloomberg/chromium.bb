@@ -45,7 +45,6 @@ public:
         , m_isFullLayout(fullLayout)
         , m_paintInvalidationLogicalTop(paintInvalidationLogicalTop)
         , m_paintInvalidationLogicalBottom(paintInvalidationLogicalBottom)
-        , m_adjustedLogicalLineTop(0)
         , m_usesPaintInvalidationBounds(false)
         , m_flowThread(flowThread)
     { }
@@ -61,11 +60,11 @@ public:
         m_paintInvalidationLogicalTop = m_paintInvalidationLogicalBottom = logicalHeight;
     }
 
-    void updatePaintInvalidationRangeFromBox(RootInlineBox* box, LayoutUnit paginationDelta = 0)
+    void updatePaintInvalidationRangeFromBox(RootInlineBox* box, LayoutUnit paginationDelta = LayoutUnit())
     {
         m_usesPaintInvalidationBounds = true;
-        m_paintInvalidationLogicalTop = std::min(m_paintInvalidationLogicalTop, box->logicalTopVisualOverflow() + std::min<LayoutUnit>(paginationDelta, 0));
-        m_paintInvalidationLogicalBottom = std::max(m_paintInvalidationLogicalBottom, box->logicalBottomVisualOverflow() + std::max<LayoutUnit>(paginationDelta, 0));
+        m_paintInvalidationLogicalTop = std::min(m_paintInvalidationLogicalTop, box->logicalTopVisualOverflow() + paginationDelta.clampPositiveToZero());
+        m_paintInvalidationLogicalBottom = std::max(m_paintInvalidationLogicalBottom, box->logicalBottomVisualOverflow() + paginationDelta.clampNegativeToZero());
     }
 
     bool endLineMatched() const { return m_endLineMatched; }

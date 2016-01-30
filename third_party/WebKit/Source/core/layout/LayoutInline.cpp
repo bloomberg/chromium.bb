@@ -243,7 +243,7 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox, int, LayoutUnit* e
     ASSERT_UNUSED(inlineBox, !inlineBox);
 
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = 0;
+        *extraWidthToEndOfLine = LayoutUnit();
 
     LayoutRect caretRect = localCaretRectForEmptyElement(borderAndPaddingWidth(), 0);
 
@@ -564,10 +564,13 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
                 RootInlineBox& rootBox = currBox->inlineBoxWrapper()->root();
                 int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
-                if (isHorizontal)
-                    yield(LayoutRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, currBox->size().width() + currBox->marginWidth(), logicalHeight));
-                else
-                    yield(LayoutRect(logicalTop, currBox->inlineBoxWrapper()->y() - currBox->marginTop(), logicalHeight, currBox->size().height() + currBox->marginHeight()));
+                if (isHorizontal) {
+                    yield(LayoutRect(LayoutUnit(currBox->inlineBoxWrapper()->x() - currBox->marginLeft()), LayoutUnit(logicalTop),
+                        LayoutUnit(currBox->size().width() + currBox->marginWidth()), LayoutUnit(logicalHeight)));
+                } else {
+                    yield(LayoutRect(LayoutUnit(logicalTop), LayoutUnit(currBox->inlineBoxWrapper()->y() - currBox->marginTop()),
+                        LayoutUnit(logicalHeight), currBox->size().height() + currBox->marginHeight()));
+                }
             }
         } else if (curr->isLayoutInline()) {
             // If the child doesn't need line boxes either, then we can recur.
@@ -580,15 +583,15 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
                     int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                     int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                     if (isHorizontal) {
-                        yield(LayoutRect(childLine->x() - childLine->marginLogicalLeft(),
-                            logicalTop,
-                            childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight(),
-                            logicalHeight));
+                        yield(LayoutRect(LayoutUnit(childLine->x() - childLine->marginLogicalLeft()),
+                            LayoutUnit(logicalTop),
+                            LayoutUnit(childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight()),
+                            LayoutUnit(logicalHeight)));
                     } else {
-                        yield(LayoutRect(logicalTop,
-                            childLine->y() - childLine->marginLogicalLeft(),
-                            logicalHeight,
-                            childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight()));
+                        yield(LayoutRect(LayoutUnit(logicalTop),
+                            LayoutUnit(childLine->y() - childLine->marginLogicalLeft()),
+                            LayoutUnit(logicalHeight),
+                            LayoutUnit(childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight())));
                     }
                 }
             }
@@ -875,8 +878,8 @@ IntRect LayoutInline::linesBoundingBox() const
     ASSERT(!firstLineBox() == !lastLineBox()); // Either both are null or both exist.
     if (firstLineBox() && lastLineBox()) {
         // Return the width of the minimal left side and the maximal right side.
-        LayoutUnit logicalLeftSide = 0;
-        LayoutUnit logicalRightSide = 0;
+        LayoutUnit logicalLeftSide;
+        LayoutUnit logicalRightSide;
         for (InlineFlowBox* curr = firstLineBox(); curr; curr = curr->nextLineBox()) {
             if (curr == firstLineBox() || curr->logicalLeft() < logicalLeftSide)
                 logicalLeftSide = curr->logicalLeft();
