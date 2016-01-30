@@ -93,7 +93,7 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     if (sync_token.HasData()) {
       gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-      if (sync_token_.HasData()) {
+      if (sync_token_.HasData() && sync_token_ != sync_token) {
         gl_->WaitSyncTokenCHROMIUM(sync_token_.GetConstData());
         sync_token_.Clear();
       }
