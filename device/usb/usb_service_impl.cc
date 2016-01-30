@@ -46,10 +46,6 @@ namespace {
 
 // Standard USB requests and descriptor types:
 const uint16_t kUsbVersion2_1 = 0x0210;
-const uint8_t kGetDescriptorRequest = 0x06;
-const uint8_t kStringDescriptorType = 0x03;
-
-const int kControlTransferTimeout = 60000;  // 1 minute
 
 #if defined(OS_WIN)
 
@@ -116,91 +112,26 @@ void GetDeviceListOnBlockingThread(
                         base::Bind(callback, platform_devices, device_count));
 }
 
-void OnReadStringDescriptor(
-    const base::Callback<void(const base::string16&)>& callback,
-    UsbTransferStatus status,
-    scoped_refptr<net::IOBuffer> buffer,
-    size_t length) {
-  base::string16 string;
-  if (status == USB_TRANSFER_COMPLETED &&
-      ParseUsbStringDescriptor(
-          std::vector<uint8_t>(buffer->data(), buffer->data() + length),
-          &string)) {
-    callback.Run(string);
-  } else {
-    callback.Run(base::string16());
-  }
-}
-
-void ReadStringDescriptor(
-    scoped_refptr<UsbDeviceHandle> device_handle,
-    uint8_t index,
-    uint16_t language_id,
-    const base::Callback<void(const base::string16&)>& callback) {
-  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(255);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
-      kGetDescriptorRequest, kStringDescriptorType << 8 | index, language_id,
-      buffer, buffer->size(), kControlTransferTimeout,
-      base::Bind(&OnReadStringDescriptor, callback));
-}
-
 void CloseHandleAndRunContinuation(scoped_refptr<UsbDeviceHandle> device_handle,
                                    const base::Closure& continuation) {
   device_handle->Close();
   continuation.Run();
 }
 
-void SaveStringAndRunContinuation(
-    const base::Callback<void(const base::string16&)>& save_callback,
+void SaveStringsAndRunContinuation(
+    scoped_refptr<UsbDeviceImpl> device,
+    uint8_t manufacturer,
+    uint8_t product,
+    uint8_t serial_number,
     const base::Closure& continuation,
-    const base::string16& value) {
-  if (!value.empty()) {
-    save_callback.Run(value);
-  }
+    scoped_ptr<std::map<uint8_t, base::string16>> string_map) {
+  if (manufacturer != 0)
+    device->set_manufacturer_string((*string_map)[manufacturer]);
+  if (product != 0)
+    device->set_product_string((*string_map)[product]);
+  if (serial_number != 0)
+    device->set_serial_number((*string_map)[serial_number]);
   continuation.Run();
-}
-
-// This function runs |barrier| once for every string it tries to read.
-void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
-                       uint8_t manufacturer,
-                       uint8_t product,
-                       uint8_t serial_number,
-                       const base::Closure& barrier,
-                       const base::string16& languages) {
-  // Default to English unless the device provides a language and then just pick
-  // the first one.
-  uint16_t language_id = 0x0409;
-  if (!languages.empty()) {
-    language_id = languages[0];
-  }
-
-  scoped_refptr<UsbDeviceImpl> device =
-      static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
-
-  if (manufacturer != 0) {
-    ReadStringDescriptor(
-        device_handle, manufacturer, language_id,
-        base::Bind(&SaveStringAndRunContinuation,
-                   base::Bind(&UsbDeviceImpl::set_manufacturer_string, device),
-                   barrier));
-  }
-
-  if (product != 0) {
-    ReadStringDescriptor(
-        device_handle, product, language_id,
-        base::Bind(&SaveStringAndRunContinuation,
-                   base::Bind(&UsbDeviceImpl::set_product_string, device),
-                   barrier));
-  }
-
-  if (serial_number != 0) {
-    ReadStringDescriptor(
-        device_handle, serial_number, language_id,
-        base::Bind(&SaveStringAndRunContinuation,
-                   base::Bind(&UsbDeviceImpl::set_serial_number, device),
-                   barrier));
-  }
 }
 
 void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
@@ -227,12 +158,17 @@ void OnDeviceOpenedReadDescriptors(
     const base::Closure& failure_closure,
     scoped_refptr<UsbDeviceHandle> device_handle) {
   if (device_handle) {
-    int count = 0;
+    scoped_ptr<std::map<uint8_t, base::string16>> string_map(
+        new std::map<uint8_t, base::string16>());
     if (manufacturer != 0)
-      count++;
+      (*string_map)[manufacturer] = base::string16();
     if (product != 0)
-      count++;
+      (*string_map)[product] = base::string16();
     if (serial_number != 0)
+      (*string_map)[serial_number] = base::string16();
+
+    int count = 0;
+    if (!string_map->empty())
       count++;
     if (read_bos_descriptors)
       count++;
@@ -242,11 +178,14 @@ void OnDeviceOpenedReadDescriptors(
         base::BarrierClosure(count, base::Bind(&CloseHandleAndRunContinuation,
                                                device_handle, success_closure));
 
-    if (manufacturer != 0 || product != 0 || serial_number != 0) {
-      ReadStringDescriptor(
-          device_handle, 0, 0,
-          base::Bind(&OnReadLanguageIds, device_handle, manufacturer, product,
-                     serial_number, barrier));
+    if (!string_map->empty()) {
+      scoped_refptr<UsbDeviceImpl> device =
+          static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
+
+      ReadUsbStringDescriptors(
+          device_handle, std::move(string_map),
+          base::Bind(&SaveStringsAndRunContinuation, device, manufacturer,
+                     product, serial_number, barrier));
     }
 
     if (read_bos_descriptors) {
