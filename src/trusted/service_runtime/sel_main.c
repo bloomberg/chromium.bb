@@ -23,14 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/shared/gio/gio.h"
-#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
@@ -127,7 +124,7 @@ static void PrintUsage(void) {
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-l log_file]\n"
-          "               [-X d] [-acFglQRsSQv]\n"
+          "               [-acFglQsSQv]\n"
           "               -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
@@ -141,16 +138,9 @@ static void PrintUsage(void) {
           " -B additional ELF file to load as a blob library\n"
           " -v increases verbosity\n"
           " -e enable hardware exception handling\n"
-          " -X create a bound socket and export the address via an\n"
-          "    IMC message to a corresponding inherited IMC app descriptor\n"
-          "    (use -1 to create the bound socket / address descriptor\n"
-          "    pair, but that no export via IMC should occur)\n"
           " -E <name=value>|<name> set an environment variable\n"
           " -p pass through all environment variables\n");
   fprintf(stderr,
-          " -R an RPC supplies the NaCl module.\n"
-          "    No nacl_file argument is expected, and the -f flag cannot be\n"
-          "    used with this flag.\n"
           "\n"
           " (testing flags)\n"
           " -a allow file access plus some other syscalls! dangerous!\n"
@@ -197,8 +187,6 @@ struct SelLdrOptions {
   int enable_env_passthrough;
   int enable_exception_handling;
   int enable_debug_stub;
-  int rpc_supplies_nexe;
-  int export_addr_to;
   int debug_mode_bypass_acl_checks;
   int debug_mode_ignore_validator;
   int debug_mode_startup_signal;
@@ -223,8 +211,6 @@ static void SelLdrOptionsCtor(struct SelLdrOptions *options) {
   options->enable_env_passthrough = 0;
   options->enable_exception_handling = 0;
   options->enable_debug_stub = 0;
-  options->rpc_supplies_nexe = 0;
-  options->export_addr_to = -1;
   options->debug_mode_bypass_acl_checks = 0;
   options->debug_mode_ignore_validator = 0;
   options->debug_mode_startup_signal = 0;
@@ -365,9 +351,6 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
                   "Native Client's sandbox will be unreliable!\n");
         options->skip_qualification = 1;
         break;
-      case 'R':
-        options->rpc_supplies_nexe = 1;
-        break;
       /* case 'r':  with 'h' and 'w' above */
       case 's':
         if (nap->validator->stubout_mode_implemented) {
@@ -384,9 +367,6 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
         NaClLogIncrVerbosity();
         break;
       /* case 'w':  with 'h' and 'r' above */
-      case 'X':
-        options->export_addr_to = strtol(optarg, (char **) 0, 0);
-        break;
 #if NACL_LINUX
       case 'z':
         NaClHandleReservedAtZero(optarg);
@@ -436,39 +416,15 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
     putc('\n', stderr);
   }
 
-  if (options->rpc_supplies_nexe) {
-    if (NULL != options->nacl_file) {
-      fprintf(stderr,
-              "sel_ldr: mutually exclusive flags -f and -R both used\n");
-      exit(1);
-    }
-    /* post: NULL == nacl_file */
-    if (options->export_addr_to < 0) {
-      fprintf(stderr,
-              "sel_ldr: -R requires -X to set up secure command channel\n");
-      exit(1);
-    }
-  } else {
-    if (NULL == options->nacl_file && optind < argc) {
-      options->nacl_file = argv[optind];
-      ++optind;
-    }
-    if (NULL == options->nacl_file) {
-      fprintf(stderr, "No nacl file specified\n");
-      exit(1);
-    }
-    /* post: NULL != nacl_file */
+  if (NULL == options->nacl_file && optind < argc) {
+    options->nacl_file = argv[optind];
+    ++optind;
   }
-  /*
-   * post condition established by the above code (in Hoare logic
-   * terminology):
-   *
-   * NULL == nacl_file iff rpc_supplies_nexe
-   *
-   * so hence forth, testing !rpc_supplies_nexe suffices for
-   * establishing NULL != nacl_file.
-   */
-  CHECK((NULL == options->nacl_file) == options->rpc_supplies_nexe);
+  if (NULL == options->nacl_file) {
+    fprintf(stderr, "No nacl file specified\n");
+    exit(1);
+  }
+  /* post: NULL != nacl_file */
 
   /* to be passed to NaClMain, eventually... */
   if (NULL != options->nacl_file && options->debug_mode_bypass_acl_checks) {
@@ -686,77 +642,27 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   NaClAppInitialDescriptorHookup(nap);
 
-  if (!options->rpc_supplies_nexe) {
-    if (LOAD_OK == errcode) {
-      NaClLog(2, "Loading nacl file %s (non-RPC)\n", options->nacl_file);
-      errcode = NaClAppLoadFileFromFilename(nap, options->nacl_file);
-      if (LOAD_OK != errcode && !options->quiet) {
-        NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n"
-                "Using the wrong type of nexe (nacl-x86-32"
-                " on an x86-64 or vice versa)\n"
-                "or a corrupt nexe file may be"
-                " responsible for this error.\n",
-                options->nacl_file,
-                NaClErrorString(errcode));
-      }
-      NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
-      NaClPerfCounterIntervalLast(&time_all_main);
+  if (LOAD_OK == errcode) {
+    NaClLog(2, "Loading nacl file %s (non-RPC)\n", options->nacl_file);
+    errcode = NaClAppLoadFileFromFilename(nap, options->nacl_file);
+    if (LOAD_OK != errcode && !options->quiet) {
+      NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n"
+              "Using the wrong type of nexe (nacl-x86-32"
+              " on an x86-64 or vice versa)\n"
+              "or a corrupt nexe file may be"
+              " responsible for this error.\n",
+              options->nacl_file,
+              NaClErrorString(errcode));
     }
+    NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
+    NaClPerfCounterIntervalLast(&time_all_main);
+  }
 
-    if (options->fuzzing_quit_after_load) {
-      exit(0);
-    }
+  if (options->fuzzing_quit_after_load) {
+    exit(0);
   }
 
   RedirectIO(nap, options->redir_queue);
-
-  /*
-   * If export_addr_to is set to a non-negative integer, we create a
-   * bound socket and socket address pair and bind the former to
-   * descriptor NACL_SERVICE_PORT_DESCRIPTOR (3 [see sel_ldr.h]) and
-   * the latter to descriptor NACL_SERVICE_ADDRESS_DESCRIPTOR (4).
-   * The socket address is sent to the export_addr_to descriptor.
-   *
-   * The service runtime also accepts a connection on the bound socket
-   * and spawns a secure command channel thread to service it.
-   */
-  if (0 <= options->export_addr_to) {
-    NaClCreateServiceSocket(nap);
-    /*
-     * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
-     * not be reported via the crash log mechanism (for Chromium
-     * embedding of NaCl, shown in the JavaScript console).
-     *
-     * Some errors, such as due to NaClRunSelQualificationTests, do not
-     * trigger a LOG_FATAL but instead set module_load_status to be sent
-     * in the start_module RPC reply.  Log messages associated with such
-     * errors would be seen, since NaClSetUpBootstrapChannel will get
-     * called.
-     */
-    NaClSetUpBootstrapChannel(nap,
-                              (NaClHandle) (intptr_t) options->export_addr_to);
-    /*
-     * NB: spawns a thread that uses the command channel.  we do
-     * this after NaClAppLoadFile so that NaClApp object is more
-     * fully populated.  Hereafter any changes to nap should be done
-     * while holding locks.
-     */
-    NaClSecureCommandChannel(nap);
-  }
-
-  /*
-   * May have created a thread, so need to synchronize uses of nap
-   * contents henceforth.
-   */
-
-  if (options->rpc_supplies_nexe) {
-    NaClErrorCode load_error = NaClWaitForLoadModuleCommand(nap);
-    if (load_error != LOAD_OK) {
-      errcode = load_error;
-    }
-    NaClPerfCounterMark(&time_all_main, "WaitForLoad");
-    NaClPerfCounterIntervalLast(&time_all_main);
-  }
 
   /*
    * Tell the debug stub to bind a TCP port before enabling the outer
@@ -774,13 +680,7 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   /*
    * Enable the outer sandbox, if one is defined.  Do this as soon as
-   * possible.
-   *
-   * This must come after NaClWaitForLoadModuleCommand(), which waits
-   * for another thread to have called NaClAppLoadFile().
-   * NaClAppLoadFile() does not work inside the Mac outer sandbox in
-   * standalone sel_ldr when using a dynamic code area because it uses
-   * NaClCreateMemoryObject() which opens a file in /tmp.
+   * possible, but after we have opened files.
    *
    * We cannot enable the sandbox if file access is enabled.
    */
@@ -815,20 +715,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
   fflush((FILE *) NULL);
 
-  if (NULL != nap->secure_service) {
-    NaClErrorCode start_result;
-    /*
-     * wait for start_module RPC call on secure channel thread.
-     */
-    start_result = NaClWaitForStartModuleCommand(nap);
-    NaClPerfCounterMark(&time_all_main, "WaitedForStartModuleCommand");
-    NaClPerfCounterIntervalLast(&time_all_main);
-    if (LOAD_OK == errcode) {
-      errcode = start_result;
-    }
-  } else {
-    NaClAppStartModule(nap, NULL, NULL);
-  }
+  NaClAppStartModule(nap, NULL, NULL);
 
   /*
    * error reporting done; can quit now if there was an error earlier.
@@ -885,17 +772,6 @@ int NaClSelLdrMain(int argc, char **argv) {
     fflush(stdout);
     PrintVmmap(nap);
     fflush(stdout);
-  }
-  /*
-   * If there is a secure command channel, we sent an RPC reply with
-   * the reason that the nexe was rejected.  If we exit now, that
-   * reply may still be in-flight and the various channel closure (esp
-   * reverse channel) may be detected first.  This would result in a
-   * crash being reported, rather than the error in the RPC reply.
-   * Instead, we wait for the hard-shutdown on the command channel.
-   */
-  if (LOAD_OK != errcode) {
-    NaClBlockIfCommandChannelExists(nap);
   }
 
   if (options->verbosity > 0) {
