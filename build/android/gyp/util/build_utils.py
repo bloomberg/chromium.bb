@@ -11,6 +11,7 @@ import pipes
 import re
 import shlex
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -209,6 +210,14 @@ def CheckZipPath(name):
     raise Exception('Absolute zip path: %s' % name)
 
 
+def IsSymlink(zip_file, name):
+  zi = zip_file.getinfo(name)
+
+  # The two high-order bytes of ZipInfo.external_attr represent
+  # UNIX permissions and file type bits.
+  return stat.S_ISLNK(zi.external_attr >> 16L)
+
+
 def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
                predicate=None):
   if path is None:
@@ -232,7 +241,12 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
           raise Exception(
               'Path already exists from zip: %s %s %s'
               % (zip_path, name, output_path))
-      z.extract(name, path)
+      if IsSymlink(z, name):
+        dest = os.path.join(path, name)
+        MakeDirectory(os.path.dirname(dest))
+        os.symlink(z.read(name), dest)
+      else:
+        z.extract(name, path)
 
 
 def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
