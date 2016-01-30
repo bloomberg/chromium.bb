@@ -14,6 +14,6 @@ public class CronetException extends UrlRequestException {
     }
 
     CronetException(String message, int netError) {
-        super(message, null);
+        super(message, netError);
     }
 }

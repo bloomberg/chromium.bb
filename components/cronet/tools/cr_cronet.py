@@ -51,6 +51,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('command',
                       choices=['gyp',
+                               'gn',
                                'sync',
                                'build',
                                'install',
@@ -67,16 +68,23 @@ def main():
   print options
   print extra_options_list
   gyp_defines = 'GYP_DEFINES="OS=android enable_websockets=0 '+ \
-      'disable_file_support=1 disable_ftp_support=1" '
+      'disable_file_support=1 disable_ftp_support=1 '+ \
+      'enable_bidirectional_stream=1"'
+  gn_args = 'target_os="android" enable_websockets=false '+ \
+      'disable_file_support=true disable_ftp_support=true '+ \
+      'enable_bidirectional_stream=false'
   out_dir = 'out/Debug'
   release_arg = ''
   extra_options = ' '.join(extra_options_list)
   if options.release:
     out_dir = 'out/Release'
     release_arg = ' --release'
+    gn_args += ' is_debug=false '
 
   if (options.command=='gyp'):
     return run (gyp_defines + ' gclient runhooks')
+  if (options.command=='gn'):
+    return run ('gn gen ' + out_dir + ' --args=\'' + gn_args + '\'')
   if (options.command=='sync'):
     return run ('git pull --rebase && ' + gyp_defines + ' gclient sync')
   if (options.command=='build'):

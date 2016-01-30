@@ -24,7 +24,6 @@ import java.util.HashMap;
  */
 public class QuicTest extends CronetTestBase {
     private static final String TAG = "cr.QuicTest";
-    private static final String[] CERTS_USED = {"quic_test.example.com.crt"};
     private CronetTestFramework mTestFramework;
     private CronetEngine.Builder mBuilder;
 
@@ -51,7 +50,7 @@ public class QuicTest extends CronetTestBase {
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
 
-        mBuilder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
+        mBuilder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
         mBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         mBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
     }
@@ -141,7 +140,7 @@ public class QuicTest extends CronetTestBase {
         JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
-        builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
+        builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
         registerHostResolver(mTestFramework);
         TestUrlRequestCallback callback2 = new TestUrlRequestCallback();

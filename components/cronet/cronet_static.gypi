@@ -7,6 +7,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+    'cronet_features',
     'cronet_jni_headers',
     'cronet_url_request_java',
     'cronet_version',
@@ -69,6 +70,16 @@
         'sources': [
           'android/cronet_data_reduction_proxy.cc',
           'android/cronet_data_reduction_proxy.h',
+        ],
+      }
+    ],
+    # If Bidirectional Stream support is enabled, add the following sources.
+    # Dependencies are target-specific and are not included here.
+    ['enable_bidirectional_stream==1',
+      {
+        'sources': [
+          'android/cronet_bidirectional_stream_adapter.cc',
+          'android/cronet_bidirectional_stream_adapter.h',
         ],
       }
     ],

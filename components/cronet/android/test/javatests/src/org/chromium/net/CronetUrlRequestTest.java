@@ -149,22 +149,6 @@ public class CronetUrlRequestTest extends CronetTestBase {
         return unknown;
     }
 
-    void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {
-        assertEquals(expected.getAllHeaders(), actual.getAllHeaders());
-        assertEquals(expected.getAllHeadersAsList(), actual.getAllHeadersAsList());
-        assertEquals(expected.getHttpStatusCode(), actual.getHttpStatusCode());
-        assertEquals(expected.getHttpStatusText(), actual.getHttpStatusText());
-        assertEquals(expected.getUrlChain(), actual.getUrlChain());
-        assertEquals(expected.getUrl(), actual.getUrl());
-        // Transferred bytes and proxy server are not supported in pure java
-        if (!(mTestFramework.mCronetEngine instanceof JavaCronetEngine)) {
-            assertEquals(expected.getReceivedBytesCount(), actual.getReceivedBytesCount());
-            assertEquals(expected.getProxyServer(), actual.getProxyServer());
-            // This is a place where behavior intentionally differs between native and java
-            assertEquals(expected.getNegotiatedProtocol(), actual.getNegotiatedProtocol());
-        }
-    }
-
     /**
      * Tests a redirect by running it step-by-step. Also tests that delaying a
      * request works as expected. To make sure there are no unexpected pending

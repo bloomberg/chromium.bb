@@ -194,7 +194,7 @@ final class CronetUrlRequest implements UrlRequest {
             try {
                 mUrlRequestAdapter = nativeCreateRequestAdapter(
                         mRequestContext.getUrlRequestContextAdapter(), mInitialUrl, mPriority);
-                mRequestContext.onRequestStarted(this);
+                mRequestContext.onRequestStarted();
                 if (mInitialMethod != null) {
                     if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
                         throw new IllegalArgumentException("Invalid http method " + mInitialMethod);
@@ -439,7 +439,7 @@ final class CronetUrlRequest implements UrlRequest {
             }
             nativeDestroy(mUrlRequestAdapter, sendOnCanceled);
             mRequestContext.reportFinished(this);
-            mRequestContext.onRequestDestroyed(this);
+            mRequestContext.onRequestDestroyed();
             mUrlRequestAdapter = 0;
             if (mOnDestroyedCallbackForTesting != null) {
                 mOnDestroyedCallbackForTesting.run();

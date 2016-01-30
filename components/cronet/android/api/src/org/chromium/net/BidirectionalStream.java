@@ -88,7 +88,7 @@ public abstract class BidirectionalStream {
          */
         public Builder setHttpMethod(String method) {
             if (method == null) {
-                throw new NullPointerException("Invalid method name.");
+                throw new NullPointerException("Method is required.");
             }
             mHttpMethod = method;
             return this;

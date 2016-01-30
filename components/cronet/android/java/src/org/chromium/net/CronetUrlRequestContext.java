@@ -143,7 +143,11 @@ class CronetUrlRequestContext extends CronetEngine {
     BidirectionalStream createBidirectionalStream(String url, BidirectionalStream.Callback callback,
             Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
             @BidirectionalStream.Builder.StreamPriority int priority) {
-        throw new UnsupportedOperationException();
+        synchronized (mLock) {
+            checkHaveAdapter();
+            return new CronetBidirectionalStream(
+                    this, url, priority, callback, executor, httpMethod, requestHeaders);
+        }
     }
 
     @Override
@@ -343,7 +347,7 @@ class CronetUrlRequestContext extends CronetEngine {
      * Mark request as started to prevent shutdown when there are active
      * requests.
      */
-    void onRequestStarted(UrlRequest urlRequest) {
+    void onRequestStarted() {
         mActiveRequestCount.incrementAndGet();
     }
 
@@ -351,7 +355,7 @@ class CronetUrlRequestContext extends CronetEngine {
      * Mark request as finished to allow shutdown when there are no active
      * requests.
      */
-    void onRequestDestroyed(UrlRequest urlRequest) {
+    void onRequestDestroyed() {
         mActiveRequestCount.decrementAndGet();
     }
 

@@ -19,6 +19,10 @@ public final class QuicTestServer {
     private static final ConditionVariable sBlock = new ConditionVariable();
     private static final String TAG = "cr.QuicTestServer";
 
+    private static final String CERT_USED = "quic_test.example.com.crt";
+    private static final String KEY_USED = "quic_test.example.com.key";
+    private static final String[] CERTS_USED = {CERT_USED};
+
     public static void startQuicTestServer(Context context) {
         TestFilesInstaller.installIfNeeded(context);
         nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context));
@@ -40,6 +44,18 @@ public final class QuicTestServer {
 
     public static int getServerPort() {
         return nativeGetServerPort();
+    }
+
+    public static final String getServerCert() {
+        return CERT_USED;
+    }
+
+    public static final String getServerCertKey() {
+        return KEY_USED;
+    }
+
+    public static long createMockCertVerifier() {
+        return MockCertVerifier.createMockCertVerifier(CERTS_USED);
     }
 
     @CalledByNative

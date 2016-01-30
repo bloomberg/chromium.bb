@@ -21,12 +21,17 @@
 #include "components/cronet/android/cronet_upload_data_stream_adapter.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/cronet_features.h"
 #include "components/cronet/version.h"
 #include "jni/CronetLibraryLoader_jni.h"
 #include "net/android/net_jni_registrar.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "url/url_util.h"
+
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
+#include "components/cronet/android/cronet_bidirectional_stream_adapter.h"
+#endif
 
 #if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
 #include "url/android/url_jni_registrar.h"  // nogncheck
@@ -41,6 +46,10 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"BaseAndroid", base::android::RegisterJni},
     {"ChromiumUrlRequest", ChromiumUrlRequestRegisterJni},
     {"ChromiumUrlRequestContext", ChromiumUrlRequestContextRegisterJni},
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
+    {"CronetBidirectionalStreamAdapter",
+     CronetBidirectionalStreamAdapter::RegisterJni},
+#endif
     {"CronetLibraryLoader", RegisterNativesImpl},
     {"CronetUploadDataStreamAdapter", CronetUploadDataStreamAdapterRegisterJni},
     {"CronetUrlRequestAdapter", CronetUrlRequestAdapterRegisterJni},
