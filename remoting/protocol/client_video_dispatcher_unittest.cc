@@ -35,7 +35,7 @@ class ClientVideoDispatcherTest : public testing::Test,
                       ErrorCode error) override;
 
  protected:
-  void OnVideoAck(scoped_ptr<VideoAck> ack, const base::Closure& done);
+  void OnVideoAck(scoped_ptr<VideoAck> ack);
   void OnReadError(int error);
 
   base::MessageLoop message_loop_;
@@ -97,10 +97,8 @@ void ClientVideoDispatcherTest::OnChannelError(
   FAIL();
 }
 
-void ClientVideoDispatcherTest::OnVideoAck(scoped_ptr<VideoAck> ack,
-                                           const base::Closure& done) {
+void ClientVideoDispatcherTest::OnVideoAck(scoped_ptr<VideoAck> ack) {
   ack_messages_.push_back(ack.release());
-  done.Run();
 }
 
 void ClientVideoDispatcherTest::OnReadError(int error) {

@@ -20,23 +20,18 @@ HostVideoDispatcher::HostVideoDispatcher()
       parser_(
           base::Bind(&HostVideoDispatcher::OnVideoAck, base::Unretained(this)),
           reader()),
-      video_feedback_stub_(nullptr) {
-}
+      video_feedback_stub_(nullptr) {}
 
-HostVideoDispatcher::~HostVideoDispatcher() {
-}
+HostVideoDispatcher::~HostVideoDispatcher() {}
 
 void HostVideoDispatcher::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                              const base::Closure& done) {
   writer()->Write(SerializeAndFrameMessage(*packet), done);
 }
 
-void HostVideoDispatcher::OnVideoAck(scoped_ptr<VideoAck> ack,
-                                     const base::Closure& done) {
+void HostVideoDispatcher::OnVideoAck(scoped_ptr<VideoAck> ack) {
   if (video_feedback_stub_)
     video_feedback_stub_->ProcessVideoAck(std::move(ack));
-
-  done.Run();
 }
 
 }  // namespace protocol

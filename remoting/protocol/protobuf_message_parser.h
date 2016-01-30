@@ -23,8 +23,7 @@ class ProtobufMessageParser {
  public:
   // The callback that is called when a new message is received. |done_task|
   // must be called by the callback when it's done processing the |message|.
-  typedef typename base::Callback<void(scoped_ptr<T> message,
-                                       const base::Closure& done_task)>
+  typedef typename base::Callback<void(scoped_ptr<T> message)>
       MessageReceivedCallback;
 
   // |message_reader| must outlive ProtobufMessageParser.
@@ -41,8 +40,7 @@ class ProtobufMessageParser {
   }
 
  private:
-  void OnNewData(scoped_ptr<CompoundBuffer> buffer,
-                 const base::Closure& done_task) {
+  void OnNewData(scoped_ptr<CompoundBuffer> buffer) {
     scoped_ptr<T> message(new T());
     CompoundBufferInputStream stream(buffer.get());
     bool ret = message->ParseFromZeroCopyStream(&stream);
@@ -50,7 +48,7 @@ class ProtobufMessageParser {
       LOG(WARNING) << "Received message that is not a valid protocol buffer.";
     } else {
       DCHECK_EQ(stream.position(), buffer->total_bytes());
-      message_received_callback_.Run(std::move(message), done_task);
+      message_received_callback_.Run(std::move(message));
     }
   }
 

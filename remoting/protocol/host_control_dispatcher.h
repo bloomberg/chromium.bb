@@ -55,8 +55,7 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   void set_host_stub(HostStub* host_stub) { host_stub_ = host_stub; }
 
  private:
-  void OnMessageReceived(scoped_ptr<ControlMessage> message,
-                         const base::Closure& done_task);
+  void OnMessageReceived(scoped_ptr<ControlMessage> message);
 
   ClipboardStub* clipboard_stub_;
   HostStub* host_stub_;

@@ -38,8 +38,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
   }
 
  private:
-  void OnMessageReceived(scoped_ptr<EventMessage> message,
-                         const base::Closure& done_task);
+  void OnMessageReceived(scoped_ptr<EventMessage> message);
 
   InputStub* input_stub_;
   OnInputEventCallback on_input_event_callback_;

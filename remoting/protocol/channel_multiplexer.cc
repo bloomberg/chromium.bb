@@ -30,15 +30,9 @@ const int kMaxPacketSize = 1024;
 
 class PendingPacket {
  public:
-  PendingPacket(scoped_ptr<MultiplexPacket> packet,
-                const base::Closure& done_task)
-      : packet(std::move(packet)),
-        done_task(done_task),
-        pos(0U) {
-  }
-  ~PendingPacket() {
-    done_task.Run();
-  }
+  PendingPacket(scoped_ptr<MultiplexPacket> packet)
+      : packet(std::move(packet)) {}
+  ~PendingPacket() {}
 
   bool is_empty() { return pos >= packet->data().size(); }
 
@@ -51,8 +45,7 @@ class PendingPacket {
 
  private:
   scoped_ptr<MultiplexPacket> packet;
-  base::Closure done_task;
-  size_t pos;
+  size_t pos = 0U;
 
   DISALLOW_COPY_AND_ASSIGN(PendingPacket);
 };
@@ -82,8 +75,7 @@ class ChannelMultiplexer::MuxChannel {
 
   // Called by ChannelMultiplexer.
   scoped_ptr<P2PStreamSocket> CreateSocket();
-  void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
-                        const base::Closure& done_task);
+  void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet);
   void OnBaseChannelError(int error);
 
   // Called by MuxSocket.
@@ -164,11 +156,10 @@ scoped_ptr<P2PStreamSocket> ChannelMultiplexer::MuxChannel::CreateSocket() {
 }
 
 void ChannelMultiplexer::MuxChannel::OnIncomingPacket(
-    scoped_ptr<MultiplexPacket> packet,
-    const base::Closure& done_task) {
+    scoped_ptr<MultiplexPacket> packet) {
   DCHECK_EQ(packet->channel_id(), receive_id_);
   if (packet->data().size() > 0) {
-    pending_packets_.push_back(new PendingPacket(std::move(packet), done_task));
+    pending_packets_.push_back(new PendingPacket(std::move(packet)));
     if (socket_) {
       // Notify the socket that we have more data.
       socket_->OnPacketReceived();
@@ -433,12 +424,10 @@ void ChannelMultiplexer::NotifyBaseChannelError(const std::string& name,
     it->second->OnBaseChannelError(error);
 }
 
-void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
-                                          const base::Closure& done_task) {
+void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet) {
   DCHECK(packet->has_channel_id());
   if (!packet->has_channel_id()) {
     LOG(ERROR) << "Received packet without channel_id.";
-    done_task.Run();
     return;
   }
 
@@ -453,7 +442,6 @@ void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
     if (!packet->has_channel_name()) {
       LOG(ERROR) << "Received packet with unknown channel_id and "
           "without channel_name.";
-      done_task.Run();
       return;
     }
     channel = GetOrCreateChannel(packet->channel_name());
@@ -461,7 +449,7 @@ void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
     channels_by_receive_id_[receive_id] = channel;
   }
 
-  channel->OnIncomingPacket(std::move(packet), done_task);
+  channel->OnIncomingPacket(std::move(packet));
 }
 
 void ChannelMultiplexer::DoWrite(scoped_ptr<MultiplexPacket> packet,

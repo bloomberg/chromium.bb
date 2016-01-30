@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/host_event_dispatcher.h"
 
-#include "base/callback_helpers.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
@@ -23,11 +22,8 @@ HostEventDispatcher::HostEventDispatcher()
 
 HostEventDispatcher::~HostEventDispatcher() {}
 
-void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message,
-                                            const base::Closure& done_task) {
+void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message) {
   DCHECK(input_stub_);
-
-  base::ScopedClosureRunner done_runner(done_task);
 
   if (!on_input_event_callback_.is_null())
     on_input_event_callback_.Run(message->timestamp());

@@ -15,12 +15,15 @@ namespace protocol {
 
 AudioReader::AudioReader(AudioStub* audio_stub)
     : ChannelDispatcherBase(kAudioChannelName),
-      parser_(base::Bind(&AudioStub::ProcessAudioPacket,
-                         base::Unretained(audio_stub)),
-              reader()) {
-}
+      audio_stub_(audio_stub),
+      parser_(base::Bind(&AudioReader::OnAudioPacket, base::Unretained(this)),
+              reader()) {}
 
-AudioReader::~AudioReader() {
+AudioReader::~AudioReader() {}
+
+void AudioReader::OnAudioPacket(scoped_ptr<AudioPacket> audio_packet) {
+  audio_stub_->ProcessAudioPacket(std::move(audio_packet),
+                                  base::Bind(&base::DoNothing));
 }
 
 }  // namespace protocol

@@ -52,8 +52,7 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   }
 
  private:
-  void OnMessageReceived(scoped_ptr<ControlMessage> message,
-                         const base::Closure& done_task);
+  void OnMessageReceived(scoped_ptr<ControlMessage> message);
 
   ClientStub* client_stub_;
   ClipboardStub* clipboard_stub_;

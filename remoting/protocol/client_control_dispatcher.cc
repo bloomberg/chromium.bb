@@ -8,7 +8,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/control.pb.h"
@@ -65,11 +64,9 @@ ClientControlDispatcher::ClientControlDispatcher()
       clipboard_stub_(nullptr),
       parser_(base::Bind(&ClientControlDispatcher::OnMessageReceived,
                          base::Unretained(this)),
-              reader()) {
-}
+              reader()) {}
 
-ClientControlDispatcher::~ClientControlDispatcher() {
-}
+ClientControlDispatcher::~ClientControlDispatcher() {}
 
 void ClientControlDispatcher::InjectClipboardEvent(
     const ClipboardEvent& event) {
@@ -119,11 +116,9 @@ void ClientControlDispatcher::DeliverClientMessage(
 }
 
 void ClientControlDispatcher::OnMessageReceived(
-    scoped_ptr<ControlMessage> message,
-    const base::Closure& done_task) {
+    scoped_ptr<ControlMessage> message) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
-  base::ScopedClosureRunner done_runner(done_task);
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());

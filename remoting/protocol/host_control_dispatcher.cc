@@ -63,11 +63,9 @@ void HostControlDispatcher::SetCursorShape(
 }
 
 void HostControlDispatcher::OnMessageReceived(
-    scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
+    scoped_ptr<ControlMessage> message) {
   DCHECK(clipboard_stub_);
   DCHECK(host_stub_);
-
-  base::ScopedClosureRunner done_runner(done_task);
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());

@@ -31,7 +31,7 @@ class HostVideoDispatcher : public ChannelDispatcherBase, public VideoStub {
                           const base::Closure& done) override;
 
  private:
-  void OnVideoAck(scoped_ptr<VideoAck> ack, const base::Closure& done);
+  void OnVideoAck(scoped_ptr<VideoAck> ack);
 
   ProtobufMessageParser<VideoAck> parser_;
 

@@ -35,7 +35,7 @@ class P2PStreamSocket;
 // e.g. when we the sender sends multiple messages in one TCP packet.
 class MessageReader : public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(scoped_ptr<CompoundBuffer>, const base::Closure&)>
+  typedef base::Callback<void(scoped_ptr<CompoundBuffer> message)>
       MessageReceivedCallback;
   typedef base::Callback<void(int)> ReadFailedCallback;
 
@@ -55,22 +55,16 @@ class MessageReader : public base::NonThreadSafe {
   void HandleReadResult(int result, bool* read_succeeded);
   void OnDataReceived(net::IOBuffer* data, int data_size);
   void RunCallback(scoped_ptr<CompoundBuffer> message);
-  void OnMessageDone();
 
   ReadFailedCallback read_failed_callback_;
 
-  P2PStreamSocket* socket_;
+  P2PStreamSocket* socket_ = nullptr;
 
   // Set to true, when we have a socket read pending, and expecting
   // OnRead() to be called when new data is received.
-  bool read_pending_;
+  bool read_pending_ = false;
 
-  // Number of messages that we received, but haven't finished
-  // processing yet, i.e. |done_task| hasn't been called for these
-  // messages.
-  int pending_messages_;
-
-  bool closed_;
+  bool closed_ = false;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   MessageDecoder message_decoder_;

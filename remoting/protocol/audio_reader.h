@@ -21,6 +21,9 @@ class AudioReader : public ChannelDispatcherBase {
   ~AudioReader() override;
 
  private:
+  void OnAudioPacket(scoped_ptr<AudioPacket> audio_packet);
+
+  AudioStub* audio_stub_;
   ProtobufMessageParser<AudioPacket> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioReader);

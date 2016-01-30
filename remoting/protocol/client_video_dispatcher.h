@@ -26,8 +26,7 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   struct PendingFrame;
   typedef std::list<PendingFrame> PendingFramesList;
 
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
-                          const base::Closure& done);
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet);
 
   // Callback for VideoStub::ProcessVideoPacket().
   void OnPacketDone(PendingFramesList::iterator pending_frame);

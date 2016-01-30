@@ -53,8 +53,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
   void NotifyBaseChannelError(const std::string& name, int error);
 
   // Callback for |reader_;
-  void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
-                        const base::Closure& done_task);
+  void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet);
 
   // Called by MuxChannel.
   void DoWrite(scoped_ptr<MultiplexPacket> packet,
