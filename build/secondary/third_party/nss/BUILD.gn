@@ -474,6 +474,30 @@ if (is_linux) {
     ]
   }
 
+  config("nss_static_config_private") {
+    if (is_clang) {
+      cflags = [
+        # nss doesn"t explicitly cast between different enum types.
+        "-Wno-conversion",
+
+        # nss passes "const char*" through "void*".
+        "-Wno-incompatible-pointer-types",
+
+        # nss prefers `a && b || c` over `(a && b) || c`.
+        "-Wno-logical-op-parentheses",
+
+        # nss doesn"t use exhaustive switches on enums
+        "-Wno-switch",
+
+        # nss has some `unsigned < 0` checks.
+        "-Wno-tautological-compare",
+
+        # nss-urandom-abort.patch removed the only call to rng_systemFromNoise
+        "-Wno-unused-function",
+      ]
+    }
+  }
+
   if (is_win && current_cpu == "x86") {
     source_set("nss_static_avx") {
       sources = [
@@ -891,6 +915,7 @@ if (is_linux) {
 
       # nss passes "const char*" through "void*".
       "//build/config/compiler:no_incompatible_pointer_warnings",
+      ":nss_static_config_private",
     ]
     public_configs = [ ":nss_static_config" ]
 
@@ -1180,28 +1205,6 @@ if (is_linux) {
         # mpi_x86_asm.c contains MSVC inline assembly code.
         "nss/lib/freebl/intel-aes-x86-masm.asm",
         "nss/lib/freebl/mpi/mpi_x86_asm.c",
-      ]
-    }
-
-    if (is_clang) {
-      cflags += [
-        # nss doesn"t explicitly cast between different enum types.
-        "-Wno-conversion",
-
-        # nss passes "const char*" through "void*".
-        "-Wno-incompatible-pointer-types",
-
-        # nss prefers `a && b || c` over `(a && b) || c`.
-        "-Wno-logical-op-parentheses",
-
-        # nss doesn"t use exhaustive switches on enums
-        "-Wno-switch",
-
-        # nss has some `unsigned < 0` checks.
-        "-Wno-tautological-compare",
-
-        # nss-urandom-abort.patch removed the only call to rng_systemFromNoise
-        "-Wno-unused-function",
       ]
     }
 
