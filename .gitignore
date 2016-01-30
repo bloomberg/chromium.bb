@@ -52,4 +52,4 @@
 *.isolated.state
 
 # Ignore recipe working directory.
-/.recipe_deps
+/infra/.recipe_deps

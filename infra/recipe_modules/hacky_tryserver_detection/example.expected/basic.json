@@ -1,0 +1,15 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "False"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "name": "am i a tryserver?"
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]
