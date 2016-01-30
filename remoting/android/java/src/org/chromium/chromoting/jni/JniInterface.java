@@ -97,8 +97,8 @@ public class JniInterface {
 
     /** Attempts to form a connection to the user-selected host. Called on the UI thread. */
     public static void connectToHost(String username, String authToken, String hostJid,
-            String hostId, String hostPubkey, ConnectionListener listener,
-            SessionAuthenticator authenticator, String flags) {
+            String hostId, String hostPubkey, SessionAuthenticator authenticator, String flags,
+            ConnectionListener listener) {
         disconnectFromHost();
 
         sConnectionListener = listener;
