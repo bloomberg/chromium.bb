@@ -47,6 +47,9 @@ class ReferenceKind(Kind):
     if self == SHAREDBUFFER:
       return NULLABLE_SHAREDBUFFER
 
+    if IsStructKind(self) and self.native_only:
+      raise Exception('Native-only structs cannot be nullable.')
+
     nullable_kind = type(self)()
     nullable_kind.shared_definition = self.shared_definition
     if self.spec is not None:

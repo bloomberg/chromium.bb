@@ -13,6 +13,9 @@ struct PickledStruct;
 
 interface PicklePasser {
   PassPickle(PickledStruct pickle) => (PickledStruct passed);
+  PassPickles(array<PickledStruct> pickles) => (array<PickledStruct> passed);
+  PassPickleArrays(array<array<PickledStruct>> pickle_arrays)
+      => (array<array<PickledStruct>> passed);
 };
 
 // Used to verify support for native serialization of mojom-defined structs.

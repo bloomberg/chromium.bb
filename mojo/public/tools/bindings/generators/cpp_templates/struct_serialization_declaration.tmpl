@@ -5,6 +5,42 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
                   {{struct.name}}Ptr* output,
                   mojo::internal::SerializationContext* context);
 
+{%- if struct|is_native_only_kind and struct|is_typemapped_kind %}
+{# This helps the array serializer understand how to serialize arrays of this
+   native-only type. #}
+
+{%-   for namespace in namespaces_as_array|reverse %}
+}  // namespace {{namespace}}
+{%-   endfor %}
+{%-   if variant %}
+}  // namespace {{variant}}
+{%-   endif %}
+
+namespace mojo {
+namespace internal {
+
+template <>
+struct ShouldUseNativeSerializer<{{struct|cpp_wrapper_type}}> {
+  static const bool value = true;
+};
+
+template <>
+struct WrapperTraits<{{struct|cpp_wrapper_type}}> {
+  using DataType = Array_Data<uint8_t>*;
+};
+
+}  // namespace internal
+}  // namespace mojo
+
+{%-   for namespace in namespaces_as_array %}
+namespace {{namespace}} {
+{%-   endfor %}
+{%-   if variant %}
+namespace {{variant}} {
+{%-   endif %}
+
+{%- endif %}
+
 {%- if not variant %}
 
 {# NOTE: Generated Reader instances are intentionally cheap to copy and devoid

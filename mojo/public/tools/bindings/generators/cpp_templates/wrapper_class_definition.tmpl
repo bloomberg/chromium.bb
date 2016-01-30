@@ -30,9 +30,8 @@
 
 bool {{struct.name}}::Equals(const {{struct.name}}& other) const {
 {%-  for field in struct.fields %}
-{%-    if field.kind|is_typemapped_kind %}
-{#     TODO(rockot): Consider adding support for native equality testing. #}
-  NOTREACHED() << "Equality testing not supported with typemapped fields.";
+{%-    if not field.kind|supports_equality %}
+  NOTREACHED() << "Equality testing not supported for field {{field.name}}";
 {%-    else %}
   if (!mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(this->{{field.name}}, other.{{field.name}}))
     return false;

@@ -63,6 +63,17 @@ class ChromiumPicklePasserImpl : public chromium::PicklePasser {
                   const PassPickleCallback& callback) override {
     callback.Run(pickle);
   }
+
+  void PassPickles(mojo::Array<PickledStructChromium> pickles,
+                   const PassPicklesCallback& callback) override {
+    callback.Run(std::move(pickles));
+  }
+
+  void PassPickleArrays(
+      mojo::Array<mojo::Array<PickledStructChromium>> pickle_arrays,
+      const PassPickleArraysCallback& callback) override {
+    callback.Run(std::move(pickle_arrays));
+  }
 };
 
 // This implements the generated Blink variant of PicklePasser.
@@ -75,6 +86,17 @@ class BlinkPicklePasserImpl : public blink::PicklePasser {
                   const PassPickleCallback& callback) override {
     callback.Run(pickle);
   }
+
+  void PassPickles(mojo::Array<PickledStructBlink> pickles,
+                   const PassPicklesCallback& callback) override {
+    callback.Run(std::move(pickles));
+  }
+
+  void PassPickleArrays(
+      mojo::Array<mojo::Array<PickledStructBlink>> pickle_arrays,
+      const PassPickleArraysCallback& callback) override {
+    callback.Run(std::move(pickle_arrays));
+  }
 };
 
 // A test which runs both Chromium and Blink implementations of the
@@ -83,12 +105,18 @@ class PickleTest : public testing::Test {
  public:
   PickleTest() {}
 
-  void BindToChromiumService(mojo::InterfaceRequest<PicklePasser> request) {
-    chromium_bindings_.AddBinding(&chromium_service_, std::move(request));
+  template <typename ProxyType = chromium::PicklePasser>
+  mojo::InterfacePtr<ProxyType> ConnectToChromiumService() {
+    mojo::InterfacePtr<ProxyType> proxy;
+    chromium_bindings_.AddBinding(&chromium_service_, GetProxy(&proxy));
+    return proxy;
   }
 
-  void BindToBlinkService(mojo::InterfaceRequest<PicklePasser> request) {
-    blink_bindings_.AddBinding(&blink_service_, std::move(request));
+  template <typename ProxyType = blink::PicklePasser>
+  mojo::InterfacePtr<ProxyType> ConnectToBlinkService() {
+    mojo::InterfacePtr<ProxyType> proxy;
+    blink_bindings_.AddBinding(&blink_service_, GetProxy(&proxy));
+    return proxy;
   }
 
  private:
@@ -102,8 +130,7 @@ class PickleTest : public testing::Test {
 }  // namespace
 
 TEST_F(PickleTest, ChromiumProxyToChromiumService) {
-  chromium::PicklePasserPtr chromium_proxy;
-  BindToChromiumService(GetProxy(&chromium_proxy));
+  auto chromium_proxy = ConnectToChromiumService();
   {
     base::RunLoop loop;
     chromium_proxy->PassPickle(
@@ -121,8 +148,7 @@ TEST_F(PickleTest, ChromiumProxyToChromiumService) {
 }
 
 TEST_F(PickleTest, ChromiumProxyToBlinkService) {
-  chromium::PicklePasserPtr chromium_proxy;
-  BindToBlinkService(GetProxy(&chromium_proxy));
+  auto chromium_proxy = ConnectToBlinkService<chromium::PicklePasser>();
   {
     base::RunLoop loop;
     chromium_proxy->PassPickle(
@@ -150,8 +176,7 @@ TEST_F(PickleTest, ChromiumProxyToBlinkService) {
 }
 
 TEST_F(PickleTest, BlinkProxyToBlinkService) {
-  blink::PicklePasserPtr blink_proxy;
-  BindToBlinkService(GetProxy(&blink_proxy));
+  auto blink_proxy = ConnectToBlinkService();
   {
     base::RunLoop loop;
     blink_proxy->PassPickle(
@@ -162,14 +187,91 @@ TEST_F(PickleTest, BlinkProxyToBlinkService) {
 }
 
 TEST_F(PickleTest, BlinkProxyToChromiumService) {
-  blink::PicklePasserPtr blink_proxy;
-  BindToChromiumService(GetProxy(&blink_proxy));
+  auto blink_proxy = ConnectToChromiumService<blink::PicklePasser>();
   {
     base::RunLoop loop;
     blink_proxy->PassPickle(
         PickledStructBlink(1, 1),
         ExpectResult(PickledStructBlink(1, 1), loop.QuitClosure()));
     loop.Run();
+  }
+}
+
+TEST_F(PickleTest, PickleArray) {
+  auto proxy = ConnectToChromiumService();
+  auto pickles = mojo::Array<PickledStructChromium>::New(2);
+  pickles[0].set_foo(1);
+  pickles[0].set_bar(2);
+  pickles[0].set_baz(100);
+  pickles[1].set_foo(3);
+  pickles[1].set_bar(4);
+  pickles[1].set_baz(100);
+  {
+    base::RunLoop run_loop;
+    // Verify that the array of pickled structs can be serialized and
+    // deserialized intact. This ensures that the ParamTraits are actually used
+    // rather than doing a byte-for-byte copy of the element data, beacuse the
+    // |baz| field should never be serialized.
+    proxy->PassPickles(
+        std::move(pickles),
+        [&](mojo::Array<PickledStructChromium> passed) {
+          ASSERT_FALSE(passed.is_null());
+          ASSERT_EQ(2u, passed.size());
+          EXPECT_EQ(1, passed[0].foo());
+          EXPECT_EQ(2, passed[0].bar());
+          EXPECT_EQ(0, passed[0].baz());
+          EXPECT_EQ(3, passed[1].foo());
+          EXPECT_EQ(4, passed[1].bar());
+          EXPECT_EQ(0, passed[1].baz());
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+}
+
+TEST_F(PickleTest, PickleArrayArray) {
+  auto proxy = ConnectToChromiumService();
+  auto pickle_arrays = mojo::Array<mojo::Array<PickledStructChromium>>::New(2);
+  for (size_t i = 0; i < 2; ++i)
+    pickle_arrays[i] = mojo::Array<PickledStructChromium>::New(2);
+
+  pickle_arrays[0][0].set_foo(1);
+  pickle_arrays[0][0].set_bar(2);
+  pickle_arrays[0][0].set_baz(100);
+  pickle_arrays[0][1].set_foo(3);
+  pickle_arrays[0][1].set_bar(4);
+  pickle_arrays[0][1].set_baz(100);
+  pickle_arrays[1][0].set_foo(5);
+  pickle_arrays[1][0].set_bar(6);
+  pickle_arrays[1][0].set_baz(100);
+  pickle_arrays[1][1].set_foo(7);
+  pickle_arrays[1][1].set_bar(8);
+  pickle_arrays[1][1].set_baz(100);
+  {
+    base::RunLoop run_loop;
+    // Verify that the array-of-arrays serializes and deserializes properly.
+    proxy->PassPickleArrays(
+        std::move(pickle_arrays),
+        [&](mojo::Array<mojo::Array<PickledStructChromium>> passed) {
+          ASSERT_FALSE(passed.is_null());
+          ASSERT_EQ(2u, passed.size());
+          ASSERT_EQ(2u, passed[0].size());
+          ASSERT_EQ(2u, passed[1].size());
+          EXPECT_EQ(1, passed[0][0].foo());
+          EXPECT_EQ(2, passed[0][0].bar());
+          EXPECT_EQ(0, passed[0][0].baz());
+          EXPECT_EQ(3, passed[0][1].foo());
+          EXPECT_EQ(4, passed[0][1].bar());
+          EXPECT_EQ(0, passed[0][1].baz());
+          EXPECT_EQ(5, passed[1][0].foo());
+          EXPECT_EQ(6, passed[1][0].bar());
+          EXPECT_EQ(0, passed[1][0].baz());
+          EXPECT_EQ(7, passed[1][1].foo());
+          EXPECT_EQ(8, passed[1][1].bar());
+          EXPECT_EQ(0, passed[1][1].baz());
+          run_loop.Quit();
+        });
+    run_loop.Run();
   }
 }
 

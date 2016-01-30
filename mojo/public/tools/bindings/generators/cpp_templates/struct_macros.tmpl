@@ -16,7 +16,7 @@
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order if pf.field.kind|is_object_kind %}
 {%-     set name = pf.field.name -%}
 {%-     set kind = pf.field.kind -%}
-{%-     if kind|is_native_only_kind %}
+{%-     if kind|is_native_only_kind and kind|is_typemapped_kind %}
   size += mojo::internal::GetSerializedSizeNative_(
       {{input_field_pattern|format(name)}});
 {%-     elif kind|is_typemapped_kind %}
@@ -53,7 +53,8 @@
 {%-   set name = pf.field.name %}
 {%-   set kind = pf.field.kind %}
 {%-   if kind|is_object_kind %}
-{%-     if kind|is_array_kind %}
+{%-     if kind|is_array_kind or
+            (kind|is_native_only_kind and not kind|is_typemapped_kind) %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind|get_array_validate_params_ctor_args|indent(10)}});
   mojo::SerializeArray_(std::move({{input_field}}), {{buffer}},
@@ -63,7 +64,7 @@
       {{kind.value_kind|get_map_validate_params_ctor_args|indent(10)}});
   mojo::SerializeMap_(std::move({{input_field}}), {{buffer}},
       &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
-{%-     elif kind|is_native_only_kind %}
+{%-     elif kind|is_native_only_kind and kind|is_typemapped_kind %}
   mojo::internal::SerializeNative_(
       {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr);
 {%-     elif kind|is_typemapped_kind %}
@@ -149,7 +150,7 @@
     if ({{input}}->header_.version < {{pf.min_version}})
       break;
 {%-     endif %}
-{%-     if kind|is_native_only_kind %}
+{%-     if kind|is_native_only_kind and kind|is_typemapped_kind %}
     if (!DeserializeNative_(
             {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
       {{success}} = false;

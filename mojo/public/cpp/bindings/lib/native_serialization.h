@@ -21,6 +21,12 @@
 namespace mojo {
 namespace internal {
 
+// Generated bindings for native-only types will specialize this to |true|.
+// It can be used as a signal (by e.g. the Array serializer) for when to use
+// SerializeNative_ with a type.
+template <typename E>
+struct ShouldUseNativeSerializer { static const bool value = false; };
+
 template <typename T>
 size_t GetSerializedSizeNative_(const T& value) {
   return IPC::ParamTraits<T>::GetSize(value);
