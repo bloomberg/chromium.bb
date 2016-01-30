@@ -328,7 +328,7 @@ class WindowHangMonitorTest : public testing::Test {
  public:
   WindowHangMonitorTest() {}
 
-  ~WindowHangMonitorTest() {
+  ~WindowHangMonitorTest() override {
     // Close process if running.
     monitored_process_.Terminate(1, false);
   }
