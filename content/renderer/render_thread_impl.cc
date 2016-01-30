@@ -1461,16 +1461,6 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
-#if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory::GetInstance()) {
-    if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
-      DLOG(WARNING) << "Accelerated video decoding is not explicitly disabled, "
-                       "but is not supported by in-process rendering";
-    }
-    return NULL;
-  }
-#endif
-
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       GetMediaThreadTaskRunner();
   scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =

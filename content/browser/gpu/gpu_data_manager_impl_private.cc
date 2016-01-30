@@ -932,22 +932,8 @@ bool GpuDataManagerImplPrivate::ShouldDisableAcceleratedVideoDecode(
   if (group_name == "Disabled")
     return true;
 
-  // Accelerated decode is never available with --disable-gpu. It is also
-  // currently non-functional with --single-process and --in-process-gpu, but
-  // these should be fixable. We set the --disable-accelerated-video-decode flag
-  // in these cases so that the renderer can be aware. (Which is important on
-  // Android where there is no fallback once WMPI is selected.)
-  //
-  // TODO(sandersd): Enable support for accelerated decode with
-  // --in-process-gpu, at least on Android (necessary to support WebView).
-  // http://crbug.com/574935.
-  if (command_line->HasSwitch(switches::kDisableGpu) ||
-      command_line->HasSwitch(switches::kSingleProcess) ||
-      command_line->HasSwitch(switches::kInProcessGPU)) {
-    return true;
-  }
-
-  return false;
+  // Accelerated decode is never available with --disable-gpu.
+  return command_line->HasSwitch(switches::kDisableGpu);
 }
 
 void GpuDataManagerImplPrivate::GetDisabledExtensions(

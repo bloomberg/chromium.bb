@@ -92,7 +92,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(ENABLE_WEBRTC)
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
 #endif
-  cl->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
 
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);

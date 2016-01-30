@@ -18,7 +18,10 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
@@ -167,10 +170,16 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       error_sequence_token_(0),
       defer_errors_(false),
       weak_this_factory_(this) {
-  if (UseDeferredRenderingStrategy())
+  if (UseDeferredRenderingStrategy()) {
+    // TODO(liberato, watk): Figure out what we want to do about zero copy for
+    // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
+    DCHECK(!gl_decoder_->GetContextGroup()->mailbox_manager()->UsesSync());
+    DVLOG(1) << __FUNCTION__ << ", using deferred rendering strategy.";
     strategy_.reset(new AndroidDeferredRenderingBackingStrategy());
-  else
+  } else {
+    DVLOG(1) << __FUNCTION__ << ", using copy back strategy.";
     strategy_.reset(new AndroidCopyingBackingStrategy());
+  }
 }
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -960,8 +969,11 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
 
 // static
 bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableUnifiedMediaPipeline);
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  // TODO(liberato, watk): Figure out what we want to do about zero copy for
+  // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
+  return cmd_line->HasSwitch(switches::kEnableUnifiedMediaPipeline) &&
+         !cmd_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
 }
 
 // static

@@ -15,6 +15,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
@@ -172,6 +173,11 @@ GpuChildThread::GpuChildThread(
              switches::kSingleProcess) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kInProcessGPU));
+
+  // Populate accelerator capabilities (normally done during GpuMain, which is
+  // not called for single process or in process gpu).
+  gpu_info_.video_decode_accelerator_capabilities =
+      content::GpuVideoDecodeAccelerator::GetCapabilities();
 
   if (!gfx::GLSurface::InitializeOneOff())
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
