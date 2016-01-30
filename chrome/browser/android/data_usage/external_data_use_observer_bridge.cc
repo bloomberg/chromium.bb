@@ -81,7 +81,6 @@ void ExternalDataUseObserverBridge::Init(
   Java_ExternalDataUseObserver_setControlAppPackageName(
       env, j_external_data_use_observer_.obj(),
       ConvertUTF8ToJavaString(env, GetControlAppPackageName()).obj());
-  FetchMatchingRules();
 }
 
 void ExternalDataUseObserverBridge::FetchMatchingRules() const {
@@ -168,10 +167,12 @@ void ExternalDataUseObserverBridge::OnReportDataUseDone(
                             external_data_use_observer_, success));
 }
 
-void ExternalDataUseObserverBridge::OnControlAppInstalled(JNIEnv* env,
-                                                          jobject obj) const {
+void ExternalDataUseObserverBridge::OnControlAppInstallStateChange(
+    JNIEnv* env,
+    jobject obj,
+    bool is_control_app_installed) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_use_tab_model_->OnControlAppInstalled();
+  data_use_tab_model_->OnControlAppInstallStateChange(is_control_app_installed);
 }
 
 bool RegisterExternalDataUseObserver(JNIEnv* env) {

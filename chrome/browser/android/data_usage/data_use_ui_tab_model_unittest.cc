@@ -82,6 +82,7 @@ class DataUseUITabModelTest : public testing::Test {
     data_use_tab_model_->InitOnUIThread(
         io_task_runner_, external_data_use_observer_->GetWeakPtr());
     data_use_ui_tab_model_.SetDataUseTabModel(data_use_tab_model_.get());
+    data_use_tab_model_->OnControlAppInstallStateChange(true);
   }
 
  private:
@@ -254,7 +255,7 @@ TEST_F(DataUseUITabModelTest, EntranceExitState) {
 }
 
 // Tests if the Entrance/Exit UI state is tracked correctly.
-TEST_F(DataUseUITabModelTest, EntraceExitStateForDialog) {
+TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
   const SessionID::id_type kFooTabId = 1;
 
   std::vector<std::string> url_regexes;

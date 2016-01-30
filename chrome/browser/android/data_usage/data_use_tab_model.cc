@@ -200,10 +200,8 @@ void DataUseTabModel::OnTabCloseEvent(SessionID::id_type tab_id) {
 }
 
 void DataUseTabModel::OnTrackingLabelRemoved(std::string label) {
-  for (auto& tab_entry : active_tabs_) {
-    if (tab_entry.second.EndTrackingWithLabel(label))
-      NotifyObserversOfTrackingEnding(tab_entry.first);
-  }
+  for (auto& tab_entry : active_tabs_)
+    tab_entry.second.EndTrackingWithLabel(label);
 }
 
 bool DataUseTabModel::GetLabelForTabAtTime(SessionID::id_type tab_id,
@@ -253,13 +251,26 @@ void DataUseTabModel::RegisterURLRegexes(
     const std::vector<std::string>& domain_path_regex,
     const std::vector<std::string>& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Fetch rule requests could be started when control app was installed, and
+  // the response could be received when control app was uninstalled. Ignore
+  // these spurious rule fetch responses.
+  if (!is_control_app_installed_)
+    return;
   data_use_matcher_->RegisterURLRegexes(app_package_name, domain_path_regex,
                                         label);
 }
 
-void DataUseTabModel::OnControlAppInstalled() {
-  is_control_app_installed_ = true;
-  data_use_matcher_->FetchMatchingRules();
+void DataUseTabModel::OnControlAppInstallStateChange(
+    bool is_control_app_installed) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(is_control_app_installed_, is_control_app_installed);
+  // If external control app is installed now, rules will be fetched on the next
+  // navigation event.
+  is_control_app_installed_ = is_control_app_installed;
+  std::vector<std::string> empty;
+  if (!is_control_app_installed_)  // Clear rules.
+    data_use_matcher_->RegisterURLRegexes(empty, empty, empty);
 }
 
 base::TimeTicks DataUseTabModel::NowTicks() const {

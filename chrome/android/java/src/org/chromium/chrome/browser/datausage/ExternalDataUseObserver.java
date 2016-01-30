@@ -22,7 +22,8 @@ import org.chromium.chrome.browser.ChromeApplication;
 public class ExternalDataUseObserver {
     /**
      * Listens for application state changes and whenever Chromium state changes to running, checks
-     * and nofifies {@link #ExternalDataUseObserverBridge} if the control app is installed.
+     * and notifies {@link #ExternalDataUseObserverBridge} if the control app gets installed or
+     * uninstalled.
      */
     private class ControlAppManager implements ApplicationStatus.ApplicationStateListener {
         // Package name of the control app.
@@ -35,32 +36,36 @@ public class ExternalDataUseObserver {
             mControlAppPackageName = controlAppPackageName;
             mInstalled = false;
             ApplicationStatus.registerApplicationStateListener(this);
-            checkAndNotifyPackageInstall();
+            checkAndNotifyPackageInstallState();
         }
 
         @Override
         public void onApplicationStateChange(int newState) {
-            if (!mInstalled && newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-                checkAndNotifyPackageInstall();
+            if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+                checkAndNotifyPackageInstallState();
             }
         }
 
         /**
-         * Checks if the control app is installed and notifies {@link
-         * #ExternalDataUseObserverBridge}.
+         * Checks if the control app is installed or uninstalled and notifies {@link
+         * #ExternalDataUseObserverBridge} if there is change of installation state.
          */
-        private void checkAndNotifyPackageInstall() {
+        private void checkAndNotifyPackageInstallState() {
             // Check if native object is destroyed. This may happen at the time of Chromium
             // shutdown.
             if (mNativeExternalDataUseObserverBridge == 0) {
                 return;
             }
-            if (mControlAppPackageName != null && !mControlAppPackageName.isEmpty()
-                    && PackageUtils.getPackageVersion(
-                               ApplicationStatus.getApplicationContext(), mControlAppPackageName)
-                            != -1) {
-                mInstalled = true;
-                nativeOnControlAppInstalled(mNativeExternalDataUseObserverBridge);
+            if (mControlAppPackageName != null && !mControlAppPackageName.isEmpty()) {
+                boolean isControlAppInstalled =
+                        PackageUtils.getPackageVersion(
+                                ApplicationStatus.getApplicationContext(), mControlAppPackageName)
+                        != -1;
+                if (isControlAppInstalled != mInstalled) {
+                    mInstalled = isControlAppInstalled;
+                    nativeOnControlAppInstallStateChange(
+                            mNativeExternalDataUseObserverBridge, mInstalled);
+                }
             }
         }
     }
@@ -182,5 +187,6 @@ public class ExternalDataUseObserver {
             long nativeExternalDataUseObserver, boolean success);
 
     @NativeClassQualifiedName("ExternalDataUseObserverBridge")
-    private native void nativeOnControlAppInstalled(long nativeExternalDataUseObserver);
+    private native void nativeOnControlAppInstallStateChange(
+            long nativeExternalDataUseObserver, boolean isControlAppInstalled);
 }

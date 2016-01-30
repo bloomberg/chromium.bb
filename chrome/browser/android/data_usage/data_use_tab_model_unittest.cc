@@ -18,6 +18,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/data_usage/data_use_matcher.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -95,6 +96,7 @@ class DataUseTabModelTest : public testing::Test {
 
     // |tick_clock_| will be owned by |data_use_tab_model_|.
     data_use_tab_model_->tick_clock_.reset(tick_clock_);
+    data_use_tab_model_->OnControlAppInstallStateChange(true);
   }
 
   // Returns true if tab entry for |tab_id| exists in |active_tabs_|.
@@ -356,8 +358,8 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
   EXPECT_TRUE(IsTrackingDataUse(kTabID2));
   EXPECT_TRUE(IsTrackingDataUse(kTabID3));
 
-  // Observer notified of end tracking.
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID2)).Times(1);
+  // Observer not notified of end tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID2)).Times(0);
 
   data_use_tab_model_->OnTrackingLabelRemoved(kTestLabel2);
 
@@ -365,7 +367,8 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
   EXPECT_FALSE(IsTrackingDataUse(kTabID2));
   EXPECT_TRUE(IsTrackingDataUse(kTabID3));
 
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID3)).Times(1);
+  // Observer not notified of end tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID3)).Times(0);
 
   data_use_tab_model_->OnTrackingLabelRemoved(kTestLabel3);
 
@@ -885,6 +888,28 @@ TEST_F(DataUseTabModelTest, LabelRemoved) {
   RegisterURLRegexes(std::vector<std::string>(labels.size(), std::string()),
                      std::vector<std::string>(labels.size(), kURLFoo), labels);
   EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+}
+
+// Tests the behavior when the external control app is uninstalled. When the app
+// gets uninstalled the active tracking sessions should end and the existing
+// matching rules should be cleared.
+TEST_F(DataUseTabModelTest, MatchingRuleClearedOnControlAppUninstall) {
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+
+  app_package_names.push_back(kPackageFoo);
+  domain_regexes.push_back(kURLFoo);
+  labels.push_back(kTestLabel1);
+
+  RegisterURLRegexes(app_package_names, domain_regexes, labels);
+
+  StartTrackingDataUse(kTabID1, kTestLabel1);
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  EXPECT_TRUE(data_use_tab_model_->data_use_matcher_->HasValidRules());
+
+  data_use_tab_model_->OnControlAppInstallStateChange(false);
+
+  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+  EXPECT_FALSE(data_use_tab_model_->data_use_matcher_->HasValidRules());
 }
 
 }  // namespace android

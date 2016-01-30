@@ -110,7 +110,8 @@ class DataUseTabModel {
   void OnTabCloseEvent(SessionID::id_type tab_id);
 
   // Notifies the DataUseTabModel that tracking label |label| is removed. Any
-  // active tracking sessions with the label are ended.
+  // active tracking sessions with the label are ended, without notifying any of
+  // the TabDataUseObserver.
   virtual void OnTrackingLabelRemoved(std::string label);
 
   // Gets the label for the tab with id |tab_id| at time |timestamp|.
@@ -140,8 +141,9 @@ class DataUseTabModel {
                           const std::vector<std::string>& domain_path_regex,
                           const std::vector<std::string>& label);
 
-  // Notifies the DataUseTabModel that the external control app is installed.
-  void OnControlAppInstalled();
+  // Notifies the DataUseTabModel that the external control app is installed or
+  // uninstalled. |is_control_app_installed| is true if app is installed.
+  void OnControlAppInstallStateChange(bool is_control_app_installed);
 
   // Returns the maximum number of tracking sessions to maintain per tab.
   size_t max_sessions_per_tab() const { return max_sessions_per_tab_; }
@@ -173,12 +175,15 @@ class DataUseTabModel {
 
  private:
   friend class DataUseTabModelTest;
+  friend class ExternalDataUseObserverTest;
   friend class TabDataUseEntryTest;
   friend class TestDataUseTabModel;
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            CompactTabEntriesWithinMaxLimit);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            ExpiredInactiveTabEntryRemovaltimeHistogram);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           MatchingRuleClearedOnControlAppUninstall);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            MultipleObserverMultipleStartEndEvents);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, ObserverStartEndEvents);

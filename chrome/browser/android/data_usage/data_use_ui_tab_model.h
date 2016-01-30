@@ -93,7 +93,7 @@ class DataUseUITabModel : public KeyedService,
  private:
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ConvertTransitionType);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, EntranceExitState);
-  FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, EntraceExitStateForDialog);
+  FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, EntranceExitStateForDialog);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ReportTabEventsTest);
 
   // DataUseTrackingEvent indicates the state of a tab.
