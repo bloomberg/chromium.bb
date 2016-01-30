@@ -57,9 +57,8 @@ void ServicePrinter::OnServiceResolved(ServiceResolver::RequestStatus status,
     printf("\t\t%s\n", i->c_str());
   }
 
-  if (service.ip_address != net::IPAddressNumber()) {
-    printf("\tIP Address: %s\n", net::IPAddressToString(
-        service.ip_address).c_str());
+  if (service.ip_address.IsValid()) {
+    printf("\tIP Address: %s\n", service.ip_address.ToString().c_str());
   }
 }
 

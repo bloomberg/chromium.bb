@@ -435,7 +435,7 @@ void ServiceResolverImpl::ARecordTransactionResponse(
     DCHECK(record);
     service_staging_.ip_address = RecordToIPAddress(record);
   } else {
-    service_staging_.ip_address = net::IPAddressNumber();
+    service_staging_.ip_address = net::IPAddress();
   }
 
   address_resolved_ = true;
@@ -493,12 +493,12 @@ net::HostPortPair ServiceResolverImpl::RecordToAddress(
   return net::HostPortPair(srv_rdata->target(), srv_rdata->port());
 }
 
-const net::IPAddressNumber& ServiceResolverImpl::RecordToIPAddress(
+net::IPAddress ServiceResolverImpl::RecordToIPAddress(
     const net::RecordParsed* record) const {
   DCHECK(record->type() == net::dns_protocol::kTypeA);
   const net::ARecordRdata* a_rdata = record->rdata<net::ARecordRdata>();
   DCHECK(a_rdata);
-  return a_rdata->address();
+  return net::IPAddress(a_rdata->address());
 }
 
 LocalDomainResolverImpl::LocalDomainResolverImpl(
@@ -545,11 +545,11 @@ void LocalDomainResolverImpl::OnTransactionComplete(
   if (result == net::MDnsTransaction::RESULT_RECORD) {
     if (record->type() == net::dns_protocol::kTypeA) {
       const net::ARecordRdata* rdata = record->rdata<net::ARecordRdata>();
-      address_ipv4_ = rdata->address();
+      address_ipv4_ = net::IPAddress(rdata->address());
     } else {
       DCHECK_EQ(net::dns_protocol::kTypeAAAA, record->type());
       const net::AAAARecordRdata* rdata = record->rdata<net::AAAARecordRdata>();
-      address_ipv6_ = rdata->address();
+      address_ipv6_ = net::IPAddress(rdata->address());
     }
   }
 
@@ -569,7 +569,7 @@ void LocalDomainResolverImpl::OnTransactionComplete(
 }
 
 bool LocalDomainResolverImpl::IsSuccess() {
-  return !address_ipv4_.empty() || !address_ipv6_.empty();
+  return address_ipv4_.IsValid() || address_ipv6_.IsValid();
 }
 
 void LocalDomainResolverImpl::SendResolvedAddresses() {

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 
 #include "chrome/common/extensions/api/mdns.h"
-#include "net/base/ip_address_number.h"
 
 using local_discovery::ServiceDescription;
 
@@ -17,9 +16,8 @@ void FillServiceInfo(const ServiceDescription& service_description,
                      DnsSdService* service) {
   service->service_name = service_description.service_name;
   service->service_host_port = service_description.address.ToString();
-  if (!service_description.ip_address.empty()) {
-    service->ip_address = net::IPAddressToString(
-        service_description.ip_address);
+  if (service_description.ip_address.IsValid()) {
+    service->ip_address = service_description.ip_address.ToString();
   }
   service->service_data = service_description.metadata;
 
