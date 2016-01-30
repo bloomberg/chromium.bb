@@ -42,6 +42,7 @@ import collections
 import functools
 import json
 import multiprocessing
+import os
 import os.path
 import subprocess
 import sys
@@ -315,6 +316,13 @@ def main():
       nargs='*',
       help='optional paths to filter what files the tool is run on')
   args = parser.parse_args()
+
+  os.environ['PATH'] = '%s%s%s' % (
+      os.path.abspath(os.path.join(
+          os.path.dirname(__file__),
+          '../../../third_party/llvm-build/Release+Asserts/bin')),
+      os.pathsep,
+      os.environ['PATH'])
 
   if args.generate_compdb:
     _GenerateCompileDatabase(args.compile_database)
