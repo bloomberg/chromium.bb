@@ -26,6 +26,55 @@ SettingsPasswordSectionBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+
+  /** @override */
+  setUp: function() {
+    PolymerTest.prototype.setUp.call(this);
+
+    // Test is run on an individual element that won't have a page language.
+    this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
+  },
+
+  /**
+   * Creates a single item for the list of passwords.
+   * @param {string} url
+   * @param {string} username
+   * @param {number} passwordLength
+   * @return {chrome.passwordsPrivate.PasswordUiEntry}
+   * @private
+   */
+  createPasswordItem_: function(url, username, passwordLength) {
+    return {
+      loginPair: {originUrl: url, username: username},
+      numCharactersInPassword: passwordLength
+    };
+  },
+
+  /**
+   * Helper method that validates a node matches the data for an index.
+   * @param {!Array<!Element>} nodes The nodes that will be checked.
+   * @param {!Array<!Object>} passwordList The expected data.
+   * @param {number} index The index that should match the node and data.
+   * @private
+   */
+  validate_: function(nodes, passwordList, index) {
+    var node = nodes[index];
+    var passwordInfo = passwordList[index];
+    assertTrue(!!node, 'Failed to get nodes[' + index + ']');
+    assertTrue(!!passwordInfo, 'Failed to get passwordList[' + index + ']');
+    assertEquals(
+        passwordInfo.loginPair.originUrl,
+        node.querySelector('#originUrl').textContent,
+        'originUrl mismatch in nodes[' + index + ']');
+    assertEquals(
+        passwordInfo.loginPair.username,
+        node.querySelector('#username').textContent,
+        'username mismatch in nodes[' + index + ']');
+    assertEquals(
+        passwordInfo.numCharactersInPassword,
+        node.querySelector('#password').value.length,
+        'password size mismatch in nodes[' + index + ']');
+  },
 };
 
 /**
@@ -39,15 +88,11 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertEquals(self.browsePreload, document.location.href,
                    'Unexpected URL loaded');
 
-      var passwordList = [{origin: 'anotherwebsite.com',
-                           username: 'luigi',
-                           password: '*******'},
-                          {origin: 'longwebsite.com',
-                           username: 'peach',
-                           password: '***'},
-                          {origin: 'website.com',
-                           username: 'mario',
-                           password: '*******'}];
+      var passwordList = [
+        self.createPasswordItem_('anotherwebsite.com', 'luigi', 1),
+        self.createPasswordItem_('longwebsite.com', 'peach', 7),
+        self.createPasswordItem_('website.com', 'mario', 70)
+      ];
 
       // Create a passwords-section to use for testing.
       var passwordsSection = document.createElement('passwords-section');
@@ -62,26 +107,13 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
                      'Failed to pass list of passwords to iron-list');
 
         var list = Polymer.dom(passwordsSection.$.passwordList);
-        assertTrue(!!list, "Failed to get the password list");
+        assertTrue(!!list, 'Failed to get the password list');
         // Skip the first child because it's the template.
         var listChildren = list.children.slice(1);
 
-        var validate = function(nodes, passwordList, index) {
-          assertTrue(!!nodes[index], 'Failed to get nodes[' + index + ']');
-          assertEquals(passwordList[index].origin,
-                       nodes[index].querySelector('#origin').textContent,
-                       'origin mismatch in nodes[' + index + ']');
-          assertEquals(passwordList[index].username,
-                       nodes[index].querySelector('#username').textContent,
-                       'username mismatch in nodes[' + index + ']');
-          assertEquals(passwordList[index].password,
-                       nodes[index].querySelector('#password').textContent,
-                       'password mismatch in nodes[' + index + ']');
-        };
-
-        validate(listChildren, passwordList, 0);
-        validate(listChildren, passwordList, 1);
-        validate(listChildren, passwordList, 2);
+        self.validate_(listChildren, passwordList, 0);
+        self.validate_(listChildren, passwordList, 1);
+        self.validate_(listChildren, passwordList, 2);
         done();
       }, 0);
     });

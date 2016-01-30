@@ -27,6 +27,7 @@ Polymer({
     /**
      * An array of passwords to display.
      * Lazy loaded when the password section is expanded.
+     * @type {!Array<!chrome.passwordsPrivate.PasswordUiEntry>}
      */
     savedPasswords: {
       type: Array,
@@ -39,29 +40,16 @@ Polymer({
     passwordsOpened: {
       type: Boolean,
       value: false,
-      observer: 'loadPasswords_',
     },
   },
 
-  /**
-   * Called when the section is expanded. This will load the list of passwords
-   * only when needed.
-   * @param {boolean} passwordSectionOpened
-   */
-  loadPasswords_: function(passwordSectionOpened) {
-    if (passwordSectionOpened) {
-      // TODO(hcarmona): Get real data.
-      this.savedPasswords =
-          [{origin: 'otherwebsite.com',
-            username: 'bowser',
-            password: '************'},
-           {origin: 'otherlongwebsite.com',
-            username: 'koopa',
-            password: '*********'},
-           {origin: 'otherverylongwebsite.com',
-            username: 'goomba',
-            password: '******'}];
-    }
+  /** @override */
+  ready: function() {
+    // Triggers a callback after the listener is added.
+    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(
+        function(passwordList) {
+          this.savedPasswords = passwordList;
+        }.bind(this));
   },
 });
 })();

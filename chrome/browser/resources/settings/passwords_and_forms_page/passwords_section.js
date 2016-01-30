@@ -19,11 +19,20 @@ Polymer({
   properties: {
     /**
      * An array of passwords to display.
+     * @type {!Array<!chrome.passwordsPrivate.PasswordUiEntry>}
      */
     savedPasswords: {
       type: Array,
       value: function() { return []; },
     },
   },
+
+  /**
+   * Creates an empty password of specified length.
+   * @param {number} length
+   * @return {string} password
+   * @private
+   */
+  getEmptyPassword_(length) { return ' '.repeat(length); },
 });
 })();
