@@ -52,5 +52,10 @@ void ClientEventDispatcher::InjectTouchEvent(const TouchEvent& event) {
   writer()->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientEventDispatcher::OnIncomingMessage(
+    scoped_ptr<CompoundBuffer> message) {
+  LOG(ERROR) << "Received unexpected message on the event channel.";
+}
+
 }  // namespace protocol
 }  // namespace remoting

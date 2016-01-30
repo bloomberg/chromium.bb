@@ -10,7 +10,6 @@
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/proto/mux.pb.h"
 #include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/protobuf_message_parser.h"
 #include "remoting/protocol/stream_channel_factory.h"
 
 namespace remoting {
@@ -53,7 +52,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
   void NotifyBaseChannelError(const std::string& name, int error);
 
   // Callback for |reader_;
-  void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet);
+  void OnIncomingPacket(scoped_ptr<CompoundBuffer> buffer);
 
   // Called by MuxChannel.
   void DoWrite(scoped_ptr<MultiplexPacket> packet,
@@ -81,7 +80,6 @@ class ChannelMultiplexer : public StreamChannelFactory {
 
   BufferedSocketWriter writer_;
   MessageReader reader_;
-  ProtobufMessageParser<MultiplexPacket> parser_;
 
   base::WeakPtrFactory<ChannelMultiplexer> weak_factory_;
 

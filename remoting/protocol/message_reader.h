@@ -42,11 +42,9 @@ class MessageReader : public base::NonThreadSafe {
   MessageReader();
   virtual ~MessageReader();
 
-  // Sets the callback to be called for each incoming message.
-  void SetMessageReceivedCallback(const MessageReceivedCallback& callback);
-
   // Starts reading from |socket|.
   void StartReading(P2PStreamSocket* socket,
+                    const MessageReceivedCallback& message_received_callback,
                     const ReadFailedCallback& read_failed_callback);
 
  private:

@@ -26,20 +26,18 @@ static const int kReadBufferSize = 4096;
 MessageReader::MessageReader() : weak_factory_(this) {}
 MessageReader::~MessageReader() {}
 
-void MessageReader::SetMessageReceivedCallback(
-    const MessageReceivedCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  message_received_callback_ = callback;
-}
-
 void MessageReader::StartReading(
     P2PStreamSocket* socket,
+    const MessageReceivedCallback& message_received_callback,
     const ReadFailedCallback& read_failed_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!socket_);
   DCHECK(socket);
+  DCHECK(!message_received_callback.is_null());
   DCHECK(!read_failed_callback.is_null());
 
   socket_ = socket;
+  message_received_callback_ = message_received_callback;
   read_failed_callback_ = read_failed_callback;
   DoRead();
 }

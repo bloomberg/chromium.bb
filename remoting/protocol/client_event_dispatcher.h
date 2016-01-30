@@ -27,6 +27,8 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
   void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
+  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
+
   DISALLOW_COPY_AND_ASSIGN(ClientEventDispatcher);
 };
 

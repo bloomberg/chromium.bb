@@ -59,13 +59,7 @@ bool CursorShapeIsValid(const CursorShapeInfo& cursor_shape) {
 }  // namespace
 
 ClientControlDispatcher::ClientControlDispatcher()
-    : ChannelDispatcherBase(kControlChannelName),
-      client_stub_(nullptr),
-      clipboard_stub_(nullptr),
-      parser_(base::Bind(&ClientControlDispatcher::OnMessageReceived,
-                         base::Unretained(this)),
-              reader()) {}
-
+    : ChannelDispatcherBase(kControlChannelName) {}
 ClientControlDispatcher::~ClientControlDispatcher() {}
 
 void ClientControlDispatcher::InjectClipboardEvent(
@@ -115,10 +109,15 @@ void ClientControlDispatcher::DeliverClientMessage(
   writer()->Write(SerializeAndFrameMessage(control_message), base::Closure());
 }
 
-void ClientControlDispatcher::OnMessageReceived(
-    scoped_ptr<ControlMessage> message) {
+void ClientControlDispatcher::OnIncomingMessage(
+    scoped_ptr<CompoundBuffer> buffer) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
+
+  scoped_ptr<ControlMessage> message =
+      ParseMessage<ControlMessage>(buffer.get());
+  if (!message)
+    return;
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());

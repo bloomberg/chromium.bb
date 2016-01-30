@@ -9,21 +9,21 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
 namespace protocol {
 
 HostEventDispatcher::HostEventDispatcher()
-    : ChannelDispatcherBase(kEventChannelName),
-      input_stub_(nullptr),
-      parser_(base::Bind(&HostEventDispatcher::OnMessageReceived,
-                         base::Unretained(this)),
-              reader()) {}
-
+    : ChannelDispatcherBase(kEventChannelName) {}
 HostEventDispatcher::~HostEventDispatcher() {}
 
-void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message) {
+void HostEventDispatcher::OnIncomingMessage(scoped_ptr<CompoundBuffer> buffer) {
   DCHECK(input_stub_);
+
+  scoped_ptr<EventMessage> message = ParseMessage<EventMessage>(buffer.get());
+  if (!message)
+    return;
 
   if (!on_input_event_callback_.is_null())
     on_input_event_callback_.Run(message->timestamp());

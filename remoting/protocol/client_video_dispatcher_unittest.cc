@@ -35,7 +35,7 @@ class ClientVideoDispatcherTest : public testing::Test,
                       ErrorCode error) override;
 
  protected:
-  void OnVideoAck(scoped_ptr<VideoAck> ack);
+  void OnMessageReceived(scoped_ptr<CompoundBuffer> buffer);
   void OnReadError(int error);
 
   base::MessageLoop message_loop_;
@@ -50,7 +50,6 @@ class ClientVideoDispatcherTest : public testing::Test,
   // Host side.
   FakeStreamSocket host_socket_;
   MessageReader reader_;
-  ProtobufMessageParser<VideoAck> parser_;
   BufferedSocketWriter writer_;
 
   ScopedVector<VideoPacket> video_packets_;
@@ -61,16 +60,15 @@ class ClientVideoDispatcherTest : public testing::Test,
 
 ClientVideoDispatcherTest::ClientVideoDispatcherTest()
     : initialized_(false),
-      dispatcher_(this),
-      parser_(base::Bind(&ClientVideoDispatcherTest::OnVideoAck,
-                         base::Unretained(this)),
-              &reader_) {
+      dispatcher_(this) {
   dispatcher_.Init(&client_channel_factory_, this);
   base::RunLoop().RunUntilIdle();
   DCHECK(initialized_);
   host_socket_.PairWith(
       client_channel_factory_.GetFakeChannel(kVideoChannelName));
   reader_.StartReading(&host_socket_,
+                       base::Bind(&ClientVideoDispatcherTest::OnMessageReceived,
+                                  base::Unretained(this)),
                        base::Bind(&ClientVideoDispatcherTest::OnReadError,
                                   base::Unretained(this)));
   writer_.Start(
@@ -97,7 +95,10 @@ void ClientVideoDispatcherTest::OnChannelError(
   FAIL();
 }
 
-void ClientVideoDispatcherTest::OnVideoAck(scoped_ptr<VideoAck> ack) {
+void ClientVideoDispatcherTest::OnMessageReceived(
+    scoped_ptr<CompoundBuffer> buffer) {
+  scoped_ptr<VideoAck> ack = ParseMessage<VideoAck>(buffer.get());
+  EXPECT_TRUE(ack);
   ack_messages_.push_back(ack.release());
 }
 

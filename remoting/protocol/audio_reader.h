@@ -7,13 +7,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "remoting/proto/audio.pb.h"
-#include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
-#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace remoting {
 namespace protocol {
+
+class AudioStub;
 
 class AudioReader : public ChannelDispatcherBase {
  public:
@@ -21,10 +20,9 @@ class AudioReader : public ChannelDispatcherBase {
   ~AudioReader() override;
 
  private:
-  void OnAudioPacket(scoped_ptr<AudioPacket> audio_packet);
+  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
 
   AudioStub* audio_stub_;
-  ProtobufMessageParser<AudioPacket> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioReader);
 };

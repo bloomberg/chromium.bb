@@ -47,6 +47,8 @@ void ChannelDispatcherBase::OnChannelReady(
       base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,
                  base::Unretained(this)));
   reader_.StartReading(channel_.get(),
+                       base::Bind(&ChannelDispatcherBase::OnIncomingMessage,
+                                  base::Unretained(this)),
                        base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,
                                   base::Unretained(this)));
 

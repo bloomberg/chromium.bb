@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
+#include "remoting/proto/audio.pb.h"
+#include "remoting/protocol/audio_stub.h"
+#include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 
@@ -14,16 +17,17 @@ namespace remoting {
 namespace protocol {
 
 AudioReader::AudioReader(AudioStub* audio_stub)
-    : ChannelDispatcherBase(kAudioChannelName),
-      audio_stub_(audio_stub),
-      parser_(base::Bind(&AudioReader::OnAudioPacket, base::Unretained(this)),
-              reader()) {}
+    : ChannelDispatcherBase(kAudioChannelName), audio_stub_(audio_stub) {}
 
 AudioReader::~AudioReader() {}
 
-void AudioReader::OnAudioPacket(scoped_ptr<AudioPacket> audio_packet) {
-  audio_stub_->ProcessAudioPacket(std::move(audio_packet),
-                                  base::Bind(&base::DoNothing));
+void AudioReader::OnIncomingMessage(scoped_ptr<CompoundBuffer> message) {
+  scoped_ptr<AudioPacket> audio_packet =
+      ParseMessage<AudioPacket>(message.get());
+  if (audio_packet) {
+    audio_stub_->ProcessAudioPacket(std::move(audio_packet),
+                                    base::Bind(&base::DoNothing));
+  }
 }
 
 }  // namespace protocol

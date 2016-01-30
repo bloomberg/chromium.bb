@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
-#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace remoting {
 namespace protocol {
@@ -26,7 +25,7 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   struct PendingFrame;
   typedef std::list<PendingFrame> PendingFramesList;
 
-  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet);
+  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
 
   // Callback for VideoStub::ProcessVideoPacket().
   void OnPacketDone(PendingFramesList::iterator pending_frame);
@@ -34,7 +33,6 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   PendingFramesList pending_frames_;
 
   VideoStub* video_stub_;
-  ProtobufMessageParser<VideoPacket> parser_;
 
   base::WeakPtrFactory<ClientVideoDispatcher> weak_factory_;
 

@@ -40,6 +40,8 @@ class AudioWriter : public ChannelDispatcherBase,
  private:
   AudioWriter();
 
+  void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) override;
+
   DISALLOW_COPY_AND_ASSIGN(AudioWriter);
 };
 

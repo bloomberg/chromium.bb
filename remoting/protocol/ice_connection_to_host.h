@@ -20,7 +20,6 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/input_filter.h"
-#include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/monitored_video_stub.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"

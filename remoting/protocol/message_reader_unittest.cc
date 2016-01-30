@@ -53,10 +53,10 @@ class MessageReaderTest : public testing::Test {
   void TearDown() override { STLDeleteElements(&messages_); }
 
   void InitReader() {
-    reader_->SetMessageReceivedCallback(
-        base::Bind(&MessageReaderTest::OnMessage, base::Unretained(this)));
-    reader_->StartReading(&socket_, base::Bind(&MessageReaderTest::OnReadError,
-                                               base::Unretained(this)));
+    reader_->StartReading(
+        &socket_,
+        base::Bind(&MessageReaderTest::OnMessage, base::Unretained(this)),
+        base::Bind(&MessageReaderTest::OnReadError, base::Unretained(this)));
   }
 
   void AddMessage(const std::string& message) {

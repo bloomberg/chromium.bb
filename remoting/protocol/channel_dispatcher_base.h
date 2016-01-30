@@ -55,7 +55,9 @@ class ChannelDispatcherBase {
   explicit ChannelDispatcherBase(const char* channel_name);
 
   BufferedSocketWriter* writer() { return &writer_; }
-  MessageReader* reader() { return &reader_; }
+
+  // Child classes must override this method to handle incoming messages.
+  virtual void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) = 0;
 
  private:
   void OnChannelReady(scoped_ptr<P2PStreamSocket> socket);

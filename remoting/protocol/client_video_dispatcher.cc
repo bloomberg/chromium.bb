@@ -28,15 +28,16 @@ struct ClientVideoDispatcher::PendingFrame {
 ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub)
     : ChannelDispatcherBase(kVideoChannelName),
       video_stub_(video_stub),
-      parser_(base::Bind(&ClientVideoDispatcher::ProcessVideoPacket,
-                         base::Unretained(this)),
-              reader()),
       weak_factory_(this) {}
-
 ClientVideoDispatcher::~ClientVideoDispatcher() {}
 
-void ClientVideoDispatcher::ProcessVideoPacket(
-    scoped_ptr<VideoPacket> video_packet) {
+void ClientVideoDispatcher::OnIncomingMessage(
+    scoped_ptr<CompoundBuffer> message) {
+  scoped_ptr<VideoPacket> video_packet =
+      ParseMessage<VideoPacket>(message.get());
+  if (!video_packet)
+    return;
+
   int frame_id = video_packet->frame_id();
 
   if (!video_packet->has_frame_id()) {

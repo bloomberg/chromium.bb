@@ -34,5 +34,9 @@ scoped_ptr<AudioWriter> AudioWriter::Create(const SessionConfig& config) {
   return make_scoped_ptr(new AudioWriter());
 }
 
+void AudioWriter::OnIncomingMessage(scoped_ptr<CompoundBuffer> message) {
+  LOG(ERROR) << "Received unexpected message on the audio channel.";
+}
+
 }  // namespace protocol
 }  // namespace remoting

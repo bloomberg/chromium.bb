@@ -10,7 +10,6 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
-#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace net {
 class StreamSocket;
@@ -19,7 +18,6 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
-class ControlMessage;
 class HostStub;
 class PairingResponse;
 class Session;
@@ -55,12 +53,10 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   void set_host_stub(HostStub* host_stub) { host_stub_ = host_stub; }
 
  private:
-  void OnMessageReceived(scoped_ptr<ControlMessage> message);
+  void OnIncomingMessage(scoped_ptr<CompoundBuffer> buffer) override;
 
-  ClipboardStub* clipboard_stub_;
-  HostStub* host_stub_;
-
-  ProtobufMessageParser<ControlMessage> parser_;
+  ClipboardStub* clipboard_stub_ = nullptr;
+  HostStub* host_stub_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(HostControlDispatcher);
 };

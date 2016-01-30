@@ -305,11 +305,7 @@ ChannelMultiplexer::ChannelMultiplexer(StreamChannelFactory* factory,
     : base_channel_factory_(factory),
       base_channel_name_(base_channel_name),
       next_channel_id_(0),
-      parser_(base::Bind(&ChannelMultiplexer::OnIncomingPacket,
-                         base::Unretained(this)),
-              &reader_),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ChannelMultiplexer::~ChannelMultiplexer() {
   DCHECK(pending_channels_.empty());
@@ -361,6 +357,8 @@ void ChannelMultiplexer::OnBaseChannelReady(
   if (base_channel_.get()) {
     // Initialize reader and writer.
     reader_.StartReading(base_channel_.get(),
+                         base::Bind(&ChannelMultiplexer::OnIncomingPacket,
+                                    base::Unretained(this)),
                          base::Bind(&ChannelMultiplexer::OnBaseChannelError,
                                     base::Unretained(this)));
     writer_.Start(base::Bind(&P2PStreamSocket::Write,
@@ -424,7 +422,12 @@ void ChannelMultiplexer::NotifyBaseChannelError(const std::string& name,
     it->second->OnBaseChannelError(error);
 }
 
-void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet) {
+void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<CompoundBuffer> buffer) {
+  scoped_ptr<MultiplexPacket> packet =
+      ParseMessage<MultiplexPacket>(buffer.get());
+  if (!packet)
+    return;
+
   DCHECK(packet->has_channel_id());
   if (!packet->has_channel_id()) {
     LOG(ERROR) << "Received packet without channel_id.";
