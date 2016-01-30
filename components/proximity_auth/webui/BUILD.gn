@@ -18,7 +18,7 @@ static_library("webui") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
+    "//components/prefs",
     "//components/proximity_auth",
     "//components/proximity_auth/ble",
     "//components/proximity_auth/cryptauth",

@@ -49,10 +49,10 @@ source_set("sync_sessions") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/bookmarks/browser",
     "//components/favicon/core",
     "//components/history/core/browser",
+    "//components/prefs",
     "//components/sessions",
     "//components/sync_driver",
     "//components/variations",
@@ -97,11 +97,10 @@ source_set("unit_tests") {
   deps = [
     ":sync_sessions",
     ":test_support",
-    "//base:prefs",
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/history/core/browser",
+    "//components/prefs:test_support",
     "//components/sessions:test_support",
     "//components/sync_driver",
     "//components/sync_driver:test_support",

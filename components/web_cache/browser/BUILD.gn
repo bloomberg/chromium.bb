@@ -12,7 +12,7 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//components/web_cache/common",
     "//content/public/browser",
     "//third_party/WebKit/public:blink",

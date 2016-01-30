@@ -20,8 +20,8 @@ source_set("test") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/network_time",
+    "//components/prefs",
     "//ios/chrome/browser",
     "//ios/public/provider/chrome/browser",
     "//ios/public/test",

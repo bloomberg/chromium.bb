@@ -66,7 +66,7 @@ source_set("metrics") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
+    "//components/prefs",
     "//components/variations",
     "//third_party/zlib:compression_utils",
   ]
@@ -322,8 +322,8 @@ source_set("unit_tests") {
     ":profiler",
     ":test_support",
     ":ui",
-    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/variations",
     "//net:test_support",
     "//testing/gtest",

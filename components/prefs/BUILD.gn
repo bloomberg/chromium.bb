@@ -4,6 +4,30 @@
 
 component("prefs") {
   sources = [
+    # Reference the forwarding headers so "gn check" can check them properly
+    # while we're transitioning from base to here.
+    "//base/prefs/base_prefs_export.h",
+    "//base/prefs/default_pref_store.h",
+    "//base/prefs/json_pref_store.h",
+    "//base/prefs/overlay_user_pref_store.h",
+    "//base/prefs/persistent_pref_store.h",
+    "//base/prefs/pref_change_registrar.h",
+    "//base/prefs/pref_filter.h",
+    "//base/prefs/pref_member.h",
+    "//base/prefs/pref_notifier.h",
+    "//base/prefs/pref_notifier_impl.h",
+    "//base/prefs/pref_observer.h",
+    "//base/prefs/pref_registry.h",
+    "//base/prefs/pref_registry_simple.h",
+    "//base/prefs/pref_service_factory.h",
+    "//base/prefs/pref_service.h",
+    "//base/prefs/pref_store.h",
+    "//base/prefs/pref_value_map.h",
+    "//base/prefs/pref_value_store.h",
+    "//base/prefs/scoped_user_pref_update.h",
+    "//base/prefs/value_map_pref_store.h",
+    "//base/prefs/writeable_pref_store.h",
+
     "default_pref_store.cc",
     "default_pref_store.h",
     "json_pref_store.cc",
@@ -61,6 +85,13 @@ component("prefs") {
 source_set("test_support") {
   testonly = true
   sources = [
+    # Reference the forwarding headers so "gn check" can check them properly
+    # while we're transitioning from base to here.
+    "//base/prefs/mock_pref_change_callback.h",
+    "//base/prefs/pref_store_observer_mock.h",
+    "//base/prefs/testing_pref_service.h",
+    "//base/prefs/testing_pref_store.h",
+
     "mock_pref_change_callback.cc",
     "mock_pref_change_callback.h",
     "pref_store_observer_mock.cc",

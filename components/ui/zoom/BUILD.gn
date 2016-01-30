@@ -18,7 +18,7 @@ source_set("zoom") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
@@ -47,7 +47,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":zoom",
-    "//base:prefs",
+    "//components/prefs",
     "//content/public/common",
     "//testing/gtest",
   ]

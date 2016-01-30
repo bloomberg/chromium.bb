@@ -12,10 +12,10 @@ source_set("content") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/precache/core",
+    "//components/prefs",
     "//components/sync_driver",
     "//components/variations",
     "//content/public/browser",

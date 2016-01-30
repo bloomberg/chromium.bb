@@ -81,9 +81,9 @@ source_set("test_support") {
   deps = [
     ":extensions_resources",
     "//base",
-    "//base:prefs_test_support",
     "//components/guest_view/browser:test_support",
     "//components/pref_registry:test_support",
+    "//components/prefs:test_support",
     "//content/public/common",
     "//content/test:test_support",
     "//extensions/browser",
@@ -175,10 +175,10 @@ test("extensions_unittests") {
     ":shell_and_test_pak",
     ":test_support",
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/keyed_service/content",
     "//components/pref_registry:test_support",
+    "//components/prefs:test_support",
     "//components/user_prefs",
     "//content/test:test_support",
     "//device/bluetooth:mocks",
@@ -251,8 +251,8 @@ test("extensions_browsertests") {
 
     # TODO(yoz): find the right deps
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/storage_monitor:test_support",
     "//content/test:test_support",
     "//device/bluetooth:mocks",

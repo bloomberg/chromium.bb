@@ -31,8 +31,8 @@ component("core") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/user_prefs",
   ]
 }

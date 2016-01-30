@@ -38,7 +38,7 @@ component("user_manager") {
       "user_type.h",
     ]
     deps += [
-      "//base:prefs",
+      "//components/prefs",
       "//components/session_manager/core",
       "//google_apis",
       "//url",

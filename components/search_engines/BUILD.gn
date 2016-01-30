@@ -55,7 +55,6 @@ static_library("search_engines") {
     ":prepopulated_engines",
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/keyed_service/core",
@@ -67,6 +66,7 @@ static_library("search_engines") {
     # dependency added:
     #"//components/omnibox/browser",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/rappor",
     "//components/strings",
     "//components/sync_driver",

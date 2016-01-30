@@ -15,9 +15,9 @@ source_set("ssl_config") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
+    "//components/prefs",
     "//net",
   ]
 }
@@ -30,7 +30,7 @@ source_set("unit_tests") {
   deps = [
     ":ssl_config",
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//net",
     "//testing/gtest",
   ]

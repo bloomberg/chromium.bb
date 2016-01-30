@@ -29,9 +29,9 @@ static_library("web_resource") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/google/core/browser",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/version_info",
     "//net",
     "//ui/base",
@@ -66,7 +66,7 @@ source_set("unit_tests") {
     ":test_support",
     ":web_resource",
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//components/version_info",
     "//net:test_support",
     "//testing/gtest",

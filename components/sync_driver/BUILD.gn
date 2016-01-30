@@ -124,11 +124,11 @@ source_set("sync_driver") {
   ]
   deps = [
     "//base",
-    "//base:prefs",
     "//base/third_party/dynamic_annotations",
     "//components/data_use_measurement/core",
     "//components/invalidation/public",
     "//components/os_crypt",
+    "//components/prefs",
     "//components/pref_registry",
     "//components/signin/core/browser",
     "//components/version_info",
@@ -230,11 +230,11 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/invalidation/impl",
     "//components/os_crypt",
     "//components/pref_registry:test_support",
+    "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",

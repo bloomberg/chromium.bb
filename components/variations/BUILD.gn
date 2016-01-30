@@ -68,8 +68,8 @@ source_set("variations") {
   deps = [
     "proto",
     "//base",
-    "//base:prefs",
     "//components/crash/core/common",
+    "//components/prefs",
     "//crypto",
     "//third_party/mt19937ar",
     "//third_party/protobuf:protobuf_lite",
@@ -118,8 +118,8 @@ source_set("unit_tests") {
     ":variations",
     "net",
     "proto",
-    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//testing/gtest",
     "//third_party/zlib:compression_utils",
   ]

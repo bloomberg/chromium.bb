@@ -113,7 +113,6 @@ test("rlz_unittests") {
     ":rlz_lib",
     ":test_support",
     "//base",
-    "//base:prefs",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

@@ -71,7 +71,7 @@ source_set("proximity_auth") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//components/proximity_auth/ble",
     "//components/proximity_auth/cryptauth",
     "//components/proximity_auth/logging",
@@ -149,8 +149,8 @@ source_set("unit_tests") {
     ":proximity_auth",
     ":test_support",
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/proximity_auth/ble:unit_tests",
     "//components/proximity_auth/cryptauth:test_support",
     "//components/proximity_auth/cryptauth:unit_tests",

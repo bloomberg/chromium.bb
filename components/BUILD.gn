@@ -419,9 +419,9 @@ test("components_browsertests") {
     # a MANUAL component_browsertest.
     sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
     deps += [
-      "//base:prefs_test_support",
       "//components/leveldb_proto",
       "//components/pref_registry:test_support",
+      "//components/prefs:test_support",
     ]
   }
 

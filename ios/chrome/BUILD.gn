@@ -42,12 +42,12 @@ test("ios_chrome_unittests") {
 
   deps = [
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/bookmarks/test",
     "//components/favicon_base",
     "//components/metrics",
     "//components/metrics:test_support",
+    "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
     "//components/signin/ios/browser:test_support",
     "//components/sync_driver:test_support",

@@ -84,7 +84,6 @@ source_set("test_support") {
 
   # New deps should go in the non-iOS section below.
   public_deps = [
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//chrome:resources",
     "//chrome:strings",
@@ -102,6 +101,7 @@ source_set("test_support") {
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/pref_registry:test_support",
+    "//components/prefs:test_support",
     "//components/rappor:test_support",
     "//components/search_engines:test_support",
     "//components/signin/core/browser:test_support",

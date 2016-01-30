@@ -44,11 +44,11 @@ source_set("browser") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//components/bookmarks/common",
     "//components/favicon_base",
     "//components/keyed_service/core",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/query_parser",
     "//components/strings",
     "//components/url_formatter",
@@ -83,12 +83,12 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
-    "//base:prefs",
-    "//base:prefs_test_support",
     "//components/bookmarks/common",
     "//components/bookmarks/test",
     "//components/favicon_base",
     "//components/pref_registry",
+    "//components/prefs",
+    "//components/prefs:test_support",
     "//testing/gtest",
     "//ui/base",
     "//url",

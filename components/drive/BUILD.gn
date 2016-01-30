@@ -50,9 +50,9 @@ source_set("drive") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//components/invalidation/public",
     "//components/keyed_service/core",
+    "//components/prefs",
 
     # TODO(lukasza): Remove this dependency (see DEPS file for more info).
     "//content/public/browser",
@@ -129,7 +129,7 @@ source_set("drive_chromeos") {
     ":drive",
     "//base",
     "//base:i18n",
-    "//base:prefs",
+    "//components/prefs",
     "//google_apis:google_apis",
     "//net:net",
   ]
@@ -158,7 +158,7 @@ source_set("test_support") {
     ":drive",
     ":proto",
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//content/test:test_support",
     "//google_apis:test_support",
     "//net:net",
@@ -182,7 +182,7 @@ source_set("test_support_chromeos") {
     ":drive_chromeos",
     ":proto",
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//content/test:test_support",
     "//google_apis:test_support",
   ]

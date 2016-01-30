@@ -12,8 +12,8 @@ source_set("prefs") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/filesystem/public/interfaces",
+    "//components/prefs",
     "//mojo/common",
     "//mojo/shell/public/cpp",
   ]

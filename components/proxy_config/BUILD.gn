@@ -24,7 +24,7 @@ component("proxy_config") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//net",
     "//url",
   ]
@@ -50,8 +50,8 @@ source_set("unit_tests") {
   deps = [
     ":proxy_config",
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

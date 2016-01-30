@@ -75,7 +75,6 @@ source_set("browser") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/google/core/browser",
@@ -84,6 +83,7 @@ source_set("browser") {
     "//components/metrics",
     "//components/os_crypt",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/signin/core/account_id",
     "//components/signin/core/common",
     "//components/webdata/common",
@@ -129,7 +129,7 @@ source_set("test_support") {
   public_deps = [
     ":browser",
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//components/webdata/common",
     "//google_apis:test_support",
     "//net:test_support",

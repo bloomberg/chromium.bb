@@ -54,10 +54,10 @@ source_set("unit_tests") {
   deps = [
     ":feedback",
     "//base",
-    "//base:prefs_test_support",
     "//components/feedback/proto",
     "//components/keyed_service/core",
     "//components/pref_registry:test_support",
+    "//components/prefs:test_support",
     "//components/user_prefs",
     "//components/variations/net",
     "//content/test:test_support",

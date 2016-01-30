@@ -42,10 +42,10 @@ source_set("browser") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//components/data_use_measurement/core",
     "//components/language_usage_metrics",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/resources:components_resources",
     "//components/strings",
     "//components/translate/core/common",
@@ -84,8 +84,8 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
-    "//base:prefs",
     "//components/pref_registry:test_support",
+    "//components/prefs",
     "//components/translate/core/common",
     "//net:test_support",
     "//testing/gtest",

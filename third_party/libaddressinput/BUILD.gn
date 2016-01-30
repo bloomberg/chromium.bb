@@ -210,8 +210,8 @@ if (!is_android || use_aura) {
     deps = [
       ":libaddressinput",
       ":strings",
-      "//base:prefs",
       "//base/test:run_all_unittests",
+      "//components/prefs",
       "//net:test_support",
       "//testing/gtest",
     ]

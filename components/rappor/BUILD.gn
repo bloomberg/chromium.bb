@@ -38,9 +38,9 @@ source_set("rappor") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/data_use_measurement/core",
     "//components/metrics",
+    "//components/prefs",
     "//components/variations",
     "//crypto",
     "//net",
@@ -63,7 +63,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
   ]
 }
 
@@ -84,9 +84,9 @@ source_set("unit_tests") {
     ":rappor",
     ":test_support",
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/metrics",
+    "//components/prefs:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//url",

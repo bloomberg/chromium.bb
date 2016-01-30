@@ -107,9 +107,9 @@ template("cronet_static_tmpl") {
       ":features",
       "//base",
       "//base:i18n",
-      "//base:prefs",
       "//base/third_party/dynamic_annotations",
       "//components/metrics",
+      "//components/prefs",
     ]
     sources = [
       "//components/cronet/android/chromium_url_request.cc",

@@ -38,8 +38,8 @@ source_set("core") {
   deps = [
     ":proto",
     "//base",
-    "//base:prefs",
     "//components/history/core/browser",
+    "//components/prefs",
     "//net",
     "//sql",
     "//url",

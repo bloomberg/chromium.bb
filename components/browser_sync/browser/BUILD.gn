@@ -16,7 +16,6 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/browser_sync/common",
@@ -28,6 +27,7 @@ source_set("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/sync/browser",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync_bookmarks",

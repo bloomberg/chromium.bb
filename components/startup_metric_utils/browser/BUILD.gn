@@ -25,7 +25,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//components/version_info",
   ]
 }

@@ -39,9 +39,9 @@ source_set("cryptauth") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
+    "//components/prefs",
     "//components/proximity_auth/logging",
     "//crypto",
     "//google_apis",
@@ -95,9 +95,9 @@ source_set("unit_tests") {
   deps = [
     ":cryptauth",
     ":test_support",
-    "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/gcm_driver:test_support",
+    "//components/prefs:test_support",
     "//components/proximity_auth",
     "//google_apis:test_support",
     "//net:test_support",

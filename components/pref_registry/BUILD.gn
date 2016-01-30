@@ -10,8 +10,8 @@ source_set("pref_registry") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//base/third_party/dynamic_annotations",
+    "//components/prefs",
   ]
 }
 
@@ -28,7 +28,6 @@ source_set("test_support") {
 
   deps = [
     "//base",
-    "//base:prefs",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
   ]
 }

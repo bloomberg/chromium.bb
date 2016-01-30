@@ -55,10 +55,10 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/content_settings/core/common",
     "//components/keyed_service/core",
     "//components/pref_registry:pref_registry",
+    "//components/prefs",
     "//components/url_formatter",
     "//net",
     "//url",
@@ -86,11 +86,11 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
-    "//base:prefs",
     "//base/test:test_support",
     "//components/content_settings/core/common",
     "//components/content_settings/core/test:test_support",
     "//components/pref_registry:test_support",
+    "//components/prefs",
     "//testing/gtest",
     "//url",
   ]

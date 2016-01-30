@@ -23,7 +23,7 @@ source_set("ble") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//components/proximity_auth/logging",
 
     # TODO(https://crbug.com/562683): This component has a circular dependency
@@ -52,8 +52,8 @@ source_set("unit_tests") {
 
   deps = [
     ":ble",
-    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/proximity_auth:test_support",
     "//device/bluetooth:mocks",
     "//testing/gmock",

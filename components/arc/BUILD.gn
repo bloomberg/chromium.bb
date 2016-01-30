@@ -35,10 +35,10 @@ static_library("arc") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//chromeos",
     "//chromeos:power_manager_proto",
     "//components/onc",
+    "//components/prefs",
     "//components/signin/core/account_id",
     "//google_apis",
     "//ipc:ipc",

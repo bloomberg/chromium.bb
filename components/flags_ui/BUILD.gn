@@ -21,8 +21,8 @@ source_set("flags_ui") {
   deps = [
     ":switches",
     "//base",
-    "//base:prefs",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/strings",
     "//ui/base",
   ]
@@ -47,8 +47,7 @@ source_set("unit_tests") {
     ":flags_ui",
     ":switches",
     "//base",
-    "//base:prefs",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//components/strings",
     "//testing/gtest",
   ]

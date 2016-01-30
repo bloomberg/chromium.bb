@@ -19,12 +19,12 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/managed",
     "//components/keyed_service/core",
     "//components/policy/core/common",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/strings",
     "//components/url_matcher",
     "//ui/base",
@@ -96,10 +96,10 @@ if (enable_configuration_policy) {
     ]
     deps = [
       "//base",
-      "//base:prefs_test_support",
       "//components/autofill/core/common",
       "//components/policy",
       "//components/policy:policy_component_test_support",
+      "//components/prefs:test_support",
       "//components/proxy_config",
       "//components/url_formatter",
       "//google_apis",

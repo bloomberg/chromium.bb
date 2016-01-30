@@ -32,10 +32,10 @@ static_library("browser") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//components/autofill/content/common",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/prefs",
     "//components/os_crypt",
     "//components/resources",
     "//components/strings",

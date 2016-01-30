@@ -13,7 +13,7 @@ static_library("network_time") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
+    "//components/prefs",
   ]
 }
 
@@ -26,7 +26,7 @@ source_set("unit_tests") {
   deps = [
     ":network_time",
     "//base",
-    "//base:prefs_test_support",
+    "//components/prefs:test_support",
     "//testing/gtest",
   ]
 }

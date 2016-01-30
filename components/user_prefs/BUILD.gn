@@ -13,6 +13,6 @@ component("user_prefs") {
 
   deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
   ]
 }

@@ -1130,7 +1130,6 @@ source_set("test_support") {
     "//chrome/browser/ui:test_support",
   ]
   deps = [
-    "//base:prefs_test_support",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
     "//chrome/common",
@@ -1139,6 +1138,7 @@ source_set("test_support") {
     "//components/invalidation/impl",
     "//components/invalidation/impl:test_support",
     "//components/password_manager/core/browser:test_support",
+    "//components/prefs:test_support",
     "//components/search_engines:test_support",
     "//components/syncable_prefs:test_support",
     "//components/user_prefs/tracked:user_prefs_tracked_test_support",

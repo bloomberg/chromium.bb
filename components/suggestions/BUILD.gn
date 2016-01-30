@@ -23,7 +23,7 @@ source_set("suggestions") {
 
   public_deps = [
     "//base",
-    "//base:prefs",
+    "//components/prefs",
     "//components/suggestions/proto",
     "//net",
     "//ui/gfx",

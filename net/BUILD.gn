@@ -122,8 +122,8 @@ if (!is_nacl) {
   net_shared_sources += gypi_values.net_non_nacl_sources
 
   net_shared_deps += [
-    "//base:prefs",
     "//base/third_party/dynamic_annotations",
+    "//components/prefs",
     "//sdch",
     "//third_party/zlib",
   ]
@@ -1407,7 +1407,6 @@ test("net_unittests") {
     ":test_support",
     "//base",
     "//base:i18n",
-    "//base:prefs_test_support",
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",

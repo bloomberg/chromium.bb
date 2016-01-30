@@ -76,7 +76,6 @@ source_set("browser") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//cc",
     "//chromecast/app:cast_crash_client",
     "//chromecast/app:chromecast_settings",
@@ -100,6 +99,7 @@ source_set("browser") {
     # isn't needed. crbug.com/541577
     "//components/metrics:ui",
     "//components/network_hints/browser",
+    "//components/prefs",
     "//content",
     "//content/public/browser",
     "//content/public/common",

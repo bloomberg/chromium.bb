@@ -13,11 +13,11 @@ mojo_native_application("wallpaper") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//components/filesystem/public/cpp/prefs",
     "//components/filesystem/public/interfaces",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
+    "//components/prefs",
     "//mash/wm/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",

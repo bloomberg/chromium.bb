@@ -17,7 +17,7 @@ component("wallpaper") {
     "//skia",
   ]
   deps = [
-    "//base:prefs",
+    "//components/prefs",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",

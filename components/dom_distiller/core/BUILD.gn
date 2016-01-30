@@ -64,9 +64,9 @@ source_set("core") {
   ]
   deps = [
     "//base",
-    "//base:prefs",
     "//components/leveldb_proto",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/resources",
     "//components/strings",
     "//components/variations",

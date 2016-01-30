@@ -1465,20 +1465,6 @@ if (is_ios || is_android || is_win || (is_linux && !is_chromeos)) {
   }
 }
 
-# TODO(brettw) remove these forwarding targets when all references to prefs are
-# updated to point to components.
-group("prefs") {
-  public_deps = [
-    "//components/prefs",
-  ]
-}
-group("prefs_test_support") {
-  testonly = true
-  public_deps = [
-    "//components/prefs:test_support",
-  ]
-}
-
 source_set("message_loop_tests") {
   testonly = true
   sources = [

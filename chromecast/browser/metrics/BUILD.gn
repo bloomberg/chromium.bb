@@ -15,13 +15,13 @@ source_set("metrics") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:prefs",
     "//chromecast/base",
     "//chromecast/common",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:profiler",
+    "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
   ]
