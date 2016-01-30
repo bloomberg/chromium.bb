@@ -19,6 +19,10 @@
 #include "net/dns/mdns_client.h"
 #include "net/udp/datagram_server_socket.h"
 
+namespace net {
+class IPAddress;
+}
+
 namespace local_discovery {
 
 using content::BrowserThread;
@@ -308,8 +312,8 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
   static void OnCallback(const WeakPtr& proxy,
                          const LocalDomainResolver::IPAddressCallback& callback,
                          bool a1,
-                         const net::IPAddressNumber& a2,
-                         const net::IPAddressNumber& a3) {
+                         const net::IPAddress& a2,
+                         const net::IPAddress& a3) {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
     PostToUIThread(base::Bind(&Base::RunCallback, proxy,
                               base::Bind(callback, a1, a2, a3)));

@@ -14,7 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 
 using local_discovery::ServiceDescription;
 using local_discovery::ServiceDiscoveryDeviceLister;
@@ -177,14 +177,13 @@ void CastDeviceProvider::OnDeviceChanged(
           << service_description.service_name;
   if (service_description.service_type() != kCastServiceType)
     return;
-  const net::IPAddressNumber& ip_address = service_description.ip_address;
-  if (ip_address.size() != net::kIPv4AddressSize &&
-      ip_address.size() != net::kIPv6AddressSize) {
+  const net::IPAddress& ip_address = service_description.ip_address;
+  if (!ip_address.IsValid()) {
     // An invalid IP address is not queryable.
     return;
   }
   const std::string& name = service_description.service_name;
-  std::string host = net::IPAddressToString(ip_address);
+  std::string host = ip_address.ToString();
   service_hostname_map_[name] = host;
   device_info_map_[host] = ServiceDescriptionToDeviceInfo(service_description);
 }
