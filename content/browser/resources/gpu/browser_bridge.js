@@ -36,11 +36,9 @@ cr.define('gpu', function() {
     applySimulatedData_: function applySimulatedData(data) {
       // set up things according to the simulated data
       this.gpuInfo_ = data.gpuInfo;
-      this.gpuMemoryBufferInfo_ = data.gpuMemoryBufferInfo;
       this.clientInfo_ = data.clientInfo;
       this.logMessages_ = data.logMessages;
       cr.dispatchSimpleEvent(this, 'gpuInfoUpdate');
-      cr.dispatchSimpleEvent(this, 'gpuMemoryBufferInfoUpdate');
       cr.dispatchSimpleEvent(this, 'clientInfoChange');
       cr.dispatchSimpleEvent(this, 'logMessagesChange');
     },
@@ -94,21 +92,6 @@ cr.define('gpu', function() {
     onGpuInfoUpdate: function(gpuInfo) {
       this.gpuInfo_ = gpuInfo;
       cr.dispatchSimpleEvent(this, 'gpuInfoUpdate');
-    },
-
-    /**
-     * Get gpuMemoryBufferInfo data.
-     */
-    get gpuMemoryBufferInfo() {
-      return this.gpuMemoryBufferInfo_;
-    },
-
-    /**
-     * Called from gpu c++ code when GpuMemoryBuffer Info is updated.
-     */
-    onGpuMemoryBufferInfoUpdate: function(gpuMemoryBufferInfo) {
-      this.gpuMemoryBufferInfo_ = gpuMemoryBufferInfo;
-      cr.dispatchSimpleEvent(this, 'gpuMemoryBufferInfoUpdate');
     },
 
     /**

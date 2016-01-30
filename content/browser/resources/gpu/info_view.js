@@ -23,8 +23,6 @@ cr.define('gpu', function() {
       cr.ui.TabPanel.prototype.decorate.apply(this);
 
       browserBridge.addEventListener('gpuInfoUpdate', this.refresh.bind(this));
-      browserBridge.addEventListener('gpuMemoryBufferInfoUpdate',
-                                     this.refresh.bind(this));
       browserBridge.addEventListener('logMessagesChange',
                                      this.refresh.bind(this));
       browserBridge.addEventListener('clientInfoChange',
@@ -96,6 +94,7 @@ cr.define('gpu', function() {
         'panel_fitting': 'Panel Fitting',
         'rasterization': 'Rasterization',
         'multiple_raster_threads': 'Multiple Raster Threads',
+        'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
       };
 
       var statusMap =  {
@@ -154,7 +153,6 @@ cr.define('gpu', function() {
       var workaroundsDiv = this.querySelector('.workarounds-div');
       var workaroundsList = this.querySelector('.workarounds-list');
       var gpuInfo = browserBridge.gpuInfo;
-      var gpuMemoryBufferInfo = browserBridge.gpuMemoryBufferInfo;
       var i;
       if (gpuInfo) {
         // Not using jstemplate here for blacklist status because we construct
@@ -219,16 +217,21 @@ cr.define('gpu', function() {
           problemsList.hidden = true;
           workaroundsList.hidden = true;
         }
-        if (gpuMemoryBufferInfo.gpu_memory_buffer_info)
-          this.setTable_('gpu-memory-buffer-info',
-                         gpuMemoryBufferInfo.gpu_memory_buffer_info);
-        else
-          this.setTable_('gpu-memory-buffer-info', []);
 
         if (gpuInfo.basic_info)
           this.setTable_('basic-info', gpuInfo.basic_info);
         else
           this.setTable_('basic-info', []);
+
+        if (gpuInfo.compositorInfo)
+          this.setTable_('compositor-info', gpuInfo.compositorInfo);
+        else
+          this.setTable_('compositor-info', []);
+
+        if (gpuInfo.gpuMemoryBufferInfo)
+          this.setTable_('gpu-memory-buffer-info', gpuInfo.gpuMemoryBufferInfo);
+        else
+          this.setTable_('gpu-memory-buffer-info', []);
 
         if (gpuInfo.diagnostics) {
           diagnosticsDiv.hidden = false;

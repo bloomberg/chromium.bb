@@ -298,7 +298,19 @@ const char* BufferUsageToString(gfx::BufferUsage usage) {
   return nullptr;
 }
 
-base::DictionaryValue* GpuMemoryBufferInfoAsDictionaryValue() {
+base::ListValue* CompositorInfo() {
+  base::ListValue* compositor_info = new base::ListValue();
+
+  compositor_info->Append(NewDescriptionValuePair(
+      "Tile Update Mode",
+      IsZeroCopyUploadEnabled() ? "Zero-copy" : "One-copy"));
+
+  compositor_info->Append(NewDescriptionValuePair(
+      "Partial Raster", IsPartialRasterEnabled() ? "Enabled" : "Disabled"));
+  return compositor_info;
+}
+
+base::ListValue* GpuMemoryBufferInfo() {
   base::ListValue* gpu_memory_buffer_info = new base::ListValue();
 
   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
@@ -324,11 +336,7 @@ base::DictionaryValue* GpuMemoryBufferInfoAsDictionaryValue() {
         BufferFormatToString(static_cast<gfx::BufferFormat>(format)),
         native_usage_support));
   }
-
-  base::DictionaryValue* info = new base::DictionaryValue();
-  info->Set("gpu_memory_buffer_info", gpu_memory_buffer_info);
-
-  return info;
+  return gpu_memory_buffer_info;
 }
 
 // This class receives javascript messages from the renderer.
@@ -504,18 +512,12 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
     workarounds->AppendString(workaround);
   feature_status->Set("workarounds", workarounds);
   gpu_info_val->Set("featureStatus", feature_status);
+  gpu_info_val->Set("compositorInfo", CompositorInfo());
+  gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo());
 
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
       *(gpu_info_val.get()));
-
-  // Get GpuMemoryBuffer Info.
-  scoped_ptr<base::DictionaryValue> gpu_memory_buffer_info_val(
-      GpuMemoryBufferInfoAsDictionaryValue());
-
-  // Send GpuMemoryBuffer Info to javascript.
-  web_ui()->CallJavascriptFunction("browserBridge.onGpuMemoryBufferInfoUpdate",
-                                   *(gpu_memory_buffer_info_val.get()));
 }
 
 void GpuMessageHandler::OnGpuSwitched() {

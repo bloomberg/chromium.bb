@@ -34,6 +34,7 @@ const char* kGpuCompositingFeatureName = "gpu_compositing";
 const char* kWebGLFeatureName = "webgl";
 const char* kRasterizationFeatureName = "rasterization";
 const char* kMultipleRasterThreadsFeatureName = "multiple_raster_threads";
+const char* kNativeGpuMemoryBuffersFeatureName = "native_gpu_memory_buffers";
 
 const int kMinRasterThreads = 1;
 const int kMaxRasterThreads = 4;
@@ -153,6 +154,14 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           NumberOfRendererRasterThreads() == 1,
           "Raster is using a single thread.",
           false
+      },
+      {
+          kNativeGpuMemoryBuffersFeatureName,
+          false,
+          !BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled(),
+          "Native GpuMemoryBuffers have been disabled, either via about:flags"
+          " or command line.",
+          true
       },
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
