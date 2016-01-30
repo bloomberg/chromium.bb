@@ -5,6 +5,7 @@
 #include "../../../../../../mojo/edk/embedder/embedder_internal.h"
 #include "../../../../../../mojo/edk/system/core.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
@@ -17,15 +18,22 @@ using mojo::embedder::internal::g_core;
 using mojo::system::MakeUserPointer;
 
 namespace {
-bool UseNewEDK() {
-  static bool checked = false;
-  static bool use_new = false;
-  if (!checked) {
+
+struct UseNewEDKChecker {
+  UseNewEDKChecker() {
     use_new = base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk");
-    checked = true;
   }
-  return use_new;
+
+  bool use_new;
+};
+
+base::LazyInstance<UseNewEDKChecker> g_use_new_checker =
+    LAZY_INSTANCE_INITIALIZER;
+
+bool UseNewEDK() {
+  return g_use_new_checker.Get().use_new;
 }
+
 }
 
 // Definitions of the system functions.
