@@ -65,7 +65,7 @@ void EngineRenderWidgetFeature::SendCompositorMessage(
   compositor_message->set_payload(message.data(),
                                   base::checked_cast<int>(message.size()));
 
-  render_widget_message_sender_->ProcessMessage(std::move(blimp_message),
+  compositor_message_sender_->ProcessMessage(std::move(blimp_message),
                                                 net::CompletionCallback());
 }
 

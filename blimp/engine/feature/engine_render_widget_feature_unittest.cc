@@ -110,12 +110,16 @@ class EngineRenderWidgetFeatureTest : public testing::Test {
     render_widget_message_sender_ = new MockBlimpMessageProcessor;
     feature_.set_render_widget_message_sender(
         make_scoped_ptr(render_widget_message_sender_));
+    compositor_message_sender_ = new MockBlimpMessageProcessor;
+    feature_.set_compositor_message_sender(
+        make_scoped_ptr(compositor_message_sender_));
     feature_.SetDelegate(1, &delegate1_);
     feature_.SetDelegate(2, &delegate2_);
   }
 
  protected:
   MockBlimpMessageProcessor* render_widget_message_sender_;
+  MockBlimpMessageProcessor* compositor_message_sender_;
   MockHostRenderWidgetMessageDelegate delegate1_;
   MockHostRenderWidgetMessageDelegate delegate2_;
   EngineRenderWidgetFeature feature_;
@@ -181,7 +185,7 @@ TEST_F(EngineRenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
   EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _))
       .InSequence(delegate1_sequence);
-  EXPECT_CALL(*render_widget_message_sender_,
+  EXPECT_CALL(*compositor_message_sender_,
               MockableProcessMessage(BlimpCompMsgEquals(1, 2U, payload), _))
       .InSequence(delegate1_sequence);
   EXPECT_CALL(*render_widget_message_sender_,
