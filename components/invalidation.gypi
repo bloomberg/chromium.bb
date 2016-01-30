@@ -50,7 +50,6 @@
         'invalidation_public',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../base/base.gyp:base_prefs',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
@@ -58,6 +57,7 @@
         'gcm_driver',
         'keyed_service_core',
         'pref_registry',
+        'prefs/prefs.gyp:prefs',
         'signin_core_browser',
       ],
       'export_dependent_settings': [

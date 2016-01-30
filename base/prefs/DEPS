@@ -1,0 +1,4 @@
+# TODO(brettw) remove this when prefs is completely moved to components.
+include_rules = [
+  "+components/prefs",
+]

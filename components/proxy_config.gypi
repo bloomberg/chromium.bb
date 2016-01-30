@@ -10,10 +10,10 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'pref_registry',
+        'prefs/prefs.gyp:prefs',
       ],
       'include_dirs': [
         '..',

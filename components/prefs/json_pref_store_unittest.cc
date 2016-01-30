@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_filter.h"
 #include "base/run_loop.h"
@@ -25,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
@@ -36,6 +36,25 @@ namespace base {
 namespace {
 
 const char kHomePage[] = "homepage";
+
+const char kReadJson[] =
+    "{\n"
+    "  \"homepage\": \"http://www.cnn.com\",\n"
+    "  \"some_directory\": \"/usr/local/\",\n"
+    "  \"tabs\": {\n"
+    "    \"new_windows_in_tabs\": true,\n"
+    "    \"max_tabs\": 20\n"
+    "  }\n"
+    "}";
+
+const char kInvalidJson[] = "!@#$%^&";
+
+// Expected output for tests using RunBasicJsonPrefStoreTest().
+const char kWriteGolden[] =
+    "{\"homepage\":\"http://www.cnn.com\","
+     "\"long_int\":{\"pref\":\"214748364842\"},"
+     "\"some_directory\":\"/usr/sbin/\","
+     "\"tabs\":{\"max_tabs\":10,\"new_windows_in_tabs\":false}}";
 
 // Set the time on the given SimpleTestClock to the given time in minutes.
 void SetCurrentTimeInMinutes(double minutes, base::SimpleTestClock* clock) {
@@ -104,10 +123,6 @@ class JsonPrefStoreTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir_));
-    data_dir_ = data_dir_.AppendASCII("prefs");
-    ASSERT_TRUE(PathExists(data_dir_));
   }
 
   void TearDown() override {
@@ -118,14 +133,8 @@ class JsonPrefStoreTest : public testing::Test {
 
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
-  // The path to the directory where the test data is stored.
-  base::FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
-
- private:
-  // Ensure histograms are reset for each test.
-  StatisticsRecorder statistics_recorder_;
 };
 
 // Test fallback behavior for a nonexistent file.
@@ -156,9 +165,10 @@ TEST_F(JsonPrefStoreTest, NonExistentFileAndAlternateFile) {
 
 // Test fallback behavior for an invalid file.
 TEST_F(JsonPrefStoreTest, InvalidFile) {
-  base::FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
   base::FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
-  ASSERT_TRUE(base::CopyFile(invalid_file_original, invalid_file));
+  ASSERT_LT(0, base::WriteFile(invalid_file,
+                               kInvalidJson, arraysize(kInvalidJson) - 1));
+
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       invalid_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
@@ -169,14 +179,17 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   EXPECT_FALSE(PathExists(invalid_file));
   base::FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
   EXPECT_TRUE(PathExists(moved_aside));
-  EXPECT_TRUE(TextContentsEqual(invalid_file_original, moved_aside));
+
+  std::string moved_aside_contents;
+  ASSERT_TRUE(base::ReadFileToString(moved_aside, &moved_aside_contents));
+  EXPECT_EQ(kInvalidJson, moved_aside_contents);
 }
 
-// This function is used to avoid code duplication while testing synchronous and
-// asynchronous version of the JsonPrefStore loading.
+// This function is used to avoid code duplication while testing synchronous
+// and asynchronous version of the JsonPrefStore loading. It validates that the
+// given output file's contents matches kWriteGolden.
 void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
-                               const base::FilePath& output_file,
-                               const base::FilePath& golden_output_file) {
+                               const base::FilePath& output_file) {
   const char kNewWindowsInTabs[] = "tabs.new_windows_in_tabs";
   const char kMaxTabs[] = "tabs.max_tabs";
   const char kLongIntPref[] = "long_int.pref";
@@ -238,19 +251,21 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   EXPECT_EQ(214748364842LL, value);
 
   // Serialize and compare to expected output.
-  ASSERT_TRUE(PathExists(golden_output_file));
   pref_store->CommitPendingWrite();
   RunLoop().RunUntilIdle();
-  EXPECT_TRUE(TextContentsEqual(golden_output_file, output_file));
+
+  std::string output_contents;
+  ASSERT_TRUE(base::ReadFileToString(output_file, &output_contents));
+  EXPECT_EQ(kWriteGolden, output_contents);
   ASSERT_TRUE(base::DeleteFile(output_file, false));
 }
 
 TEST_F(JsonPrefStoreTest, Basic) {
-  ASSERT_TRUE(base::CopyFile(data_dir_.AppendASCII("read.json"),
-                             temp_dir_.path().AppendASCII("write.json")));
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  ASSERT_LT(0, base::WriteFile(input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the persistent value can be loaded.
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
@@ -268,17 +283,15 @@ TEST_F(JsonPrefStoreTest, Basic) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, BasicAsync) {
-  ASSERT_TRUE(base::CopyFile(data_dir_.AppendASCII("read.json"),
-                             temp_dir_.path().AppendASCII("write.json")));
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  ASSERT_LT(0, base::WriteFile(input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the persistent value can be loaded.
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  ASSERT_TRUE(PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
 
@@ -309,8 +322,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
@@ -386,12 +398,9 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
 }
 
 TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
-  ASSERT_TRUE(base::CopyFile(data_dir_.AppendASCII("read.json"),
-                             temp_dir_.path().AppendASCII("write.json")));
-
-  // Test that the persistent value can be loaded.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_LT(0, base::WriteFile(input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   scoped_ptr<InterceptingPrefFilter> intercepting_pref_filter(
       new InterceptingPrefFilter());
@@ -427,17 +436,13 @@ TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
-  ASSERT_TRUE(base::CopyFile(data_dir_.AppendASCII("read.json"),
-                             temp_dir_.path().AppendASCII("write.json")));
-
-  // Test that the persistent value can be loaded.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_LT(0, base::WriteFile(input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   scoped_ptr<InterceptingPrefFilter> intercepting_pref_filter(
       new InterceptingPrefFilter());
@@ -492,20 +497,18 @@ TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, AlternateFile) {
-  ASSERT_TRUE(
-      base::CopyFile(data_dir_.AppendASCII("read.json"),
-                     temp_dir_.path().AppendASCII("alternate.json")));
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_LT(0, base::WriteFile(alternate_input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the alternate file is moved to the main file and read as-is from
   // there.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
   ASSERT_FALSE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
@@ -532,26 +535,22 @@ TEST_F(JsonPrefStoreTest, AlternateFile) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, AlternateFileIgnoredWhenMainFileExists) {
-  ASSERT_TRUE(
-      base::CopyFile(data_dir_.AppendASCII("read.json"),
-                     temp_dir_.path().AppendASCII("write.json")));
-  ASSERT_TRUE(
-      base::CopyFile(data_dir_.AppendASCII("invalid.json"),
-                     temp_dir_.path().AppendASCII("alternate.json")));
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  ASSERT_LT(0, base::WriteFile(input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
+
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_LT(0, base::WriteFile(alternate_input_file,
+                               kInvalidJson, arraysize(kInvalidJson) - 1));
 
   // Test that the alternate file is ignored and that the read occurs from the
   // existing main file. There is no attempt at even deleting the alternate
   // file as this scenario should never happen in normal user-data-dirs.
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
-  ASSERT_TRUE(PathExists(input_file));
-  ASSERT_TRUE(PathExists(alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file, alternate_input_file,
                         message_loop_.task_runner(), scoped_ptr<PrefFilter>());
@@ -576,18 +575,16 @@ TEST_F(JsonPrefStoreTest, AlternateFileIgnoredWhenMainFileExists) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, AlternateFileDNE) {
-  ASSERT_TRUE(
-      base::CopyFile(data_dir_.AppendASCII("read.json"),
-                     temp_dir_.path().AppendASCII("write.json")));
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  ASSERT_LT(0, base::WriteFile(input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the basic read works fine when an alternate file is specified but
   // does not exist.
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   base::FilePath alternate_input_file =
       temp_dir_.path().AppendASCII("alternate.json");
   ASSERT_TRUE(PathExists(input_file));
@@ -616,22 +613,18 @@ TEST_F(JsonPrefStoreTest, AlternateFileDNE) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, BasicAsyncWithAlternateFile) {
-  ASSERT_TRUE(
-      base::CopyFile(data_dir_.AppendASCII("read.json"),
-                     temp_dir_.path().AppendASCII("alternate.json")));
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_LT(0, base::WriteFile(alternate_input_file,
+                               kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the alternate file is moved to the main file and read as-is from
   // there even when the read is made asynchronously.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
-  ASSERT_FALSE(PathExists(input_file));
-  ASSERT_TRUE(PathExists(alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file, alternate_input_file,
                         message_loop_.task_runner(), scoped_ptr<PrefFilter>());
@@ -669,11 +662,12 @@ TEST_F(JsonPrefStoreTest, BasicAsyncWithAlternateFile) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(
-      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(pref_store.get(), input_file);
 }
 
 TEST_F(JsonPrefStoreTest, WriteCountHistogramTestBasic) {
+  base::HistogramTester histogram_tester;
+
   SimpleTestClock* test_clock = new SimpleTestClock;
   SetCurrentTimeInMinutes(0, test_clock);
   JsonPrefStore::WriteCountHistogram histogram(
@@ -689,8 +683,10 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestBasic) {
   histogram.ReportOutstandingWrites();
   scoped_ptr<HistogramSamples> samples =
       histogram.GetHistogram()->SnapshotSamples();
-  ASSERT_EQ(1, samples->GetCount(1));
-  ASSERT_EQ(1, samples->TotalCount());
+
+  std::string histogram_name = histogram.GetHistogram()->histogram_name();
+  histogram_tester.ExpectBucketCount(histogram_name, 1, 1);
+  histogram_tester.ExpectTotalCount(histogram_name, 1);
 
   ASSERT_EQ("Settings.JsonDataWriteCount.Local_State",
             histogram.GetHistogram()->histogram_name());
@@ -698,6 +694,8 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestBasic) {
 }
 
 TEST_F(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod) {
+  base::HistogramTester histogram_tester;
+
   SimpleTestClock* test_clock = new SimpleTestClock;
   SetCurrentTimeInMinutes(0, test_clock);
   JsonPrefStore::WriteCountHistogram histogram(
@@ -714,29 +712,28 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod) {
   histogram.RecordWriteOccured();
 
   // Nothing should be recorded until the report period has elapsed.
-  scoped_ptr<HistogramSamples> samples =
-      histogram.GetHistogram()->SnapshotSamples();
-  ASSERT_EQ(0, samples->TotalCount());
+  std::string histogram_name = histogram.GetHistogram()->histogram_name();
+  histogram_tester.ExpectTotalCount(histogram_name, 0);
 
   SetCurrentTimeInMinutes(1.3 * report_interval, test_clock);
   histogram.RecordWriteOccured();
 
   // Now the report period has elapsed.
-  samples = histogram.GetHistogram()->SnapshotSamples();
-  ASSERT_EQ(1, samples->GetCount(3));
-  ASSERT_EQ(1, samples->TotalCount());
+  histogram_tester.ExpectBucketCount(histogram_name, 3, 1);
+  histogram_tester.ExpectTotalCount(histogram_name, 1);
 
   // The last write won't be recorded because the second count period hasn't
   // fully elapsed.
   SetCurrentTimeInMinutes(1.5 * report_interval, test_clock);
   histogram.ReportOutstandingWrites();
 
-  samples = histogram.GetHistogram()->SnapshotSamples();
-  ASSERT_EQ(1, samples->GetCount(3));
-  ASSERT_EQ(1, samples->TotalCount());
+  histogram_tester.ExpectBucketCount(histogram_name, 3, 1);
+  histogram_tester.ExpectTotalCount(histogram_name, 1);
 }
 
 TEST_F(JsonPrefStoreTest, WriteCountHistogramTestMultiplePeriods) {
+  base::HistogramTester histogram_tester;
+
   SimpleTestClock* test_clock = new SimpleTestClock;
   SetCurrentTimeInMinutes(0, test_clock);
   JsonPrefStore::WriteCountHistogram histogram(
@@ -768,14 +765,15 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestMultiplePeriods) {
   // fully elapsed
   SetCurrentTimeInMinutes(3.5 * report_interval, test_clock);
   histogram.ReportOutstandingWrites();
-  scoped_ptr<HistogramSamples> samples =
-      histogram.GetHistogram()->SnapshotSamples();
-  ASSERT_EQ(2, samples->GetCount(3));
-  ASSERT_EQ(1, samples->GetCount(2));
-  ASSERT_EQ(3, samples->TotalCount());
+  std::string histogram_name = histogram.GetHistogram()->histogram_name();
+  histogram_tester.ExpectBucketCount(histogram_name, 3, 2);
+  histogram_tester.ExpectBucketCount(histogram_name, 2, 1);
+  histogram_tester.ExpectTotalCount(histogram_name, 3);
 }
 
 TEST_F(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps) {
+  base::HistogramTester histogram_tester;
+
   SimpleTestClock* test_clock = new SimpleTestClock;
   SetCurrentTimeInMinutes(0, test_clock);
   JsonPrefStore::WriteCountHistogram histogram(
@@ -808,13 +806,12 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps) {
 
   SetCurrentTimeInMinutes(6.1 * report_interval, test_clock);
   histogram.ReportOutstandingWrites();
-  scoped_ptr<HistogramSamples> samples =
-      histogram.GetHistogram()->SnapshotSamples();
-  ASSERT_EQ(3, samples->GetCount(0));
-  ASSERT_EQ(1, samples->GetCount(1));
-  ASSERT_EQ(1, samples->GetCount(2));
-  ASSERT_EQ(1, samples->GetCount(3));
-  ASSERT_EQ(6, samples->TotalCount());
+  std::string histogram_name = histogram.GetHistogram()->histogram_name();
+  histogram_tester.ExpectBucketCount(histogram_name, 0, 3);
+  histogram_tester.ExpectBucketCount(histogram_name, 1, 1);
+  histogram_tester.ExpectBucketCount(histogram_name, 2, 1);
+  histogram_tester.ExpectBucketCount(histogram_name, 3, 1);
+  histogram_tester.ExpectTotalCount(histogram_name, 6);
 }
 
 class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {

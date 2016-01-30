@@ -142,7 +142,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../base/base.gyp:base_prefs_test_support',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
         '../crypto/crypto.gyp:crypto_test_support',

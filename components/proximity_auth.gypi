@@ -17,9 +17,9 @@
         ':cryptauth_proto',
         ':proximity_auth_logging',
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../net/net.gyp:net',
+        'prefs/prefs.gyp:prefs',
       ],
       'sources': [
         "proximity_auth/authenticator.h",

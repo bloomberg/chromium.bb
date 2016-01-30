@@ -65,7 +65,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../base/base.gyp:base_prefs',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
@@ -91,6 +90,7 @@
         'keyed_service_core',
         'os_crypt',
         'pref_registry',
+        'prefs/prefs.gyp:prefs',
         'rappor',
         'signin_core_browser',
         'signin_core_common',
@@ -277,7 +277,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
@@ -285,6 +284,7 @@
         'autofill_core_browser',
         'os_crypt',
         'pref_registry',
+        'prefs/prefs.gyp:prefs',
         'rappor',
         'signin_core_browser_test_support',
       ],
@@ -380,7 +380,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../base/base.gyp:base_prefs',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../google_apis/google_apis.gyp:google_apis',
@@ -403,6 +402,7 @@
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
             'os_crypt',
+            'prefs/prefs.gyp:prefs',
             'user_prefs',
             'webdata_common',
           ],

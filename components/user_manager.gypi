@@ -51,8 +51,8 @@
     'conditions': [
       ['chromeos == 1', {
         'dependencies': [
-          '<(DEPTH)/base/base.gyp:base_prefs',
           '<(DEPTH)/components/components.gyp:session_manager_component',
+          '<(DEPTH)/components/prefs/prefs.gyp:prefs',
           '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
           '<(DEPTH)/url/url.gyp:url_lib',
         ],

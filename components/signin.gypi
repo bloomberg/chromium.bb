@@ -39,7 +39,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../base/base.gyp:base_prefs',
         '../crypto/crypto.gyp:crypto',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
@@ -54,6 +53,7 @@
         'keyed_service_core',
         'metrics',
         'os_crypt',
+        'prefs/prefs.gyp:prefs',
         'signin_core_common',
         'signin_core_account_id',
         'webdata_common',

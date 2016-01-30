@@ -10,9 +10,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../sync/sync.gyp:sync',
         'pref_registry',
+        'prefs/prefs.gyp:prefs',
       ],
       'include_dirs': [
         '..',

@@ -10,8 +10,8 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        'prefs/prefs.gyp:prefs',
       ],
       'include_dirs': [
         '..',
@@ -27,7 +27,7 @@
       'type': 'static_library',
       'dependencies': [
         'pref_registry',
-        '../base/base.gyp:base_prefs_test_support',
+        'prefs/prefs.gyp:prefs_test_support',
       ],
       'include_dirs': [
         '..',

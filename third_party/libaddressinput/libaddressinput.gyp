@@ -110,7 +110,7 @@
       },
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../base/base.gyp:base_prefs',
+        '../../components/prefs/prefs.gyp:prefs',
         '../../net/net.gyp:net',
         '../icu/icu.gyp:icui18n',
         '../icu/icu.gyp:icuuc',
@@ -143,8 +143,8 @@
         'src/cpp/src/',
       ],
       'dependencies': [
-        '../../base/base.gyp:base_prefs',
         '../../base/base.gyp:run_all_unittests',
+        '../../components/prefs/prefs.gyp:prefs',
         '../../net/net.gyp:net_test_support',
         '../../testing/gtest.gyp:gtest',
         'libaddressinput',

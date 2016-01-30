@@ -586,6 +586,18 @@
       'proxy_config/proxy_config_dictionary_unittest.cc',
       'proxy_config/proxy_prefs_unittest.cc',
     ],
+    'prefs_unittest_sources': [
+      'prefs/default_pref_store_unittest.cc',
+      'prefs/json_pref_store_unittest.cc',
+      'prefs/overlay_user_pref_store_unittest.cc',
+      'prefs/pref_change_registrar_unittest.cc',
+      'prefs/pref_member_unittest.cc',
+      'prefs/pref_notifier_impl_unittest.cc',
+      'prefs/pref_service_unittest.cc',
+      'prefs/pref_value_map_unittest.cc',
+      'prefs/pref_value_store_unittest.cc',
+      'prefs/scoped_user_pref_update_unittest.cc',
+    ],
     'query_parser_unittest_sources': [
       'query_parser/query_parser_unittest.cc',
       'query_parser/snippet_unittest.cc',
@@ -939,6 +951,7 @@
         '<@(password_manager_unittest_sources)',
         '<@(precache_unittest_sources)',
         '<@(proxy_config_unittest_sources)',
+        '<@(prefs_unittest_sources)',
         '<@(query_parser_unittest_sources)',
         '<@(rappor_unittest_sources)',
         '<@(search_engines_unittest_sources)',
@@ -971,7 +984,6 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs_test_support',
         '../base/base.gyp:test_support_base',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../jingle/jingle.gyp:notifier_test_util',
@@ -1106,6 +1118,8 @@
         'components_strings.gyp:components_strings',
         'components_tests_pak',
         'mime_util/mime_util.gyp:mime_util',
+        'prefs/prefs.gyp:prefs',
+        'prefs/prefs.gyp:prefs_test_support',
         'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'conditions': [

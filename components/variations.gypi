@@ -15,12 +15,12 @@
         # List of dependencies is intentionally very minimal. Please avoid
         # adding extra dependencies without first checking with OWNERS.
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../crypto/crypto.gyp:crypto',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/zlib/google/zip.gyp:compression_utils',
         'crash_core_common',
+        'prefs/prefs.gyp:prefs',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
@@ -102,13 +102,13 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs',
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
         'data_use_measurement_core',
         'metrics',
         'network_time',
         'pref_registry',
+        'prefs/prefs.gyp:prefs',
         'variations',
         'version_info',
         'web_resource',

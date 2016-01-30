@@ -14,9 +14,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../base/base.gyp:base_prefs',
         '../third_party/zlib/google/zip.gyp:compression_utils',
         'component_metrics_proto',
+        'prefs/prefs.gyp:prefs',
         'variations',
       ],
       'export_dependent_settings': [
