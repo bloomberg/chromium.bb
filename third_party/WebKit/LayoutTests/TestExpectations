@@ -1126,7 +1126,6 @@ crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
-crbug.com/521730 [ Win10 ] compositing/plugins/invalidate_rect.html [ Crash ]
 crbug.com/521730 [ Win10 ] plugins/windowless_plugin_paint_test.html [ Crash ]
 
 crbug.com/521730 [ Win10 ] fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Failure ]
