@@ -433,6 +433,9 @@ TELEMETRY_TESTS = {
   'screenshot_sync': {},
   'trace_test': {},
   'webgl_conformance': {},
+}
+
+FYI_ONLY_TELEMETRY_TESTS = {
   'webgl_conformance_d3d9_tests': {
     'win_only': True,
     'target_name': 'webgl_conformance',
@@ -561,6 +564,14 @@ def generate_gtests(tester_config, test_dictionary):
       gtests.append(test)
   return gtests
 
+def generate_telemetry_tests(tester_config, test_dictionary):
+  isolated_scripts = []
+  for test_name, test_config in sorted(test_dictionary.iteritems()):
+    test = generate_telemetry_test(tester_config, test_name, test_config)
+    if test:
+      isolated_scripts.append(test)
+  return isolated_scripts
+
 def generate_all_tests(waterfall, is_fyi):
   tests = {}
   for builder in waterfall['builders']:
@@ -577,10 +588,10 @@ def generate_all_tests(waterfall, is_fyi):
         gtests.extend(generate_gtests(config, FYI_ONLY_GTESTS))
     isolated_scripts = []
     if not config.get('deqp'):
-      for test_name, test_config in sorted(TELEMETRY_TESTS.iteritems()):
-        test = generate_telemetry_test(config, test_name, test_config)
-        if test:
-          isolated_scripts.append(test)
+      isolated_scripts.extend(generate_telemetry_tests(config, TELEMETRY_TESTS))
+      if is_fyi:
+        isolated_scripts.extend(generate_telemetry_tests(
+            config, FYI_ONLY_TELEMETRY_TESTS))
     cur_tests = {}
     if gtests:
       cur_tests['gtest_tests'] = sorted(gtests, key=lambda x: x['test'])
