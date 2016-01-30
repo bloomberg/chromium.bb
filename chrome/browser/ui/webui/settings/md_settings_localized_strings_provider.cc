@@ -44,6 +44,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("addLabel", IDS_ADD);
   html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
   html_source->AddLocalizedString("cancel", IDS_CANCEL);
+  html_source->AddLocalizedString("ok", IDS_OK);
 }
 
 #if defined(OS_CHROMEOS)
@@ -151,8 +152,6 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE);
   html_source->AddLocalizedString(
-      "bluetoothCancel", IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL);
-  html_source->AddLocalizedString(
       "bluetoothScanning", IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING);
   html_source->AddLocalizedString(
       "bluetoothAccept", IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY);
@@ -160,8 +159,6 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       "bluetoothReject", IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY);
   html_source->AddLocalizedString(
       "bluetoothConnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT);
-  html_source->AddLocalizedString(
-      "bluetoothCancel", IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL);
   html_source->AddLocalizedString(
       "bluetoothDismiss", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR);
 
@@ -587,10 +584,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK);
   html_source->AddLocalizedString("useDefaultSettingsButton",
                                   IDS_SETTINGS_USE_DEFAULT_SETTINGS_BUTTON);
-  // TODO(dpapad): Remove this string and use IDS_CANCEL (see AddCommonStrings
-  // at the top of this file).
-  html_source->AddLocalizedString("cancelButton", IDS_SETTINGS_CANCEL_BUTTON);
-  html_source->AddLocalizedString("okButton", IDS_SETTINGS_OK_BUTTON);
   html_source->AddLocalizedString("passphraseExplanationText",
                                   IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT);
   html_source->AddLocalizedString("emptyPassphraseError",

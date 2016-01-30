@@ -753,9 +753,6 @@
   <message name="IDS_SETTINGS_CANCEL_BUTTON" desc="Text for the button which, when clicked, discards changes made to sync settings and navigates away from the sync settings page.">
     Cancel
   </message>
-  <message name="IDS_SETTINGS_OK_BUTTON" desc="Text for the button which, when clicked, saves changes made to sync settings and navigates away from the sync settings page.">
-    OK
-  </message>
 
   <!-- Users Page -->
   <message name="IDS_SETTINGS_USERS" desc="Name of the settings page which manages users on the device.">
