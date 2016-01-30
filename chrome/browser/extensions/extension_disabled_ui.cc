@@ -158,6 +158,7 @@ class ExtensionDisabledGlobalError
   void BubbleViewAcceptButtonPressed(Browser* browser) override;
   void BubbleViewCancelButtonPressed(Browser* browser) override;
   bool ShouldCloseOnDeactivate() const override;
+  bool ShouldShowCloseButton() const override;
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
@@ -402,6 +403,14 @@ bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
   // have the user acknowledge it, rather than having the bubble disappear when
   // a new window pops up.
   return false;
+}
+
+bool ExtensionDisabledGlobalError::ShouldShowCloseButton() const {
+  // As we don't close the bubble on deactivation (see ShouldCloseOnDeactivate),
+  // we add a close button so the user doesn't *need* to act right away.
+  // If the bubble is closed, the error remains in the wrench menu and the user
+  // can address it later.
+  return true;
 }
 
 void ExtensionDisabledGlobalError::OnExtensionUninstallDialogClosed(
