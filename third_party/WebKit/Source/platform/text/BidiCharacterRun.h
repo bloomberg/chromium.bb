@@ -28,7 +28,7 @@
 namespace blink {
 
 struct BidiCharacterRun {
-    BidiCharacterRun(int start, int stop, BidiContext* context, WTF::Unicode::Direction dir)
+    BidiCharacterRun(int start, int stop, BidiContext* context, WTF::Unicode::CharDirection dir)
         : m_override(context->override())
         , m_next(0)
         , m_start(start)

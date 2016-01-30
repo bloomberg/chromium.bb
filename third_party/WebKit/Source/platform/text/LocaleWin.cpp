@@ -334,7 +334,7 @@ unsigned LocaleWin::firstDayOfWeek()
 
 bool LocaleWin::isRTL()
 {
-    WTF::Unicode::Direction dir = WTF::Unicode::direction(monthLabels()[0][0]);
+    WTF::Unicode::CharDirection dir = WTF::Unicode::direction(monthLabels()[0][0]);
     return dir == WTF::Unicode::RightToLeft || dir == WTF::Unicode::RightToLeftArabic;
 }
 

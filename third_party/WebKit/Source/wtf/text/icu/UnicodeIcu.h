@@ -30,7 +30,7 @@ namespace WTF {
 
 namespace Unicode {
 
-enum Direction {
+enum CharDirection {
     LeftToRight = U_LEFT_TO_RIGHT,
     RightToLeft = U_RIGHT_TO_LEFT,
     EuropeanNumber = U_EUROPEAN_NUMBER,
@@ -52,7 +52,7 @@ enum Direction {
     BoundaryNeutral = U_BOUNDARY_NEUTRAL
 };
 
-enum DecompositionType {
+enum CharDecompositionType {
     DecompositionNone = U_DT_NONE,
     DecompositionCanonical = U_DT_CANONICAL,
     DecompositionCompat = U_DT_COMPAT,
@@ -74,7 +74,7 @@ enum DecompositionType {
 };
 
 enum CharCategory {
-    NoCategory =  0,
+    NoCategory = 0,
     Other_NotAssigned = U_MASK(U_GENERAL_OTHER_TYPES),
     Letter_Uppercase = U_MASK(U_UPPERCASE_LETTER),
     Letter_Lowercase = U_MASK(U_LOWERCASE_LETTER),
@@ -198,9 +198,9 @@ inline CharCategory category(UChar32 c)
     return static_cast<CharCategory>(U_GET_GC_MASK(c));
 }
 
-inline Direction direction(UChar32 c)
+inline CharDirection direction(UChar32 c)
 {
-    return static_cast<Direction>(u_charDirection(c));
+    return static_cast<CharDirection>(u_charDirection(c));
 }
 
 inline bool isLower(UChar32 c)
@@ -213,9 +213,9 @@ inline uint8_t combiningClass(UChar32 c)
     return u_getCombiningClass(c);
 }
 
-inline DecompositionType decompositionType(UChar32 c)
+inline CharDecompositionType decompositionType(UChar32 c)
 {
-    return static_cast<DecompositionType>(u_getIntPropertyValue(c, UCHAR_DECOMPOSITION_TYPE));
+    return static_cast<CharDecompositionType>(u_getIntPropertyValue(c, UCHAR_DECOMPOSITION_TYPE));
 }
 
 inline int umemcasecmp(const UChar* a, const UChar* b, int len)

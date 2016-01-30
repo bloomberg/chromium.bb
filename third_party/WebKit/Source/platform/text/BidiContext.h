@@ -39,11 +39,11 @@ enum BidiEmbeddingSource {
 // Used to keep track of explicit embeddings.
 class PLATFORM_EXPORT BidiContext : public RefCounted<BidiContext> {
 public:
-    static PassRefPtr<BidiContext> create(unsigned char level, WTF::Unicode::Direction, bool override = false, BidiEmbeddingSource = FromStyleOrDOM, BidiContext* parent = 0);
+    static PassRefPtr<BidiContext> create(unsigned char level, WTF::Unicode::CharDirection, bool override = false, BidiEmbeddingSource = FromStyleOrDOM, BidiContext* parent = 0);
 
     BidiContext* parent() const { return m_parent.get(); }
     unsigned char level() const { return m_level; }
-    WTF::Unicode::Direction dir() const { return static_cast<WTF::Unicode::Direction>(m_direction); }
+    WTF::Unicode::CharDirection dir() const { return static_cast<WTF::Unicode::CharDirection>(m_direction); }
     bool override() const { return m_override; }
     BidiEmbeddingSource source() const { return static_cast<BidiEmbeddingSource>(m_source); }
 
@@ -55,7 +55,7 @@ public:
     static const unsigned char kMaxLevel = 125;
 
 private:
-    BidiContext(unsigned char level, WTF::Unicode::Direction direction, bool override, BidiEmbeddingSource source, BidiContext* parent)
+    BidiContext(unsigned char level, WTF::Unicode::CharDirection direction, bool override, BidiEmbeddingSource source, BidiContext* parent)
         : m_level(level)
         , m_direction(direction)
         , m_override(override)
@@ -65,7 +65,7 @@ private:
         ASSERT(level <= kMaxLevel);
     }
 
-    static PassRefPtr<BidiContext> createUncached(unsigned char level, WTF::Unicode::Direction, bool override, BidiEmbeddingSource, BidiContext* parent);
+    static PassRefPtr<BidiContext> createUncached(unsigned char level, WTF::Unicode::CharDirection, bool override, BidiEmbeddingSource, BidiContext* parent);
 
     unsigned m_level : 7; // The maximium bidi level is 125: http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
     unsigned m_direction : 5; // Direction

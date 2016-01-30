@@ -131,12 +131,12 @@ struct BidiStatus final {
     // Uses TextDirection as it only has two possibilities instead of WTF::Unicode::Direction which has 19.
     BidiStatus(TextDirection textDirection, bool isOverride)
     {
-        WTF::Unicode::Direction direction = textDirection == LTR ? WTF::Unicode::LeftToRight : WTF::Unicode::RightToLeft;
+        WTF::Unicode::CharDirection direction = textDirection == LTR ? WTF::Unicode::LeftToRight : WTF::Unicode::RightToLeft;
         eor = lastStrong = last = direction;
         context = BidiContext::create(textDirection == LTR ? 0 : 1, direction, isOverride);
     }
 
-    BidiStatus(WTF::Unicode::Direction eorDir, WTF::Unicode::Direction lastStrongDir, WTF::Unicode::Direction lastDir, PassRefPtr<BidiContext> bidiContext)
+    BidiStatus(WTF::Unicode::CharDirection eorDir, WTF::Unicode::CharDirection lastStrongDir, WTF::Unicode::CharDirection lastDir, PassRefPtr<BidiContext> bidiContext)
         : eor(eorDir)
         , lastStrong(lastStrongDir)
         , last(lastDir)
@@ -148,7 +148,7 @@ struct BidiStatus final {
     // The rule X5a ans X5b of UAX#9: http://unicode.org/reports/tr9/#X5a
     static BidiStatus createForIsolate(TextDirection textDirection, bool isOverride, unsigned char level)
     {
-        WTF::Unicode::Direction direction;
+        WTF::Unicode::CharDirection direction;
         if (textDirection == RTL) {
             level = nextGreaterOddLevel(level);
             direction = WTF::Unicode::RightToLeft;
@@ -163,25 +163,25 @@ struct BidiStatus final {
         return BidiStatus(direction, direction, direction, context.release());
     }
 
-    WTF::Unicode::Direction eor;
-    WTF::Unicode::Direction lastStrong;
-    WTF::Unicode::Direction last;
+    WTF::Unicode::CharDirection eor;
+    WTF::Unicode::CharDirection lastStrong;
+    WTF::Unicode::CharDirection last;
     RefPtr<BidiContext> context;
 };
 
 class BidiEmbedding final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    BidiEmbedding(WTF::Unicode::Direction direction, BidiEmbeddingSource source)
-    : m_direction(direction)
-    , m_source(source)
+    BidiEmbedding(WTF::Unicode::CharDirection direction, BidiEmbeddingSource source)
+        : m_direction(direction)
+        , m_source(source)
     {
     }
 
-    WTF::Unicode::Direction direction() const { return m_direction; }
+    WTF::Unicode::CharDirection direction() const { return m_direction; }
     BidiEmbeddingSource source() const { return m_source; }
 private:
-    WTF::Unicode::Direction m_direction;
+    WTF::Unicode::CharDirection m_direction;
     BidiEmbeddingSource m_source;
 };
 
@@ -235,12 +235,12 @@ public:
     BidiContext* context() const { return m_status.context.get(); }
     void setContext(PassRefPtr<BidiContext> c) { m_status.context = c; }
 
-    void setLastDir(WTF::Unicode::Direction lastDir) { m_status.last = lastDir; }
-    void setLastStrongDir(WTF::Unicode::Direction lastStrongDir) { m_status.lastStrong = lastStrongDir; }
-    void setEorDir(WTF::Unicode::Direction eorDir) { m_status.eor = eorDir; }
+    void setLastDir(WTF::Unicode::CharDirection lastDir) { m_status.last = lastDir; }
+    void setLastStrongDir(WTF::Unicode::CharDirection lastStrongDir) { m_status.lastStrong = lastStrongDir; }
+    void setEorDir(WTF::Unicode::CharDirection eorDir) { m_status.eor = eorDir; }
 
-    WTF::Unicode::Direction dir() const { return m_direction; }
-    void setDir(WTF::Unicode::Direction d) { m_direction = d; }
+    WTF::Unicode::CharDirection dir() const { return m_direction; }
+    void setDir(WTF::Unicode::CharDirection d) { m_direction = d; }
 
     const BidiStatus& status() const { return m_status; }
     void setStatus(const BidiStatus s)
@@ -259,7 +259,7 @@ public:
     void exitIsolate() { ASSERT(m_nestedIsolateCount >= 1); m_nestedIsolateCount--; }
     bool inIsolate() const { return m_nestedIsolateCount; }
 
-    void embed(WTF::Unicode::Direction, BidiEmbeddingSource);
+    void embed(WTF::Unicode::CharDirection, BidiEmbeddingSource);
     bool commitExplicitEmbedding(BidiRunList<Run>&);
 
     void createBidiRunsForLine(const Iterator& end, VisualDirectionOverride = NoVisualOverride, bool hardLineBreak = false, bool reorderRuns = true);
@@ -306,7 +306,7 @@ protected:
     Iterator m_eor; // Points to the last character in the current run.
     Iterator m_last;
     BidiStatus m_status;
-    WTF::Unicode::Direction m_direction;
+    WTF::Unicode::CharDirection m_direction;
     // m_endOfRunAtEndOfLine is "the position last eor in the end of line"
     Iterator m_endOfRunAtEndOfLine;
     Iterator m_endOfLine;
@@ -326,11 +326,11 @@ protected:
     TextDirection m_paragraphDirectionality;
 
 private:
-    void raiseExplicitEmbeddingLevel(BidiRunList<Run>&, WTF::Unicode::Direction from, WTF::Unicode::Direction to);
-    void lowerExplicitEmbeddingLevel(BidiRunList<Run>&, WTF::Unicode::Direction from);
+    void raiseExplicitEmbeddingLevel(BidiRunList<Run>&, WTF::Unicode::CharDirection from, WTF::Unicode::CharDirection to);
+    void lowerExplicitEmbeddingLevel(BidiRunList<Run>&, WTF::Unicode::CharDirection from);
     void checkDirectionInLowerRaiseEmbeddingLevel();
 
-    void updateStatusLastFromCurrentDirection(WTF::Unicode::Direction);
+    void updateStatusLastFromCurrentDirection(WTF::Unicode::CharDirection);
     void reorderRunsFromLevels(BidiRunList<Run>&) const;
 
     bool needsToApplyL1Rule(BidiRunList<Run>&) { return false; }
@@ -390,7 +390,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::appendRun(BidiRunList<Run>& runs)
 }
 
 template <class Iterator, class Run, class IsolatedRun>
-void BidiResolver<Iterator, Run, IsolatedRun>::embed(WTF::Unicode::Direction dir, BidiEmbeddingSource source)
+void BidiResolver<Iterator, Run, IsolatedRun>::embed(WTF::Unicode::CharDirection dir, BidiEmbeddingSource source)
 {
     // Isolated spans compute base directionality during their own UBA run.
     // Do not insert fake embed characters once we enter an isolated span.
@@ -419,7 +419,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::checkDirectionInLowerRaiseEmbeddi
 }
 
 template <class Iterator, class Run, class IsolatedRun>
-void BidiResolver<Iterator, Run, IsolatedRun>::lowerExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from)
+void BidiResolver<Iterator, Run, IsolatedRun>::lowerExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::CharDirection from)
 {
     using namespace WTF::Unicode;
 
@@ -457,7 +457,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::lowerExplicitEmbeddingLevel(BidiR
 }
 
 template <class Iterator, class Run, class IsolatedRun>
-void BidiResolver<Iterator, Run, IsolatedRun>::raiseExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from, WTF::Unicode::Direction to)
+void BidiResolver<Iterator, Run, IsolatedRun>::raiseExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::CharDirection from, WTF::Unicode::CharDirection to)
 {
     using namespace WTF::Unicode;
 
@@ -553,7 +553,7 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::commitExplicitEmbedding(BidiRunLi
             if (BidiContext* parentContext = toContext->parent())
                 toContext = parentContext;
         } else {
-            Direction direction = (embedding.direction() == RightToLeftEmbedding || embedding.direction() == RightToLeftOverride) ? RightToLeft : LeftToRight;
+            CharDirection direction = (embedding.direction() == RightToLeftEmbedding || embedding.direction() == RightToLeftOverride) ? RightToLeft : LeftToRight;
             bool override = embedding.direction() == LeftToRightOverride || embedding.direction() == RightToLeftOverride;
             unsigned char level = toContext->level();
             if (direction == RightToLeft)
@@ -580,7 +580,7 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::commitExplicitEmbedding(BidiRunLi
 }
 
 template <class Iterator, class Run, class IsolatedRun>
-inline void BidiResolver<Iterator, Run, IsolatedRun>::updateStatusLastFromCurrentDirection(WTF::Unicode::Direction dirCurrent)
+inline void BidiResolver<Iterator, Run, IsolatedRun>::updateStatusLastFromCurrentDirection(WTF::Unicode::CharDirection dirCurrent)
 {
     using namespace WTF::Unicode;
     switch (dirCurrent) {
@@ -684,7 +684,7 @@ TextDirection BidiResolver<Iterator, Run, IsolatedRun>::determineDirectionalityI
                 continue;
             current = U16_GET_SUPPLEMENTARY(high, low);
         }
-        WTF::Unicode::Direction charDirection = WTF::Unicode::direction(current);
+        WTF::Unicode::CharDirection charDirection = WTF::Unicode::direction(current);
         if (charDirection == WTF::Unicode::LeftToRight) {
             if (hasStrongDirectionality)
                 *hasStrongDirectionality = true;
@@ -704,7 +704,7 @@ TextDirection BidiResolver<Iterator, Run, IsolatedRun>::determineDirectionalityI
 
 inline TextDirection directionForCharacter(UChar32 character)
 {
-    WTF::Unicode::Direction charDirection = WTF::Unicode::direction(character);
+    WTF::Unicode::CharDirection charDirection = WTF::Unicode::direction(character);
     if (charDirection == WTF::Unicode::RightToLeft || charDirection == WTF::Unicode::RightToLeftArabic)
         return RTL;
     return LTR;
@@ -764,7 +764,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(const Itera
             m_endOfRunAtEndOfLine = m_last;
             lastLineEnded = true;
         }
-        Direction dirCurrent;
+        CharDirection dirCurrent;
         if (lastLineEnded && (hardLineBreak || m_current.atEnd())) {
             BidiContext* c = context();
             if (hardLineBreak) {

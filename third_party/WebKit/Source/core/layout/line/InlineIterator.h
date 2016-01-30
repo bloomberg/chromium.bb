@@ -120,7 +120,7 @@ public:
     UChar characterAt(unsigned) const;
     UChar current() const;
     UChar previousInSameNode() const;
-    ALWAYS_INLINE WTF::Unicode::Direction direction() const;
+    ALWAYS_INLINE WTF::Unicode::CharDirection direction() const;
 
 private:
     LineLayoutItem m_root;
@@ -140,7 +140,7 @@ inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2)
     return it1.offset() != it2.offset() || it1.object() != it2.object();
 }
 
-static inline WTF::Unicode::Direction embedCharFromDirection(TextDirection dir, EUnicodeBidi unicodeBidi)
+static inline WTF::Unicode::CharDirection embedCharFromDirection(TextDirection dir, EUnicodeBidi unicodeBidi)
 {
     using namespace WTF::Unicode;
     if (unicodeBidi == Embed)
@@ -462,7 +462,7 @@ inline UChar InlineIterator::previousInSameNode() const
     return characterAt(m_pos - 1);
 }
 
-ALWAYS_INLINE WTF::Unicode::Direction InlineIterator::direction() const
+ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::direction() const
 {
     if (UChar c = current())
         return WTF::Unicode::direction(c);
@@ -635,7 +635,7 @@ public:
     bool inIsolate() const { return m_nestedIsolateCount; }
 
     // We don't care if we encounter bidi directional overrides.
-    void embed(WTF::Unicode::Direction, BidiEmbeddingSource) { }
+    void embed(WTF::Unicode::CharDirection, BidiEmbeddingSource) {}
     void commitExplicitEmbedding(BidiRunList<BidiRun>&) { }
     BidiRunList<BidiRun>& runs() { return m_runs; }
 

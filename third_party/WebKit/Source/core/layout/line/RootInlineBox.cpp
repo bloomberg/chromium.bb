@@ -463,7 +463,10 @@ InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(LayoutUnit left
 
 BidiStatus RootInlineBox::lineBreakBidiStatus() const
 {
-    return BidiStatus(static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusEor), static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusLastStrong), static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusLast), m_lineBreakContext);
+    return BidiStatus(static_cast<WTF::Unicode::CharDirection>(m_lineBreakBidiStatusEor),
+        static_cast<WTF::Unicode::CharDirection>(m_lineBreakBidiStatusLastStrong),
+        static_cast<WTF::Unicode::CharDirection>(m_lineBreakBidiStatusLast),
+        m_lineBreakContext);
 }
 
 void RootInlineBox::setLineBreakInfo(LineLayoutItem obj, unsigned breakPos, const BidiStatus& status)

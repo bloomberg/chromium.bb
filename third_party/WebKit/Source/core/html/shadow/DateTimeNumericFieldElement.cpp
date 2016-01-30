@@ -65,7 +65,7 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(Document& document, Fie
     // We show a direction-neutral string such as "--" as a placeholder. It
     // should follow the direction of numeric values.
     if (localeForOwner().isRTL()) {
-        Direction dir = direction(formatValue(this->maximum())[0]);
+        CharDirection dir = direction(formatValue(this->maximum())[0]);
         if (dir == LeftToRight || dir == EuropeanNumber || dir == ArabicNumber) {
             setInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
             setInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);

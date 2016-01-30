@@ -404,7 +404,7 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
     RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(editElement().document());
     element->setShadowPseudoId(textPseudoId);
     if (m_parameters.locale.isRTL() && text.length()) {
-        Direction dir = direction(text[0]);
+        CharDirection dir = direction(text[0]);
         if (dir == SegmentSeparator || dir == WhiteSpaceNeutral || dir == OtherNeutral)
             element->appendChild(Text::create(editElement().document(), String(&rightToLeftMarkCharacter, 1)));
     }

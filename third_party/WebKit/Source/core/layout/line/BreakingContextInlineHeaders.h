@@ -523,7 +523,7 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
     return 0;
 }
 
-ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::Direction direction)
+ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::CharDirection direction)
 {
     return direction == WTF::Unicode::RightToLeft
         || direction == WTF::Unicode::RightToLeftArabic ? RTL : LTR;

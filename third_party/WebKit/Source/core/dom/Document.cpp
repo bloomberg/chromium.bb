@@ -276,7 +276,7 @@ static inline bool isValidNameStart(UChar32 c)
         return false;
 
     // rule (d) above
-    DecompositionType decompType = decompositionType(c);
+    CharDecompositionType decompType = decompositionType(c);
     if (decompType == DecompositionFont || decompType == DecompositionCompat)
         return false;
 
@@ -307,7 +307,7 @@ static inline bool isValidNamePart(UChar32 c)
         return false;
 
     // rule (d) above
-    DecompositionType decompType = decompositionType(c);
+    CharDecompositionType decompType = decompositionType(c);
     if (decompType == DecompositionFont || decompType == DecompositionCompat)
         return false;
 
