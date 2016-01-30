@@ -503,9 +503,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   if (use_remote_compositing) {
     DCHECK(!compositor_thread_task_runner.get());
 
-    // TODO(khushalsagar): Replace this with LayerTreeHost::CreateRemote
-    // See crbug/550687.
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+    layer_tree_host_ = cc::LayerTreeHost::CreateRemoteServer(this, &params);
   } else if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
         compositor_thread_task_runner, &params);
