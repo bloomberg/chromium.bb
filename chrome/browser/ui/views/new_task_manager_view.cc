@@ -99,7 +99,6 @@ void NewTaskManagerView::Show(Browser* browser) {
                                      window,
                                      nullptr);
   g_task_manager_view->InitAlwaysOnTopState();
-  g_task_manager_view->table_model_->StartUpdating();
 
 #if defined(OS_WIN)
   // Set the app id for the task manager to the app id of its parent browser. If
@@ -268,7 +267,6 @@ void NewTaskManagerView::WindowClosing() {
     g_task_manager_view = nullptr;
   }
   table_model_->StoreColumnsSettings();
-  table_model_->StopUpdating();
 }
 
 bool NewTaskManagerView::UseNewStyleForThisDialog() const {

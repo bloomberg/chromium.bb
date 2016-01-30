@@ -75,10 +75,6 @@ class TaskManagerTableModel
   // |row_index| belongs.
   void GetRowsGroupRange(int row_index, int* out_start, int* out_length);
 
-  // Start / stop observing the task manager.
-  void StartUpdating();
-  void StopUpdating();
-
   // Activates the browser tab associated with the process in the specified
   // |row_index|.
   void ActivateTask(int row_index);
@@ -104,6 +100,10 @@ class TaskManagerTableModel
   void ToggleColumnVisibility(int column_id);
 
  private:
+  // Start / stop observing the task manager.
+  void StartUpdating();
+  void StopUpdating();
+
   void OnRefresh();
 
   // Checks whether the task at |row_index| is the first task in its process
