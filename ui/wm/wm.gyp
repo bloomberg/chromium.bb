@@ -60,13 +60,6 @@
         'core/masked_window_targeter.h',
         'core/native_cursor_manager.h',
         'core/native_cursor_manager_delegate.h',
-        'core/nested_accelerator_controller.cc',
-        'core/nested_accelerator_controller.h',
-        'core/nested_accelerator_delegate.h',
-        'core/nested_accelerator_dispatcher.cc',
-        'core/nested_accelerator_dispatcher.h',
-        'core/nested_accelerator_dispatcher_linux.cc',
-        'core/nested_accelerator_dispatcher_win.cc',
         'core/shadow.cc',
         'core/shadow.h',
         'core/shadow_controller.cc',
@@ -98,15 +91,6 @@
         ['use_x11==1', {
           'dependencies': [
             '../../build/linux/system.gyp:x11',
-          ],
-        }],
-        ['OS=="android"', {
-          'sources!': [
-            'core/nested_accelerator_controller.cc',
-            'core/nested_accelerator_controller.h',
-            'core/nested_accelerator_delegate.h',
-            'core/nested_accelerator_dispatcher.cc',
-            'core/nested_accelerator_dispatcher.h',
           ],
         }],
       ],
@@ -154,7 +138,6 @@
         'core/cursor_manager_unittest.cc',
         'core/focus_controller_unittest.cc',
         'core/image_grid_unittest.cc',
-        'core/nested_accelerator_controller_unittest.cc',
         'core/shadow_controller_unittest.cc',
         'core/shadow_unittest.cc',
         'core/transient_window_manager_unittest.cc',

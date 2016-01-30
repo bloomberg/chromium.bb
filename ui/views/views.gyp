@@ -414,8 +414,6 @@
       'widget/desktop_aura/desktop_capture_client.cc',
       'widget/desktop_aura/desktop_capture_client.h',
       'widget/desktop_aura/desktop_cursor_loader_updater.h',
-      'widget/desktop_aura/desktop_dispatcher_client.cc',
-      'widget/desktop_aura/desktop_dispatcher_client.h',
       'widget/desktop_aura/desktop_drop_target_win.cc',
       'widget/desktop_aura/desktop_drop_target_win.h',
       'widget/desktop_aura/desktop_event_client.cc',

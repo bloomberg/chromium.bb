@@ -24,10 +24,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
 
-#if defined(OS_WIN)
-#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
@@ -436,14 +432,7 @@ class MenuControllerTest : public ViewsTestBase {
         new ui::test::EventGenerator(GetContext(), owner_->GetNativeWindow()));
     owner_->Show();
 
-#if defined(OS_WIN)
-    dispatcher_client_.reset(new DesktopDispatcherClient);
-    aura::client::SetDispatcherClient(owner_->GetNativeView()->GetRootWindow(),
-                                      dispatcher_client_.get());
-#endif
-
     SetupMenuItem();
-
     SetupMenuController();
   }
 
@@ -466,10 +455,6 @@ class MenuControllerTest : public ViewsTestBase {
         menu_item_.get(), MenuController::SELECTION_UPDATE_IMMEDIATELY);
     menu_item_->SetController(menu_controller_);
   }
-
-#if defined(OS_WIN)
-  scoped_ptr<aura::client::DispatcherClient> dispatcher_client_;
-#endif
 
   scoped_ptr<Widget> owner_;
   scoped_ptr<ui::test::EventGenerator> event_generator_;

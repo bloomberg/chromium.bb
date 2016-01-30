@@ -25,8 +25,6 @@
       'accelerators/key_hold_detector.h',
       'accelerators/magnifier_key_scroller.cc',
       'accelerators/magnifier_key_scroller.h',
-      'accelerators/nested_accelerator_delegate.cc',
-      'accelerators/nested_accelerator_delegate.h',
       'accelerators/spoken_feedback_toggler.cc',
       'accelerators/spoken_feedback_toggler.h',
       'accessibility_delegate.h',

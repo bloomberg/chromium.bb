@@ -69,7 +69,6 @@ class TooltipController;
 namespace wm {
 class AcceleratorFilter;
 class CompoundEventFilter;
-class NestedAcceleratorController;
 class ShadowController;
 class VisibilityController;
 class WindowModalityController;
@@ -641,7 +640,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::vector<WindowAndBoundsPair> to_restore_;
 
   scoped_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  scoped_ptr< ::wm::NestedAcceleratorController> nested_accelerator_controller_;
   scoped_ptr<AcceleratorController> accelerator_controller_;
   scoped_ptr<ShellDelegate> delegate_;
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;

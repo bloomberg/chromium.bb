@@ -37,8 +37,6 @@
         '../wm/public/activation_delegate.h',
         '../wm/public/animation_host.cc',
         '../wm/public/animation_host.h',
-        '../wm/public/dispatcher_client.cc',
-        '../wm/public/dispatcher_client.h',
         '../wm/public/drag_drop_client.cc',
         '../wm/public/drag_drop_client.h',
         '../wm/public/drag_drop_delegate.cc',

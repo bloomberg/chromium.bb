@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -23,7 +24,6 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "ui/wm/public/dispatcher_client.h"
 
 #if defined(OS_WIN)
 #include "ui/views/win/hwnd_util.h"
@@ -231,15 +231,10 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   widget->Init(params);
   widget->Show();
 
-  aura::Window* window = widget->GetNativeView();
-  aura::Window* root = window->GetRootWindow();
-  aura::client::DispatcherClient* client =
-      aura::client::GetDispatcherClient(root);
-
   // Post a task that terminates the nested loop and destroyes the widget. This
   // task will be executed from the nested loop initiated with the call to
   // |RunWithDispatcher()| below.
-  aura::client::DispatcherRunLoop run_loop(client, NULL);
+  base::RunLoop run_loop;
   base::Closure quit_runloop = run_loop.QuitClosure();
   message_loop()->PostTask(FROM_HERE,
                            base::Bind(&QuitNestedLoopAndCloseWidget,

@@ -200,8 +200,7 @@ void ChromeShellDelegate::Observe(int type,
       // we should execute the startup code.
       // If there are browsers open in the desktop, we create a browser window
       // and open a new tab page, if session restore is not on.
-      BrowserList* desktop_list = BrowserList::GetInstance(
-          chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList* desktop_list = BrowserList::GetInstance();
       if (desktop_list->empty()) {
         // We pass a dummy command line here, because the browser is launched in
         // silent-mode by the metro viewer process, which causes the

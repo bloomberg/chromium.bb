@@ -32,7 +32,6 @@
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
-#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_event_client.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -341,11 +340,6 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
 void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
     aura::WindowTreeHost* host) {
-  // |dispatcher_| is still valid, but DesktopWindowTreeHost is nearly
-  // destroyed. Do cleanup here of members DesktopWindowTreeHost may also use.
-  aura::client::SetDispatcherClient(host->window(), NULL);
-  dispatcher_client_.reset();
-
   // We explicitly do NOT clear the cursor client property. Since the cursor
   // manager is a singleton, it can outlive any window hierarchy, and it's
   // important that objects attached to this destroying window hierarchy have
@@ -482,10 +476,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   aura::client::SetFocusClient(host_->window(), focus_controller);
   aura::client::SetActivationClient(host_->window(), focus_controller);
   host_->window()->AddPreTargetHandler(focus_controller);
-
-  dispatcher_client_.reset(new DesktopDispatcherClient);
-  aura::client::SetDispatcherClient(host_->window(),
-                                    dispatcher_client_.get());
 
   position_client_.reset(new DesktopScreenPositionClient(host_->window()));
 
