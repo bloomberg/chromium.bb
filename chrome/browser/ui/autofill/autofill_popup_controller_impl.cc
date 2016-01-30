@@ -29,10 +29,9 @@ namespace {
 // Used to indicate that no line is currently selected by the user.
 const int kNoSelection = -1;
 
-
 #if !defined(OS_ANDROID)
-// Size difference between name and label in pixels.
-const int kLabelFontSizeDelta = -3;
+// Size difference between the normal font and the smaller font, in pixels.
+const int kSmallerFontSizeDelta = -1;
 #endif
 
 }  // namespace
@@ -82,13 +81,14 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
 #if !defined(OS_ANDROID)
-  label_font_list_ = value_font_list_.DeriveWithSizeDelta(kLabelFontSizeDelta);
-  title_font_list_ = value_font_list_.DeriveWithStyle(gfx::Font::BOLD);
+  smaller_font_list_ =
+      normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
+  bold_font_list_ = normal_font_list_.DeriveWithStyle(gfx::Font::BOLD);
 #if defined(OS_MACOSX)
   // There is no italic version of the system font.
-  warning_font_list_ = value_font_list_;
+  warning_font_list_ = normal_font_list_;
 #else
-  warning_font_list_ = value_font_list_.DeriveWithStyle(gfx::Font::ITALIC);
+  warning_font_list_ = normal_font_list_.DeriveWithStyle(gfx::Font::ITALIC);
 #endif
 #endif
 }
@@ -332,11 +332,12 @@ AutofillPopupControllerImpl::GetSuggestions() {
 
 #if !defined(OS_ANDROID)
 int AutofillPopupControllerImpl::GetElidedValueWidthForRow(size_t row) {
-  return gfx::GetStringWidth(GetElidedValueAt(row), value_font_list_);
+  return gfx::GetStringWidth(GetElidedValueAt(row),
+                             GetValueFontListForRow(row));
 }
 
 int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(size_t row) {
-  return gfx::GetStringWidth(GetElidedLabelAt(row), label_font_list_);
+  return gfx::GetStringWidth(GetElidedLabelAt(row), GetLabelFontList());
 }
 #endif
 
@@ -394,17 +395,32 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
 #if !defined(OS_ANDROID)
 const gfx::FontList& AutofillPopupControllerImpl::GetValueFontListForRow(
     size_t index) const {
-  if (suggestions_[index].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE)
-    return warning_font_list_;
+  // Autofill values have positive |frontend_id|.
+  if (suggestions_[index].frontend_id > 0)
+    return bold_font_list_;
 
-  if (suggestions_[index].frontend_id == POPUP_ITEM_ID_TITLE)
-    return title_font_list_;
-
-  return value_font_list_;
+  // All other message types are defined here.
+  PopupItemId id = static_cast<PopupItemId>(suggestions_[index].frontend_id);
+  switch (id) {
+    case POPUP_ITEM_ID_WARNING_MESSAGE:
+      return warning_font_list_;
+    case POPUP_ITEM_ID_CLEAR_FORM:
+    case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
+    case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
+    case POPUP_ITEM_ID_SEPARATOR:
+      return normal_font_list_;
+    case POPUP_ITEM_ID_TITLE:
+    case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
+    case POPUP_ITEM_ID_DATALIST_ENTRY:
+    case POPUP_ITEM_ID_PASSWORD_ENTRY:
+      return bold_font_list_;
+  }
+  NOTREACHED();
+  return normal_font_list_;
 }
 
 const gfx::FontList& AutofillPopupControllerImpl::GetLabelFontList() const {
-  return label_font_list_;
+  return smaller_font_list_;
 }
 #endif
 

@@ -171,10 +171,15 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
 #if !defined(OS_ANDROID)
   // The fonts for the popup text.
-  gfx::FontList value_font_list_;
-  gfx::FontList label_font_list_;
+  // Normal font (readable size, non bold).
+  gfx::FontList normal_font_list_;
+  // Slightly smaller than the normal font.
+  gfx::FontList smaller_font_list_;
+  // Bold version of the normal font.
+  gfx::FontList bold_font_list_;
+  // Font used for the warning dialog, which may be italic or not depending on
+  // the platform.
   gfx::FontList warning_font_list_;
-  gfx::FontList title_font_list_;
 #endif
 
   // The line that is currently selected by the user.
