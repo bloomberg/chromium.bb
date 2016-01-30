@@ -8,205 +8,323 @@ the src/testing/buildbot directory. Maintaining these files by hand is
 too unwieldy.
 """
 
+import argparse
 import copy
 import json
 import string
 import sys
 
-BUILDERS = [
-  'GPU Win Builder',
-  'GPU Win Builder (dbg)',
-  'GPU Mac Builder',
-  'GPU Mac Builder (dbg)',
-  'GPU Linux Builder',
-  'GPU Linux Builder (dbg)',
-]
+WATERFALL = {
+  'builders': [
+    'GPU Win Builder',
+    'GPU Win Builder (dbg)',
+    'GPU Mac Builder',
+    'GPU Mac Builder (dbg)',
+    'GPU Linux Builder',
+    'GPU Linux Builder (dbg)',
+   ],
 
-TESTERS = {
-  # FYI bots, matching the order on the waterfall.
-  'Win7 Release (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1'
+  'testers': {
+    'Win7 Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win7 Debug (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1'
+    'Win7 Debug (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win8 Release (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2012ServerR2-SP0'
+    'Win7 Release (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6779',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win8 Debug (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2012ServerR2-SP0'
+    'Mac 10.10 Release (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win7 Release (ATI)': {
-    'swarming_dimensions': {
-      'gpu': '1002:6779',
-      'os': 'Windows-2008ServerR2-SP1'
+    'Mac 10.10 Debug (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Win7 Release dEQP (NVIDIA)': {
-    'deqp': True,
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Windows-2008ServerR2-SP1'
+    'Mac Retina Release': {
+      'swarming_dimensions': {
+        'gpu': '10de:0fe9',
+        'hidpi': '1',
+        'os': 'Mac'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'win',
-  },
-  'Mac 10.10 Release (Intel)': {
-    'swarming_dimensions': {
-      'gpu': '8086:0a2e',
-      'os': 'Mac-10.10'
+    'Mac Retina Debug': {
+      'swarming_dimensions': {
+        'gpu': '10de:0fe9',
+        'hidpi': '1',
+        'os': 'Mac'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'mac',
-  },
-  'Mac 10.10 Debug (Intel)': {
-    'swarming_dimensions': {
-      'gpu': '8086:0a2e',
-      'os': 'Mac-10.10'
+    'Mac 10.10 Retina Release (AMD)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'mac',
-  },
-  'Mac 10.10 Release (ATI)': {
-    'swarming_dimensions': {
-      'gpu': '1002:679e',
-      'os': 'Mac-10.10'
+    'Mac 10.10 Retina Debug (AMD)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Release',
-    # This bot is a one-off and doesn't have similar slaves in the
-    # swarming pool.
-    'swarming': False,
-    'os_type': 'mac',
-  },
-  'Mac 10.10 Debug (ATI)': {
-    'swarming_dimensions': {
-      'gpu': '1002:679e',
-      'os': 'Mac-10.10'
+    'Linux Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
     },
-    'build_config': 'Debug',
-    # This bot is a one-off and doesn't have similar slaves in the
-    # swarming pool.
-    'swarming': False,
-    'os_type': 'mac',
-  },
-  'Mac 10.10 Retina Release (AMD)': {
-    'swarming_dimensions': {
-      'gpu': '1002:6821',
-      'hidpi': '1',
-      'os': 'Mac-10.10'
+    'Linux Debug (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Linux'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'linux',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'mac',
-  },
-  'Mac 10.10 Retina Debug (AMD)': {
-    'swarming_dimensions': {
-      'gpu': '1002:6821',
-      'hidpi': '1',
-      'os': 'Mac-10.10'
+  }
+}
+
+FYI_WATERFALL = {
+  'builders': [
+    'GPU Win Builder',
+    'GPU Win Builder (dbg)',
+    'GPU Mac Builder',
+    'GPU Mac Builder (dbg)',
+    'GPU Linux Builder',
+    'GPU Linux Builder (dbg)',
+   ],
+
+  'testers': {
+    'Win7 Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'mac',
-  },
-  'Linux Release (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Linux'
+    'Win7 Debug (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Release',
-    'swarming': True,
-    'os_type': 'linux',
-  },
-  'Linux Release (Intel)': {
-    'swarming_dimensions': {
-      'gpu': '8086:041a',
-      'os': 'Linux'
+    'Win8 Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2012ServerR2-SP0'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Release',
-    # This bot is a one-off and doesn't have similar slaves in the
-    # swarming pool.
-    'swarming': False,
-    'os_type': 'linux',
-  },
-  'Linux Release (Intel Graphics Stack)': {
-    'swarming_dimensions': {
-      'gpu': '8086:041a',
-      'os': 'Linux'
+    'Win8 Debug (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2012ServerR2-SP0'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Release',
-    # This bot is a one-off and doesn't have similar slaves in the
-    # swarming pool.
-    'swarming': False,
-    'os_type': 'linux',
-  },
-  'Linux Release (ATI)': {
-    'swarming_dimensions': {
-      'gpu': '1002:6779',
-      'os': 'Linux'
+    'Win7 Release (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6779',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Release',
-    # This bot is a one-off and doesn't have similar slaves in the
-    # swarming pool.
-    'swarming': False,
-    'os_type': 'linux',
-  },
-  'Linux Debug (NVIDIA)': {
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Linux'
+    'Win7 Release dEQP (NVIDIA)': {
+      'deqp': True,
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
-    'build_config': 'Debug',
-    'swarming': True,
-    'os_type': 'linux',
-  },
-  'Linux Release dEQP (NVIDIA)': {
-    'deqp': True,
-    'swarming_dimensions': {
-      'gpu': '10de:104a',
-      'os': 'Linux'
+    'Mac 10.10 Release (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
     },
-    'build_config': 'Release',
-    # TODO(kbr): switch this to use Swarming, and put the physical
-    # machine into the Swarming pool, once we're convinced it's
-    # working well.
-    'swarming': False,
-    'os_type': 'linux',
-  },
+    'Mac 10.10 Debug (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac 10.10 Release (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:679e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'mac',
+    },
+    'Mac 10.10 Debug (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:679e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Debug',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'mac',
+    },
+    'Mac 10.10 Retina Release (AMD)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac 10.10 Retina Debug (AMD)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Linux Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+    },
+    'Linux Release (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:041a',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
+    'Linux Release (Intel Graphics Stack)': {
+      'swarming_dimensions': {
+        'gpu': '8086:041a',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
+    'Linux Release (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6779',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
+    'Linux Debug (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Linux'
+      },
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'linux',
+    },
+    'Linux Release dEQP (NVIDIA)': {
+      'deqp': True,
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # TODO(kbr): switch this to use Swarming, and put the physical
+      # machine into the Swarming pool, once we're convinced it's
+      # working well.
+      'swarming': False,
+      'os_type': 'linux',
+    },
+  }
 }
 
 COMMON_GTESTS = {
-  'angle_end2end_tests': {'args': ['--use-gpu-in-tests']},
   'angle_unittests': {'args': ['--use-gpu-in-tests']},
   'content_gl_tests': {'args': ['--use-gpu-in-tests']},
   'gl_tests': {'args': ['--use-gpu-in-tests']},
@@ -247,6 +365,10 @@ NON_SWARMED_GTESTS = {
 # removal of the --require-audio-hardware-for-testing flag for the
 # time being. See crbug.com/574942.
 FYI_ONLY_GTESTS = {
+  # Until we have more capacity, run angle_end2end_tests only on the
+  # FYI waterfall and the ANGLE trybots (which mirror the FYI
+  # waterfall).
+  'angle_end2end_tests': {'args': ['--use-gpu-in-tests']},
   'audio_unittests': {'args': ['--use-gpu-in-tests']},
   # TODO(kbr): content_unittests is killing the Linux GPU swarming
   # bots. crbug.com/582094 . It's not useful now anyway until audio
@@ -439,11 +561,11 @@ def generate_gtests(tester_config, test_dictionary):
       gtests.append(test)
   return gtests
 
-def generate_all_tests():
+def generate_all_tests(waterfall, is_fyi):
   tests = {}
-  for builder in BUILDERS:
+  for builder in waterfall['builders']:
     tests[builder] = {}
-  for name, config in TESTERS.iteritems():
+  for name, config in waterfall['testers'].iteritems():
     gtests = []
     if config.get('deqp'):
       gtests.extend(generate_gtests(config, DEQP_GTESTS))
@@ -451,8 +573,8 @@ def generate_all_tests():
       gtests.extend(generate_gtests(config, COMMON_GTESTS))
       if config['build_config'] == 'Release':
         gtests.extend(generate_gtests(config, RELEASE_ONLY_GTESTS))
-      # For the moment we're only generating the FYI waterfall's tests.
-      gtests.extend(generate_gtests(config, FYI_ONLY_GTESTS))
+      if is_fyi:
+        gtests.extend(generate_gtests(config, FYI_ONLY_GTESTS))
     isolated_scripts = []
     if not config.get('deqp'):
       for test_name, test_config in sorted(TELEMETRY_TESTS.iteritems()):
@@ -470,5 +592,16 @@ def generate_all_tests():
   tests['AAAAA2 See generate_buildbot_json.py to make changes'] = {}
   print json.dumps(tests, indent=2, separators=(',', ': '), sort_keys=True)
 
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--fyi', help='Generate FYI waterfall',
+                      action='store_true')
+  args = parser.parse_args()
+
+  if args.fyi:
+    sys.exit(generate_all_tests(FYI_WATERFALL, True))
+  else:
+    sys.exit(generate_all_tests(WATERFALL, False))
+
 if __name__ == "__main__":
-  sys.exit(generate_all_tests())
+  sys.exit(main())

@@ -91,6 +91,8 @@
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
     'swarming_gpu_fyi_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'debug_bot'],
     'swarming_gpu_fyi_tests_gn_release_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'release_bot'],
+    'swarming_gpu_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'gn', 'debug_bot'],
+    'swarming_gpu_tests_gn_release_bot': ['swarming', 'gpu_tests', 'gn', 'release_bot'],
     'swarming_gpu_tests_gn_release_trybot': ['swarming', 'gpu_tests', 'gn', 'release_trybot'],
     'swarming_gpu_tests_gyp_debug_trybot': ['swarming', 'gpu_tests', 'gyp', 'debug_trybot'],
     'swarming_gpu_tests_gyp_release_trybot': ['swarming', 'gpu_tests', 'gyp', 'release_trybot'],
@@ -577,6 +579,12 @@
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
       'Linux ARM': 'swarming_gyp_release_bot_arm',
+    },
+    'chromium.gpu': {
+      'GPU Linux Builder': 'swarming_gpu_tests_gn_release_bot',
+      'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_bot',
+      'Linux Release (NVIDIA)': 'none',
+      'Linux Debug (NVIDIA)': 'none',
     },
     'chromium.gpu.fyi': {
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_bot',
