@@ -367,10 +367,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool CryptoConfigCacheIsEmpty(const QuicServerId& server_id);
 
   // Initializes the cached state associated with |server_id| in
-  // |crypto_config_| with the information in |server_info|.
+  // |crypto_config_| with the information in |server_info|. Populates
+  // |connection_id| with the next server designated connection id,
+  // if any, and otherwise leaves it unchanged.
   void InitializeCachedStateInCryptoConfig(
       const QuicServerId& server_id,
-      const scoped_ptr<QuicServerInfo>& server_info);
+      const scoped_ptr<QuicServerInfo>& server_info,
+      QuicConnectionId* connection_id);
 
   // Initialize |quic_supported_servers_at_startup_| with the list of servers
   // that supported QUIC at start up and also initialize in-memory cache of

@@ -773,6 +773,8 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
                               connection()->version());
   NotifyFactoryOfSessionGoingAway();
+  QuicSession::OnConnectionClosed(error, from_peer);
+
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
@@ -780,7 +782,6 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
   for (auto& socket : sockets_) {
     socket->Close();
   }
-  QuicSession::OnConnectionClosed(error, from_peer);
   DCHECK(dynamic_streams().empty());
   CloseAllStreams(ERR_UNEXPECTED);
   CloseAllObservers(ERR_UNEXPECTED);

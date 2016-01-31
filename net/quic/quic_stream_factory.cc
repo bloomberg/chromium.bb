@@ -190,6 +190,7 @@ class QuicStreamFactory::Job {
   scoped_ptr<QuicServerInfo> server_info_;
   bool started_another_job_;
   const BoundNetLog net_log_;
+  int num_sent_client_hellos_;
   QuicChromiumClientSession* session_;
   CompletionCallback callback_;
   AddressList address_list_;
@@ -221,6 +222,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       server_info_(server_info),
       started_another_job_(false),
       net_log_(net_log),
+      num_sent_client_hellos_(0),
       session_(nullptr),
       weak_factory_(this) {}
 
@@ -238,6 +240,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       was_alternative_service_recently_broken_(false),  // unused
       started_another_job_(false),                      // unused
       net_log_(session->net_log()),                     // unused
+      num_sent_client_hellos_(0),
       session_(session),
       weak_factory_(this) {}
 
@@ -459,6 +462,17 @@ int QuicStreamFactory::Job::DoResumeConnect() {
 }
 
 int QuicStreamFactory::Job::DoConnectComplete(int rv) {
+  if (session_ && session_->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+    num_sent_client_hellos_ += session_->GetNumSentClientHellos();
+    if (num_sent_client_hellos_ >= QuicCryptoClientStream::kMaxClientHellos) {
+      return ERR_QUIC_HANDSHAKE_FAILED;
+    }
+    // The handshake was rejected statelessly, so create another connection
+    // to resume the handshake.
+    io_state_ = STATE_CONNECT;
+    return OK;
+  }
+
   if (rv != OK)
     return rv;
 
@@ -1425,16 +1439,15 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
         base::ThreadTaskRunnerHandle::Get().get(), clock_.get(),
         random_generator_));
   }
+  QuicConnectionId connection_id = random_generator_->RandUint64();
+  InitializeCachedStateInCryptoConfig(server_id, server_info, &connection_id);
 
   QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(socket.get());
-  QuicConnectionId connection_id = random_generator_->RandUint64();
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), writer, true /* owns_writer */,
       Perspective::IS_CLIENT, supported_versions_);
   writer->SetConnection(connection);
   connection->SetMaxPacketLength(max_packet_length_);
-
-  InitializeCachedStateInCryptoConfig(server_id, server_info);
 
   QuicConfig config = config_;
   config.SetSocketReceiveBufferToSend(socket_receive_buffer_size_);
@@ -1526,15 +1539,19 @@ bool QuicStreamFactory::CryptoConfigCacheIsEmpty(
 
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const QuicServerId& server_id,
-    const scoped_ptr<QuicServerInfo>& server_info) {
-  // |server_info| will be NULL, if a non-empty server config already exists in
-  // the memory cache. This is a minor optimization to avoid LookupOrCreate.
-  if (!server_info)
-    return;
-
+    const scoped_ptr<QuicServerInfo>& server_info,
+    QuicConnectionId* connection_id) {
   QuicCryptoClientConfig::CachedState* cached =
       crypto_config_.LookupOrCreate(server_id);
+  if (cached->has_server_designated_connection_id())
+    *connection_id = cached->GetNextServerDesignatedConnectionId();
+
   if (!cached->IsEmpty())
+    return;
+
+  // |server_info| will be NULL, if a non-empty server config already exists in
+  // the memory cache.
+  if (!server_info)
     return;
 
   // TODO(rtenneti): Delete the following histogram after collecting stats.
@@ -1584,7 +1601,7 @@ void QuicStreamFactory::MaybeInitialize() {
     server_info.reset(quic_server_info_factory_->GetForServer(server_id));
     if (server_info->WaitForDataReady(callback) == OK) {
       DVLOG(1) << "Initialized server config for: " << server_id.ToString();
-      InitializeCachedStateInCryptoConfig(server_id, server_info);
+      InitializeCachedStateInCryptoConfig(server_id, server_info, nullptr);
     }
   }
 }

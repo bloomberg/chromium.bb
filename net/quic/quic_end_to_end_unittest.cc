@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ostream>
 #include <utility>
 #include <vector>
 
@@ -72,9 +73,24 @@ class TestTransactionFactory : public HttpTransactionFactory {
   scoped_ptr<HttpNetworkSession> session_;
 };
 
+struct TestParams {
+  explicit TestParams(bool use_stateless_rejects)
+      : use_stateless_rejects(use_stateless_rejects) {}
+
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
+    os << "{ use_stateless_rejects: " << p.use_stateless_rejects << " }";
+    return os;
+  }
+  bool use_stateless_rejects;
+};
+
+std::vector<TestParams> GetTestParams() {
+  return std::vector<TestParams>{TestParams(true), TestParams(false)};
+}
+
 }  // namespace
 
-class QuicEndToEndTest : public PlatformTest {
+class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
  protected:
   QuicEndToEndTest()
       : host_resolver_impl_(CreateResolverImpl()),
@@ -92,6 +108,9 @@ class QuicEndToEndTest : public PlatformTest {
     params_.enable_quic = true;
     params_.quic_clock = nullptr;
     params_.quic_random = nullptr;
+    if (GetParam().use_stateless_rejects) {
+      params_.quic_connection_options.push_back(kSREJ);
+    }
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
     params_.transport_security_state = &transport_security_state_;
@@ -242,7 +261,11 @@ class QuicEndToEndTest : public PlatformTest {
   bool strike_register_no_startup_period_;
 };
 
-TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
+INSTANTIATE_TEST_CASE_P(Tests,
+                        QuicEndToEndTest,
+                        ::testing::ValuesIn(GetTestParams()));
+
+TEST_P(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   std::string response(10 * 1024, 'x');
 
   AddToCache(request_.url.PathForRequest(), 200, "OK", response);
@@ -259,11 +282,10 @@ TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
 
 // crbug.com/559173
 #if defined(THREAD_SANITIZER)
-#define MAYBE_LargePostWithNoPacketLoss DISABLED_LargePostWithNoPacketLoss
+TEST_P(QuicEndToEndTest, DISABLED_LargePostWithNoPacketLoss) {
 #else
-#define MAYBE_LargePostWithNoPacketLoss LargePostWithNoPacketLoss
+TEST_P(QuicEndToEndTest, LargePostWithNoPacketLoss) {
 #endif
-TEST_F(QuicEndToEndTest, MAYBE_LargePostWithNoPacketLoss) {
   InitializePostRequest(1024 * 1024);
 
   AddToCache(request_.url.PathForRequest(), 200, "OK", kResponseBody);
@@ -280,11 +302,10 @@ TEST_F(QuicEndToEndTest, MAYBE_LargePostWithNoPacketLoss) {
 
 // crbug.com/559173
 #if defined(THREAD_SANITIZER)
-#define MAYBE_LargePostWithPacketLoss DISABLED_LargePostWithPacketLoss
+TEST_P(QuicEndToEndTest, DISABLED_LargePostWithPacketLoss) {
 #else
-#define MAYBE_LargePostWithPacketLoss LargePostWithPacketLoss
+TEST_P(QuicEndToEndTest, LargePostWithPacketLoss) {
 #endif
-TEST_F(QuicEndToEndTest, MAYBE_LargePostWithPacketLoss) {
   // FLAGS_fake_packet_loss_percentage = 30;
   InitializePostRequest(1024 * 1024);
 
@@ -303,11 +324,10 @@ TEST_F(QuicEndToEndTest, MAYBE_LargePostWithPacketLoss) {
 
 // crbug.com/536845
 #if defined(THREAD_SANITIZER)
-#define MAYBE_UberTest DISABLED_UberTest
+TEST_P(QuicEndToEndTest, DISABLED_UberTest) {
 #else
-#define MAYBE_UberTest UberTest
+TEST_P(QuicEndToEndTest, UberTest) {
 #endif
-TEST_F(QuicEndToEndTest, MAYBE_UberTest) {
   // FLAGS_fake_packet_loss_percentage = 30;
 
   const char kResponseBody[] = "some really big response body";
