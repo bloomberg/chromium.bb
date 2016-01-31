@@ -37,7 +37,9 @@ add_custom_target(cr-check-all COMMAND ${CMAKE_CTEST_COMMAND} -V)
 #   arguments...
 #   )
 function(cr_add_test name testprog)
-  add_custom_target(${name} COMMAND ${testprog} ${ARGN})
+  add_custom_target(
+    ${name} COMMAND ${testprog} ${ARGN}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
   add_dependencies(cr-check-all ${name})
 endfunction(cr_add_test)
 
