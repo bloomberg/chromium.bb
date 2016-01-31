@@ -527,7 +527,7 @@ WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
     {
         if (waitMode == DontWaitForTask)
             absoluteTime = 0.0;
-        SafePointScope safePointScope(BlinkGC::NoHeapPointersOnStack);
+        SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
         task = m_debuggerTaskQueue->waitWithTimeout(result, absoluteTime);
     }
 
