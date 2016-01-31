@@ -44,8 +44,13 @@ void MenuKeyEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
+  event->StopPropagation();
+
   if (event->type() == ui::ET_KEY_PRESSED) {
     menu_controller->OnKeyDown(event->key_code());
+    // Menu controller might have been deleted.
+    if (!MenuController::GetActiveInstance())
+      return;
 
     // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
     // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
@@ -54,6 +59,9 @@ void MenuKeyEventHandler::OnKeyEvent(ui::KeyEvent* event) {
         (flags & kKeyFlagsMask) == 0) {
       char c = event->GetCharacter();
       menu_controller->SelectByChar(c);
+      // Menu controller might have been deleted.
+      if (!MenuController::GetActiveInstance())
+        return;
     }
   }
 
@@ -65,8 +73,6 @@ void MenuKeyEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU)
       menu_controller->CancelAll();
   }
-
-  event->StopPropagation();
 }
 
 }  // namespace views
