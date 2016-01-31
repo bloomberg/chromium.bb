@@ -211,14 +211,6 @@ void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
     return;
   imm32_manager_.CancelIME(toplevel_window_handle_);
   UpdateIMEState();
-
-  ui::IMEEngineHandlerInterface* engine = GetEngine();
-  if (engine) {
-    engine->FocusOut();
-    ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
-    engine->FocusIn(context);
-  }
 }
 
 void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
@@ -265,12 +257,8 @@ bool InputMethodWin::IsCandidatePopupOpen() const {
 
 void InputMethodWin::OnWillChangeFocusedClient(TextInputClient* focused_before,
                                                TextInputClient* focused) {
-  if (IsWindowFocused(focused_before)) {
+  if (IsWindowFocused(focused_before))
     ConfirmCompositionText();
-
-    if (GetEngine())
-      GetEngine()->FocusOut();
-  }
 }
 
 void InputMethodWin::OnDidChangeFocusedClient(
@@ -672,6 +660,22 @@ void InputMethodWin::UpdateIMEState() {
   imm32_manager_.SetTextInputMode(window_handle, text_input_mode);
   tsf_inputscope::SetInputScopeForTsfUnawareWindow(
       window_handle, text_input_type, text_input_mode);
+
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    const TextInputType old_text_input_type =
+        ui::IMEBridge::Get()->GetCurrentInputContext().type;
+
+    ui::IMEEngineHandlerInterface::InputContext context(
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+
+    if (old_text_input_type != ui::TEXT_INPUT_TYPE_NONE)
+      engine->FocusOut();
+    if (text_input_type != ui::TEXT_INPUT_TYPE_NONE)
+      engine->FocusIn(context);
+
+    ui::IMEBridge::Get()->SetCurrentInputContext(context);
+  }
 }
 
 }  // namespace ui

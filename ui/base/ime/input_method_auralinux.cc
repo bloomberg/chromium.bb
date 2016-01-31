@@ -221,20 +221,24 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
     context_simple_->Focus();
   else
     context_simple_->Blur();
+
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    ui::IMEEngineHandlerInterface::InputContext context(
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+
+    if (old_text_input_type != TEXT_INPUT_TYPE_NONE)
+      engine->FocusOut();
+    if (text_input_type_ != TEXT_INPUT_TYPE_NONE)
+      engine->FocusIn(context);
+
+    ui::IMEBridge::Get()->SetCurrentInputContext(context);
+  }
 }
 
 void InputMethodAuraLinux::OnTextInputTypeChanged(
     const TextInputClient* client) {
   UpdateContextFocusState();
-
-  ui::IMEEngineHandlerInterface* engine = GetEngine();
-  if (engine) {
-    engine->FocusOut();
-    ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
-    engine->FocusIn(context);
-  }
-
   InputMethodBase::OnTextInputTypeChanged(client);
   // TODO(yoichio): Support inputmode HTML attribute.
 }
@@ -362,21 +366,12 @@ void InputMethodAuraLinux::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   ConfirmCompositionText();
-
-  if (GetEngine())
-    GetEngine()->FocusOut();
 }
 
 void InputMethodAuraLinux::OnDidChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   UpdateContextFocusState();
-
-  if (GetEngine()) {
-    ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
-    GetEngine()->FocusIn(context);
-  }
 
   // Force to update caret bounds, in case the View thinks that the caret
   // bounds has not changed.
