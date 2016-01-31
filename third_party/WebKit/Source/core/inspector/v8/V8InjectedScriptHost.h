@@ -5,7 +5,6 @@
 #ifndef V8InjectedScriptHost_h
 #define V8InjectedScriptHost_h
 
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include <v8.h>
 
@@ -24,8 +23,7 @@ public:
     static void inspectCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void inspectedObjectCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void isDOMWrapperCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void isHTMLAllCollectionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void formatAccessorsAsProperties(const v8::FunctionCallbackInfo<v8::Value>&);
     static void isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void functionDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>&);

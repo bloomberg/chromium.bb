@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/PromiseTracker.h"
+#include "core/inspector/v8/PromiseTracker.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/inspector/ScriptAsyncCallStack.h"

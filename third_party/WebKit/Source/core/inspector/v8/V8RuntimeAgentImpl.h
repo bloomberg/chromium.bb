@@ -32,10 +32,9 @@
 #define V8RuntimeAgentImpl_h
 
 #include "core/CoreExport.h"
+#include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/v8/V8RuntimeAgent.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

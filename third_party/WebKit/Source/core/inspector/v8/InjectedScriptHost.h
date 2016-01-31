@@ -32,6 +32,7 @@
 
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/v8/InjectedScriptHostClient.h"
+#include "core/inspector/v8/V8DebuggerAgentImpl.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

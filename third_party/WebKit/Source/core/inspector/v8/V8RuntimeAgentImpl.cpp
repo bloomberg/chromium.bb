@@ -47,6 +47,11 @@ namespace V8RuntimeAgentImplState {
 static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled";
 };
 
+inline static bool asBool(const bool* const b)
+{
+    return b ? *b : false;
+}
+
 PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
 {
     return adoptPtr(new V8RuntimeAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger)));

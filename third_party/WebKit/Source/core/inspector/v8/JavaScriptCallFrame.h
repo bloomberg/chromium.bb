@@ -31,7 +31,6 @@
 #ifndef JavaScriptCallFrame_h
 #define JavaScriptCallFrame_h
 
-
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>

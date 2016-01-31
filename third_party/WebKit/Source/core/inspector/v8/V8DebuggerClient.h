@@ -28,6 +28,8 @@ public:
     virtual v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) = 0;
     virtual v8::MaybeLocal<v8::Value> callInternalFunction(v8::Local<v8::Function>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) = 0;
 
+    virtual String valueSubtype(v8::Local<v8::Value>) = 0;
+    virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;
 };
 
 } // namespace blink

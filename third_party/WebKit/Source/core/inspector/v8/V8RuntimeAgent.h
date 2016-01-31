@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

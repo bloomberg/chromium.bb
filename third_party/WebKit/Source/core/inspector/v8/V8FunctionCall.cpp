@@ -31,21 +31,17 @@
 #include "core/inspector/v8/V8FunctionCall.h"
 
 #include "core/inspector/v8/V8DebuggerClient.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <v8.h>
 
 namespace blink {
 
-static v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string)
-{
-    return v8::String::NewFromUtf8(isolate, string.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
-}
-
 V8FunctionCall::V8FunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& name)
     : m_client(client)
     , m_context(context)
-    , m_name(v8String(context->GetIsolate(), name))
+    , m_name(toV8String(context->GetIsolate(), name))
     , m_value(value)
 {
 }
@@ -57,7 +53,7 @@ void V8FunctionCall::appendArgument(v8::Local<v8::Value> value)
 
 void V8FunctionCall::appendArgument(const String& argument)
 {
-    m_arguments.append(v8String(m_context->GetIsolate(), argument));
+    m_arguments.append(toV8String(m_context->GetIsolate(), argument));
 }
 
 void V8FunctionCall::appendArgument(int argument)

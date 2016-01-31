@@ -1,15 +1,7 @@
 include_rules = [
     "-bindings/core",
-    "+bindings/core/v8/ExceptionState.h",
     "+bindings/core/v8/ScriptCallStackFactory.h",
     "+bindings/core/v8/ScriptRegexp.h",
-    "+bindings/core/v8/V8Binding.h",
-    "+bindings/core/v8/V8DOMException.h",
-    "+bindings/core/v8/V8DOMTokenList.h",
     "+bindings/core/v8/V8GlobalValueMap.h",
-    "+bindings/core/v8/V8HTMLAllCollection.h",
-    "+bindings/core/v8/V8HTMLCollection.h",
-    "+bindings/core/v8/V8Node.h",
-    "+bindings/core/v8/V8NodeList.h",
     "+bindings/core/v8/V8RecursionScope.h",
 ]

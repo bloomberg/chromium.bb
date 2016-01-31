@@ -30,7 +30,6 @@
 
 #include "core/inspector/v8/InjectedScript.h"
 
-#include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
@@ -38,6 +37,7 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8FunctionCall.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "platform/JSONValuesForV8.h"
@@ -522,7 +522,7 @@ void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefP
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Message> message = tryCatch.Message();
-        String text = !message.IsEmpty() ? toCoreStringWithUndefinedOrNullCheck(message->Get()) : "Internal error";
+        String text = !message.IsEmpty() ? toWTFStringWithTypeCheck(message->Get()) : "Internal error";
         *exceptionDetails = TypeBuilder::Debugger::ExceptionDetails::create().setText(text);
     } else {
         *result = toJSONValue(function.context(), resultValue);

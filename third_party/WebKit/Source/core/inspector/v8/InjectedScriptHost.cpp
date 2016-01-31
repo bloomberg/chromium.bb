@@ -30,7 +30,6 @@
 
 #include "core/inspector/v8/InjectedScriptHost.h"
 
-#include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
 #include "platform/JSONValues.h"

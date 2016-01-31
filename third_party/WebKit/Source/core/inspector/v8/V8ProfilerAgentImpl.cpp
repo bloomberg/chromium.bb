@@ -5,8 +5,8 @@
 #include "core/inspector/v8/V8ProfilerAgentImpl.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "wtf/Atomics.h"
 #include <v8-profiler.h>
 
@@ -53,9 +53,9 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Is
     RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
 
     RefPtr<TypeBuilder::Profiler::CPUProfileNode> result = TypeBuilder::Profiler::CPUProfileNode::create()
-        .setFunctionName(toCoreString(node->GetFunctionName()))
+        .setFunctionName(toWTFString(node->GetFunctionName()))
         .setScriptId(String::number(node->GetScriptId()))
-        .setUrl(toCoreString(node->GetScriptResourceName()))
+        .setUrl(toWTFString(node->GetScriptResourceName()))
         .setLineNumber(node->GetLineNumber())
         .setColumnNumber(node->GetColumnNumber())
         .setHitCount(node->GetHitCount())
@@ -268,13 +268,13 @@ String V8ProfilerAgentImpl::nextProfileId()
 void V8ProfilerAgentImpl::startProfiling(const String& title)
 {
     v8::HandleScope handleScope(m_isolate);
-    m_isolate->GetCpuProfiler()->StartProfiling(v8String(m_isolate, title), true);
+    m_isolate->GetCpuProfiler()->StartProfiling(toV8String(m_isolate, title), true);
 }
 
 PassRefPtr<TypeBuilder::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling(const String& title, bool serialize)
 {
     v8::HandleScope handleScope(m_isolate);
-    v8::CpuProfile* profile = m_isolate->GetCpuProfiler()->StopProfiling(v8String(m_isolate, title));
+    v8::CpuProfile* profile = m_isolate->GetCpuProfiler()->StopProfiling(toV8String(m_isolate, title));
     if (!profile)
         return nullptr;
     RefPtr<TypeBuilder::Profiler::CPUProfile> result;

@@ -6,6 +6,7 @@
 
 #include "core/inspector/v8/InspectorWrapper.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
@@ -60,17 +61,13 @@ void thisObjectAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCa
 void stepInPositionsAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    CString cstr = impl->stepInPositions().utf8();
-    v8::Local<v8::Name> result = v8::String::NewFromUtf8(info.GetIsolate(), cstr.data(), v8::NewStringType::kNormal, cstr.length()).ToLocalChecked();
-    info.GetReturnValue().Set(result);
+    info.GetReturnValue().Set(toV8String(info.GetIsolate(), impl->stepInPositions()));
 }
 
 void functionNameAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    CString cstr = impl->functionName().utf8();
-    v8::Local<v8::Name> result = v8::String::NewFromUtf8(info.GetIsolate(), cstr.data(), v8::NewStringType::kNormal, cstr.length()).ToLocalChecked();
-    info.GetReturnValue().Set(result);
+    info.GetReturnValue().Set(toV8String(info.GetIsolate(), impl->functionName()));
 }
 
 void functionLineAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)

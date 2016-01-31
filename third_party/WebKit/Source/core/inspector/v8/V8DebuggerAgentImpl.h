@@ -6,14 +6,13 @@
 #define V8DebuggerAgentImpl_h
 
 #include "core/CoreExport.h"
+#include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/PromiseTracker.h"
+#include "core/inspector/v8/PromiseTracker.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/SourceMap.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

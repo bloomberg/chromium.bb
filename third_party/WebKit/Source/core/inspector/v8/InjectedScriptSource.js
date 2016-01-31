@@ -562,7 +562,7 @@ InjectedScript.prototype = {
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
-                        if ("get" in descriptor && "set" in descriptor && name != "__proto__" && InjectedScriptHost.isDOMWrapper(object) && !doesAttributeHaveObservableSideEffectOnGet(object, name)) {
+                        if ("get" in descriptor && "set" in descriptor && name != "__proto__" && InjectedScriptHost.formatAccessorsAsProperties(object) && !doesAttributeHaveObservableSideEffectOnGet(object, name)) {
                             descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [name]);
                             descriptor.isOwn = true;
                             delete descriptor.get;
@@ -1025,7 +1025,7 @@ InjectedScript.prototype = {
     _isHTMLAllCollection: function(object)
     {
         // document.all is reported as undefined, but we still want to process it.
-        return (typeof object === "undefined") && InjectedScriptHost.isHTMLAllCollection(object);
+        return (typeof object === "undefined") && !!InjectedScriptHost.subtype(object);
     },
 
     /**

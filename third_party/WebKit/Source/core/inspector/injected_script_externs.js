@@ -33,13 +33,7 @@ InjectedScriptHostClass.prototype.internalConstructorName = function(obj) {}
  * @param {*} obj
  * @return {boolean}
  */
-InjectedScriptHostClass.prototype.isDOMWrapper = function(obj) {}
-
-/**
- * @param {*} obj
- * @return {boolean}
- */
-InjectedScriptHostClass.prototype.isHTMLAllCollection = function(obj) {}
+InjectedScriptHostClass.prototype.formatAccessorsAsProperties = function(obj) {}
 
 /**
  * @param {*} obj

@@ -4,7 +4,6 @@
 
 #include "core/inspector/v8/V8AsyncCallTracker.h"
 
-#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"

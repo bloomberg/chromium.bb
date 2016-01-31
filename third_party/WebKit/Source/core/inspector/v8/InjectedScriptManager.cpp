@@ -30,7 +30,6 @@
 
 #include "core/inspector/v8/InjectedScriptManager.h"
 
-#include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptNative.h"
@@ -38,6 +37,7 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8InjectedScriptHost.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
@@ -164,7 +164,6 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& 
         return v8::Local<v8::Object>();
 
     injectedScriptNative->setOnInjectedScriptHost(scriptHostWrapper);
-    v8::Local<v8::String> sourceValue = v8::String::NewFromUtf8(isolate, source.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
 
     // Inject javascript into the context. The compiled script is supposed to evaluate into
     // a single anonymous function(it's anonymous to avoid cluttering the global object with
@@ -172,7 +171,7 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& 
     // injected script id and explicit reference to the inspected global object. The function is expected
     // to create and configure InjectedScript instance that is going to be used by the inspector.
     v8::Local<v8::Value> value;
-    if (!m_client->compileAndRunInternalScript(sourceValue).ToLocal(&value))
+    if (!m_client->compileAndRunInternalScript(toV8String(isolate, source)).ToLocal(&value))
         return v8::Local<v8::Object>();
     ASSERT(value->IsFunction());
 

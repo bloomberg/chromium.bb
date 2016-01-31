@@ -6,15 +6,13 @@
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptRegexp.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Microtask.h"
-#include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/ContentSearchUtils.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/AsyncCallChain.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
@@ -25,6 +23,7 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
@@ -67,6 +66,11 @@ static const char skipContentScripts[] = "skipContentScripts";
 static const char skipAllPauses[] = "skipAllPauses";
 
 } // namespace DebuggerAgentState;
+
+inline static bool asBool(const bool* const b)
+{
+    return b ? *b : false;
+}
 
 static const int maxSkipStepFrameCount = 128;
 
@@ -986,9 +990,8 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
     v8::HandleScope handles(injectedScript->isolate());
     v8::Context::Scope scope(injectedScript->context());
     v8::TryCatch tryCatch(m_isolate);
-    v8::Local<v8::String> expressionValue = v8::String::NewFromUtf8(m_isolate, expression.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
     v8::Local<v8::Script> script;
-    if (!m_debugger->client()->compileScript(injectedScript->context(), expressionValue, sourceURL).ToLocal(&script)) {
+    if (!m_debugger->client()->compileScript(injectedScript->context(), toV8String(m_isolate, expression), sourceURL).ToLocal(&script)) {
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
             exceptionDetails = createExceptionDetails(m_isolate, message);
@@ -1718,7 +1721,7 @@ void V8DebuggerAgentImpl::reset()
 
 PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> V8DebuggerAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
 {
-    RefPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toCoreStringWithUndefinedOrNullCheck(message->Get()));
+    RefPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toWTFStringWithTypeCheck(message->Get()));
     exceptionDetails->setLine(message->GetLineNumber());
     exceptionDetails->setColumn(message->GetStartColumn());
     v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
