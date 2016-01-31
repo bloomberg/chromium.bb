@@ -6,11 +6,36 @@
 
 #include <utility>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
 #include "third_party/mojo/src/mojo/edk/js/handle.h"
+#include "v8/include/v8.h"
 
 namespace content {
+
+namespace {
+
+struct JsFactoryDeleter {
+  inline void operator()(v8::Persistent<v8::Function>* ptr) const {
+    ptr->Reset();
+    delete ptr;
+  }
+};
+
+using ScopedJsFactory =
+    scoped_ptr<v8::Persistent<v8::Function>, JsFactoryDeleter>;
+
+void CallJsFactory(ScopedJsFactory factory,
+                   mojo::ScopedMessagePipeHandle pipe) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<v8::Value> argv[] = {
+    gin::ConvertToV8(isolate, mojo::Handle(pipe.release().value()))
+  };
+  factory->Get(isolate)->Call(v8::Undefined(isolate), 1, argv);
+}
+
+}  // namespace
 
 gin::WrapperInfo ServiceRegistryJsWrapper::kWrapperInfo = {
     gin::kEmbedderNativeGin};
@@ -34,7 +59,9 @@ gin::ObjectTemplateBuilder ServiceRegistryJsWrapper::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return Wrappable<ServiceRegistryJsWrapper>::GetObjectTemplateBuilder(isolate).
       SetMethod("connectToService",
-                &ServiceRegistryJsWrapper::ConnectToService);
+                &ServiceRegistryJsWrapper::ConnectToService).
+      SetMethod("addServiceOverrideForTesting",
+                &ServiceRegistryJsWrapper::AddServiceOverrideForTesting);
 }
 
 mojo::Handle ServiceRegistryJsWrapper::ConnectToService(
@@ -44,6 +71,20 @@ mojo::Handle ServiceRegistryJsWrapper::ConnectToService(
     service_registry_->ConnectToRemoteService(service_name,
                                               std::move(pipe.handle0));
   return pipe.handle1.release();
+}
+
+void ServiceRegistryJsWrapper::AddServiceOverrideForTesting(
+    const std::string& service_name,
+    v8::Local<v8::Function> service_factory) {
+  ServiceRegistryImpl* registry =
+      static_cast<ServiceRegistryImpl*>(service_registry_.get());
+  if (!registry)
+    return;
+  ScopedJsFactory factory(
+      new v8::Persistent<v8::Function>(v8::Isolate::GetCurrent(),
+                                       service_factory));
+  registry->AddServiceOverrideForTesting(
+      service_name, base::Bind(&CallJsFactory, base::Passed(&factory)));
 }
 
 ServiceRegistryJsWrapper::ServiceRegistryJsWrapper(

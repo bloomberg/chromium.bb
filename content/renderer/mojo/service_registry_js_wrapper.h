@@ -12,7 +12,11 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/handle.h"
+
+namespace v8 {
+class Isolate;
+}
 
 namespace content {
 
@@ -33,6 +37,8 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
       v8::Isolate* isolate) override;
 
   // JS interface implementation.
+  void AddServiceOverrideForTesting(const std::string& service_name,
+                                    v8::Local<v8::Function> service_factory);
   mojo::Handle ConnectToService(const std::string& service_name);
 
   static gin::WrapperInfo kWrapperInfo;
