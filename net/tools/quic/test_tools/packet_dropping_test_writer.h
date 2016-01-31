@@ -22,7 +22,6 @@
 #include "net/tools/quic/test_tools/quic_test_client.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // Simulates a connection that drops packets a configured percentage of the time
@@ -162,7 +161,6 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_PACKET_DROPPING_TEST_WRITER_H_

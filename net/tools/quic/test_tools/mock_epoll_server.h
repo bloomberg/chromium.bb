@@ -14,7 +14,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // Unlike the full MockEpollServer, this only lies about the time but lets
@@ -108,7 +107,6 @@ class MockEpollServer : public FakeTimeEpollServer {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_

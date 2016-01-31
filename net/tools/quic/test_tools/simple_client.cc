@@ -5,7 +5,6 @@
 #include "net/tools/quic/test_tools/simple_client.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 void SimpleClient::WaitForResponse() {
@@ -36,5 +35,4 @@ int64_t SimpleClient::response_body_size() const {
 }
 
 }  // namespace net
-}  // namespace tools
 }  // namespace test

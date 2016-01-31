@@ -12,7 +12,6 @@
 using net::test::CryptoTestUtils;
 
 namespace net {
-namespace tools {
 namespace test {
 
 TEST(QuicSimpleClientTest, Initialize) {
@@ -26,5 +25,4 @@ TEST(QuicSimpleClientTest, Initialize) {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

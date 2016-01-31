@@ -28,7 +28,6 @@ namespace net {
 
 class QuicServerId;
 
-namespace tools {
 
 class QuicEpollConnectionHelper;
 class QuicPacketReader;
@@ -206,7 +205,7 @@ class QuicClient : public QuicClientBase,
   }
 
  private:
-  friend class net::tools::test::QuicClientPeer;
+  friend class net::test::QuicClientPeer;
 
   // Specific QuicClient class for storing data to resend.
   class ClientQuicDataToResend : public QuicDataToResend {
@@ -303,7 +302,6 @@ class QuicClient : public QuicClientBase,
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_CLIENT_H_

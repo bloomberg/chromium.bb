@@ -13,7 +13,6 @@
 #include "net/quic/reliable_quic_stream.h"
 
 namespace net {
-namespace tools {
 
 QuicServerSessionBase::QuicServerSessionBase(
     const QuicConfig& config,
@@ -213,5 +212,4 @@ QuicCryptoServerStreamBase* QuicServerSessionBase::GetCryptoStream() {
   return crypto_stream_.get();
 }
 
-}  // namespace tools
 }  // namespace net

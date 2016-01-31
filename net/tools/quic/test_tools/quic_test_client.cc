@@ -34,7 +34,6 @@ using std::string;
 using std::vector;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -638,5 +637,4 @@ void QuicTestClient::FillInRequest(const string& uri, HTTPMessage* message) {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

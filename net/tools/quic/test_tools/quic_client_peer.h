@@ -12,7 +12,6 @@ namespace net {
 class QuicCryptoClientConfig;
 class QuicPacketWriter;
 
-namespace tools {
 
 class QuicClient;
 
@@ -29,7 +28,6 @@ class QuicClientPeer {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_QUIC_CLIENT_PEER_H_

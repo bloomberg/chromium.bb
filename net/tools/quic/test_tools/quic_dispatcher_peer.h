@@ -11,7 +11,6 @@
 #include "net/base/ip_endpoint.h"
 
 namespace net {
-namespace tools {
 
 class QuicPacketWriterWrapper;
 
@@ -46,7 +45,6 @@ class QuicDispatcherPeer {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_QUIC_DISPATCHER_PEER_H_

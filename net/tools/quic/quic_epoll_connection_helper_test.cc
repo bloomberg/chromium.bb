@@ -8,10 +8,9 @@
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::tools::test::MockEpollServer;
+using net::test::MockEpollServer;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -170,5 +169,4 @@ TEST_P(QuicEpollConnectionHelperAlarmTest, CreateAlarmAndUpdate) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

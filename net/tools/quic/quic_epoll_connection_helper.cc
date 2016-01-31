@@ -15,7 +15,6 @@
 #include "net/tools/quic/quic_socket_utils.h"
 
 namespace net {
-namespace tools {
 
 namespace {
 
@@ -98,5 +97,4 @@ QuicBufferAllocator* QuicEpollConnectionHelper::GetBufferAllocator() {
   return &buffer_allocator_;
 }
 
-}  // namespace tools
 }  // namespace net

@@ -18,7 +18,6 @@ using net::EpollServer;
 using net::test::CryptoTestUtils;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -103,5 +102,4 @@ TEST(QuicClientTest, CreateAndCleanUpUDPSockets) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

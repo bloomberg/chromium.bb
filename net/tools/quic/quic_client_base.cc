@@ -8,7 +8,6 @@
 #include "net/quic/quic_server_id.h"
 
 namespace net {
-namespace tools {
 
 QuicClientBase::QuicClientBase(const QuicServerId& server_id,
                                const QuicVersionVector& supported_versions,
@@ -138,5 +137,4 @@ QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
   return QuicRandom::GetInstance()->RandUint64();
 }
 
-}  // namespace tools
 }  // namespace net

@@ -7,7 +7,6 @@
 #include "net/tools/quic/quic_socket_utils.h"
 
 namespace net {
-namespace tools {
 
 QuicDefaultPacketWriter::QuicDefaultPacketWriter(int fd)
     : fd_(fd), write_blocked_(false) {}
@@ -45,5 +44,4 @@ QuicByteCount QuicDefaultPacketWriter::GetMaxPacketSize(
   return kMaxPacketSize;
 }
 
-}  // namespace tools
 }  // namespace net

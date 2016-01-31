@@ -17,7 +17,6 @@
 
 namespace net {
 
-namespace tools {
 
 namespace test {
 
@@ -95,7 +94,6 @@ class ImmediateGoAwaySession : public QuicSimpleServerSession {
 
 }  // namespace test
 
-}  // namespace tools
 
 }  // namespace net
 

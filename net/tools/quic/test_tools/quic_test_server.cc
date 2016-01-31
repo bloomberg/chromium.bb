@@ -24,7 +24,6 @@
 #include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 class CustomStreamSession : public QuicSimpleServerSession {
@@ -167,5 +166,4 @@ ImmediateGoAwaySession::ImmediateGoAwaySession(
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

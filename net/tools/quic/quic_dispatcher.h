@@ -28,7 +28,6 @@ class QuicConfig;
 class QuicCryptoServerConfig;
 class QuicServerSessionBase;
 
-namespace tools {
 
 namespace test {
 class QuicDispatcherPeer;
@@ -170,7 +169,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
  private:
   class QuicFramerVisitor;
-  friend class net::tools::test::QuicDispatcherPeer;
+  friend class net::test::QuicDispatcherPeer;
 
   // Called by |framer_visitor_| when the private header has been parsed
   // of a data packet that is destined for the time wait manager.
@@ -233,7 +232,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_DISPATCHER_H_

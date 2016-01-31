@@ -22,7 +22,6 @@ using base::StringToInt;
 using std::string;
 
 namespace net {
-namespace tools {
 
 QuicSimpleServerStream::QuicSimpleServerStream(QuicStreamId id,
                                                QuicSpdySession* session)
@@ -253,5 +252,4 @@ const char* const QuicSimpleServerStream::kErrorResponseBody = "bad";
 const char* const QuicSimpleServerStream::kNotFoundResponseBody =
     "file not found";
 
-}  // namespace tools
 }  // namespace net

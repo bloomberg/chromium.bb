@@ -46,7 +46,6 @@ using testing::Truly;
 using testing::_;
 
 namespace net {
-namespace tools {
 namespace test {
 
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
@@ -546,5 +545,4 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

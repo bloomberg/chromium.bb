@@ -14,7 +14,6 @@ namespace net {
 
 class EpollServer;
 
-namespace tools {
 
 // Clock to efficiently retrieve an approximately accurate time from an
 // EpollServer.
@@ -41,7 +40,6 @@ class QuicEpollClock : public QuicClock {
   DISALLOW_COPY_AND_ASSIGN(QuicEpollClock);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_

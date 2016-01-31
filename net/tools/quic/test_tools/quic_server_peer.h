@@ -9,7 +9,6 @@
 
 namespace net {
 
-namespace tools {
 
 class QuicDispatcher;
 class QuicServer;
@@ -29,7 +28,6 @@ class QuicServerPeer {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_QUIC_SERVER_PEER_H_

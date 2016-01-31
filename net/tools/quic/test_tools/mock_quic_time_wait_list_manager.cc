@@ -9,7 +9,6 @@ using testing::AnyNumber;
 using testing::Invoke;
 
 namespace net {
-namespace tools {
 namespace test {
 
 MockTimeWaitListManager::MockTimeWaitListManager(
@@ -30,5 +29,4 @@ MockTimeWaitListManager::MockTimeWaitListManager(
 MockTimeWaitListManager::~MockTimeWaitListManager() {}
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

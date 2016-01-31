@@ -13,7 +13,6 @@
 
 namespace net {
 
-namespace tools {
 
 // A connection-specific packet writer that wraps a shared writer.
 class QuicPerConnectionPacketWriter : public QuicPacketWriter {
@@ -41,7 +40,6 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
   DISALLOW_COPY_AND_ASSIGN(QuicPerConnectionPacketWriter);
 };
 
-}  // namespace tools
 
 }  // namespace net
 

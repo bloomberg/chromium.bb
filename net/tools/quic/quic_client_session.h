@@ -21,7 +21,6 @@ class QuicConnection;
 class QuicServerId;
 class ReliableQuicStream;
 
-namespace tools {
 
 // The maximum time a promises stream can be reserved without being
 // claimed by a client request.
@@ -90,7 +89,6 @@ class QuicClientSession : public QuicClientSessionBase {
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_

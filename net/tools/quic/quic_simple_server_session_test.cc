@@ -54,7 +54,6 @@ using testing::InSequence;
 using testing::Return;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 typedef QuicSimpleServerSession::PromisedStreamInfo PromisedStreamInfo;
@@ -502,5 +501,4 @@ TEST_P(QuicSimpleServerSessionTest, CloseStreamToHandleMorePromisedStream) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

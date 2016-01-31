@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 namespace net {
-namespace tools {
 
 QuicSimpleServerSession::QuicSimpleServerSession(
     const QuicConfig& config,
@@ -182,5 +181,4 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
   }
 }
 
-}  // namespace tools
 }  // namespace net

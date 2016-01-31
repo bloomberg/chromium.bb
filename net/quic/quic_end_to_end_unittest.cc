@@ -40,10 +40,8 @@ using base::StringPiece;
 
 namespace net {
 
-using tools::QuicInMemoryCache;
-using tools::QuicServer;
-using tools::test::QuicInMemoryCachePeer;
-using tools::test::ServerThread;
+using test::QuicInMemoryCachePeer;
+using test::ServerThread;
 
 namespace test {
 

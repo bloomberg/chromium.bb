@@ -7,7 +7,6 @@
 #include "net/quic/quic_types.h"
 
 namespace net {
-namespace tools {
 
 QuicPacketWriterWrapper::QuicPacketWriterWrapper() {}
 
@@ -45,5 +44,4 @@ void QuicPacketWriterWrapper::set_writer(QuicPacketWriter* writer) {
   writer_.reset(writer);
 }
 
-}  // namespace tools
 }  // namespace net

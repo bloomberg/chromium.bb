@@ -16,7 +16,6 @@ using net::test::CryptoTestUtils;
 using net::test::MockQuicDispatcher;
 
 namespace net {
-namespace tools {
 namespace test {
 
 namespace {
@@ -69,5 +68,4 @@ TEST_F(QuicServerDispatchPacketTest, DispatchPacket) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

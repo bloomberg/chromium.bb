@@ -15,7 +15,6 @@
 #include "net/tools/balsa/balsa_frame.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 class HTTPMessage;
@@ -158,7 +157,6 @@ class SimpleClient {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_SIMPLE_CLIENT_H_

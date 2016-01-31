@@ -12,7 +12,6 @@
 #include "net/tools/quic/quic_server.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // Simple wrapper class to run QuicServer in a dedicated thread.
@@ -75,7 +74,6 @@ class ServerThread : public base::SimpleThread {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_

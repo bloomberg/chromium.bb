@@ -5,7 +5,6 @@
 #include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 MockQuicServerSessionVisitor::MockQuicServerSessionVisitor() {}
@@ -13,5 +12,4 @@ MockQuicServerSessionVisitor::MockQuicServerSessionVisitor() {}
 MockQuicServerSessionVisitor::~MockQuicServerSessionVisitor() {}
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

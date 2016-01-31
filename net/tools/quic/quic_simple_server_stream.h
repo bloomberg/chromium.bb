@@ -16,7 +16,6 @@
 
 namespace net {
 
-namespace tools {
 
 namespace test {
 class QuicSimpleServerStreamPeer;
@@ -80,7 +79,6 @@ class QuicSimpleServerStream : public QuicSpdyStream {
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerStream);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SIMPLE_SERVER_STREAM_H_

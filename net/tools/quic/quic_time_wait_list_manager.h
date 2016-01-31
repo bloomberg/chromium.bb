@@ -22,7 +22,6 @@
 #include "net/quic/quic_protocol.h"
 
 namespace net {
-namespace tools {
 
 class QuicServerSessionVisitor;
 
@@ -187,7 +186,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_TIME_WAIT_LIST_MANAGER_H_

@@ -31,7 +31,6 @@ using testing::StrictMock;
 using testing::TestWithParam;
 
 namespace net {
-namespace tools {
 namespace test {
 
 class QuicClientPromisedInfoPeer {
@@ -79,8 +78,7 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
     headers_.ReplaceOrAppendHeader("content-length", "11");
 
-    headers_string_ =
-        net::tools::SpdyBalsaUtils::SerializeResponseHeaders(headers_);
+    headers_string_ = net::SpdyBalsaUtils::SerializeResponseHeaders(headers_);
 
     stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
   }
@@ -387,5 +385,4 @@ TEST_F(QuicSpdyClientStreamTest, ReceivingPromiseVaryNoWait) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

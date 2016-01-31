@@ -43,7 +43,6 @@ using testing::WithoutArgs;
 using testing::_;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -768,5 +767,4 @@ TEST_F(QuicDispatcherWriteBlockedListTest, TestWriteLimits) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

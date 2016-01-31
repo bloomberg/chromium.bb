@@ -5,7 +5,6 @@
 #include "net/tools/quic/test_tools/limited_mtu_test_writer.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 LimitedMtuTestWriter::LimitedMtuTestWriter(QuicByteCount mtu) : mtu_(mtu) {}
@@ -27,5 +26,4 @@ WriteResult LimitedMtuTestWriter::WritePacket(
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

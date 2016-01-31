@@ -16,7 +16,6 @@
 #include "net/spdy/spdy_framer.h"
 
 namespace net {
-namespace tools {
 
 class QuicClientSession;
 
@@ -108,7 +107,6 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientStream);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_

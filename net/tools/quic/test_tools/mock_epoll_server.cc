@@ -5,7 +5,6 @@
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 FakeTimeEpollServer::FakeTimeEpollServer() : now_in_usec_(0) {}
@@ -58,5 +57,4 @@ int MockEpollServer::epoll_wait_impl(int epfd,
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

@@ -9,7 +9,7 @@
 #include "net/tools/quic/quic_client_session.h"
 
 using net::SpdyHeaderBlock;
-using net::tools::kPushPromiseTimeoutSecs;
+using net::kPushPromiseTimeoutSecs;
 
 namespace net {
 

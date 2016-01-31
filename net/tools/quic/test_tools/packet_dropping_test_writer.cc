@@ -11,7 +11,6 @@
 #include "net/tools/quic/quic_socket_utils.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // An alarm that is scheduled if a blocked socket is simulated to indicate
@@ -216,5 +215,4 @@ PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
 PacketDroppingTestWriter::DelayedWrite::~DelayedWrite() {}
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

@@ -13,14 +13,12 @@
 
 namespace net {
 
-namespace tools {
 
 class SynchronousHostResolver {
  public:
   static int Resolve(const std::string& host, AddressList* addresses);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_SYNCHRONOUS_HOST_RESOLVER_H_

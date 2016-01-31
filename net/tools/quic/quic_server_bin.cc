@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (line->HasSwitch("quic_in_memory_cache_dir")) {
-    net::tools::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
+    net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
         line->GetSwitchValueASCII("quic_in_memory_cache_dir"));
   }
 
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
   net::QuicConfig config;
-  net::tools::QuicServer server(
+  net::QuicServer server(
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
       config, net::QuicSupportedVersions());

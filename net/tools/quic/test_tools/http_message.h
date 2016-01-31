@@ -14,7 +14,6 @@
 #include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 class HttpConstants {
@@ -123,7 +122,6 @@ class HTTPMessage {
 };
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_TEST_TOOLS_HTTP_MESSAGE_H_

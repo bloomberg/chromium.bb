@@ -25,7 +25,6 @@ namespace net {
 class EpollServer;
 class QuicRandom;
 
-namespace tools {
 
 class AckAlarm;
 class RetransmissionAlarm;
@@ -63,7 +62,6 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
   DISALLOW_COPY_AND_ASSIGN(QuicEpollConnectionHelper);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_EPOLL_CONNECTION_HELPER_H_

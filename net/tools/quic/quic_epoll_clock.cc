@@ -7,7 +7,6 @@
 #include "net/tools/epoll_server/epoll_server.h"
 
 namespace net {
-namespace tools {
 
 QuicEpollClock::QuicEpollClock(EpollServer* epoll_server)
     : epoll_server_(epoll_server) {}
@@ -29,5 +28,4 @@ QuicWallTime QuicEpollClock::WallNow() const {
       epoll_server_->ApproximateNowInUsec());
 }
 
-}  // namespace tools
 }  // namespace net

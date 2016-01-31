@@ -8,7 +8,6 @@
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 
 namespace net {
-namespace tools {
 
 QuicSimplePerConnectionPacketWriter::QuicSimplePerConnectionPacketWriter(
     QuicSimpleServerPacketWriter* shared_writer)
@@ -56,5 +55,4 @@ QuicByteCount QuicSimplePerConnectionPacketWriter::GetMaxPacketSize(
   return shared_writer_->GetMaxPacketSize(peer_address);
 }
 
-}  // namespace tools
 }  // namespace net

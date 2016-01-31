@@ -7,7 +7,6 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // static
@@ -16,5 +15,4 @@ void QuicInMemoryCachePeer::ResetForTests() {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

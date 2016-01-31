@@ -34,7 +34,6 @@
 #endif
 
 namespace net {
-namespace tools {
 namespace {
 
 // Specifies the directory used during QuicInMemoryCache
@@ -225,5 +224,4 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   }
 }
 
-}  // namespace tools
 }  // namespace net

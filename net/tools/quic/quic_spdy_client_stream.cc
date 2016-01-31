@@ -18,7 +18,6 @@ using std::string;
 using base::StringToInt;
 
 namespace net {
-namespace tools {
 
 QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
                                            QuicClientSession* session)
@@ -155,5 +154,4 @@ void QuicSpdyClientStream::SendBody(const string& data,
   WriteOrBufferData(data, fin, listener);
 }
 
-}  // namespace tools
 }  // namespace net

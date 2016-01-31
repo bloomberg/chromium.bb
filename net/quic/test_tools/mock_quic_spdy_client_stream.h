@@ -14,10 +14,9 @@
 namespace net {
 namespace test {
 
-class MockQuicSpdyClientStream : public net::tools::QuicSpdyClientStream {
+class MockQuicSpdyClientStream : public net::QuicSpdyClientStream {
  public:
-  MockQuicSpdyClientStream(QuicStreamId id,
-                           net::tools::QuicClientSession* session);
+  MockQuicSpdyClientStream(QuicStreamId id, net::QuicClientSession* session);
   ~MockQuicSpdyClientStream() override;
 
   MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame& frame));

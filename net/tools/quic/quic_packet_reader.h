@@ -16,7 +16,6 @@
 
 namespace net {
 
-namespace tools {
 
 // Read in larger batches to minimize recvmmsg overhead.
 const int kNumPacketsPerReadMmsgCall = 16;
@@ -74,7 +73,6 @@ class QuicPacketReader {
   DISALLOW_COPY_AND_ASSIGN(QuicPacketReader);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_PACKET_READER_H_

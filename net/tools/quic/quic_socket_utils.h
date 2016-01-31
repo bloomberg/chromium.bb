@@ -18,7 +18,6 @@
 #include "net/quic/quic_types.h"
 
 namespace net {
-namespace tools {
 
 class QuicSocketUtils {
  public:
@@ -78,7 +77,6 @@ class QuicSocketUtils {
   DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_

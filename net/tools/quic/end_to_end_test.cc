@@ -72,15 +72,14 @@ using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
 using net::test::kInitialSessionFlowControlWindowForTest;
 using net::test::kInitialStreamFlowControlWindowForTest;
-using net::tools::test::PacketDroppingTestWriter;
-using net::tools::test::QuicDispatcherPeer;
-using net::tools::test::QuicServerPeer;
+using net::test::PacketDroppingTestWriter;
+using net::test::QuicDispatcherPeer;
+using net::test::QuicServerPeer;
 using std::ostream;
 using std::string;
 using std::vector;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -2177,5 +2176,4 @@ TEST_P(EndToEndTest, Trailers) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

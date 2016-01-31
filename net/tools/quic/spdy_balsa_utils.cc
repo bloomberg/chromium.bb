@@ -25,7 +25,6 @@ using std::pair;
 using std::string;
 
 namespace net {
-namespace tools {
 namespace {
 
 const char kV4Host[] = ":authority";
@@ -279,5 +278,4 @@ void SpdyBalsaUtils::SpdyHeadersToRequestHeaders(const SpdyHeaderBlock& block,
   SpdyHeadersToBalsaHeaders(block, headers, SpdyHeaderValidatorType::REQUEST);
 }
 
-}  // namespace tools
 }  // namespace net

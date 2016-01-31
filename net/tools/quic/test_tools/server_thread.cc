@@ -9,7 +9,6 @@
 #include "net/tools/quic/test_tools/quic_server_peer.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 ServerThread::ServerThread(QuicServer* server,
@@ -110,5 +109,4 @@ void ServerThread::MaybeNotifyOfHandshakeConfirmation() {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

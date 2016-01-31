@@ -23,7 +23,6 @@ using net::SpdyHeaderBlock;
 using std::string;
 
 namespace net {
-namespace tools {
 namespace test {
 
 namespace {
@@ -242,5 +241,4 @@ TEST_F(QuicInMemoryCacheTest, GetServerPushResourcesAndPushResponses) {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

@@ -18,7 +18,6 @@
 
 namespace net {
 
-namespace tools {
 
 namespace {
 
@@ -101,5 +100,4 @@ int SynchronousHostResolver::Resolve(const std::string& host,
   return resolver.Resolve(host, addresses);
 }
 
-}  // namespace tools
 }  // namespace net

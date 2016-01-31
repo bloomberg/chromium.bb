@@ -18,11 +18,9 @@ namespace net {
 class QuicClientSessionBase;
 class QuicConnectionHelperInterface;
 
-namespace tools {
 namespace test {
 class QuicClientPromisedInfoPeer;
 }  // namespace test
-}  // namespace tools
 
 // QuicClientPromisedInfo tracks the client state of a server push
 // stream from the time a PUSH_PROMISE is received until rendezvous
@@ -89,7 +87,7 @@ class NET_EXPORT_PRIVATE QuicClientPromisedInfo {
   void SetListener(Listener* listener) { listener_ = listener; }
 
  private:
-  friend class net::tools::test::QuicClientPromisedInfoPeer;
+  friend class test::QuicClientPromisedInfoPeer;
 
   class CleanupAlarm : public QuicAlarm::Delegate {
    public:

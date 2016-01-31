@@ -26,7 +26,6 @@ namespace net {
 
 class ProofVerifier;
 
-namespace tools {
 
 class QuicPacketWriterWrapper;
 
@@ -263,7 +262,6 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
 
 }  // namespace test
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_CLIENT_H_

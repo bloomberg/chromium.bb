@@ -13,7 +13,6 @@
 #include "net/quic/quic_packet_writer.h"
 
 namespace net {
-namespace tools {
 
 class QuicSimpleServerPacketWriter;
 
@@ -54,7 +53,6 @@ class QuicSimplePerConnectionPacketWriter : public QuicPacketWriter {
   DISALLOW_COPY_AND_ASSIGN(QuicSimplePerConnectionPacketWriter);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_QUIC_TOOLS_QUIC_SIMPLE_PER_CONNECTION_PACKET_WRITER_H_

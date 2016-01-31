@@ -13,7 +13,6 @@
 #include "net/udp/udp_server_socket.h"
 
 namespace net {
-namespace tools {
 
 QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
     UDPServerSocket* socket,
@@ -97,5 +96,4 @@ QuicByteCount QuicSimpleServerPacketWriter::GetMaxPacketSize(
   return kMaxPacketSize;
 }
 
-}  // namespace tools
 }  // namespace net

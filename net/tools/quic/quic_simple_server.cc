@@ -22,7 +22,6 @@
 #include "net/udp/udp_server_socket.h"
 
 namespace net {
-namespace tools {
 
 namespace {
 
@@ -209,5 +208,4 @@ void QuicSimpleServer::OnReadComplete(int result) {
   StartReading();
 }
 
-}  // namespace tools
 }  // namespace net

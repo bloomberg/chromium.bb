@@ -13,7 +13,6 @@
 
 namespace net {
 
-namespace tools {
 
 // Wraps a writer object to allow dynamically extending functionality. Use
 // cases: replace writer while dispatcher and connections hold on to the
@@ -44,7 +43,6 @@ class QuicPacketWriterWrapper : public QuicPacketWriter {
   DISALLOW_COPY_AND_ASSIGN(QuicPacketWriterWrapper);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_PACKET_WRITER_WRAPPER_H_

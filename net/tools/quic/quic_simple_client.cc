@@ -27,7 +27,6 @@ using std::string;
 using std::vector;
 
 namespace net {
-namespace tools {
 
 void QuicSimpleClient::ClientQuicDataToResend::Resend() {
   client_->SendRequest(*headers_, body_, fin_);
@@ -405,5 +404,4 @@ bool QuicSimpleClient::OnPacket(const QuicEncryptedPacket& packet,
   return true;
 }
 
-}  // namespace tools
 }  // namespace net

@@ -28,7 +28,6 @@
 
 namespace net {
 
-namespace tools {
 
 QuicPacketReader::QuicPacketReader() {
   Initialize();
@@ -141,6 +140,5 @@ bool QuicPacketReader::ReadAndDispatchSinglePacket(
   return true;
 }
 
-}  // namespace tools
 
 }  // namespace net

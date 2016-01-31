@@ -8,7 +8,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -81,5 +80,4 @@ TEST(SpdyBalsaUtilsTest, SpdyHeadersToResponseHeaders) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

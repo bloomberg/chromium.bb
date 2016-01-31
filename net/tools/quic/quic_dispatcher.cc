@@ -19,7 +19,6 @@
 
 namespace net {
 
-namespace tools {
 
 using std::make_pair;
 using base::StringPiece;
@@ -477,5 +476,4 @@ void QuicDispatcher::SetLastError(QuicErrorCode error) {
   last_error_ = error;
 }
 
-}  // namespace tools
 }  // namespace net

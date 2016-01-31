@@ -45,7 +45,6 @@ using testing::WithArgs;
 DECLARE_bool(quic_always_log_bugs_for_tests);
 
 namespace net {
-namespace tools {
 namespace test {
 
 class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
@@ -600,5 +599,4 @@ TEST_P(QuicSimpleServerStreamTest, InvalidHeadersWithFin) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

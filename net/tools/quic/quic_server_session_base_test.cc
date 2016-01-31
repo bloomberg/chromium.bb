@@ -48,7 +48,6 @@ using testing::StrictMock;
 using testing::_;
 
 namespace net {
-namespace tools {
 namespace test {
 
 class QuicServerSessionBasePeer {
@@ -535,5 +534,4 @@ TEST_P(QuicServerSessionBaseTest, NoBandwidthResumptionByDefault) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

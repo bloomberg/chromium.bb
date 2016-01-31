@@ -28,7 +28,6 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace net {
-namespace tools {
 
 namespace test {
 class QuicInMemoryCachePeer;
@@ -184,7 +183,6 @@ class QuicInMemoryCache {
   DISALLOW_COPY_AND_ASSIGN(QuicInMemoryCache);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_

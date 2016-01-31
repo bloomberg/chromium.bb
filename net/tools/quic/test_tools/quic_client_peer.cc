@@ -7,7 +7,6 @@
 #include "net/tools/quic/quic_client.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // static
@@ -27,5 +26,4 @@ void QuicClientPeer::SetClientPort(QuicClient* client, int port) {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

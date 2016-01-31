@@ -15,7 +15,6 @@ namespace net {
 
 struct WriteResult;
 
-namespace tools {
 
 // Default packet writer which wraps QuicSocketUtils WritePacket.
 class QuicDefaultPacketWriter : public QuicPacketWriter {
@@ -46,7 +45,6 @@ class QuicDefaultPacketWriter : public QuicPacketWriter {
   DISALLOW_COPY_AND_ASSIGN(QuicDefaultPacketWriter);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_DEFAULT_PACKET_WRITER_H_

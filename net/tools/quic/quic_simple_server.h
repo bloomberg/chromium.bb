@@ -22,7 +22,6 @@ namespace net {
 
 class UDPServerSocket;
 
-namespace tools {
 
 class QuicDispatcher;
 
@@ -113,7 +112,6 @@ class QuicSimpleServer {
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServer);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_QUIC_TOOLS_QUIC_SIMPLE_SERVER_H_

@@ -21,7 +21,6 @@ using base::StringPiece;
 using std::string;
 
 namespace net {
-namespace tools {
 
 QuicInMemoryCache::ServerPushInfo::ServerPushInfo(
     GURL request_url,
@@ -258,5 +257,4 @@ bool QuicInMemoryCache::PushResourceExistsInCache(string original_request_url,
   return false;
 }
 
-}  // namespace tools
 }  // namespace net

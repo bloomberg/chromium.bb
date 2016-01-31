@@ -44,7 +44,6 @@ using testing::Truly;
 using testing::_;
 
 namespace net {
-namespace tools {
 namespace test {
 namespace {
 
@@ -74,10 +73,9 @@ class TestQuicClientSession : public QuicClientSession {
   }
 };
 
-class ToolsQuicClientSessionTest
-    : public ::testing::TestWithParam<QuicVersion> {
+class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
-  ToolsQuicClientSessionTest()
+  QuicClientSessionTest()
       : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         promised_stream_id_(kServerDataStreamId1),
         associated_stream_id_(kClientDataStreamId1) {
@@ -86,7 +84,7 @@ class ToolsQuicClientSessionTest
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
-  ~ToolsQuicClientSessionTest() override {
+  ~QuicClientSessionTest() override {
     // Session must be destroyed before promised_by_url_
     session_.reset(nullptr);
   }
@@ -129,14 +127,14 @@ class ToolsQuicClientSessionTest
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,
-                        ToolsQuicClientSessionTest,
+                        QuicClientSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
-TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
+TEST_P(QuicClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_P(ToolsQuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
+TEST_P(QuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
   ValueRestore<bool> old_flag(&FLAGS_quic_block_unencrypted_writes, true);
   // Complete a handshake in order to prime the crypto config for 0-RTT.
   CompleteCryptoHandshake();
@@ -177,7 +175,7 @@ TEST_P(ToolsQuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
   EXPECT_EQ(0u, consumed.bytes_consumed);
 }
 
-TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
+TEST_P(QuicClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
   EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(AnyNumber());
 
   session_->config()->SetMaxStreamsPerConnection(1, 1);
@@ -199,7 +197,7 @@ TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
   EXPECT_FALSE(stream);
 }
 
-TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithRst) {
+TEST_P(QuicClientSessionTest, MaxNumStreamsWithRst) {
   EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(AnyNumber());
 
   session_->config()->SetMaxStreamsPerConnection(1, 1);
@@ -223,7 +221,7 @@ TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithRst) {
   EXPECT_TRUE(stream);
 }
 
-TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
+TEST_P(QuicClientSessionTest, GoAwayReceived) {
   CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing
@@ -233,7 +231,7 @@ TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
   EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream(kDefaultPriority));
 }
 
-TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
+TEST_P(QuicClientSessionTest, SetFecProtectionFromConfig) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
 
   // Set FEC config in client's connection options.
@@ -260,7 +258,7 @@ static bool CheckForDecryptionError(QuicFramer* framer) {
 }
 
 // Regression test for b/17206611.
-TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
+TEST_P(QuicClientSessionTest, InvalidPacketReceived) {
   IPEndPoint server_address(TestPeerIPAddress(), kTestPort);
   IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
 
@@ -295,7 +293,7 @@ TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
 }
 
 // A packet with invalid framing should cause a connection to be closed.
-TEST_P(ToolsQuicClientSessionTest, InvalidFramedPacketReceived) {
+TEST_P(QuicClientSessionTest, InvalidFramedPacketReceived) {
   IPEndPoint server_address(TestPeerIPAddress(), kTestPort);
   IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
 
@@ -313,7 +311,7 @@ TEST_P(ToolsQuicClientSessionTest, InvalidFramedPacketReceived) {
   session_->ProcessUdpPacket(client_address, server_address, *packet);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseOnPromiseHeaders) {
+TEST_P(QuicClientSessionTest, PushPromiseOnPromiseHeaders) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -325,7 +323,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseOnPromiseHeaders) {
   session_->OnPromiseHeaders(associated_stream_id_, headers_data);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseOnPromiseHeadersAlreadyClosed) {
+TEST_P(QuicClientSessionTest, PushPromiseOnPromiseHeadersAlreadyClosed) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -339,7 +337,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseOnPromiseHeadersAlreadyClosed) {
   session_->OnPromiseHeaders(associated_stream_id_, headers_data);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseOnHeadersCompleteAlreadyClosed) {
+TEST_P(QuicClientSessionTest, PushPromiseOnHeadersCompleteAlreadyClosed) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -352,7 +350,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseOnHeadersCompleteAlreadyClosed) {
                                      0);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseOutOfOrder) {
+TEST_P(QuicClientSessionTest, PushPromiseOutOfOrder) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -371,7 +369,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseOutOfOrder) {
                                      0);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseHandlePromise) {
+TEST_P(QuicClientSessionTest, PushPromiseHandlePromise) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -385,7 +383,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseHandlePromise) {
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseAlreadyClosed) {
+TEST_P(QuicClientSessionTest, PushPromiseAlreadyClosed) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -404,7 +402,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseAlreadyClosed) {
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
 }
 
-TEST_P(ToolsQuicClientSessionTest, PushPromiseDuplicateUrl) {
+TEST_P(QuicClientSessionTest, PushPromiseDuplicateUrl) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -429,7 +427,7 @@ TEST_P(ToolsQuicClientSessionTest, PushPromiseDuplicateUrl) {
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
 }
 
-TEST_P(ToolsQuicClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
+TEST_P(QuicClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
   for (size_t i = 0u; i < session_->get_max_promises(); i++) {
     push_promise_[":path"] = StringPrintf("/bar%zu", i);
 
@@ -459,7 +457,7 @@ TEST_P(ToolsQuicClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url), nullptr);
 }
 
-TEST_P(ToolsQuicClientSessionTest, IsClosedTrueAfterResetPromisedAlreadyOpen) {
+TEST_P(QuicClientSessionTest, IsClosedTrueAfterResetPromisedAlreadyOpen) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -468,7 +466,7 @@ TEST_P(ToolsQuicClientSessionTest, IsClosedTrueAfterResetPromisedAlreadyOpen) {
   EXPECT_TRUE(session_->IsClosedStream(promised_stream_id_));
 }
 
-TEST_P(ToolsQuicClientSessionTest, IsClosedTrueAfterResetPromisedNonexistant) {
+TEST_P(QuicClientSessionTest, IsClosedTrueAfterResetPromisedNonexistant) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
@@ -476,7 +474,7 @@ TEST_P(ToolsQuicClientSessionTest, IsClosedTrueAfterResetPromisedNonexistant) {
   EXPECT_TRUE(session_->IsClosedStream(promised_stream_id_));
 }
 
-TEST_P(ToolsQuicClientSessionTest, OnInitialHeadersCompleteIsPush) {
+TEST_P(QuicClientSessionTest, OnInitialHeadersCompleteIsPush) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetStream(promised_stream_id_);
@@ -489,14 +487,14 @@ TEST_P(ToolsQuicClientSessionTest, OnInitialHeadersCompleteIsPush) {
   session_->OnInitialHeadersComplete(promised_stream_id_, SpdyHeaderBlock());
 }
 
-TEST_P(ToolsQuicClientSessionTest, OnInitialHeadersCompleteIsNotPush) {
+TEST_P(QuicClientSessionTest, OnInitialHeadersCompleteIsNotPush) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->CreateOutgoingDynamicStream(kDefaultPriority);
   session_->OnInitialHeadersComplete(promised_stream_id_, SpdyHeaderBlock());
 }
 
-TEST_P(ToolsQuicClientSessionTest, DeletePromised) {
+TEST_P(QuicClientSessionTest, DeletePromised) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetStream(promised_stream_id_);
@@ -515,5 +513,4 @@ TEST_P(ToolsQuicClientSessionTest, DeletePromised) {
 
 }  // namespace
 }  // namespace test
-}  // namespace tools
 }  // namespace net

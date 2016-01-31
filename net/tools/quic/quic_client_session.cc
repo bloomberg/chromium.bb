@@ -13,7 +13,6 @@
 using std::string;
 
 namespace net {
-namespace tools {
 
 QuicClientSession::QuicClientSession(const QuicConfig& config,
                                      QuicConnection* connection,
@@ -110,6 +109,5 @@ QuicCryptoClientStreamBase* QuicClientSession::CreateQuicCryptoStream() {
       crypto_config_);
 }
 
-}  // namespace tools
 
 }  // namespace net

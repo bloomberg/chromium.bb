@@ -8,7 +8,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 TEST(QuicEpollClockTest, ApproximateNowInUsec) {
@@ -44,5 +43,4 @@ TEST(QuicEpollClockTest, NowInUsec) {
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

@@ -24,7 +24,6 @@
 using base::StringPiece;
 
 namespace net {
-namespace tools {
 
 // A very simple alarm that just informs the QuicTimeWaitListManager to clean
 // up old connection_ids. This alarm should be cancelled  and deleted before
@@ -328,5 +327,4 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
 
 QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() {}
 
-}  // namespace tools
 }  // namespace net

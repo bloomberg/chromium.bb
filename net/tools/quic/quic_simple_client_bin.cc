@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
   }
   if (!net::ParseIPLiteralToNumber(host, &ip_addr)) {
     net::AddressList addresses;
-    int rv = net::tools::SynchronousHostResolver::Resolve(host, &addresses);
+    int rv = net::SynchronousHostResolver::Resolve(host, &addresses);
     if (rv != net::OK) {
       LOG(ERROR) << "Unable to resolve '" << host
                  << "' : " << net::ErrorToShortString(rv);
@@ -287,8 +287,8 @@ int main(int argc, char* argv[]) {
   ProofVerifierChromium* proof_verifier = new ProofVerifierChromium(
       cert_verifier.get(), nullptr, transport_security_state.get(),
       ct_verifier.get());
-  net::tools::QuicSimpleClient client(net::IPEndPoint(ip_addr, port), server_id,
-                                      versions, proof_verifier);
+  net::QuicSimpleClient client(net::IPEndPoint(ip_addr, port), server_id,
+                               versions, proof_verifier);
   client.set_initial_max_packet_length(
       FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   if (!client.Initialize()) {

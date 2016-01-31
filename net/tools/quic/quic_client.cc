@@ -36,7 +36,6 @@ using std::string;
 using std::vector;
 
 namespace net {
-namespace tools {
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
@@ -532,5 +531,4 @@ void QuicClient::ProcessPacket(const IPEndPoint& self_address,
   session()->connection()->ProcessUdpPacket(self_address, peer_address, packet);
 }
 
-}  // namespace tools
 }  // namespace net

@@ -30,7 +30,6 @@ struct HttpRequestInfo;
 class QuicChromiumConnectionHelper;
 class UDPClientSocket;
 
-namespace tools {
 
 namespace test {
 class QuicClientPeer;
@@ -170,7 +169,7 @@ class QuicSimpleClient : public QuicClientBase,
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 
  private:
-  friend class net::tools::test::QuicClientPeer;
+  friend class net::test::QuicClientPeer;
 
   // Specific QuicClient class for storing data to resend.
   class ClientQuicDataToResend : public QuicDataToResend {
@@ -263,7 +262,6 @@ class QuicSimpleClient : public QuicClientBase,
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleClient);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_H_

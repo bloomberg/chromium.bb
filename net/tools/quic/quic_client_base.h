@@ -29,7 +29,6 @@ namespace net {
 class ProofVerifier;
 class QuicServerId;
 
-namespace tools {
 
 class QuicClientBase {
  public:
@@ -227,7 +226,6 @@ class QuicClientBase {
   DISALLOW_COPY_AND_ASSIGN(QuicClientBase);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_CLIENT_BASE_H_

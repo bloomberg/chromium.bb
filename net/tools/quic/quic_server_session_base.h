@@ -28,7 +28,6 @@ class QuicConnection;
 class QuicCryptoServerConfig;
 class ReliableQuicStream;
 
-namespace tools {
 
 namespace test {
 class QuicServerSessionBasePeer;
@@ -131,7 +130,6 @@ class QuicServerSessionBase : public QuicSpdySession {
   DISALLOW_COPY_AND_ASSIGN(QuicServerSessionBase);
 };
 
-}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_

@@ -8,7 +8,6 @@
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 
 namespace net {
-namespace tools {
 namespace test {
 
 // static
@@ -57,5 +56,4 @@ const QuicDispatcher::SessionMap& QuicDispatcherPeer::session_map(
 }
 
 }  // namespace test
-}  // namespace tools
 }  // namespace net

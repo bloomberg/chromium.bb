@@ -11,8 +11,6 @@
 
 namespace net {
 
-namespace tools {
-
 // A class to process each incoming packet.
 class ProcessPacketInterface {
  public:
@@ -21,8 +19,6 @@ class ProcessPacketInterface {
                              const IPEndPoint& client_address,
                              const QuicEncryptedPacket& packet) = 0;
 };
-
-}  // namespace tools
 
 }  // namespace net
 
