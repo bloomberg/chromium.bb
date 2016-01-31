@@ -194,7 +194,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
 {
     // SVG will handle vertical alignment on its own.
     if (isSVGRootInlineBox())
-        return 0;
+        return LayoutUnit();
 
     LayoutUnit maxPositionTop;
     LayoutUnit maxPositionBottom;
@@ -213,7 +213,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     if (maxAscent + maxDescent < std::max(maxPositionTop, maxPositionBottom))
         adjustMaxAscentAndDescent(maxAscent, maxDescent, maxPositionTop, maxPositionBottom);
 
-    LayoutUnit maxHeight = maxAscent + maxDescent;
+    LayoutUnit maxHeight = LayoutUnit(maxAscent + maxDescent);
     LayoutUnit lineTop = heightOfBlock;
     LayoutUnit lineBottom = heightOfBlock;
     LayoutUnit lineTopIncludingMargins = heightOfBlock;
@@ -607,7 +607,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     LineLayoutBoxModel boxModel = box->boxModelObject();
     ASSERT(boxModel.isInline());
     if (!boxModel.isInline())
-        return 0;
+        return LayoutUnit();
 
     // This method determines the vertical position for inline elements.
     bool firstLine = isFirstLineStyle();
@@ -617,7 +617,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     // Check the cache.
     bool isLayoutInline = boxModel.isLayoutInline();
     if (isLayoutInline && !firstLine) {
-        LayoutUnit verticalPosition = verticalPositionCache.get(boxModel, baselineType());
+        LayoutUnit verticalPosition = LayoutUnit(verticalPositionCache.get(boxModel, baselineType()));
         if (verticalPosition != PositionUndefined)
             return verticalPosition;
     }
@@ -625,7 +625,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     LayoutUnit verticalPosition;
     EVerticalAlign verticalAlign = boxModel.style()->verticalAlign();
     if (verticalAlign == TOP || verticalAlign == BOTTOM)
-        return 0;
+        return LayoutUnit();
 
     LineLayoutItem parent = boxModel.parent();
     if (parent.isLayoutInline() && parent.style()->verticalAlign() != TOP && parent.style()->verticalAlign() != BOTTOM)
@@ -645,7 +645,9 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
         } else if (verticalAlign == TEXT_TOP) {
             verticalPosition += boxModel.baselinePosition(baselineType(), firstLine, lineDirection) - fontMetrics.ascent(baselineType());
         } else if (verticalAlign == MIDDLE) {
-            verticalPosition = (verticalPosition - static_cast<LayoutUnit>(fontMetrics.xHeight() / 2) - boxModel.lineHeight(firstLine, lineDirection) / 2 + boxModel.baselinePosition(baselineType(), firstLine, lineDirection)).round();
+            verticalPosition = LayoutUnit((verticalPosition - LayoutUnit(fontMetrics.xHeight() / 2)
+                - boxModel.lineHeight(firstLine, lineDirection) / 2
+                + boxModel.baselinePosition(baselineType(), firstLine, lineDirection)).round());
         } else if (verticalAlign == TEXT_BOTTOM) {
             verticalPosition += fontMetrics.descent(baselineType());
             // lineHeight - baselinePosition is always 0 for replaced elements (except inline blocks), so don't bother wasting time in that case.
@@ -657,7 +659,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
             LayoutUnit lineHeight;
             // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align: 'Percentages: refer to the 'line-height' of the element itself'.
             if (boxModel.style()->verticalAlignLength().hasPercent())
-                lineHeight = boxModel.style()->computedLineHeight();
+                lineHeight = LayoutUnit(boxModel.style()->computedLineHeight());
             else
                 lineHeight = boxModel.lineHeight(firstLine, lineDirection);
             verticalPosition -= valueForLength(boxModel.style()->verticalAlignLength(), lineHeight);

@@ -194,8 +194,8 @@ bool scrollInDirection(LocalFrame* frame, WebFocusType type)
     ASSERT(frame);
 
     if (frame && canScrollInDirection(frame->document(), type)) {
-        LayoutUnit dx;
-        LayoutUnit dy;
+        int dx = 0;
+        int dy = 0;
         switch (type) {
         case WebFocusTypeLeft:
             dx = - ScrollableArea::pixelsPerLineStep();
@@ -230,22 +230,25 @@ bool scrollInDirection(Node* container, WebFocusType type)
         return false;
 
     if (canScrollInDirection(container, type)) {
-        LayoutUnit dx;
-        LayoutUnit dy;
+        int dx = 0;
+        int dy = 0;
+        // TODO(leviw): Why are these values truncated (toInt) instead of rounding?
         switch (type) {
         case WebFocusTypeLeft:
-            dx = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollLeft());
+            dx = - std::min(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollLeft().toInt());
             break;
         case WebFocusTypeRight:
             ASSERT(container->layoutBox()->scrollWidth() > (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth()));
-            dx = std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollWidth() - (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth()));
+            dx = std::min(ScrollableArea::pixelsPerLineStep(),
+                (container->layoutBox()->scrollWidth() - (container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth())).toInt());
             break;
         case WebFocusTypeUp:
-            dy = - std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollTop());
+            dy = - std::min(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollTop().toInt());
             break;
         case WebFocusTypeDown:
             ASSERT(container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight()));
-            dy = std::min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight()));
+            dy = std::min(ScrollableArea::pixelsPerLineStep(),
+                (container->layoutBox()->scrollHeight() - (container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight())).toInt());
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -264,7 +267,7 @@ static void deflateIfOverlapped(LayoutRect& a, LayoutRect& b)
     if (!a.intersects(b) || a.contains(b) || b.contains(a))
         return;
 
-    LayoutUnit deflateFactor = -fudgeFactor();
+    LayoutUnit deflateFactor = LayoutUnit(-fudgeFactor());
 
     // Avoid negative width or height values.
     if ((a.width() + 2 * deflateFactor > 0) && (a.height() + 2 * deflateFactor > 0))

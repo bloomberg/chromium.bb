@@ -1562,7 +1562,7 @@ int AXObject::lineForPosition(const VisiblePosition& position) const
     do {
         previousPosition = currentPosition;
         currentPosition = previousLinePosition(
-            currentPosition, 0, HasEditableAXRole);
+            currentPosition, LayoutUnit(), HasEditableAXRole);
         ++lineCount;
     } while (currentPosition.isNotNull()
         && !inSameLine(currentPosition, previousPosition));

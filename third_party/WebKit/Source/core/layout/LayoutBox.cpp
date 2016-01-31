@@ -615,7 +615,7 @@ LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logica
             LayoutUnit availableLogicalHeight = logicalHeight / styleToUse.logicalHeight().value() * 100;
             logicalHeight = std::min(logicalHeight, valueForLength(styleToUse.logicalMaxHeight(), availableLogicalHeight));
         } else {
-            LayoutUnit maxHeight = computeContentLogicalHeight(MaxSize, styleToUse.logicalMaxHeight(), -1);
+            LayoutUnit maxHeight = computeContentLogicalHeight(MaxSize, styleToUse.logicalMaxHeight(), LayoutUnit(-1));
             if (maxHeight != -1)
                 logicalHeight = std::min(logicalHeight, maxHeight);
         }
@@ -1037,13 +1037,13 @@ void LayoutBox::setOverrideLogicalContentWidth(LayoutUnit width)
 void LayoutBox::clearOverrideLogicalContentHeight()
 {
     if (m_rareData)
-        m_rareData->m_overrideLogicalContentHeight = -1;
+        m_rareData->m_overrideLogicalContentHeight = LayoutUnit(-1);
 }
 
 void LayoutBox::clearOverrideLogicalContentWidth()
 {
     if (m_rareData)
-        m_rareData->m_overrideLogicalContentWidth = -1;
+        m_rareData->m_overrideLogicalContentWidth = LayoutUnit(-1);
 }
 
 void LayoutBox::clearOverrideSize()

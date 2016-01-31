@@ -480,7 +480,7 @@ void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
     LayoutBlock* columnBlock = multiColumnBlockFlow();
     const ComputedStyle* columnStyle = columnBlock->style();
     LayoutUnit availableWidth = columnBlock->contentLogicalWidth();
-    LayoutUnit columnGap = columnBlock->columnGap();
+    LayoutUnit columnGap = LayoutUnit(columnBlock->columnGap());
     LayoutUnit computedColumnWidth = max(LayoutUnit(1), LayoutUnit(columnStyle->columnWidth()));
     unsigned computedColumnCount = max<int>(1, columnStyle->columnCount());
 
@@ -858,7 +858,7 @@ void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()
     const ComputedStyle* multicolStyle = multicolContainer->style();
     int columnCount = multicolStyle->hasAutoColumnCount() ? 1 : multicolStyle->columnCount();
     LayoutUnit columnWidth;
-    LayoutUnit gapExtra = (columnCount - 1) * multicolContainer->columnGap();
+    LayoutUnit gapExtra = LayoutUnit((columnCount - 1) * multicolContainer->columnGap());
     if (multicolStyle->hasAutoColumnWidth()) {
         m_minPreferredLogicalWidth = m_minPreferredLogicalWidth * columnCount + gapExtra;
     } else {

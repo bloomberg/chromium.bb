@@ -138,8 +138,8 @@ public:
 
     bool isValid() { return positionOffset >= 0 && distributionOffset >= 0; }
 
-    LayoutUnit positionOffset = -1;
-    LayoutUnit distributionOffset = -1;
+    LayoutUnit positionOffset = LayoutUnit(-1);
+    LayoutUnit distributionOffset = LayoutUnit(-1);
 };
 
 enum TrackSizeRestriction {
@@ -351,7 +351,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         LayoutSize previousSize = size();
 
         updateLogicalWidth();
-        bool logicalHeightWasIndefinite = computeContentLogicalHeight(MainOrPreferredSize, style()->logicalHeight(), -1) == -1;
+        bool logicalHeightWasIndefinite = computeContentLogicalHeight(MainOrPreferredSize, style()->logicalHeight(), LayoutUnit(-1)) == LayoutUnit(-1);
 
         TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
@@ -407,10 +407,10 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t sp
     ASSERT(span >= 1);
 
     if (span == 1)
-        return 0;
+        return LayoutUnit();
 
     const Length& trackGap = direction == ForColumns ? styleRef().gridColumnGap() : styleRef().gridRowGap();
-    return valueForLength(trackGap, 0) * (span - 1);
+    return valueForLength(trackGap, LayoutUnit()) * (span - 1);
 }
 
 void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -418,14 +418,14 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
     const_cast<LayoutGrid*>(this)->placeItemsOnGrid();
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
-    sizingData.freeSpaceForDirection(ForColumns) = 0;
+    sizingData.freeSpaceForDirection(ForColumns) = LayoutUnit();
     const_cast<LayoutGrid*>(this)->computeUsedBreadthOfGridTracks(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth, AvailableSpaceIndefinite);
 
     LayoutUnit totalGuttersSize = guttersSize(ForColumns, sizingData.columnTracks.size());
     minLogicalWidth += totalGuttersSize;
     maxLogicalWidth += totalGuttersSize;
 
-    LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
+    LayoutUnit scrollbarWidth = LayoutUnit(intrinsicScrollbarLogicalWidth());
     minLogicalWidth += scrollbarWidth;
     maxLogicalWidth += scrollbarWidth;
 }
@@ -433,7 +433,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
 void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
 {
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForColumns, sizingData));
-    sizingData.freeSpaceForDirection(ForRows) = 0;
+    sizingData.freeSpaceForDirection(ForRows) = LayoutUnit();
     computeUsedBreadthOfGridTracks(ForRows, sizingData, m_minContentHeight, m_maxContentHeight, AvailableSpaceIndefinite);
 
     LayoutUnit totalGuttersSize = guttersSize(ForRows, gridRowCount());
@@ -453,7 +453,7 @@ LayoutUnit LayoutGrid::computeIntrinsicLogicalContentHeightUsing(const Length& l
 
     if (logicalHeightLength.isFitContent()) {
         if (m_minContentHeight == -1 || m_maxContentHeight == -1)
-            return -1;
+            return LayoutUnit(-1);
         LayoutUnit fillAvailableExtent = containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding);
         return std::min<LayoutUnit>(m_maxContentHeight, std::max(m_minContentHeight, fillAvailableExtent));
     }
@@ -461,7 +461,7 @@ LayoutUnit LayoutGrid::computeIntrinsicLogicalContentHeightUsing(const Length& l
     if (logicalHeightLength.isFillAvailable())
         return containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding) - borderAndPadding;
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 static inline double normalizedFlexFraction(const GridTrack& track, double flexFactor)
@@ -499,7 +499,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     if (!sizingData.contentSizedTracksIndex.isEmpty())
         resolveContentBasedTrackSizingFunctions(direction, sizingData);
 
-    baseSizesWithoutMaximization = growthLimitsWithoutMaximization = 0;
+    baseSizesWithoutMaximization = growthLimitsWithoutMaximization = LayoutUnit();
 
     for (const auto& track: tracks) {
         ASSERT(!track.infiniteGrowthPotential());
@@ -573,14 +573,14 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
 LayoutUnit LayoutGrid::computeUsedBreadthOfMinLength(const GridLength& gridLength, LayoutUnit maxSize) const
 {
     if (gridLength.isFlex())
-        return 0;
+        return LayoutUnit();
 
     const Length& trackLength = gridLength.length();
     if (trackLength.isSpecified())
         return valueForLength(trackLength, maxSize);
 
     ASSERT(trackLength.isMinContent() || trackLength.isAuto() || trackLength.isMaxContent());
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit LayoutGrid::computeUsedBreadthOfMaxLength(const GridLength& gridLength, LayoutUnit usedBreadth, LayoutUnit maxSize) const
@@ -593,7 +593,7 @@ LayoutUnit LayoutGrid::computeUsedBreadthOfMaxLength(const GridLength& gridLengt
         return valueForLength(trackLength, maxSize);
 
     ASSERT(trackLength.isMinContent() || trackLength.isAuto() || trackLength.isMaxContent());
-    return infinity;
+    return LayoutUnit(infinity);
 }
 
 double LayoutGrid::computeFlexFactorUnitSize(const Vector<GridTrack>& tracks, GridTrackSizingDirection direction, double flexFactorSum, LayoutUnit& leftOverSpace, const Vector<size_t, 8>& flexibleTracksIndexes, PassOwnPtr<TrackIndexSet> tracksToTreatAsInflexible) const
@@ -694,7 +694,7 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
     // what we are interested in here. Thus we need to set the override logical height to -1 (no possible resolution).
     if (child.hasRelativeLogicalHeight())
-        child.setOverrideContainingBlockContentLogicalHeight(-1);
+        child.setOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
     child.layoutIfNeeded();
     // If the child was stretched we should use its intrinsic height.
     return (hasOverrideHeight ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
@@ -724,13 +724,13 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
     // FIXME: Properly support orthogonal writing mode.
     if (hasOrthogonalWritingMode)
-        return 0;
+        return LayoutUnit();
 
     if (direction == ForColumns) {
         // If |child| has a relative logical width, we shouldn't let it override its intrinsic width, which is
         // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
         if (child.hasRelativeLogicalWidth())
-            child.setOverrideContainingBlockContentLogicalWidth(-1);
+            child.setOverrideContainingBlockContentLogicalWidth(LayoutUnit(-1));
 
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
@@ -751,7 +751,7 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
         // If |child| has a relative logical width, we shouldn't let it override its intrinsic width, which is
         // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
         if (child.hasRelativeLogicalWidth())
-            child.setOverrideContainingBlockContentLogicalWidth(-1);
+            child.setOverrideContainingBlockContentLogicalWidth(LayoutUnit(-1));
 
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
@@ -969,11 +969,11 @@ LayoutUnit LayoutGrid::currentItemSizeForTrackSizeComputationPhase(TrackSizeComp
         return maxContentForChild(gridItem, direction, columnTracks);
     case MaximizeTracks:
         ASSERT_NOT_REACHED();
-        return 0;
+        return LayoutUnit();
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 template <TrackSizeComputationPhase phase>
@@ -1388,7 +1388,7 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
         LayoutUnit baseSize = track->baseSize() + sizeToIncrease;
         track->setBaseSize(baseSize);
     }
-    availableSpace = 0;
+    availableSpace = LayoutUnit();
 }
 
 void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
@@ -1631,7 +1631,7 @@ static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, Lay
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child)
@@ -1680,7 +1680,7 @@ LayoutUnit LayoutGrid::marginLogicalHeightForChild(const LayoutBox& child) const
 LayoutUnit LayoutGrid::computeMarginLogicalHeightForChild(const LayoutBox& child) const
 {
     if (!child.styleRef().hasMargin())
-        return 0;
+        return LayoutUnit();
 
     LayoutUnit marginBefore;
     LayoutUnit marginAfter;
@@ -1715,7 +1715,7 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
         // TODO (lajava): grid track sizing and positioning do not support orthogonal modes yet.
         if (child.isHorizontalWritingMode() == isHorizontalMode) {
             LayoutUnit stretchedLogicalHeight = availableAlignmentSpaceForChildBeforeStretching(child.overrideContainingBlockContentLogicalHeight(), child);
-            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, -1);
+            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, LayoutUnit(-1));
             child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
             if (desiredLogicalHeight != child.logicalHeight()) {
                 // TODO (lajava): Can avoid laying out here in some cases. See https://webkit.org/b/87905.
@@ -1911,7 +1911,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
@@ -1943,7 +1943,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 ContentPosition static resolveContentDistributionFallback(ContentDistributionType distribution)
@@ -1989,7 +1989,7 @@ static ContentAlignmentData contentDistributionOffset(const LayoutUnit& availabl
     case ContentDistributionSpaceBetween:
         if (numberOfGridTracks < 2)
             return {};
-        return {0, availableFreeSpace / (numberOfGridTracks - 1)};
+        return {LayoutUnit(), availableFreeSpace / (numberOfGridTracks - 1)};
     case ContentDistributionSpaceAround:
         if (numberOfGridTracks < 1)
             return {};
@@ -1999,7 +1999,7 @@ static ContentAlignmentData contentDistributionOffset(const LayoutUnit& availabl
         distributionOffset = availableFreeSpace / (numberOfGridTracks + 1);
         return {distributionOffset, distributionOffset};
     case ContentDistributionStretch:
-        return {0, 0};
+        return {LayoutUnit(), LayoutUnit()};
     case ContentDistributionDefault:
         return {};
     }
@@ -2021,42 +2021,42 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(Gri
 
     OverflowAlignment overflow = isRowAxis ? styleRef().justifyContentOverflowAlignment() : styleRef().alignContentOverflowAlignment();
     if (availableFreeSpace <= 0 && overflow == OverflowAlignmentSafe)
-        return {0, 0};
+        return {LayoutUnit(), LayoutUnit()};
 
     switch (position) {
     case ContentPositionLeft:
         // The align-content's axis is always orthogonal to the inline-axis.
-        return {0, 0};
+        return {LayoutUnit(), LayoutUnit()};
     case ContentPositionRight:
         if (isRowAxis)
-            return {availableFreeSpace, 0};
+            return {availableFreeSpace, LayoutUnit()};
         // The align-content's axis is always orthogonal to the inline-axis.
-        return {0, 0};
+        return {LayoutUnit(), LayoutUnit()};
     case ContentPositionCenter:
-        return {availableFreeSpace / 2, 0};
+        return {availableFreeSpace / 2, LayoutUnit()};
     case ContentPositionFlexEnd: // Only used in flex layout, for other layout, it's equivalent to 'End'.
     case ContentPositionEnd:
         if (isRowAxis)
-            return {offsetToEndEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), 0};
-        return {availableFreeSpace, 0};
+            return {offsetToEndEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), LayoutUnit()};
+        return {availableFreeSpace, LayoutUnit()};
     case ContentPositionFlexStart: // Only used in flex layout, for other layout, it's equivalent to 'Start'.
     case ContentPositionStart:
         if (isRowAxis)
-            return {offsetToStartEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), 0};
-        return {0, 0};
+            return {offsetToStartEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), LayoutUnit()};
+        return {LayoutUnit(), LayoutUnit()};
     case ContentPositionBaseline:
     case ContentPositionLastBaseline:
         // FIXME: These two require implementing Baseline Alignment. For now, we always 'start' align the child.
         // crbug.com/234191
         if (isRowAxis)
-            return {offsetToStartEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), 0};
-        return {0, 0};
+            return {offsetToStartEdge(styleRef().isLeftToRightDirection(), availableFreeSpace), LayoutUnit()};
+        return {LayoutUnit(), LayoutUnit()};
     case ContentPositionAuto:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return {0, 0};
+    return {LayoutUnit(), LayoutUnit()};
 }
 
 LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSizingData& sizingData) const

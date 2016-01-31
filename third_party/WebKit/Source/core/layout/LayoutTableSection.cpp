@@ -725,12 +725,12 @@ int LayoutTableSection::calcRowLogicalHeight()
 #endif
 
     for (unsigned r = 0; r < m_grid.size(); r++) {
-        m_grid[r].baseline = -1;
+        m_grid[r].baseline = LayoutUnit(-1);
         LayoutUnit baselineDescent;
 
         if (m_grid[r].logicalHeight.isSpecified()) {
             // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).
-            m_rowPos[r + 1] = std::max(m_rowPos[r] + minimumValueForLength(m_grid[r].logicalHeight, 0).round(), 0);
+            m_rowPos[r + 1] = std::max(m_rowPos[r] + minimumValueForLength(m_grid[r].logicalHeight, LayoutUnit()).round(), 0);
         } else {
             // Non-specified lengths are ignored because the row already accounts for the cells
             // intrinsic logical height.
@@ -968,7 +968,7 @@ void LayoutTableSection::layoutRows()
         if (rowLayoutObject) {
             rowLayoutObject->setLocation(LayoutPoint(0, m_rowPos[r]));
             rowLayoutObject->setLogicalWidth(logicalWidth());
-            rowLayoutObject->setLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
+            rowLayoutObject->setLogicalHeight(LayoutUnit(m_rowPos[r + 1] - m_rowPos[r] - vspacing));
             rowLayoutObject->updateLayerTransformAfterLayout();
             rowLayoutObject->clearAllOverflows();
             rowLayoutObject->addVisualEffectOverflow();
@@ -1027,7 +1027,7 @@ void LayoutTableSection::layoutRows()
                 // Alignment within a cell is based off the calculated
                 // height, which becomes irrelevant once the cell has
                 // been resized based off its percentage.
-                cell->setOverrideLogicalContentHeightFromRowHeight(rHeight);
+                cell->setOverrideLogicalContentHeightFromRowHeight(LayoutUnit(rHeight));
                 cell->forceChildLayout();
 
                 // If the baseline moved, we may have to update the data for our row. Find out the new baseline.
@@ -1090,7 +1090,7 @@ void LayoutTableSection::layoutRows()
 
     ASSERT(!needsLayout());
 
-    setLogicalHeight(m_rowPos[totalRows]);
+    setLogicalHeight(LayoutUnit(m_rowPos[totalRows]));
 
     computeOverflowFromCells(totalRows, nEffCols);
 }
@@ -1640,9 +1640,9 @@ void LayoutTableSection::setLogicalPositionForCell(LayoutTableCell* cell, unsign
 
     // FIXME: The table's direction should determine our row's direction, not the section's (see bug 96691).
     if (!style()->isLeftToRightDirection())
-        cellLocation.setX(table()->columnPositions()[table()->numEffCols()] - table()->columnPositions()[table()->colToEffCol(cell->col() + cell->colSpan())] + horizontalBorderSpacing);
+        cellLocation.setX(LayoutUnit(table()->columnPositions()[table()->numEffCols()] - table()->columnPositions()[table()->colToEffCol(cell->col() + cell->colSpan())] + horizontalBorderSpacing));
     else
-        cellLocation.setX(table()->columnPositions()[effectiveColumn] + horizontalBorderSpacing);
+        cellLocation.setX(LayoutUnit(table()->columnPositions()[effectiveColumn] + horizontalBorderSpacing));
 
     cell->setLogicalLocation(cellLocation);
 }

@@ -215,8 +215,8 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         r.move(0, -toLayoutTableCell(o.containingBlock())->intrinsicPaddingBefore());
 
     if (o.isLayoutView()) {
-        r.setWidth(toLayoutView(o).viewWidth(IncludeScrollbars));
-        r.setHeight(toLayoutView(o).viewHeight(IncludeScrollbars));
+        r.setWidth(LayoutUnit(toLayoutView(o).viewWidth(IncludeScrollbars)));
+        r.setHeight(LayoutUnit(toLayoutView(o).viewHeight(IncludeScrollbars)));
     }
 
     ts << " " << r;

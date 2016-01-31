@@ -35,7 +35,7 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgInlineFlowBox.lineLayoutItem()), paintInfo);
     if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintContext.paintInfo(), paintOffset, 0, 0);
+            child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(), LayoutUnit());
     }
 }
 

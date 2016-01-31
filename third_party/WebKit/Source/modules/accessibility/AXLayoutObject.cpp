@@ -2158,13 +2158,13 @@ void AXLayoutObject::lineBreaks(Vector<int>& lineBreaks) const
 
     VisiblePosition visiblePos = visiblePositionForIndex(0);
     VisiblePosition prevVisiblePos = visiblePos;
-    visiblePos = nextLinePosition(visiblePos, 0, HasEditableAXRole);
+    visiblePos = nextLinePosition(visiblePos, LayoutUnit(), HasEditableAXRole);
     // nextLinePosition moves to the end of the current line when there are
     // no more lines.
     while (visiblePos.isNotNull() && !inSameLine(prevVisiblePos, visiblePos)) {
         lineBreaks.append(indexForVisiblePosition(visiblePos));
         prevVisiblePos = visiblePos;
-        visiblePos = nextLinePosition(visiblePos, 0, HasEditableAXRole);
+        visiblePos = nextLinePosition(visiblePos, LayoutUnit(), HasEditableAXRole);
 
         // Make sure we always make forward progress.
         if (visiblePos.deepEquivalent().compareTo(prevVisiblePos.deepEquivalent()) < 0)

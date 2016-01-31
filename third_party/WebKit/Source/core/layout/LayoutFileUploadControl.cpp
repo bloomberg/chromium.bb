@@ -99,7 +99,7 @@ void LayoutFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
         if (LayoutObject* buttonLayoutObject = button->layoutObject())
             defaultLabelWidth += buttonLayoutObject->maxPreferredLogicalWidth() + afterButtonSpacing;
     }
-    maxLogicalWidth = static_cast<int>(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));
+    maxLogicalWidth = LayoutUnit(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));
 
     if (!style()->width().hasPercent())
         minLogicalWidth = maxLogicalWidth;
@@ -109,8 +109,8 @@ void LayoutFileUploadControl::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
 
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
+    m_minPreferredLogicalWidth = LayoutUnit();
+    m_maxPreferredLogicalWidth = LayoutUnit();
     const ComputedStyle& styleToUse = styleRef();
 
     if (styleToUse.width().isFixed() && styleToUse.width().value() > 0)

@@ -367,7 +367,7 @@ static void updateLogicalWidthForLeftAlignedBlock(bool isLeftToRightDirection, B
     }
 
     if (trailingSpaceRun)
-        trailingSpaceRun->m_box->setLogicalWidth(0);
+        trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
     else if (totalLogicalWidth > availableLogicalWidth)
         logicalLeft -= (totalLogicalWidth - availableLogicalWidth);
 }
@@ -380,7 +380,7 @@ static void updateLogicalWidthForRightAlignedBlock(bool isLeftToRightDirection, 
     if (isLeftToRightDirection) {
         if (trailingSpaceRun) {
             totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
-            trailingSpaceRun->m_box->setLogicalWidth(0);
+            trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
         }
         if (totalLogicalWidth < availableLogicalWidth)
             logicalLeft += availableLogicalWidth - totalLogicalWidth;
@@ -421,8 +421,8 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* layoutRu
         }
     }
     layoutRubyRun->getOverhang(lineInfo.isFirstLine(), layoutRubyRun->style()->isLeftToRightDirection() ? previousObject : nextObject, layoutRubyRun->style()->isLeftToRightDirection() ? nextObject : previousObject, startOverhang, endOverhang);
-    setMarginStartForChild(*layoutRubyRun, -startOverhang);
-    setMarginEndForChild(*layoutRubyRun, -endOverhang);
+    setMarginStartForChild(*layoutRubyRun, LayoutUnit(-startOverhang));
+    setMarginEndForChild(*layoutRubyRun, LayoutUnit(-endOverhang));
 }
 
 static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* run, LayoutText* layoutText, LayoutUnit xPos, const LineInfo& lineInfo,
@@ -546,7 +546,7 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign
         if (expansionOpportunityCount) {
             if (trailingSpaceRun) {
                 totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
-                trailingSpaceRun->m_box->setLogicalWidth(0);
+                trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
             }
             break;
         }
@@ -591,7 +591,7 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     LayoutUnit lineLogicalLeft;
     LayoutUnit lineLogicalRight;
     LayoutUnit availableLogicalWidth;
-    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, indentText, 0);
+    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, indentText, LayoutUnit());
     bool needsWordSpacing;
 
     if (firstRun && firstRun->m_object->isAtomicInlineLevel()) {
@@ -1883,7 +1883,7 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
     LayoutUnit endPadding = hasOverflowClip() ? paddingEnd() : LayoutUnit();
     // FIXME: Need to find another way to do this, since scrollbars could show when we don't want them to.
     if (hasOverflowClip() && !endPadding && node() && node()->isRootEditableElement() && style()->isLeftToRightDirection())
-        endPadding = 1;
+        endPadding = LayoutUnit(1);
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         addLayoutOverflow(curr->paddedLayoutOverflowRect(endPadding));
         LayoutRect visualOverflow = curr->visualOverflowRect(curr->lineTop(), curr->lineBottom());
@@ -1904,7 +1904,7 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
         toLayoutInline(o).addOutlineRectsForContinuations(outlineRects, LayoutPoint(), o.outlineRectsShouldIncludeBlockVisualOverflow());
         if (!outlineRects.isEmpty()) {
             LayoutRect outlineBounds = unionRectEvenIfEmpty(outlineRects);
-            outlineBounds.inflate(o.styleRef().outlineOutsetExtent());
+            outlineBounds.inflate(LayoutUnit(o.styleRef().outlineOutsetExtent()));
             outlineBoundsOfAllContinuations.unite(outlineBounds);
         }
     }

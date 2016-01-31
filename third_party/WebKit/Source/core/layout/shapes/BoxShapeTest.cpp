@@ -83,7 +83,7 @@ TEST_F(BoxShapeTest, zeroRadii)
     // is defined as top <= y < top + height.
 
     EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-9), LayoutUnit(1)));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(0)));
+    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit()));
     EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(200)));
     EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(5), LayoutUnit(10)));
     EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(59), LayoutUnit(1)));

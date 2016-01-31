@@ -1416,7 +1416,7 @@ void LayoutFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children,
 static LayoutUnit initialAlignContentOffset(LayoutUnit availableFreeSpace, ContentPosition alignContent, ContentDistributionType alignContentDistribution, unsigned numberOfLines)
 {
     if (numberOfLines <= 1)
-        return 0;
+        return LayoutUnit();
     if (alignContent == ContentPositionFlexEnd)
         return availableFreeSpace;
     if (alignContent == ContentPositionCenter)
@@ -1427,7 +1427,7 @@ static LayoutUnit initialAlignContentOffset(LayoutUnit availableFreeSpace, Conte
         if (availableFreeSpace < 0)
             return availableFreeSpace / 2;
     }
-    return 0;
+    return LayoutUnit();
 }
 
 static LayoutUnit alignContentSpaceBetweenChildren(LayoutUnit availableFreeSpace, ContentDistributionType alignContentDistribution, unsigned numberOfLines)
@@ -1438,7 +1438,7 @@ static LayoutUnit alignContentSpaceBetweenChildren(LayoutUnit availableFreeSpace
         if (alignContentDistribution == ContentDistributionSpaceAround || alignContentDistribution == ContentDistributionStretch)
             return availableFreeSpace / numberOfLines;
     }
-    return 0;
+    return LayoutUnit();
 }
 
 void LayoutFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts)

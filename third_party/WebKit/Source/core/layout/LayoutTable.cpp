@@ -286,14 +286,14 @@ void LayoutTable::updateLogicalWidth()
             availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toLayoutBlockFlow(cb));
 
         // Ensure we aren't bigger than our available width.
-        setLogicalWidth(std::min<int>(availableContentLogicalWidth, maxPreferredLogicalWidth()));
+        setLogicalWidth(LayoutUnit(std::min(availableContentLogicalWidth, maxPreferredLogicalWidth()).floor()));
     }
 
     // Ensure we aren't bigger than our max-width style.
     Length styleMaxLogicalWidth = style()->logicalMaxWidth();
     if ((styleMaxLogicalWidth.isSpecified() && !styleMaxLogicalWidth.isNegative()) || styleMaxLogicalWidth.isIntrinsic()) {
         LayoutUnit computedMaxLogicalWidth = convertStyleLogicalWidthToComputedWidth(styleMaxLogicalWidth, availableLogicalWidth);
-        setLogicalWidth(std::min<int>(logicalWidth(), computedMaxLogicalWidth));
+        setLogicalWidth(LayoutUnit(std::min(logicalWidth(), computedMaxLogicalWidth).floor()));
     }
 
     // Ensure we aren't smaller than our min preferred width. This MUST be done after 'max-width' as
@@ -304,7 +304,7 @@ void LayoutTable::updateLogicalWidth()
     Length styleMinLogicalWidth = style()->logicalMinWidth();
     if ((styleMinLogicalWidth.isSpecified() && !styleMinLogicalWidth.isNegative()) || styleMinLogicalWidth.isIntrinsic()) {
         LayoutUnit computedMinLogicalWidth = convertStyleLogicalWidthToComputedWidth(styleMinLogicalWidth, availableLogicalWidth);
-        setLogicalWidth(std::max<int>(logicalWidth(), computedMinLogicalWidth));
+        setLogicalWidth(LayoutUnit(std::max(logicalWidth(), computedMinLogicalWidth).floor()));
     }
 
     // Finally, with our true width determined, compute our margins for real.
@@ -317,7 +317,7 @@ void LayoutTable::updateLogicalWidth()
     // its own content which doesn't match CSS nor what authors expect.
     // FIXME: When we convert to sub-pixel layout for tables we can remove the int conversion
     // https://code.google.com/p/chromium/issues/detail?id=241198
-    ASSERT(logicalWidth().toInt() >= minPreferredLogicalWidth().toInt());
+    ASSERT(logicalWidth().floor() >= minPreferredLogicalWidth().floor());
 }
 
 // This method takes a ComputedStyle's logical width, min-width, or max-width length and computes its actual value.
@@ -436,7 +436,7 @@ void LayoutTable::layout()
         LayoutUnit oldLogicalWidth = logicalWidth();
         LayoutUnit oldLogicalHeight = logicalHeight();
 
-        setLogicalHeight(0);
+        setLogicalHeight(LayoutUnit());
         updateLogicalWidth();
 
         if (logicalWidth() != oldLogicalWidth) {
@@ -524,7 +524,7 @@ void LayoutTable::layout()
             setLogicalHeight(logicalHeight() + computedLogicalHeight);
         }
 
-        LayoutUnit sectionLogicalLeft = style()->isLeftToRightDirection() ? borderStart() : borderEnd();
+        LayoutUnit sectionLogicalLeft = LayoutUnit(style()->isLeftToRightDirection() ? borderStart() : borderEnd());
         if (!collapsing)
             sectionLogicalLeft += style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
 
@@ -654,11 +654,11 @@ void LayoutTable::subtractCaptionRect(LayoutRect& rect) const
         if (style()->isHorizontalWritingMode()) {
             rect.setHeight(rect.height() - captionLogicalHeight);
             if (captionIsBefore)
-                rect.move(0, captionLogicalHeight);
+                rect.move(LayoutUnit(), captionLogicalHeight);
         } else {
             rect.setWidth(rect.width() - captionLogicalHeight);
             if (captionIsBefore)
-                rect.move(captionLogicalHeight, 0);
+                rect.move(captionLogicalHeight, LayoutUnit());
         }
     }
 }

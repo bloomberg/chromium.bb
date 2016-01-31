@@ -2359,7 +2359,7 @@ LayoutSize LayoutObject::offsetFromAncestorContainer(const LayoutObject* ancesto
 LayoutRect LayoutObject::localCaretRect(InlineBox*, int, LayoutUnit* extraWidthToEndOfLine)
 {
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = 0;
+        *extraWidthToEndOfLine = LayoutUnit();
 
     return LayoutRect();
 }

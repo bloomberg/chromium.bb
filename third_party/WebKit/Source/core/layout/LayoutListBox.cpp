@@ -96,14 +96,14 @@ unsigned LayoutListBox::size() const
 
 LayoutUnit LayoutListBox::defaultItemHeight() const
 {
-    return style()->fontMetrics().height() + defaultPaddingBottom;
+    return LayoutUnit(style()->fontMetrics().height() + defaultPaddingBottom);
 }
 
 LayoutUnit LayoutListBox::itemHeight() const
 {
     HTMLSelectElement* select = selectElement();
     if (!select)
-        return 0;
+        return LayoutUnit();
     Element* baseItem = ElementTraversal::firstChild(*select);
     if (!baseItem)
         return defaultItemHeight();

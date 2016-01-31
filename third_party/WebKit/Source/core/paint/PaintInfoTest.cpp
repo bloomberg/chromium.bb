@@ -61,7 +61,7 @@ TEST_F(PaintInfoTest, intersectsVerticalRange)
 {
     PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
-    EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(0), LayoutUnit(1)));
+    EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(), LayoutUnit(1)));
     EXPECT_FALSE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(100), LayoutUnit(101)));
 }
 
@@ -69,7 +69,7 @@ TEST_F(PaintInfoTest, intersectsHorizontalRange)
 {
     PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
-    EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(0), LayoutUnit(1)));
+    EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(), LayoutUnit(1)));
     EXPECT_FALSE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(50), LayoutUnit(51)));
 }
 

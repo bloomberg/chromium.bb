@@ -902,14 +902,14 @@ IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& border
         borderBoxRect.height() - (box().borderTop() + box().borderBottom()) - scrollCorner.height());
 }
 
-LayoutUnit PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const
+int PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const
 {
     if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         return minX + box().borderLeft();
     return maxX - box().borderRight() - verticalScrollbar()->width();
 }
 
-LayoutUnit PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
+int PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
 {
     int x = minX + box().borderLeft();
     if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())

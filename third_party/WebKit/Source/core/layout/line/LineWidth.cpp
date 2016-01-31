@@ -119,7 +119,7 @@ void LineWidth::applyOverhang(LineLayoutRubyRun rubyRun, LineLayoutItem startLay
 }
 
 inline static float availableWidthAtOffset(LineLayoutBlockFlow block, const LayoutUnit& offset, IndentTextOrNot indentText, float& newLineLeft,
-    float& newLineRight, const LayoutUnit& lineHeight = 0)
+    float& newLineRight, const LayoutUnit& lineHeight = LayoutUnit())
 {
     newLineLeft = block.logicalLeftOffsetForLine(offset, indentText, lineHeight).toFloat();
     newLineRight = block.logicalRightOffsetForLine(offset, indentText, lineHeight).toFloat();

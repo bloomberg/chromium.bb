@@ -352,8 +352,8 @@ private:
     void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
-    LayoutUnit verticalScrollbarStart(int minX, int maxX) const;
-    LayoutUnit horizontalScrollbarStart(int minX) const;
+    int verticalScrollbarStart(int minX, int maxX) const;
+    int horizontalScrollbarStart(int minX) const;
     IntSize scrollbarOffset(const Scrollbar&) const;
 
     void setHasHorizontalScrollbar(bool hasScrollbar);

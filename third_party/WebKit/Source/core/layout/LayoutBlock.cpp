@@ -1939,8 +1939,8 @@ void LayoutBlock::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
 
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
+    m_minPreferredLogicalWidth = LayoutUnit();
+    m_maxPreferredLogicalWidth = LayoutUnit();
 
     // FIXME: The isFixed() calls here should probably be checking for isSpecified since you
     // should be able to use percentage, calc or viewport relative values for width.
@@ -1963,8 +1963,8 @@ void LayoutBlock::computePreferredLogicalWidths()
 
     // Table layout uses integers, ceil the preferred widths to ensure that they can contain the contents.
     if (isTableCell()) {
-        m_minPreferredLogicalWidth = m_minPreferredLogicalWidth.ceil();
-        m_maxPreferredLogicalWidth = m_maxPreferredLogicalWidth.ceil();
+        m_minPreferredLogicalWidth = LayoutUnit(m_minPreferredLogicalWidth.ceil());
+        m_maxPreferredLogicalWidth = LayoutUnit(m_maxPreferredLogicalWidth.ceil());
     }
 
     LayoutUnit borderAndPadding = borderAndPaddingLogicalWidth();
@@ -1995,11 +1995,11 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
             LayoutUnit floatTotalWidth = floatLeftWidth + floatRightWidth;
             if (childStyle->clear() & CLEFT) {
                 maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
-                floatLeftWidth = 0;
+                floatLeftWidth = LayoutUnit();
             }
             if (childStyle->clear() & CRIGHT) {
                 maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
-                floatRightWidth = 0;
+                floatRightWidth = LayoutUnit();
             }
         }
 
@@ -2044,7 +2044,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
             } else {
                 maxLogicalWidth = std::max(floatLeftWidth + floatRightWidth, maxLogicalWidth);
             }
-            floatLeftWidth = floatRightWidth = 0;
+            floatLeftWidth = floatRightWidth = LayoutUnit();
         }
 
         if (child->isFloating()) {
@@ -2120,7 +2120,7 @@ LayoutUnit LayoutBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
         return LayoutBox::lineHeight(firstLine, direction, linePositionMode);
 
     const ComputedStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
-    return style.computedLineHeight();
+    return LayoutUnit(style.computedLineHeight());
 }
 
 int LayoutBlock::beforeMarginInLineDirection(LineDirectionMode direction) const
@@ -2512,7 +2512,7 @@ void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& 
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
         if (topMargin || bottomMargin) {
             LayoutRect rect(additionalOffset, size());
-            rect.expandEdges(topMargin, 0, bottomMargin, 0);
+            rect.expandEdges(topMargin, LayoutUnit(), bottomMargin, LayoutUnit());
             rects.append(rect);
         }
     } else if (!isAnonymous()) { // For anonymous blocks, the children add outline rects.

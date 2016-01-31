@@ -75,7 +75,7 @@ void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint
     LayoutRect adjustedFrameRect(adjustedPaintOffset, m_layoutFrameSet.size());
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect, adjustedPaintOffset);
 
-    LayoutUnit borderThickness = m_layoutFrameSet.frameSet()->border();
+    LayoutUnit borderThickness(m_layoutFrameSet.frameSet()->border());
     if (!borderThickness)
         return;
 

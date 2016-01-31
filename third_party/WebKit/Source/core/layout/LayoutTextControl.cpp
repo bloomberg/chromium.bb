@@ -242,8 +242,8 @@ void LayoutTextControl::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
 
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
+    m_minPreferredLogicalWidth = LayoutUnit();
+    m_maxPreferredLogicalWidth = LayoutUnit();
     const ComputedStyle& styleToUse = styleRef();
 
     if (styleToUse.logicalWidth().isFixed() && styleToUse.logicalWidth().value() >= 0)

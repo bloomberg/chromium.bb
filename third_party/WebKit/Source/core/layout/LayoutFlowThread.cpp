@@ -119,7 +119,7 @@ void LayoutFlowThread::layout()
 void LayoutFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_position = logicalTop;
-    computedValues.m_extent = 0;
+    computedValues.m_extent = LayoutUnit();
 
     for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
         LayoutMultiColumnSet* columnSet = *iter;
