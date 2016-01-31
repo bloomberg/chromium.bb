@@ -45,6 +45,10 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/views/controls/menu/menu_key_event_handler.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using ui::OSExchangeData;
@@ -335,6 +339,12 @@ MenuItemView* MenuController::Run(Widget* parent,
     DCHECK_EQ(owner_, parent);
   } else {
     showing_ = true;
+
+#if defined(USE_AURA)
+    // Only create a MenuKeyEventHandler for non-nested menus. Nested menus will
+    // use the existing one.
+    key_event_handler_.reset(new MenuKeyEventHandler);
+#endif
   }
 
   // Reset current state.
@@ -2518,6 +2528,10 @@ MenuItemView* MenuController::ExitMenuRun() {
       async_run_ = delegate_stack_.back().second;
     }
   } else {
+#if defined(USE_AURA)
+    key_event_handler_.reset();
+#endif
+
     showing_ = false;
     did_capture_ = false;
   }

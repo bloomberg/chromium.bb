@@ -46,6 +46,10 @@ class MouseEvent;
 class SubmenuView;
 class View;
 
+#if defined(USE_AURA)
+class MenuKeyEventHandler;
+#endif
+
 namespace internal {
 class MenuControllerDelegate;
 class MenuEventDispatcher;
@@ -698,6 +702,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   int current_mouse_pressed_state_;
 
   scoped_ptr<MenuMessageLoop> message_loop_;
+
+#if defined(USE_AURA)
+  scoped_ptr<MenuKeyEventHandler> key_event_handler_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };
