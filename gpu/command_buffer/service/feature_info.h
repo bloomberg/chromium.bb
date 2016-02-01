@@ -31,8 +31,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   struct FeatureFlags {
     FeatureFlags();
 
-    bool chromium_color_buffer_float_rgba;
-    bool chromium_color_buffer_float_rgb;
     bool chromium_framebuffer_multisample;
     bool chromium_sync_query;
     // Use glBlitFramebuffer() and glRenderbufferStorageMultisample() with
@@ -119,6 +117,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Helper that defaults to no disallowed features and a GLES2 context.
   bool InitializeForTesting();
+  // Helper that defaults to a GLES2 context.
+  bool InitializeForTesting(const DisallowedFeatures& disallowed_features);
 
   const Validators* validators() const {
     return &validators_;
@@ -138,6 +138,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return workarounds_;
   }
 
+  const DisallowedFeatures& disallowed_features() const {
+    return disallowed_features_;
+  }
+
   const gfx::GLVersionInfo& gl_version_info() const {
     DCHECK(gl_version_info_.get());
     return *(gl_version_info_.get());
@@ -153,6 +157,11 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool disable_shader_translator() const { return disable_shader_translator_; }
 
   bool IsWebGLContext() const;
+
+  void EnableCHROMIUMColorBufferFloatRGBA();
+  void EnableCHROMIUMColorBufferFloatRGB();
+  void EnableEXTColorBufferFloat();
+  void EnableOESTextureFloatLinear();
 
  private:
   friend class base::RefCounted<FeatureInfo>;
@@ -186,6 +195,11 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Whether the command line switch kEnableGLPathRendering is passed in.
   bool enable_gl_path_rendering_switch_;
+
+  bool chromium_color_buffer_float_rgba_available_;
+  bool chromium_color_buffer_float_rgb_available_;
+  bool ext_color_buffer_float_available_;
+  bool oes_texture_float_linear_available_;
 
   bool disable_shader_translator_;
   scoped_ptr<gfx::GLVersionInfo> gl_version_info_;

@@ -1993,8 +1993,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   scoped_refptr<ShaderTranslatorInterface> vertex_translator_;
   scoped_refptr<ShaderTranslatorInterface> fragment_translator_;
 
-  DisallowedFeatures disallowed_features_;
-
   // Cached from ContextGroup
   const Validators* validators_;
   scoped_refptr<FeatureInfo> feature_info_;
@@ -2642,13 +2640,8 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
     return false;
   }
 
-  disallowed_features_ = disallowed_features;
-  if (attrib_parser.context_type == CONTEXT_TYPE_WEBGL1) {
-    disallowed_features_.npot_support = true;
-  }
-
   if (!group_->Initialize(this, attrib_parser.context_type,
-                          disallowed_features_)) {
+                          disallowed_features)) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
     return false;
@@ -12319,7 +12312,9 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
           cmd_data);
   Bucket* bucket = CreateBucket(c.bucket_id);
   scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  info->Initialize(feature_info_->context_type(), disallowed_features_);
+  DisallowedFeatures disallowed_features = feature_info_->disallowed_features();
+  disallowed_features.AllowExtensions();
+  info->Initialize(feature_info_->context_type(), disallowed_features);
   bucket->SetFromString(info->extensions().c_str());
   return error::kNoError;
 }
@@ -12337,6 +12332,7 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   if (!bucket->GetAsString(&feature_str)) {
     return error::kInvalidArguments;
   }
+  feature_str = feature_str + " ";
 
   bool desire_standard_derivatives = false;
   bool desire_frag_depth = false;
@@ -12344,15 +12340,14 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_shader_texture_lod = false;
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
-        feature_str.find("GL_OES_standard_derivatives") != std::string::npos;
+        feature_str.find("GL_OES_standard_derivatives ") != std::string::npos;
     desire_frag_depth =
-        feature_str.find("GL_EXT_frag_depth") != std::string::npos;
+        feature_str.find("GL_EXT_frag_depth ") != std::string::npos;
     desire_draw_buffers =
-        feature_str.find("GL_EXT_draw_buffers") != std::string::npos;
+        feature_str.find("GL_EXT_draw_buffers ") != std::string::npos;
     desire_shader_texture_lod =
-        feature_str.find("GL_EXT_shader_texture_lod") != std::string::npos;
+        feature_str.find("GL_EXT_shader_texture_lod ") != std::string::npos;
   }
-
   if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
       desire_frag_depth != frag_depth_explicitly_enabled_ ||
       desire_draw_buffers != draw_buffers_explicitly_enabled_ ||
@@ -12362,6 +12357,21 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
     draw_buffers_explicitly_enabled_ |= desire_draw_buffers;
     shader_texture_lod_explicitly_enabled_ |= desire_shader_texture_lod;
     InitializeShaderTranslator();
+  }
+
+  if (feature_str.find("GL_CHROMIUM_color_buffer_float_rgba ") !=
+      std::string::npos) {
+    feature_info_->EnableCHROMIUMColorBufferFloatRGBA();
+  }
+  if (feature_str.find("GL_CHROMIUM_color_buffer_float_rgb ") !=
+      std::string::npos) {
+    feature_info_->EnableCHROMIUMColorBufferFloatRGB();
+  }
+  if (feature_str.find("GL_EXT_color_buffer_float ") != std::string::npos) {
+    feature_info_->EnableEXTColorBufferFloat();
+  }
+  if (feature_str.find("GL_OES_texture_float_linear ") != std::string::npos) {
+    feature_info_->EnableOESTextureFloatLinear();
   }
 
   UpdateCapabilities();

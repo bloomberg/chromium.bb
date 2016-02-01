@@ -81,6 +81,18 @@ class FeatureInfoTest
     info_->InitializeForTesting();
   }
 
+  void SetupInitExpectationsWithGLVersionAndDisallowedFeatures(
+      const char* extensions,
+      const char* renderer,
+      const char* version,
+      const DisallowedFeatures& disallowed_features) {
+    GpuServiceTest::SetUpWithGLVersion(version, extensions);
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+        gl_.get(), extensions, renderer, version);
+    info_ = new FeatureInfo();
+    info_->InitializeForTesting(disallowed_features);
+  }
+
   void SetupInitExpectationsWithGLVersionAndCommandLine(
       const char* extensions,
       const char* renderer,
@@ -691,10 +703,33 @@ TEST_P(FeatureInfoTest,
 }
 
 TEST_P(FeatureInfoTest, InitializeARB_texture_float) {
-  SetupInitExpectations("GL_ARB_texture_float");
-  EXPECT_TRUE(info_->feature_flags().chromium_color_buffer_float_rgba);
-  EXPECT_TRUE(info_->feature_flags().chromium_color_buffer_float_rgb);
+  DisallowedFeatures disallowed_features;
+  disallowed_features.chromium_color_buffer_float_rgb = true;
+  disallowed_features.chromium_color_buffer_float_rgba = true;
+  SetupInitExpectationsWithGLVersionAndDisallowedFeatures(
+      "GL_ARB_texture_float", "", "3.0", disallowed_features);
   std::string extensions = info_->extensions() + " ";
+  EXPECT_THAT(extensions,
+              Not(HasSubstr("GL_CHROMIUM_color_buffer_float_rgb ")));
+  EXPECT_THAT(extensions,
+              Not(HasSubstr("GL_CHROMIUM_color_buffer_float_rgba")));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGBA32F));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGB32F));
+
+  info_->EnableCHROMIUMColorBufferFloatRGBA();
+  extensions = info_->extensions() + " ";
+  EXPECT_THAT(extensions,
+              Not(HasSubstr("GL_CHROMIUM_color_buffer_float_rgb ")));
+  EXPECT_THAT(extensions, HasSubstr("GL_CHROMIUM_color_buffer_float_rgba"));
+  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGBA32F));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGB32F));
+
+  info_->EnableCHROMIUMColorBufferFloatRGB();
+  extensions = info_->extensions() + " ";
   EXPECT_THAT(extensions, HasSubstr("GL_CHROMIUM_color_buffer_float_rgb "));
   EXPECT_THAT(extensions, HasSubstr("GL_CHROMIUM_color_buffer_float_rgba"));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(

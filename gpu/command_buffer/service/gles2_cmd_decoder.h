@@ -49,11 +49,26 @@ struct ContextState;
 struct DisallowedFeatures {
   DisallowedFeatures()
       : gpu_memory_manager(false),
-        npot_support(false) {
+        npot_support(false),
+        chromium_color_buffer_float_rgba(false),
+        chromium_color_buffer_float_rgb(false),
+        ext_color_buffer_float(false),
+        oes_texture_float_linear(false) {
+  }
+
+  void AllowExtensions() {
+    chromium_color_buffer_float_rgba = false;
+    chromium_color_buffer_float_rgb = false;
+    ext_color_buffer_float = false;
+    oes_texture_float_linear = false;
   }
 
   bool gpu_memory_manager;
   bool npot_support;
+  bool chromium_color_buffer_float_rgba;
+  bool chromium_color_buffer_float_rgb;
+  bool ext_color_buffer_float;
+  bool oes_texture_float_linear;
 };
 
 typedef base::Callback<void(const std::string& key,

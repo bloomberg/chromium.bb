@@ -30,6 +30,32 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+void GetIntegerv(GLenum pname, uint32_t* var) {
+  GLint value = 0;
+  glGetIntegerv(pname, &value);
+  *var = value;
+}
+
+DisallowedFeatures AdjustDisallowedFeatures(
+    ContextType context_type, const DisallowedFeatures& disallowed_features) {
+  DisallowedFeatures adjusted_disallowed_features = disallowed_features;
+  if (context_type == CONTEXT_TYPE_WEBGL1) {
+    adjusted_disallowed_features.npot_support = true;
+  }
+  if (context_type == CONTEXT_TYPE_WEBGL1 ||
+      context_type == CONTEXT_TYPE_WEBGL2) {
+    adjusted_disallowed_features.chromium_color_buffer_float_rgba = true;
+    adjusted_disallowed_features.chromium_color_buffer_float_rgb = true;
+    adjusted_disallowed_features.ext_color_buffer_float = true;
+    adjusted_disallowed_features.oes_texture_float_linear = true;
+  }
+  return adjusted_disallowed_features;
+}
+
+}  // namespace anonymous
+
 ContextGroup::ContextGroup(
     const scoped_refptr<MailboxManager>& mailbox_manager,
     const scoped_refptr<MemoryTracker>& memory_tracker,
@@ -87,12 +113,6 @@ ContextGroup::ContextGroup(
   }
 }
 
-static void GetIntegerv(GLenum pname, uint32_t* var) {
-  GLint value = 0;
-  glGetIntegerv(pname, &value);
-  *var = value;
-}
-
 bool ContextGroup::Initialize(GLES2Decoder* decoder,
                               ContextType context_type,
                               const DisallowedFeatures& disallowed_features) {
@@ -107,7 +127,10 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     return true;
   }
 
-  if (!feature_info_->Initialize(context_type, disallowed_features)) {
+  DisallowedFeatures adjusted_disallowed_features =
+      AdjustDisallowedFeatures(context_type, disallowed_features);
+
+  if (!feature_info_->Initialize(context_type, adjusted_disallowed_features)) {
     LOG(ERROR) << "ContextGroup::Initialize failed because FeatureInfo "
                << "initialization failed.";
     return false;
