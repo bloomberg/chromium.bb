@@ -90,8 +90,9 @@ void HtmlVideoElementCapturerSource::StartCapture(
     return;
   }
   const blink::WebSize resolution = web_media_player_->naturalSize();
-  canvas_.reset(skia::CreatePlatformCanvas(resolution.width, resolution.height,
-                                           true /* is_opaque */));
+  canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(resolution.width,
+                               resolution.height,
+                               true /* is_opaque */));
 
   new_frame_callback_ = new_frame_callback;
   // Force |capture_frame_rate_| to be in between k{Min,Max}FramesPerSecond.
