@@ -109,8 +109,12 @@ InstantService::InstantService(Profile* profile)
 
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
-  if (top_sites)
+  if (top_sites) {
     top_sites->AddObserver(this);
+    // Immediately query the TopSites state.
+    TopSitesChanged(top_sites.get(),
+                    history::TopSitesObserver::ChangeReason::MOST_VISITED);
+  }
 
   if (profile_ && profile_->GetResourceContext()) {
     content::BrowserThread::PostTask(
