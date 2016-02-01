@@ -248,10 +248,23 @@ function startTest(tabId) {
 
 // Navigates to a page that navigates to a 204 page via a script.
 function navigateToFrameAndWaitUntil204Loaded(tabId, hostname, hostname204) {
+  // If the child frame's origin differs from the parent frame's origin, and
+  // site isolation is enabled, then two onErrorOccurred events are expected:
+  // 1. onErrorOccurred for a process swap of the initial frame.
+  // 2. onErrorOccurred for the failed provisional load.
+  // TODO(robwu): Remove this work-around when the navigation is immediately
+  // handled in the right process (so that a process swap is not needed).
+  var expectTwoErrors = MAIN_HOST !== hostname && config.isolateExtensions;
   var doneListening = chrome.test.listenForever(
       chrome.webNavigation.onErrorOccurred,
       function(details) {
         if (details.tabId === tabId && details.frameId > 0) {
+          if (expectTwoErrors) {
+            // |url| is the initial URL of the iframe, declared below.
+            chrome.test.assertEq(url, details.url);
+            expectTwoErrors = false;
+            return;
+          }
           chrome.test.assertTrue(details.url.includes('page204.html'),
               'frame URL should be page204.html, but was ' + details.url);
           doneListening();
