@@ -460,6 +460,14 @@ are declared in build/common.gypi.
         Loading...
       </message>
 
+      <!-- Material Design History Strings -->
+      <message name="IDS_MD_HISTORY_SEARCH" desc="Placeholder text/label for the search input in the history page">
+        Search
+      </message>
+      <message name="IDS_MD_HISTORY_CLEAR_SEARCH" desc="Tooltip text for the button that clears the search term on the history page">
+        Clear search
+      </message>
+
       <!-- Generic terms -->
       <message name="IDS_ADD" desc="Used for Add on buttons">
         Add

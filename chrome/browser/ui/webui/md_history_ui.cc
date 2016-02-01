@@ -15,6 +15,7 @@
 #include "grit/browser_resources.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -30,9 +31,27 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
   // Localized strings (alphabetical order).
+  source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
+  source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
+  source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
+  source->AddLocalizedString("search", IDS_MD_HISTORY_SEARCH);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
 
-  // TODO(tsergeant): File resources (alphabetical order).
+  source->AddResourcePath("history_card.html",
+                          IDR_MD_HISTORY_HISTORY_CARD_HTML);
+  source->AddResourcePath("history_card.js", IDR_MD_HISTORY_HISTORY_CARD_JS);
+  source->AddResourcePath("history_card_manager.html",
+                          IDR_MD_HISTORY_HISTORY_CARD_MANAGER_HTML);
+  source->AddResourcePath("history_card_manager.js",
+                          IDR_MD_HISTORY_HISTORY_CARD_MANAGER_JS);
+  source->AddResourcePath("history_item.html",
+                          IDR_MD_HISTORY_HISTORY_ITEM_HTML);
+  source->AddResourcePath("history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS);
+  source->AddResourcePath("history_toolbar.html",
+                          IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML);
+  source->AddResourcePath("history_toolbar.js",
+                          IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
+  source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
 
   source->SetDefaultResource(IDR_MD_HISTORY_HISTORY_HTML);
   source->SetJsonPath("strings.js");

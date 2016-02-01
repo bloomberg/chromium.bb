@@ -971,6 +971,7 @@
       'test/data/webui/extensions/cr_extensions_browsertest.js',
       'test/data/webui/history_browsertest.js',
       'test/data/webui/md_downloads/downloads_browsertest.js',
+      'test/data/webui/md_history/md_history_browsertest.js',
       'test/data/webui/mock4js_browsertest.js',
       'test/data/webui/net_internals/bandwidth_view.js',
       'test/data/webui/net_internals/chromeos_view.js',

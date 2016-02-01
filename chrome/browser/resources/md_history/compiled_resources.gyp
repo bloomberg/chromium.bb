@@ -2,12 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Closure compiler definition for MD History. Not tied into the main closure
-# build while we get oriented with the system.
-# To compile:
-#   GYP_GENERATORS=ninja tools/gyp/gyp --depth . -Goutput_dir=out_closure \
-#     chrome/browser/resources/md_history/compiled_resources.gyp
-#   ninja -C out_closure/Default
+# Closure compiler definition for MD History.
 {
   'targets': [
     {
@@ -21,6 +16,8 @@
           'history_card_manager.js',
           'history_card.js',
           'history_item.js',
+          'history_toolbar.js',
+          'history.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_send.js',
