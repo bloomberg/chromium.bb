@@ -273,6 +273,8 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
         if (flowThread && flowThread != this)
             flowThread->flowThreadDescendantStyleDidChange(this, diff, *oldStyle);
     }
+
+    ASSERT(!isInline() || isAtomicInlineLevel()); // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
 }
 
 void LayoutBox::updateBackgroundAttachmentFixedStatusAfterStyleChange()
@@ -1738,17 +1740,15 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
     if (isInFlowPositioned())
         offset += offsetForInFlowPosition();
 
-    if (!isInline() || isAtomicInlineLevel()) {
-        offset += topLeftLocationOffset();
-        if (o->isLayoutFlowThread()) {
-            // So far the point has been in flow thread coordinates (i.e. as if everything in
-            // the fragmentation context lived in one tall single column). Convert it to a
-            // visual point now.
-            LayoutPoint pointInContainer = point + offset;
-            offset += o->columnOffset(pointInContainer);
-            if (offsetDependsOnPoint)
-                *offsetDependsOnPoint = true;
-        }
+    offset += topLeftLocationOffset();
+    if (o->isLayoutFlowThread()) {
+        // So far the point has been in flow thread coordinates (i.e. as if everything in
+        // the fragmentation context lived in one tall single column). Convert it to a
+        // visual point now.
+        LayoutPoint pointInContainer = point + offset;
+        offset += o->columnOffset(pointInContainer);
+        if (offsetDependsOnPoint)
+            *offsetDependsOnPoint = true;
     }
 
     if (o->hasOverflowClip())
@@ -2400,8 +2400,8 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     computedValues.m_extent = logicalHeight;
     computedValues.m_position = logicalTop;
 
-    // Cell height is managed by the table and non-atomic inline-level elements do not support a height property.
-    if (isTableCell() || (isInline() && !isAtomicInlineLevel()))
+    // Cell height is managed by the table.
+    if (isTableCell())
         return;
 
     Length h;
