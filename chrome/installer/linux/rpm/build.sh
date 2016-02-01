@@ -102,9 +102,20 @@ do_package() {
   DETECTED_DEPENDS="$(echo "${BUILDDIR}/chrome" | /usr/lib/rpm/find-requires)"
 
   # Compare the expected dependency list to the generated list.
+  #
+  # In this comparison, we allow ld-linux.so's symbol version "GLIBC_2.3"
+  # to be present but don't require it, because it is hard to predict
+  # whether it will be generated.  Referencing a __thread
+  # (thread-local/TLS) variable *sometimes* causes the compiler to generate
+  # a reference to __tls_get_addr() (depending on compiler options such as
+  # -fPIC vs. -fPIE).  This function has symbol version "GLIBC_2.3".  The
+  # linker *sometimes* optimizes away the __tls_get_addr() call using
+  # link-time code rewriting, but it might leave the symbol dependency in
+  # place -- there are no guarantees.
   BAD_DIFF=0
   diff "$SCRIPTDIR/expected_deps_$ARCHITECTURE" \
-      <(echo "${DETECTED_DEPENDS}") || BAD_DIFF=1
+      <(echo "${DETECTED_DEPENDS}" | grep -v '^ld-linux.*\(GLIBC_2\.3\)') \
+      || BAD_DIFF=1
   if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
     echo
     echo "ERROR: Shared library dependencies changed!"
