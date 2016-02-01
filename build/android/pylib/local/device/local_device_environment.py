@@ -114,14 +114,9 @@ class LocalDeviceEnvironment(environment.Environment):
       m.Close()
 
   def BlacklistDevice(self, device, reason='local_device_failure'):
-    if not self._blacklist:
-      logging.warning(
-          'Attempted to blacklist %s, but no blacklist was provided.',
-          str(device))
-      return
-
     device_serial = device.adb.GetDeviceSerial()
-    self._blacklist.Extend([device_serial], reason=reason)
+    if self._blacklist:
+      self._blacklist.Extend([device_serial], reason=reason)
     with self._devices_lock:
       self._devices = [d for d in self._devices if str(d) != device_serial]
 

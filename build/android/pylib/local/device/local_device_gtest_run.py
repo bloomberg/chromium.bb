@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import imp
 import itertools
 import os
@@ -217,7 +218,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     elif self._test_instance.exe:
       self._delegate = _ExeDelegate(self, self._test_instance.exe)
 
-    self._servers = {}
+    self._servers = collections.defaultdict(list)
 
   #override
   def TestPackage(self):
