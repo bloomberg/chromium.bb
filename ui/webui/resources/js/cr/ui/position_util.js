@@ -226,8 +226,9 @@ cr.define('cr.ui', function() {
    * @param {number} x The client x position.
    * @param {number} y The client y position.
    * @param {!HTMLElement} popupElement The popup element we are positioning.
+   * @param {cr.ui.AnchorType=} opt_anchorType The type of anchoring we want.
    */
-  function positionPopupAtPoint(x, y, popupElement) {
+  function positionPopupAtPoint(x, y, popupElement, opt_anchorType) {
     var rect = {
       left: x,
       top: y,
@@ -236,7 +237,9 @@ cr.define('cr.ui', function() {
       right: x,
       bottom: y
     };
-    positionPopupAroundRect(rect, popupElement, AnchorType.BELOW);
+
+    var anchorType = opt_anchorType || AnchorType.BELOW;
+    positionPopupAroundRect(rect, popupElement, anchorType);
   }
 
   // Export
