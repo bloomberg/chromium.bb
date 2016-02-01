@@ -2789,7 +2789,7 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
         return parent->layoutObject() && parent->layoutObject()->isSelectable();
     }
 
-    if (anchorNode->document().documentElement() == anchorNode)
+    if (anchorNode->document().documentElement() == anchorNode || anchorNode->isDocumentNode())
         return false;
 
     if (!layoutObject->isSelectable())

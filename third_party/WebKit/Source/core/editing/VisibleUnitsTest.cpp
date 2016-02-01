@@ -758,6 +758,13 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement)
     EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two.get(), 1)));
 }
 
+TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithDocument)
+{
+    updateLayoutAndStyleForPainting();
+
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(&document(), 0)));
+}
+
 TEST_F(VisibleUnitsTest, leftPositionOf)
 {
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
