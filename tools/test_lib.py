@@ -330,7 +330,7 @@ def MakeTempFile(env, **kwargs):
 
   Passes arguments through to tempfile.mkstemp
   """
-  handle, path = tempfile.mkstemp()
+  handle, path = tempfile.mkstemp(**kwargs)
   def Cleanup():
     try:
       # Try to remove the file but only if it exists. Some tests may clean up

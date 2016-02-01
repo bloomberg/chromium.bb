@@ -35,6 +35,7 @@
           'nacl_valgrind_hooks.c',
           'sel_addrspace.c',
           'sel_ldr.c',
+          'sel_ldr_filename.c',
           'sel_ldr_standard.c',
           'sel_ldr_thread_interface.c',
           # TODO(mseaborn): Move sel_main_chrome.c to the

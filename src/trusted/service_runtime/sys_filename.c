@@ -8,6 +8,7 @@
 
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
@@ -21,28 +22,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr_filename.h"
 
-
-static uint32_t CopyPathFromUser(struct NaClApp *nap,
-                                 char           *dest,
-                                 size_t         num_bytes,
-                                 uintptr_t      src) {
-  /*
-   * NaClCopyInFromUserZStr may (try to) get bytes that is outside the
-   * app's address space and generate a fault.
-   */
-  if (!NaClCopyInFromUserZStr(nap, dest, num_bytes, src)) {
-    if (dest[0] == '\0') {
-      NaClLog(LOG_ERROR, "NaClSys: invalid address for pathname\n");
-      return (uint32_t) -NACL_ABI_EFAULT;
-    }
-
-    NaClLog(LOG_ERROR, "NaClSys: pathname string too long\n");
-    return (uint32_t) -NACL_ABI_ENAMETOOLONG;
-  }
-
-  return 0;
-}
 
 int32_t NaClSysOpen(struct NaClAppThread  *natp,
                     uint32_t              pathname,
@@ -58,11 +39,11 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
           "0x%08"NACL_PRIx32", 0x%x, 0x%x)\n",
           (uintptr_t) natp, pathname, flags, mode);
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     return -NACL_ABI_EACCES;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -166,11 +147,11 @@ int32_t NaClSysStat(struct NaClAppThread  *natp,
           ("Entered NaClSysStat(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIx32","
            " 0x%08"NACL_PRIx32")\n"), (uintptr_t) natp, pathname, nasp);
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     return -NACL_ABI_EACCES;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -197,12 +178,12 @@ int32_t NaClSysMkdir(struct NaClAppThread *natp,
   char           path[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -217,12 +198,12 @@ int32_t NaClSysRmdir(struct NaClAppThread *natp,
   char           path[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -237,12 +218,12 @@ int32_t NaClSysChdir(struct NaClAppThread *natp,
   char           path[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -258,7 +239,7 @@ int32_t NaClSysGetcwd(struct NaClAppThread *natp,
   int32_t        retval = -NACL_ABI_EINVAL;
   char           path[NACL_CONFIG_PATH_MAX];
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
@@ -270,8 +251,7 @@ int32_t NaClSysGetcwd(struct NaClAppThread *natp,
   if (retval != 0)
     goto cleanup;
 
-  if (!NaClCopyOutToUser(nap, buffer, &path, strlen(path) + 1))
-    retval = -NACL_ABI_EFAULT;
+  return CopyHostPathOutToUser(nap, buffer, path);
 
 cleanup:
   return retval;
@@ -283,12 +263,12 @@ int32_t NaClSysUnlink(struct NaClAppThread *natp,
   char           path[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     goto cleanup;
 
@@ -306,10 +286,10 @@ int32_t NaClSysTruncate(struct NaClAppThread *natp,
   int32_t        retval = -NACL_ABI_EINVAL;
   nacl_abi_off_t length;
 
-  if (!NaClAclBypassChecks)
+  if (!NaClFileAccessEnabled())
     return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     return retval;
 
@@ -334,16 +314,16 @@ int32_t NaClSysLstat(struct NaClAppThread  *natp,
           ("Entered NaClSysLstat(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIx32","
            " 0x%08"NACL_PRIx32")\n"), (uintptr_t) natp, pathname, nasp);
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     return -NACL_ABI_EACCES;
   }
 
-  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  retval = CopyHostPathInFromUser(nap, path, sizeof path, pathname);
   if (0 != retval)
     return retval;
 
   /*
-   * Perform a host stat.
+   * Perform a host lstat directly
    */
   retval = NaClHostDescLstat(path, &stbuf);
   if (0 == retval) {
@@ -365,14 +345,14 @@ int32_t NaClSysLink(struct NaClAppThread *natp,
   char           newpath[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks)
+  if (!NaClFileAccessEnabled())
     return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, oldpath, sizeof oldpath, oldname);
+  retval = CopyHostPathInFromUser(nap, oldpath, sizeof oldpath, oldname);
   if (0 != retval)
     return retval;
 
-  retval = CopyPathFromUser(nap, newpath, sizeof newpath, newname);
+  retval = CopyHostPathInFromUser(nap, newpath, sizeof newpath, newname);
   if (0 != retval)
     return retval;
 
@@ -387,14 +367,14 @@ int32_t NaClSysRename(struct NaClAppThread *natp,
   char           newpath[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks)
+  if (!NaClFileAccessEnabled())
     return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, oldpath, sizeof oldpath, oldname);
+  retval = CopyHostPathInFromUser(nap, oldpath, sizeof oldpath, oldname);
   if (0 != retval)
     return retval;
 
-  retval = CopyPathFromUser(nap, newpath, sizeof newpath, newname);
+  retval = CopyHostPathInFromUser(nap, newpath, sizeof newpath, newname);
   if (0 != retval)
     return retval;
 
@@ -409,14 +389,15 @@ int32_t NaClSysSymlink(struct NaClAppThread *natp,
   char           newpath[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
+  /* We do not allow creation of symlinks in "-m" mode. */
   if (!NaClAclBypassChecks)
     return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, oldpath, sizeof oldpath, oldname);
+  retval = CopyHostPathInFromUser(nap, oldpath, sizeof oldpath, oldname);
   if (0 != retval)
     return retval;
 
-  retval = CopyPathFromUser(nap, newpath, sizeof newpath, newname);
+  retval = CopyHostPathInFromUser(nap, newpath, sizeof newpath, newname);
   if (0 != retval)
     return retval;
 
@@ -430,10 +411,10 @@ int32_t NaClSysChmod(struct NaClAppThread *natp,
   char           pathname[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks)
+  if (!NaClFileAccessEnabled())
     return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  retval = CopyHostPathInFromUser(nap, pathname, sizeof pathname, path);
   if (0 != retval)
     return retval;
 
@@ -447,7 +428,7 @@ int32_t NaClSysAccess(struct NaClAppThread *natp,
   char           pathname[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks)
+  if (!NaClFileAccessEnabled())
     return -NACL_ABI_EACCES;
 
   /*
@@ -457,7 +438,7 @@ int32_t NaClSysAccess(struct NaClAppThread *natp,
       && (amode & ~(NACL_ABI_R_OK | NACL_ABI_W_OK | NACL_ABI_X_OK)) != 0)
     return -NACL_ABI_EINVAL;
 
-  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  retval = CopyHostPathInFromUser(nap, pathname, sizeof pathname, path);
   if (0 != retval)
     return retval;
 
@@ -476,10 +457,11 @@ int32_t NaClSysReadlink(struct NaClAppThread *natp,
   int32_t        retval = -NACL_ABI_EINVAL;
   uint32_t       result_size;
 
+  /* We do not allow usage of symlinks in "-m" mode. */
   if (!NaClAclBypassChecks)
     return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
+  retval = CopyHostPathInFromUser(nap, pathname, sizeof pathname, path);
   if (0 != retval)
     return retval;
 
@@ -524,24 +506,18 @@ int32_t NaClSysUtimes(struct NaClAppThread *natp,
            " 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, (uintptr_t) path, (uintptr_t) times);
 
-  if (!NaClAclBypassChecks) {
-    retval = -NACL_ABI_EACCES;
-    goto cleanup;
-  }
+  if (!NaClFileAccessEnabled())
+    return -NACL_ABI_EACCES;
 
-  retval = CopyPathFromUser(nap, kern_path, sizeof kern_path, path);
-  if (0 != retval) {
-    goto cleanup;
-  }
+  retval = CopyHostPathInFromUser(nap, kern_path, sizeof kern_path, path);
+  if (0 != retval)
+    return retval;
 
   if (times != 0 &&
       !NaClCopyInFromUser(nap, &kern_times, (uintptr_t) times,
                           sizeof kern_times)) {
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
+    return -NACL_ABI_EFAULT;
   }
 
-  retval = NaClHostDescUtimes(kern_path, (times != 0) ? kern_times : NULL);
-cleanup:
-  return retval;
+  return NaClHostDescUtimes(kern_path, (times != 0) ? kern_times : NULL);
 }

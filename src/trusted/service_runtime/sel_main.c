@@ -124,6 +124,7 @@ static void PrintUsage(void) {
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-l log_file]\n"
+          "               [-m fs_root]\n"
           "               [-acFglQsSQv]\n"
           "               -- [nacl_file] [args]\n"
           "\n");
@@ -141,6 +142,14 @@ static void PrintUsage(void) {
           " -E <name=value>|<name> set an environment variable\n"
           " -p pass through all environment variables\n");
   fprintf(stderr,
+          " -m <directory> mount directory as root.\n"
+          "    If not provided (and -a is also missing), no filesystem access\n"
+          "    of any kind is allowed. If provided, safely allows read/write\n"
+          "    access to just the provided directory as if it were the FS\n"
+          "    root. BEFORE USING, READ 'documentation/filesystem_access.txt'\n"
+          "    FOR A LIST OF CONSTRAINTS ON SETTING UP THE MOUNTED DIRECTORY.\n"
+          "    If both -m and -a are passed, -m behavior supersedes -a for\n"
+          "    filesystem operations.\n"
           "\n"
           " (testing flags)\n"
           " -a allow file access plus some other syscalls! dangerous!\n"
@@ -176,6 +185,7 @@ static int my_getopt(int argc, char *const *argv, const char *shortopts) {
 struct SelLdrOptions {
   char *nacl_file;
   char *blob_library_file;
+  char *root_mount;
   int app_argc;
   char **app_argv;
 
@@ -200,6 +210,7 @@ static void SelLdrOptionsCtor(struct SelLdrOptions *options) {
 
   options->nacl_file = NULL;
   options->blob_library_file = NULL;
+  options->root_mount = NULL;
   options->app_argc = 0;
   options->app_argv = NULL;
 
@@ -245,7 +256,7 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
 #if NACL_LINUX
                        "+D:z:"
 #endif
-                       "aB:cdeE:f:Fgh:i:l:pqQr:RsSvw:X:Z")) != -1) {
+                       "aB:cdeE:f:Fgh:i:l:m:pqQr:RsSvw:X:Z")) != -1) {
     switch (opt) {
       case 'a':
         if (!options->quiet)
@@ -338,6 +349,9 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
            */
           NaClLogSetFile(optarg);
         }
+        break;
+      case 'm':
+        options->root_mount = optarg;
         break;
       case 'p':
         options->enable_env_passthrough = 1;
@@ -554,7 +568,19 @@ int NaClSelLdrMain(int argc, char **argv) {
 #endif
   }
 
-  if (options->debug_mode_bypass_acl_checks) {
+
+  if (options->root_mount != NULL) {
+#if NACL_WINDOWS
+    NaClLog(LOG_ERROR, "-m option not supported on Windows\n");
+    return -1;
+#else
+    if (!NaClMountRootDir(options->root_mount)) {
+      NaClLog(LOG_ERROR, "Failed to mount root dir\n");
+      return -1;
+    }
+#endif
+  } else if (options->debug_mode_bypass_acl_checks) {
+    /* If both -m and -a are specified, -m takes precedence. */
     NaClInsecurelyBypassAllAclChecks();
   }
 
@@ -684,7 +710,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    *
    * We cannot enable the sandbox if file access is enabled.
    */
-  if (!NaClAclBypassChecks && g_enable_outer_sandbox_func != NULL) {
+  if (!NaClFileAccessEnabled() && g_enable_outer_sandbox_func != NULL) {
     g_enable_outer_sandbox_func();
   }
 
@@ -716,6 +742,14 @@ int NaClSelLdrMain(int argc, char **argv) {
   fflush((FILE *) NULL);
 
   NaClAppStartModule(nap, NULL, NULL);
+
+  /*
+   * For restricted file access, change directory to the root
+   * of the restricted directory.
+   */
+  if (NaClRootDir != NULL && NaClHostDescChdir(NaClRootDir)) {
+    NaClLog(LOG_FATAL, "Could not change directory to root dir\n");
+  }
 
   /*
    * error reporting done; can quit now if there was an error earlier.

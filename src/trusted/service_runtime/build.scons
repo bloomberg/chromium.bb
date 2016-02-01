@@ -45,6 +45,7 @@ ldr_inputs = [
     'nacl_valgrind_hooks.c',
     'sel_addrspace.c',
     'sel_ldr.c',
+    'sel_ldr_filename.c',
     'sel_ldr_standard.c',
     'sel_ldr_thread_interface.c',
     'sel_main_common.c',

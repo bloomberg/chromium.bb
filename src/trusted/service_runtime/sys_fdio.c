@@ -135,7 +135,7 @@ int32_t NaClSysGetdents(struct NaClAppThread *natp,
            "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n"),
           (uintptr_t) natp, d, dirp, count, count);
 
-  if (!NaClAclBypassChecks) {
+  if (!NaClFileAccessEnabled()) {
     /*
      * Filesystem access is disabled, so disable the getdents() syscall.
      * We do this for security hardening, though it should be redundant,
@@ -416,7 +416,7 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
   retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
             Fstat)(ndp, &result);
   if (0 == retval) {
-    if (!NaClAclBypassChecks) {
+    if (!NaClFileAccessEnabled()) {
       result.nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
     }
     if (!NaClCopyOutToUser(nap, nasp, &result, sizeof result)) {
