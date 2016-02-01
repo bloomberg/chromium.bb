@@ -85,6 +85,10 @@ views::View* SaveCardBubbleViews::GetInitiallyFocusedView() {
   return save_button_;
 }
 
+base::string16 SaveCardBubbleViews::GetAccessibleWindowTitle() const {
+  return controller_->GetWindowTitle();
+}
+
 void SaveCardBubbleViews::WindowClosing() {
   if (controller_)
     controller_->OnBubbleClosed();
@@ -138,8 +142,9 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
                            views::kUnrelatedControlHorizontalSpacing,
                            views::kUnrelatedControlLargeHorizontalSpacing));
 
-  // Add a title label. (We don't use GetWindowTitle because it doesn't support
-  // multi-line.)
+  // Add a title label. (We don't simply override WidgetDelegate::GetWindowTitle
+  // and WidgetDelegate::ShouldShowWindowTitle because the built-in bubble title
+  // doesn't support multi-line.)
   ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   views::Label* title_label =
       new views::Label(controller_->GetWindowTitle(),
