@@ -50,12 +50,15 @@ span ~ a {
 .list-frame {
   @apply(--layout-center);
   display: block;
-  margin-left: 48px;
-  padding: 0;
+  padding: 0 20px 0 48px;
 }
 
 .list-frame select {
   -webkit-margin-start: 4px;
+}
+
+.list-frame .secondary {
+  color: #969696;
 }
 
 .list-item {
@@ -64,15 +67,17 @@ span ~ a {
   padding: 0;
 }
 
-.list-item .middle {
+.list-item > .middle {
   flex: 1;
   margin: 8px 12px;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.list-item .secondary {
-  color: #969696;
+.list-item > .start {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .list-item > paper-icon-item {
@@ -91,17 +96,17 @@ span ~ a {
 .settings-box {
   @apply(--layout-center);
   border-top: 1px solid #e0e0e0;
-  display: block;
+  display: flex;
   min-height: 40px;
-  padding: 8px 16px;
+  padding: 0 20px;
 }
 
 .settings-box.first {
   border-top: none;
 }
 
-.settings-box.row {
-  display: flex;
+.settings-box.block {
+  display: block;
 }
 
 .settings-box.two-line {
@@ -112,11 +117,7 @@ span ~ a {
   color: #969696;
 }
 
-.split {
-  display: flex;
-}
-
-.split .start {
+.settings-box .start {
   flex: auto;
 }
 

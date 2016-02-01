@@ -9,7 +9,7 @@
       href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="downloads_page.css">
   <template>
-    <div class="settings-box split first">
+    <div class="settings-box first">
       <div class="start">
         <settings-input id="downloadsPath" always-flow-label readonly
             i18n-values="label:downloadLocation"
@@ -21,7 +21,7 @@
           i18n-content="changeDownloadLocation">
       </paper-button>
     </div>
-    <div class="settings-box">
+    <div class="settings-box block">
       <settings-checkbox pref="{{prefs.download.prompt_for_download}}"
           i18n-values="label:promptForDownload">
       </settings-checkbox>

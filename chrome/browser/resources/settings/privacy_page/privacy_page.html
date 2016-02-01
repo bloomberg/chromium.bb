@@ -20,7 +20,7 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="privacy">
       <neon-animatable id="main">
-        <div class="settings-box first">
+        <div class="settings-box block first">
           <p class="privacy-explanation"
               i18n-values=".innerHTML:improveBrowsingExperience">
           </p>
@@ -70,7 +70,7 @@
           </settings-checkbox>
 </if>
         </div>
-        <div class="settings-box" on-tap="onManageCertificatesTap_">
+        <div class="settings-box two-line" on-tap="onManageCertificatesTap_">
           <div class="start">
             <div i18n-content="manageCertificates"></div>
             <div class="secondary">
@@ -79,7 +79,7 @@
             </div>
           </div>
         </div>
-        <div class="settings-box" on-tap="onSiteSettingsTap_">
+        <div class="settings-box two-line" on-tap="onSiteSettingsTap_">
           <div class="start">
             <div i18n-content="siteSettings"></div>
             <div class="secondary">

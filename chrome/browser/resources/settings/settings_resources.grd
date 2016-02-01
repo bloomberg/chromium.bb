@@ -590,9 +590,6 @@
         <structure name="IDR_SETTINGS_BLUETOOTH_PAIR_DEVICE_DIALOG_JS"
                    file="bluetooth_page/bluetooth_pair_device_dialog.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_DATE_TIME_PAGE_CSS"
-                   file="date_time_page/date_time_page.css"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DATE_TIME_PAGE_HTML"
                    file="date_time_page/date_time_page.html"
                    type="chrome_html" />

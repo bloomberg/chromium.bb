@@ -19,7 +19,7 @@
       <h2 i18n-content="enabledLanguages"></h2>
       <div>
         <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-          <paper-item class="split">
+          <paper-item>
             <div class="language-name"
                 title="[[item.language.nativeDisplayName]]"
                 >[[item.language.displayName]]</div>
@@ -46,4 +46,3 @@
   </template>
   <script src="manage_languages_page.js"></script>
 </dom-module>
-

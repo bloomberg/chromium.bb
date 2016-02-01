@@ -3,18 +3,16 @@
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 
 <dom-module id="settings-date-time-page">
-  <link rel="import" type="css"
-      href="chrome://md-settings/settings_shared.css">
-  <link rel="import" type="css" href="date_time_page.css">
+  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <template>
-    <div class="horizontal layout center">
-      <span class="time-zone-label" i18n-content="timeZone"></span>
+    <div class="settings-box block">
+      <div i18n-content="timeZone"></div>
+      <settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
+          i18n-values="label:use24HourClock">
+      </settings-checkbox>
+      <div id="setAutomatically" i18n-content="dateTimeSetAutomatically">
+      </div>
     </div>
-    <settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
-        i18n-values="label:use24HourClock">
-    </settings-checkbox>
-    <span id="setAutomatically" i18n-content="dateTimeSetAutomatically">
-    </span>
   </template>
   <script src="date_time_page.js"></script>
 </dom-module>

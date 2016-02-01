@@ -24,14 +24,14 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="appearance">
       <neon-animatable id="main">
-        <div class="settings-box split first">
+        <div class="settings-box first">
           <div class="start">
             <iron-icon icon="image:brightness-1"></iron-icon>
             <paper-button i18n-content="setWallpaper"></paper-button>
           </div>
           <iron-icon icon="exit-to-app" disabled></iron-icon>
         </div>
-        <div class="settings-box split">
+        <div class="settings-box">
           <div class="start">
             <iron-icon icon="image:brightness-1"></iron-icon>
             <paper-button id="get-themes"
@@ -46,7 +46,7 @@
                 >[[i18n('resetToDefaultTheme')]]</paper-button>
           </template>
         </div>
-        <div class="settings-box split two-line">
+        <div class="settings-box two-line">
           <settings-checkbox class="start" i18n-values="label:showHomeButton"
               pref="{{prefs.browser.show_home_button}}">
           </settings-checkbox>
@@ -66,24 +66,24 @@
             </settings-radio-group>
           </div>
         </template>
-        <div class="settings-box split">
+        <div class="settings-box">
           <settings-checkbox class="start" i18n-values="label:showBookmarksBar"
               pref="{{prefs.bookmark_bar.show_on_all_tabs}}">
           </settings-checkbox>
         </div>
-        <div class="settings-box split">
+        <div class="settings-box">
           <div class="start" i18n-content="fontSize"></div>
           <settings-dropdown-menu id="defaultFontSize"
               pref="{{prefs.webkit.webprefs.default_font_size}}"
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <div class="settings-box split">
+        <div class="settings-box">
           <div class="start" i18n-content="customizeFonts"></div>
           <paper-button on-tap="onCustomizeFontsTap_"
               i18n-content="customizeFonts"></paper-button>
         </div>
-        <div class="settings-box split">
+        <div class="settings-box">
           <div class="start" i18n-content="pageZoom"></div>
           <settings-dropdown-menu id="pageZoom"
               pref="{{defaultZoomLevel_}}"

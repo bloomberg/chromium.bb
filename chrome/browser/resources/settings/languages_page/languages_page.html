@@ -27,13 +27,13 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="languages">
       <neon-animatable id="main">
-        <div class="settings-box first">
+        <div class="settings-box block first">
           <h2 i18n-content="languagesListTitle"></h2>
           <div>
             <array-selector id="languageSelector" selected="{{detailLanguage}}"
                 items="{{languages.enabledLanguages}}"></array-selector>
             <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-              <paper-item class="split" on-tap="onLanguageTap_">
+              <paper-item on-tap="onLanguageTap_">
                 <div class="flex" title="[[item.language.nativeDisplayName]]"
                     >[[item.language.displayName]]</div>
 <if expr="chromeos or is_win">
@@ -54,7 +54,7 @@
           <h2 i18n-content="inputMethodsListTitle"></h2>
           <div>
             <template is="dom-repeat" items="{{languages.inputMethods}}">
-              <paper-item class="split">
+              <paper-item>
                 <div class="flex">[[item.name]]</div>
                 <iron-icon icon="done"
                     hidden$="[[!isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">

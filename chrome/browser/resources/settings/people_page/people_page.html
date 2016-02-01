@@ -25,40 +25,38 @@
         section="people">
       <neon-animatable id="main">
         <div class="settings-box first">
-          <div class="split">
-            <span class="start">
-              <img id="account-picture" src="[[profileIconUrl_]]"
-                  on-tap="onPictureTap_">
+          <span class="start">
+            <img id="account-picture" src="[[profileIconUrl_]]"
+                on-tap="onPictureTap_">
 <if expr="chromeos">
-              <span id="profile-name" on-tap="onProfileNameTap_">
-                [[profileName_]]
-              </span>
+            <span id="profile-name" on-tap="onProfileNameTap_">
+              [[profileName_]]
+            </span>
 </if>
 <if expr="not chromeos">
-              <span id="profile-name">
-                [[profileName_]]
-              </span>
+            <span id="profile-name">
+              [[profileName_]]
+            </span>
 </if>
-            </span>
-            <span>
-              <template is="dom-if" if="[[!syncStatus.signedIn]]">
-                <paper-button on-tap="onSigninTap_" raised
-                    disabled="[[syncStatus.setupInProgress]]">
-                    [[i18n('syncSignin')]]
-                </paper-button>
-              </template>
-              <template is="dom-if" if="[[syncStatus.signedIn]]">
-                <paper-button on-tap="onDisconnectTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
-                    [[i18n('syncDisconnect')]]
-                </paper-button>
-              </template>
-            </span>
-          </div>
+          </span>
+          <span>
+            <template is="dom-if" if="[[!syncStatus.signedIn]]">
+              <paper-button on-tap="onSigninTap_" raised
+                  disabled="[[syncStatus.setupInProgress]]">
+                  [[i18n('syncSignin')]]
+              </paper-button>
+            </template>
+            <template is="dom-if" if="[[syncStatus.signedIn]]">
+              <paper-button on-tap="onDisconnectTap_"
+                  disabled="[[syncStatus.setupInProgress]]">
+                  [[i18n('syncDisconnect')]]
+              </paper-button>
+            </template>
+          </span>
           <div hidden="[[syncStatus.signedIn]]">[[i18n('syncOverview')]]</div>
         </div>
 
-        <div class="settings-box split"
+        <div class="settings-box"
             hidden="[[!isStatusTextSet_(syncStatus)]]">
           <span id="syncStatusText"></span>
           <paper-button on-tap="onActionLinkTap_">

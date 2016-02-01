@@ -9,26 +9,24 @@
   <link rel="import" type="css" href="change_picture.css">
   <template>
     <div class="settings-box">
-      <div class="split">
-        <div id="available-icons" class="start">
-          <iron-selector id="selector" on-iron-activate="onImageActivate_"
-              selected-item="{{selectedItem_}}">
-            <img id="cameraImage" data-type="camera"
-                src="[[cameraImageUrl_]]" alt="[[cameraImageTitle_]]">
-            <img id="profileImage" data-type="profile"
-                src="[[profileImageUrl_]]"
-                alt="[[i18n('profilePhotoLoading')]]">
-            <img id="oldImage" data-type="old"
-                src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
-            <template is="dom-repeat" items="[[defaultImages_]]">
-              <img data-type="default" src="[[item.url]]" alt="[[item.title]]">
-            </template>
-          </iron-selector>
-        </div>
-        <div id="preview-pane">
-          <img id="previewImage" src="[[selectedItem_.src]]"
-              hidden="[[isPreviewImageHidden_(selectedItem_)]]">
-        </div>
+      <div id="available-icons" class="start">
+        <iron-selector id="selector" on-iron-activate="onImageActivate_"
+            selected-item="{{selectedItem_}}">
+          <img id="cameraImage" data-type="camera"
+              src="[[cameraImageUrl_]]" alt="[[cameraImageTitle_]]">
+          <img id="profileImage" data-type="profile"
+              src="[[profileImageUrl_]]"
+              alt="[[i18n('profilePhotoLoading')]]">
+          <img id="oldImage" data-type="old"
+              src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
+          <template is="dom-repeat" items="[[defaultImages_]]">
+            <img data-type="default" src="[[item.url]]" alt="[[item.title]]">
+          </template>
+        </iron-selector>
+      </div>
+      <div id="preview-pane">
+        <img id="previewImage" src="[[selectedItem_.src]]"
+            hidden="[[isPreviewImageHidden_(selectedItem_)]]">
       </div>
     </div>
   </template>
