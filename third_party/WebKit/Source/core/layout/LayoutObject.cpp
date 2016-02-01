@@ -743,6 +743,10 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (object->isTablePart())
         return false;
 
+    // Scrollbar parts can be removed during layout. Avoid the complexity of having to deal with that.
+    if (object->isLayoutScrollbarPart())
+        return false;
+
     // Inside multicol it's generally problematic to allow relayout roots. The multicol container
     // itself may be scheduled for relayout as well (due to other changes that may have happened
     // since the previous layout pass), which might affect the column heights, which may affect how

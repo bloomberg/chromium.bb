@@ -20,19 +20,9 @@ unsigned LayoutSubtreeRootList::LayoutSubtree::determineDepth(LayoutObject* obje
 
 void LayoutSubtreeRootList::removeRoot(LayoutObject& object)
 {
-    if (!m_roots.isEmpty()) {
-        m_roots.remove(&object);
-        ASSERT(m_orderedRoots.isEmpty());
-    } else {
-        // When removed during layout, we have to search the vector
-        int rootCount = m_orderedRoots.size();
-        for (int i = 0; i < rootCount; ++i) {
-            if (m_orderedRoots[i].object == &object) {
-                m_orderedRoots.remove(i);
-                return;
-            }
-        }
-    }
+    auto root = m_roots.find(&object);
+    ASSERT(root == m_roots.end() || m_orderedRoots.isEmpty());
+    m_roots.remove(root);
 }
 
 void LayoutSubtreeRootList::clearAndMarkContainingBlocksForLayout()
