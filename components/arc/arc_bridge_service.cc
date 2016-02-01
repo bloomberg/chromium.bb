@@ -119,7 +119,7 @@ void ArcBridgeService::OnAuthVersionReady(int32_t version) {
 
 void ArcBridgeService::CloseAuthChannel() {
   DCHECK(CalledOnValidThread());
-  if (!input_ptr_)
+  if (!auth_ptr_)
     return;
 
   auth_ptr_.reset();
