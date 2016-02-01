@@ -61,8 +61,6 @@ class OortOnlineTBM(perf_benchmark.PerfBenchmark):
         # TODO(perezju): Temporary workaround to disable periodic memory dumps.
         # See: http://crbug.com/513692
         '--enable-memory-benchmarking',
-        # TODO(ssid): Remove this flag after fixing http://crbug.com/461788.
-        '--no-sandbox'
     ])
 
   def CreateStorySet(self, options):
