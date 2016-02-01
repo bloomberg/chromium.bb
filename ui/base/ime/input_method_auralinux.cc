@@ -404,8 +404,12 @@ ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
 
 void InputMethodAuraLinux::ConfirmCompositionText() {
   TextInputClient* client = GetTextInputClient();
-  if (client && client->HasCompositionText())
+  if (client && client->HasCompositionText()) {
     client->ConfirmCompositionText();
+
+    if (GetEngine())
+      GetEngine()->Reset();
+  }
 
   ResetContext();
 }

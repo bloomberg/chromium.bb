@@ -630,12 +630,14 @@ void InputMethodWin::ConfirmCompositionText() {
   if (composing_window_handle_)
     imm32_manager_.CleanupComposition(composing_window_handle_);
 
-  if (!IsTextInputTypeNone()) {
-    // Though above line should confirm the client's composition text by sending
-    // a result text to us, in case the input method and the client are in
-    // inconsistent states, we check the client's composition state again.
-    if (GetTextInputClient()->HasCompositionText())
-      GetTextInputClient()->ConfirmCompositionText();
+  // Though above line should confirm the client's composition text by sending a
+  // result text to us, in case the input method and the client are in
+  // inconsistent states, we check the client's composition state again.
+  if (!IsTextInputTypeNone() && GetTextInputClient()->HasCompositionText()) {
+    GetTextInputClient()->ConfirmCompositionText();
+
+    if (GetEngine())
+      GetEngine()->Reset();
   }
 }
 
