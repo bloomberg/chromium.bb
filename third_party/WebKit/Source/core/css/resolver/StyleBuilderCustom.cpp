@@ -69,7 +69,6 @@
 #include "core/style/CounterContent.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "core/style/PathStyleMotionPath.h"
 #include "core/style/QuotesData.h"
 #include "core/style/SVGComputedStyle.h"
 #include "core/style/StyleGeneratedImage.h"
@@ -431,31 +430,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTransform(StyleResolverState& s
     TransformOperations operations;
     TransformBuilder::createTransformOperations(*value, state.cssToLengthConversionData(), operations);
     state.style()->setTransform(operations);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyMotionPath(StyleResolverState& state)
-{
-    if (state.parentStyle()->motionPath())
-        state.style()->setMotionPath(state.parentStyle()->motionPath());
-    else
-        state.style()->resetMotionPath();
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyMotionPath(StyleResolverState& state, CSSValue* value)
-{
-    if (value->isPathValue()) {
-        const String& pathString = toCSSPathValue(value)->pathString();
-        state.style()->setMotionPath(PathStyleMotionPath::create(pathString));
-        return;
-    }
-
-    ASSERT(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
-    state.style()->resetMotionPath();
-}
-
-void StyleBuilderFunctions::applyInitialCSSPropertyMotionPath(StyleResolverState& state)
-{
-    state.style()->resetMotionPath();
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(StyleResolverState& state)

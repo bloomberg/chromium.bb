@@ -22,7 +22,7 @@ public:
 
     static CSSPathValue* emptyPathValue();
 
-    StylePath* cachedPath();
+    StylePath* cachedPath() const;
     String customCSSText() const;
 
     bool equals(const CSSPathValue&) const;
@@ -36,7 +36,7 @@ private:
     CSSPathValue(PassRefPtr<SVGPathByteStream>, StylePath*);
 
     RefPtr<SVGPathByteStream> m_pathByteStream;
-    RefPtr<StylePath> m_cachedPath;
+    mutable RefPtr<StylePath> m_cachedPath;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, isPathValue());

@@ -49,7 +49,6 @@
 #include "core/style/StyleGridData.h"
 #include "core/style/StyleGridItemData.h"
 #include "core/style/StyleInheritedData.h"
-#include "core/style/StyleMotionPath.h"
 #include "core/style/StyleMotionRotation.h"
 #include "core/style/StyleMultiColData.h"
 #include "core/style/StyleRareInheritedData.h"
@@ -896,7 +895,7 @@ public:
     bool hasTransformOperations() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
-    StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
+    StylePath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
     bool hasMotionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path; }
     const Length& motionOffset() const { return rareNonInheritedData->m_transform->m_motion.m_offset; }
     const StyleMotionRotation& motionRotation() const { return rareNonInheritedData->m_transform->m_motion.m_rotation; }
@@ -1423,8 +1422,7 @@ public:
     void setTextEmphasisPosition(TextEmphasisPosition position) { SET_VAR(rareInheritedData, textEmphasisPosition, position); }
     bool setTextOrientation(TextOrientation);
 
-    void setMotionPath(PassRefPtr<StyleMotionPath>);
-    void resetMotionPath();
+    void setMotionPath(PassRefPtr<StylePath>);
     void setMotionOffset(const Length& motionOffset) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_motion.m_offset, motionOffset); }
     void setMotionRotation(const StyleMotionRotation& motionRotation) { SET_NESTED_VAR(rareNonInheritedData, m_transform, m_motion.m_rotation, motionRotation); }
 
@@ -1747,7 +1745,7 @@ public:
     static TransformOrigin initialTransformOrigin() { return TransformOrigin(Length(50.0, Percent), Length(50.0, Percent), 0); }
     static EPointerEvents initialPointerEvents() { return PE_AUTO; }
     static ETransformStyle3D initialTransformStyle3D() { return TransformStyle3DFlat; }
-    static const StyleMotionPath* initialMotionPath() { return nullptr; }
+    static StylePath* initialMotionPath() { return nullptr; }
     static Length initialMotionOffset() { return Length(0, Fixed); }
     static StyleMotionRotation initialMotionRotation() { return StyleMotionRotation(0, MotionRotationAuto); }
     static EBackfaceVisibility initialBackfaceVisibility() { return BackfaceVisibilityVisible; }

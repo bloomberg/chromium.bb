@@ -13,6 +13,7 @@ namespace blink {
 
 StylePath::StylePath(PassRefPtr<SVGPathByteStream> pathByteStream)
     : m_byteStream(pathByteStream)
+    , m_pathLength(std::numeric_limits<float>::quiet_NaN())
 {
     ASSERT(m_byteStream);
 }
@@ -39,6 +40,18 @@ const Path& StylePath::path() const
         buildPathFromByteStream(*m_byteStream, *m_path);
     }
     return *m_path;
+}
+
+float StylePath::length() const
+{
+    if (std::isnan(m_pathLength))
+        m_pathLength = path().length();
+    return m_pathLength;
+}
+
+bool StylePath::isClosed() const
+{
+    return path().isClosed();
 }
 
 const SVGPathByteStream& StylePath::byteStream() const

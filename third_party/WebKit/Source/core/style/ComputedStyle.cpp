@@ -30,7 +30,6 @@
 #include "core/style/ContentData.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "core/style/PathStyleMotionPath.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleImage.h"
@@ -992,8 +991,8 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect
 void ComputedStyle::applyMotionPathTransform(float originX, float originY, TransformationMatrix& transform) const
 {
     const StyleMotionData& motionData = rareNonInheritedData->m_transform->m_motion;
-    ASSERT(motionData.m_path && motionData.m_path->isPathStyleMotionPath());
-    const PathStyleMotionPath& motionPath = toPathStyleMotionPath(*motionData.m_path);
+    ASSERT(motionData.m_path);
+    const StylePath& motionPath = *motionData.m_path;
     float pathLength = motionPath.length();
     float distance = floatValueForLength(motionData.m_offset, pathLength);
     float computedDistance;
@@ -1681,15 +1680,9 @@ void ComputedStyle::setMarginEnd(const Length& margin)
     }
 }
 
-void ComputedStyle::setMotionPath(PassRefPtr<StyleMotionPath> path)
+void ComputedStyle::setMotionPath(PassRefPtr<StylePath> path)
 {
-    ASSERT(path);
     rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
-}
-
-void ComputedStyle::resetMotionPath()
-{
-    rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = nullptr;
 }
 
 int ComputedStyle::outlineOutsetExtent() const

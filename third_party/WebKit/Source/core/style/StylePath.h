@@ -25,6 +25,9 @@ public:
     static StylePath* emptyPath();
 
     const Path& path() const;
+    float length() const;
+    bool isClosed() const;
+
     const SVGPathByteStream& byteStream() const;
 
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const;
@@ -36,6 +39,7 @@ private:
 
     RefPtr<SVGPathByteStream> m_byteStream;
     mutable OwnPtr<Path> m_path;
+    mutable float m_pathLength;
 };
 
 } // namespace blink

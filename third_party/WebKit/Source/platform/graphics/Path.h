@@ -106,6 +106,7 @@ public:
 
     void clear();
     bool isEmpty() const;
+    bool isClosed() const;
     // Specify whether this path is volatile. Temporary paths that are discarded or
     // modified after use should be marked as volatile. This is a hint to the device
     // to not cache this path.

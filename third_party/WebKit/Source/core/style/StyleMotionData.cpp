@@ -4,8 +4,6 @@
 
 #include "core/style/StyleMotionData.h"
 
-#include "core/style/PathStyleMotionPath.h"
-
 namespace blink {
 
 bool StyleMotionData::operator==(const StyleMotionData& o) const
@@ -16,10 +14,7 @@ bool StyleMotionData::operator==(const StyleMotionData& o) const
     if (!m_path || !o.m_path)
         return !m_path && !o.m_path;
 
-    if (m_path->isPathStyleMotionPath() && o.m_path->isPathStyleMotionPath())
-        return toPathStyleMotionPath(*m_path).equals(toPathStyleMotionPath(*o.m_path));
-
-    return false;
+    return m_path->equals(*o.m_path);
 }
 
 } // namespace blink

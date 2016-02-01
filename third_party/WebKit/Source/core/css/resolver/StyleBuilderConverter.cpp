@@ -975,9 +975,17 @@ RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(Style
     return primitiveValue.getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
-PassRefPtr<StylePath> StyleBuilderConverter::convertPath(StyleResolverState&, CSSValue& value)
+PassRefPtr<StylePath> StyleBuilderConverter::convertPath(StyleResolverState&, const CSSValue& value)
 {
     return toCSSPathValue(value).cachedPath();
+}
+
+PassRefPtr<StylePath> StyleBuilderConverter::convertPathOrNone(StyleResolverState& state, const CSSValue& value)
+{
+    if (value.isPathValue())
+        return convertPath(state, value);
+    ASSERT(value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
+    return nullptr;
 }
 
 } // namespace blink

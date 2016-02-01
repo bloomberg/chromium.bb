@@ -275,6 +275,11 @@ bool Path::isEmpty() const
     return m_path.isEmpty();
 }
 
+bool Path::isClosed() const
+{
+    return m_path.isLastContourClosed();
+}
+
 void Path::setIsVolatile(bool isVolatile)
 {
     m_path.setIsVolatile(isVolatile);

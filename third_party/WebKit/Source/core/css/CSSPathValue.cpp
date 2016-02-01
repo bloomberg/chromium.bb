@@ -52,7 +52,7 @@ CSSPathValue* CSSPathValue::emptyPathValue()
     return empty.get();
 }
 
-StylePath* CSSPathValue::cachedPath()
+StylePath* CSSPathValue::cachedPath() const
 {
     if (!m_cachedPath)
         m_cachedPath = StylePath::create(m_pathByteStream);

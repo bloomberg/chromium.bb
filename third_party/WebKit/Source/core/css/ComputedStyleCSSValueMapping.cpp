@@ -53,11 +53,9 @@
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
-#include "core/style/PathStyleMotionPath.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleVariableData.h"
-#include "core/svg/SVGPathUtilities.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -2452,14 +2450,10 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyMotion:
         return valuesForShorthandProperty(motionShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
 
-    case CSSPropertyMotionPath: {
-        const StyleMotionPath* styleMotionPath = style.motionPath();
-        if (!styleMotionPath)
-            return cssValuePool().createIdentifierValue(CSSValueNone);
-
-        ASSERT(styleMotionPath->isPathStyleMotionPath());
-        return CSSPathValue::create(toPathStyleMotionPath(styleMotionPath)->pathString());
-    }
+    case CSSPropertyMotionPath:
+        if (const StylePath* styleMotionPath = style.motionPath())
+            return styleMotionPath->computedCSSValue();
+        return cssValuePool().createIdentifierValue(CSSValueNone);
 
     case CSSPropertyMotionOffset:
         return zoomAdjustedPixelValueForLength(style.motionOffset(), style);
