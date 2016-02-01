@@ -410,6 +410,7 @@
       'omnibox/browser/history_quick_provider_unittest.cc',
       'omnibox/browser/history_url_provider_unittest.cc',
       'omnibox/browser/in_memory_url_index_types_unittest.cc',
+      'omnibox/browser/in_memory_url_index_unittest.cc',
       'omnibox/browser/keyword_provider_unittest.cc',
       'omnibox/browser/omnibox_edit_unittest.cc',
       'omnibox/browser/omnibox_field_trial_unittest.cc',

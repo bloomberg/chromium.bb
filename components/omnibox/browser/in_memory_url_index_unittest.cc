@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -21,27 +22,23 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_profile.h"
-#include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/history_service_test_util.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/url_index_private_data.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 
 // The test version of the history url database table ('url') is contained in
-// a database file created from a text file('url_history_provider_test.db.txt').
+// a database file created from a text file('in_memory_url_index_test.db.txt').
 // The only difference between this table and a live 'urls' table from a
 // profile is that the last_visit_time column in the test table contains a
 // number specifying the number of days relative to 'today' to which the
@@ -148,7 +145,6 @@ class InMemoryURLIndexTest : public testing::Test {
   void PostSaveToCacheFileTask();
   const SchemeSet& scheme_whitelist();
 
-
   // Pass-through functions to simplify our friendship with URLIndexPrivateData.
   bool UpdateURL(const history::URLRow& row);
   bool DeleteURL(const GURL& url);
@@ -159,16 +155,16 @@ class InMemoryURLIndexTest : public testing::Test {
   void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
                               const URLIndexPrivateData& actual);
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<InMemoryURLIndex> url_index_;
-  TestingProfile profile_;
-  history::HistoryService* history_service_;
+  base::MessageLoop message_loop_;
+  base::SequencedWorkerPoolOwner pool_owner_;
+  base::ScopedTempDir history_dir_;
+  scoped_ptr<history::HistoryService> history_service_;
   history::HistoryDatabase* history_database_;
+  scoped_ptr<InMemoryURLIndex> url_index_;
 };
 
 InMemoryURLIndexTest::InMemoryURLIndexTest()
-    : history_service_(nullptr), history_database_(nullptr) {
-}
+    : pool_owner_(3, "Background Pool"), history_database_(nullptr) {}
 
 sql::Connection& InMemoryURLIndexTest::GetDB() {
   return history_database_->GetDB();
@@ -211,11 +207,9 @@ const SchemeSet& InMemoryURLIndexTest::scheme_whitelist() {
 }
 
 bool InMemoryURLIndexTest::UpdateURL(const history::URLRow& row) {
-  return GetPrivateData()->UpdateURL(history_service_,
-                                     row,
-                                     url_index_->languages_,
-                                     url_index_->scheme_whitelist_,
-                                     GetPrivateDataTracker());
+  return GetPrivateData()->UpdateURL(
+      history_service_.get(), row, url_index_->languages_,
+      url_index_->scheme_whitelist_, GetPrivateDataTracker());
 }
 
 bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
@@ -224,25 +218,25 @@ bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
 
 void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
-  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
-  profile_.CreateBookmarkModel(true);
-  bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(&profile_));
-  profile_.BlockUntilHistoryProcessesPendingRequests();
-  profile_.BlockUntilHistoryIndexIsRefreshed();
-  history_service_ = HistoryServiceFactory::GetForProfile(
-      &profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  if (history_dir_.CreateUniqueTempDir()) {
+    history_service_ = history::CreateHistoryService(
+        history_dir_.path(), std::string(), true);
+  }
   ASSERT_TRUE(history_service_);
+  BlockUntilInMemoryURLIndexIsRefreshed(url_index_.get());
+
   history::HistoryBackend* backend = history_service_->history_backend_.get();
   history_database_ = backend->db();
 
   // Create and populate a working copy of the URL history database.
   base::FilePath history_proto_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &history_proto_path);
-  history_proto_path = history_proto_path.Append(
-      FILE_PATH_LITERAL("History"));
+  PathService::Get(base::DIR_SOURCE_ROOT, &history_proto_path);
+  history_proto_path = history_proto_path.AppendASCII("components");
+  history_proto_path = history_proto_path.AppendASCII("test");
+  history_proto_path = history_proto_path.AppendASCII("data");
+  history_proto_path = history_proto_path.AppendASCII("omnibox");
   history_proto_path = history_proto_path.Append(TestDBName());
-  EXPECT_TRUE(base::PathExists(history_proto_path));
+  ASSERT_TRUE(base::PathExists(history_proto_path));
 
   std::ifstream proto_file(history_proto_path.value().c_str());
   static const size_t kCommandBufferMaxSize = 2048;
@@ -322,7 +316,7 @@ void InMemoryURLIndexTest::TearDown() {
 }
 
 base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
-    return FILE_PATH_LITERAL("url_history_provider_test.db.txt");
+    return FILE_PATH_LITERAL("in_memory_url_index_test.db.txt");
 }
 
 bool InMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
@@ -335,7 +329,7 @@ void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   SchemeSet client_schemes_to_whitelist;
   client_schemes_to_whitelist.insert(kClientWhitelistedScheme);
   url_index_.reset(new InMemoryURLIndex(
-      nullptr, history_service_, content::BrowserThread::GetBlockingPool(),
+      nullptr, history_service_.get(), pool_owner_.pool().get(),
       base::FilePath(), kTestLanguages, client_schemes_to_whitelist));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
@@ -479,7 +473,7 @@ class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
 };
 
 base::FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
-  return FILE_PATH_LITERAL("url_history_provider_test_limited.db.txt");
+  return FILE_PATH_LITERAL("in_memory_url_index_test_limited.db.txt");
 }
 
 bool LimitedInMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
@@ -1266,7 +1260,7 @@ TEST_F(InMemoryURLIndexTest, AddHistoryMatch) {
 
 class InMemoryURLIndexCacheTest : public testing::Test {
  public:
-  InMemoryURLIndexCacheTest() {}
+  InMemoryURLIndexCacheTest();
 
  protected:
   void SetUp() override;
@@ -1276,17 +1270,21 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   void set_history_dir(const base::FilePath& dir_path);
   bool GetCacheFilePath(base::FilePath* file_path) const;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<InMemoryURLIndex> url_index_;
 };
 
+InMemoryURLIndexCacheTest::InMemoryURLIndexCacheTest()
+    : pool_owner_(3, "Background Pool") {}
+
 void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path(temp_dir_.path());
-  url_index_.reset(new InMemoryURLIndex(
-      nullptr, nullptr, content::BrowserThread::GetBlockingPool(), path,
-      kTestLanguages, SchemeSet()));
+  url_index_.reset(new InMemoryURLIndex(nullptr, nullptr,
+                                        pool_owner_.pool().get(), path,
+                                        kTestLanguages, SchemeSet()));
 }
 
 void InMemoryURLIndexCacheTest::TearDown() {
