@@ -253,7 +253,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     helper_.reset();
   }
 
-  void SimulateDispatchEvent() {
+  void SimulateDispatchEvent(ServiceWorkerMetrics::EventType event_type) {
     ServiceWorkerStatusCode status =
         SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
 
@@ -266,9 +266,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
     // Start request, as if an event is being dispatched.
-    int request_id =
-        version_->StartRequest(ServiceWorkerMetrics::EventType::PUSH,
-                               CreateReceiverOnCurrentThread(&status));
+    int request_id = version_->StartRequest(
+        event_type, CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
 
     // And finish request, as if a response to the event was received.
@@ -482,26 +481,17 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 
   // Dispatch an event without starting the worker.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
-  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
 
   // The worker should be now started.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
   // Stop the worker, and then dispatch an event immediately after that.
-  status = SERVICE_WORKER_ERROR_FAILED;
   ServiceWorkerStatusCode stop_status = SERVICE_WORKER_ERROR_FAILED;
   version_->StopWorker(CreateReceiverOnCurrentThread(&stop_status));
-  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
   EXPECT_EQ(SERVICE_WORKER_OK, stop_status);
-
-  // Dispatch an event should return SERVICE_WORKER_OK since the worker
-  // should have been restarted to dispatch the event.
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
 
   // The worker should be now started again.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
@@ -574,8 +564,7 @@ TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
   // Dispatch an install event.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
 
   // Wait for the completion.
   bool status_change_called = false;
@@ -585,7 +574,6 @@ TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
   base::RunLoop().RunUntilIdle();
 
   // Version's status must not have changed during installation.
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_FALSE(status_change_called);
   EXPECT_EQ(ServiceWorkerVersion::INSTALLING, version_->status());
 }
@@ -763,7 +751,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_FreshWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(base::Time::Now());
-  SimulateDispatchEvent();
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
 
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_FALSE(version_->update_timer_.IsRunning());
@@ -771,15 +759,11 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_FreshWorker) {
 
 // Test that update isn't triggered for a non-active worker.
 TEST_F(ServiceWorkerVersionTest, StaleUpdate_NonActiveWorker) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   registration_->SetInstallingVersion(version_);
   registration_->set_last_update_check(GetYesterday());
-  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
 
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_FALSE(version_->update_timer_.IsRunning());
 }
@@ -792,7 +776,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(GetYesterday());
-  SimulateDispatchEvent();
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
   EXPECT_FALSE(version_->stale_time_.is_null());
   EXPECT_FALSE(version_->update_timer_.IsRunning());
 
@@ -810,7 +794,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_RunningWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(base::Time::Now());
-  SimulateDispatchEvent();
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
   EXPECT_TRUE(version_->stale_time_.is_null());
 
   // Simulate it running for a day. It will be marked stale.
@@ -859,9 +843,9 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
 
   // Update timer is not deferred.
   base::TimeTicks run_time = version_->update_timer_.desired_run_time();
-  SimulateDispatchEvent();
-  SimulateDispatchEvent();
-  SimulateDispatchEvent();
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::PUSH);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());

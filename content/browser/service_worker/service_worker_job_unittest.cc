@@ -274,6 +274,8 @@ TEST_F(ServiceWorkerJobTest, Register) {
                      GURL("http://www.example.com/service_worker.js"));
 
   ASSERT_NE(scoped_refptr<ServiceWorkerRegistration>(NULL), registration);
+  EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
+      ServiceWorkerMsg_InstallEvent::ID));
 }
 
 // Make sure registrations are cleaned up when they are unregistered.

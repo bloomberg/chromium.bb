@@ -120,6 +120,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void OnStartWorkerFinished(ServiceWorkerStatusCode status);
   void OnStoreRegistrationComplete(ServiceWorkerStatusCode status);
   void InstallAndContinue();
+  void DispatchInstallEvent();
   void OnInstallFinished(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status,

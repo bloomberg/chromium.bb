@@ -604,8 +604,19 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                          ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
-    version_->DispatchInstallEvent(
+    version_->RunAfterStartWorker(
+        base::Bind(&self::DispatchInstallEventOnIOThread, this, done, result),
         CreateReceiver(BrowserThread::UI, done, result));
+  }
+
+  void DispatchInstallEventOnIOThread(const base::Closure& done,
+                                      ServiceWorkerStatusCode* result) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    int request_id =
+        version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
+                               CreateReceiver(BrowserThread::UI, done, result));
+    version_->DispatchSimpleEvent<ServiceWorkerHostMsg_InstallEventFinished>(
+        request_id, ServiceWorkerMsg_InstallEvent(request_id));
   }
 
   void StoreOnIOThread(const base::Closure& done,
@@ -797,7 +808,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Activate_Rejected) {
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithWaitUntil_Rejected) {
   InstallTestHelper("/service_worker/worker_install_rejected.js",
-                    SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
+                    SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
@@ -815,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                           base::Bind(&self::InstallOnIOThread, this,
                                      install_run_loop.QuitClosure(), &status));
   install_run_loop.Run();
-  ASSERT_EQ(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED, status);
+  ASSERT_EQ(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, status);
 
   const base::string16 expected =
       base::ASCIIToUTF16("Rejecting oninstall event");
@@ -897,7 +908,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {
                          base::TimeDelta::FromMilliseconds(100));
   install_run_loop.Run();
 
-  EXPECT_EQ(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED, status);
+  // Terminating a worker, even one in an infinite loop, is treated as if
+  // waitUntil was rejected in the renderer code.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, status);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {

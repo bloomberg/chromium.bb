@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -415,7 +416,9 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
   registration()->NotifyUpdateFound();
 
   // "Fire an event named install..."
-  new_version()->DispatchInstallEvent(
+  new_version()->RunAfterStartWorker(
+      base::Bind(&ServiceWorkerRegisterJob::DispatchInstallEvent,
+                 weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
                  weak_factory_.GetWeakPtr()));
 
@@ -426,13 +429,27 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
     Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
+void ServiceWorkerRegisterJob::DispatchInstallEvent() {
+  DCHECK_EQ(ServiceWorkerVersion::INSTALLING, new_version()->status())
+      << new_version()->status();
+  DCHECK_EQ(ServiceWorkerVersion::RUNNING, new_version()->running_status())
+      << "Worker stopped too soon after it was started.";
+  int request_id = new_version()->StartRequest(
+      ServiceWorkerMetrics::EventType::INSTALL,
+      base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
+                 weak_factory_.GetWeakPtr()));
+  new_version()->DispatchSimpleEvent<ServiceWorkerHostMsg_InstallEventFinished>(
+      request_id, ServiceWorkerMsg_InstallEvent(request_id));
+}
+
 void ServiceWorkerRegisterJob::OnInstallFinished(
     ServiceWorkerStatusCode status) {
   ServiceWorkerMetrics::RecordInstallEventStatus(status);
 
   if (status != SERVICE_WORKER_OK) {
     // "8. If installFailed is true, then:..."
-    Complete(status);
+    Complete(status, std::string("ServiceWorker failed to install: ") +
+                         ServiceWorkerStatusToString(status));
     return;
   }
 

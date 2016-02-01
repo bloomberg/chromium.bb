@@ -582,25 +582,6 @@ void ServiceWorkerVersion::DispatchMessageEventInternal(
   RunSoon(base::Bind(callback, status));
 }
 
-void ServiceWorkerVersion::DispatchInstallEvent(
-    const StatusCallback& callback) {
-  OnBeginEvent();
-  DCHECK_EQ(INSTALLING, status()) << status();
-
-  if (running_status() != RUNNING) {
-    // Schedule calling this method after starting the worker.
-    StartWorker(
-        base::Bind(&RunTaskAfterStartWorker,
-                   weak_factory_.GetWeakPtr(),
-                   callback,
-                   base::Bind(&self::DispatchInstallEventAfterStartWorker,
-                              weak_factory_.GetWeakPtr(),
-                              callback)));
-  } else {
-    DispatchInstallEventAfterStartWorker(callback);
-  }
-}
-
 void ServiceWorkerVersion::DispatchActivateEvent(
     const StatusCallback& callback) {
   OnBeginEvent();
@@ -959,8 +940,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ActivateEventFinished,
                         OnActivateEventFinished)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_InstallEventFinished,
-                        OnInstallEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FetchEventFinished,
                         OnFetchEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
@@ -992,21 +971,6 @@ void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     scoped_refptr<ServiceWorkerVersion> protect(this);
     RunCallbacks(this, &start_callbacks_,
                  DeduceStartWorkerFailureReason(status));
-  }
-}
-
-void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
-    const StatusCallback& callback) {
-  DCHECK_EQ(RUNNING, running_status())
-      << "Worker stopped too soon after it was started.";
-
-  int request_id = AddRequest(callback, &install_requests_, REQUEST_INSTALL,
-                              ServiceWorkerMetrics::EventType::INSTALL);
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_InstallEvent(request_id));
-  if (status != SERVICE_WORKER_OK) {
-    install_requests_.Remove(request_id);
-    RunSoon(base::Bind(callback, status));
   }
 }
 
@@ -1077,33 +1041,6 @@ void ServiceWorkerVersion::OnActivateEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   request->callback.Run(rv);
   RemoveCallbackAndStopIfRedundant(&activate_requests_, request_id);
-}
-
-void ServiceWorkerVersion::OnInstallEventFinished(
-    int request_id,
-    blink::WebServiceWorkerEventResult result) {
-  // Status is REDUNDANT if the worker was doomed while handling the install
-  // event, and finished handling before being terminated.
-  DCHECK(status() == INSTALLING || status() == REDUNDANT) << status();
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerVersion::OnInstallEventFinished");
-
-  PendingRequest<StatusCallback>* request =
-      install_requests_.Lookup(request_id);
-  if (!request) {
-    NOTREACHED() << "Got unexpected message: " << request_id;
-    return;
-  }
-  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected)
-    status = SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED;
-
-  ServiceWorkerMetrics::RecordEventDuration(
-      request->event_type, base::TimeTicks::Now() - request->start_time);
-
-  scoped_refptr<ServiceWorkerVersion> protect(this);
-  request->callback.Run(status);
-  RemoveCallbackAndStopIfRedundant(&install_requests_, request_id);
 }
 
 void ServiceWorkerVersion::OnFetchEventFinished(
@@ -1681,8 +1618,7 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
 }
 
 bool ServiceWorkerVersion::HasInflightRequests() const {
-  return !activate_requests_.IsEmpty() || !install_requests_.IsEmpty() ||
-         !fetch_requests_.IsEmpty() ||
+  return !activate_requests_.IsEmpty() || !fetch_requests_.IsEmpty() ||
          !custom_requests_.IsEmpty() || !streaming_url_request_jobs_.empty();
 }
 
@@ -1780,9 +1716,6 @@ bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
   switch (info.type) {
     case REQUEST_ACTIVATE:
       return RunIDMapCallback(&activate_requests_, info.id,
-                              SERVICE_WORKER_ERROR_TIMEOUT);
-    case REQUEST_INSTALL:
-      return RunIDMapCallback(&install_requests_, info.id,
                               SERVICE_WORKER_ERROR_TIMEOUT);
     case REQUEST_FETCH:
       return RunIDMapCallback(
@@ -1902,8 +1835,6 @@ void ServiceWorkerVersion::OnStoppedInternal(
   // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
   RunIDMapCallbacks(&activate_requests_,
                     SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
-  RunIDMapCallbacks(&install_requests_,
-                    SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
   RunIDMapCallbacks(&fetch_requests_, SERVICE_WORKER_ERROR_FAILED,
                     SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
                     ServiceWorkerResponse());
