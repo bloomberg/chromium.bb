@@ -645,8 +645,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setMotionOffset(animatableValueToLength(value, state));
         return;
     case CSSPropertyMotionRotation:
-        style->setMotionRotation(toAnimatableDoubleAndBool(value)->toDouble());
-        style->setMotionRotationType(toAnimatableDoubleAndBool(value)->flag() ? MotionRotationAuto : MotionRotationFixed);
+        style->setMotionRotation(StyleMotionRotation(
+            toAnimatableDoubleAndBool(value)->toDouble(),
+            toAnimatableDoubleAndBool(value)->flag() ? MotionRotationAuto : MotionRotationFixed));
         return;
     case CSSPropertyWebkitPerspectiveOriginX:
         style->setPerspectiveOriginX(animatableValueToLength(value, state));

@@ -1009,11 +1009,11 @@ void ComputedStyle::applyMotionPathTransform(float originX, float originY, Trans
     float angle;
     motionPath.path().pointAndNormalAtLength(computedDistance, point, angle);
 
-    if (motionData.m_rotationType == MotionRotationFixed)
+    if (motionData.m_rotation.type == MotionRotationFixed)
         angle = 0;
 
     transform.translate(point.x() - originX, point.y() - originY);
-    transform.rotate(angle + motionData.m_rotation);
+    transform.rotate(angle + motionData.m_rotation.angle);
 }
 
 void ComputedStyle::setTextShadow(PassRefPtr<ShadowList> s)

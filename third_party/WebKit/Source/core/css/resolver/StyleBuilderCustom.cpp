@@ -458,44 +458,6 @@ void StyleBuilderFunctions::applyInitialCSSPropertyMotionPath(StyleResolverState
     state.style()->resetMotionPath();
 }
 
-void StyleBuilderFunctions::applyInheritCSSPropertyMotionRotation(StyleResolverState& state)
-{
-    state.style()->setMotionRotation(state.parentStyle()->motionRotation());
-    state.style()->setMotionRotationType(state.parentStyle()->motionRotationType());
-}
-
-void StyleBuilderFunctions::applyInitialCSSPropertyMotionRotation(StyleResolverState& state)
-{
-    state.style()->setMotionRotation(ComputedStyle::initialMotionRotation());
-    state.style()->setMotionRotationType(ComputedStyle::initialMotionRotationType());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyMotionRotation(StyleResolverState& state, CSSValue* value)
-{
-    float rotation = 0;
-    MotionRotationType rotationType = MotionRotationFixed;
-
-    ASSERT(value->isValueList());
-    CSSValueList* list = toCSSValueList(value);
-    int len = list->length();
-    for (int i = 0; i < len; i++) {
-        CSSValue* item = list->item(i);
-        ASSERT(item->isPrimitiveValue());
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
-        if (primitiveValue->getValueID() == CSSValueAuto) {
-            rotationType = MotionRotationAuto;
-        } else if (primitiveValue->getValueID() == CSSValueReverse) {
-            rotationType = MotionRotationAuto;
-            rotation += 180;
-        } else {
-            rotation += primitiveValue->computeDegrees();
-        }
-    }
-
-    state.style()->setMotionRotation(rotation);
-    state.style()->setMotionRotationType(rotationType);
-}
-
 void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(StyleResolverState& state)
 {
     EVerticalAlign verticalAlign = state.parentStyle()->verticalAlign();

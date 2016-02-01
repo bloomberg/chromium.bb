@@ -229,7 +229,7 @@ min-width interpolable, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode runtime_flag=CSSCompositing, type_name=blink::WebBlendMode, name_for_methods=BlendMode
 motion-offset interpolable, converter=convertLength
 motion-path custom_all
-motion-rotation interpolable, custom_all
+motion-rotation interpolable, converter=convertMotionRotation
 object-fit type_name=ObjectFit
 object-position interpolable, converter=convertPosition
 opacity interpolable, type_name=float

@@ -177,8 +177,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
     case CSSPropertyMotionOffset:
         return a.motionOffset() == b.motionOffset();
     case CSSPropertyMotionRotation:
-        return a.motionRotation() == b.motionRotation()
-            && a.motionRotationType() == b.motionRotationType();
+        return a.motionRotation() == b.motionRotation();
     case CSSPropertyObjectPosition:
         return a.objectPosition() == b.objectPosition();
     case CSSPropertyOpacity:

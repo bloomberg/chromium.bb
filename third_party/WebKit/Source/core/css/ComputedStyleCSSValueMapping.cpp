@@ -2466,9 +2466,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
 
     case CSSPropertyMotionRotation: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-        if (style.motionRotationType() == MotionRotationAuto)
+        if (style.motionRotation().type == MotionRotationAuto)
             list->append(cssValuePool().createIdentifierValue(CSSValueAuto));
-        list->append(cssValuePool().createValue(style.motionRotation(), CSSPrimitiveValue::UnitType::Degrees));
+        list->append(cssValuePool().createValue(style.motionRotation().angle, CSSPrimitiveValue::UnitType::Degrees));
         return list.release();
     }
 

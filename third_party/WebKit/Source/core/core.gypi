@@ -800,6 +800,7 @@
             'style/StyleMotionData.cpp',
             'style/StyleMotionData.h',
             'style/StyleMotionPath.h',
+            'style/StyleMotionRotation.h',
             'style/StyleMultiColData.cpp',
             'style/StylePath.cpp',
             'style/StylePath.h',

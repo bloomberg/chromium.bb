@@ -10,7 +10,7 @@ namespace blink {
 
 bool StyleMotionData::operator==(const StyleMotionData& o) const
 {
-    if (m_offset != o.m_offset || m_rotation != o.m_rotation || m_rotationType != o.m_rotationType)
+    if (m_offset != o.m_offset || m_rotation != o.m_rotation)
         return false;
 
     if (!m_path || !o.m_path)

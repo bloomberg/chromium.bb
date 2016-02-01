@@ -628,6 +628,27 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
     return primitiveValue.getFloatValue() / 100.0f;
 }
 
+StyleMotionRotation StyleBuilderConverter::convertMotionRotation(StyleResolverState&, const CSSValue& value)
+{
+    StyleMotionRotation result(0, MotionRotationFixed);
+
+    const CSSValueList& list = toCSSValueList(value);
+    ASSERT(list.length() == 1 || list.length() == 2);
+    for (const auto& item : list) {
+        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*item);
+        if (primitiveValue.getValueID() == CSSValueAuto) {
+            result.type = MotionRotationAuto;
+        } else if (primitiveValue.getValueID() == CSSValueReverse) {
+            result.type = MotionRotationAuto;
+            result.angle += 180;
+        } else {
+            result.angle += primitiveValue.computeDegrees();
+        }
+    }
+
+    return result;
+}
+
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
 static Length convertPositionLength(StyleResolverState& state, const CSSValue& value)
 {
