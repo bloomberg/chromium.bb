@@ -51,6 +51,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   ASSERT_TRUE(tab_manager);
   EXPECT_FALSE(tab_manager->recent_tab_discard());
 
+  // Disable the protection of recent tabs.
+  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+
   // Get three tabs open.
   WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -183,6 +186,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   ASSERT_TRUE(tab_manager);
+
+  // Disable the protection of recent tabs.
+  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
 
   // Get three tabs open.
   content::WindowedNotificationObserver load1(

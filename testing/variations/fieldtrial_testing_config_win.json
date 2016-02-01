@@ -30,7 +30,10 @@
             "enable_features": [
                 "AutomaticTabDiscarding"
             ],
-            "group_name": "Enabled_Once_5"
+            "group_name": "Enabled_Once_5",
+            "params": {
+                "MinimumProtectionTime": "300"
+            }
         }
     ],
     "BrowserBlacklist": [
