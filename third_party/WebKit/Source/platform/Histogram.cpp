@@ -11,7 +11,7 @@ namespace blink {
 
 CustomCountHistogram::CustomCountHistogram(const char* name, int32_t min, int32_t max, int32_t bucketCount)
 {
-    m_histogram = base::Histogram::FactoryGet(name, min, max, bucketCount, base::HistogramBase::kNoFlags);
+    m_histogram = base::Histogram::FactoryGet(name, min, max, bucketCount, base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 CustomCountHistogram::CustomCountHistogram(base::HistogramBase* histogram)
@@ -25,7 +25,7 @@ void CustomCountHistogram::count(int32_t sample)
 }
 
 EnumerationHistogram::EnumerationHistogram(const char* name, int32_t boundaryValue)
-    : CustomCountHistogram(base::LinearHistogram::FactoryGet(name, 1, boundaryValue, boundaryValue + 1, base::HistogramBase::kNoFlags))
+    : CustomCountHistogram(base::LinearHistogram::FactoryGet(name, 1, boundaryValue, boundaryValue + 1, base::HistogramBase::kUmaTargetedHistogramFlag))
 {
 }
 
