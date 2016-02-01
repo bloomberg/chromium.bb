@@ -4,70 +4,69 @@
 
 #include "mash/wm/window_manager_application.h"
 
-#include <stdint.h>
 #include <utility>
 
 #include "base/bind.h"
-#include "components/mus/common/util.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "mash/wm/accelerator_registrar_impl.h"
-#include "mash/wm/background_layout.h"
-#include "mash/wm/screenlock_layout.h"
-#include "mash/wm/shadow_controller.h"
-#include "mash/wm/shelf_layout.h"
+#include "mash/wm/root_window_controller.h"
 #include "mash/wm/user_window_controller_impl.h"
-#include "mash/wm/window_layout.h"
-#include "mash/wm/window_manager_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
 
 namespace mash {
 namespace wm {
-namespace {
-const uint32_t kWindowSwitchCmd = 1;
-
-void AssertTrue(bool success) {
-  DCHECK(success);
-}
-
-}  // namespace
 
 WindowManagerApplication::WindowManagerApplication()
-    : root_(nullptr),
-      window_count_(0),
-      app_(nullptr),
-      host_client_binding_(this) {}
+    : app_(nullptr), window_manager_factory_binding_(this) {}
 
-WindowManagerApplication::~WindowManagerApplication() {}
-
-mus::Window* WindowManagerApplication::GetWindowForContainer(
-    mojom::Container container) {
-  const mus::Id window_id = root_->connection()->GetConnectionId() << 16 |
-                            static_cast<uint16_t>(container);
-  return root_->GetChildById(window_id);
+WindowManagerApplication::~WindowManagerApplication() {
+  std::set<RootWindowController*> controllers(root_controllers_);
+  std::for_each(
+      controllers.begin(), controllers.end(),
+      [](RootWindowController* controller) { controller->Destroy(); });
 }
 
-mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
-  return root_->GetChildById(id);
+void WindowManagerApplication::OnRootWindowControllerGotRoot(
+    RootWindowController* root_controller) {
+  if (ui_init_.get())
+    return;
+
+  ui_init_.reset(new ui::mojo::UIInit(
+      views::GetDisplaysFromWindow(root_controller->root())));
+  aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
 }
 
-bool WindowManagerApplication::WindowIsContainer(
-    const mus::Window* window) const {
-  return window && window->parent() == root_;
+void WindowManagerApplication::OnRootWindowControllerDoneInit(
+    RootWindowController* root_controller) {
+  // TODO(msw): figure out if this should be per display, or global.
+  user_window_controller_->Initialize(root_controller);
+  for (auto& request : user_window_controller_requests_)
+    user_window_controller_binding_.AddBinding(user_window_controller_.get(),
+                                               std::move(*request));
+  user_window_controller_requests_.clear();
 }
 
-void WindowManagerApplication::AddAccelerators() {
-  window_tree_host_->AddAccelerator(
-      kWindowSwitchCmd,
-      mus::CreateKeyMatcher(mus::mojom::KeyboardCode::TAB,
-                            mus::mojom::kEventFlagControlDown),
-      base::Bind(&AssertTrue));
+void WindowManagerApplication::OnRootWindowDestroyed(
+    RootWindowController* root_controller) {
+  root_controllers_.erase(root_controller);
+  user_window_controller_.reset(nullptr);
+}
+
+void WindowManagerApplication::OnAccelerator(uint32_t id,
+                                             mus::mojom::EventPtr event) {
+  for (auto* registrar : accelerator_registrars_) {
+    if (registrar->OwnsAccelerator(id)) {
+      registrar->ProcessAccelerator(id, std::move(event));
+      break;
+    }
+  }
 }
 
 void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
@@ -78,11 +77,16 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
-  window_manager_.reset(new WindowManagerImpl());
+
+  mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
+  app_->ConnectToService("mojo:mus", &wm_factory_service);
+  wm_factory_service->SetWindowManagerFactory(
+      window_manager_factory_binding_.CreateInterfacePtrAndBind());
+
   user_window_controller_.reset(new UserWindowControllerImpl());
-  mus::CreateSingleWindowTreeHost(
-      app, host_client_binding_.CreateInterfacePtrAndBind(), this,
-      &window_tree_host_, window_manager_.get());
+
+  root_controllers_.insert(
+      RootWindowController::CreateUsingWindowTreeHost(this));
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
@@ -92,65 +96,10 @@ bool WindowManagerApplication::ConfigureIncomingConnection(
   return true;
 }
 
-void WindowManagerApplication::OnAccelerator(uint32_t id,
-                                             mus::mojom::EventPtr event) {
-  switch (id) {
-    case kWindowSwitchCmd:
-      window_tree_host_->ActivateNextWindow();
-      break;
-    default:
-      for (auto* registrar : accelerator_registrars_) {
-        if (registrar->OwnsAccelerator(id)) {
-          registrar->ProcessAccelerator(id, std::move(event));
-          break;
-        }
-      }
-  }
-}
-
-void WindowManagerApplication::OnEmbed(mus::Window* root) {
-  root_ = root;
-  root_->AddObserver(this);
-  CreateContainers();
-  background_layout_.reset(new BackgroundLayout(
-      GetWindowForContainer(mojom::Container::USER_BACKGROUND)));
-  screenlock_layout_.reset(new ScreenlockLayout(GetWindowForContainer(
-      mojom::Container::LOGIN_WINDOWS)));
-  shelf_layout_.reset(new ShelfLayout(GetWindowForContainer(
-      mojom::Container::USER_SHELF)));
-
-  mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
-  window_layout_.reset(
-      new WindowLayout(GetWindowForContainer(mojom::Container::USER_WINDOWS)));
-  window_tree_host_->AddActivationParent(window->id());
-  window_tree_host_->SetTitle("Mash");
-
-  AddAccelerators();
-
-  ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
-  aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
-  window_manager_->Initialize(this);
-
-  user_window_controller_->Initialize(this);
-  for (auto& request : user_window_controller_requests_)
-    user_window_controller_binding_.AddBinding(user_window_controller_.get(),
-                                               std::move(*request));
-  user_window_controller_requests_.clear();
-
-  shadow_controller_.reset(new ShadowController(root->connection()));
-}
-
-void WindowManagerApplication::OnConnectionLost(
-    mus::WindowTreeConnection* connection) {
-  // TODO(sky): shutdown.
-  NOTIMPLEMENTED();
-  shadow_controller_.reset();
-}
-
 void WindowManagerApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mash::wm::mojom::UserWindowController> request) {
-  if (root_) {
+  if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
     user_window_controller_binding_.AddBinding(user_window_controller_.get(),
                                                std::move(request));
   } else {
@@ -163,6 +112,8 @@ void WindowManagerApplication::Create(
 void WindowManagerApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request) {
+  // TODO(sky): figure out the right place for this code. Should it
+  // automatically register for all displays?
   static int accelerator_registrar_count = 0;
   if (accelerator_registrar_count == std::numeric_limits<int>::max()) {
     // Restart from zero if we have reached the limit. It is technically
@@ -172,34 +123,20 @@ void WindowManagerApplication::Create(
     // install accelerators.
     accelerator_registrar_count = 0;
   }
+  // TODO(sky): make global.
+  RootWindowController* root_controller = *root_controllers_.begin();
   accelerator_registrars_.insert(new AcceleratorRegistrarImpl(
-      window_tree_host_.get(), ++accelerator_registrar_count,
+      root_controller->window_tree_host(), ++accelerator_registrar_count,
       std::move(request),
       base::Bind(&WindowManagerApplication::OnAcceleratorRegistrarDestroyed,
                  base::Unretained(this))));
 }
 
-void WindowManagerApplication::OnWindowDestroyed(mus::Window* window) {
-  DCHECK_EQ(window, root_);
-  root_->RemoveObserver(this);
-  // Delete the |window_manager_| here so that WindowManager doesn't have to
-  // worry about the possibility of |root_| being null.
-  window_manager_.reset();
-  root_ = nullptr;
-}
-
-void WindowManagerApplication::CreateContainers() {
-  for (uint16_t container =
-           static_cast<uint16_t>(mojom::Container::ALL_USER_BACKGROUND);
-       container < static_cast<uint16_t>(mojom::Container::COUNT);
-       ++container) {
-    mus::Window* window = root_->connection()->NewWindow();
-    DCHECK_EQ(mus::LoWord(window->id()), container)
-        << "Containers must be created before other windows!";
-    window->SetBounds(root_->bounds());
-    window->SetVisible(true);
-    root_->AddChild(window);
-  }
+void WindowManagerApplication::CreateWindowManager(
+    mus::mojom::DisplayPtr display,
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> client_request) {
+  root_controllers_.insert(RootWindowController::CreateFromDisplay(
+      this, std::move(display), std::move(client_request)));
 }
 
 }  // namespace wm

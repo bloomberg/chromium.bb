@@ -11,6 +11,7 @@
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
+#include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -262,6 +263,15 @@ WindowTreeHostImpl* ConnectionManager::GetActiveWindowTreeHost() {
 void ConnectionManager::AddDisplayManagerBinding(
     mojo::InterfaceRequest<mojom::DisplayManager> request) {
   display_manager_bindings_.AddBinding(this, std::move(request));
+}
+
+void ConnectionManager::CreateWindowManagerFactoryService(
+    mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request) {
+  if (window_manager_factory_service_)
+    return;
+
+  window_manager_factory_service_.reset(
+      new WindowManagerFactoryService(std::move(request)));
 }
 
 uint32_t ConnectionManager::GenerateWindowManagerChangeId(

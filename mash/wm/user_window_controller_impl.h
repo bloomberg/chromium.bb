@@ -16,7 +16,7 @@
 namespace mash {
 namespace wm {
 
-class WindowManagerApplication;
+class RootWindowController;
 class WindowTitleObserver;
 
 class UserWindowControllerImpl : public mojom::UserWindowController,
@@ -30,7 +30,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
     return user_window_observer_.get();
   }
 
-  void Initialize(WindowManagerApplication* state);
+  void Initialize(RootWindowController* root_controller);
 
  private:
   // A helper to get the container for user windows.
@@ -47,7 +47,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
   void AddUserWindowObserver(mojom::UserWindowObserverPtr observer) override;
   void FocusUserWindow(uint32_t window_id) override;
 
-  WindowManagerApplication* state_;
+  RootWindowController* root_controller_;
   mojom::UserWindowObserverPtr user_window_observer_;
   scoped_ptr<WindowTitleObserver> window_title_observer_;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_WM_WINDOW_MANAGER_IMPL_H_
-#define MASH_WM_WINDOW_MANAGER_IMPL_H_
+#ifndef MASH_WM_WINDOW_MANAGER_H_
+#define MASH_WM_WINDOW_MANAGER_H_
 
 #include <stdint.h>
 
@@ -16,18 +16,15 @@
 namespace mash {
 namespace wm {
 
-class WindowManagerApplication;
+class RootWindowController;
 
-using WindowManagerErrorCodeCallback =
-    const mojo::Callback<void(mus::mojom::WindowManagerErrorCode)>;
-
-class WindowManagerImpl : public mus::WindowObserver,
-                          public mus::WindowManagerDelegate {
+class WindowManager : public mus::WindowObserver,
+                      public mus::WindowManagerDelegate {
  public:
-  WindowManagerImpl();
-  ~WindowManagerImpl() override;
+  WindowManager();
+  ~WindowManager() override;
 
-  void Initialize(WindowManagerApplication* state);
+  void Initialize(RootWindowController* root_controller);
 
  private:
   gfx::Rect CalculateDefaultBounds(mus::Window* window) const;
@@ -49,13 +46,13 @@ class WindowManagerImpl : public mus::WindowObserver,
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
 
-  WindowManagerApplication* state_;
+  RootWindowController* root_controller_;
   mus::WindowManagerClient* window_manager_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
 
 }  // namespace wm
 }  // namespace mash
 
-#endif  // MASH_WM_WINDOW_MANAGER_IMPL_H_
+#endif  // MASH_WM_WINDOW_MANAGER_H_

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/display.mojom.h"
+#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -35,6 +36,7 @@ namespace ws {
 class ClientConnection;
 class ConnectionManagerDelegate;
 class ServerWindow;
+class WindowManagerFactoryService;
 class WindowTreeHostConnection;
 class WindowTreeImpl;
 
@@ -138,6 +140,9 @@ class ConnectionManager : public ServerWindowDelegate,
 
   void AddDisplayManagerBinding(
       mojo::InterfaceRequest<mojom::DisplayManager> request);
+
+  void CreateWindowManagerFactoryService(
+      mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request);
 
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
@@ -320,6 +325,8 @@ class ConnectionManager : public ServerWindowDelegate,
       display_manager_observers_;
 
   bool got_valid_frame_decorations_;
+
+  scoped_ptr<WindowManagerFactoryService> window_manager_factory_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

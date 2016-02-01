@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/common/types.h"
-#include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
@@ -38,55 +37,40 @@ namespace mash {
 namespace wm {
 
 class AcceleratorRegistrarImpl;
-class BackgroundLayout;
-class ScreenlockLayout;
-class ShadowController;
-class ShelfLayout;
+class RootWindowController;
 class UserWindowControllerImpl;
-class WindowLayout;
-class WindowManagerImpl;
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
-      public mus::WindowObserver,
-      public mus::mojom::WindowTreeHostClient,
-      public mus::WindowTreeDelegate,
+      public mus::mojom::WindowManagerFactory,
       public mojo::InterfaceFactory<mash::wm::mojom::UserWindowController>,
       public mojo::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
-  mus::Window* root() { return root_; }
-
-  int window_count() { return window_count_; }
-  void IncrementWindowCount() { ++window_count_; }
-
-  mus::Window* GetWindowForContainer(mojom::Container container);
-  mus::Window* GetWindowById(mus::Id id);
-  bool WindowIsContainer(const mus::Window* window) const;
-
   mojo::ApplicationImpl* app() { return app_; }
 
-  mus::mojom::WindowTreeHost* window_tree_host() {
-    return window_tree_host_.get();
-  }
+  // Called when the root window of |root_controller| is obtained.
+  void OnRootWindowControllerGotRoot(RootWindowController* root_controller);
+
+  // Called after RootWindowController creates the necessary resources.
+  void OnRootWindowControllerDoneInit(RootWindowController* root_controller);
+
+  // Called when the root mus::Window of RootWindowController is destroyed.
+  // |root_controller| is destroyed after this call.
+  void OnRootWindowDestroyed(RootWindowController* root_controller);
+
+  // TODO(sky): figure out right place for this code.
+  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event);
 
  private:
-  void AddAccelerators();
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
-
-  // WindowTreeHostClient:
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
-
-  // WindowTreeDelegate:
-  void OnEmbed(mus::Window* root) override;
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // InterfaceFactory<mash::wm::mojom::UserWindowController>:
   void Create(mojo::ApplicationConnection* connection,
@@ -98,29 +82,17 @@ class WindowManagerApplication
               mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request)
       override;
 
-  // mus::WindowObserver:
-  void OnWindowDestroyed(mus::Window* window) override;
-
-  // Sets up the window containers used for z-space management.
-  void CreateContainers();
-
-  // nullptr until the Mus connection is established via OnEmbed().
-  mus::Window* root_;
-  int window_count_;
+  // mus::mojom::WindowManagerFactory:
+  void CreateWindowManager(mus::mojom::DisplayPtr display,
+                           mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
+                               client_request) override;
 
   mojo::ApplicationImpl* app_;
 
   mojo::TracingImpl tracing_;
 
-  mus::mojom::WindowTreeHostPtr window_tree_host_;
-  mojo::Binding<mus::mojom::WindowTreeHostClient> host_client_binding_;
-
   scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;
-
-  // |window_manager_| is created once OnEmbed() is called. Until that time
-  // |requests_| stores any pending WindowManager interface requests.
-  scoped_ptr<WindowManagerImpl> window_manager_;
 
   // |user_window_controller_| is created once OnEmbed() is called. Until that
   // time |user_window_controller_requests_| stores pending interface requests.
@@ -131,14 +103,11 @@ class WindowManagerApplication
       scoped_ptr<mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>>>
       user_window_controller_requests_;
 
-  scoped_ptr<BackgroundLayout> background_layout_;
-  scoped_ptr<ScreenlockLayout> screenlock_layout_;
-  scoped_ptr<ShelfLayout> shelf_layout_;
-  scoped_ptr<WindowLayout> window_layout_;
-
-  scoped_ptr<ShadowController> shadow_controller_;
-
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
+  std::set<RootWindowController*> root_controllers_;
+
+  mojo::Binding<mus::mojom::WindowManagerFactory>
+      window_manager_factory_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };

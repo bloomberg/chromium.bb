@@ -355,6 +355,9 @@ interface WindowTreeClient {
   GetWindowManager(associated WindowManager& internal);
 };
 
+// Mus provides this interface as a way for clients to connect and obtain a
+// WindowTree handle with a supplied WindowTreeClient handle. The
+// WindowTreeClient has no roots, use NewTopLevelWindow() to create one.
 interface WindowTreeFactory {
   CreateWindowTree(WindowTree& tree_request, WindowTreeClient client);
 };

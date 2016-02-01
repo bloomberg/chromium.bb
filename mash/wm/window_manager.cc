@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/wm/window_manager_impl.h"
+#include "mash/wm/window_manager.h"
 
 #include <stdint.h>
 #include <utility>
@@ -17,32 +17,32 @@
 #include "mash/wm/non_client_frame_controller.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
-#include "mash/wm/window_manager_application.h"
+#include "mash/wm/root_window_controller.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mash {
 namespace wm {
 
-WindowManagerImpl::WindowManagerImpl()
-    : state_(nullptr), window_manager_client_(nullptr) {}
+WindowManager::WindowManager()
+    : root_controller_(nullptr), window_manager_client_(nullptr) {}
 
-WindowManagerImpl::~WindowManagerImpl() {
-  if (!state_)
+WindowManager::~WindowManager() {
+  if (!root_controller_)
     return;
-  for (auto container : state_->root()->children()) {
+  for (auto container : root_controller_->root()->children()) {
     container->RemoveObserver(this);
     for (auto child : container->children())
       child->RemoveObserver(this);
   }
 }
 
-void WindowManagerImpl::Initialize(WindowManagerApplication* state) {
-  DCHECK(state);
-  DCHECK(!state_);
-  state_ = state;
+void WindowManager::Initialize(RootWindowController* root_controller) {
+  DCHECK(root_controller);
+  DCHECK(!root_controller_);
+  root_controller_ = root_controller;
   // The children of the root are considered containers.
-  for (auto container : state_->root()->children()) {
+  for (auto container : root_controller_->root()->children()) {
     container->AddObserver(this);
     for (auto child : container->children())
       child->AddObserver(this);
@@ -65,11 +65,11 @@ void WindowManagerImpl::Initialize(WindowManagerApplication* state) {
       std::move(frame_decoration_values));
 }
 
-gfx::Rect WindowManagerImpl::CalculateDefaultBounds(mus::Window* window) const {
-  DCHECK(state_);
+gfx::Rect WindowManager::CalculateDefaultBounds(mus::Window* window) const {
+  DCHECK(root_controller_);
   int width, height;
   const gfx::Size pref = GetWindowPreferredSize(window);
-  const mus::Window* root = state_->root();
+  const mus::Window* root = root_controller_->root();
   if (pref.IsEmpty()) {
     width = root->bounds().width() - 240;
     height = root->bounds().height() - 240;
@@ -79,19 +79,20 @@ gfx::Rect WindowManagerImpl::CalculateDefaultBounds(mus::Window* window) const {
     width = std::max(0, std::min(max_size.width(), pref.width()));
     height = std::max(0, std::min(max_size.height(), pref.height()));
   }
-  return gfx::Rect(40 + (state_->window_count() % 4) * 40,
-                   40 + (state_->window_count() % 4) * 40, width, height);
+  return gfx::Rect(40 + (root_controller_->window_count() % 4) * 40,
+                   40 + (root_controller_->window_count() % 4) * 40, width,
+                   height);
 }
 
-gfx::Rect WindowManagerImpl::GetMaximizedWindowBounds() const {
-  DCHECK(state_);
-  return gfx::Rect(state_->root()->bounds().size());
+gfx::Rect WindowManager::GetMaximizedWindowBounds() const {
+  DCHECK(root_controller_);
+  return gfx::Rect(root_controller_->root()->bounds().size());
 }
 
-mus::Window* WindowManagerImpl::NewTopLevelWindow(
+mus::Window* WindowManager::NewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  DCHECK(state_);
-  mus::Window* root = state_->root();
+  DCHECK(root_controller_);
+  mus::Window* root = root_controller_->root();
   DCHECK(root);
 
   const bool provide_non_client_frame =
@@ -104,42 +105,41 @@ mus::Window* WindowManagerImpl::NewTopLevelWindow(
   window->SetBounds(CalculateDefaultBounds(window));
 
   mojom::Container container = GetRequestedContainer(window);
-  state_->GetWindowForContainer(container)->AddChild(window);
+  root_controller_->GetWindowForContainer(container)->AddChild(window);
 
   if (provide_non_client_frame) {
     // NonClientFrameController deletes itself when |window| is destroyed.
-    new NonClientFrameController(state_->app()->shell(), window,
-                                 state_->window_tree_host());
+    new NonClientFrameController(root_controller_->GetShell(), window,
+                                 root_controller_->window_tree_host());
   }
 
-  state_->IncrementWindowCount();
+  root_controller_->IncrementWindowCount();
 
   return window;
 }
 
-void WindowManagerImpl::OnTreeChanging(const TreeChangeParams& params) {
-  DCHECK(state_);
-  if (state_->WindowIsContainer(params.old_parent))
+void WindowManager::OnTreeChanging(const TreeChangeParams& params) {
+  DCHECK(root_controller_);
+  if (root_controller_->WindowIsContainer(params.old_parent))
     params.target->RemoveObserver(this);
-  else if (state_->WindowIsContainer(params.new_parent))
+  else if (root_controller_->WindowIsContainer(params.new_parent))
     params.target->AddObserver(this);
 }
 
-void WindowManagerImpl::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
+void WindowManager::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
   window->Destroy();
 }
 
-void WindowManagerImpl::SetWindowManagerClient(
-    mus::WindowManagerClient* client) {
+void WindowManager::SetWindowManagerClient(mus::WindowManagerClient* client) {
   window_manager_client_ = client;
 }
 
-bool WindowManagerImpl::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
+bool WindowManager::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
   // By returning true the bounds of |window| is updated.
   return true;
 }
 
-bool WindowManagerImpl::OnWmSetProperty(
+bool WindowManager::OnWmSetProperty(
     mus::Window* window,
     const std::string& name,
     scoped_ptr<std::vector<uint8_t>>* new_data) {
@@ -151,7 +151,7 @@ bool WindowManagerImpl::OnWmSetProperty(
          name == mus::mojom::WindowManager::kWindowTitle_Property;
 }
 
-mus::Window* WindowManagerImpl::OnWmCreateTopLevelWindow(
+mus::Window* WindowManager::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   return NewTopLevelWindow(properties);
 }

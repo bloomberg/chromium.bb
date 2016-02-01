@@ -94,6 +94,7 @@ bool MandolineUIServicesApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   connection->AddService<Gpu>(this);
   connection->AddService<mojom::DisplayManager>(this);
+  connection->AddService<mojom::WindowManagerFactoryService>(this);
   connection->AddService<mojom::WindowTreeFactory>(this);
   connection->AddService<WindowTreeHostFactory>(this);
   return true;
@@ -139,6 +140,12 @@ void MandolineUIServicesApp::Create(
     return;
   }
   connection_manager_->AddDisplayManagerBinding(std::move(request));
+}
+
+void MandolineUIServicesApp::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request) {
+  connection_manager_->CreateWindowManagerFactoryService(std::move(request));
 }
 
 void MandolineUIServicesApp::Create(

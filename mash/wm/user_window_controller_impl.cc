@@ -9,7 +9,7 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
-#include "mash/wm/window_manager_application.h"
+#include "mash/wm/root_window_controller.h"
 #include "mojo/common/common_type_converters.h"
 
 namespace mash {
@@ -72,20 +72,22 @@ class WindowTitleObserver : public mus::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowTitleObserver);
 };
 
-UserWindowControllerImpl::UserWindowControllerImpl() : state_(nullptr) {}
+UserWindowControllerImpl::UserWindowControllerImpl()
+    : root_controller_(nullptr) {}
 
 UserWindowControllerImpl::~UserWindowControllerImpl() {
-  if (state_) {
+  if (root_controller_) {
     GetUserWindowContainer()->RemoveObserver(this);
     for (auto iter : GetUserWindowContainer()->children())
       iter->RemoveObserver(window_title_observer_.get());
   }
 }
 
-void UserWindowControllerImpl::Initialize(WindowManagerApplication* state) {
-  DCHECK(state);
-  DCHECK(!state_);
-  state_ = state;
+void UserWindowControllerImpl::Initialize(
+    RootWindowController* root_controller) {
+  DCHECK(root_controller);
+  DCHECK(!root_controller_);
+  root_controller_ = root_controller;
   GetUserWindowContainer()->AddObserver(this);
   GetUserWindowContainer()->connection()->AddObserver(this);
   window_title_observer_.reset(new WindowTitleObserver(this));
@@ -94,11 +96,12 @@ void UserWindowControllerImpl::Initialize(WindowManagerApplication* state) {
 }
 
 mus::Window* UserWindowControllerImpl::GetUserWindowContainer() const {
-  return state_->GetWindowForContainer(mojom::Container::USER_WINDOWS);
+  return root_controller_->GetWindowForContainer(
+      mojom::Container::USER_WINDOWS);
 }
 
 void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {
-  DCHECK(state_);
+  DCHECK(root_controller_);
   if (params.new_parent == GetUserWindowContainer()) {
     params.target->AddObserver(window_title_observer_.get());
     if (user_window_observer_)

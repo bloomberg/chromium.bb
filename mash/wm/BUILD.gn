@@ -44,6 +44,8 @@ source_set("lib") {
     "non_client_frame_controller.h",
     "property_util.cc",
     "property_util.h",
+    "root_window_controller.cc",
+    "root_window_controller.h",
     "screenlock_layout.cc",
     "screenlock_layout.h",
     "shadow.cc",
@@ -56,10 +58,10 @@ source_set("lib") {
     "user_window_controller_impl.h",
     "window_layout.cc",
     "window_layout.h",
+    "window_manager.cc",
+    "window_manager.h",
     "window_manager_application.cc",
     "window_manager_application.h",
-    "window_manager_impl.cc",
-    "window_manager_impl.h",
   ]
 
   deps = [

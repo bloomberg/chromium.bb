@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
+#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
@@ -45,6 +46,7 @@ class MandolineUIServicesApp
     : public mojo::ApplicationDelegate,
       public ws::ConnectionManagerDelegate,
       public mojo::InterfaceFactory<mojom::DisplayManager>,
+      public mojo::InterfaceFactory<mojom::WindowManagerFactoryService>,
       public mojo::InterfaceFactory<mojom::WindowTreeFactory>,
       public mojo::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public mojo::InterfaceFactory<mojom::Gpu>,
@@ -76,6 +78,11 @@ class MandolineUIServicesApp
   // mojo::InterfaceFactory<mojom::DisplayManager> implementation.
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojom::DisplayManager> request) override;
+
+  // mojo::InterfaceFactory<mojom::WindowManagerFactoryService> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojom::WindowManagerFactoryService>
+                  request) override;
 
   // mojo::InterfaceFactory<mojom::WindowTreeFactory>:
   void Create(
