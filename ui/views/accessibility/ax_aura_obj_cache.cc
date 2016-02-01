@@ -33,15 +33,15 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
   return CreateInternal<AXWindowObjWrapper>(window, window_to_id_map_);
 }
 
-int32_t AXAuraObjCache::GetID(View* view) const {
+int32_t AXAuraObjCache::GetID(View* view) {
   return GetIDInternal(view, view_to_id_map_);
 }
 
-int32_t AXAuraObjCache::GetID(Widget* widget) const {
+int32_t AXAuraObjCache::GetID(Widget* widget) {
   return GetIDInternal(widget, widget_to_id_map_);
 }
 
-int32_t AXAuraObjCache::GetID(aura::Window* window) const {
+int32_t AXAuraObjCache::GetID(aura::Window* window) {
   return GetIDInternal(window, window_to_id_map_);
 }
 
@@ -129,11 +129,13 @@ AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
 template <typename AuraView>
 int32_t AXAuraObjCache::GetIDInternal(
     AuraView* aura_view,
-    const std::map<AuraView*, int32_t>& aura_view_to_id_map) const {
+    std::map<AuraView*, int32_t>& aura_view_to_id_map) {
   if (!aura_view)
     return -1;
 
-  auto it = aura_view_to_id_map.find(aura_view);
+  typename std::map<AuraView*, int32_t>::iterator it =
+      aura_view_to_id_map.find(aura_view);
+
   if (it != aura_view_to_id_map.end())
     return it->second;
 

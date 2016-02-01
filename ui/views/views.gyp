@@ -600,7 +600,6 @@
       'widget/desktop_widget_unittest.cc',
     ],
     'views_unittests_aura_sources': [
-      'accessibility/ax_aura_obj_cache_unittest.cc',
       'controls/native/native_view_host_aura_unittest.cc',
       'corewm/tooltip_controller_unittest.cc',
       'touchui/touch_selection_controller_impl_unittest.cc',

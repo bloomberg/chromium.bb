@@ -51,7 +51,7 @@ void AXWidgetObjWrapper::OnWidgetDestroying(Widget* widget) {
 }
 
 void AXWidgetObjWrapper::OnWillRemoveView(Widget* widget, View* view) {
-  AXAuraObjCache::GetInstance()->RemoveViewSubtree(view);
+  AXAuraObjCache::GetInstance()->Remove(view);
 }
 
 }  // namespace views
