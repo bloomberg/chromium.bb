@@ -1011,7 +1011,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
-  if (!backend_initialized_)
+  if (!backend_initialized_ || !data_type_manager_)
     return;
   data_type_manager_->ReenableType(type);
 }
