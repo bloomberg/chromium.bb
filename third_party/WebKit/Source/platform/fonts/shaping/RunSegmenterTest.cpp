@@ -20,6 +20,7 @@ struct SegmenterTestRun {
     UScriptCode script;
     OrientationIterator::RenderOrientation renderOrientation;
     SmallCapsIterator::SmallCapsBehavior smallCapsBehavior;
+    FontFallbackPriority fontFallbackPriority;
 };
 
 struct SegmenterExpectedRun {
@@ -28,17 +29,20 @@ struct SegmenterExpectedRun {
     UScriptCode script;
     OrientationIterator::RenderOrientation renderOrientation;
     SmallCapsIterator::SmallCapsBehavior smallCapsBehavior;
+    FontFallbackPriority fontFallbackPriority;
 
     SegmenterExpectedRun(unsigned theStart,
         unsigned theLimit,
         UScriptCode theScript,
         OrientationIterator::RenderOrientation theRenderOrientation,
-        SmallCapsIterator::SmallCapsBehavior theSmallCapsBehavior)
+        SmallCapsIterator::SmallCapsBehavior theSmallCapsBehavior,
+        FontFallbackPriority theFontFallbackPriority)
         : start(theStart)
         , limit(theLimit)
         , script(theScript)
         , renderOrientation(theRenderOrientation)
         , smallCapsBehavior(theSmallCapsBehavior)
+        , fontFallbackPriority(theFontFallbackPriority)
     {
     }
 };
@@ -59,7 +63,7 @@ protected:
         for (auto& run : runs) {
             unsigned lengthBefore = text.length();
             text.append(String::fromUTF8(run.text.c_str()));
-            expect.append(SegmenterExpectedRun(lengthBefore, text.length(), run.script, run.renderOrientation, run.smallCapsBehavior));
+            expect.append(SegmenterExpectedRun(lengthBefore, text.length(), run.script, run.renderOrientation, run.smallCapsBehavior, run.fontFallbackPriority));
         }
         RunSegmenter runSegmenter(text.characters16(), text.length(), orientation, variant);
         VerifyRuns(&runSegmenter, expect);
@@ -77,6 +81,7 @@ protected:
             ASSERT_EQ(expect[runCount].script, segmenterRange.script);
             ASSERT_EQ(expect[runCount].renderOrientation, segmenterRange.renderOrientation);
             ASSERT_EQ(expect[runCount].smallCapsBehavior, segmenterRange.smallCapsBehavior);
+            ASSERT_EQ(expect[runCount].fontFallbackPriority, segmenterRange.fontFallbackPriority);
             ++runCount;
         }
         ASSERT_EQ(expect.size(), runCount);
@@ -117,88 +122,101 @@ TEST_F(RunSegmenterTest, Empty)
     ASSERT_EQ(segmenterRange.script, USCRIPT_INVALID_CODE);
     ASSERT_EQ(segmenterRange.renderOrientation, OrientationIterator::OrientationKeep);
     ASSERT_EQ(segmenterRange.smallCapsBehavior, SmallCapsIterator::SmallCapsSameCase);
+    ASSERT_EQ(segmenterRange.fontFallbackPriority, FontFallbackPriority::Text);
 }
 
 TEST_F(RunSegmenterTest, LatinPunctuationSideways)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "Abc.;?Xyz", USCRIPT_LATIN, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "Abc.;?Xyz", USCRIPT_LATIN, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, OneSpace)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { " ", USCRIPT_COMMON, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { " ", USCRIPT_COMMON, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, ArabicHangul)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "نص", USCRIPT_ARABIC, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase },
-        { "키스의", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "نص", USCRIPT_ARABIC, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "키스의", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, JapaneseHindiEmojiMix)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "百家姓", USCRIPT_HAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
-        { "ऋषियों", USCRIPT_DEVANAGARI, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase },
-        { "🌱🌲🌳🌴", USCRIPT_DEVANAGARI, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
-        { "百家姓🌱🌲", USCRIPT_HAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "百家姓", USCRIPT_HAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "ऋषियों", USCRIPT_DEVANAGARI, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "🌱🌲🌳🌴", USCRIPT_DEVANAGARI, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji },
+        { "百家姓", USCRIPT_HAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "🌱🌲", USCRIPT_HAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji } });
 }
 
 TEST_F(RunSegmenterTest, HangulSpace)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "키스의", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
-        { " ", USCRIPT_HANGUL, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase },
-        { "고유조건은", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "키스의", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { " ", USCRIPT_HANGUL, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "고유조건은", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, TechnicalCommonUpright)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "⌀⌁⌂", USCRIPT_COMMON, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "⌀⌁⌂", USCRIPT_COMMON, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Math } });
 }
 
 TEST_F(RunSegmenterTest, PunctuationCommonSideways)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { ".…¡", USCRIPT_COMMON, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { ".…¡", USCRIPT_COMMON, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, JapanesePunctuationMixedInside)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "いろはに", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
-        { ".…¡", USCRIPT_HIRAGANA, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase },
-        { "ほへと", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "いろはに", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { ".…¡", USCRIPT_HIRAGANA, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "ほへと", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, JapanesePunctuationMixedInsideHorizontal)
 {
-    CHECK_RUNS_HORIZONTAL_NORMAL({ { "いろはに.…¡ほへと", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase }});
+    CHECK_RUNS_HORIZONTAL_NORMAL({ { "いろはに.…¡ほへと", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text }});
 }
 
 TEST_F(RunSegmenterTest, PunctuationDevanagariCombining)
 {
-    CHECK_RUNS_HORIZONTAL_NORMAL({ { "क+े", USCRIPT_DEVANAGARI, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase }});
+    CHECK_RUNS_HORIZONTAL_NORMAL({ { "क+े", USCRIPT_DEVANAGARI, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text }});
+}
+
+TEST_F(RunSegmenterTest, EmojiZWJSequences)
+{
+    CHECK_RUNS_HORIZONTAL_NORMAL({
+        { "👩‍👩‍👧‍👦👩‍❤️‍💋‍👨", USCRIPT_LATIN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji },
+        { "abcd", USCRIPT_LATIN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "👩‍👩‍", USCRIPT_LATIN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji },
+        { "efg", USCRIPT_LATIN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text }
+    });
 }
 
 TEST_F(RunSegmenterTest, JapaneseLetterlikeEnd)
 {
-    CHECK_RUNS_MIXED_NORMAL({ { "いろは", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
-        { "ℐℒℐℒℐℒℐℒℐℒℐℒℐℒ", USCRIPT_HIRAGANA, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_MIXED_NORMAL({ { "いろは", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "ℐℒℐℒℐℒℐℒℐℒℐℒℐℒ", USCRIPT_HIRAGANA, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, JapaneseSmallCaps)
 {
     CHECK_RUNS_MIXED_SMALLCAPS({
-        { "いろは", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
-        { "aa", USCRIPT_LATIN, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsUppercaseNeeded },
-        { "AA", USCRIPT_LATIN, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase },
-        { "いろは", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase },
+        { "いろは", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "aa", USCRIPT_LATIN, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsUppercaseNeeded, FontFallbackPriority::Text },
+        { "AA", USCRIPT_LATIN, OrientationIterator::OrientationRotateSideways, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
+        { "いろは", USCRIPT_HIRAGANA, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text },
     });
 }
 
 TEST_F(RunSegmenterTest, ArmenianCyrillicSmallCaps)
 {
-    CHECK_RUNS_HORIZONTAL_SMALLCAPS({ { "աբգ", USCRIPT_ARMENIAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsUppercaseNeeded },
-        { "αβγ", USCRIPT_GREEK, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsUppercaseNeeded },
-        { "ԱԲԳ", USCRIPT_ARMENIAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase } });
+    CHECK_RUNS_HORIZONTAL_SMALLCAPS({ { "աբգ", USCRIPT_ARMENIAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsUppercaseNeeded, FontFallbackPriority::Text },
+        { "αβγ", USCRIPT_GREEK, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsUppercaseNeeded, FontFallbackPriority::Text },
+        { "ԱԲԳ", USCRIPT_ARMENIAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::Text } });
 }
+
 
 
 } // namespace blink

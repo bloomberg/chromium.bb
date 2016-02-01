@@ -7,6 +7,7 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/SmallCapsIterator.h"
+#include "platform/fonts/SymbolsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
 #include "wtf/Assertions.h"
 
@@ -18,10 +19,12 @@ RunSegmenter::RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrienta
     , m_scriptRunIterator(adoptPtr(new ScriptRunIterator(buffer, bufferSize)))
     , m_orientationIterator(runOrientation == FontOrientation::VerticalMixed ? adoptPtr(new OrientationIterator(buffer, bufferSize, runOrientation)) : nullptr)
     , m_smallCapsIterator(variant == FontVariantSmallCaps ? adoptPtr(new SmallCapsIterator(buffer, bufferSize)) : nullptr)
+    , m_symbolsIterator(adoptPtr(new SymbolsIterator(buffer, bufferSize)))
     , m_lastSplit(0)
     , m_scriptRunIteratorPosition(0)
     , m_orientationIteratorPosition(runOrientation == FontOrientation::VerticalMixed ? 0 : m_bufferSize)
     , m_smallCapsIteratorPosition(variant == FontVariantSmallCaps ? 0 : m_bufferSize)
+    , m_symbolsIteratorPosition(0)
     , m_atEnd(false)
 {
 }
@@ -57,6 +60,17 @@ void RunSegmenter::consumeSmallCapsIteratorPastLastSplit()
     }
 }
 
+void RunSegmenter::consumeSymbolsIteratorPastLastSplit()
+{
+    ASSERT(m_symbolsIterator);
+    if (m_symbolsIteratorPosition <= m_lastSplit && m_symbolsIteratorPosition < m_bufferSize) {
+        while (m_symbolsIterator->consume(&m_symbolsIteratorPosition, &m_candidateRange.fontFallbackPriority)) {
+            if (m_symbolsIteratorPosition > m_lastSplit)
+                return;
+        }
+    }
+}
+
 bool RunSegmenter::consume(RunSegmenterRange* nextRange)
 {
     if (m_atEnd || !m_bufferSize)
@@ -65,20 +79,30 @@ bool RunSegmenter::consume(RunSegmenterRange* nextRange)
     consumeScriptIteratorPastLastSplit();
     consumeOrientationIteratorPastLastSplit();
     consumeSmallCapsIteratorPastLastSplit();
+    consumeSymbolsIteratorPastLastSplit();
 
     if (m_scriptRunIteratorPosition <= m_orientationIteratorPosition
-        && m_scriptRunIteratorPosition <= m_smallCapsIteratorPosition) {
+        && m_scriptRunIteratorPosition <= m_smallCapsIteratorPosition
+        && m_scriptRunIteratorPosition <= m_symbolsIteratorPosition) {
         m_lastSplit = m_scriptRunIteratorPosition;
     }
 
     if (m_orientationIteratorPosition <= m_scriptRunIteratorPosition
-        && m_orientationIteratorPosition <= m_smallCapsIteratorPosition) {
+        && m_orientationIteratorPosition <= m_smallCapsIteratorPosition
+        && m_orientationIteratorPosition <= m_symbolsIteratorPosition) {
         m_lastSplit = m_orientationIteratorPosition;
     }
 
     if (m_smallCapsIteratorPosition <= m_scriptRunIteratorPosition
-        && m_smallCapsIteratorPosition <= m_orientationIteratorPosition) {
+        && m_smallCapsIteratorPosition <= m_orientationIteratorPosition
+        && m_smallCapsIteratorPosition <= m_symbolsIteratorPosition) {
         m_lastSplit = m_smallCapsIteratorPosition;
+    }
+
+    if (m_symbolsIteratorPosition <= m_scriptRunIteratorPosition
+        && m_symbolsIteratorPosition <= m_orientationIteratorPosition
+        && m_symbolsIteratorPosition <= m_smallCapsIteratorPosition) {
+        m_lastSplit = m_symbolsIteratorPosition;
     }
 
     m_candidateRange.start = m_candidateRange.end;
