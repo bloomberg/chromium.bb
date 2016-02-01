@@ -302,6 +302,24 @@ bool GetGestureTimes(const XEvent& xev, double* start_time, double* end_time) {
   return true;
 }
 
+int64_t g_last_seen_timestamp_ms_ = 0;
+// accumulated rollover time.
+int64_t g_rollover_ms_ = 0;
+
+// Takes a 32-bit timestamp in milliseconds (e.g., an Xlib Time) and returns
+// a time delta that is immune to timer rollover. This function is not thread
+// safe as we do not use a lock.
+base::TimeDelta TimeDeltaFromXEventTime(uint32_t timestamp) {
+  int64_t timestamp_64 = static_cast<int64_t>(timestamp);
+  // Register a rollover if the distance between last timestamp and current one
+  // is larger than half the width. This avoids false rollovers even in a case
+  // where X server delivers reasonably close events out-of-order.
+  if (g_last_seen_timestamp_ms_ - timestamp_64 > (UINT32_MAX >> 1))
+    g_rollover_ms_ += static_cast<int64_t>(UINT32_MAX) + 1;  // ~49.7 days.
+  g_last_seen_timestamp_ms_ = timestamp_64;
+  return base::TimeDelta::FromMilliseconds(g_rollover_ms_ + timestamp_64);
+}
+
 }  // namespace
 
 namespace ui {
@@ -480,17 +498,17 @@ base::TimeDelta EventTimeFromXEvent(const XEvent& xev) {
   switch (xev.type) {
     case KeyPress:
     case KeyRelease:
-      return base::TimeDelta::FromMilliseconds(xev.xkey.time);
+      return TimeDeltaFromXEventTime(xev.xkey.time);
     case ButtonPress:
     case ButtonRelease:
-      return base::TimeDelta::FromMilliseconds(xev.xbutton.time);
+      return TimeDeltaFromXEventTime(xev.xbutton.time);
       break;
     case MotionNotify:
-      return base::TimeDelta::FromMilliseconds(xev.xmotion.time);
+      return TimeDeltaFromXEventTime(xev.xmotion.time);
       break;
     case EnterNotify:
     case LeaveNotify:
-      return base::TimeDelta::FromMilliseconds(xev.xcrossing.time);
+      return TimeDeltaFromXEventTime(xev.xcrossing.time);
       break;
     case GenericEvent: {
       double start, end;
@@ -504,7 +522,7 @@ base::TimeDelta EventTimeFromXEvent(const XEvent& xev) {
         return base::TimeDelta::FromMicroseconds(touch_timestamp * 1000000);
       } else {
         XIDeviceEvent* xide = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-        return base::TimeDelta::FromMilliseconds(xide->time);
+        return TimeDeltaFromXEventTime(xide->time);
       }
       break;
     }
@@ -751,6 +769,11 @@ bool GetFlingDataFromXEvent(const XEvent& xev,
   DeviceDataManagerX11::GetInstance()->GetFlingData(xev, vx, vy, vx_ordinal,
                                                     vy_ordinal, is_cancel);
   return true;
+}
+
+void ResetTimestampRolloverCountersForTesting() {
+  g_last_seen_timestamp_ms_ = 0;
+  g_rollover_ms_ = 0;
 }
 
 }  // namespace ui

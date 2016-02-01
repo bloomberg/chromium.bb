@@ -412,7 +412,10 @@ test("events_unittests") {
       "x/events_x_unittest.cc",
     ]
     configs += [ "//build/config/linux:x11" ]
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/x",
+      "//ui/gfx/x",
+    ]
   }
 
   if (use_ozone) {

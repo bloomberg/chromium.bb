@@ -28,6 +28,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -81,6 +82,7 @@ class EventsXTest : public testing::Test {
   void SetUp() override {
     DeviceDataManagerX11::CreateInstance();
     ui::TouchFactory::GetInstance()->ResetForTest();
+    ResetTimestampRolloverCountersForTesting();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(EventsXTest);
@@ -515,6 +517,35 @@ TEST_F(EventsXTest, IgnoresMotionEventForMouseWheelScroll) {
   // We shouldn't produce a mouse move event on a mouse wheel
   // scroll. These events are only produced for some mice.
   EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
+}
+
+TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
+  XEvent event;
+  InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
+
+  event.xbutton.time = 0xFFFFFFFF;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0xFFFFFFFF).ToInternalValue(),
+            ui::EventTimeFromNative(&event).ToInternalValue());
+
+  event.xbutton.time = 3;
+  EXPECT_EQ(
+      base::TimeDelta::FromMilliseconds(0x100000000LL + 3).ToInternalValue(),
+      ui::EventTimeFromNative(&event).ToInternalValue());
+}
+
+TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
+  XEvent event;
+  InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
+
+  event.xbutton.time = 1;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1).ToInternalValue(),
+            ui::EventTimeFromNative(&event).ToInternalValue());
+  event.xbutton.time = 2;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2).ToInternalValue(),
+            ui::EventTimeFromNative(&event).ToInternalValue());
+  event.xbutton.time = 0xFFFFFFFF;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0xFFFFFFFF).ToInternalValue(),
+            ui::EventTimeFromNative(&event).ToInternalValue());
 }
 
 }  // namespace ui
