@@ -122,7 +122,7 @@ Test the value 'initial' for positioned elements
 PASS element.style.alignSelf is "left"
 PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left"
 PASS element.style.alignSelf is "initial"
-PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
 
 Test the value 'initial' for positioned elements in grid containers
 PASS element.style.alignSelf is "right"

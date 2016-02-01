@@ -1055,6 +1055,10 @@ crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failur
 crbug.com/474798 virtual/spv2/paint/invalidation/spv2/align-self-change-keeping-geometry-grid-as-text.html [ Skip ]
 crbug.com/474798 virtual/spv2/paint/invalidation/spv2/justify-self-change-keeping-geometry-as-text.html [ Skip ]
 
+crbug.com/582230 fast/css-grid-layout/relayout-align-items-changed.html [ Skip ]
+crbug.com/582230 fast/repaint/align-items-change.html [ Skip ]
+crbug.com/582230 fast/repaint/align-items-overflow-change.html [ Skip ]
+
 crbug.com/548695 fast/forms/datalist/update-range-with-datalist.html [ Failure ]
 
 # Temporarily disabled after chromium change

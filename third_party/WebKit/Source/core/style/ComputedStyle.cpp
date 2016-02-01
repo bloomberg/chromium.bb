@@ -182,8 +182,7 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         || oldStyle->hasPseudoStyle(FIRST_LETTER) != newStyle->hasPseudoStyle(FIRST_LETTER)
         || !oldStyle->contentDataEquivalent(newStyle)
         || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
-        || oldStyle->justifyItems() != newStyle->justifyItems()
-        || oldStyle->alignItems() != newStyle->alignItems())
+        || oldStyle->justifyItems() != newStyle->justifyItems()) // TODO (lajava): We must avoid this Reattach.
         return Reattach;
 
     if (oldStyle->inheritedNotEqual(*newStyle))
@@ -204,6 +203,17 @@ ItemPosition ComputedStyle::resolveAlignment(const ComputedStyle& parentStyle, c
     if (childStyle.alignSelfPosition() == ItemPositionAuto)
         return (parentStyle.alignItemsPosition() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.alignItemsPosition();
     return childStyle.alignSelfPosition();
+}
+
+const StyleSelfAlignmentData ComputedStyle::resolvedAlignment(const ComputedStyle& parentStyle, ItemPosition resolvedAutoPositionForLayoutObject) const
+{
+    // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
+    if (alignSelfPosition() == ItemPositionAuto) {
+        if (parentStyle.alignItemsPosition() == ItemPositionAuto)
+            return {resolvedAutoPositionForLayoutObject, OverflowAlignmentDefault};
+        return parentStyle.alignItems();
+    }
+    return alignSelf();
 }
 
 ItemPosition ComputedStyle::resolveJustification(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)

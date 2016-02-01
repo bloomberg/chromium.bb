@@ -1607,8 +1607,13 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyAlignItems:
         return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignItemsPosition(), &style), style.alignItemsOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyAlignSelf: {
-        Node* parent = styledNode->parentNode();
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignSelfPosition(), parent ? parent->ensureComputedStyle() : nullptr), style.alignSelfOverflowAlignment(), NonLegacyPosition);
+        ItemPosition position = style.alignSelfPosition();
+        if (position == ItemPositionAuto) {
+            // TODO(lajava): This code doesn't work for ShadowDOM (see Node::parentComputedStyle)
+            const ComputedStyle* parentStyle = styledNode->parentNode() ? styledNode->parentNode()->ensureComputedStyle() : nullptr;
+            position = parentStyle ? ComputedStyle::resolveAlignment(*parentStyle, style, resolveAlignmentAuto(parentStyle->alignItemsPosition(), parentStyle)) : ItemPositionStart;
+        }
+        return valueForItemPositionWithOverflowAlignment(position, style.alignSelfOverflowAlignment(), NonLegacyPosition);
     }
     case CSSPropertyFlex:
         return valuesForShorthandProperty(flexShorthand(), style, layoutObject, styledNode, allowVisitedStyle);

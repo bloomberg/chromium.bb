@@ -295,16 +295,6 @@ void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style, const Computed
             style.setAlignItemsPosition(ItemPositionStretch);
     }
 
-    // The 'auto' keyword computes to 'stretch' on absolutely-positioned elements,
-    // and to the computed value of align-items on the parent (minus
-    // any 'legacy' keywords) on all other boxes.
-    if (style.alignSelfPosition() == ItemPositionAuto) {
-        if (absolutePositioned)
-            style.setAlignSelfPosition(ItemPositionStretch);
-        else
-            style.setAlignSelf(parentStyle.alignItems());
-    }
-
     // Block Containers: For table cells, the behavior of the 'auto' depends on the computed
     // value of 'vertical-align', otherwise behaves as 'start'.
     // Flex Containers: 'auto' computes to 'flex-start'.
