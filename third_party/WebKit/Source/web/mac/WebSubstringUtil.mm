@@ -83,8 +83,9 @@ static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& ra
         // using a web font. For now, just use the default font instead.
         // TODO(rsesek): Change the font activation flags to allow other processes
         // to use the font.
+        // TODO(shuchen): Support scaling the font as necessary according to CSS transforms.
         if (!font)
-          font = [NSFont systemFontOfSize:style->font().fontDescription().computedSize()];
+            font = [NSFont systemFontOfSize:style->font().fontDescription().computedSize()];
         [attrs setObject:font forKey:NSFontAttributeName];
 
         if (style->visitedDependentColor(CSSPropertyColor).alpha())
@@ -112,8 +113,9 @@ static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& ra
 WebPoint getBaselinePoint(FrameView* frameView, const EphemeralRange& range, NSAttributedString* string)
 {
     // Compute bottom left corner and convert to AppKit coordinates.
-    // TODO(yosin) We shold avoid to create |Range| object. See crbug.com/529985.
-    IntRect stringRect = enclosingIntRect(createRange(range)->boundingRect());
+    // TODO(yosin): We shold avoid to create |Range| object. See crbug.com/529985.
+    // TODO(shuchen): Support page-zoom for getting the baseline point.
+    IntRect stringRect = frameView->contentsToRootFrame(createRange(range)->boundingBox());
     IntPoint stringPoint = stringRect.minXMaxYCorner();
     stringPoint.setY(frameView->height() - stringPoint.y());
 

@@ -94,6 +94,10 @@
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
+#if OS(MACOSX)
+#include "public/web/mac/WebSubstringUtil.h"
+#endif
+
 using blink::FrameTestHelpers::loadFrame;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
@@ -3182,5 +3186,34 @@ TEST_F(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult)
     ASSERT_TRUE(document);
     EXPECT_FALSE(document->frame()->isLoading());
 }
+
+#if OS(MACOSX)
+TEST_F(WebViewTest, WebSubstringUtil)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("content_editable_populated.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "content_editable_populated.html");
+    webView->settings()->setDefaultFontSize(12);
+    webView->resize(WebSize(400, 400));
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+    FrameView* frameView = frame->frame()->view();
+
+    WebPoint baselinePoint;
+    NSAttributedString* result = WebSubstringUtil::attributedSubstringInRange(frame, 10, 3, &baselinePoint);
+    ASSERT_TRUE(!!result);
+
+    WebPoint point(baselinePoint.x, frameView->height() - baselinePoint.y);
+    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    ASSERT_TRUE(!!result);
+
+    webView->setZoomLevel(3);
+
+    result = WebSubstringUtil::attributedSubstringInRange(frame, 5, 5, &baselinePoint);
+    ASSERT_TRUE(!!result);
+
+    point = WebPoint(baselinePoint.x, frameView->height() - baselinePoint.y);
+    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    ASSERT_TRUE(!!result);
+}
+#endif
 
 } // namespace blink
