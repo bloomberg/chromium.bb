@@ -221,6 +221,20 @@
         </div>
       </div>
   </section>
+<if expr="chromeos">
+  <section id="andorid-apps-section" guest-visibility="hidden">
+    <h3 i18n-content="androidAppsTitle"></h3>
+    <div class="checkbox controlled-setting-with-label">
+      <label>
+        <input id="android-apps-enabled" pref="arc.enabled"
+            metric="Options_AndroidApps" type="checkbox">
+        <span>
+          <span i18n-content="androidAppsEnabled"></span>
+        </span>
+      </label>
+    </div>
+  </section>
+</if>
   <section id="sync-users-section" guest-visibility="hidden">
     <h3 i18n-content="sectionTitleUsers"></h3>
 <if expr="chromeos">
@@ -525,7 +539,7 @@
       </div>
     </div>
   </section>
-</if>  <!-- chromeos -->
+</if>
   <section id="passwords-and-autofill-section">
     <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
     <div class="checkbox controlled-setting-with-label">

@@ -2317,6 +2317,15 @@ cr.define('options', function() {
       }
       button.textContent = loadTimeData.getString(strId);
     };
+
+    /**
+     * Hides Android Apps settings when they are not available (ChromeOS only).
+     */
+    BrowserOptions.hideAndroidAppsSection = function() {
+      var section = $('andorid-apps-section');
+      if (section)
+        section.hidden = true;
+    };
   }
 
   // Export

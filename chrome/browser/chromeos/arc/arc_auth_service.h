@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/arc/arc_auth_ui.h"
 #include "components/arc/arc_bridge_service.h"
@@ -17,7 +18,12 @@
 #include "components/arc/common/auth.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class PrefService;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace arc {
 
@@ -48,6 +54,9 @@ class ArcAuthService : public ArcService,
   ~ArcAuthService() override;
 
   static ArcAuthService* Get();
+
+  // It is called from chrome/browser/prefs/browser_prefs.cc.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void DisableUIForTesting();
 
@@ -85,12 +94,17 @@ class ArcAuthService : public ArcService,
   void FetchAuthCode();
   void CloseUI();
   void SetState(State state);
+  void ShutdownBridgeAndCloseUI();
+  void OnOptInPreferenceChanged();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
 
   // Owned by view hierarchy.
   ArcAuthUI* auth_ui_ = nullptr;
+
+  // Registrar used to monitor ARC opt-in state.
+  PrefChangeRegistrar pref_change_registrar_;
 
   mojo::Binding<AuthHost> binding_;
   base::ThreadChecker thread_checker_;

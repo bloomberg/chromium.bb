@@ -17,6 +17,7 @@ namespace prefs {
 // Profile prefs. Please add Local State prefs below instead.
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
 extern const char kArcApps[];
+extern const char kArcEnabled[];
 #endif
 extern const char kChildAccountStatusKnown[];
 extern const char kDefaultApps[];

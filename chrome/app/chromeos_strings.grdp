@@ -6423,4 +6423,12 @@ All users must sign out to continue.
     Enables Chrome Web Store Gallery app for printer drivers. The app searches Chrome Web Store for extensions that support printing to a USB printer with specific USB ID.
   </message>
 
+  <!-- Android Apps -->
+  <message name="IDS_OPTIONS_ARC_TITLE" desc="The title of Android Apps section.">
+    Android Apps
+  </message>
+  <message name="IDS_OPTIONS_ARC_ENABLE" desc="Label for the checkbox that enables Android apps.">
+    Enable Android Apps to run on your Chromebook.
+  </message>
+
 </grit-part>

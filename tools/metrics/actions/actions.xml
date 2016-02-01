@@ -9341,6 +9341,20 @@ should be able to be added at any place in this file.
   <description>Settings: Users: Enable allowing all users</description>
 </action>
 
+<action name="Options_AndroidApps_Disable">
+  <owner>khmel@chromium.org</owner>
+  <description>
+    User changed setting to disable Android apps from running on the Chromebook.
+  </description>
+</action>
+
+<action name="Options_AndroidApps_Enable">
+  <owner>khmel@chromium.org</owner>
+  <description>
+    User changed setting to enable Android apps to run on the Chromebook.
+  </description>
+</action>
+
 <action name="Options_AppLanguage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -6,9 +6,12 @@
 
 #include <utility>
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/arc/arc_auth_ui.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace arc {
 
@@ -24,7 +27,6 @@ const char kStateDisable[] = "DISABLE";
 const char kStateFetchingCode[] = "FETCHING_CODE";
 const char kStateNoCode[] = "NO_CODE";
 const char kStateEnable[] = "ENABLE";
-
 }  // namespace
 
 ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
@@ -36,8 +38,8 @@ ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
 }
 
 ArcAuthService::~ArcAuthService() {
+  DCHECK(!auth_ui_ && !profile_);
   arc_bridge_service()->RemoveObserver(this);
-  CloseUI();
 
   DCHECK(arc_auth_service == this);
   arc_auth_service = nullptr;
@@ -48,6 +50,14 @@ ArcAuthService* ArcAuthService::Get() {
   DCHECK(arc_auth_service);
   DCHECK(arc_auth_service->thread_checker_.CalledOnValidThread());
   return arc_auth_service;
+}
+
+// static
+void ArcAuthService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kArcEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // static
@@ -73,7 +83,8 @@ void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
 }
 
 void ArcAuthService::SetState(State state) {
-  DCHECK_NE(state_, state);
+  if (state_ == state)
+    return;
   state_ = state;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInChanged(state_));
 }
@@ -86,19 +97,44 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   profile_ = profile;
 
-  // TODO(khmel). At this moment UI to handle ARC OptIn is not ready yet. Assume
-  // we opted in by default. When UI is ready, this should be synced with
-  // user's prefs.
-  FetchAuthCode();
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kArcEnabled, base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
+                                     base::Unretained(this)));
+  OnOptInPreferenceChanged();
 }
 
 void ArcAuthService::Shutdown() {
+  ShutdownBridgeAndCloseUI();
   profile_ = nullptr;
-  ArcBridgeService::Get()->Shutdown();
-  if (state_ != State::DISABLE) {
-    auth_fetcher_.reset();
-    SetState(State::DISABLE);
+  pref_change_registrar_.RemoveAll();
+}
+
+void ArcAuthService::OnOptInPreferenceChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(profile_);
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+    switch (state_) {
+      case State::DISABLE:
+        FetchAuthCode();
+        break;
+      case State::NO_CODE:  // Retry
+        FetchAuthCode();
+        break;
+      default:
+        break;
+    }
+  } else {
+    ShutdownBridgeAndCloseUI();
   }
+}
+
+void ArcAuthService::ShutdownBridgeAndCloseUI() {
+  CloseUI();
+  auth_fetcher_.reset();
+  ArcBridgeService::Get()->Shutdown();
+  SetState(State::DISABLE);
 }
 
 void ArcAuthService::AddObserver(Observer* observer) {
@@ -123,8 +159,8 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK(!auth_code.empty());
   DCHECK_NE(state_, State::ENABLE);
 
-  CloseUI();
-  auth_fetcher_.reset();
+  ShutdownBridgeAndCloseUI();
+
   auth_code_ = auth_code;
   ArcBridgeService::Get()->HandleStartup();
 
@@ -133,7 +169,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
 
 void ArcAuthService::FetchAuthCode() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, State::DISABLE);
+  DCHECK(state_ == State::DISABLE || state_ == State::NO_CODE);
 
   CloseUI();
   auth_code_.clear();

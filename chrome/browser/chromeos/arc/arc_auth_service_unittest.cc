@@ -10,8 +10,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/auth/arc_auth_fetcher.h"
@@ -103,7 +106,31 @@ class ArcAuthServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
 };
 
-TEST_F(ArcAuthServiceTest, Workflow) {
+TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
+  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+
+  PrefService* pref = profile()->GetPrefs();
+  DCHECK_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
+
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+
+  // Need to initialize URLFetcher for test framework.
+  const GURL gaia_gurl = ArcAuthFetcher::CreateURL();
+  url_fetcher_factory().SetFakeResponse(gaia_gurl, std::string(), net::HTTP_OK,
+                                        net::URLRequestStatus::SUCCESS);
+
+  pref->SetBoolean(prefs::kArcEnabled, true);
+  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+
+  pref->SetBoolean(prefs::kArcEnabled, false);
+  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
   ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAutoCode());
@@ -117,7 +144,12 @@ TEST_F(ArcAuthServiceTest, Workflow) {
   set_cookie(cookie);
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
-  // Setting profile initiates a code fetching process.
+  // By default ARC is not enabled.
+  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  // Setting profile and pref initiates a code fetching process.
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
 
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
@@ -159,6 +191,9 @@ TEST_F(ArcAuthServiceTest, Workflow) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(ArcAuthService::State::NO_CODE, auth_service()->state());
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
 }
 
 }  // namespace arc

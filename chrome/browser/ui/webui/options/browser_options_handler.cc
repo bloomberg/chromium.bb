@@ -130,6 +130,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/accessibility_types.h"
@@ -414,6 +415,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TOUCHPAD_TAP_DRAGGING_DESCRIPTION },
     { "accessibilityVirtualKeyboard",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
+    { "androidAppsTitle", IDS_OPTIONS_ARC_TITLE },
+    { "androidAppsEnabled", IDS_OPTIONS_ARC_ENABLE },
     { "autoclickDelayExtremelyShort",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_EXTREMELY_SHORT },
     { "autoclickDelayLong",
@@ -1042,6 +1045,11 @@ void BrowserOptionsHandler::InitializePage() {
   if (consumer_management) {
     OnConsumerManagementStatusChanged();
     consumer_management->AddObserver(this);
+  }
+
+  if (!arc::ArcBridgeService::GetEnabled(
+          base::CommandLine::ForCurrentProcess())) {
+    web_ui()->CallJavascriptFunction("BrowserOptions.hideAndroidAppsSection");
   }
 #endif
 }
