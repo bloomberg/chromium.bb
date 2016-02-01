@@ -19,11 +19,6 @@ namespace {
 
 const size_t kMaxSenders = 100;
 
-// TODO(peter): Implement an event for GCMAppHandlers that should be called
-// when decryption of an incoming message has failed.
-void DecryptionFailedCallback(
-    GCMEncryptionProvider::DecryptionFailure reason) {}
-
 }  // namespace
 
 InstanceIDHandler::InstanceIDHandler() {
@@ -280,7 +275,8 @@ void GCMDriver::DispatchMessage(const std::string& app_id,
       app_id, message,
       base::Bind(&GCMDriver::DispatchMessage,
                  weak_ptr_factory_.GetWeakPtr(), app_id),
-      base::Bind(&DecryptionFailedCallback));
+      base::Bind(&GCMDriver::RecordDecryptionFailure,
+                 weak_ptr_factory_.GetWeakPtr(), app_id));
 }
 
 void GCMDriver::RegisterAfterUnregister(

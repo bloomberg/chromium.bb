@@ -58,6 +58,9 @@ class GCMEncryptionProvider {
   // Callback to be invoked when a message cannot be decoded.
   using DecryptionFailedCallback = base::Callback<void(DecryptionFailure)>;
 
+  // Converts |reason| to a string describing the details of said reason.
+  static std::string ToDecryptionFailureDetailsString(DecryptionFailure reason);
+
   GCMEncryptionProvider();
   ~GCMEncryptionProvider();
 

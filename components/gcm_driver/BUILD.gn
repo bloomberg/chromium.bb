@@ -160,6 +160,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/gcm_driver/crypto",
     "//components/prefs:test_support",
     "//google_apis:test_support",
     "//google_apis/gcm:test_support",

@@ -86,6 +86,19 @@ void SetSendingInfo(const std::vector<gcm::SendingActivity>& sends,
   }
 }
 
+void SetDecryptionFailureInfo(
+    const std::vector<gcm::DecryptionFailureActivity>& failures,
+    base::ListValue* failure_info) {
+  for (const gcm::DecryptionFailureActivity& failure : failures) {
+    base::ListValue* row = new base::ListValue();
+    failure_info->Append(row);
+
+    row->AppendDouble(failure.time.ToJsTime());
+    row->AppendString(failure.app_id);
+    row->AppendString(failure.details);
+  }
+}
+
 }  // namespace
 
 void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
@@ -143,6 +156,14 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
       base::ListValue* send_info = new base::ListValue();
       results->Set(kSendInfo, send_info);
       SetSendingInfo(stats->recorded_activities.sending_activities, send_info);
+    }
+
+    if (stats->recorded_activities.decryption_failure_activities.size() > 0) {
+      base::ListValue* failure_info = new base::ListValue();
+      results->Set(kDecryptionFailureInfo, failure_info);
+      SetDecryptionFailureInfo(
+          stats->recorded_activities.decryption_failure_activities,
+          failure_info);
     }
   }
 }

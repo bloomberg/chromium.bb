@@ -256,6 +256,11 @@ class GCMDriver {
                         const std::string& receiver_id,
                         const OutgoingMessage& message) = 0;
 
+  // Platform-specific implementation of recording message decryption failures.
+  virtual void RecordDecryptionFailure(
+      const std::string& app_id,
+      GCMEncryptionProvider::DecryptionFailure reason) = 0;
+
   // Runs the Register callback.
   void RegisterFinished(const std::string& app_id,
                         const std::string& registration_id,

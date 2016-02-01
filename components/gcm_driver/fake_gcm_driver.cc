@@ -74,6 +74,11 @@ void FakeGCMDriver::SendImpl(const std::string& app_id,
                              const OutgoingMessage& message) {
 }
 
+void FakeGCMDriver::RecordDecryptionFailure(
+    const std::string& app_id,
+    GCMEncryptionProvider::DecryptionFailure reason) {
+}
+
 void FakeGCMDriver::SetAccountTokens(
     const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
 }

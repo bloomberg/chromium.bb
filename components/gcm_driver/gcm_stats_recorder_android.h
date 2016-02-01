@@ -9,15 +9,17 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_activity.h"
 
 namespace gcm {
 
-struct RecordedActivities;
-
 // Stats recorder for Android, used for recording stats and activities on the
 // GCM Driver level for debugging purposes. Based on the GCMStatsRecorder, as
 // defined in the GCM Engine, which does not exist on Android.
+//
+// Note that this class, different from the GCMStatsRecorder(Impl), is expected
+// to be used on the UI thread.
 class GCMStatsRecorderAndroid {
  public:
   // A delegate interface that allows the GCMStatsRecorderAndroid instance to
@@ -57,6 +59,10 @@ class GCMStatsRecorderAndroid {
   void RecordDataMessageReceived(const std::string& app_id,
                                  int message_byte_size);
 
+  // Records a message decryption failure caused by |reason| for |app_id|.
+  void RecordDecryptionFailure(const std::string& app_id,
+                               GCMEncryptionProvider::DecryptionFailure reason);
+
   bool is_recording() const { return is_recording_; }
   void set_is_recording(bool recording) { is_recording_ = recording; }
 
@@ -76,6 +82,9 @@ class GCMStatsRecorderAndroid {
 
   // Recorded received message activities.
   std::deque<ReceivingActivity> receiving_activities_;
+
+  // Recorded message decryption failure activities.
+  std::deque<DecryptionFailureActivity> decryption_failure_activities_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMStatsRecorderAndroid);
 };
