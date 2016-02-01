@@ -111,11 +111,11 @@ Polymer({
      * flow.
      * @private {string}
      */
-    firstRunFlowCloudLearnMore_: {
+    firstRunFlowLearnMore_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.valueExists('firstRunFlowCloudLearnMore') ?
-          loadTimeData.getString('firstRunFlowCloudLearnMore') : '',
+      value: loadTimeData.valueExists('firstRunFlowLearnMore') ?
+          loadTimeData.getString('firstRunFlowLearnMore') : '',
     },
 
     /**
@@ -137,6 +137,15 @@ Polymer({
       readOnly: true,
       value: loadTimeData.valueExists('firstRunFlowCloudPrefText') ?
           loadTimeData.getString('firstRunFlowCloudPrefText') : '',
+    },
+
+    /**
+     * The URL to open when the first run flow learn more link is clicked.
+     * @type {string}
+     */
+    firstRunFlowLearnMoreUrl: {
+      type: String,
+      value: '',
     },
 
     /**

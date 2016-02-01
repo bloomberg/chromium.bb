@@ -19,7 +19,14 @@
         if="[[computeShowFirstRunFlow_(showFirstRunFlow, currentView_)]]">
       <div id="first-run-flow">
         <div id="first-run-title">[[firstRunFlowTitle_]]</div>
-        <div id="first-run-text">[[firstRunFlowText_]]</div>
+        <div id="first-run-text">
+          <span>[[firstRunFlowText_]]</span>
+          <a href="[[firstRunFlowLearnMoreUrl]]">
+            <span class="first-run-learn-more">
+              [[firstRunFlowLearnMore_]]
+            </span>
+          </a>
+        </div>
         <template is="dom-if" if="[[showFirstRunFlowCloudPref]]">
           <div id="first-run-flow-cloud-pref">
             <div>
@@ -29,8 +36,8 @@
             <div>
               <span>[[firstRunFlowCloudPrefText_]]</span>
               <a href="[[firstRunFlowCloudPrefLearnMoreUrl]]">
-                <span id="first-run-learn-more">
-                  [[firstRunFlowCloudLearnMore_]]
+                <span class="first-run-learn-more">
+                  [[firstRunFlowLearnMore_]]
                 </span>
               </a>
             </div>
