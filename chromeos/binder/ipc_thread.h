@@ -6,34 +6,61 @@
 #define CHROMEOS_BINDER_IPC_THREAD_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "chromeos/binder/command_broker.h"
 #include "chromeos/chromeos_export.h"
 
 namespace binder {
 
-class CommandBroker;
 class Driver;
 
-// IpcThread manages binder-related resources (e.g. binder driver FD) and
-// handles incoming binder commands.
-class CHROMEOS_EXPORT IpcThread : public base::Thread,
-                                  public base::MessageLoopForIO::Watcher {
+// IpcThreadPoller watches the driver for incoming commands, and polls and
+// handles them when necessary.
+class CHROMEOS_EXPORT IpcThreadPoller : public base::MessageLoopForIO::Watcher {
  public:
-  IpcThread();
-  ~IpcThread() override;
+  enum ThreadType {
+    THREAD_TYPE_MAIN,  // The thread owns the driver instance.
+    THREAD_TYPE_SUB,   // The thread is not the owner of the driver instance.
+  };
+
+  IpcThreadPoller(ThreadType type, Driver* driver);
+  ~IpcThreadPoller() override;
+
+  Driver* driver() { return driver_; }
+  CommandBroker* command_broker() { return &command_broker_; }
+
+  // Initializes this object.
+  // Returns true on success.
+  bool Initialize();
+
+  // base::MessageLoopIO::Watcher overrides:
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
+
+ private:
+  ThreadType type_;
+  Driver* driver_;
+  CommandBroker command_broker_;
+  base::MessageLoopForIO::FileDescriptorWatcher watcher_;
+  DISALLOW_COPY_AND_ASSIGN(IpcThreadPoller);
+};
+
+// MainIpcThread manages binder-related resources (e.g. binder driver FD) and
+// handles incoming binder commands.
+class CHROMEOS_EXPORT MainIpcThread : public base::Thread {
+ public:
+  MainIpcThread();
+  ~MainIpcThread() override;
 
   Driver* driver() { return driver_.get(); }
-  CommandBroker* command_broker() { return command_broker_.get(); }
+  CommandBroker* command_broker() { return poller_->command_broker(); }
   bool initialized() const { return initialized_; }
 
   // Starts this thread.
   // Returns true on success.
   bool Start();
-
-  // base::MessageLoopIO::Watcher overrides:
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
 
  protected:
   // base::Thread overrides:
@@ -42,11 +69,40 @@ class CHROMEOS_EXPORT IpcThread : public base::Thread,
 
  private:
   scoped_ptr<Driver> driver_;
-  scoped_ptr<CommandBroker> command_broker_;
-  scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> watcher_;
+  scoped_ptr<IpcThreadPoller> poller_;
   bool initialized_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(IpcThread);
+  DISALLOW_COPY_AND_ASSIGN(MainIpcThread);
+};
+
+// SubIpcThread does the same thing as MainIpcThread, but relies on the driver
+// instance owned by the main thread.
+class CHROMEOS_EXPORT SubIpcThread : public base::Thread {
+ public:
+  // Constructs a sub thread with a Driver instance owned by the main thread.
+  explicit SubIpcThread(MainIpcThread* main_thread);
+
+  ~SubIpcThread() override;
+
+  Driver* driver() { return poller_->driver(); }
+  CommandBroker* command_broker() { return poller_->command_broker(); }
+  bool initialized() const { return initialized_; }
+
+  // Starts this thread.
+  // Returns true on success.
+  bool Start();
+
+ protected:
+  // base::Thread overrides:
+  void Init() override;
+  void CleanUp() override;
+
+ private:
+  MainIpcThread* main_thread_;
+  scoped_ptr<IpcThreadPoller> poller_;
+  bool initialized_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SubIpcThread);
 };
 
 }  // namespace binder

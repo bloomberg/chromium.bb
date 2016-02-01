@@ -53,6 +53,11 @@ bool CommandBroker::EnterLooper() {
   return command_stream_.Flush();
 }
 
+bool CommandBroker::RegisterLooper() {
+  command_stream_.AppendOutgoingCommand(BC_REGISTER_LOOPER, nullptr, 0);
+  return command_stream_.Flush();
+}
+
 bool CommandBroker::ExitLooper() {
   command_stream_.AppendOutgoingCommand(BC_EXIT_LOOPER, nullptr, 0);
   return command_stream_.Flush();
@@ -216,7 +221,8 @@ CommandBroker::ResponseType CommandBroker::WaitForResponse(
         return RESPONSE_TYPE_NONE;
       }
     } else {
-      if (!command_stream_.Fetch()) {
+      // Block until response is received.
+      if (!command_stream_.FetchBlocking()) {
         LOG(ERROR) << "Failed to fetch.";
         return RESPONSE_TYPE_NONE;
       }

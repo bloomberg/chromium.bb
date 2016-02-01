@@ -9,63 +9,113 @@
 
 namespace binder {
 
-IpcThread::IpcThread()
-    : base::Thread("BinderThread"),
-      driver_(new Driver()),
-      watcher_(new base::MessageLoopForIO::FileDescriptorWatcher()) {}
+// IpcThreadPoller
+IpcThreadPoller::IpcThreadPoller(ThreadType type, Driver* driver)
+    : type_(type), driver_(driver), command_broker_(driver) {}
 
-IpcThread::~IpcThread() {
-  Stop();
-}
-
-bool IpcThread::Start() {
-  DCHECK(!initialized_);
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  return StartWithOptions(options);
-}
-
-void IpcThread::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(initialized_);
-  bool success = command_broker_->PollCommands();
-  LOG_IF(ERROR, !success) << "PollCommands() failed.";
-}
-
-void IpcThread::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
-}
-
-void IpcThread::Init() {
-  DCHECK(!initialized_);
-  if (!driver_->Initialize()) {
-    LOG(ERROR) << "Failed to initialize driver.";
-    return;
-  }
-  command_broker_.reset(new CommandBroker(driver_.get()));
-  if (!command_broker_->EnterLooper()) {
-    LOG(ERROR) << "Failed to enter looper.";
-    return;
-  }
-  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          driver_->GetFD(), true, base::MessageLoopForIO::WATCH_READ,
-          watcher_.get(), this)) {
-    LOG(ERROR) << "Failed to initialize watcher.";
-    return;
-  }
-  initialized_ = true;
-}
-
-void IpcThread::CleanUp() {
-  DCHECK(initialized_);
-  if (!command_broker_->ExitLooper()) {
+IpcThreadPoller::~IpcThreadPoller() {
+  if (!command_broker_.ExitLooper()) {
     LOG(ERROR) << "Failed to exit looper.";
   }
   if (!driver_->NotifyCurrentThreadExiting()) {
     LOG(ERROR) << "Failed to send thread exit.";
   }
-  watcher_.reset();
-  command_broker_.reset();
+}
+
+bool IpcThreadPoller::Initialize() {
+  if (type_ == THREAD_TYPE_MAIN) {
+    if (!command_broker_.EnterLooper()) {
+      LOG(ERROR) << "Failed to enter looper.";
+      return false;
+    }
+  } else {
+    if (!command_broker_.RegisterLooper()) {
+      LOG(ERROR) << "Failed to register looper.";
+      return false;
+    }
+  }
+  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+          driver_->GetFD(), true, base::MessageLoopForIO::WATCH_READ, &watcher_,
+          this)) {
+    LOG(ERROR) << "Failed to initialize watcher.";
+    return false;
+  }
+  return true;
+}
+
+void IpcThreadPoller::OnFileCanReadWithoutBlocking(int fd) {
+  bool success = command_broker_.PollCommands();
+  LOG_IF(ERROR, !success) << "PollCommands() failed.";
+}
+
+void IpcThreadPoller::OnFileCanWriteWithoutBlocking(int fd) {
+  NOTREACHED();
+}
+
+// MainIpcThread
+MainIpcThread::MainIpcThread() : base::Thread("BinderMainThread") {}
+
+MainIpcThread::~MainIpcThread() {
+  Stop();
+}
+
+bool MainIpcThread::Start() {
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  return StartWithOptions(options);
+}
+
+void MainIpcThread::Init() {
+  driver_.reset(new Driver());
+  if (!driver_->Initialize()) {
+    LOG(ERROR) << "Failed to initialize driver.";
+    return;
+  }
+  poller_.reset(
+      new IpcThreadPoller(IpcThreadPoller::THREAD_TYPE_MAIN, driver_.get()));
+  if (!poller_->Initialize()) {
+    LOG(ERROR) << "Failed to initialize poller.";
+    return;
+  }
+  initialized_ = true;
+}
+
+void MainIpcThread::CleanUp() {
+  poller_.reset();
   driver_.reset();
+}
+
+// SubIpcThread
+SubIpcThread::SubIpcThread(MainIpcThread* main_thread)
+    : base::Thread("BinderSubThread"), main_thread_(main_thread) {}
+
+SubIpcThread::~SubIpcThread() {
+  Stop();
+}
+
+bool SubIpcThread::Start() {
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  return StartWithOptions(options);
+}
+
+void SubIpcThread::Init() {
+  // Wait for the main thread to finish initialization.
+  if (!main_thread_->WaitUntilThreadStarted()) {
+    LOG(ERROR) << "Failed to wait for the main thread.";
+    return;
+  }
+  poller_.reset(new IpcThreadPoller(IpcThreadPoller::THREAD_TYPE_SUB,
+                                    main_thread_->driver()));
+  if (!poller_->Initialize()) {
+    LOG(ERROR) << "Failed to initialize poller.";
+    return;
+  }
+  initialized_ = true;
+}
+
+void SubIpcThread::CleanUp() {
+  poller_.reset();
 }
 
 }  // namespace binder

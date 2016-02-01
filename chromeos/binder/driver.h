@@ -39,13 +39,15 @@ class CHROMEOS_EXPORT Driver {
   // num_written_bytes. The read data will be stored in the buffer specified by
   // read_buf and read_buf_size, and the number of bytes read will be stored in
   // num_read_bytes.
-  // This method blocks until some data becomes available if read_buf_size > 0.
   bool WriteRead(const char* write_buf,
                  size_t write_buf_size,
                  char* read_buf,
                  size_t read_buf_size,
                  size_t* num_written_bytes,
                  size_t* num_read_bytes);
+
+  // Waits for some data to be available for reading.
+  bool Poll();
 
   // Lets the driver know the current thread is exiting.
   bool NotifyCurrentThreadExiting();

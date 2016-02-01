@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/android/binder.h>
+#include <poll.h>
 #include <stddef.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -38,7 +39,7 @@ Driver::~Driver() {
 bool Driver::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
   // Open binder driver.
-  fd_.reset(HANDLE_EINTR(open(kDriverPath, O_RDWR | O_CLOEXEC)));
+  fd_.reset(HANDLE_EINTR(open(kDriverPath, O_RDWR | O_CLOEXEC | O_NONBLOCK)));
   if (!fd_.is_valid()) {
     PLOG(ERROR) << "Failed to open";
     return false;
@@ -87,7 +88,8 @@ bool Driver::WriteRead(const char* write_buf,
   params.write_size = write_buf_size;
   params.read_buffer = reinterpret_cast<uintptr_t>(read_buf);
   params.read_size = read_buf_size;
-  if (HANDLE_EINTR(ioctl(fd_.get(), BINDER_WRITE_READ, &params)) < 0) {
+  if (HANDLE_EINTR(ioctl(fd_.get(), BINDER_WRITE_READ, &params)) < 0 &&
+      errno != EAGAIN) {  // EAGAIN means there is no data to read.
     PLOG(ERROR) << "BINDER_WRITE_READ failed: write_buf_size = "
                 << write_buf_size << ", read_buf_size = " << read_buf_size;
     return false;
@@ -95,6 +97,15 @@ bool Driver::WriteRead(const char* write_buf,
   *written_bytes = params.write_consumed;
   *read_bytes = params.read_consumed;
   return true;
+}
+
+bool Driver::Poll() {
+  pollfd params = {};
+  params.fd = fd_.get();
+  params.events = POLLIN;
+  const int kNumFds = 1;
+  const int kTimeout = -1;  // No timeout.
+  return HANDLE_EINTR(poll(&params, kNumFds, kTimeout)) == kNumFds;
 }
 
 bool Driver::NotifyCurrentThreadExiting() {

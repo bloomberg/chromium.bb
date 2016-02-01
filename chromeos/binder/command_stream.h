@@ -67,8 +67,12 @@ class CHROMEOS_EXPORT CommandStream {
   ~CommandStream();
 
   // Reads incoming commands from the driver to the buffer, and returns true on
-  // success.
+  // success. If there is no data to read, returns true immediately.
   bool Fetch();
+
+  // Does the same thing as Fetch(), but it also blocks until some data becomes
+  // available for reading.
+  bool FetchBlocking();
 
   // Returns true if any incoming commands are in the buffer.
   bool CanProcessIncomingCommand();

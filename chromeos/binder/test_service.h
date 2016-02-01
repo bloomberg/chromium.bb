@@ -22,6 +22,8 @@ class TestService {
   enum {
     INCREMENT_INT_TRANSACTION = kFirstTransactionCode,
     GET_FD_TRANSACTION,
+    WAIT_TRANSACTION,    // Waits for SIGNAL_TRANSACTION.
+    SIGNAL_TRANSACTION,  // Signals a waiting thread.
   };
 
   TestService();
@@ -48,7 +50,8 @@ class TestService {
   void Initialize(bool* result);
 
   base::string16 service_name_;
-  IpcThread thread_;
+  MainIpcThread main_thread_;
+  SubIpcThread sub_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestService);
 };

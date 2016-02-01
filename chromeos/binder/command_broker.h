@@ -34,7 +34,15 @@ class CHROMEOS_EXPORT CommandBroker
 
   // Tells the driver that the current thread entered command handling loop.
   // Returns true on success.
+  // This method must be used by the main thread which owns the Driver instance,
+  // sub threads should use RegisterLooper().
   bool EnterLooper();
+
+  // Tells the driver that the current thread entered command handling loop.
+  // Returns true on success.
+  // This method must be used by sub threads, the main thread should use
+  // EnterLooper().
+  bool RegisterLooper();
 
   // Tells the driver that the current thread exited command handling loop.
   // Returns true on success.

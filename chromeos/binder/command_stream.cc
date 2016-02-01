@@ -46,6 +46,11 @@ bool CommandStream::Fetch() {
   return true;
 }
 
+bool CommandStream::FetchBlocking() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return driver_->Poll() && Fetch();
+}
+
 bool CommandStream::CanProcessIncomingCommand() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return incoming_data_reader_ && incoming_data_reader_->HasMoreData();
