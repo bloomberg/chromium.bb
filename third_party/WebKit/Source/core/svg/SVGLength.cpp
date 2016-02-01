@@ -89,11 +89,8 @@ void SVGLength::setValue(float value, const SVGLengthContext& context)
 
 bool isSupportedCSSUnitType(CSSPrimitiveValue::UnitType type)
 {
-    return type != CSSPrimitiveValue::UnitType::Unknown
-        && (type <= CSSPrimitiveValue::UnitType::UserUnits
-            || type == CSSPrimitiveValue::UnitType::Chs
-            || type == CSSPrimitiveValue::UnitType::Rems
-            || (type >= CSSPrimitiveValue::UnitType::ViewportWidth && type <= CSSPrimitiveValue::UnitType::ViewportMax));
+    return (CSSPrimitiveValue::isLength(type) || type == CSSPrimitiveValue::UnitType::Number || type == CSSPrimitiveValue::UnitType::Percentage)
+        && type != CSSPrimitiveValue::UnitType::QuirkyEms;
 }
 
 void SVGLength::setUnitType(CSSPrimitiveValue::UnitType type)

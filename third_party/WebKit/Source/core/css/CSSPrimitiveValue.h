@@ -65,10 +65,12 @@ template<> inline float roundForImpreciseConversion(double value)
 // to handle any kind of mutations.
 class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 public:
+    // These units are iterated through, so be careful when adding or changing the order.
     enum class UnitType {
         Unknown,
         Number,
         Percentage,
+        // Length units
         Ems,
         Exs,
         Pixels,
@@ -77,26 +79,30 @@ public:
         Inches,
         Points,
         Picas,
-        UserUnits, // The SVG term for unitless lengths
-        Degrees,
-        Radians,
-        Gradians,
-        Turns,
-        Milliseconds,
-        Seconds,
-        Hertz,
-        Kilohertz,
         ViewportWidth,
         ViewportHeight,
         ViewportMin,
         ViewportMax,
+        Rems,
+        Chs,
+        UserUnits, // The SVG term for unitless lengths
+        // Angle units
+        Degrees,
+        Radians,
+        Gradians,
+        Turns,
+        // Time units
+        Milliseconds,
+        Seconds,
+        Hertz,
+        Kilohertz,
+        // Resolution
         DotsPerPixel,
         DotsPerInch,
         DotsPerCentimeter,
+        // Other units
         Fraction,
         Integer,
-        Rems,
-        Chs,
         Calc,
         CalcPercentageWithNumber,
         CalcPercentageWithLength,
@@ -169,7 +175,17 @@ public:
     static bool isViewportPercentageLength(UnitType type) { return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax; }
     static bool isLength(UnitType type)
     {
-        return (type >= UnitType::Ems && type <= UnitType::UserUnits) || type == UnitType::QuirkyEms || type == UnitType::Rems || type == UnitType::Chs || isViewportPercentageLength(type);
+        return (type >= UnitType::Ems && type <= UnitType::UserUnits)
+            || type == UnitType::QuirkyEms;
+    }
+    static inline bool isRelativeUnit(UnitType type)
+    {
+        return type == UnitType::Percentage
+            || type == UnitType::Ems
+            || type == UnitType::Exs
+            || type == UnitType::Rems
+            || type == UnitType::Chs
+            || isViewportPercentageLength(type);
     }
     bool isLength() const { return isLength(typeWithCalcResolved()); }
     bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }

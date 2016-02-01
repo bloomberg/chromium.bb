@@ -72,7 +72,7 @@ public:
     void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
     void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
-    bool hasExposedLengthUnit() { return target()->typeWithCalcResolved() <= CSSPrimitiveValue::UnitType::UserUnits; }
+    bool hasExposedLengthUnit();
 
 private:
     SVGLengthTearOff(PassRefPtrWillBeRawPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());

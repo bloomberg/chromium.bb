@@ -3,16 +3,15 @@
 <script src=../../resources/testharness.js></script>
 <script src=../../resources/testharnessreport.js></script>
 <div id="testcontainer">
-<svg width="1" height="1" visibility="hidden">
-</svg>
+  <svg width="1" height="1" visibility="hidden"> </svg>
 </div>
-<div id=log></div>
 <script>
-var svg = document.querySelector("svg");
-var EPSILON = Math.pow(2, -8);
-var lengths = [ 10, 0, 360, 500, 90, 180, 45, 25.9];
 
-var units = { 
+var svg = document.querySelector("svg");
+
+var EPSILON = Math.pow(2, -8);
+var lengths = [10, 0, 360, 500, 90, 180, 45, 25.9];
+var validUnits = { 
     "" : 1, 
     "%": 2, 
     "em": 3, 
@@ -23,27 +22,13 @@ var units = {
     "in": 8,
     "pt": 9,
     "pc": 10,
-    "rem": 11,
-    "ch":12
 };
-var highestExposedUnit = 10; // SVG_LENGTHTYPE_PC
-var unitconstants = {
-    "UNKNOWN" : 0,
-    "NUMBER": 1,
-    "PERCENTAGE": 2,
-    "EMS": 3,
-    "EXS": 4,
-    "PX": 5,
-    "CM": 6,
-    "MM": 7,
-    "IN": 8,
-    "PT": 9,
-    "PC": 10,
-};
-var nonexposedunitconstants = {
-    "REMS": 11,
-    "CHS":12
-};
+
+function createLength(valuestr) {
+    var length = svg.createSVGLength();
+    length.valueAsString = valuestr;
+    return length;
+}
 
 function convertTo(value, unit, outunit) {
     var userUnits;
@@ -104,90 +89,101 @@ function convertTo(value, unit, outunit) {
     }
 }
 
-function createLength(valuestr) {
-    var length = svg.createSVGLength();
-    length.valueAsString = valuestr;
-    return length;
-}
+test(function() {
+  for (var unit in validUnits) {
+    var length = createLength(10 + unit);
+    assert_equals(length.unitType, validUnits[unit]);
+  }
+}, "Test valid unit types are accepted in valueAsString");
 
-for(var unit in units) {
-    test(function() {
-        var result = undefined;
-        try {
-            var a = createLength(10 + unit);
-            result = a.unitType;
-        }
-        catch(e) {}
-            if (units[unit] > highestExposedUnit)
-                assert_equals(result, undefined);
-            else
-                assert_equals(result, units[unit]);
-    }, "SVGLength(10" + unit + ").unitType");
-}
+test(function() {
+  var invalidUnits = {
+    "rem": 1,
+    "ch": 2
+  };
+  for (var unit in invalidUnits) {
+    assert_throws(null, function() { createLength(10 + unit) });
+  }
+}, "Test invalid unit types are not accepted in valueAsString");
 
-for(var constant in unitconstants) {
+test(function() {
+  var unitConstants = {
+    "UNKNOWN" : 0,
+    "NUMBER": 1,
+    "PERCENTAGE": 2,
+    "EMS": 3,
+    "EXS": 4,
+    "PX": 5,
+    "CM": 6,
+    "MM": 7,
+    "IN": 8,
+    "PT": 9,
+    "PC": 10,
+  };
+  for (var constant in unitConstants) {
     var str = "SVG_LENGTHTYPE_" + constant;
-    test(function() {
-        assert_exists(SVGLength, str, "");
-    }, "SVGLength." + str);
-}
-for(var constant in nonexposedunitconstants) {
+    assert_exists(SVGLength, str, str + " should exist in SVGlength");
+  }
+}, "Test that unit constants that are supposed to be exposed are available");
+
+test(function() {
+  var nonexposedUnitConstants = {
+    "REMS": 11,
+    "CHS":12
+  };
+  for (var constant in nonexposedUnitConstants) {
     var str = "SVG_LENGTHTYPE_" + constant;
-    test(function() {
-        assert_not_exists(SVGLength, str, "");
-    }, "SVGLength." + str);
-}
+    assert_not_exists(SVGLength, str, str + " should not be exposed in SVGlength");
+  }
+}, "Test that unit constants that are not supposed to be exposed are not available");
 
-lengths.forEach(function(length) {
-    for(var unit in units) {
-        var lengthstr = length + unit;
-        var ref;
-        try {
-            ref = createLength(lengthstr);
-        }
-        catch(e) {
-            continue;
-        }
-        
-        test(function() {
-            assert_approx_equals(length, ref.valueInSpecifiedUnits, EPSILON);
-        }, "SVGLength(" + lengthstr + ").valueInSpecifiedUnits");
-
-        for (var otherunit in units) {
-            test(function() {
-                var a = createLength(lengthstr);
-                try {
-                    a.convertToSpecifiedUnits(units[otherunit]);
-                }
-                catch(e) {}
-
-                // unknown unit
-                if (units[otherunit] > highestExposedUnit)
-                    assert_approx_equals(a.valueInSpecifiedUnits, length, EPSILON);        
-                else
-                    assert_approx_equals(a.valueInSpecifiedUnits, convertTo(length, unit, otherunit), EPSILON);
-            }, "SVGLength(" + lengthstr + ").convertToSpecifiedUnits(" + units[otherunit] + " /*" + (otherunit ? otherunit : "unspecified") + "*/)");
-            
-            test(function() {
-                var result = "";
-                try {
-                    var a = createLength(47 + otherunit);
-                    a.newValueSpecifiedUnits(units[unit], length);
-                    result = a.valueAsString;
-                }
-                catch(e) {
-                }
-
-                // unknown unit
-                if (units[unit] > highestExposedUnit || units[otherunit] > highestExposedUnit)
-                    assert_equals(result, "");
-                else
-                    assert_equals(result, ref.valueAsString);
-            }, "newValueSpecifiedUnits(" + units[unit] + ", " + length + ")" );
-        };
-
+test(function() {
+  for (var i = 0; i < validUnits.length; ++i) {
+    var unit = validUnits[i];
+    for (var j = 0; j < lengths.length; ++j) {
+      var length = lengths[i];
+      var value = createLength(length + unit);
+      assert_equals(length, value.valueInSpecifiedUnits);
     }
-});
+  }
+}, "Test result from valueInSpecifiedUnits");
 
+test(function() {
+  var nonRelativeUnits = ["px", "cm", "mm", "in", "pt", "pc"];
+
+  for (var i = 0; i < lengths.length; ++i) {
+    var length = lengths[i];
+    for (var j = 0; j < nonRelativeUnits.length; ++j) {
+      var unit = nonRelativeUnits[j];
+      var lengthStr = length + unit;
+      for (var k = 0; k < nonRelativeUnits.length; ++k) {
+        var otherUnit = nonRelativeUnits[k];
+        var svgLength = createLength(lengthStr);
+        svgLength.convertToSpecifiedUnits(validUnits[otherUnit]);
+        assert_approx_equals(svgLength.valueInSpecifiedUnits, convertTo(length, unit, otherUnit), EPSILON);
+      }
+    }
+  }
+}, "Test converting unit types for non-relative units");
+
+test(function() {
+  for (var i = 0; i < lengths.length; ++i) {
+    var length = lengths[i];
+    for (var j = 0; j < validUnits.length; ++j) {
+      var unit = validUnits[j];
+      var ref = createLength(length + unit);
+
+      for (var k = 0; k < validUnits.length; ++k) {
+        var otherUnit = validUnits[k];
+
+        var value = createLength(47 + otherUnit);
+        value.newValueSpecifiedUnits(unit, length);
+
+        assert_equals(value.valueAsString, ref.valueAsString);
+      }
+    }
+  }
+}, "Test newValueSpecifiedUnits for each unit");
 
 </script>
+

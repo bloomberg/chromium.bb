@@ -38,10 +38,23 @@ namespace blink {
 
 namespace {
 
+inline bool isValidLengthUnit(CSSPrimitiveValue::UnitType unit)
+{
+    return unit == CSSPrimitiveValue::UnitType::Number
+        || unit == CSSPrimitiveValue::UnitType::Percentage
+        || unit == CSSPrimitiveValue::UnitType::Ems
+        || unit == CSSPrimitiveValue::UnitType::Exs
+        || unit == CSSPrimitiveValue::UnitType::Pixels
+        || unit == CSSPrimitiveValue::UnitType::Centimeters
+        || unit == CSSPrimitiveValue::UnitType::Millimeters
+        || unit == CSSPrimitiveValue::UnitType::Inches
+        || unit == CSSPrimitiveValue::UnitType::Points
+        || unit == CSSPrimitiveValue::UnitType::Picas;
+}
+
 inline bool isValidLengthUnit(unsigned short type)
 {
-    return type != static_cast<unsigned short>(CSSPrimitiveValue::UnitType::Unknown)
-        && type <= static_cast<unsigned short>(CSSPrimitiveValue::UnitType::Picas);
+    return isValidLengthUnit(static_cast<CSSPrimitiveValue::UnitType>(type));
 }
 
 inline bool canResolveRelativeUnits(const SVGElement* contextElement)
@@ -86,7 +99,16 @@ inline SVGLengthType toSVGLengthType(CSSPrimitiveValue::UnitType type)
         return LengthTypeUnknown;
     }
 }
+
 } // namespace
+
+bool SVGLengthTearOff::hasExposedLengthUnit()
+{
+    CSSPrimitiveValue::UnitType unit = target()->typeWithCalcResolved();
+    return isValidLengthUnit(unit)
+        || unit == CSSPrimitiveValue::UnitType::Unknown
+        || unit == CSSPrimitiveValue::UnitType::UserUnits;
+}
 
 SVGLengthType SVGLengthTearOff::unitType()
 {
@@ -198,7 +220,7 @@ void SVGLengthTearOff::convertToSpecifiedUnits(unsigned short unitType, Exceptio
         return;
     }
 
-    if ((target()->isRelative() || SVGLength::isRelativeUnit(toCSSUnitType(unitType)))
+    if ((target()->isRelative() || CSSPrimitiveValue::isRelativeUnit(toCSSUnitType(unitType)))
         && !canResolveRelativeUnits(contextElement())) {
         exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
         return;
