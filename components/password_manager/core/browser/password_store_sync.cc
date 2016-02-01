@@ -6,11 +6,8 @@
 
 namespace password_manager {
 
-PasswordStoreSync::PasswordStoreSync() : is_alive_(true) {}
+PasswordStoreSync::PasswordStoreSync() = default;
 
-PasswordStoreSync::~PasswordStoreSync() {
-  CHECK(is_alive_);
-  is_alive_ = false;
-}
+PasswordStoreSync::~PasswordStoreSync() = default;
 
 }  // namespace password_manager

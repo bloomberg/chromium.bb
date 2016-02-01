@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_INTERFACE_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_INTERFACE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -48,14 +48,10 @@ class PasswordStoreSync {
  protected:
   virtual ~PasswordStoreSync();
 
-  bool is_alive() { return is_alive_; }
-
  private:
-  bool is_alive_;  // TODO(vabr): Remove when http://crbug.com/514040 is fixed.
-
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreSync);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_INTERFACE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
