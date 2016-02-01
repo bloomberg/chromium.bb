@@ -49,7 +49,7 @@ import org.chromium.ui.resources.ResourceManager;
  */
 @JNINamespace("chrome::android")
 public class CompositorView
-        extends SurfaceView implements ContentOffsetProvider, SurfaceHolder.Callback2 {
+        extends SurfaceView implements ContentOffsetProvider, SurfaceHolder.Callback {
     private static final String TAG = "CompositorView";
 
     // Cache objects that should not be created every frame
@@ -146,11 +146,6 @@ public class CompositorView
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-    }
-
-    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mPreviousWindowTop = -1;
@@ -237,9 +232,6 @@ public class CompositorView
         if (mNativeCompositorView == 0) return;
         nativeSurfaceDestroyed(mNativeCompositorView);
     }
-
-    @Override
-    public void surfaceRedrawNeeded(SurfaceHolder holder) {}
 
     @Override
     public void onWindowVisibilityChanged(int visibility) {

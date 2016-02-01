@@ -19,7 +19,6 @@ import android.support.v4.widget.ExploreByTouchHelper;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -260,13 +259,6 @@ public class CompositorViewHolder extends FrameLayout
             loader.registerResource(
                     R.id.control_container, mControlContainer.getToolbarResourceAdapter());
         }
-    }
-
-    /**
-     * @return The CompositorView.
-     */
-    public SurfaceHolder.Callback2 getSurfaceHolderCallback2() {
-        return mCompositorView;
     }
 
     /**
