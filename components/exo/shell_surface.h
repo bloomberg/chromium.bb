@@ -58,6 +58,9 @@ class ShellSurface : public SurfaceDelegate,
   // Maximizes the shell surface.
   void Maximize();
 
+  // Restore the shell surface.
+  void Restore();
+
   // Set fullscreen state for shell surface.
   void SetFullscreen(bool fullscreen);
 
