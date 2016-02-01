@@ -132,13 +132,13 @@ protected:
         return m_resources;
     }
 
-    const SerializedResource* getResource(const char* url, const char* mimeType)
+    const SerializedResource* getResource(const char* urlString, const char* mimeType)
     {
-        const KURL kURL = KURL(m_baseUrl, url);
+        const KURL url(m_baseUrl, urlString);
         String mime(mimeType);
         for (size_t i = 0; i < m_resources.size(); ++i) {
             const SerializedResource& resource = m_resources[i];
-            if (resource.url == kURL && !resource.data->isEmpty()
+            if (resource.url == url && !resource.data->isEmpty()
                 && (mime.isNull() || equalIgnoringCase(resource.mimeType, mime)))
                 return &resource;
         }

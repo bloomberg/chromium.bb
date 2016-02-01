@@ -525,9 +525,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     EXPECT_EQ(kTransparent, frame->view()->baseBackgroundColor());
     frame->view()->dispose();
 
-    const Color kTransparentRed(100, 0, 0, 0);
-    frame->createView(IntSize(1024, 768), kTransparentRed, true);
-    EXPECT_EQ(kTransparentRed, frame->view()->baseBackgroundColor());
+    const Color transparentRed(100, 0, 0, 0);
+    frame->createView(IntSize(1024, 768), transparentRed, true);
+    EXPECT_EQ(transparentRed, frame->view()->baseBackgroundColor());
     frame->view()->dispose();
 }
 
@@ -2138,8 +2138,8 @@ TEST_F(WebViewTest, SmartClipData)
 
 TEST_F(WebViewTest, SmartClipDataWithPinchZoom)
 {
-    static const char* kExpectedClipText = "\nPrice 10,000,000won";
-    static const char* kExpectedClipHtml =
+    static const char kExpectedClipText[] = "\nPrice 10,000,000won";
+    static const char kExpectedClipHtml[] =
         "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px "
         "solid skyblue; float: left; width: 190px; height: 30px; "
         "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
