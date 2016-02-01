@@ -18,7 +18,8 @@ from profile_chrome import ui
 from pylib import constants
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
-                             'tools',
+                             'third_party',
+                             'catapult',
                              'telemetry'))
 try:
   # pylint: disable=F0401
