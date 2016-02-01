@@ -55,6 +55,17 @@ void RunSwReporter(
     const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner);
 
+// Returns true iff Local State is successfully accessed and indicates the most
+// recent Reporter run terminated with an exit code indicating the presence of
+// UwS.
+bool ReporterFoundUws();
+
+// Returns true iff a valid registry key for the SRT Cleaner exists, and that
+// key is nonempty.
+// TODO(tmartino): Consider changing to check whether the user has recently
+// run the cleaner, rather than checking if they've run it at all.
+bool UserHasRunCleaner();
+
 // Test mocks for launching the reporter and showing the prompt
 typedef base::Callback<int(const base::FilePath& exe_path,
                            const std::string& version)> ReporterLauncher;

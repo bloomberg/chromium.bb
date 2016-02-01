@@ -54,6 +54,8 @@ namespace safe_browsing {
 const wchar_t kSoftwareRemovalToolRegistryKey[] =
     L"Software\\Google\\Software Removal Tool";
 
+const wchar_t kCleanerSubKey[] = L"Cleaner";
+
 const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kStartTimeValueName[] = L"StartTime";
 
@@ -607,6 +609,24 @@ void RunSwReporter(
     const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
   ReporterRunner::Run(exe_path, version, main_thread_task_runner,
                       blocking_task_runner);
+}
+
+bool ReporterFoundUws() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  int exit_code = local_state->GetInteger(prefs::kSwReporterLastExitCode);
+  return exit_code == kSwReporterCleanupNeeded;
+}
+
+bool UserHasRunCleaner() {
+  base::string16 cleaner_key_path(kSoftwareRemovalToolRegistryKey);
+  cleaner_key_path.append(L"\\").append(kCleanerSubKey);
+
+  base::win::RegKey srt_cleaner_key(HKEY_CURRENT_USER, cleaner_key_path.c_str(),
+                                    KEY_QUERY_VALUE);
+
+  return srt_cleaner_key.Valid() && srt_cleaner_key.GetValueCount() > 0;
 }
 
 void SetReporterLauncherForTesting(const ReporterLauncher& reporter_launcher) {
