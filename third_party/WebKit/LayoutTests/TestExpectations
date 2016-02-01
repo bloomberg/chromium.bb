@@ -418,7 +418,6 @@ crbug.com/563667 virtual/spv2/fast/borders/border-image-scale-transform.html [ P
 crbug.com/580355 virtual/spv2/fast/block/basic/018.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/basic/adding-near-anonymous-block.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/basic/text-indent-rtl.html [ Pass ]
-crbug.com/580355 virtual/spv2/fast/block/basic/truncation-rtl.html [ NeedsRebaseline ]
 crbug.com/580355 virtual/spv2/fast/block/basic/white-space-pre-wraps.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/float/001.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/float/002.html [ Pass ]
