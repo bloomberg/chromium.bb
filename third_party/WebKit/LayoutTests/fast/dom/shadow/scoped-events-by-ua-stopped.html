@@ -2,75 +2,62 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shadow-dom.js"></script>
-<img id="img" src="../../images/resources/test-load.jpg">
+
+<input id="input"></input>
 <div id="sandbox">
     <div id = "host">
         <template>
-            <img id="target" src="../../images/resources/test-load.jpg">
+            <input id="target" value="test"></div>
         </template>
     </div>
 </div>
+
 <script>
-setup({ explicit_done: true });
 var e;
 test(function() {
     e = new Event('test');
     assert_equals(e.scoped, false);
-}, "A new event's scoped value should be set to false by default.");
+}, 'A new events scoped value should be set to false by default.');
 
 test(function() {
     e = new Event('test', { scoped: true });
     assert_equals(e.scoped, true);
 }, 'Users should be able to set a scoped value.');
 
-img.onload = function(e) {
-    test(function() {
-        assert_equals(e.scoped, true);
-    }, "UA load event's scoped should be set to true");
-};
-
-var resultNonTrusted = [];
-
-function addEventListeners(nodes)
-{
-    for (var i = 0; i < nodes.length; ++i) {
-        var node = getNodeInTreeOfTrees(nodes[i]);
-        node.addEventListener('load', recordEvent, false);
-        node.addEventListener('error', recordEvent, false);
-    }
-}
-
-function recordEvent(event)
-{
-    if (event.type == 'load') {
-        if (event.currentTarget.id == 'host'){
-            test(function() {
-                assert_true(false);
-            }, "Load event should be stopped if created by UAs.");
-        } else {
-            test(function() {
-                assert_equals(event.currentTarget.id, 'target');
-            }, "Event fired in the right place.");
-        }
-    }
-    if (event.type == 'error') {
-        resultNonTrusted.push(event.currentTarget.id);
-        if (resultNonTrusted.length == 2) {
-            test(function() {
-                assert_array_equals(resultNonTrusted, ['target', 'host']);
-            }, "Only certain trusted events should stop in bubbling.");
-            done();
-        }
-    }
-}
+var input = document.getElementById('input');
+async_test(function(t) {
+    input.onselect = function(e) {
+        t.step(function() { assert_true(e.scoped); t.done(); });
+    };
+}, 'UA select events scoped should be set to true.');
+input.select();
 
 var sandbox = document.getElementById('sandbox');
 convertTemplatesToShadowRootsWithin(sandbox);
-var targetImg = getNodeInTreeOfTrees('host/target');
-addEventListeners(['host', 'host/target']);
+var target = getNodeInTreeOfTrees('host/target');
+var host = getNodeInTreeOfTrees('host');
 
-targetImg.setAttribute('src', '../../images/resources/lenna.jpg');
+async_test(function(t) {
+    target.onselect = function(e) {
+        t.step(function() {
+            assert_true(e.deepPath().includes(target));
+            assert_false(e.deepPath().includes(host));
+            t.done();
+        });
+    }
+}, 'Select events should stop if created by UA.');
+
+async_test(function(t) {
+    target.onerror = function(e) {
+        t.step(function() {
+            assert_true(e.deepPath().includes(target));
+            assert_true(e.deepPath().includes(host));
+            t.done();
+        });
+    }
+}, 'Only certain trusted events should stop in bubbling.');
+
+target.select();
 var userError = new Event('error');
-targetImg.dispatchEvent(userError);
-
+target.dispatchEvent(userError);
 </script>
