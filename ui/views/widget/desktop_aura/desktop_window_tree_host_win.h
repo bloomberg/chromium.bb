@@ -256,6 +256,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
 
   scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
 
+  // Indicates if current window will receive mouse events when should not
+  // become activated.
+  bool wants_mouse_events_when_inactive_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostWin);
 };
 

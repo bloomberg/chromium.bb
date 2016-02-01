@@ -125,6 +125,7 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
   // TODO(beng): SetInitParams().
   content_window_ = content_window;
+  wants_mouse_events_when_inactive_ = params.wants_mouse_events_when_inactive;
 
   aura::client::SetAnimationHost(content_window_, this);
 
@@ -626,7 +627,7 @@ bool DesktopWindowTreeHostWin::CanActivate() const {
 }
 
 bool DesktopWindowTreeHostWin::WantsMouseEventsWhenInactive() const {
-  return false;
+  return wants_mouse_events_when_inactive_;
 }
 
 bool DesktopWindowTreeHostWin::WidgetSizeIsClientSize() const {
