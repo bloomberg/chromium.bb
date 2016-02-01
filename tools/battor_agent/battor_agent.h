@@ -139,6 +139,10 @@ class BattOrAgent : public BattOrConnection::Listener,
   // The actual data samples recorded.
   std::vector<RawBattOrSample> samples_;
 
+  // The expected sequence number of the next frame. We use this to ensure that
+  // we receive frames in order.
+  uint32_t next_sequence_number_;
+
   // The number of times that we've attempted to read the last message.
   uint8_t num_read_attempts_;
 

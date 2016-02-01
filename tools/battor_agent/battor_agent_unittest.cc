@@ -145,7 +145,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     EEPROM_REQUEST_SENT,
     EEPROM_RECEIVED,
     SAMPLES_REQUEST_SENT,
-    CALIBRATION_FRAME_SENT,
+    CALIBRATION_FRAME_RECEIVED,
   };
 
   // Runs BattOrAgent::StartTracing until it reaches the specified state by
@@ -231,7 +231,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     if (end_state == BattOrAgentState::SAMPLES_REQUEST_SENT)
       return;
 
-    DCHECK(end_state == BattOrAgentState::CALIBRATION_FRAME_SENT);
+    DCHECK(end_state == BattOrAgentState::CALIBRATION_FRAME_RECEIVED);
 
     BattOrFrameHeader cal_frame_header{0, sizeof(RawBattOrSample)};
     RawBattOrSample cal_frame[] = {RawBattOrSample{1, 1}};
@@ -438,20 +438,20 @@ TEST_F(BattOrAgentTest, StopTracing) {
                 CreateFrame(cal_frame_header, cal_frame, 2));
 
   // Send the two real data frames.
-  BattOrFrameHeader frame_header1{0, 3 * sizeof(RawBattOrSample)};
+  BattOrFrameHeader frame_header1{1, 3 * sizeof(RawBattOrSample)};
   RawBattOrSample frame1[] = {
       RawBattOrSample{1, 1}, RawBattOrSample{2, 2}, RawBattOrSample{3, 3},
   };
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header1, frame1, 3));
 
-  BattOrFrameHeader frame_header2{0, 1 * sizeof(RawBattOrSample)};
+  BattOrFrameHeader frame_header2{2, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample frame2[] = {RawBattOrSample{1, 1}};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header2, frame2, 1));
 
   // Send an empty last frame to indicate that we're done.
-  BattOrFrameHeader frame_header3{0, 0 * sizeof(RawBattOrSample)};
+  BattOrFrameHeader frame_header3{3, 0 * sizeof(RawBattOrSample)};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header3, nullptr, 0));
 
@@ -496,7 +496,7 @@ TEST_F(BattOrAgentTest, StopTracingRetriesEEPROMRead) {
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(cal_frame_header, cal_frame, 1));
 
-  BattOrFrameHeader frame_header{0, 0};
+  BattOrFrameHeader frame_header{1, 0};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header, nullptr, 0));
 
@@ -542,7 +542,7 @@ TEST_F(BattOrAgentTest, StopTracingSucceedsWithOneCalibrationFrameReadFailure) {
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(cal_frame_header, cal_frame, 1));
 
-  BattOrFrameHeader frame_header{0, 0};
+  BattOrFrameHeader frame_header{1, 0};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header, nullptr, 0));
 
@@ -563,12 +563,12 @@ TEST_F(BattOrAgentTest, StopTracingFailsWithManyCalibrationFrameReadFailures) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingSucceedsWithOneDataFrameReadFailure) {
-  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_SENT);
+  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_RECEIVED);
 
   // Make a read fail in order to make sure that the agent will retry.
   OnMessageRead(false, BATTOR_MESSAGE_TYPE_SAMPLES, nullptr);
 
-  BattOrFrameHeader frame_header{0, 0};
+  BattOrFrameHeader frame_header{1, 0};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header, nullptr, 0));
 
@@ -577,7 +577,7 @@ TEST_F(BattOrAgentTest, StopTracingSucceedsWithOneDataFrameReadFailure) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsWithManyDataFrameReadFailures) {
-  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_SENT);
+  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_RECEIVED);
 
   // We attempt the read a max of 20 times: send that many failures.
   for (int i = 0; i < 20; i++) {
@@ -589,7 +589,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsWithManyDataFrameReadFailures) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingRetriesResetEachFrame) {
-  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_SENT);
+  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_RECEIVED);
 
   // Send 11 failures on two different reads: because the retry count should
   // reset after a successful read, this should still be okay.
@@ -597,7 +597,7 @@ TEST_F(BattOrAgentTest, StopTracingRetriesResetEachFrame) {
     OnMessageRead(false, BATTOR_MESSAGE_TYPE_SAMPLES, nullptr);
   }
 
-  BattOrFrameHeader frame_header1{0, 1 * sizeof(RawBattOrSample)};
+  BattOrFrameHeader frame_header1{1, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample frame1[] = {RawBattOrSample{1, 1}};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header1, frame1, 1));
@@ -606,7 +606,7 @@ TEST_F(BattOrAgentTest, StopTracingRetriesResetEachFrame) {
     OnMessageRead(false, BATTOR_MESSAGE_TYPE_SAMPLES, nullptr);
   }
 
-  BattOrFrameHeader frame_header2{0, 0};
+  BattOrFrameHeader frame_header2{2, 0};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header2, nullptr, 0));
 
@@ -650,7 +650,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
 
   // Send a data frame with a mismatch between the frame length in the
   // header and the actual frame length.
-  BattOrFrameHeader frame_header{0, 2 * sizeof(RawBattOrSample)};
+  BattOrFrameHeader frame_header{1, 2 * sizeof(RawBattOrSample)};
   RawBattOrSample frame[] = {RawBattOrSample{1, 1}};
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(frame_header, frame, 1));
@@ -688,7 +688,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                 CreateFrame(cal_frame_header, cal_frame, 1));
 
-  BattOrFrameHeader frame_header{0, 1};
+  BattOrFrameHeader frame_header{1, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample frame[] = {RawBattOrSample{1, 1}};
 
   // Remove the last byte from the frame to make it invalid.
@@ -696,6 +696,26 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
   frame_bytes->pop_back();
 
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES, std::move(frame_bytes));
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, StopTracingFailsIfFrameArrivesOutOfOrder) {
+  RunStopTracingTo(BattOrAgentState::CALIBRATION_FRAME_RECEIVED);
+
+  BattOrFrameHeader frame_header{1, 1 * sizeof(RawBattOrSample)};
+  RawBattOrSample frame[] = {RawBattOrSample{1, 1}};
+
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
+                CreateFrame(frame_header, frame, 1));
+
+  // Skip frame with sequence number 2.
+  frame_header = BattOrFrameHeader{3, 1 * sizeof(RawBattOrSample)};
+  frame[0] = RawBattOrSample{1, 1};
+
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
+                CreateFrame(frame_header, frame, 1));
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
