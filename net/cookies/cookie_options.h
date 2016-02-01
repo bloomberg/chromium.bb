@@ -18,13 +18,13 @@ class NET_EXPORT CookieOptions {
   // Creates a CookieOptions object which:
   //
   // * Excludes HttpOnly cookies
-  // * Excludes First-Party-Only cookies
+  // * Excludes SameSite cookies
   // * Does not enforce prefix restrictions (e.g. "$Secure-*")
   //
   // These settings can be altered by calling:
   //
   // * |set_{include,exclude}_httponly()|
-  // * |set_include_first_party_only_cookies()|
+  // * |set_include_same_site()|
   // * |set_enforce_prefixes()|
   CookieOptions();
 
@@ -32,13 +32,9 @@ class NET_EXPORT CookieOptions {
   void set_include_httponly() { exclude_httponly_ = false; }
   bool exclude_httponly() const { return exclude_httponly_; }
 
-  // Default is to exclude 'first-party-only' cookies.
-  void set_include_first_party_only_cookies() {
-    include_first_party_only_cookies_ = true;
-  }
-  bool include_first_party_only_cookies() const {
-    return include_first_party_only_cookies_;
-  }
+  // Default is to exclude 'same_site' cookies.
+  void set_include_same_site() { include_same_site_ = true; }
+  bool include_same_site() const { return include_same_site_; }
 
   // TODO(jww): Remove once we decide whether to ship modifying 'secure' cookies
   // only from secure schemes. https://crbug.com/546820
@@ -56,7 +52,7 @@ class NET_EXPORT CookieOptions {
 
  private:
   bool exclude_httponly_;
-  bool include_first_party_only_cookies_;
+  bool include_same_site_;
   bool enforce_strict_secure_;
   base::Time server_time_;
 };

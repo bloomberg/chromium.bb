@@ -10273,11 +10273,11 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_COOKIE_SENDFOR_SECURE" desc="Send Cookie for any kind of connection">
         Secure connections only
       </message>
-      <message name="IDS_COOKIES_COOKIE_SENDFOR_FIRSTPARTY" desc="Send Cookie for any first-party connection">
-        First-party connections only
+      <message name="IDS_COOKIES_COOKIE_SENDFOR_SAME_SITE" desc="Send Cookie for any same-site connection">
+        Same-site connections only
       </message>
-      <message name="IDS_COOKIES_COOKIE_SENDFOR_SECURE_FIRSTPARTY" desc="Send Cookie for secure, first-party connections">
-        Secure first-party connections only
+      <message name="IDS_COOKIES_COOKIE_SENDFOR_SECURE_SAME_SITE" desc="Send Cookie for secure, same-site connections">
+        Secure same-site connections only
       </message>
       <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_YES" desc="Accessible to Script">
         Yes

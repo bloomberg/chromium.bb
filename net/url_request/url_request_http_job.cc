@@ -681,19 +681,19 @@ void URLRequestHttpJob::DoLoadCookies() {
   CookieOptions options;
   options.set_include_httponly();
 
-  // TODO(mkwst): If first-party-only cookies aren't enabled, pretend the
-  // request is first-party regardless, in order to include all cookies. Drop
-  // this check once we decide whether or not we're shipping this feature:
+  // TODO(mkwst): If same-site cookies aren't enabled, pretend the request is
+  // same-site regardless, in order to include all cookies. Drop this check once
+  // we decide whether or not we're shipping this feature:
   // https://crbug.com/459154
   url::Origin requested_origin(request_->url());
   if (!network_delegate() ||
       !network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
-    options.set_include_first_party_only_cookies();
+    options.set_include_same_site();
   } else if (requested_origin.IsSameOriginWith(
                  url::Origin(request_->first_party_for_cookies())) &&
              (IsMethodSafe(request_->method()) ||
               requested_origin.IsSameOriginWith(request_->initiator()))) {
-    options.set_include_first_party_only_cookies();
+    options.set_include_same_site();
   }
 
   request_->context()->cookie_store()->GetCookiesWithOptionsAsync(

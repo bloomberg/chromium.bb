@@ -176,7 +176,7 @@ public class CookiesFetcher {
                             cookie.getValue(), cookie.getDomain(), cookie.getPath(),
                             cookie.getCreationDate(), cookie.getExpirationDate(),
                             cookie.getLastAccessDate(), cookie.isSecure(), cookie.isHttpOnly(),
-                            cookie.isFirstPartyOnly(), cookie.getPriority());
+                            cookie.isSameSite(), cookie.getPriority());
                 }
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -203,9 +203,9 @@ public class CookiesFetcher {
     @CalledByNative
     private CanonicalCookie createCookie(String url, String name, String value, String domain,
             String path, long creation, long expiration, long lastAccess, boolean secure,
-            boolean httpOnly, boolean firstPartyOnly, int priority) {
+            boolean httpOnly, boolean sameSite, int priority) {
         return new CanonicalCookie(url, name, value, domain, path, creation, expiration, lastAccess,
-                secure, httpOnly, firstPartyOnly, priority);
+                secure, httpOnly, sameSite, priority);
     }
 
     @CalledByNative
@@ -298,6 +298,5 @@ public class CookiesFetcher {
     private native void nativePersistCookies(long nativeCookiesFetcher);
     private native void nativeRestoreCookies(long nativeCookiesFetcher, String url, String name,
             String value, String domain, String path, long creation, long expiration,
-            long lastAccess, boolean secure, boolean httpOnly, boolean firstPartyOnly,
-            int priority);
+            long lastAccess, boolean secure, boolean httpOnly, boolean sameSite, int priority);
 }

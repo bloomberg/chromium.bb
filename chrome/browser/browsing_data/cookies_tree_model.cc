@@ -992,12 +992,12 @@ CookiesTreeModel::~CookiesTreeModel() {
 // static
 int CookiesTreeModel::GetSendForMessageID(const net::CanonicalCookie& cookie) {
   if (cookie.IsSecure()) {
-    if (cookie.IsFirstPartyOnly())
-      return IDS_COOKIES_COOKIE_SENDFOR_SECURE_FIRSTPARTY;
+    if (cookie.IsSameSite())
+      return IDS_COOKIES_COOKIE_SENDFOR_SECURE_SAME_SITE;
     return IDS_COOKIES_COOKIE_SENDFOR_SECURE;
   }
-  if (cookie.IsFirstPartyOnly())
-    return IDS_COOKIES_COOKIE_SENDFOR_FIRSTPARTY;
+  if (cookie.IsSameSite())
+    return IDS_COOKIES_COOKIE_SENDFOR_SAME_SITE;
   return IDS_COOKIES_COOKIE_SENDFOR_ANY;
 }
 

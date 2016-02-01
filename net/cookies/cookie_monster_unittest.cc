@@ -151,13 +151,13 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                             const base::Time& expiration_time,
                             bool secure,
                             bool http_only,
-                            bool first_party_only,
+                            bool same_site,
                             CookiePriority priority) {
     DCHECK(cm);
     ResultSavingCookieCallback<bool> callback;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
-        first_party_only, false /* enforce prefixes */,
+        same_site, false /* enforce prefixes */,
         false /* enforces strict secure cookies */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(&callback)));
@@ -246,7 +246,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     //    * Three levels of domain cookie (.b.a, .c.b.a, .d.c.b.a)
     //    * Three levels of host cookie (w.b.a, w.c.b.a, w.d.c.b.a)
     //    * http_only cookie (w.c.b.a)
-    //    * first-party cookie (w.c.b.a)
+    //    * same_site cookie (w.c.b.a)
     //    * Two secure cookies (.c.b.a, w.c.b.a)
     //    * Two domain path cookies (.c.b.a/dir1, .c.b.a/dir1/dir2)
     //    * Two host path cookies (w.c.b.a/dir1, w.c.b.a/dir1/dir2)
@@ -281,9 +281,9 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         std::string(), "/", base::Time(), false, true, false,
         COOKIE_PRIORITY_DEFAULT));
 
-    // first-party cookie
+    // same-site cookie
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm.get(), url_top_level_domain_plus_2, "firstp_check", "x",
+        cm.get(), url_top_level_domain_plus_2, "sames_check", "x",
         std::string(), "/", base::Time(), false, false, true,
         COOKIE_PRIORITY_DEFAULT));
 
@@ -691,7 +691,7 @@ struct CookiesInputInfo {
   const base::Time expiration_time;
   bool secure;
   bool http_only;
-  bool first_party_only;
+  bool same_site;
   CookiePriority priority;
 };
 
@@ -726,9 +726,9 @@ ACTION_P4(DeleteAllCreatedBetweenAction,
 ACTION_P3(SetCookieWithDetailsAction, cookie_monster, cc, callback) {
   cookie_monster->SetCookieWithDetailsAsync(
       cc.url, cc.name, cc.value, cc.domain, cc.path, cc.expiration_time,
-      cc.secure, cc.http_only, cc.first_party_only,
-      false /* enforce prefixes */, false /* enforces strict secure cookies */,
-      cc.priority, callback->AsCallback());
+      cc.secure, cc.http_only, cc.same_site, false /* enforce prefixes */,
+      false /* enforces strict secure cookies */, cc.priority,
+      callback->AsCallback());
 }
 
 ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
@@ -2007,8 +2007,8 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
          p < &input_info[arraysize(input_info)]; p++) {
       EXPECT_TRUE(SetCookieWithDetails(cmout.get(), p->url, p->name, p->value,
                                        p->domain, p->path, p->expiration_time,
-                                       p->secure, p->http_only,
-                                       p->first_party_only, p->priority));
+                                       p->secure, p->http_only, p->same_site,
+                                       p->priority));
     }
     GURL del_url(input_info[INPUT_DELETE]
                      .url.Resolve(input_info[INPUT_DELETE].path)
@@ -2037,7 +2037,7 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
                 output->CreationDate().ToInternalValue());
       EXPECT_EQ(input->secure, output->IsSecure());
       EXPECT_EQ(input->http_only, output->IsHttpOnly());
-      EXPECT_EQ(input->first_party_only, output->IsFirstPartyOnly());
+      EXPECT_EQ(input->same_site, output->IsSameSite());
       EXPECT_TRUE(output->IsPersistent());
       EXPECT_EQ(input->expiration_time.ToInternalValue(),
                 output->ExpiryDate().ToInternalValue());
@@ -2544,11 +2544,11 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
     base::Time expiration_time = base::Time();
     bool secure = false;
     bool http_only = false;
-    bool first_party_only = false;
+    bool same_site = false;
     CookiePriority priority = COOKIE_PRIORITY_DEFAULT;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
-        first_party_only, false /* enforce prefixes */,
+        same_site, false /* enforce prefixes */,
         false /* enforces strict secure cookies */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(callback)));

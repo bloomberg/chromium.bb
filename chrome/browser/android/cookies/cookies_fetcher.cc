@@ -88,7 +88,7 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
         base::android::ConvertUTF8ToJavaString(env, i->Path()).obj(),
         i->CreationDate().ToInternalValue(), i->ExpiryDate().ToInternalValue(),
         i->LastAccessDate().ToInternalValue(), i->IsSecure(), i->IsHttpOnly(),
-        i->IsFirstPartyOnly(), i->Priority());
+        i->IsSameSite(), i->Priority());
     env->SetObjectArrayElement(joa.obj(), index++, java_cookie.obj());
   }
 
@@ -110,7 +110,7 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
                                     int64_t last_access,
                                     bool secure,
                                     bool httponly,
-                                    bool firstpartyonly,
+                                    bool same_site,
                                     int priority) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
@@ -129,8 +129,8 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, path),
       base::Time::FromInternalValue(creation),
       base::Time::FromInternalValue(expiration),
-      base::Time::FromInternalValue(last_access), secure, httponly,
-      firstpartyonly, static_cast<net::CookiePriority>(priority));
+      base::Time::FromInternalValue(last_access), secure, httponly, same_site,
+      static_cast<net::CookiePriority>(priority));
 
   // The rest must be done from the IO thread.
   content::BrowserThread::PostTask(
@@ -166,9 +166,8 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   monster->SetCookieWithDetailsAsync(
       cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
       cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
-      cookie.IsHttpOnly(), cookie.IsFirstPartyOnly(),
-      experimental_features_enabled, experimental_features_enabled,
-      cookie.Priority(), cb);
+      cookie.IsHttpOnly(), cookie.IsSameSite(), experimental_features_enabled,
+      experimental_features_enabled, cookie.Priority(), cb);
 }
 
 // JNI functions

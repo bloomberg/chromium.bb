@@ -92,12 +92,11 @@ TEST(ParsedCookieTest, TestNameless) {
 }
 
 TEST(ParsedCookieTest, TestAttributeCase) {
-  ParsedCookie pc(
-      "BLAHHH; Path=/; sECuRe; httpONLY; first-PaRty-only; pRIoRitY=hIgH");
+  ParsedCookie pc("BLAHHH; Path=/; sECuRe; httpONLY; sAmESitE; pRIoRitY=hIgH");
   EXPECT_TRUE(pc.IsValid());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
-  EXPECT_TRUE(pc.IsFirstPartyOnly());
+  EXPECT_TRUE(pc.IsSameSite());
   EXPECT_TRUE(pc.HasPath());
   EXPECT_EQ("/", pc.Path());
   EXPECT_EQ("", pc.Name());
@@ -148,7 +147,7 @@ TEST(ParsedCookieTest, MissingValue) {
 }
 
 TEST(ParsedCookieTest, Whitespace) {
-  ParsedCookie pc("  A  = BC  ;secure;;;   first-party-only     ");
+  ParsedCookie pc("  A  = BC  ;secure;;;   samesite     ");
   EXPECT_TRUE(pc.IsValid());
   EXPECT_EQ("A", pc.Name());
   EXPECT_EQ("BC", pc.Value());
@@ -156,7 +155,7 @@ TEST(ParsedCookieTest, Whitespace) {
   EXPECT_FALSE(pc.HasDomain());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_FALSE(pc.IsHttpOnly());
-  EXPECT_TRUE(pc.IsFirstPartyOnly());
+  EXPECT_TRUE(pc.IsSameSite());
   EXPECT_EQ(COOKIE_PRIORITY_DEFAULT, pc.Priority());
   // We parse anything between ; as attributes, so we end up with two
   // attributes with an empty string name and value.
@@ -171,7 +170,7 @@ TEST(ParsedCookieTest, MultipleEquals) {
   EXPECT_FALSE(pc.HasDomain());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
-  EXPECT_FALSE(pc.IsFirstPartyOnly());
+  EXPECT_FALSE(pc.IsSameSite());
   EXPECT_EQ(COOKIE_PRIORITY_DEFAULT, pc.Priority());
   EXPECT_EQ(4U, pc.NumberOfAttributes());
 }
@@ -357,12 +356,12 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_TRUE(pc.SetIsSecure(true));
   EXPECT_TRUE(pc.SetIsHttpOnly(true));
   EXPECT_TRUE(pc.SetIsHttpOnly(true));
-  EXPECT_TRUE(pc.SetIsFirstPartyOnly(true));
+  EXPECT_TRUE(pc.SetIsSameSite(true));
   EXPECT_TRUE(pc.SetPriority("HIGH"));
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; first-party-only; priority=HIGH",
+      "httponly; samesite; priority=HIGH",
       pc.ToCookieLine());
   EXPECT_TRUE(pc.HasDomain());
   EXPECT_TRUE(pc.HasPath());
@@ -370,7 +369,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_TRUE(pc.HasMaxAge());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
-  EXPECT_TRUE(pc.IsFirstPartyOnly());
+  EXPECT_TRUE(pc.IsSameSite());
   EXPECT_EQ(COOKIE_PRIORITY_HIGH, pc.Priority());
 
   // Clear one attribute from the middle.
@@ -383,7 +382,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/foo; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; first-party-only; priority=HIGH",
+      "httponly; samesite; priority=HIGH",
       pc.ToCookieLine());
 
   // Set priority to medium.
@@ -391,7 +390,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/foo; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; first-party-only; priority=medium",
+      "httponly; samesite; priority=medium",
       pc.ToCookieLine());
 
   // Clear the rest and change the name and value.
@@ -401,7 +400,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_TRUE(pc.SetMaxAge(std::string()));
   EXPECT_TRUE(pc.SetIsSecure(false));
   EXPECT_TRUE(pc.SetIsHttpOnly(false));
-  EXPECT_TRUE(pc.SetIsFirstPartyOnly(false));
+  EXPECT_TRUE(pc.SetIsSameSite(false));
   EXPECT_TRUE(pc.SetName("name2"));
   EXPECT_TRUE(pc.SetValue("value2"));
   EXPECT_TRUE(pc.SetPriority(std::string()));
@@ -411,7 +410,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_FALSE(pc.HasMaxAge());
   EXPECT_FALSE(pc.IsSecure());
   EXPECT_FALSE(pc.IsHttpOnly());
-  EXPECT_FALSE(pc.IsFirstPartyOnly());
+  EXPECT_FALSE(pc.IsSameSite());
   EXPECT_EQ("name2=value2", pc.ToCookieLine());
 }
 

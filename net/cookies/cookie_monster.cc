@@ -388,7 +388,7 @@ bool CookieMonster::ImportCookies(const CookieList& list) {
     scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(*iter));
     CookieOptions options;
     options.set_include_httponly();
-    options.set_include_first_party_only_cookies();
+    options.set_include_same_site();
     if (!SetCanonicalCookie(&cookie, cookie->CreationDate(), options))
       return false;
   }
@@ -465,7 +465,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            const base::Time& expiration_time,
                            bool secure,
                            bool http_only,
-                           bool first_party_only,
+                           bool same_site,
                            bool enforce_prefixes,
                            bool enforce_strict_secure,
                            CookiePriority priority,
@@ -479,7 +479,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
         expiration_time_(expiration_time),
         secure_(secure),
         http_only_(http_only),
-        first_party_only_(first_party_only),
+        same_site_(same_site),
         enforce_prefixes_(enforce_prefixes),
         enforce_strict_secure_(enforce_strict_secure),
         priority_(priority),
@@ -500,7 +500,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   base::Time expiration_time_;
   bool secure_;
   bool http_only_;
-  bool first_party_only_;
+  bool same_site_;
   bool enforce_prefixes_;
   bool enforce_strict_secure_;
   CookiePriority priority_;
@@ -512,7 +512,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 void CookieMonster::SetCookieWithDetailsTask::Run() {
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_, secure_,
-      http_only_, first_party_only_, enforce_prefixes_, enforce_strict_secure_,
+      http_only_, same_site_, enforce_prefixes_, enforce_strict_secure_,
       priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
@@ -961,15 +961,14 @@ void CookieMonster::SetCookieWithDetailsAsync(
     const Time& expiration_time,
     bool secure,
     bool http_only,
-    bool first_party_only,
+    bool same_site,
     bool enforce_prefixes,
     bool enforce_strict_secure,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task = new SetCookieWithDetailsTask(
       this, url, name, value, domain, path, expiration_time, secure, http_only,
-      first_party_only, enforce_prefixes, enforce_strict_secure, priority,
-      callback);
+      same_site, enforce_prefixes, enforce_strict_secure, priority, callback);
   DoCookieTaskForURL(task, url);
 }
 
@@ -1047,7 +1046,7 @@ void CookieMonster::GetAllCookiesForURLAsync(
     const GetCookieListCallback& callback) {
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_first_party_only_cookies();
+  options.set_include_same_site();
   scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
@@ -1191,7 +1190,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          const base::Time& expiration_time,
                                          bool secure,
                                          bool http_only,
-                                         bool first_party_only,
+                                         bool same_site,
                                          bool enforce_prefixes,
                                          bool enforce_strict_secure,
                                          CookiePriority priority) {
@@ -1205,14 +1204,14 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
 
   scoped_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
       url, name, value, domain, path, creation_time, expiration_time, secure,
-      http_only, first_party_only, enforce_strict_secure, priority));
+      http_only, same_site, enforce_strict_secure, priority));
 
   if (!cc.get())
     return false;
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_first_party_only_cookies();
+  options.set_include_same_site();
   if (enforce_strict_secure)
     options.set_enforce_strict_secure();
   return SetCanonicalCookie(&cc, creation_time, options);
@@ -1398,7 +1397,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_first_party_only_cookies();
+  options.set_include_same_site();
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
   FindCookiesForHostAndDomain(url, options, true, &cookies);
@@ -1861,11 +1860,10 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   }
 
   // See InitializeHistograms() for details.
-  int32_t cookie_type_sample =
-      cc->IsFirstPartyOnly() ? 1 << COOKIE_TYPE_FIRSTPARTYONLY : 0;
-  cookie_type_sample |= cc->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
-  cookie_type_sample |= cc->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
-  histogram_cookie_type_->Add(cookie_type_sample);
+  int32_t type_sample = cc->IsSameSite() ? 1 << COOKIE_TYPE_SAME_SITE : 0;
+  type_sample |= cc->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
+  type_sample |= cc->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
+  histogram_cookie_type_->Add(type_sample);
 
   // Histogram the type of scheme used on URLs that set cookies. This
   // intentionally includes cookies that are set or overwritten by
@@ -2474,7 +2472,7 @@ void CookieMonster::RunCallbacks(const CanonicalCookie& cookie, bool removed) {
   lock_.AssertAcquired();
   CookieOptions opts;
   opts.set_include_httponly();
-  opts.set_include_first_party_only_cookies();
+  opts.set_include_same_site();
   // Note that the callbacks in hook_map_ are wrapped with MakeAsync(), so they
   // are guaranteed to not take long - they just post a RunAsync task back to
   // the appropriate thread's message loop and return. It is important that this

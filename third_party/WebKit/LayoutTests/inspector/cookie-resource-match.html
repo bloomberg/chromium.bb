@@ -73,7 +73,7 @@ function test() {
             size: name.length + value.length,
             httpOnly: false,
             secure: secure,
-            firstPartyOnly: false,
+            sameSite: false,
             session: true
         };
         return WebInspector.Cookies._parseProtocolCookie(WebInspector.targetManager.mainTarget(), protocolCookie);

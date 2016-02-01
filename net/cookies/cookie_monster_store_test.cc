@@ -120,7 +120,7 @@ CanonicalCookie BuildCanonicalCookie(const std::string& key,
 
   return CanonicalCookie(GURL(), pc.Name(), pc.Value(), key, cookie_path,
                          creation_time, cookie_expires, creation_time,
-                         pc.IsSecure(), pc.IsHttpOnly(), pc.IsFirstPartyOnly(),
+                         pc.IsSecure(), pc.IsHttpOnly(), pc.IsSameSite(),
                          pc.Priority());
 }
 

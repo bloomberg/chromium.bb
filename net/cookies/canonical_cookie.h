@@ -38,7 +38,7 @@ class NET_EXPORT CanonicalCookie {
                   const base::Time& last_access,
                   bool secure,
                   bool httponly,
-                  bool firstpartyonly,
+                  bool same_site,
                   CookiePriority priority);
 
   // This constructor does canonicalization but not validation.
@@ -70,7 +70,7 @@ class NET_EXPORT CanonicalCookie {
                                             const base::Time& expiration,
                                             bool secure,
                                             bool http_only,
-                                            bool first_party_only,
+                                            bool same_site,
                                             bool enforce_strict_secure,
                                             CookiePriority priority);
 
@@ -85,7 +85,7 @@ class NET_EXPORT CanonicalCookie {
   const base::Time& ExpiryDate() const { return expiry_date_; }
   bool IsSecure() const { return secure_; }
   bool IsHttpOnly() const { return httponly_; }
-  bool IsFirstPartyOnly() const { return first_party_only_; }
+  bool IsSameSite() const { return same_site_; }
   CookiePriority Priority() const { return priority_; }
   bool IsDomainCookie() const {
     return !domain_.empty() && domain_[0] == '.'; }
@@ -204,7 +204,7 @@ class NET_EXPORT CanonicalCookie {
   base::Time last_access_date_;
   bool secure_;
   bool httponly_;
-  bool first_party_only_;
+  bool same_site_;
   CookiePriority priority_;
 };
 

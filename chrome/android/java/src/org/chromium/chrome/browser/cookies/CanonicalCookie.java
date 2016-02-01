@@ -22,13 +22,13 @@ class CanonicalCookie {
     private final long mLastAccess;
     private final boolean mSecure;
     private final boolean mHttpOnly;
-    private final boolean mFirstPartyOnly;
+    private final boolean mSameSite;
     private final int mPriority;
 
     /** Constructs a CanonicalCookie */
     CanonicalCookie(String url, String name, String value, String domain, String path,
             long creation, long expiration, long lastAccess, boolean secure, boolean httpOnly,
-            boolean firstPartyOnly, int priority) {
+            boolean sameSite, int priority) {
         mUrl = url;
         mName = name;
         mValue = value;
@@ -39,7 +39,7 @@ class CanonicalCookie {
         mLastAccess = lastAccess;
         mSecure = secure;
         mHttpOnly = httpOnly;
-        mFirstPartyOnly = firstPartyOnly;
+        mSameSite = sameSite;
         mPriority = priority;
     }
 
@@ -53,9 +53,9 @@ class CanonicalCookie {
         return mHttpOnly;
     }
 
-    /** @return True if the cookie is First-Party only. */
-    boolean isFirstPartyOnly() {
-        return mFirstPartyOnly;
+    /** @return True if the cookie is Same-Site. */
+    boolean isSameSite() {
+        return mSameSite;
     }
 
     /** @return True if the cookie is secure. */
@@ -120,7 +120,7 @@ class CanonicalCookie {
         out.writeLong(mLastAccess);
         out.writeBoolean(mSecure);
         out.writeBoolean(mHttpOnly);
-        out.writeBoolean(mFirstPartyOnly);
+        out.writeBoolean(mSameSite);
         out.writeInt(mPriority);
     }
 

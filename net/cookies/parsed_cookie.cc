@@ -55,7 +55,7 @@ const char kExpiresTokenName[] = "expires";
 const char kMaxAgeTokenName[] = "max-age";
 const char kSecureTokenName[] = "secure";
 const char kHttpOnlyTokenName[] = "httponly";
-const char kFirstPartyOnlyTokenName[] = "first-party-only";
+const char kSameSiteTokenName[] = "samesite";
 const char kPriorityTokenName[] = "priority";
 
 const char kTerminator[] = "\n\r\0";
@@ -163,7 +163,7 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line)
       maxage_index_(0),
       secure_index_(0),
       httponly_index_(0),
-      firstpartyonly_index_(0),
+      same_site_index_(0),
       priority_index_(0) {
   if (cookie_line.size() > kMaxCookieSize) {
     VLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
@@ -230,9 +230,8 @@ bool ParsedCookie::SetIsHttpOnly(bool is_http_only) {
   return SetBool(&httponly_index_, kHttpOnlyTokenName, is_http_only);
 }
 
-bool ParsedCookie::SetIsFirstPartyOnly(bool is_first_party_only) {
-  return SetBool(&firstpartyonly_index_, kFirstPartyOnlyTokenName,
-                 is_first_party_only);
+bool ParsedCookie::SetIsSameSite(bool is_same_site) {
+  return SetBool(&same_site_index_, kSameSiteTokenName, is_same_site);
 }
 
 bool ParsedCookie::SetPriority(const std::string& priority) {
@@ -246,7 +245,7 @@ std::string ParsedCookie::ToCookieLine() const {
       out.append("; ");
     out.append(it->first);
     if (it->first != kSecureTokenName && it->first != kHttpOnlyTokenName &&
-        it->first != kFirstPartyOnlyTokenName) {
+        it->first != kSameSiteTokenName) {
       out.append("=");
       out.append(it->second);
     }
@@ -437,8 +436,8 @@ void ParsedCookie::SetupAttributes() {
       secure_index_ = i;
     } else if (pairs_[i].first == kHttpOnlyTokenName) {
       httponly_index_ = i;
-    } else if (pairs_[i].first == kFirstPartyOnlyTokenName) {
-      firstpartyonly_index_ = i;
+    } else if (pairs_[i].first == kSameSiteTokenName) {
+      same_site_index_ = i;
     } else if (pairs_[i].first == kPriorityTokenName) {
       priority_index_ = i;
     } else {
@@ -490,14 +489,9 @@ void ParsedCookie::ClearAttributePair(size_t index) {
   if (index == 0)
     return;
 
-  size_t* indexes[] = {&path_index_,
-                       &domain_index_,
-                       &expires_index_,
-                       &maxage_index_,
-                       &secure_index_,
-                       &httponly_index_,
-                       &firstpartyonly_index_,
-                       &priority_index_};
+  size_t* indexes[] = {&path_index_,      &domain_index_,  &expires_index_,
+                       &maxage_index_,    &secure_index_,  &httponly_index_,
+                       &same_site_index_, &priority_index_};
   for (size_t i = 0; i < arraysize(indexes); ++i) {
     if (*indexes[i] == index)
       *indexes[i] = 0;

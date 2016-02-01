@@ -133,7 +133,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url,
                                  const base::Time& last_access,
                                  bool secure,
                                  bool httponly,
-                                 bool firstpartyonly,
+                                 bool same_site,
                                  CookiePriority priority)
     : source_(url.SchemeIsFile() ? url : url.GetOrigin()),
       name_(name),
@@ -145,7 +145,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url,
       last_access_date_(last_access),
       secure_(secure),
       httponly_(httponly),
-      first_party_only_(firstpartyonly),
+      same_site_(same_site),
       priority_(priority) {}
 
 CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
@@ -157,7 +157,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
       last_access_date_(Time()),
       secure_(pc.IsSecure()),
       httponly_(pc.IsHttpOnly()),
-      first_party_only_(pc.IsFirstPartyOnly()),
+      same_site_(pc.IsSameSite()),
       priority_(pc.Priority()) {
   if (pc.HasExpires())
     expiry_date_ = CanonExpiration(pc, creation_date_, creation_date_);
@@ -274,7 +274,7 @@ scoped_ptr<CanonicalCookie> CanonicalCookie::Create(
       url, parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain,
       cookie_path, creation_time, cookie_expires, creation_time,
       parsed_cookie.IsSecure(), parsed_cookie.IsHttpOnly(),
-      parsed_cookie.IsFirstPartyOnly(), parsed_cookie.Priority()));
+      parsed_cookie.IsSameSite(), parsed_cookie.Priority()));
 }
 
 // static
@@ -288,7 +288,7 @@ scoped_ptr<CanonicalCookie> CanonicalCookie::Create(
     const base::Time& expiration,
     bool secure,
     bool http_only,
-    bool first_party_only,
+    bool same_site,
     bool enforce_strict_secure,
     CookiePriority priority) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
@@ -331,7 +331,7 @@ scoped_ptr<CanonicalCookie> CanonicalCookie::Create(
 
   return make_scoped_ptr(new CanonicalCookie(
       url, parsed_name, parsed_value, cookie_domain, cookie_path, creation,
-      expiration, creation, secure, http_only, first_party_only, priority));
+      expiration, creation, secure, http_only, same_site, priority));
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
@@ -419,8 +419,8 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
   // match the cookie-path.
   if (!IsOnPath(url.path()))
     return false;
-  // Don't include first-party-only cookies for non-first-party requests.
-  if (IsFirstPartyOnly() && !options.include_first_party_only_cookies())
+  // Don't include same-site cookies for cross-site requests.
+  if (IsSameSite() && !options.include_same_site())
     return false;
 
   return true;

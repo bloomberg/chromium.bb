@@ -1119,7 +1119,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt64(6, po->cc().ExpiryDate().ToInternalValue());
         add_smt.BindInt(7, po->cc().IsSecure());
         add_smt.BindInt(8, po->cc().IsHttpOnly());
-        add_smt.BindInt(9, po->cc().IsFirstPartyOnly());
+        add_smt.BindInt(9, po->cc().IsSameSite());
         add_smt.BindInt64(10, po->cc().LastAccessDate().ToInternalValue());
         add_smt.BindInt(11, po->cc().IsPersistent());
         add_smt.BindInt(12, po->cc().IsPersistent());

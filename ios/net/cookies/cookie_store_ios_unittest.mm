@@ -233,7 +233,7 @@ class TestPersistentCookieStore
         base::Time(),  // last_access
         false,         // secure
         false,         // httponly
-        false,         // first_party_only
+        false,         // same_site
         net::COOKIE_PRIORITY_DEFAULT);
     cookies.push_back(bad_canonical_cookie);
     loaded_callback_.Run(cookies);

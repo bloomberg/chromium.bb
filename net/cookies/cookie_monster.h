@@ -379,7 +379,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // New items MUST be added at the end of the list, just before
   // COOKIE_TYPE_LAST_ENTRY;
   enum CookieType {
-    COOKIE_TYPE_FIRSTPARTYONLY = 0,
+    COOKIE_TYPE_SAME_SITE = 0,
     COOKIE_TYPE_HTTPONLY,
     COOKIE_TYPE_SECURE,
     COOKIE_TYPE_LAST_ENTRY
