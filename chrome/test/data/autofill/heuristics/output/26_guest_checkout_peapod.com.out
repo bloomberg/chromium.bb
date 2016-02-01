@@ -1,0 +1,18 @@
+UNKNOWN_TYPE | delivTitle | Title: | Ms. | delivTitle_1-default
+NAME_FIRST | delivFirstName |  |  | delivTitle_1-default
+NAME_MIDDLE_INITIAL | delivMiddleInitial | Middle Initial: |  | delivTitle_1-default
+NAME_LAST | delivLastName | Last Name: |  | delivTitle_1-default
+ADDRESS_HOME_LINE1 | delivAddressLine1 | Street Address: |  | delivTitle_1-default
+ADDRESS_HOME_LINE2 | delivAddressLine2 | Address Line 2: |  | delivTitle_1-default
+ADDRESS_HOME_CITY | delivCity | City: | New York | delivTitle_1-default
+ADDRESS_HOME_STATE | delivState | NY | NY | delivTitle_1-default
+ADDRESS_HOME_ZIP | delivZipCode | Zip Code: | 10011 | delivTitle_1-default
+UNKNOWN_TYPE | HomeArea |  |  | delivTitle_1-default
+UNKNOWN_TYPE | HomePrefix |  |  | delivTitle_1-default
+UNKNOWN_TYPE | HomeSuffix |  |  | delivTitle_1-default
+UNKNOWN_TYPE | WorkArea |  |  | delivTitle_1-default
+UNKNOWN_TYPE | WorkPrefix |  |  | delivTitle_1-default
+UNKNOWN_TYPE | WorkSuffix |  |  | delivTitle_1-default
+UNKNOWN_TYPE | delivWorkPhoneExt | Ext: |  | delivTitle_1-default
+UNKNOWN_TYPE | dlv_isct_tx | Closest Major Intersection: |  | delivTitle_1-default
+UNKNOWN_TYPE | instructions |  |  | delivTitle_1-default

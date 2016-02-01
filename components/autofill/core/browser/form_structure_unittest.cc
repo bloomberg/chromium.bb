@@ -362,6 +362,10 @@ TEST_F(FormStructureTest, HeuristicsContactInfo) {
   field.name = ASCIIToUTF16("phone");
   form.fields.push_back(field);
 
+  field.label = ASCIIToUTF16("Ext:");
+  field.name = ASCIIToUTF16("phoneextension");
+  form.fields.push_back(field);
+
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
   form.fields.push_back(field);
@@ -384,7 +388,7 @@ TEST_F(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(8U, form_structure->field_count());
+  ASSERT_EQ(9U, form_structure->field_count());
   ASSERT_EQ(7U, form_structure->autofill_count());
 
   // First name.
@@ -396,14 +400,16 @@ TEST_F(FormStructureTest, HeuristicsContactInfo) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(3)->heuristic_type());
+  // Phone extension.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(5)->heuristic_type());
   // City.
-  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(6)->heuristic_type());
   // Zip.
-  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(7)->heuristic_type());
   // Submit.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
 }
 
 // Verify that we can correctly process the |autocomplete| attribute.
