@@ -338,13 +338,9 @@
           ],
           'dependencies': [
             'cast_shell_core',
-            '../content/content_shell_and_tests.gyp:content_browser_test_base',
             '../content/content_shell_and_tests.gyp:content_browser_test_support',
             '../testing/gtest.gyp:gtest',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-          ],
-          'export_dependent_settings': [
-            '../content/content_shell_and_tests.gyp:content_browser_test_base',
           ],
           'sources': [
             'browser/test/chromecast_browser_test.cc',

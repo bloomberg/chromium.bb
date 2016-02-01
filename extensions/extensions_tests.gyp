@@ -77,7 +77,6 @@
         '<(DEPTH)/components/components.gyp:guest_view_renderer',
         '<(DEPTH)/components/components.gyp:guest_view_test_support',
         '<(DEPTH)/content/content.gyp:content_app_both',
-        '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_base',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
         '<(DEPTH)/device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',

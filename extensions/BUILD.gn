@@ -254,7 +254,6 @@ test("extensions_browsertests") {
     "//base/test:test_support",
     "//components/prefs:test_support",
     "//components/storage_monitor:test_support",
-    "//content/test:browsertest_base",
     "//content/test:test_support",
     "//device/bluetooth:mocks",
     "//device/core:mocks",
