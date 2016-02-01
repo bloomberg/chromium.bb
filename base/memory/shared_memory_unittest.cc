@@ -411,6 +411,9 @@ TEST(SharedMemoryTest, ShareToSelf) {
 
   SharedMemoryHandle shared_handle;
   ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+#if defined(OS_WIN)
+  ASSERT_TRUE(shared_handle.OwnershipPassesToIPC());
+#endif
   SharedMemory shared(shared_handle, /*readonly=*/false);
 
   ASSERT_TRUE(shared.Map(contents.size()));
@@ -420,6 +423,9 @@ TEST(SharedMemoryTest, ShareToSelf) {
 
   shared_handle = SharedMemoryHandle();
   ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+#if defined(OS_WIN)
+  ASSERT_TRUE(shared_handle.OwnershipPassesToIPC());
+#endif
   SharedMemory readonly(shared_handle, /*readonly=*/true);
 
   ASSERT_TRUE(readonly.Map(contents.size()));

@@ -665,6 +665,11 @@ void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
   if (p.NeedsBrokering()) {
     HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
     ParamTraits<HandleWin>::Write(m, handle_win);
+
+    // If the caller intended to pass ownership to the IPC stack, release a
+    // reference.
+    if (p.OwnershipPassesToIPC())
+      p.Close();
   } else {
     m->WriteInt(HandleToLong(p.GetHandle()));
   }

@@ -307,6 +307,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
     return false;
   }
   *new_handle = SharedMemoryHandle(result, base::GetProcId(process));
+  new_handle->SetOwnershipPassesToIPC(true);
   return true;
 }
 
