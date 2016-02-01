@@ -3124,19 +3124,19 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="FilterURLTermiate_About">
+<action name="FilterURLTermiate_About" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
   <obsolete>Removed in M44.</obsolete>
 </action>
 
-<action name="FilterURLTermiate_Blocked">
+<action name="FilterURLTermiate_Blocked" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
   <obsolete>Removed in M44.</obsolete>
 </action>
 
-<action name="FilterURLTermiate_Invalid">
+<action name="FilterURLTermiate_Invalid" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
   <obsolete>Removed in M44.</obsolete>
@@ -7869,23 +7869,23 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobileBreakpadUploadAttempt">
+<action name="MobileBreakpadUploadAttempt" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobileBreakpadUploadFail">
+<action name="MobileBreakpadUploadFail" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
 </action>
 
-<action name="MobileBreakpadUploadFailure">
+<action name="MobileBreakpadUploadFailure" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
   <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
-<action name="MobileBreakpadUploadSuccess">
+<action name="MobileBreakpadUploadSuccess" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -8320,17 +8320,17 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobilePageLoaded">
+<action name="MobilePageLoaded" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobilePageLoadedDesktopUserAgent">
+<action name="MobilePageLoadedDesktopUserAgent" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobilePageLoadedWithKeyboard">
+<action name="MobilePageLoadedWithKeyboard" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -11959,7 +11959,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ServiceWorker.ControlledPageLoad">
+<action name="ServiceWorker.ControlledPageLoad" not_user_triggered="true">
   <owner>nhiroki@chromium.org</owner>
   <description>
     Counts the number of page loads controlled by a Service Worker.
