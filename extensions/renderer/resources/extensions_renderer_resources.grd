@@ -61,6 +61,7 @@
       <include name="IDR_WEB_VIEW_ATTRIBUTES_JS" file="guest_view/web_view/web_view_attributes.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_CONSTANTS_JS" file="guest_view/web_view/web_view_constants.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_EVENTS_JS" file="guest_view/web_view/web_view_events.js" type="BINDATA" />
+      <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="guest_view/web_view/web_view_experimental.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_IFRAME_JS" file="guest_view/web_view/web_view_iframe.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="guest_view/web_view/web_view_internal.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_JS" file="guest_view/web_view/web_view.js" type="BINDATA" />

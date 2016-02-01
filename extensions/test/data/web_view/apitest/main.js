@@ -1685,6 +1685,36 @@ function testWebRequestAPIGoogleProperty() {
   document.body.appendChild(webview);
 }
 
+// This is a basic test to verify that image data is returned by
+// captureVisibleRegion().
+function testCaptureVisibleRegion() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', 'data:text/html,webview test');
+
+  webview.addEventListener('loadstop', function(e) {
+    webview.captureVisibleRegion(
+        {},
+        function(imgdata) {
+          if (chrome.runtime.lastError) {
+            console.log(
+                'webview.apitest.testCaptureVisibleRegion: ' +
+                chrome.runtime.lastError.message);
+            embedder.test.fail();
+          } else {
+            if (imgdata.indexOf('data:image/jpeg;base64') != 0) {
+              console_log('imgdata = ' + imgdata);
+            }
+            embedder.test.assertTrue(
+                imgdata.indexOf('data:image/jpeg;base64') == 0);
+            embedder.test.succeed();
+          }
+        });
+  });
+  document.body.appendChild(webview);
+}
+
+function captureVisibleRegionDoCapture() {}
+
 // Tests end.
 
 embedder.test.testList = {
@@ -1752,7 +1782,8 @@ embedder.test.testList = {
   'testWebRequestAPI': testWebRequestAPI,
   'testWebRequestAPIWithHeaders': testWebRequestAPIWithHeaders,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
-  'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty
+  'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
+  'testCaptureVisibleRegion': testCaptureVisibleRegion
 };
 
 onload = function() {

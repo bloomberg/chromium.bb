@@ -211,21 +211,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Called after async thumbnailer task completes.  Scales and crops the result
   // of the copy.
-  static void CopyFromCompositingSurfaceHasResult(
-      const gfx::Size& dst_size_in_pixel,
-      const SkColorType color_type,
-      const ReadbackRequestCallback& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
-  static void PrepareTextureCopyOutputResult(
-      const gfx::Size& dst_size_in_pixel,
-      const SkColorType color_type,
-      const ReadbackRequestCallback& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
-  static void PrepareBitmapCopyOutputResult(
-      const gfx::Size& dst_size_in_pixel,
-      const SkColorType color_type,
-      const ReadbackRequestCallback& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
   static void CopyFromCompositingSurfaceHasResultForVideo(
       base::WeakPtr<DelegatedFrameHost> rwhva,
       scoped_refptr<OwnedMailbox> subscriber_texture,

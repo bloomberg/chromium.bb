@@ -1647,6 +1647,10 @@ TabsCaptureVisibleTabFunction::TabsCaptureVisibleTabFunction()
     : chrome_details_(this) {
 }
 
+bool TabsCaptureVisibleTabFunction::HasPermission() {
+  return true;
+}
+
 bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() {
   PrefService* service = chrome_details_.GetProfile()->GetPrefs();
   if (service->GetBoolean(prefs::kDisableScreenshots)) {
@@ -1672,6 +1676,40 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
     return NULL;
   }
   return contents;
+}
+
+bool TabsCaptureVisibleTabFunction::RunAsync() {
+  using api::extension_types::ImageDetails;
+
+  EXTENSION_FUNCTION_VALIDATE(args_);
+
+  int context_id = extension_misc::kCurrentWindowId;
+  args_->GetInteger(0, &context_id);
+
+  scoped_ptr<ImageDetails> image_details;
+  if (args_->GetSize() > 1) {
+    base::Value* spec = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &spec) && spec);
+    image_details = ImageDetails::FromValue(*spec);
+  }
+
+  WebContents* contents = GetWebContentsForID(context_id);
+
+  return CaptureAsync(
+      contents, image_details.get(),
+      base::Bind(&TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete,
+                 this));
+}
+
+void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
+  std::string base64_result;
+  if (!EncodeBitmap(bitmap, &base64_result)) {
+    OnCaptureFailure(FAILURE_REASON_ENCODING_FAILED);
+    return;
+  }
+
+  SetResult(new base::StringValue(base64_result));
+  SendResponse(true);
 }
 
 void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {

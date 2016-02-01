@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
@@ -84,8 +86,7 @@ bool RenderWidgetHostViewChildFrame::HasFocus() const {
 }
 
 bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
-  NOTIMPLEMENTED();
-  return false;
+  return surface_factory_ && !surface_id_.is_null();
 }
 
 void RenderWidgetHostViewChildFrame::Show() {
@@ -321,6 +322,17 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   DCHECK_LT(ack_pending_count_, 1000U);
   surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                           ack_callback);
+
+  ProcessFrameSwappedCallbacks();
+}
+
+void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
+  // We only use callbacks once, therefore we make a new list for registration
+  // before we start, and discard the old list entries when we are done.
+  FrameSwappedCallbackList process_callbacks;
+  process_callbacks.swap(frame_swapped_callbacks_);
+  for (scoped_ptr<base::Closure>& callback : process_callbacks)
+    callback->Run();
 }
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(
@@ -431,12 +443,44 @@ bool RenderWidgetHostViewChildFrame::PostProcessEventForPluginIme(
 }
 #endif  // defined(OS_MACOSX)
 
+void RenderWidgetHostViewChildFrame::RegisterFrameSwappedCallback(
+    scoped_ptr<base::Closure> callback) {
+  frame_swapped_callbacks_.push_back(std::move(callback));
+}
+
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
-    const gfx::Rect& /* src_subrect */,
-    const gfx::Size& /* dst_size */,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
-    const SkColorType /* preferred_color_type */) {
-  callback.Run(SkBitmap(), READBACK_FAILED);
+    const SkColorType preferred_color_type) {
+  if (!IsSurfaceAvailableForCopy()) {
+    // Defer submitting the copy request until after a frame is drawn, at which
+    // point we should be guaranteed that the surface is available.
+    RegisterFrameSwappedCallback(make_scoped_ptr(new base::Closure(base::Bind(
+        &RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest, AsWeakPtr(),
+        src_subrect, output_size, callback, preferred_color_type))));
+    return;
+  }
+
+  SubmitSurfaceCopyRequest(src_subrect, output_size, callback,
+                           preferred_color_type);
+}
+
+void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& output_size,
+    const ReadbackRequestCallback& callback,
+    const SkColorType preferred_color_type) {
+  DCHECK(IsSurfaceAvailableForCopy());
+
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(
+          base::Bind(&CopyFromCompositingSurfaceHasResult, output_size,
+                     preferred_color_type, callback));
+  if (!src_subrect.IsEmpty())
+    request->set_area(src_subrect);
+
+  surface_factory_->RequestCopyOfSurface(surface_id_, std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(

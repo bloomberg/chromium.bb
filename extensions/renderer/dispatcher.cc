@@ -644,6 +644,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair("webViewInternal",
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+      std::make_pair("webViewExperimental", IDR_WEB_VIEW_EXPERIMENTAL_JS));
   if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
     resources.push_back(std::make_pair("webViewIframe",
                                        IDR_WEB_VIEW_IFRAME_JS));
@@ -1597,6 +1599,10 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     module_system->Require("webView");
     module_system->Require("webViewApiMethods");
     module_system->Require("webViewAttributes");
+    if (context->GetAvailability("webViewExperimentalInternal")
+            .is_available()) {
+      module_system->Require("webViewExperimental");
+    }
 
     if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
       module_system->Require("webViewIframe");

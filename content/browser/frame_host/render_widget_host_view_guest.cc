@@ -300,6 +300,8 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   DCHECK(ack_pending_count_ < 1000);
   surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                           ack_callback);
+
+  ProcessFrameSwappedCallbacks();
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {

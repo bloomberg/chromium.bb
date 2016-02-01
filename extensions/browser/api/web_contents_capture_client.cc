@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/capture_web_contents_function.h"
+#include "extensions/browser/api/web_contents_capture_client.h"
 
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
@@ -25,28 +25,14 @@ namespace extensions {
 
 using api::extension_types::ImageDetails;
 
-bool CaptureWebContentsFunction::HasPermission() {
-  return true;
-}
-
-bool CaptureWebContentsFunction::RunAsync() {
-  EXTENSION_FUNCTION_VALIDATE(args_);
-
-  context_id_ = extension_misc::kCurrentWindowId;
-  args_->GetInteger(0, &context_id_);
-
-  scoped_ptr<ImageDetails> image_details;
-  if (args_->GetSize() > 1) {
-    base::Value* spec = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &spec) && spec);
-    image_details = ImageDetails::FromValue(*spec);
-  }
-
-  if (!IsScreenshotEnabled())
+bool WebContentsCaptureClient::CaptureAsync(
+    WebContents* web_contents,
+    const ImageDetails* image_details,
+    const content::ReadbackRequestCallback callback) {
+  if (!web_contents)
     return false;
 
-  WebContents* contents = GetWebContentsForID(context_id_);
-  if (!contents)
+  if (!IsScreenshotEnabled())
     return false;
 
   // The default format and quality setting used when encoding jpegs.
@@ -65,7 +51,7 @@ bool CaptureWebContentsFunction::RunAsync() {
   }
 
   // TODO(miu): Account for fullscreen render widget?  http://crbug.com/419878
-  RenderWidgetHostView* const view = contents->GetRenderWidgetHostView();
+  RenderWidgetHostView* const view = web_contents->GetRenderWidgetHostView();
   RenderWidgetHost* const host = view ? view->GetRenderWidgetHost() : nullptr;
   if (!view || !host) {
     OnCaptureFailure(FAILURE_REASON_VIEW_INVISIBLE);
@@ -84,26 +70,41 @@ bool CaptureWebContentsFunction::RunAsync() {
   if (scale > 1.0f)
     bitmap_size = gfx::ScaleToCeiledSize(view_size, scale);
 
-  host->CopyFromBackingStore(
-      gfx::Rect(view_size),
-      bitmap_size,
-      base::Bind(&CaptureWebContentsFunction::CopyFromBackingStoreComplete,
-                 this),
-      kN32_SkColorType);
+  host->CopyFromBackingStore(gfx::Rect(view_size), bitmap_size, callback,
+                             kN32_SkColorType);
   return true;
 }
 
-void CaptureWebContentsFunction::CopyFromBackingStoreComplete(
+void WebContentsCaptureClient::CopyFromBackingStoreComplete(
     const SkBitmap& bitmap,
     content::ReadbackResponse response) {
   if (response == content::READBACK_SUCCESS) {
     OnCaptureSuccess(bitmap);
     return;
   }
+  // TODO(wjmaclean): Improve error reporting. Why aren't we passing more
+  // information here?
+  std::string reason;
+  switch (response) {
+    case content::READBACK_FAILED:
+      reason = "READBACK_FAILED";
+      break;
+    case content::READBACK_SURFACE_UNAVAILABLE:
+      reason = "READBACK_SURFACE_UNAVAILABLE";
+      break;
+    case content::READBACK_BITMAP_ALLOCATION_FAILURE:
+      reason = "READBACK_BITMAP_ALLOCATION_FAILURE";
+      break;
+    default:
+      reason = "<unknown>";
+  }
   OnCaptureFailure(FAILURE_REASON_UNKNOWN);
 }
 
-void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
+// TODO(wjmaclean) can this be static?
+bool WebContentsCaptureClient::EncodeBitmap(const SkBitmap& bitmap,
+                                            std::string* base64_result) {
+  DCHECK(base64_result);
   std::vector<unsigned char> data;
   SkAutoLockPixels screen_capture_lock(bitmap);
   bool encoded = false;
@@ -112,12 +113,8 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
     case api::extension_types::IMAGE_FORMAT_JPEG:
       encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_SkBitmap,
-          bitmap.width(),
-          bitmap.height(),
-          static_cast<int>(bitmap.rowBytes()),
-          image_quality_,
-          &data);
+          gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
+          static_cast<int>(bitmap.rowBytes()), image_quality_, &data);
       mime_type = kMimeTypeJpeg;
       break;
     case api::extension_types::IMAGE_FORMAT_PNG:
@@ -131,20 +128,17 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
       NOTREACHED() << "Invalid image format.";
   }
 
-  if (!encoded) {
-    OnCaptureFailure(FAILURE_REASON_ENCODING_FAILED);
-    return;
-  }
+  if (!encoded)
+    return false;
 
-  std::string base64_result;
   base::StringPiece stream_as_string(reinterpret_cast<const char*>(data.data()),
                                      data.size());
 
-  base::Base64Encode(stream_as_string, &base64_result);
-  base64_result.insert(
+  base::Base64Encode(stream_as_string, base64_result);
+  base64_result->insert(
       0, base::StringPrintf("data:%s;base64,", mime_type.c_str()));
-  SetResult(new base::StringValue(base64_result));
-  SendResponse(true);
+
+  return true;
 }
 
 }  // namespace extensions

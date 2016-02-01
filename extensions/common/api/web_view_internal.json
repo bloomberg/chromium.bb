@@ -670,6 +670,33 @@
         ]
       },
       {
+        "name": "captureVisibleRegion",
+        "type": "function",
+        "description": "foo",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "$ref": "extensionTypes.ImageDetails",
+            "name": "options",
+            "optional": true
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"type": "string",
+                "name": "dataUrl",
+                "description": "A data URL which encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "clearData",
         "type": "function",
         "description": "Clears various types of browsing data stored in a storage partition of a <webview>.",
