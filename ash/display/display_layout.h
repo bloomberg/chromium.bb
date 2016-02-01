@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
@@ -20,7 +20,7 @@ template <typename T> class JSONValueConverter;
 
 namespace ash {
 
-typedef std::pair<int64_t, int64_t> DisplayIdPair;
+typedef std::vector<int64_t> DisplayIdList;
 
 struct ASH_EXPORT DisplayLayout {
   // Layout options where the secondary display should be positioned.

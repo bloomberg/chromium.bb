@@ -174,9 +174,9 @@ void TouchTransformerController::UpdateTouchTransformer() const {
     single_display = display_manager->GetDisplayInfo(single_display_id);
     UpdateTouchRadius(single_display);
   } else {
-    DisplayIdPair id_pair = display_manager->GetCurrentDisplayIdPair();
-    display1_id = id_pair.first;
-    display2_id = id_pair.second;
+    DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+    display1_id = list[0];
+    display2_id = list[1];
     DCHECK(display1_id != gfx::Display::kInvalidDisplayID &&
            display2_id != gfx::Display::kInvalidDisplayID);
     display1 = display_manager->GetDisplayInfo(display1_id);

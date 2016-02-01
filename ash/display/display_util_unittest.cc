@@ -92,32 +92,32 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
 }
 
 TEST_F(DisplayUtilTest, CreateDisplayIdPair) {
-  DisplayIdPair pair = CreateDisplayIdPair(10, 1);
-  EXPECT_EQ(1, pair.first);
-  EXPECT_EQ(10, pair.second);
-  pair = CreateDisplayIdPair(10, 100);
-  EXPECT_EQ(10, pair.first);
-  EXPECT_EQ(100, pair.second);
+  DisplayIdList list = CreateDisplayIdList(10, 1);
+  EXPECT_EQ(1, list[0]);
+  EXPECT_EQ(10, list[1]);
+  list = CreateDisplayIdList(10, 100);
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(100, list[1]);
   {
     test::ScopedSetInternalDisplayId set_internal(100);
-    pair = CreateDisplayIdPair(10, 100);
-    EXPECT_EQ(100, pair.first);
-    EXPECT_EQ(10, pair.second);
+    list = CreateDisplayIdList(10, 100);
+    EXPECT_EQ(100, list[0]);
+    EXPECT_EQ(10, list[1]);
 
-    pair = CreateDisplayIdPair(100, 10);
-    EXPECT_EQ(100, pair.first);
-    EXPECT_EQ(10, pair.second);
+    list = CreateDisplayIdList(100, 10);
+    EXPECT_EQ(100, list[0]);
+    EXPECT_EQ(10, list[1]);
   }
 
   {
     test::ScopedSetInternalDisplayId set_internal(10);
-    pair = CreateDisplayIdPair(10, 100);
-    EXPECT_EQ(10, pair.first);
-    EXPECT_EQ(100, pair.second);
+    list = CreateDisplayIdList(10, 100);
+    EXPECT_EQ(10, list[0]);
+    EXPECT_EQ(100, list[1]);
 
-    pair = CreateDisplayIdPair(100, 10);
-    EXPECT_EQ(10, pair.first);
-    EXPECT_EQ(100, pair.second);
+    list = CreateDisplayIdList(100, 10);
+    EXPECT_EQ(10, list[0]);
+    EXPECT_EQ(100, list[1]);
   }
 }
 

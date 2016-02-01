@@ -134,7 +134,7 @@ void LoadDisplayLayouts() {
           id2 == gfx::Display::kInvalidDisplayID) {
         continue;
       }
-      layout_store->RegisterLayoutForDisplayIdPair(id1, id2, layout);
+      layout_store->RegisterLayoutForDisplayIdList(id1, id2, layout);
     }
   }
 }
@@ -210,10 +210,9 @@ void LoadDisplayRotationState() {
       static_cast<gfx::Display::Rotation>(rotation));
 }
 
-void StoreDisplayLayoutPref(const ash::DisplayIdPair& pair,
+void StoreDisplayLayoutPref(const ash::DisplayIdList& list,
                             const ash::DisplayLayout& display_layout) {
-  std::string name =
-      base::Int64ToString(pair.first) + "," + base::Int64ToString(pair.second);
+  std::string name = ash::DisplayIdListToString(list);
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, prefs::kSecondaryDisplays);
@@ -235,7 +234,7 @@ void StoreCurrentDisplayLayoutPrefs() {
     return;
   }
 
-  ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
+  ash::DisplayIdList pair = display_manager->GetCurrentDisplayIdList();
   ash::DisplayLayout display_layout =
       display_manager->layout_store()->GetRegisteredDisplayLayout(pair);
   StoreDisplayLayoutPref(pair, display_layout);
@@ -393,7 +392,7 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
 void StoreDisplayLayoutPrefForTest(int64_t id1,
                                    int64_t id2,
                                    const ash::DisplayLayout& layout) {
-  StoreDisplayLayoutPref(ash::CreateDisplayIdPair(id1, id2), layout);
+  StoreDisplayLayoutPref(ash::CreateDisplayIdList(id1, id2), layout);
 }
 
 // Stores the given |power_state|.

@@ -135,8 +135,8 @@ class ASH_EXPORT DisplayManager
   // Returns the display layout used for current displays.
   DisplayLayout GetCurrentDisplayLayout();
 
-  // Returns the current display pair.
-  DisplayIdPair GetCurrentDisplayIdPair() const;
+  // Returns the current display list.
+  DisplayIdList GetCurrentDisplayIdList() const;
 
   // Sets the layout for the current display pair. The |layout| specifies
   // the locaion of the secondary display relative to the primary.

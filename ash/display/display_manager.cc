@@ -208,8 +208,8 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
   DCHECK_LE(2U, num_connected_displays());
   // Invert if the primary was swapped.
   if (num_connected_displays() == 2) {
-    DisplayIdPair pair = GetCurrentDisplayIdPair();
-    return layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
+    DisplayIdList list = GetCurrentDisplayIdList();
+    return layout_store_->ComputeDisplayLayoutForDisplayIdList(list);
   } else if (num_connected_displays() > 2) {
     // Return fixed horizontal layout for >= 3 displays.
     DisplayLayout layout(DisplayLayout::RIGHT, 0);
@@ -223,9 +223,9 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
   return layout;
 }
 
-DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
+DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   if (IsInUnifiedMode()) {
-    return CreateDisplayIdPair(software_mirroring_display_list_[0].id(),
+    return CreateDisplayIdList(software_mirroring_display_list_[0].id(),
                                software_mirroring_display_list_[1].id());
   } else if (IsInMirrorMode()) {
     if (software_mirroring_enabled()) {
@@ -234,11 +234,11 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
       // between two checks.
       CHECK_EQ(1u, active_display_list_.size());
     }
-    return CreateDisplayIdPair(active_display_list_[0].id(),
+    return CreateDisplayIdList(active_display_list_[0].id(),
                                mirroring_display_id_);
   } else {
     CHECK_LE(2u, active_display_list_.size());
-    return CreateDisplayIdPair(active_display_list_[0].id(),
+    return CreateDisplayIdList(active_display_list_[0].id(),
                                active_display_list_[1].id());
   }
 }
@@ -248,18 +248,18 @@ void DisplayManager::SetLayoutForCurrentDisplays(
   if (GetNumDisplays() != 2)
     return;
   const gfx::Display& primary = screen_->GetPrimaryDisplay();
-  const DisplayIdPair pair = GetCurrentDisplayIdPair();
+  const DisplayIdList list = GetCurrentDisplayIdList();
   // Invert if the primary was swapped.
-  DisplayLayout to_set = pair.first == primary.id() ?
-      layout_relative_to_primary : layout_relative_to_primary.Invert();
+  DisplayLayout to_set = list[0] == primary.id()
+                             ? layout_relative_to_primary
+                             : layout_relative_to_primary.Invert();
 
   DisplayLayout current_layout =
-      layout_store_->GetRegisteredDisplayLayout(pair);
+      layout_store_->GetRegisteredDisplayLayout(list);
   if (to_set.position != current_layout.position ||
       to_set.offset != current_layout.offset) {
     to_set.primary_id = primary.id();
-    layout_store_->RegisterLayoutForDisplayIdPair(
-        pair.first, pair.second, to_set);
+    layout_store_->RegisterLayoutForDisplayIdList(list[0], list[1], to_set);
     if (delegate_)
       delegate_->PreDisplayConfigurationChange(false);
     // PreDisplayConfigurationChange(false);
@@ -619,9 +619,9 @@ void DisplayManager::OnNativeDisplaysChanged(
 #if defined(OS_CHROMEOS)
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       new_display_info_list.size() > 1) {
-    DisplayIdPair pair = CreateDisplayIdPair(new_display_info_list[0].id(),
+    DisplayIdList list = CreateDisplayIdList(new_display_info_list[0].id(),
                                              new_display_info_list[1].id());
-    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(pair);
+    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(list);
     // Mirror mode is set by DisplayConfigurator on the device.
     // Emulate it when running on linux desktop.
     if (layout.mirrored)
@@ -656,9 +656,9 @@ void DisplayManager::UpdateDisplaysWith(
             DisplayInfoSortFunctor());
 
   if (new_display_info_list.size() > 1) {
-    DisplayIdPair pair = CreateDisplayIdPair(new_display_info_list[0].id(),
+    DisplayIdList list = CreateDisplayIdList(new_display_info_list[0].id(),
                                              new_display_info_list[1].id());
-    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(pair);
+    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(list);
     current_default_multi_display_mode_ =
         (layout.default_unified && unified_desktop_enabled_) ? UNIFIED
                                                              : EXTENDED;
@@ -858,8 +858,8 @@ const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
 const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
   if (GetNumDisplays() != 2)
     return active_display_list_[0];
-  DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
-      GetCurrentDisplayIdPair());
+  DisplayLayout layout =
+      layout_store_->GetRegisteredDisplayLayout(GetCurrentDisplayIdList());
   return GetDisplayForId(layout.primary_id);
 }
 
@@ -999,8 +999,8 @@ bool DisplayManager::SoftwareMirroringEnabled() const {
 void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
     MultiDisplayMode mode) {
   DCHECK_NE(MIRRORING, mode);
-  DisplayIdPair pair = GetCurrentDisplayIdPair();
-  layout_store_->UpdateMultiDisplayState(pair, IsInMirrorMode(),
+  DisplayIdList list = GetCurrentDisplayIdList();
+  layout_store_->UpdateMultiDisplayState(list, IsInMirrorMode(),
                                          mode == UNIFIED);
   ReconfigureDisplays();
 }
@@ -1307,8 +1307,8 @@ bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
     return true;
   }
 
-  DisplayLayout layout = layout_store_->ComputeDisplayLayoutForDisplayIdPair(
-      CreateDisplayIdPair(displays->at(0).id(), displays->at(1).id()));
+  DisplayLayout layout = layout_store_->ComputeDisplayLayoutForDisplayIdList(
+      CreateDisplayIdList(displays->at(0).id(), displays->at(1).id()));
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.

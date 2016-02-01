@@ -1602,11 +1602,11 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   // if the displays are configured to use mirroring when running on desktop.
   // This is a workdaround to force the display manager to forget
   // the mirroing layout.
-  DisplayIdPair pair = CreateDisplayIdPair(1, 2);
+  DisplayIdList list = CreateDisplayIdList(1, 2);
   DisplayLayout layout =
-      display_manager()->layout_store()->GetRegisteredDisplayLayout(pair);
+      display_manager()->layout_store()->GetRegisteredDisplayLayout(list);
   layout.mirrored = false;
-  display_manager()->layout_store()->RegisterLayoutForDisplayIdPair(1, 2,
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(1, 2,
                                                                     layout);
 
   // Exit from hardware mirroring.
@@ -1626,12 +1626,12 @@ TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   UpdateDisplay("400x500,300x200");
-  DisplayIdPair pair = display_manager()->GetCurrentDisplayIdPair();
+  DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
   DisplayLayout layout =
-      display_manager()->layout_store()->GetRegisteredDisplayLayout(pair);
+      display_manager()->layout_store()->GetRegisteredDisplayLayout(list);
   layout.default_unified = false;
-  display_manager()->layout_store()->RegisterLayoutForDisplayIdPair(
-      pair.first, pair.second, layout);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list[0], list[1], layout);
   display_manager()->SetUnifiedDesktopEnabled(true);
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
@@ -2026,16 +2026,17 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   DisplayLayout good(DisplayLayout(DisplayLayout::LEFT, 0));
   good.primary_id = id1;
 
-  layout_store->RegisterLayoutForDisplayIdPair(id1, id2, good);
+  layout_store->RegisterLayoutForDisplayIdList(id1, id2, good);
 
   DisplayLayout bad(DisplayLayout(DisplayLayout::BOTTOM, 0));
   good.primary_id = id2;
 
-  layout_store->RegisterLayoutForDisplayIdPair(id2, id1, bad);
+  layout_store->RegisterLayoutForDisplayIdList(id2, id1, bad);
 
-  EXPECT_EQ(good.ToString(), layout_store->GetRegisteredDisplayLayout(
-                                             CreateDisplayIdPair(id1, id2))
-                                 .ToString());
+  EXPECT_EQ(
+      good.ToString(),
+      layout_store->GetRegisteredDisplayLayout(CreateDisplayIdList(id1, id2))
+          .ToString());
 }
 
 #endif  // OS_CHROMEOS

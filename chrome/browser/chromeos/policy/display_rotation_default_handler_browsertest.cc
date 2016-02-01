@@ -56,10 +56,10 @@ gfx::Display::Rotation GetRotationOfSecondDisplay() {
         << "Requested rotation of second display while there was only one.";
     return gfx::Display::ROTATE_0;
   }
-  const ash::DisplayIdPair display_id_pair =
-      display_manager->GetCurrentDisplayIdPair();
+  const ash::DisplayIdList display_id_pair =
+      display_manager->GetCurrentDisplayIdList();
   const gfx::Display& second_display =
-      display_manager->GetDisplayForId(display_id_pair.second);
+      display_manager->GetDisplayForId(display_id_pair[1]);
   return second_display.rotation();
 }
 

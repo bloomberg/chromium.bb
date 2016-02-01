@@ -451,7 +451,7 @@ void WindowTreeHostManager::SetPrimaryDisplay(
 
   primary_display_id = new_primary_display.id();
   GetDisplayManager()->layout_store()->UpdatePrimaryDisplayId(
-      display_manager->GetCurrentDisplayIdPair(), primary_display_id);
+      display_manager->GetCurrentDisplayIdList(), primary_display_id);
 
   UpdateWorkAreaOfDisplayNearestWindow(GetWindow(primary_host),
                                        old_primary_display.GetWorkAreaInsets());
@@ -763,22 +763,21 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   DisplayManager* display_manager = GetDisplayManager();
   DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
-    DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
-    DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(pair);
+    DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+    DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(list);
     layout_store->UpdateMultiDisplayState(
-        pair, display_manager->IsInMirrorMode(), layout.default_unified);
+        list, display_manager->IsInMirrorMode(), layout.default_unified);
 
     if (gfx::Screen::GetScreen()->GetNumDisplays() > 1) {
       int64_t primary_id = layout.primary_id;
-      SetPrimaryDisplayId(primary_id == gfx::Display::kInvalidDisplayID
-                              ? pair.first
-                              : primary_id);
+      SetPrimaryDisplayId(
+          primary_id == gfx::Display::kInvalidDisplayID ? list[0] : primary_id);
       // Update the primary_id in case the above call is
       // ignored. Happens when a) default layout's primary id
       // doesn't exist, or b) the primary_id has already been
       // set to the same and didn't update it.
       layout_store->UpdatePrimaryDisplayId(
-          pair, gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
+          list, gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());

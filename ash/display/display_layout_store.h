@@ -26,42 +26,42 @@ class ASH_EXPORT DisplayLayoutStore {
   void SetDefaultDisplayLayout(const DisplayLayout& layout);
 
   // Registeres the display layout info for the specified display(s).
-  void RegisterLayoutForDisplayIdPair(int64_t id1,
+  void RegisterLayoutForDisplayIdList(int64_t id1,
                                       int64_t id2,
                                       const DisplayLayout& layout);
 
   // If no layout is registered, it creatas new layout using
   // |default_display_layout_|.
-  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdPair& pair);
+  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdList& list);
 
-  // Returns the display layout for the display id pair
+  // Returns the display layout for the display id list
   // with display swapping applied.  That is, this returns
   // flipped layout if the displays are swapped.
-  DisplayLayout ComputeDisplayLayoutForDisplayIdPair(
-      const DisplayIdPair& display_pair);
+  DisplayLayout ComputeDisplayLayoutForDisplayIdList(
+      const DisplayIdList& display_list);
 
   // Update the multi display state in the display layout for
-  // |display_pair|.  This creates new display layout if no layout is
-  // registered for |display_pair|.
-  void UpdateMultiDisplayState(const DisplayIdPair& display_pair,
+  // |display_list|.  This creates new display layout if no layout is
+  // registered for |display_list|.
+  void UpdateMultiDisplayState(const DisplayIdList& display_list,
                                bool mirrored,
                                bool default_unified);
 
   // Update the |primary_id| in the display layout for
-  // |display_pair|.  This creates new display layout if no layout is
-  // registered for |display_pair|.
-  void UpdatePrimaryDisplayId(const DisplayIdPair& display_pair,
+  // |display_list|.  This creates new display layout if no layout is
+  // registered for |display_list|.
+  void UpdatePrimaryDisplayId(const DisplayIdList& display_list,
                               int64_t display_id);
 
  private:
-  // Creates new layout for display pair from |default_display_layout_|.
-  DisplayLayout CreateDisplayLayout(const DisplayIdPair& display_pair);
+  // Creates new layout for display list from |default_display_layout_|.
+  DisplayLayout CreateDisplayLayout(const DisplayIdList& display_list);
 
   // The default display layout.
   DisplayLayout default_display_layout_;
 
-  // Display layout per pair of devices.
-  std::map<DisplayIdPair, DisplayLayout> paired_layouts_;
+  // Display layout per list of devices.
+  std::map<DisplayIdList, DisplayLayout> layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };

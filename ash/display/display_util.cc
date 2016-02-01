@@ -10,6 +10,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/display.h"
@@ -348,9 +349,18 @@ int FindDisplayIndexContainingPoint(const std::vector<gfx::Display>& displays,
   return iter == displays.end() ? -1 : (iter - displays.begin());
 }
 
-DisplayIdPair CreateDisplayIdPair(int64_t id1, int64_t id2) {
-  return CompareDisplayIds(id1, id2) ? std::make_pair(id1, id2)
-                                     : std::make_pair(id2, id1);
+DisplayIdList CreateDisplayIdList(int64_t id1, int64_t id2) {
+  std::vector<int64_t> ids;
+
+  ids.push_back(id1);
+  ids.push_back(id2);
+  std::sort(ids.begin(), ids.end(),
+            [](int64_t a, int64_t b) { return CompareDisplayIds(a, b); });
+  return ids;
+}
+
+std::string DisplayIdListToString(const ash::DisplayIdList& list) {
+  return base::Int64ToString(list[0]) + "," + base::Int64ToString(list[1]);
 }
 
 bool CompareDisplayIds(int64_t id1, int64_t id2) {

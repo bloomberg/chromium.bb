@@ -45,58 +45,59 @@ void DisplayLayoutStore::SetDefaultDisplayLayout(const DisplayLayout& layout) {
     default_display_layout_ = layout;
 }
 
-void DisplayLayoutStore::RegisterLayoutForDisplayIdPair(
+void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
     int64_t id1,
     int64_t id2,
     const DisplayLayout& layout) {
-  auto key = CreateDisplayIdPair(id1, id2);
+  auto key = CreateDisplayIdList(id1, id2);
 
   // Do not overwrite the valid data with old invalid date.
-  if (paired_layouts_.count(key) && !CompareDisplayIds(id1, id2))
+  if (layouts_.count(key) && !CompareDisplayIds(id1, id2))
     return;
 
-  paired_layouts_[key] = layout;
+  layouts_[key] = layout;
 }
 
 DisplayLayout DisplayLayoutStore::GetRegisteredDisplayLayout(
-    const DisplayIdPair& pair) {
-  std::map<DisplayIdPair, DisplayLayout>::const_iterator iter =
-      paired_layouts_.find(pair);
-  return
-      iter != paired_layouts_.end() ? iter->second : CreateDisplayLayout(pair);
+    const DisplayIdList& list) {
+  std::map<DisplayIdList, DisplayLayout>::const_iterator iter =
+      layouts_.find(list);
+  return iter != layouts_.end() ? iter->second : CreateDisplayLayout(list);
 }
 
-DisplayLayout DisplayLayoutStore::ComputeDisplayLayoutForDisplayIdPair(
-    const DisplayIdPair& pair) {
-  DisplayLayout layout = GetRegisteredDisplayLayout(pair);
+DisplayLayout DisplayLayoutStore::ComputeDisplayLayoutForDisplayIdList(
+    const DisplayIdList& list) {
+  DisplayLayout layout = GetRegisteredDisplayLayout(list);
   DCHECK_NE(layout.primary_id, gfx::Display::kInvalidDisplayID);
   // Invert if the primary was swapped. If mirrored, first is always
   // primary.
   return (layout.primary_id == gfx::Display::kInvalidDisplayID ||
-          pair.first == layout.primary_id) ? layout : layout.Invert();
+          list[0] == layout.primary_id)
+             ? layout
+             : layout.Invert();
 }
 
-void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdPair& pair,
+void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,
                                                  bool mirrored,
                                                  bool default_unified) {
-  if (paired_layouts_.find(pair) == paired_layouts_.end())
-    CreateDisplayLayout(pair);
-  paired_layouts_[pair].mirrored = mirrored;
-  paired_layouts_[pair].default_unified = default_unified;
+  if (layouts_.find(list) == layouts_.end())
+    CreateDisplayLayout(list);
+  layouts_[list].mirrored = mirrored;
+  layouts_[list].default_unified = default_unified;
 }
 
-void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdPair& pair,
+void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdList& list,
                                                 int64_t display_id) {
-  if (paired_layouts_.find(pair) == paired_layouts_.end())
-    CreateDisplayLayout(pair);
-  paired_layouts_[pair].primary_id = display_id;
+  if (layouts_.find(list) == layouts_.end())
+    CreateDisplayLayout(list);
+  layouts_[list].primary_id = display_id;
 }
 
 DisplayLayout DisplayLayoutStore::CreateDisplayLayout(
-    const DisplayIdPair& pair) {
+    const DisplayIdList& list) {
   DisplayLayout layout = default_display_layout_;
-  layout.primary_id = pair.first;
-  paired_layouts_[pair] = layout;
+  layout.primary_id = list[0];
+  layouts_[list] = layout;
   return layout;
 }
 
