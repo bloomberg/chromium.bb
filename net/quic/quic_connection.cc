@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
@@ -2073,7 +2074,14 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   }
   connected_ = false;
   DCHECK(visitor_ != nullptr);
-  visitor_->OnConnectionClosed(error, from_peer);
+  // TODO(rtenneti): crbug.com/546668. A temporary fix. Added a check for null
+  // |visitor_| to fix crash bug. Delete |visitor_| check and histogram after
+  // fix is merged.
+  if (visitor_) {
+    visitor_->OnConnectionClosed(error, from_peer);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicCloseConnection.NullVisitor", true);
+  }
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionClosed(error, from_peer);
   }

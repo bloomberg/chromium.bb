@@ -25713,6 +25713,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicCloseConnection.NullVisitor" enum="BooleanNullVisitor">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of times Connection's visitor is a nullptr when CloseConnection
+    is called.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicCryptoClientConfig.PopulatedFromCanonicalConfig"
     enum="BooleanPopulated">
   <owner>rtenneti@chromium.org</owner>
@@ -58415,6 +58423,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanMissingFromDiskCache" type="int">
   <int value="0" label="Has data in disk cache"/>
   <int value="1" label="Missing data in disk cache"/>
+</enum>
+
+<enum name="BooleanNullVisitor" type="int">
+  <int value="0" label="Connection's visitor is not a nullptr"/>
+  <int value="1" label="Connection's visitor is a nullptr"/>
 </enum>
 
 <enum name="BooleanOrphan" type="int">
