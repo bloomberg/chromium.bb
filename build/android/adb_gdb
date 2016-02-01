@@ -104,6 +104,7 @@ PULL_LIBS_DIR=
 SANDBOXED=
 SANDBOXED_INDEX=
 START=
+ATTACH_DELAY=1
 SU_PREFIX=
 SYMBOL_DIR=
 TARGET_ARCH=
@@ -178,6 +179,9 @@ for opt; do
     --start)
       START=true
       ;;
+    --attach-delay=*)
+      ATTACH_DELAY=$optarg
+      ;;
     --su-prefix=*)
       SU_PREFIX=$optarg
       ;;
@@ -209,7 +213,7 @@ for opt; do
       BUILDTYPE=Release
       ;;
     -*)
-      panic "Unknown option $OPT, see --help." >&2
+      panic "Unknown option $opt, see --help." >&2
       ;;
     *)
       if [ "$PACKAGE_NAME" ]; then
@@ -319,6 +323,9 @@ Valid options:
   --pid=<pid>           Specify application process pid.
   --force               Kill any previous debugging session, if any.
   --start               Start package's activity on device.
+  --attach-delay=<num>  Seconds to wait for gdbserver to attach to the
+                        remote process before starting gdb. Default 1.
+                        <num> may be a float if your sleep(1) supports it.
   --ui                  Use gdbtui instead of gdb
   --activity=<name>     Activity name for --start [$DEFAULT_ACTIVITY].
   --annotate=<num>      Enable gdb annotation.
@@ -997,13 +1004,14 @@ GDBSERVER_PID=$!
 echo "$GDBSERVER_PID" > $GDBSERVER_PIDFILE
 log "background job pid: $GDBSERVER_PID"
 
-# Check that it is still running after a few seconds. If not, this means we
-# could not properly attach to it
-sleep 2
+# Sleep to allow gdbserver to attach to the remote process and be
+# ready to connect to.
+log "Sleeping ${ATTACH_DELAY}s to allow gdbserver to attach."
+sleep "$ATTACH_DELAY"
 log "Job control: $(jobs -l)"
 STATE=$(jobs -l | awk '$2 == "'$GDBSERVER_PID'" { print $3; }')
 if [ "$STATE" != "Running" ]; then
-  echo "ERROR: GDBServer could not attach to PID $PID!"
+  echo "ERROR: GDBServer either failed to run or attach to PID $PID!"
   if [ $(adb_shell su -c getenforce) != "Permissive" ];  then
     echo "Device mode is Enforcing. Changing Device mode to Permissive "
     $(adb_shell su -c setenforce 0)
