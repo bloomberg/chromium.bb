@@ -1268,16 +1268,17 @@ wl_display_add_socket_fd(struct wl_display *display, int sock_fd)
 	if (s == NULL)
 		return -1;
 
-	/* Reuse the existing fd */
-	s->fd = sock_fd;
-
-	s->source = wl_event_loop_add_fd(display->loop, s->fd,
+	s->source = wl_event_loop_add_fd(display->loop, sock_fd,
 					 WL_EVENT_READABLE,
 					 socket_data, display);
 	if (s->source == NULL) {
 		wl_log("failed to establish event source\n");
+		wl_socket_destroy(s);
 		return -1;
 	}
+
+	/* Reuse the existing fd */
+	s->fd = sock_fd;
 
 	wl_list_insert(display->socket_list.prev, &s->link);
 
