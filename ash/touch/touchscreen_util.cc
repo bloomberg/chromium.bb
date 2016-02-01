@@ -83,8 +83,8 @@ const ui::TouchscreenDevice* GuessBestUdlDevice(DisplayInfo* display,
 }
 
 void AssociateUdlDevices(DisplayInfoList* displays, DeviceList* devices) {
-  VLOG(2) << "Trying to associate udl devices (" << displays->size()
-          << " displays and " << devices->size() << " devices to associate)";
+  VLOG(2) << "Trying to match udl devices (" << displays->size()
+          << " displays and " << devices->size() << " devices to match)";
 
   DisplayInfoList::iterator display_it = displays->begin();
   while (display_it != displays->end()) {
@@ -118,8 +118,8 @@ bool IsInternalDevice(const ui::TouchscreenDevice* device) {
 }
 
 void AssociateInternalDevices(DisplayInfoList* displays, DeviceList* devices) {
-  VLOG(2) << "Trying to associate internal devices (" << displays->size()
-          << " displays and " << devices->size() << " devices to associate)";
+  VLOG(2) << "Trying to match internal devices (" << displays->size()
+          << " displays and " << devices->size() << " devices to match)";
 
   // Internal device assocation has a couple of gotchas:
   // - There can be internal devices but no internal display, or visa-versa.
@@ -138,6 +138,8 @@ void AssociateInternalDevices(DisplayInfoList* displays, DeviceList* devices) {
     displays->erase(display_it);
   }
 
+  bool matched = false;
+
   // Remove all internal devices from |devices|. If we have an internal display,
   // then associate the device with the display before removing it.
   DeviceList::iterator device_it = devices->begin();
@@ -154,18 +156,22 @@ void AssociateInternalDevices(DisplayInfoList* displays, DeviceList* devices) {
       VLOG(2) << "=> Matched device " << internal_device->name << " to display "
               << internal_display->name();
       Associate(internal_display, internal_device);
+      matched = true;
     } else {
       VLOG(2) << "=> Removing internal device " << internal_device->name;
     }
 
     device_it = devices->erase(device_it);
   }
+
+  if (!matched)
+    VLOG(2) << "=> Removing internal display " << internal_display->name();
 }
 
 void AssociateSameSizeDevices(DisplayInfoList* displays, DeviceList* devices) {
   // Associate screens/displays with the same size.
-  VLOG(2) << "Trying to associate same-size devices (" << displays->size()
-          << " displays and " << devices->size() << " devices to associate)";
+  VLOG(2) << "Trying to match same-size devices (" << displays->size()
+          << " displays and " << devices->size() << " devices to match)";
 
   DisplayInfoList::iterator display_it = displays->begin();
   while (display_it != displays->end()) {
@@ -206,11 +212,11 @@ void AssociateToSingleDisplay(DisplayInfoList* displays, DeviceList* devices) {
   // If there is only one display left, then we should associate all input
   // devices with it.
 
-  VLOG(2) << "Associating to single display (" << displays->size()
-          << " displays and " << devices->size() << " devices to associate)";
+  VLOG(2) << "Trying to match to single display (" << displays->size()
+          << " displays and " << devices->size() << " devices to match)";
 
   // We only associate to one display.
-  if (displays->size() != 1)
+  if (displays->size() != 1 || devices->size() == 0)
     return;
 
   DisplayInfo* display = *displays->begin();
@@ -239,7 +245,7 @@ void AssociateTouchscreens(
     display.ClearInputDevices();
 
     if (display.GetNativeModeSize().IsEmpty()) {
-      VLOG(2) << "Will not associate display " << display.id()
+      VLOG(2) << "Will not match display " << display.id()
               << " since it doesn't have a native mode";
       continue;
     }
@@ -251,15 +257,26 @@ void AssociateTouchscreens(
   for (const ui::TouchscreenDevice& device : all_devices)
     devices.push_back(&device);
 
+  for (const DisplayInfo* display : displays) {
+    VLOG(2) << "Received display " << display->name()
+            << " (size: " << display->GetNativeModeSize().ToString()
+            << ", sys_path: " << display->sys_path().LossyDisplayName() << ")";
+  }
+  for (const ui::TouchscreenDevice* device : devices) {
+    VLOG(2) << "Received device " << device->name
+            << " (size: " << device->size.ToString()
+            << ", sys_path: " << device->sys_path.LossyDisplayName() << ")";
+  }
+
   AssociateInternalDevices(&displays, &devices);
   AssociateUdlDevices(&displays, &devices);
   AssociateSameSizeDevices(&displays, &devices);
   AssociateToSingleDisplay(&displays, &devices);
 
-  for (DisplayInfo* display : displays)
-    VLOG(1) << "Unassociated display " << display->name();
+  for (const DisplayInfo* display : displays)
+    VLOG(1) << "Unmatched display " << display->name();
   for (const ui::TouchscreenDevice* device : devices)
-    VLOG(1) << "Unassociated device " << device->name;
+    VLOG(1) << "Unmatched device " << device->name;
 }
 
 }  // namespace ash
