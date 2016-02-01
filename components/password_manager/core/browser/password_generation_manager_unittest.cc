@@ -8,9 +8,6 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -24,6 +21,9 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

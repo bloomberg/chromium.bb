@@ -5,8 +5,6 @@
 #include "components/omnibox/browser/zero_suggest_provider.h"
 
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
@@ -16,6 +14,8 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"

@@ -11,11 +11,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes

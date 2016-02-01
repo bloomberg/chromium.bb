@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/test_log_uploader.h"
 

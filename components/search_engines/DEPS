@@ -7,6 +7,7 @@ include_rules = [
   "+components/omnibox/browser/omnibox_field_trial.h",
   "+components/policy/core",
   "+components/pref_registry",
+  "+components/prefs",
   "+components/rappor",
   "+components/sync_driver",
   "+components/url_formatter",

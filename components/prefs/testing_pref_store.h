@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/prefs/persistent_pref_store.h"
-#include "base/prefs/pref_value_map.h"
+#include "components/prefs/persistent_pref_store.h"
+#include "components/prefs/pref_value_map.h"
 
 // |TestingPrefStore| is a preference store implementation that allows tests to
 // explicitly manipulate the contents of the store, triggering notifications

@@ -2,6 +2,7 @@ include_rules = [
   "+chromeos/arc",
   "+chromeos/chromeos_switches.h",
   "+chromeos/dbus",
+  "+components/prefs",
   "+components/signin/core/account_id",
   "+ipc",
   "+mojo",

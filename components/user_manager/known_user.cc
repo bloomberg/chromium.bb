@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 

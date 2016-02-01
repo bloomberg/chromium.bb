@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/mock_pref_change_callback.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/mock_pref_change_callback.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

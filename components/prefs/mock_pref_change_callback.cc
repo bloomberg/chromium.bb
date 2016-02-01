@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/mock_pref_change_callback.h"
+#include "components/prefs/mock_pref_change_callback.h"
 
 #include "base/bind.h"
 

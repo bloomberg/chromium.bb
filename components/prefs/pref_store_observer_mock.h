@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_store.h"
+#include "components/prefs/pref_store.h"
 
 // A mock implementation of PrefStore::Observer.
 class PrefStoreObserverMock : public PrefStore::Observer {

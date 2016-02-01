@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -19,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"

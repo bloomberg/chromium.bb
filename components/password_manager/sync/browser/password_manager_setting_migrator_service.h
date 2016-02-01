@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 
 namespace sync_driver {

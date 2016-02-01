@@ -5,9 +5,9 @@
 #import "components/translate/ios/browser/language_detection_controller.h"
 
 #include "base/mac/bind_objc_block.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 #include "ios/web/public/test/test_web_state.h"

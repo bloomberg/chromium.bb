@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -15,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"

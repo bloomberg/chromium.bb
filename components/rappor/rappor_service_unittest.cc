@@ -10,7 +10,7 @@
 
 #include "base/base64.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"

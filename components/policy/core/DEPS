@@ -1,5 +1,6 @@
 include_rules = [
   "+components/json_schema",
+  "+components/prefs",
   "+crypto",
   "+google_apis",
   "+net",

@@ -12,11 +12,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/task_runner.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace policy {
 

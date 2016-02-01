@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/prefs/pref_member.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 namespace autofill {

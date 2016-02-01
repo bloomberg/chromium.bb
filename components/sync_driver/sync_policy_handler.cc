@@ -4,9 +4,9 @@
 
 #include "components/sync_driver/sync_policy_handler.h"
 
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/prefs/pref_value_map.h"
 #include "components/sync_driver/pref_names.h"
 #include "policy/policy_constants.h"
 

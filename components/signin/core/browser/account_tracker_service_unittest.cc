@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"

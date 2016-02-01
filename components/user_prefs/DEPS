@@ -3,4 +3,6 @@ include_rules = [
   # platform-specific dependencies.
   "-content",
   "-ios",
+
+  "+components/prefs",
 ]

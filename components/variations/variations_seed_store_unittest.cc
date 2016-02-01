@@ -6,8 +6,8 @@
 
 #include "base/base64.h"
 #include "base/macros.h"
-#include "base/prefs/testing_pref_service.h"
 #include "build/build_config.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"

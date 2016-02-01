@@ -4,7 +4,7 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 
-#include "base/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 
 namespace proximity_auth {

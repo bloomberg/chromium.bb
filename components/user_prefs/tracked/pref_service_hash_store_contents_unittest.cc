@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrefServiceHashStoreContentsTest : public testing::Test {

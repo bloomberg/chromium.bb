@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"

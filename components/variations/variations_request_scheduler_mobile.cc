@@ -4,7 +4,7 @@
 
 #include "components/variations/variations_request_scheduler_mobile.h"
 
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/pref_names.h"
 
 namespace variations {

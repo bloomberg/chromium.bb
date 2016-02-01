@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/ui/zoom/page_zoom_constants.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"

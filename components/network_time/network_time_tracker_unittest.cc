@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/time/tick_clock.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network_time {

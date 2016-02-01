@@ -6,13 +6,13 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
+#include "components/prefs/pref_value_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

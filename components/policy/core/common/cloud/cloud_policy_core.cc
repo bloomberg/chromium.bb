@@ -9,13 +9,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
+#include "components/prefs/pref_service.h"
 
 namespace policy {
 

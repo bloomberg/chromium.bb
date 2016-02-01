@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 

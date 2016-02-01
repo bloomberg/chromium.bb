@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_store.h"
+#include "components/prefs/pref_store.h"
 
 namespace base {
 class Value;

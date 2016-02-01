@@ -5,9 +5,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 
 #include "base/files/file_path.h"
-#include "base/prefs/default_pref_store.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/prefs/default_pref_store.h"
 
 namespace user_prefs {
 

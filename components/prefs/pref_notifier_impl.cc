@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_notifier_impl.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "components/prefs/pref_service.h"
 
 PrefNotifierImpl::PrefNotifierImpl()
     : pref_service_(NULL) {

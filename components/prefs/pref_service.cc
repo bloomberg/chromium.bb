@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 
 #include <algorithm>
 #include <utility>
@@ -12,10 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/default_pref_store.h"
-#include "base/prefs/pref_notifier_impl.h"
-#include "base/prefs/pref_registry.h"
-#include "base/prefs/pref_value_store.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +19,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
+#include "components/prefs/default_pref_store.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_value_store.h"
 
 namespace {
 

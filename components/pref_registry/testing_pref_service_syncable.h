@@ -6,7 +6,7 @@
 #define COMPONENTS_PERF_REGISTRY_TESTING_PREF_SERVICE_SYNCABLE_H_
 
 #include "base/macros.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 namespace user_prefs {
 

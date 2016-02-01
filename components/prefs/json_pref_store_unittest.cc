@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/json_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 
 #include <stdint.h>
 
@@ -18,7 +18,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_filter.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,6 +28,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "components/prefs/pref_filter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

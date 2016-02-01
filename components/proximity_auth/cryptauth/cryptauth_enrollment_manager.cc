@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/base64url.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"

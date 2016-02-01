@@ -1,6 +1,7 @@
 include_rules = [
   "+components/data_use_measurement/core",
   "+components/metrics",
+  "+components/prefs",
   "+components/variations",
   "+crypto",
   "+net",

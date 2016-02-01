@@ -8,8 +8,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -19,6 +17,8 @@
 #include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

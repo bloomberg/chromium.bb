@@ -6,12 +6,12 @@
 
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"

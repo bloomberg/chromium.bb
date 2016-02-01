@@ -6,7 +6,7 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 
 namespace {

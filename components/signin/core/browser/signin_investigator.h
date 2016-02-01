@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.signin

@@ -33,10 +33,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/pref_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/pref_observer.h"
 
 class PrefService;
 

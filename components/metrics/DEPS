@@ -4,6 +4,7 @@ include_rules = [
   "-components",
   "+components/compression",
   "+components/metrics",
+  "+components/prefs",
   "+components/variations",
   "+components/version_info",
   "+third_party/zlib/google",

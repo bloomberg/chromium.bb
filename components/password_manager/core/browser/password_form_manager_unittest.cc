@@ -9,9 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -33,6 +30,9 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

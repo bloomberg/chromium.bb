@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_member.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_member.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 

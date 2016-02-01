@@ -4,7 +4,7 @@
 
 #include "components/syncable_prefs/pref_service_mock_factory.h"
 
-#include "base/prefs/testing_pref_store.h"
+#include "components/prefs/testing_pref_store.h"
 
 namespace syncable_prefs {
 

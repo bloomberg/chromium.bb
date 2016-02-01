@@ -13,10 +13,10 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/pref_notifier.h"
-#include "base/prefs/pref_observer.h"
 #include "base/threading/thread_checker.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/pref_notifier.h"
+#include "components/prefs/pref_observer.h"
 
 class PrefService;
 

@@ -14,8 +14,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/prefs/pref_service.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"

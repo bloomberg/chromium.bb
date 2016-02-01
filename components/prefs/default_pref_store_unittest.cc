@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/prefs/default_pref_store.h"
+#include "components/prefs/default_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringValue;

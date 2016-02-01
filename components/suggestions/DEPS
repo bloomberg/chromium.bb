@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/leveldb_proto",
   "+components/pref_registry",
+  "+components/prefs",
   "+components/signin/core/browser",
   "+components/variations",
   "+google_apis",

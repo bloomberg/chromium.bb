@@ -10,8 +10,6 @@
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -21,6 +19,8 @@
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_switches.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
 
 namespace metrics {

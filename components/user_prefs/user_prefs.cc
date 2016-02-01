@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 
 namespace user_prefs {
 

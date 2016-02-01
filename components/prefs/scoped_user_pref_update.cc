@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/scoped_user_pref_update.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_notifier.h"
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_notifier.h"
+#include "components/prefs/pref_service.h"
 
 namespace subtle {
 

@@ -9,10 +9,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/pref_store.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/pref_store.h"
+#include "components/prefs/pref_value_map.h"
 
 // Used within a PrefRegistry to keep track of default preference values.
 class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {

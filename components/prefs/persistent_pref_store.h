@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/writeable_pref_store.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/writeable_pref_store.h"
 
 // This interface is complementary to the PrefStore interface, declaring
 // additional functionality that adds support for setting values and persisting

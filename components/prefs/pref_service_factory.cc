@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_service_factory.h"
+#include "components/prefs/pref_service_factory.h"
 
 #include "base/bind.h"
-#include "base/prefs/default_pref_store.h"
-#include "base/prefs/json_pref_store.h"
-#include "base/prefs/pref_filter.h"
-#include "base/prefs/pref_notifier_impl.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_value_store.h"
 #include "base/sequenced_task_runner.h"
+#include "components/prefs/default_pref_store.h"
+#include "components/prefs/json_pref_store.h"
+#include "components/prefs/pref_filter.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_value_store.h"
 
 namespace base {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_member.h"
+#include "components/prefs/pref_member.h"
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

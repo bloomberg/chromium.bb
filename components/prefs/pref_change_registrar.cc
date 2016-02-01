@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}
 

@@ -6,7 +6,7 @@
 #define COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 

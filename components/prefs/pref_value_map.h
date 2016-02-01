@@ -11,7 +11,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/base_prefs_export.h"
+#include "components/prefs/base_prefs_export.h"
 
 namespace base {
 class Value;

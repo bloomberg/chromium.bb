@@ -6,12 +6,12 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/prefs/pref_member.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync_driver/pref_names.h"
 
 namespace sync_driver {

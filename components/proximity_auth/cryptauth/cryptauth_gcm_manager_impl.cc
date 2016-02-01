@@ -5,9 +5,9 @@
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/prefs/pref_service.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "components/proximity_auth/logging/logging.h"
 

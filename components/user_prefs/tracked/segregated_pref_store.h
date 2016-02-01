@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/persistent_pref_store.h"
+#include "components/prefs/persistent_pref_store.h"
 
 // Provides a unified PersistentPrefStore implementation that splits its storage
 // and retrieval between two underlying PersistentPrefStore instances: a set of

@@ -6,12 +6,12 @@
 
 #include <set>
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_experiment.h"

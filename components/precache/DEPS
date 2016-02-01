@@ -6,4 +6,5 @@ include_rules = [
   "+components/precache/core",
 
   "+components/history/core/browser",
+  "+components/prefs",
 ]

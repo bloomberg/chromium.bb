@@ -4,7 +4,7 @@
 
 #include "components/sync_sessions/session_data_type_controller.h"
 
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"

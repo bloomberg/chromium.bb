@@ -3,6 +3,7 @@ include_rules = [
   "+components/infobars",
   "+components/language_usage_metrics",
   "+components/pref_registry",
+  "+components/prefs",
   "+google_apis",
   "+grit",  # For generated headers.
   "+net",

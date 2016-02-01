@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/prefs/pref_store_observer_mock.h"
 #include "base/run_loop.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
@@ -17,6 +16,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/prefs/pref_store_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // Note: this file should move to components/policy/core/browser, but the

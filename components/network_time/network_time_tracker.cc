@@ -9,12 +9,12 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "components/network_time/network_time_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace network_time {
 

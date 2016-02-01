@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_member.h"
+#include "components/prefs/pref_member.h"
 
 #include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
+#include "components/prefs/pref_service.h"
 
 using base::SingleThreadTaskRunner;
 

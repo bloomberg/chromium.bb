@@ -19,9 +19,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/persistent_pref_store.h"
 #include "base/threading/non_thread_safe.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/persistent_pref_store.h"
 
 class PrefFilter;
 

@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"

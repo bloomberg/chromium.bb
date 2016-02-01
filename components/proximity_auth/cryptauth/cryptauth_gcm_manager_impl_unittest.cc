@@ -5,9 +5,9 @@
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
 
 #include "base/macros.h"
-#include "base/prefs/testing_pref_service.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

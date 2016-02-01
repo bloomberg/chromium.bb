@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/pref_observer.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/pref_observer.h"
 
 class PrefService;
 

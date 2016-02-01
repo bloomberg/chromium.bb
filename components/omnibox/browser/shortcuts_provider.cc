@@ -15,7 +15,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,6 +29,7 @@
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "url/third_party/mozilla/url_parse.h"
 

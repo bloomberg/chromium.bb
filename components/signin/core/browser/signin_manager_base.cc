@@ -9,11 +9,11 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"

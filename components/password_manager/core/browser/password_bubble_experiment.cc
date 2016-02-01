@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace password_bubble_experiment {

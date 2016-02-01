@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_notifier.h"
-#include "base/prefs/pref_value_store.h"
-#include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
+#include "components/prefs/pref_notifier.h"
+#include "components/prefs/pref_value_store.h"
+#include "components/prefs/testing_pref_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

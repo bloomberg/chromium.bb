@@ -4,11 +4,11 @@
 
 #include "components/syncable_prefs/pref_service_syncable_factory.h"
 
-#include "base/prefs/default_pref_store.h"
-#include "base/prefs/pref_notifier_impl.h"
-#include "base/prefs/pref_value_store.h"
 #include "base/trace_event/trace_event.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/default_pref_store.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_value_store.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

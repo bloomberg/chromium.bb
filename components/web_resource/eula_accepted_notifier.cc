@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 
 namespace web_resource {

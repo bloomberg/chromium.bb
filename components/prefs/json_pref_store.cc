@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/json_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 
 #include <stddef.h>
 
@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_filter.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -26,6 +25,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "components/prefs/pref_filter.h"
 
 // Result returned from internal read tasks.
 struct JsonPrefStore::ReadResult {

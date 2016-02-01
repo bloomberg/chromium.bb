@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/os_crypt",
   "+components/pref_registry",
+  "+components/prefs",
   "+components/webdata/common",
   "+crypto",
   "+google_apis/gaia",

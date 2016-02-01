@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_value_store.h"
+#include "components/prefs/pref_value_store.h"
 
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/prefs/pref_notifier.h"
-#include "base/prefs/pref_observer.h"
+#include "components/prefs/pref_notifier.h"
+#include "components/prefs/pref_observer.h"
 
 PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
     : pref_value_store_(NULL),

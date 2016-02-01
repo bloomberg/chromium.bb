@@ -4,6 +4,7 @@ include_rules = [
   "-components",
   "+components/compression",
   "+components/crash/core/common",
+  "+components/prefs",
   "+components/variations",
   "+crypto",
   "-net",

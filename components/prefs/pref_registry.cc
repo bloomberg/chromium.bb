@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_registry.h"
+#include "components/prefs/pref_registry.h"
 
 #include "base/logging.h"
-#include "base/prefs/default_pref_store.h"
-#include "base/prefs/pref_store.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "components/prefs/default_pref_store.h"
+#include "components/prefs/pref_store.h"
 
 PrefRegistry::PrefRegistry()
     : defaults_(new DefaultPrefStore()) {

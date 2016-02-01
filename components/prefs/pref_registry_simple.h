@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/pref_registry.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/pref_registry.h"
 
 namespace base {
 class DictionaryValue;

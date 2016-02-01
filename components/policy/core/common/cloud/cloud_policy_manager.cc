@@ -11,12 +11,12 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/base_prefs_export.h"
+#include "components/prefs/base_prefs_export.h"
 
 namespace base {
 class DictionaryValue;

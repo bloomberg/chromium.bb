@@ -6,10 +6,10 @@
 
 #include "base/base64.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "components/metrics/daily_event.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/rappor_parameters.h"
 #include "components/rappor/rappor_pref_names.h"

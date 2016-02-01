@@ -11,8 +11,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/pref_model_associator.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
 

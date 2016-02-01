@@ -7,10 +7,10 @@
 #include <ostream>
 
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/sync_driver/fake_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

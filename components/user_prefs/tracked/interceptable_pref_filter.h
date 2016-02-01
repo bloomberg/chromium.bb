@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_filter.h"
 #include "base/values.h"
+#include "components/prefs/pref_filter.h"
 
 // A partial implementation of a PrefFilter whose FilterOnLoad call may be
 // intercepted by a FilterOnLoadInterceptor. Implementations of

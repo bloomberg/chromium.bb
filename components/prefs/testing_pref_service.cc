@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/prefs/default_pref_store.h"
-#include "base/prefs/pref_notifier_impl.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_value_store.h"
+#include "components/prefs/default_pref_store.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 template <>

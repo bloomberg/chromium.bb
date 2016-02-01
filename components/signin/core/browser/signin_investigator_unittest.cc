@@ -4,9 +4,9 @@
 
 #include <string>
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/test/histogram_tester.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/signin_pref_names.h"

@@ -8,15 +8,15 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/json_pref_store.h"
-#include "base/prefs/mock_pref_change_callback.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service_factory.h"
-#include "base/prefs/pref_value_store.h"
-#include "base/prefs/testing_pref_service.h"
-#include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
+#include "components/prefs/json_pref_store.h"
+#include "components/prefs/mock_pref_change_callback.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service_factory.h"
+#include "components/prefs/pref_value_store.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

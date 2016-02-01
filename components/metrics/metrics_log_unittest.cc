@@ -14,8 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -23,6 +21,8 @@
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/variations/active_field_trials.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

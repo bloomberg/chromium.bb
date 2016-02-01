@@ -18,8 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "components/policy/policy_export.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/url_matcher/url_matcher.h"
 #include "url/gurl.h"
 

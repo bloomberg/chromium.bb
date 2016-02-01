@@ -4,9 +4,9 @@
 
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"

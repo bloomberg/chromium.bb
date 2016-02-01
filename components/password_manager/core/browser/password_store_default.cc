@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/prefs/pref_service.h"
 #include "url/origin.h"
 
 using autofill::PasswordForm;
