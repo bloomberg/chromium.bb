@@ -1432,7 +1432,7 @@ void FrameView::restoreScrollbar()
     setScrollbarsSuppressed(false);
 }
 
-bool FrameView::processUrlFragment(const KURL& url, UrlFragmentBehavior behavior)
+void FrameView::processUrlFragment(const KURL& url, UrlFragmentBehavior behavior)
 {
     // If our URL has no ref, then we have no place we need to jump to.
     // OTOH If CSS target was set previously, we want to set it to 0, recalc
@@ -1441,17 +1441,16 @@ bool FrameView::processUrlFragment(const KURL& url, UrlFragmentBehavior behavior
     // Similarly for svg, if we had a previous svgView() then we need to reset
     // the initial view if we don't have a fragment.
     if (!url.hasFragmentIdentifier() && !m_frame->document()->cssTarget() && !m_frame->document()->isSVGDocument())
-        return false;
+        return;
 
     String fragmentIdentifier = url.fragmentIdentifier();
     if (processUrlFragmentHelper(fragmentIdentifier, behavior))
-        return true;
+        return;
 
     // Try again after decoding the ref, based on the document's encoding.
     if (m_frame->document()->encoding().isValid())
-        return processUrlFragmentHelper(decodeURLEscapeSequences(fragmentIdentifier, m_frame->document()->encoding()), behavior);
+        processUrlFragmentHelper(decodeURLEscapeSequences(fragmentIdentifier, m_frame->document()->encoding()), behavior);
 
-    return false;
 }
 
 bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior behavior)
@@ -1485,13 +1484,13 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
     if (behavior == UrlFragmentScroll)
         setFragmentAnchor(anchorNode ? static_cast<Node*>(anchorNode) : m_frame->document());
 
-    // If the anchor accepts keyboard focus, move focus there to aid users
-    // relying on keyboard navigation.
-    // If anchorNode is not focusable, clear focus, which matches the behavior
-    // of other browsers.
+    // If the anchor accepts keyboard focus and fragment scrolling is allowed,
+    // move focus there to aid users relying on keyboard navigation.
+    // If anchorNode is not focusable or fragment scrolling is not allowed,
+    // clear focus, which matches the behavior of other browsers.
     if (anchorNode) {
         m_frame->document()->updateLayoutIgnorePendingStylesheets();
-        if (anchorNode->isFocusable())
+        if (behavior == UrlFragmentScroll && anchorNode->isFocusable())
             anchorNode->focus();
         else
             m_frame->document()->clearFocusedElement();
