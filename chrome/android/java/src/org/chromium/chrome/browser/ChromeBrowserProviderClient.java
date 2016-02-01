@@ -52,35 +52,6 @@ public class ChromeBrowserProviderClient {
     }
 
     /**
-     * Creates a bookmark folder or returns its ID if it already exists.
-     * This method does not update the last modified folder in the UI.
-     *
-     * @param title Title of the new or existing bookmark folder.
-     * @param parentId ID of the parent folder. Must be in the Mobile Bookmarks branch.
-     * @return The ID of the new created folder (or INVALID_BOOKMARK_ID on error).
-     *         Will return the ID of any existing folder in the same parent with the same name.
-     */
-    public static long createBookmarksFolderOnce(Context context, String title, long parentId) {
-        Long id = chromeBrowserProviderCall(Long.class,
-                ChromeBrowserProvider.CLIENT_API_CREATE_BOOKMARKS_FOLDER_ONCE, context,
-                argsToBundle(title, parentId));
-        return id != null ? id.longValue() : INVALID_BOOKMARK_ID;
-    }
-
-    /**
-     * Retrieves the bookmark folder hierarchy of editable nodes, returning its root node.
-     *
-     * @return The root node of the bookmark folder hierarchy with all its descendant folders
-     *         that are editable by the user, populated or null in case of error.
-     *         Note that only folders are returned.
-     */
-    public static BookmarkNode getEditableBookmarkFolderHierarchy(Context context) {
-        return chromeBrowserProviderCall(BookmarkNode.class,
-                ChromeBrowserProvider.CLIENT_API_GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY, context,
-                argsToBundle());
-    }
-
-    /**
      * Removes all bookmarks and bookmark folders that the user can edit.
      * Only the permanent bookmark folders remain after this operation, and any managed bookmarks.
      */
@@ -107,19 +78,6 @@ public class ChromeBrowserProviderClient {
                         (flags & GET_CHILDREN) != 0,
                         (flags & GET_FAVICONS) != 0,
                         (flags & GET_THUMBNAILS) != 0));
-    }
-
-    /**
-     * Retrieves the current default folder for UI based bookmark operations.
-     * The result depends on where the last successful bookmark operation was performed by the user.
-     *
-     * @return The default bookmark folder for new bookmarks or null in case of error.
-     *         No parent or children are populated in the returned node.
-     */
-    public static BookmarkNode getDefaultBookmarkFolder(Context context) {
-        return chromeBrowserProviderCall(BookmarkNode.class,
-                ChromeBrowserProvider.CLIENT_API_GET_DEFAULT_BOOKMARK_FOLDER, context,
-                argsToBundle());
     }
 
     /**

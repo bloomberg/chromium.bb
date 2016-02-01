@@ -3640,6 +3640,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Bookmarks.OpenAction" enum="BookmarksOpenAction">
+  <obsolete>
+    Deprecated as of 1/2016.
+  </obsolete>
   <owner>kkimlabs@chromium.org</owner>
   <summary>
     Logs how user is opening a bookmark on Android. For example, user can long

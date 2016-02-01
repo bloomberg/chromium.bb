@@ -26,8 +26,6 @@
     <!-- Compositor Tab Title Text -->
     <bool name="compositor_tab_title_fake_bold_text">true</bool>
 
-    <!-- The maximum indent depth of folders when selecting bookmarks. -->
-    <integer name="select_bookmark_folder_max_depth_indent">5</integer>
     <!-- TabSwitcher - Maximum amount to tilt tabs in over scroll in degrees. -->
     <integer name="over_scroll_angle">15</integer>
 

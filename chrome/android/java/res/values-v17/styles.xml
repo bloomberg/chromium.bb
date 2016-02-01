@@ -160,13 +160,6 @@
         <item name="android:paddingEnd">@dimen/dialog_padding_sides</item>
         <item name="android:paddingTop">@dimen/dialog_padding_top</item>
     </style>
-    <style name="AlertDialogEditTextItem">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:paddingTop">10dp</item>
-    </style>
     <style name="AlertDialogSummaryViewItem" parent="@android:style/TextAppearance.Small">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -174,17 +167,6 @@
         <item name="android:paddingTop">10dp</item>
     </style>
 
-    <style name="BoldTextFieldLabel" parent="@android:style/TextAppearance.Medium">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textAlignment">viewStart</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:paddingTop">10dp</item>
-        <!-- These aren't really clickable, this is just a hack to make labels
-             accessibility focusable. -->
-        <item name="android:clickable">true</item>
-    </style>
     <style name="OverflowMenuTheme" parent="Theme.AppCompat.Light">
         <item name="android:popupBackground">@null</item>
         <item name="android:listDivider">@null</item>
@@ -348,28 +330,6 @@
         <!-- Remove ActionBar -->
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
-    </style>
-
-    <!--  Legacy Bookmarks -->
-    <style name="DialogWhenLargeHolo" parent="@android:style/Theme.Holo.Light.DialogWhenLarge" >
-        <item name="android:windowActionBar">false</item>
-        <item name="android:windowNoTitle">true</item>
-    </style>
-    <style name="AlertDialogTitle" parent="@android:style/TextAppearance.Large">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@android:color/holo_blue_light</item>
-        <item name="android:paddingStart">15dp</item>
-        <item name="android:paddingEnd">15dp</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:minHeight">64dp</item>
-        <!-- Not clickable, this is a hack to make alert titles accessibility focusable. -->
-        <item name="android:clickable">true</item>
-    </style>
-    <style name="AlertDialogTitleDivider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">2dp</item>
-        <item name="android:background">@android:color/holo_blue_light</item>
     </style>
 
     <!-- Enhanced bookmarks -->

@@ -16,7 +16,6 @@
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
-#include "chrome/browser/android/bookmarks/edit_bookmark_helper.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
 #include "chrome/browser/android/browsing_data/browsing_data_counter_bridge.h"
@@ -262,7 +261,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      DownloadManagerService::RegisterDownloadManagerService},
     {"DownloadOverwriteInfoBarDelegate",
      RegisterDownloadOverwriteInfoBarDelegate},
-    {"EditBookmarkHelper", RegisterEditBookmarkHelper},
     {"ExternalDataUseObserverBridge", RegisterExternalDataUseObserver},
     {"ExternalPrerenderRequestHandler",
      prerender::ExternalPrerenderHandlerAndroid::

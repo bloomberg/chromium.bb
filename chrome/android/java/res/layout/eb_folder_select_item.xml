@@ -10,8 +10,8 @@
     android:drawablePadding="20dp"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:paddingEnd="@dimen/select_bookmark_folder_item_left"
-    android:paddingStart="@dimen/select_bookmark_folder_item_left"
+    android:paddingEnd="15dp"
+    android:paddingStart="15dp"
     android:singleLine="true"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="@color/dark_mode_tint" />

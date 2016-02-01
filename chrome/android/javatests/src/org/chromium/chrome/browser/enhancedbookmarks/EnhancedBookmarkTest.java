@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -22,7 +24,6 @@ import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.chrome.test.util.BookmarkTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -32,6 +33,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
@@ -180,7 +182,7 @@ public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActiv
         openBookmarkManager();
         assertTrue("Grid view does not contain added bookmark: ",
                 isItemPresentInBookmarkList(TEST_PAGE_TITLE));
-        final View tile = BookmarkTestUtils.getViewWithText(mItemsContainer, TEST_PAGE_TITLE);
+        final View tile = getViewWithText(mItemsContainer, TEST_PAGE_TITLE);
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
             @Override
             public void run() {
@@ -240,5 +242,32 @@ public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActiv
         assertEquals(EnhancedBookmarkUIState.STATE_FILTER, delegate.getCurrentState());
         assertEquals(UrlConstants.BOOKMARKS_URL,
                 EnhancedBookmarkUtils.getLastUsedUrl(getActivity()));
+    }
+
+    /**
+     * Returns the View that has the given text.
+     *
+     * @param viewGroup    The group to which the view belongs.
+     * @param expectedText The expected description text.
+     * @return The unique view, if one exists. Throws an exception if one doesn't exist.
+     */
+    private static View getViewWithText(final ViewGroup viewGroup, final String expectedText) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<View>() {
+            @Override
+            public View call() throws Exception {
+                ArrayList<View> outViews = new ArrayList<View>();
+                ArrayList<View> matchingViews = new ArrayList<View>();
+                viewGroup.findViewsWithText(outViews, expectedText, View.FIND_VIEWS_WITH_TEXT);
+                // outViews includes all views whose text contains expectedText as a
+                // case-insensitive substring. Filter these views to find only exact string matches.
+                for (View v : outViews) {
+                    if (TextUtils.equals(((TextView) v).getText().toString(), expectedText)) {
+                        matchingViews.add(v);
+                    }
+                }
+                Assert.assertEquals("Exactly one item should be present.", 1, matchingViews.size());
+                return matchingViews.get(0);
+            }
+        });
     }
 }

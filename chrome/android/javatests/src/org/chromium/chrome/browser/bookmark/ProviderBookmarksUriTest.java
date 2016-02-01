@@ -11,8 +11,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.test.util.browser.BookmarkUtils;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -81,7 +81,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(lastUpdateTime, cursor.getLong(index));
         index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
         assertTrue(-1 != index);
-        assertTrue(BookmarkUtils.byteArrayEqual(FAVICON_DATA, cursor.getBlob(index)));
+        assertTrue(byteArraysEqual(FAVICON_DATA, cursor.getBlob(index)));
         index = cursor.getColumnIndex(BookmarkColumns.URL);
         assertTrue(-1 != index);
         assertEquals(url, cursor.getString(index));
@@ -130,7 +130,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(lastUpdateTime[0], cursor.getLong(index));
         index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
         assertTrue(-1 != index);
-        assertTrue(BookmarkUtils.byteArrayEqual(icons[0], cursor.getBlob(index)));
+        assertTrue(byteArraysEqual(icons[0], cursor.getBlob(index)));
         index = cursor.getColumnIndex(BookmarkColumns.URL);
         assertTrue(-1 != index);
         assertEquals(url[0], cursor.getString(index));
@@ -160,7 +160,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(lastUpdateTime[1], cursor.getLong(index));
         index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
         assertTrue(-1 != index);
-        assertTrue(BookmarkUtils.byteArrayEqual(icons[1], cursor.getBlob(index)));
+        assertTrue(byteArraysEqual(icons[1], cursor.getBlob(index)));
         index = cursor.getColumnIndex(BookmarkColumns.URL);
         assertTrue(-1 != index);
         assertEquals(url[1], cursor.getString(index));
@@ -211,7 +211,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(lastUpdateTime[1], cursor.getLong(index));
         index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
         assertTrue(-1 != index);
-        assertTrue(BookmarkUtils.byteArrayEqual(icons[1], cursor.getBlob(index)));
+        assertTrue(byteArraysEqual(icons[1], cursor.getBlob(index)));
         index = cursor.getColumnIndex(BookmarkColumns.URL);
         assertTrue(-1 != index);
         assertEquals(url[1], cursor.getString(index));
@@ -350,5 +350,19 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
                 BookmarkColumns.ID + " = " + Id,
                 null, null);
         assertEquals(0, cursor.getCount());
+    }
+
+    /**
+     * Checks if two byte arrays are equal. Used to compare icons.
+     * @return True if equal, false otherwise.
+     */
+    private static boolean byteArraysEqual(byte[] byte1, byte[] byte2) {
+        if (byte1 == null && byte2 != null) {
+            return byte2.length == 0;
+        }
+        if (byte2 == null && byte1 != null) {
+            return byte1.length == 0;
+        }
+        return Arrays.equals(byte1, byte2);
     }
 }

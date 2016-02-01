@@ -200,12 +200,6 @@
     <!-- The combined height of the tab strip and toolbar. -->
     <dimen name="tab_strip_and_toolbar_height">56dp</dimen>
 
-    <!-- SelectBookmarkFolder - Default indent for bookmark folders in the selection dialog. -->
-    <dimen name="select_bookmark_folder_item_left">15dp</dimen>
-    <!-- SelectBookmarkFolder - Incremental indentation for nested bookmark folders in the
-         selection dialog. -->
-    <dimen name="select_bookmark_folder_item_inc_left">10dp</dimen>
-
     <!-- Find in Page dimensions -->
     <dimen name="find_result_bar_touch_width">68dp</dimen>
     <dimen name="find_result_bar_draw_width">46dp</dimen>
@@ -270,7 +264,6 @@
     <dimen name="ntp_list_item_padding">16dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_list_item_text_size">16sp</dimen>
-    <dimen name="ntp_list_item_favicon_container_size">24dp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
     <dimen name="snippets_thumbnail_size">90dp</dimen>
     
@@ -279,10 +272,6 @@
     <dimen name="ntp_interest_item_min_height">180dp</dimen>
     <dimen name="ntp_interest_item_image_size">120dp</dimen>
     <dimen name="ntp_interest_item_image_text_size">20sp</dimen>
-
-    <!-- Bookmarks page -->
-    <dimen name="bookmark_folder_min_height">48dp</dimen>
-    <dimen name="bookmark_folder_text_size">16sp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
