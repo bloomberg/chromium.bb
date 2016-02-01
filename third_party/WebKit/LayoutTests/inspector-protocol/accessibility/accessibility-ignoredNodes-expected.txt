@@ -245,8 +245,12 @@ Content within label refers to label container
           },
           {
             "type": "attribute",
-            "value": {
+            "attributeValue": {
               "type": "string",
+              "value": ""
+            },
+            "value": {
+              "type": "computedString",
               "value": ""
             },
             "attribute": "alt"

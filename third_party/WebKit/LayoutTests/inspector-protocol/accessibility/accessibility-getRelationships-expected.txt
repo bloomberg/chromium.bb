@@ -62,7 +62,7 @@ Ginger Ale
         "sources": [
           {
             "type": "relatedElement",
-            "value": {
+            "attributeValue": {
               "type": "idrefList",
               "relatedNodes": [
                 {
@@ -72,6 +72,10 @@ Ginger Ale
                 }
               ],
               "value": "rg1_label"
+            },
+            "value": {
+              "type": "computedString",
+              "value": "Lunch Options"
             },
             "attribute": "aria-labelledby"
           },
@@ -128,7 +132,7 @@ Ginger Ale
         "sources": [
           {
             "type": "relatedElement",
-            "value": {
+            "attributeValue": {
               "type": "idrefList",
               "relatedNodes": [
                 {
@@ -138,6 +142,10 @@ Ginger Ale
                 }
               ],
               "value": "rg2_label"
+            },
+            "value": {
+              "type": "computedString",
+              "value": "Drink Options"
             },
             "attribute": "aria-labelledby"
           },

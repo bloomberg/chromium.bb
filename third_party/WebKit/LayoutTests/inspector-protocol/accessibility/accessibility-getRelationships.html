@@ -126,6 +126,8 @@ function test()
            for (var source of node.name.sources) {
                if (source.value)
                    rewriteValue(source.value, promises);
+               if (source.attributeValue)
+                   rewriteValue(source.attributeValue, promises);
            }
         }
         for (var property of properties)
