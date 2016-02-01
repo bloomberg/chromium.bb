@@ -410,7 +410,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
   }
 }
 
-TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
+#if defined(OS_ANDROID)
+#define MAYBE_NetHistograms DISABLED_NetHistograms
+#else
+#define MAYBE_NetHistograms NetHistograms
+#endif
+TEST_F(DataReductionProxyNetworkDelegateTest, MAYBE_NetHistograms) {
   const std::string kReceivedValidOCLHistogramName =
       "Net.HttpContentLengthWithValidOCL";
   const std::string kOriginalValidOCLHistogramName =
@@ -670,7 +675,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NullRequest) {
   EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
 }
 
-TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
+#if defined(OS_ANDROID)
+#define MAYBE_OnCompletedInternalLoFi DISABLED_OnCompletedInternalLoFi
+#else
+#define MAYBE_OnCompletedInternalLoFi OnCompletedInternalLoFi
+#endif
+TEST_F(DataReductionProxyNetworkDelegateTest, MAYBE_OnCompletedInternalLoFi) {
   // Enable Lo-Fi.
   const struct {
     bool lofi_response;
@@ -697,7 +707,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
   }
 }
 
-TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFiPreview) {
+#if defined(OS_ANDROID)
+#define MAYBE_OnCompletedInternalLoFiPreview \
+  DISABLED_OnCompletedInternalLoFiPreview
+#else
+#define MAYBE_OnCompletedInternalLoFiPreview OnCompletedInternalLoFiPreview
+#endif
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       MAYBE_OnCompletedInternalLoFiPreview) {
   // Enable Lo-Fi.
   const struct {
     bool is_preview;

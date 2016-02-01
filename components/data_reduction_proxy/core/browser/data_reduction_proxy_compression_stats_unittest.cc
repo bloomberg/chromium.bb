@@ -888,7 +888,12 @@ TEST_F(DataReductionProxyCompressionStatsTest, PartialDayTimeChange) {
       original2, 2, received2, 2);
 }
 
-TEST_F(DataReductionProxyCompressionStatsTest, ForwardMultipleDays) {
+#if defined(OS_ANDROID)
+#define MAYBE_ForwardMultipleDays DISABLED_ForwardMultipleDays
+#else
+#define MAYBE_ForwardMultipleDays ForwardMultipleDays
+#endif
+TEST_F(DataReductionProxyCompressionStatsTest, MAYBE_ForwardMultipleDays) {
   const int64_t kOriginalLength = 200;
   const int64_t kReceivedLength = 100;
   RecordContentLengthPrefs(
