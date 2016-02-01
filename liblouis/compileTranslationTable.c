@@ -4041,7 +4041,7 @@ doOpcode:
 	    char * s = malloc(sizeof(char) * (emphClass.length + 1));
 	    for (k = 0; k < emphClass.length; k++)
 	      s[k] = (char)emphClass.chars[k];
-	    s[k++] = '\0';
+	    s[emphClass.length] = '\0';
 	    for (i = 0; table->emphClasses[i]; i++)
 	      if (strcmp(s, table->emphClasses[i]) == 0)
 		{
@@ -4128,7 +4128,7 @@ doOpcode:
 	    char * s = malloc(sizeof(char) * (emphClass.length + 1));
 	    for (k = 0; k < emphClass.length; k++)
 	      s[k] = (char)emphClass.chars[k];
-	    s[k++] = '\0';
+	    s[emphClass.length] = '\0';
 	    for (i = 0; table->emphClasses[i]; i++)
 	      if (strcmp(s, table->emphClasses[i]) == 0)
 		{
