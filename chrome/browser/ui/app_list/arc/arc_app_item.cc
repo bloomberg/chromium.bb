@@ -72,7 +72,7 @@ void ArcAppItem::Activate(int event_flags) {
     return;
   }
 
-  app_instance->LaunchApp(app_info->package, app_info->activity);
+  app_instance->LaunchApp(app_info->package_name, app_info->activity);
 
   // Manually close app_list view because focus is not changed on ARC app start,
   // and current view remains active.

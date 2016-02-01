@@ -36,15 +36,16 @@ void FakeAppInstance::RefreshAppList() {
   ++refresh_app_list_count_;
 }
 
-void FakeAppInstance::LaunchApp(const mojo::String& package,
+void FakeAppInstance::LaunchApp(const mojo::String& package_name,
                                 const mojo::String& activity) {
-  launch_requests_.push_back(new Request(package, activity));
+  launch_requests_.push_back(new Request(package_name, activity));
 }
 
-void FakeAppInstance::RequestAppIcon(const mojo::String& package,
+void FakeAppInstance::RequestAppIcon(const mojo::String& package_name,
                                      const mojo::String& activity,
                                      ScaleFactor scale_factor) {
-  icon_requests_.push_back(new IconRequest(package, activity, scale_factor));
+  icon_requests_.push_back(
+      new IconRequest(package_name, activity, scale_factor));
 }
 
 void FakeAppInstance::SendRefreshAppList(const std::vector<AppInfo>& apps) {
@@ -99,7 +100,7 @@ bool FakeAppInstance::GenerateAndSendIcon(const AppInfo& app,
   CHECK(base::PathExists(icon_file_path));
   CHECK(base::ReadFileToString(icon_file_path, png_data_as_string));
 
-  app_host_->OnAppIcon(app.package, app.activity, scale_factor,
+  app_host_->OnAppIcon(app.package_name, app.activity, scale_factor,
                        mojo::Array<uint8_t>::From(*png_data_as_string));
 
   return true;

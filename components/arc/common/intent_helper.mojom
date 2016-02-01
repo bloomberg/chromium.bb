@@ -22,7 +22,7 @@ interface IntentHelperInstance {
   // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
   // added to the whitelist in ArcBridgeService.java in the Android source.
   [MinVersion=1] SendBroadcast@1(string action,
-                                 string package,
+                                 string package_name,
                                  string cls,
                                  string extras);
 };

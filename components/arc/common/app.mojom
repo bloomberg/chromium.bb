@@ -23,7 +23,7 @@ enum ScaleFactor {
 // Describes ARC app.
 struct AppInfo {
   string name;
-  string package;
+  string package_name;
   string activity;
 };
 
@@ -36,18 +36,18 @@ interface AppHost {
   // package added notification. Multiple apps may be added in the one package.
   [MinVersion=1] OnAppAdded@2(AppInfo app);
 
-  // Sends removed ARC package to Chrome. |package| must contain non-empty
+  // Sends removed ARC package to Chrome. |package_name| must contain non-empty
   // string. This message is sent when ARC receives package removed
   // notification. Removing one package can potentially remove more than one
   // app.
-  [MinVersion=1] OnPackageRemoved@3(string package);
+  [MinVersion=1] OnPackageRemoved@3(string package_name);
 
   // Receives an icon of required |scale_factor| for specific ARC app. The app
-  // is defined by |package| and |activity|. The icon content cannot be empty
-  // and must match to |scale_factor| assuming 48x48 for SCALE_FACTOR_100P.
-  // |scale_factor| is an enum defined at ui/base/layout.h. |icon_png_data| is
-  // a png-encoded image.
-  OnAppIcon@1(string package, string activity,
+  // is defined by |package_name| and |activity|. The icon content cannot be
+  // empty and must match to |scale_factor| assuming 48x48 for
+  // SCALE_FACTOR_100P.  |scale_factor| is an enum defined at ui/base/layout.h.
+  // |icon_png_data| is a png-encoded image.
+  OnAppIcon@1(string package_name, string activity,
               ScaleFactor scale_factor, array<uint8> icon_png_data);
 };
 
@@ -55,9 +55,9 @@ interface AppHost {
 interface AppInstance {
   Init(AppHost host_ptr);
 
-  // Sends a request to ARC to launch an ARC app defined by |package| and
+  // Sends a request to ARC to launch an ARC app defined by |package_name| and
   // |activity|, which cannot be empty.
-  LaunchApp(string package, string activity);
+  LaunchApp(string package_name, string activity);
 
   // Sends a request to ARC to refresh a list of ARC apps.
   // OnRefreshAppsList is expected in response to this message. However,
@@ -67,6 +67,6 @@ interface AppInstance {
 
   // Sends a request to ARC for the ARC app icon of a required scale factor.
   // Scale factor is an enum defined at ui/base/layout.h. App is defined by
-  // |package| and |activity|, which cannot be empty.
-  RequestAppIcon(string package, string activity, ScaleFactor scale_factor);
+  // |package_name| and |activity|, which cannot be empty.
+  RequestAppIcon(string package_name, string activity, ScaleFactor scale_factor);
 };

@@ -22,7 +22,7 @@
 namespace {
 
 const char kName[] = "name";
-const char kPackage[] = "package";
+const char kPackageName[] = "package_name";
 const char kActivity[] = "activity";
 
 // Provider of write access to a dictionary storing ARC app prefs.
@@ -103,9 +103,9 @@ ArcAppListPrefs* ArcAppListPrefs::Get(content::BrowserContext* context) {
 }
 
 // static
-std::string ArcAppListPrefs::GetAppId(const std::string& package,
+std::string ArcAppListPrefs::GetAppId(const std::string& package_name,
                                       const std::string& activity) {
-  std::string input = package + "#" + activity;
+  std::string input = package_name + "#" + activity;
   return crx_file::id_util::GenerateId(input);
 }
 
@@ -198,7 +198,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  app_instance->RequestAppIcon(app_info->package, app_info->activity,
+  app_instance->RequestAppIcon(app_info->package_name, app_info->activity,
                                static_cast<arc::ScaleFactor>(scale_factor));
 }
 
@@ -234,15 +234,13 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     return scoped_ptr<AppInfo>();
 
   std::string name;
-  std::string package;
+  std::string package_name;
   std::string activity;
   app->GetString(kName, &name);
-  app->GetString(kPackage, &package);
+  app->GetString(kPackageName, &package_name);
   app->GetString(kActivity, &activity);
-  scoped_ptr<AppInfo> app_info(new AppInfo(name,
-                                           package,
-                                           activity,
-                                           ready_apps_.count(app_id) > 0));
+  scoped_ptr<AppInfo> app_info(
+      new AppInfo(name, package_name, activity, ready_apps_.count(app_id) > 0));
 
   return app_info;
 }
@@ -286,12 +284,12 @@ void ArcAppListPrefs::OnAppInstanceReady() {
 }
 
 void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
-  if (app.name.get().empty() || app.package.get().empty() ||
+  if (app.name.get().empty() || app.package_name.get().empty() ||
       app.activity.get().empty()) {
-    VLOG(2) << "Name, package and activity cannot be empty.";
+    VLOG(2) << "Name, package name, and activity cannot be empty.";
     return;
   }
-  std::string app_id = GetAppId(app.package, app.activity);
+  std::string app_id = GetAppId(app.package_name, app.activity);
   bool was_registered = IsRegistered(app_id);
 
   if (was_registered) {
@@ -305,7 +303,7 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
   ScopedArcAppListPrefUpdate update(prefs_, app_id);
   base::DictionaryValue* app_dict = update.Get();
   app_dict->SetString(kName, app.name);
-  app_dict->SetString(kPackage, app.package);
+  app_dict->SetString(kPackageName, app.package_name);
   app_dict->SetString(kActivity, app.activity);
 
   // From now, app is available.
@@ -317,7 +315,7 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
                       observer_list_,
                       OnAppReadyChanged(app_id, true));
   } else {
-    AppInfo app_info(app.name, app.package, app.activity, true);
+    AppInfo app_info(app.name, app.package_name, app.activity, true);
     FOR_EACH_OBSERVER(Observer,
                       observer_list_,
                       OnAppRegistered(app_id, app_info));
@@ -373,7 +371,7 @@ void ArcAppListPrefs::OnAppAdded(arc::AppInfoPtr app) {
   AddApp(*app);
 }
 
-void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package) {
+void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   std::vector<std::string> apps_to_remove;
   for (base::DictionaryValue::Iterator app_it(*apps);
@@ -386,12 +384,12 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package) {
     }
 
     std::string app_package;
-    if (!app->GetString(kPackage, &app_package)) {
+    if (!app->GetString(kPackageName, &app_package)) {
       NOTREACHED();
       continue;
     }
 
-    if (package != app_package)
+    if (package_name != app_package)
       continue;
 
     apps_to_remove.push_back(app_it.key());
@@ -401,14 +399,14 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package) {
     RemoveApp(app_id);
 }
 
-void ArcAppListPrefs::OnAppIcon(const mojo::String& package,
+void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
                                 const mojo::String& activity,
                                 arc::ScaleFactor scale_factor,
                                 mojo::Array<uint8_t> icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(0u, icon_png_data.size());
 
-  std::string app_id = GetAppId(package, activity);
+  std::string app_id = GetAppId(package_name, activity);
   if (!IsRegistered(app_id)) {
     VLOG(2) << "Request to update icon for non-registered app: " << app_id;
     return;
@@ -448,11 +446,10 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
 }
 
 ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
-                                  const std::string& package,
+                                  const std::string& package_name,
                                   const std::string& activity,
                                   bool ready)
     : name(name),
-      package(package),
+      package_name(package_name),
       activity(activity),
-      ready(ready) {
-}
+      ready(ready) {}

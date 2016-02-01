@@ -19,20 +19,21 @@ class FakeAppInstance : public AppInstance {
  public:
   class Request {
    public:
-    Request(const std::string& package, const std::string& activity)
-        : package_(package), activity_(activity) {}
+    Request(const std::string& package_name, const std::string& activity)
+        : package_name_(package_name), activity_(activity) {}
     ~Request() {}
 
-    const std::string& package() const { return package_; }
+    const std::string& package_name() const { return package_name_; }
 
     const std::string& activity() const { return activity_; }
 
     bool IsForApp(const AppInfo& app_info) const {
-      return package_ == app_info.package && activity_ == app_info.activity;
+      return package_name_ == app_info.package_name &&
+             activity_ == app_info.activity;
     }
 
    private:
-    std::string package_;
+    std::string package_name_;
     std::string activity_;
 
     DISALLOW_COPY_AND_ASSIGN(Request);
@@ -40,10 +41,10 @@ class FakeAppInstance : public AppInstance {
 
   class IconRequest : public Request {
    public:
-    IconRequest(const std::string& package,
+    IconRequest(const std::string& package_name,
                 const std::string& activity,
                 ScaleFactor scale_factor)
-        : Request(package, activity),
+        : Request(package_name, activity),
           scale_factor_(static_cast<int>(scale_factor)) {}
     ~IconRequest() {}
 
@@ -65,9 +66,9 @@ class FakeAppInstance : public AppInstance {
   // AppInstance overrides:
   void Init(AppHostPtr host_ptr) override {}
   void RefreshAppList() override;
-  void LaunchApp(const mojo::String& package,
+  void LaunchApp(const mojo::String& package_name,
                  const mojo::String& activity) override;
-  void RequestAppIcon(const mojo::String& package,
+  void RequestAppIcon(const mojo::String& package_name,
                       const mojo::String& activity,
                       ScaleFactor scale_factor) override;
 

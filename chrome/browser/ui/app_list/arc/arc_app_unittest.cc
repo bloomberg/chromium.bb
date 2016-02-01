@@ -35,7 +35,7 @@
 namespace {
 
 std::string GetAppId(const arc::AppInfo& app_info) {
-  return ArcAppListPrefs::GetAppId(app_info.package, app_info.activity);
+  return ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
 }
 
 }  // namespace
@@ -58,7 +58,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       base::snprintf(buffer, arraysize(buffer), "Fake App %d", i);
       app.name = buffer;
       base::snprintf(buffer, arraysize(buffer), "fake.app.%d", i);
-      app.package = buffer;
+      app.package_name = buffer;
       base::snprintf(buffer, arraysize(buffer), "fake.app.%d.activity", i);
       app.activity = buffer;
       fake_apps_.push_back(app);
@@ -156,7 +156,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(app.name, app_info->name);
-      EXPECT_EQ(app.package, app_info->package);
+      EXPECT_EQ(app.package_name, app_info->package_name);
       EXPECT_EQ(app.activity, app_info->activity);
 
       const ArcAppItem* app_item = FindArcItem(id);
@@ -402,8 +402,8 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   std::map<std::string, uint32_t> app_masks;
   for (size_t i = 0; i < icon_requests.size(); ++i) {
     const arc::FakeAppInstance::IconRequest* icon_request = icon_requests[i];
-    const std::string id = ArcAppListPrefs::GetAppId(icon_request->package(),
-                                                     icon_request->activity());
+    const std::string id = ArcAppListPrefs::GetAppId(
+        icon_request->package_name(), icon_request->activity());
     // Make sure no double requests.
     EXPECT_NE(app_masks[id],
               app_masks[id] | (1 << icon_request->scale_factor()));

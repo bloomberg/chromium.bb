@@ -14,7 +14,7 @@ interface SettingsInstance {
   // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
   // added to the whitelist in ArcBridgeService.java in the Android source.
   SendBroadcast(string action,
-                string package,
+                string package_name,
                 string cls,
                 string extras);
 };
