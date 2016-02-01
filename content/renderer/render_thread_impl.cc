@@ -945,7 +945,7 @@ void RenderThreadImpl::Shutdown() {
 
   main_thread_compositor_task_runner_ = NULL;
 
-  gpu_factories_.reset();
+  gpu_factories_.clear();
 
   // Context providers must be released prior to destroying the GPU channel.
   shared_worker_context_provider_ = nullptr;
@@ -1456,8 +1456,26 @@ void RenderThreadImpl::PostponeIdleNotification() {
 media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
-  if (gpu_factories_)
-    return gpu_factories_.get();
+  if (!gpu_factories_.empty()) {
+    scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
+        gpu_factories_.back()->ContextProviderMainThread();
+    if (shared_context_provider) {
+      cc::ContextProvider::ScopedContextLock lock(
+          shared_context_provider.get());
+      if (lock.ContextGL()->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+        return gpu_factories_.back();
+      } else {
+        scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
+            GetMediaThreadTaskRunner();
+        media_task_runner->PostTask(
+            FROM_HERE,
+            base::Bind(
+                base::IgnoreResult(
+                    &RendererGpuVideoAcceleratorFactories::CheckContextLost),
+                base::Unretained(gpu_factories_.back())));
+      }
+    }
+  }
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
@@ -1481,13 +1499,14 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
     StringToUintVector(video_frame_image_texture_target_string,
                        &image_texture_targets);
 
-    gpu_factories_ = RendererGpuVideoAcceleratorFactories::Create(
+    gpu_factories_.push_back(RendererGpuVideoAcceleratorFactories::Create(
         gpu_channel_host.get(), base::ThreadTaskRunnerHandle::Get(),
         media_task_runner, shared_context_provider,
         enable_gpu_memory_buffer_video_frames, image_texture_targets,
-        enable_video_accelerator);
+        enable_video_accelerator));
+    return gpu_factories_.back();
   }
-  return gpu_factories_.get();
+  return nullptr;
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>

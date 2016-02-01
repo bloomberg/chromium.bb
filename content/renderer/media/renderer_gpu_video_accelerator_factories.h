@@ -81,6 +81,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   media::VideoPixelFormat VideoFrameOutputFormat() override;
   scoped_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
   GetGLContextLock() override;
+  bool CheckContextLost();
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
@@ -90,6 +91,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       GetVideoEncodeAcceleratorSupportedProfiles() override;
 
   void ReleaseContextProvider();
+  scoped_refptr<ContextProviderCommandBuffer> ContextProviderMainThread();
 
   ~RendererGpuVideoAcceleratorFactories() override;
 
@@ -103,8 +105,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       bool enable_gpu_memory_buffer_video_frames,
       std::vector<unsigned> image_texture_targets,
       bool enable_video_accelerator);
-
-  bool CheckContextLost();
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

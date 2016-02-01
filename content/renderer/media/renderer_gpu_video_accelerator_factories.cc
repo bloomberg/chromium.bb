@@ -266,4 +266,10 @@ void RendererGpuVideoAcceleratorFactories::ReleaseContextProvider() {
   context_provider_refptr_ = nullptr;
 }
 
+scoped_refptr<ContextProviderCommandBuffer>
+RendererGpuVideoAcceleratorFactories::ContextProviderMainThread() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  return context_provider_refptr_;
+}
+
 }  // namespace content

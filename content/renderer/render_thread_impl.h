@@ -603,7 +603,10 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<scheduler::WebThreadBase> compositor_thread_;
 
   // Utility class to provide GPU functionalities to media.
-  scoped_ptr<content::RendererGpuVideoAcceleratorFactories> gpu_factories_;
+  // TODO(dcastagna): This should be just one scoped_ptr once
+  // http://crbug.com/580386 is fixed.
+  // NOTE(dcastagna): At worst this accumulates a few bytes per context lost.
+  ScopedVector<content::RendererGpuVideoAcceleratorFactories> gpu_factories_;
 
   // Thread for running multimedia operations (e.g., video decoding).
   scoped_ptr<base::Thread> media_thread_;
