@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<script src="../resources/runner.js"></script>
+<div id="host">
+</div>
+<script>
+'use strict';
+const numAssignedDivs = 100;
+
+const host = document.getElementById('host');
+for (let i = 0; i < numAssignedDivs; ++i){
+  let div = document.createElement('div');
+  div.setAttribute('slot', 's1');
+  div.appendChild(document.createTextNode('div' + i));
+  host.appendChild(div);
+}
+
+const slot = document.createElement('slot');
+slot.setAttribute('name', 's1');
+const shadowRoot = host.attachShadow({mode: 'open'});
+shadowRoot.appendChild(slot);
+
+function run() {
+  slot.innerText;
+}
+
+PerfTestRunner.measureRunsPerSecond({
+  description: 'Measure Slot Distribution Calculation',
+  run: run,
+  done: () => {
+  }
+});
+</script>
+

@@ -83,32 +83,46 @@ void HTMLSlotElement::appendAssignedNode(Node& node)
 
 void HTMLSlotElement::appendDistributedNode(Node& node)
 {
+    size_t size = m_distributedNodes.size();
     m_distributedNodes.append(&node);
+    m_distributedIndices.set(&node, size);
 }
 
 void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
 {
+    size_t index = m_distributedNodes.size();
     m_distributedNodes.appendVector(other.m_distributedNodes);
+    for (const auto& it : other.m_distributedIndices) {
+        const Node* node = it.key;
+        m_distributedIndices.set(node, index++);
+    }
 }
 
 void HTMLSlotElement::clearDistribution()
 {
     m_assignedNodes.clear();
     m_distributedNodes.clear();
+    m_distributedIndices.clear();
 }
 
 Node* HTMLSlotElement::distributedNodeNextTo(const Node& node) const
 {
-    size_t index = m_distributedNodes.find(&node);
-    if (index == kNotFound || index + 1 == m_distributedNodes.size())
+    const auto& it = m_distributedIndices.find(&node);
+    if (it == m_distributedIndices.end())
+        return nullptr;
+    size_t index = it->value;
+    if (index + 1 == m_distributedNodes.size())
         return nullptr;
     return m_distributedNodes[index + 1].get();
 }
 
 Node* HTMLSlotElement::distributedNodePreviousTo(const Node& node) const
 {
-    size_t index = m_distributedNodes.find(&node);
-    if (index == kNotFound || index == 0)
+    const auto& it = m_distributedIndices.find(&node);
+    if (it == m_distributedIndices.end())
+        return nullptr;
+    size_t index = it->value;
+    if (index == 0)
         return nullptr;
     return m_distributedNodes[index - 1].get();
 }
@@ -202,8 +216,11 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
 
 DEFINE_TRACE(HTMLSlotElement)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_assignedNodes);
     visitor->trace(m_distributedNodes);
+    visitor->trace(m_distributedIndices);
+#endif
     HTMLElement::trace(visitor);
 }
 

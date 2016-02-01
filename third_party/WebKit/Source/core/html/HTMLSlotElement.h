@@ -50,7 +50,6 @@ public:
     Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.first().get(); }
     Node* lastDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.last().get(); }
 
-    // TODO(hayato): This takes O(N). Make it O(1) with node-to-index hash table.
     Node* distributedNodeNextTo(const Node&) const;
     Node* distributedNodePreviousTo(const Node&) const;
 
@@ -76,8 +75,8 @@ private:
     void removedFrom(ContainerNode*) override;
 
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_assignedNodes;
-    // TODO(hayato): Share code with DistributedNode class
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_distributedNodes;
+    WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t> m_distributedIndices;
 };
 
 } // namespace blink
