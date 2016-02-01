@@ -100,6 +100,9 @@ data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 static void
 data_source_notify_finish(struct weston_data_source *source)
 {
+	if (!source->actions_set)
+		return;
+
 	if (source->offer->in_ask &&
 	    wl_resource_get_version(source->resource) >=
 	    WL_DATA_SOURCE_ACTION_SINCE_VERSION) {
@@ -157,7 +160,7 @@ data_offer_update_action(struct weston_data_offer *offer)
 {
 	uint32_t action;
 
-	if (!offer->source)
+	if (!offer->source || !offer->source->actions_set)
 		return;
 
 	action = data_offer_choose_action(offer);
@@ -268,7 +271,8 @@ destroy_data_offer(struct wl_resource *resource)
 	if (wl_resource_get_version(offer->resource) <
 	    WL_DATA_OFFER_ACTION_SINCE_VERSION) {
 		data_source_notify_finish(offer->source);
-	} else if (wl_resource_get_version(offer->source->resource) >=
+	} else if (offer->source->resource &&
+		   wl_resource_get_version(offer->source->resource) >=
 		   WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
 		wl_data_source_send_cancelled(offer->source->resource);
 	}
