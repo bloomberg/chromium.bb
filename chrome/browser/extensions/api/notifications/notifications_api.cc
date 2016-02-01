@@ -395,6 +395,10 @@ bool NotificationsApiFunction::CreateNotification(
       base::UTF8ToUTF16(extension_->name()), extension_->url(),
       api_delegate->id(), optional_fields, api_delegate);
 
+  // Apply the "requireInteraction" flag. The value defaults to false.
+  notification.set_never_timeout(options->require_interaction &&
+                                 *options->require_interaction);
+
   g_browser_process->notification_ui_manager()->Add(notification, GetProfile());
   return true;
 }
