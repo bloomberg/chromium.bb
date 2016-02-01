@@ -57,7 +57,12 @@ int CertDatabase::CheckUserCert(X509Certificate* cert_obj) {
 int CertDatabase::AddUserCert(X509Certificate* cert_obj) {
   CertificateList cert_list;
   cert_list.push_back(cert_obj);
-  return psm::ImportUserCert(cert_list);
+  int result = psm::ImportUserCert(cert_list);
+
+  if (result == OK)
+    NotifyObserversOfCertAdded(NULL);
+
+  return result;
 }
 
 }  // namespace net
