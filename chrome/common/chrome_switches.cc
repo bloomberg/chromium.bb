@@ -998,14 +998,6 @@ const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 const char kEnableAndroidSpellChecker[] = "enable-android-spellchecker";
 #endif
 
-// Disables the multilingual spellchecker.
-const char kDisableMultilingualSpellChecker[] =
-    "disable-multilingual-spellchecker";
-
-// Enables the multilingual spellchecker.
-const char kEnableMultilingualSpellChecker[] =
-    "enable-multilingual-spellchecker";
-
 // Enables participation in the field trial for user feedback to spelling
 // service.
 const char kEnableSpellingFeedbackFieldTrial[] =
@@ -1338,7 +1330,7 @@ const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";
-#endif // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 extern const char kEnableInputImeAPI[] = "enable-input-ime-api";

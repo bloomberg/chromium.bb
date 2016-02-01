@@ -551,8 +551,6 @@
       'browser/ui/webui/options/options_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.h',
-      'browser/ui/webui/options/single_language_options_browsertest.cc',
-      'browser/ui/webui/options/single_language_options_browsertest.h',
       'browser/ui/webui/password_manager_internals/password_manager_internals_ui_browsertest.cc',
       'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
       'browser/ui/webui/signin/inline_login_ui_browsertest.cc',

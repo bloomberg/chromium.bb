@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN('#include "chrome/browser/ui/webui/options/' +
-    'single_language_options_browsertest.h"');
 GEN_INCLUDE(['options_browsertest_base.js']);
 
 /**
@@ -21,9 +19,6 @@ LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
    * Browse to languages options.
    */
   browsePreload: 'chrome://settings-frame/languages',
-
-  /** @override */
-  typedefCppFixture: 'SingleLanguageOptionsBrowserTest',
 
   /**
    * Register a mock dictionary handler.
@@ -54,13 +49,13 @@ LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
   },
 };
 
-// Verify that dictionary download success shows 'This language is used for
-// spellchecking' message.
+// Verify that dictionary download success does not show, "This language can't
+// be used for spellchecking." or "Download failed."
 TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
        'testdictionaryDownloadSuccess',
        function() {
   options.LanguageOptions.onDictionaryDownloadSuccess('en-US');
-  expectFalse($('spellcheck-language-message').hidden);
+  expectTrue($('spellcheck-language-message').hidden);
   expectTrue($('language-options-dictionary-downloading-message').hidden);
   expectTrue($('language-options-dictionary-download-failed-message').hidden);
   expectTrue(

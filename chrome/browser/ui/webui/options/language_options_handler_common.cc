@@ -127,10 +127,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
                          GetSpellCheckLanguageCodeSet());
   localized_strings->Set("uiLanguageCodeSet", GetUILanguageCodeSet());
 
-  localized_strings->SetBoolean(
-      "enableMultilingualSpellChecker",
-      chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
-
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
   std::string default_target_language =

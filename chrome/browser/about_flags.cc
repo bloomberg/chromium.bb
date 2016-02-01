@@ -797,15 +797,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableAndroidSpellChecker)},
 #endif
-#if defined(ENABLE_SPELLCHECK) && \
-    (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS))
-    {"enable-multilingual-spellchecker",
-     IDS_FLAGS_ENABLE_MULTILINGUAL_SPELLCHECKER_NAME,
-     IDS_FLAGS_ENABLE_MULTILINGUAL_SPELLCHECKER_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMultilingualSpellChecker,
-                               switches::kDisableMultilingualSpellChecker)},
-#endif
     {"enable-scroll-prediction",
      IDS_FLAGS_SCROLL_PREDICTION_NAME,
      IDS_FLAGS_SCROLL_PREDICTION_DESCRIPTION,
@@ -2087,7 +2078,7 @@ const FeatureEntry kFeatureEntries[] = {
       kOsWin | kOsLinux,
       ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                 switches::kDisableInputImeAPI)},
-#endif // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
     {"enable-experimental-framework",
      IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_NAME,
      IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_DESCRIPTION,

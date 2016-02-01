@@ -39,9 +39,6 @@ static const size_t MAX_SYNCABLE_DICTIONARY_WORDS = 1300;
 // dictionary.
 static const size_t MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 
-// The name of the field trial for multilingual spellchecker.
-extern const char kMultilingualSpellcheckFieldTrial[];
-
 base::FilePath GetVersionedFileName(const std::string& input_language,
                                     const base::FilePath& dict_dir);
 
@@ -57,9 +54,6 @@ void SpellCheckLanguages(std::vector<std::string>* languages);
 void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
                                          std::string* language_code,
                                          std::string* country_code);
-
-// Returns true if multilingual spellchecker is enabled.
-bool IsMultilingualSpellcheckEnabled();
 
 }  // namespace spellcheck_common
 }  // namespace chrome

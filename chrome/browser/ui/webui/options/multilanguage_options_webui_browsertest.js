@@ -35,11 +35,9 @@ MultilanguageOptionsWebUIBrowserTest.prototype = {
   setUp: function() {
     OptionsBrowsertestBase.prototype.setUp.call(this);
 
-    assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
     assertFalse(cr.isMac);
-    expectTrue($('spellcheck-language-button').hidden);
     expectFalse($('edit-custom-dictionary-button').hidden);
-    this.expectEnableSpellcheckCheckboxHidden();
+    this.expectEnableSpellcheckCheckboxVisible();
     this.expectCurrentlySelected('fr');
 
     var requiredOwnedAriaRoleMissingSelectors = [
@@ -69,13 +67,13 @@ MultilanguageOptionsWebUIBrowserTest.prototype = {
   /** @override */
   tearDown: function() {
     testing.Test.prototype.tearDown.call(this);
-    this.expectEnableSpellcheckCheckboxHidden();
+    this.expectEnableSpellcheckCheckboxVisible();
   },
 
-  /** Make sure the 'Enable spell checking' checkbox is not visible. */
-  expectEnableSpellcheckCheckboxHidden: function() {
+  /** Make sure the 'Enable spell checking' checkbox is visible. */
+  expectEnableSpellcheckCheckboxVisible: function() {
     if ($('enable-spellcheck-container'))
-      expectTrue($('enable-spellcheck-container').hidden);
+      expectFalse($('enable-spellcheck-container').hidden);
   },
 };
 
@@ -166,11 +164,9 @@ MultilanguagePreferenceWebUIBrowserTest.prototype = {
   setUp: function() {
     OptionsBrowsertestBase.prototype.setUp.call(this);
 
-    assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
     assertFalse(cr.isMac);
-    expectTrue($('spellcheck-language-button').hidden);
     expectTrue($('edit-custom-dictionary-button').hidden);
-    this.expectEnableSpellcheckCheckboxHidden();
+    this.expectEnableSpellcheckCheckboxVisible();
     this.expectCurrentlySelected('');
     this.expectRegisteredDictionariesPref('');
 

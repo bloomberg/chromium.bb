@@ -18,8 +18,6 @@
 namespace chrome {
 namespace spellcheck_common {
 
-const char kMultilingualSpellcheckFieldTrial[] = "MultilingualSpellcheck";
-
 struct LanguageRegion {
   const char* language;  // The language.
   const char* language_region;  // language & region, used by dictionaries.
@@ -185,24 +183,6 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
   }
   *language_code = std::string(language);
   *country_code = std::string(country);
-}
-
-bool IsMultilingualSpellcheckEnabled() {
-  // TODO(rouslan): Remove field trial and command line flags when M49 is
-  // stable.
-  const std::string& group_name =
-      base::FieldTrialList::FindFullName(kMultilingualSpellcheckFieldTrial);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMultilingualSpellChecker)) {
-    return false;
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMultilingualSpellChecker)) {
-    return true;
-  }
-  // Enabled by default, but can be disabled in field trial.
-  return !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace spellcheck_common

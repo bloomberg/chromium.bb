@@ -165,15 +165,6 @@ cr.define('options', function() {
      */
     enableTranslate_: false,
 
-    /**
-     * Returns true if the enable-multilingual-spellchecker flag is set.
-     * @return {boolean}
-     * @private
-     */
-    isMultilingualSpellcheckerEnabled_: function() {
-      return loadTimeData.getBoolean('enableMultilingualSpellChecker');
-    },
-
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -244,25 +235,15 @@ cr.define('options', function() {
 
       if (!(cr.isMac || cr.isChromeOS)) {
         // Handle spell check enable/disable.
-        if (!this.isMultilingualSpellcheckerEnabled_()) {
-          Preferences.getInstance().addEventListener(
-              ENABLE_SPELL_CHECK_PREF, this.updateEnableSpellCheck_.bind(this));
-        }
-        $('enable-spellcheck-container').hidden =
-            this.isMultilingualSpellcheckerEnabled_();
+        Preferences.getInstance().addEventListener(
+            ENABLE_SPELL_CHECK_PREF, this.updateEnableSpellCheck_.bind(this));
       }
 
       // Handle clicks on "Use this language for spell checking" button.
       if (!cr.isMac) {
-        if (this.isMultilingualSpellcheckerEnabled_()) {
-          $('spellcheck-language-checkbox').addEventListener(
-              'change',
-              this.handleSpellCheckLanguageCheckboxClick_.bind(this));
-        } else {
-          $('spellcheck-language-button').addEventListener(
-              'click',
-              this.handleSpellCheckLanguageButtonClick_.bind(this));
-        }
+        $('spellcheck-language-checkbox').addEventListener(
+            'change',
+            this.handleSpellCheckLanguageCheckboxClick_.bind(this));
       }
 
       if (cr.isChromeOS) {
@@ -639,7 +620,6 @@ cr.define('options', function() {
     updateSpellCheckLanguageControls_: function(languageCode) {
       assert(languageCode);
       var spellCheckLanguageSection = $('language-options-spellcheck');
-      var spellCheckLanguageButton = $('spellcheck-language-button');
       var spellCheckLanguageCheckboxContainer =
           $('spellcheck-language-checkbox-container');
       var spellCheckLanguageCheckbox = $('spellcheck-language-checkbox');
@@ -653,7 +633,6 @@ cr.define('options', function() {
 
       spellCheckLanguageSection.hidden = false;
       spellCheckLanguageMessage.hidden = true;
-      spellCheckLanguageButton.hidden = true;
       spellCheckLanguageCheckboxContainer.hidden = true;
       dictionaryDownloadInProgress.hidden = true;
       dictionaryDownloadFailed.hidden = true;
@@ -671,25 +650,10 @@ cr.define('options', function() {
       }
 
       var isUsedForSpellchecking = languageCode in this.spellCheckLanguages_;
-      var isLanguageDownloaded =
-          !(languageCode in this.spellcheckDictionaryDownloadStatus_);
 
-      if (this.isMultilingualSpellcheckerEnabled_()) {
-        spellCheckLanguageCheckbox.languageCode = languageCode;
-        spellCheckLanguageCheckbox.checked = isUsedForSpellchecking;
-        spellCheckLanguageCheckboxContainer.hidden = false;
-      } else if (isUsedForSpellchecking) {
-        if (isLanguageDownloaded) {
-          spellCheckLanguageMessage.textContent =
-              loadTimeData.getString('isUsedForSpellChecking');
-          spellCheckLanguageMessage.hidden = false;
-        }
-      } else {
-        spellCheckLanguageButton.textContent =
-            loadTimeData.getString('useThisForSpellChecking');
-        spellCheckLanguageButton.hidden = false;
-        spellCheckLanguageButton.languageCode = languageCode;
-      }
+      spellCheckLanguageCheckbox.languageCode = languageCode;
+      spellCheckLanguageCheckbox.checked = isUsedForSpellchecking;
+      spellCheckLanguageCheckboxContainer.hidden = false;
 
       switch (this.spellcheckDictionaryDownloadStatus_[languageCode]) {
         case DOWNLOAD_STATUS.IN_PROGRESS:
@@ -708,7 +672,6 @@ cr.define('options', function() {
           Object.keys(this.spellCheckLanguages_).length == 0;
       var usesSystemSpellchecker = !$('enable-spellcheck-container');
       var isSpellcheckingEnabled = usesSystemSpellchecker ||
-          this.isMultilingualSpellcheckerEnabled_() ||
           $('enable-spellcheck').checked;
       $('edit-custom-dictionary-button').hidden =
           areNoLanguagesSelected || !isSpellcheckingEnabled;
@@ -971,14 +934,13 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles browse.enable_spellchecking change.
+     * Handles browser.enable_spellchecking change.
      * @param {Event} e Change event.
      * @private
      */
     updateEnableSpellCheck_: function(e) {
       var value = !$('enable-spellcheck').checked;
-      var languageControl = $(this.isMultilingualSpellcheckerEnabled_() ?
-          'spellcheck-language-checkbox' : 'spellcheck-language-button');
+      var languageControl = $('spellcheck-language-checkbox');
       languageControl.disabled = value;
       if (!cr.isMac)
         $('edit-custom-dictionary-button').hidden = value;
@@ -1025,23 +987,6 @@ cr.define('options', function() {
       this.enableTranslate_ = enabled;
       this.updateOfferToTranslateCheckbox_(
           $('language-options-list').getSelectedLanguageCode());
-    },
-
-    /**
-     * Handles spellCheckLanguageButton click.
-     * @param {Event} e Click event.
-     * @private
-     */
-    handleSpellCheckLanguageButtonClick_: function(e) {
-      var languageCode = e.currentTarget.languageCode;
-      // Save the preference.
-      Preferences.setListPref(SPELL_CHECK_DICTIONARIES_PREF,
-                              [languageCode], true);
-
-      // The spellCheckLanguageChange argument is only used for logging.
-      chrome.send('spellCheckLanguageChange', [languageCode]);
-      chrome.send('coreOptionsUserMetricsAction',
-                  ['Options_Languages_SpellCheck']);
     },
 
     /**

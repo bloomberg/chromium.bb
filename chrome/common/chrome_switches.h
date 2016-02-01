@@ -268,8 +268,6 @@ extern const char kSpeculativeResourcePrefetchingLearning[];
 #if defined(OS_ANDROID)
 extern const char kEnableAndroidSpellChecker[];
 #endif
-extern const char kDisableMultilingualSpellChecker[];
-extern const char kEnableMultilingualSpellChecker[];
 extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
