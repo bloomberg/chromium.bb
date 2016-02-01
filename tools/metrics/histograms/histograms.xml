@@ -31791,6 +31791,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SuggestionUsed.SearchVsUrl"
+    enum="OmniboxSummarizedResultType">
+  <owner>mpearson@google.com</owner>
+  <summary>
+    The rough type of the suggestion the user selected when the user used the
+    omnibox to go somewhere.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime" units="ms">
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -73271,6 +73280,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
+<enum name="OmniboxSummarizedResultType" type="int">
+  <int value="0" label="URL"/>
+  <int value="1" label="search"/>
+  <int value="2" label="app/extension"/>
+  <int value="3" label="contact"/>
+  <int value="4" label="on-device"/>
+  <int value="5" label="unknown"/>
 </enum>
 
 <enum name="OmniboxUserTextCleared" type="int">
