@@ -322,7 +322,6 @@ static inline Element* parentOrV0ShadowHostElement(const Element& element)
 SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, MatchResult& result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
-    nextContext.previousElement = context.element;
 
     CSSSelector::Relation relation = context.selector->relation();
 
@@ -330,6 +329,9 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     if (!context.isSubSelector && (context.element->isLink() || (relation != CSSSelector::Descendant && relation != CSSSelector::Child)))
         nextContext.visitedMatchType = VisitedMatchDisabled;
 
+    nextContext.inRightmostCompound = false;
+    nextContext.isSubSelector = false;
+    nextContext.previousElement = context.element;
     nextContext.pseudoId = NOPSEUDO;
 
     switch (relation) {
@@ -341,8 +343,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             }
             return SelectorFailsCompletely;
         }
-        nextContext.isSubSelector = false;
-        nextContext.inRightmostCompound = false;
 
         if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
@@ -359,9 +359,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         {
             if (context.selector->relationIsAffectedByPseudoContent())
                 return matchForPseudoContent(nextContext, *context.element, result);
-
-            nextContext.isSubSelector = false;
-            nextContext.inRightmostCompound = false;
 
             if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
                 return matchForPseudoShadow(nextContext, context.element->parentNode(), result);
@@ -383,8 +380,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.element = ElementTraversal::previousSibling(*context.element);
         if (!nextContext.element)
             return SelectorFailsAllSiblings;
-        nextContext.isSubSelector = false;
-        nextContext.inRightmostCompound = false;
         return matchSelector(nextContext, result);
 
     case CSSSelector::IndirectAdjacent:
@@ -397,8 +392,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
                 parent->setChildrenAffectedByIndirectAdjacentRules();
         }
         nextContext.element = ElementTraversal::previousSibling(*context.element);
-        nextContext.isSubSelector = false;
-        nextContext.inRightmostCompound = false;
         for (; nextContext.element; nextContext.element = ElementTraversal::previousSibling(*nextContext.element)) {
             Match match = matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
@@ -418,8 +411,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (!shadowHost)
                 return SelectorFailsCompletely;
             nextContext.element = shadowHost;
-            nextContext.isSubSelector = false;
-            nextContext.inRightmostCompound = false;
             return matchSelector(nextContext, result);
         }
 
@@ -440,9 +431,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
                 }
                 return SelectorFailsCompletely;
             }
-
-            nextContext.isSubSelector = false;
-            nextContext.inRightmostCompound = false;
 
             for (nextContext.element = parentOrV0ShadowHostElement(*context.element); nextContext.element; nextContext.element = parentOrV0ShadowHostElement(*nextContext.element)) {
                 Match match = matchSelector(nextContext, result);
@@ -477,8 +465,6 @@ SelectorChecker::Match SelectorChecker::matchForPseudoContent(const SelectorChec
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(element, insertionPoints);
     SelectorCheckingContext nextContext(context);
-    nextContext.isSubSelector = false;
-    nextContext.inRightmostCompound = false;
     for (const auto& insertionPoint : insertionPoints) {
         nextContext.element = insertionPoint;
         // TODO(esprehn): Why does SharingRules have a special case?
