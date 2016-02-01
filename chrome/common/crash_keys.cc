@@ -169,6 +169,11 @@ size_t RegisterChromeCrashKeys() {
     { "rvinit_view_id", kSmallSize },
     { "rvinit_proxy_id", kSmallSize },
     { "rvinit_main_frame_id", kSmallSize },
+    { "initrf_frame_id", kSmallSize },
+    { "initrf_proxy_id", kSmallSize },
+    { "initrf_view_id", kSmallSize },
+    { "initrf_main_frame_id", kSmallSize },
+    { "initrf_view_is_live", kSmallSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
